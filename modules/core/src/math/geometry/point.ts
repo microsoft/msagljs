@@ -11,7 +11,7 @@ export enum TriangleOrientation {
 export function distPP(a: Point, b: Point) {
   return a.sub(b).length
 }
-
+/** represents a point with two coordinates on the plane */
 export class Point {
   // c is projected to line through a, b
   public static ProjectionToLine(a: Point, b: Point, c: Point): Point {
@@ -27,13 +27,13 @@ export class Point {
     //Assert.assert(Math.abs(c.sub(ret).dot(d)) < GeomConstants.distanceEpsilon)
     return ret
   }
-  static RayIntersectsRayInteriors(aOrig: Point, aDirection: Point, bOrig: Point, bDirection: Point): Point | undefined {
-    const x = Point.lineLineIntersection(aOrig, aOrig.add(aDirection), bOrig, bOrig.add(bDirection))
+  static RayIntersectsRayInteriors(aOrig: Point, aDir: Point, bOrig: Point, bDir: Point): Point | undefined {
+    const x = Point.lineLineIntersection(aOrig, aOrig.add(aDir), bOrig, bOrig.add(bDir))
     if (!x) return undefined
 
     if (
-      x.sub(aOrig).dot(aDirection.div(aDirection.l1)) > GeomConstants.distanceEpsilon &&
-      x.sub(bOrig).dot(bDirection.div(bDirection.l1)) > GeomConstants.distanceEpsilon
+      x.sub(aOrig).dot(aDir.div(aDir.l1)) > GeomConstants.distanceEpsilon &&
+      x.sub(bOrig).dot(bDir.div(bDir.l1)) > GeomConstants.distanceEpsilon
     )
       return x
 
