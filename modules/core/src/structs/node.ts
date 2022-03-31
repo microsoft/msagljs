@@ -4,6 +4,7 @@ import {Graph} from './graph'
 /** Represent a node of a graph: has id, which is a string, and sets of in/out/self edges */
 export class Node extends Entity {
   private _id: string
+  /** the unique, in the parent graph, id of the node */
   public get id(): string {
     return this._id
   }
