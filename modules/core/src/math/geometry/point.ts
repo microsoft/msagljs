@@ -13,7 +13,7 @@ export function distPP(a: Point, b: Point) {
 }
 /** represents a point with two coordinates on the plane */
 export class Point {
-  // c is projected to line through a, b
+  /** c is projected to line through a, b */
   public static ProjectionToLine(a: Point, b: Point, c: Point): Point {
     let d = b.sub(a)
     const dLen = d.length
