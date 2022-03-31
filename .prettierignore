@@ -1,0 +1,9 @@
+# do not run Prettier against JavaScript files
+# in "snapshots/" folders
+**/node_modules/*.js
+**/*.gv
+**/*~
+**/*.png
+**/*.doc*
+**/*.*_
+src/tools/commentOutAssert.py

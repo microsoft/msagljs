@@ -1,0 +1,29 @@
+{
+  "name": "@msagl/renderer",
+  "version": "0.0.18",
+  "description": "WebGL renderer for MSAGL in JavaScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "dist.min.js",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaglJS/msagl-js"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsc --project tsconfig.prod.json && npm run build-bundle",
+    "build-bundle": "esbuild src/index.ts --bundle --minify --format=iife --global-name=msagl --outfile=dist.min.js"
+  },
+  "dependencies": {
+    "@danmarshall/deckgl-typings": "^4.9.13",
+    "deck.gl": "^8.6.0",
+    "msagl-js": "^0.0.51"
+  }
+}

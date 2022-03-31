@@ -1,0 +1,34 @@
+{
+  "name": "msagl-js",
+  "version": "0.0.51",
+  "description": "MSAGL in JavaScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "drawing",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaglJS/msagl-js"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsc --project tsconfig.prod.json"
+  },
+  "dependencies": {
+    "@esfx/collections": "^1.0.0-pre.19",
+    "@esfx/collections-sortedmap": "^1.0.0-pre.19",
+    "@types/parse-color": "^1.0.1",
+    "dotparser": "^1.1.0",
+    "parse-color": "^1.0.0",
+    "queue-typescript": "^1.0.1",
+    "reliable-random": "^0.0.1",
+    "stack-typescript": "^1.0.4",
+    "typescript-string-operations": "^1.4.1"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "lib": ["dom", "es2018"],
+    "importHelpers": true,
+    "noEmit": true,
+    "esModuleInterop": true
+  },
+  "include": ["modules/**/src/**/*", "modules/**/test/**/*"],
+  "typeRoots": [
+    "./node_modules/@types/",
+    "./node_modules/@danmarshall/deckgl-typings"
+  ]
+}

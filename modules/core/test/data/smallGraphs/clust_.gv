@@ -1,0 +1,13 @@
+digraph G {
+    subgraph cluster0 {
+		x0 -> y0;
+		x0 -> z0;
+	}
+
+	subgraph cluster1 {
+		x1 -> y1;
+		x1 -> z1;
+	}
+    cluster0 -> cluster1
+
+}

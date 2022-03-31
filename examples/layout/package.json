@@ -1,0 +1,30 @@
+{
+  "name": "msagl-renderer",
+  "version": "1.0.0",
+  "description": "Renderer for msagl-js",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open",
+    "start-local": "webpack-dev-server --progress --hot --open --env.local",
+    "build": "rm -rf dist && webpack --env.prod && cp index.html dist",
+    "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
+  },
+  "author": "xiac@microsoft.com",
+  "license": "MIT",
+  "dependencies": {
+    "@msagl/renderer": "^0.0.18",
+    "msagl-js": "^0.0.51",
+    "typescript": "^4.5.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/plugin-transform-runtime": "^7.16.10",
+    "@babel/preset-env": "^7.16.11",
+    "babel-loader": "^8.2.3",
+    "ts-loader": "^8.0.12",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.11.3"
+  }
+}

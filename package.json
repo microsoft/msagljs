@@ -1,0 +1,53 @@
+{
+  "name": "msagl-js",
+  "version": "0.0.45",
+  "description": "MSAGL in JavaScript",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaglJS/msagl-js"
+  },
+  "workspaces": [
+    "modules/*"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "build": "lerna run build",
+    "publish": "lerna run build && lerna publish",
+    "typecheck": "tsc",
+    "eslint": "eslint modules/core/src",
+    "prettier": "prettier --write modules/core/src"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/collections": "^5.1.2",
+    "@types/jest": "^26.0.24",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "babel-eslint": "^10.1.0",
+    "esbuild": "^0.14.27",
+    "eslint": "^7.32.0",
+    "eslint-plugin-react": "^7.29.4",
+    "husky": "^4.3.8",
+    "jest": "^27.5.1",
+    "lerna": "^4.0.0",
+    "lint-staged": "10.5.3",
+    "prettier": "^2.6.0",
+    "ts-jest": "^27.1.4",
+    "typescript": "^4.6.3",
+    "xml-writer": "^1.7.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "npm run eslint",
+      "npm run prettier"
+    ]
+  }
+ 
+}
