@@ -8,7 +8,8 @@ renderer.addControl(new SearchControl())
 let drawingGraph: DrawingGraph
 const routingButtons = document.querySelectorAll('input[name="routing_mode"]')
 for (let i = 0; i < routingButtons.length; i++) {
-  routingButtons[i].onchange = routingChange
+  const button = <HTMLInputElement>routingButtons[i]
+  button.onchange = routingChange
 }
 dropZone('drop-target', async (f: File) => {
   drawingGraph = await loadDotFile(f)
@@ -65,8 +66,9 @@ function adjustLayoutSettings(): LayoutSettings {
 }
 function getRoutingStyle(): string {
   for (let i = 0; i < routingButtons.length; i++) {
-    if (routingButtons[i].checked) {
-      return routingButtons[i].value
+    const button = <HTMLInputElement>routingButtons[i]
+    if (button.checked) {
+      return button.value
     }
   }
 }
