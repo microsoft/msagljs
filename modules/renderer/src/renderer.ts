@@ -6,10 +6,9 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {GeomGraph, Rectangle} from 'msagl-js'
+import {GeomGraph, Rectangle, LayoutSettings} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
-import {LayoutSettings} from '../../core/src'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
