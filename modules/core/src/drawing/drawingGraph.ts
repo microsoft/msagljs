@@ -51,7 +51,7 @@ export class DrawingGraph extends DrawingNode {
       if (!str) return null
       return new Size(str.length * 8 + 8, 20)
     },
-  ): void {
+  ): GeomGraph {
     const geomGraph = new GeomGraph(this.graph)
     geomGraph.labelSize = textMeasure(this.labelText)
     for (const n of this.graph.deepNodes) {
@@ -60,6 +60,7 @@ export class DrawingGraph extends DrawingNode {
     for (const e of this.graph.edges) {
       this.createEdgeGeometry(e, textMeasure)
     }
+    return geomGraph
   }
   createEdgeGeometry(e: Edge, textMeasure: (label: string) => Size) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)

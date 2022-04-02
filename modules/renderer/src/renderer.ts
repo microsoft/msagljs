@@ -5,10 +5,11 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
-import {layoutDrawingGraph, GraphLayoutOptions} from './layout'
+import {layoutDrawingGraph} from './layout'
 import {GeomGraph, Rectangle} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
+import {LayoutSettings} from '../../core/src'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -29,8 +30,6 @@ export default class Renderer extends EventSource {
   private _geomGraph?: GeomGraph
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
-
-  private _layoutOptions?: GraphLayoutOptions
 
   constructor(container: HTMLElement = document.body) {
     super()
@@ -95,9 +94,13 @@ export default class Renderer extends EventSource {
     return this._geomGraph
   }
 
-  setGraph(drawingGraph: DrawingGraph, layoutOptions?: GraphLayoutOptions) {
+  get layoutOptions(): LayoutSettings {
+    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._drawingGraph.graph)
+    return geomGraph == null ? null : geomGraph.layoutSettings
+  }
+
+  setGraph(drawingGraph: DrawingGraph) {
     this._drawingGraph = drawingGraph
-    this._layoutOptions = layoutOptions
     if (this._deck.layerManager) {
       // deck is ready
       this._update()
@@ -119,11 +122,9 @@ export default class Renderer extends EventSource {
   }
 
   private _update() {
-    const drawingGraph = this._drawingGraph
-    if (!drawingGraph) return
+    if (!this._drawingGraph) return
 
-    const geomGraph = layoutDrawingGraph(drawingGraph, this._layoutOptions)
-    this._geomGraph = geomGraph
+    const geomGraph = (this._geomGraph = layoutDrawingGraph(this._drawingGraph))
 
     const center = geomGraph.boundingBox.center
 

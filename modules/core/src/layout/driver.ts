@@ -122,6 +122,10 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.isEmpty()) {
     return
   }
+  if (geomG.layoutSettings && geomG.layoutSettings.runRoutingOnly) {
+    edgeRouter(geomG, Array.from(geomG.deepEdges()), cancelToken)
+    return
+  }
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)

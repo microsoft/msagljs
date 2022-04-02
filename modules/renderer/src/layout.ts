@@ -1,5 +1,13 @@
 import {MdsLayoutSettings} from 'msagl-js'
-import {GeomGraph, Size, layoutGraphWithSugiayma, layoutGraphWithMds, SugiyamaLayoutSettings, EdgeRoutingMode} from 'msagl-js'
+import {
+  GeomGraph,
+  Size,
+  layoutGraphWithSugiayma,
+  layoutGraphWithMds,
+  LayoutSettings,
+  SugiyamaLayoutSettings,
+  EdgeRoutingMode,
+} from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
 // TODO - use user-specified font
@@ -8,55 +16,39 @@ function measureTextSize(str: string): Size {
   return new Size(str.length * 8 + 8, 20)
 }
 
-export type GraphLayoutOptions = {
-  rectilinearEdges?: boolean
-}
-/** lay out the DrawingGraph dg.
- * TODO: replace GraphLayoutOptions by LayoutSettings from core
- */
-export function layoutDrawingGraph(dg: DrawingGraph, options: GraphLayoutOptions = {}, stringMeasure = measureTextSize): GeomGraph {
-  //  Go over the underlying Graph, dg.graph, and for every element of this Graph create a geometry attribute: GeomGraph for Graph, GeomNode for Node, GeomEdge for Edge, and GeomLabel for Label.
-  dg.createGeometry(stringMeasure)
-
-  const {rectilinearEdges = false} = options
-  // Fetch the geometry attribute from Graph, GeomGraph in this case
-  const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
-  // directed is true iff the dot starts with keyword 'digraph'
-  const directed = dg.hasDirectedEdge()
-  // figure out if the graph is too large for the layered layout
-  const tooLargeForLayered = geomGraph.graph.nodeCollection.nodeDeepCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 2000
-
-  if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings || (directed && !tooLargeForLayered)) {
-    let ss: SugiyamaLayoutSettings // this type of settings is used for layered layout
-    // create SugiyamaLayout settings, but only in the case they were not created before
-    // and stored under GeomGraph
-    if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
-      ss = <SugiyamaLayoutSettings>geomGraph.layoutSettings
-    } else {
-      ss = geomGraph.layoutSettings = new SugiyamaLayoutSettings()
-    }
-    // adjust the edge routing mode for rectilinearRouting if required
-    if (rectilinearEdges) {
-      ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Rectilinear
-    }
-    // rankdir sets up the layer direction: can be left-righ, right-left, top-bottom, and bottom-top
-    if (dg.rankdir) {
-      ss.layerDirection = dg.rankdir
-    }
-    // calculate the layout
-    layoutGraphWithSugiayma(geomGraph, null)
-  } else {
-    if (rectilinearEdges) {
-      // create settings to control MDS layout for the case they are not set and stored under GeomGraph beforehand
-      let mdsS: MdsLayoutSettings = <MdsLayoutSettings>geomGraph.layoutSettings
-      if (!(mdsS instanceof MdsLayoutSettings)) {
-        geomGraph.layoutSettings = mdsS = new MdsLayoutSettings()
-      }
-      mdsS.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Rectilinear
-    }
-    // calculate the layout
-    layoutGraphWithMds(geomGraph, null)
+/** lay out the DrawingGraph dg*/
+export function layoutDrawingGraph(dg: DrawingGraph, stringMeasure = measureTextSize): GeomGraph {
+  let geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grap the GeomGraph from the underlying Graph
+  if (
+    geomGraph == null || // there is no geometry yet
+    geomGraph.layoutSettings == null || // or layout settings are not set
+    !geomGraph.layoutSettings.runRoutingOnly // or we are not rerouting only
+  ) {
+    //  Go over the underlying Graph, dg.graph, and for every element of this Graph create a geometry attribute: GeomGraph for Graph, GeomNode for Node, GeomEdge for Edge, and GeomLabel for Label.
+    geomGraph = dg.createGeometry(stringMeasure)
   }
 
+  if (geomGraph.layoutSettings == null) {
+    // directed is true iff the dot starts with keyword 'digraph'
+    const directed = dg.hasDirectedEdge()
+    // figure out if the graph is too large for the layered layout
+    const tooLargeForLayered = geomGraph.graph.nodeCollection.nodeDeepCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 2000
+    if (directed && !tooLargeForLayered) {
+      // the graph is not tool large and has directed edges: use layered layout
+      const ss = (geomGraph.layoutSettings = new SugiyamaLayoutSettings())
+      // rankdir sets up the layer direction: can be left-righ, right-left, top-bottom, and bottom-top
+      if (dg.rankdir) {
+        ss.layerDirection = dg.rankdir
+      }
+    } else {
+      // the graph is more suitable for the pivot mds layout
+      geomGraph.layoutSettings = new MdsLayoutSettings()
+    }
+  }
+  if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
+    layoutGraphWithSugiayma(geomGraph) // calculate the layout
+  } else {
+    layoutGraphWithMds(geomGraph) // calculate the layout
+  }
   return geomGraph
 }

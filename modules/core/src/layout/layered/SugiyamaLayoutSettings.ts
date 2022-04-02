@@ -12,9 +12,11 @@ export enum SnapToGridByY {
 }
 /** The base class for hierarchy of layout settings: it specifies the minumal allowed distance between the nodes,  the minimal size of the resulting bounding box, settings for edge routing, and the ratio for the graph boxes packing algorithm  */
 export class LayoutSettings {
+  /** if this option is set to true and the geometry is present in the Graph, no layout is done, but only the edges are routed */
+  runRoutingOnly = false
   edgeRoutingSettings = new EdgeRoutingSettings()
   minimalWidth = 0
-  // The resulting layout should be at list this wide
+  /**  The resulting layout should be at list this wide*/
   get MinimalWidth(): number {
     return this.minimalWidth
   }
@@ -22,7 +24,7 @@ export class LayoutSettings {
     this.minimalWidth = Math.max(value, 0)
   }
   minimalHeight = 0
-  // The resulting layout should be at least this tall
+  /**  The resulting layout should be at least this tall*/
   get MinimalHeight(): number {
     return this.minimalHeight
   }
@@ -58,9 +60,9 @@ export class SugiyamaLayoutSettings extends LayoutSettings {
   RepetitionCoefficientForOrdering = 1
   AspectRatio = 0
   MaxNumberOfPassesInOrdering = 24
-  // When the number of vertices in the proper layered graph
-  // is at least threshold  we switch to the faster, but not so accurate,
-  // method for x-coordinates calculations.
+  /**  When the number of vertices in the proper layered graph
+   is at least threshold  we switch to a fast, but not so accurate,
+   method for x-coordinates calculations. */
   BrandesThreshold = 600
   LabelCornersPreserveCoefficient = 0.1
   MinNodeHeight = (72 * 0.5) / 4
