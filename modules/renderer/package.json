@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,6 +24,6 @@
   "dependencies": {
     "@danmarshall/deckgl-typings": "^4.9.13",
     "deck.gl": "^8.6.0",
-    "msagl-js": "^0.0.51"
+    "msagl-js": "^0.0.52"
   }
 }
