@@ -6,11 +6,9 @@ import {GeomGraph, EdgeRoutingMode, LayoutSettings, SugiyamaLayoutSettings} from
 const renderer = new Renderer()
 renderer.addControl(new SearchControl())
 let drawingGraph: DrawingGraph
-const routingButtons = document.querySelectorAll('input[name="routing_mode"]')
-for (let i = 0; i < routingButtons.length; i++) {
-  const button = <HTMLInputElement>routingButtons[i]
-  button.onchange = routingChange
-}
+const dropDown = <HTMLSelectElement>document.getElementById('rs')
+dropDown.onchange = routingChange
+
 dropZone('drop-target', async (f: File) => {
   drawingGraph = await loadDotFile(f)
   renderer.setGraph(drawingGraph)
@@ -26,6 +24,7 @@ function routingChange() {
   adjustLayoutSettings()
   renderer.setGraph(drawingGraph)
 }
+
 function adjustLayoutSettings(): LayoutSettings {
   const rstyle: string = getRoutingStyle()
   const settings = (<GeomGraph>GeomGraph.getGeom(drawingGraph.graph)).layoutSettings
@@ -51,6 +50,7 @@ function adjustLayoutSettings(): LayoutSettings {
       settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.StraightLine
       settings.edgeRoutingSettings.BundlingSettings = null
       settings.runRoutingOnly = true
+      break
     }
     case 'default': {
       settings.edgeRoutingSettings.BundlingSettings = null
@@ -72,10 +72,5 @@ function adjustLayoutSettings(): LayoutSettings {
   return settings
 }
 function getRoutingStyle(): string {
-  for (let i = 0; i < routingButtons.length; i++) {
-    const button = <HTMLInputElement>routingButtons[i]
-    if (button.checked) {
-      return button.value
-    }
-  }
+  return dropDown.options[dropDown.selectedIndex].value
 }
