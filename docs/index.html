@@ -23,7 +23,8 @@
         background: #fff;
         box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
       }
-      #buttons {
+
+      #routing {
         cursor: pointer;
         position: fixed;
         display: flex;
@@ -52,19 +53,15 @@
       </svg>
       <span id="graph-name"></span>
     </div>
-    <div id="buttons">
-      Edge Routing:
-      <input type="radio" id="rect" name="routing_mode" value="rectilinear" />
-      <label for="rect">rectilinear</label>
-
-      <input type="radio" id="spline" name="routing_mode" value="splines" checked="true" />
-      <label for="spline">splines</label>
-
-      <input type="radio" id="bundling" name="routing_mode" value="bundles" />
-      <label for="bund">bundles</label>
-
-      <input type="radio" id="default" name="routing_mode" value="default" />
-      <label for="default">default</label>
+    <div id="routing">
+      <label for="routing_mode">Choose edge routing:</label>
+      <select name="rs" id="rs">
+        <option value="default" name="routing_mode" selected="true">Default</option>
+        <option value="splines" name="routing_mode">Splines</option>
+        <option value="rectilinear" name="routing_mode">Rectilinear</option>
+        <option value="bundles" name="routing_mode">Bundles</option>
+        <option value="straight" name="routing_mode">Straight</option>
+      </select>
     </div>
     <script src="./app.js"></script>
   </body>
