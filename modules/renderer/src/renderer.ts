@@ -26,6 +26,9 @@ const MaxZoom = 4
 export default class Renderer extends EventSource {
   private _deck: any
   private _drawingGraph?: DrawingGraph
+  get drawingGraph() {
+    return this._drawingGraph
+  }
   private _geomGraph?: GeomGraph
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
@@ -98,7 +101,7 @@ export default class Renderer extends EventSource {
     return geomGraph == null ? null : geomGraph.layoutSettings
   }
 
-  setGraph(drawingGraph: DrawingGraph) {
+  setGraph(drawingGraph: DrawingGraph = this._drawingGraph) {
     this._drawingGraph = drawingGraph
     if (this._deck.layerManager) {
       // deck is ready

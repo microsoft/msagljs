@@ -1,33 +1,45 @@
 import {loadDefaultGraph, loadDotFile} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl} from '@msagl/renderer'
-import {DrawingGraph} from 'msagl-js/dist/drawing'
+import {parseDotString} from 'msagl-js/drawing'
 import {GeomGraph, EdgeRoutingMode, LayoutSettings, SugiyamaLayoutSettings} from 'msagl-js'
 const renderer = new Renderer()
 renderer.addControl(new SearchControl())
-let drawingGraph: DrawingGraph
-const dropDown = <HTMLSelectElement>document.getElementById('rs')
-dropDown.onchange = routingChange
+const edgeRoutingSelect = <HTMLSelectElement>document.getElementById('rs')
+edgeRoutingSelect.onchange = routingChange
+
+const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
+dotFileSelect.onchange = gvChange
 
 dropZone('drop-target', async (f: File) => {
-  drawingGraph = await loadDotFile(f)
+  const drawingGraph = await loadDotFile(f)
   renderer.setGraph(drawingGraph)
   document.getElementById('graph-name').innerText = drawingGraph.graph.id
 })
 ;(async () => {
-  drawingGraph = await loadDefaultGraph()
+  const drawingGraph = await loadDefaultGraph()
 
   renderer.setGraph(drawingGraph)
   document.getElementById('graph-name').innerText = drawingGraph.id
 })()
 function routingChange() {
   adjustLayoutSettings()
-  renderer.setGraph(drawingGraph)
+  renderer.setGraph()
+}
+
+function gvChange() {
+  const fn = dotFileSelect.options[dotFileSelect.selectedIndex].value
+  const fullName = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + fn
+  fetch(fullName)
+    .then((resp) => resp.text())
+    .then((data) => {
+      renderer.setGraph(parseDotString(data))
+    })
 }
 
 function adjustLayoutSettings(): LayoutSettings {
   const rstyle: string = getRoutingStyle()
-  const settings = (<GeomGraph>GeomGraph.getGeom(drawingGraph.graph)).layoutSettings
+  const settings = (<GeomGraph>GeomGraph.getGeom(renderer.drawingGraph.graph)).layoutSettings
 
   switch (rstyle) {
     case 'rectilinear':
@@ -72,5 +84,5 @@ function adjustLayoutSettings(): LayoutSettings {
   return settings
 }
 function getRoutingStyle(): string {
-  return dropDown.options[dropDown.selectedIndex].value
+  return edgeRoutingSelect.options[edgeRoutingSelect.selectedIndex].value
 }
