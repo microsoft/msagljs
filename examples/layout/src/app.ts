@@ -33,10 +33,12 @@ function adjustLayoutSettings(): LayoutSettings {
   switch (rstyle) {
     case 'rectilinear':
       settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Rectilinear
+      settings.edgeRoutingSettings.BundlingSettings = null
       settings.runRoutingOnly = true
       break
     case 'splines': {
       settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
+      settings.edgeRoutingSettings.BundlingSettings = null
       settings.runRoutingOnly = true
       break
     }
@@ -44,6 +46,11 @@ function adjustLayoutSettings(): LayoutSettings {
       settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
       settings.runRoutingOnly = true
       break
+    }
+    case 'straight': {
+      settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.StraightLine
+      settings.edgeRoutingSettings.BundlingSettings = null
+      settings.runRoutingOnly = true
     }
     case 'default': {
       settings.edgeRoutingSettings.BundlingSettings = null
