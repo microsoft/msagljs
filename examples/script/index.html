@@ -1,31 +1,29 @@
 <html>
+  <head>
+    <title>MSAGL</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
 
-<head>
-  <title>MSAGL</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-  </style>
-</head>
+  <body>
+    <script src="https://unpkg.com/@msagl/renderer@^0.0.19/dist.min.js"></script>
+    <script>
+      fetch('https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/badvoro.gv')
+        .then((resp) => resp.text())
+        .then((data) => {
+          const graph = msagl.parseDot(data)
+          const renderer = new msagl.Renderer()
+          renderer.setGraph(graph)
 
-<body>
-  <script src="https://unpkg.com/@msagl/renderer@^0.0.17/dist.min.js"></script>
-  <script>
-    fetch('https://raw.githubusercontent.com/msaglJS/msagl-js/56814f6fefbd8347d490dd7a3aa48c61b3677035/test/data/graphvis/badvoro.gv')
-      .then(resp => resp.text())
-      .then(data => {
-        const graph = msagl.parseDot(data)
-        const renderer = new msagl.Renderer()
-        renderer.setGraph(graph)
-        
-        const searchControl = new msagl.SearchControl()
-        renderer.addControl(searchControl)
-      })
-  </script>
-</body>
-
+          const searchControl = new msagl.SearchControl()
+          renderer.addControl(searchControl)
+        })
+    </script>
+  </body>
 </html>
