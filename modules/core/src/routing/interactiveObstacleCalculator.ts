@@ -118,7 +118,10 @@ export class InteractiveObstacleCalculator {
 
     if (rectNode.UserData != null) {
       const curveUnderTest = rectNode.UserData
-      return Curve.intersectionOne(curveUnderTest, curve, false) != null || InteractiveObstacleCalculator.Inside(curveUnderTest, curve)
+      return (
+        Curve.intersectionOne(curveUnderTest, curve, false) != null ||
+        InteractiveObstacleCalculator.PointIsInside(curveUnderTest.start, curve)
+      )
     }
 
     // Assert.assert(rectNode.Left != null && rectNode.Right != null)
@@ -128,8 +131,8 @@ export class InteractiveObstacleCalculator {
     )
   }
 
-  static Inside(curveUnderTest: ICurve, curve: ICurve): boolean {
-    return Curve.PointRelativeToCurveLocation(curve.start, curveUnderTest) == PointLocation.Inside
+  static PointIsInside(point: Point, curve: ICurve): boolean {
+    return Curve.PointRelativeToCurveLocation(point, curve) == PointLocation.Inside
   }
 
   CreateTightObstaclesIgnoringTightPadding() {

@@ -7,6 +7,10 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {mkRTree, RTree} from '../../math/geometry/RTree/RTree'
+import {Curve, PointLocation} from '../../math/geometry'
+import {InteractiveObstacleCalculator} from '../../routing/interactiveObstacleCalculator'
+import {mkRectangleNode, RectangleNode} from '../../math/geometry/RTree/RectangleNode'
 
 // import {Curve} from '../../math/geometry/curve'
 // import {Ellipse} from '../../math/geometry/ellipse'
@@ -37,8 +41,38 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
   geomGraph.addLabelToGraphBB(geomGraph.boundingBox)
 }
 
-/** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information and GeomGraph has some geometry info: for example the layout settings, and some inherited from GeomNode */
+/** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  _rtree: RTree<GeomObject, Point>;
+
+  /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
+  *intersectedObjects(rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
+    if (this._rtree == null) {
+      this._rtree = this.buildRTree()
+    }
+    const result = this._rtree.GetAllIntersecting(rect)
+    const perimeter = rect.perimeter()
+    for (const r of result) {
+      if (r instanceof GeomNode) yield r
+      if (onlyNodes) continue
+      if (r instanceof GeomEdge) {
+        const curveUnderTest = (r as GeomEdge).curve
+        if (
+          Curve.intersectionOne(curveUnderTest, perimeter, false) != null ||
+          Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) == PointLocation.Inside
+        )
+          yield r
+      }
+    }
+  }
+
+  buildRTree(): RTree<GeomObject, Point> {
+    const data: Array<[Rectangle, GeomObject]> = (Array.from(this.deepNodes()) as GeomObject[])
+      .concat(Array.from(this.deepEdges()) as GeomObject[])
+      .map((o) => [o.boundingBox, o])
+    return mkRTree(data)
+  }
+
   isEmpty(): boolean {
     return this.graph.isEmpty()
   }

@@ -6,7 +6,7 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {GeomGraph, Rectangle, LayoutSettings} from 'msagl-js'
+import {GeomGraph, Rectangle, LayoutSettings, GeomNode, Point} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 
@@ -143,6 +143,8 @@ export default class Renderer extends EventSource {
       getWidth: 1,
       getSize: 14,
       sizeMaxPixels: 24,
+      onClick: (a, b) => callMe(a, b),
+      pickable: true,
     })
 
     this._deck.setProps({
@@ -158,4 +160,10 @@ export default class Renderer extends EventSource {
       data: geomGraph,
     } as Event)
   }
+}
+function callMe(a: any, b: any) {
+  console.log(a)
+  console.log(b)
+  const geomNode = <GeomNode>a.object
+  geomNode.center = geomNode.center.add(new Point(100, 0))
 }
