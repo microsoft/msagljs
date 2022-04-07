@@ -38,7 +38,7 @@ import {EdgeRoutingSettings} from './EdgeRoutingSettings'
 import {ShapeCreatorForRoutingToParents} from './ShapeCreatorForRoutingToParents'
 import {Port} from '../layout/core/port'
 import {ShapeObstacleCalculator} from './ShapeObstacleCalculator'
-import {InteractiveEdgeRouter} from './InteractiveEdgeRouter'
+import {EdgeToParent, InteractiveEdgeRouter} from './InteractiveEdgeRouter'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {addRange, uniteSets, insertRange, setIntersection, setsAreEqual} from '../utils/setOperations'
 import {Queue} from 'queue-typescript'
@@ -55,9 +55,9 @@ import {SdShortestPath} from './spline/bundling/SdShortestPath'
 import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
-//import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
+import {Graph} from '../structs/graph'
 
-//  routing splines around shapes
+/**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   //  setting this to true forces the calculation to go on even when node overlaps are present
   //
@@ -396,7 +396,7 @@ export class SplineRouter extends Algorithm {
   RouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
     const transparentShapes = this.MakeTransparentShapesOfEdgeGeometryAndGetTheShapes(edge)
     this.ProgressStep()
-    this.RouteEdgeGeometry(edge, interactiveEdgeRouter)
+    this.RouteEdgeInternal(edge, interactiveEdgeRouter)
     SplineRouter.SetTransparency(transparentShapes, false)
   }
 
@@ -687,9 +687,11 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //   The set of shapes where the edge source and target ports shapes are citizens.
-  //   In the simple case it is the union of the target port shape parents and the sourceport shape parents.
-  //   When one end shape contains another, the passport is the set consisting of the end shape and all other shape parents.
+  /**
+   * The set of shapes where the edge source and target ports shapes are citizens: the shapes who's interior the edge can cross
+   *   In the simple case it is the union of the target port shape parents and the sourceport shape parents.
+   *   When one end shape contains another, the passport is the set consisting of the end shape and all other shape parents.
+   */
   EdgePassport(edge: GeomEdge): Set<Shape> {
     const ret = new Set<Shape>()
     const sourceShape = this.portsToShapes.get(edge.sourcePort)
@@ -741,7 +743,7 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  RouteEdgeGeometry(edge: GeomEdge, iRouter: InteractiveEdgeRouter) {
+  RouteEdgeInternal(edge: GeomEdge, iRouter: InteractiveEdgeRouter) {
     const addedEdges = new Array<VisibilityEdge>()
     if (!(edge.sourcePort instanceof HookUpAnywhereFromInsidePort)) {
       addRange(addedEdges, this.AddVisibilityEdgesFromPort(edge.sourcePort))
@@ -751,9 +753,10 @@ export class SplineRouter extends Algorithm {
       addRange(addedEdges, this.AddVisibilityEdgesFromPort(edge.targetPort))
     }
 
+    const toAncestor = SplineRouter.EdgeIsToAncestor(edge)
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
-    if (!Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
-      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t)
+    if (toAncestor || !Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
+      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t, toAncestor)
     } else {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
     }
@@ -769,6 +772,22 @@ export class SplineRouter extends Algorithm {
 
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     //   SetTransparency(transparentShapes, false);
+  }
+  /** returns 0 if the source and the target are just siblings
+   *          1 if the source is a descendant of the target
+   *         -1 if the target is a descendant of the source
+   */
+  static EdgeIsToAncestor(geomEdge: GeomEdge): EdgeToParent {
+    const e = geomEdge.edge
+    const s = e.source
+    const t = e.target
+    if (s instanceof Graph) {
+      if (t.isDescendantOf(<Graph>s)) return EdgeToParent.FromAncestor
+    }
+    if (t instanceof Graph) {
+      if (s.isDescendantOf(<Graph>t)) return EdgeToParent.FromAncestor
+    }
+    return EdgeToParent.None
   }
 
   KeepOriginalSpline = false
@@ -978,7 +997,7 @@ export class SplineRouter extends Algorithm {
     const looseShape: Shape = tightLooseCouple ? tightLooseCouple.LooseShape : this.looseRoot
     const obstacles = new Set<Polyline>(looseShape.Children.map((c) => <Polyline>c.BoundaryCurve))
     const portLocations = this.RemoveInsidePortsAndSplitBoundaryIfNeeded(looseBoundary)
-    // this run will split the polyline enough to route later from the inner ports
+
     let tmpVisGraph = new VisibilityGraph()
     let coneSpanner = ConeSpanner.mk([], tmpVisGraph, this.coneAngle, portLocations, looseBoundary)
     coneSpanner.run()
@@ -1049,6 +1068,7 @@ export class SplineRouter extends Algorithm {
     }
   }
 
+  /** this run will split the polyline enough to route later from the inner ports */
   RemoveInsidePortsAndSplitBoundaryIfNeeded(boundary: Polyline): PointSet {
     const ret = new PointSet()
     if (boundary == null) {

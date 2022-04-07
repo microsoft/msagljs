@@ -256,10 +256,11 @@ export class SvgDebugWriter {
       if (n instanceof GeomGraph) {
         box = n.boundaryCurve.boundingBox
         const gg = <GeomGraph>n
-        // we are in the flipped world
-        const labelBox = Rectangle.mkSizeCenter(gg.labelSize, new Point(box.center.x, box.bottom + gg.labelSize.height / 2 + 2))
-
-        this.writeLabel(n.node, labelBox)
+        if (gg.labelSize) {
+          // we are in the flipped world
+          const labelBox = Rectangle.mkSizeCenter(gg.labelSize, new Point(box.center.x, box.bottom + gg.labelSize.height / 2 + 2))
+          this.writeLabel(n.node, labelBox)
+        }
       } else {
         this.writeLabel(n.node, box)
       }

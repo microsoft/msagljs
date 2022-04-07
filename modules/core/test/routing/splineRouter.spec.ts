@@ -12,6 +12,7 @@ import {
   MdsLayoutSettings,
   layoutGraphWithMds,
   GeomEdge,
+  BundlingSettings,
 } from '../../src'
 import {DrawingEdge, DrawingGraph, DrawingNode} from '../../src/drawing'
 import {GeomObject} from '../../src/layout/core/geomObject'
@@ -742,3 +743,31 @@ function checkEdges(gg: GeomGraph) {
     }
   }
 }
+
+test('edge to a parent', () => {
+  // create a graph with a subgraph and a node inside of it
+  const g = new Graph('graph')
+  const a = new Graph('a')
+  g.addNode(a)
+  const b = a.addNode(new Node('b'))
+  const c = a.addNode(new Node('c'))
+  const ab = new Edge(a, b)
+  // create geometry
+  const gg = new GeomGraph(g)
+  const ag = new GeomGraph(a)
+  ag.boundaryCurve = CurveFactory.mkCircle(100, new Point(0, 0))
+
+  const bg = new GeomNode(b)
+  // create a smaller circle for bg
+  bg.boundaryCurve = CurveFactory.mkCircle(30, new Point(0, 0))
+  new GeomEdge(ab)
+
+  const cg = new GeomNode(c)
+  cg.boundaryCurve = CurveFactory.mkCircle(10, new Point(-50, -50))
+
+  const sr = SplineRouter.mk4(gg, 2, 4, Math.PI / 6)
+  // sr.BundlingSettings = new BundlingSettings() : this will crash!!!
+  sr.run()
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent.svg')
+  t.writeGeomGraph(gg)
+})

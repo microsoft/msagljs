@@ -30,7 +30,17 @@ import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
+import {Assert} from '../utils/assert'
 
+/** characterize edge if it connects an node and its ancestor */
+export enum EdgeToParent {
+  /** the source and the target are siblings */
+  None,
+  /** the source is an ancestor of the target */
+  FromAncestor,
+  /** the target is an ancestor of the source */
+  ToAncestor,
+}
 export class InteractiveEdgeRouter extends Algorithm {
   //  the obstacles for routing
   obstacles_: Array<ICurve>
@@ -1488,20 +1498,23 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     targetPortLocal: Port,
     smooth: boolean,
     t: {smoothedPolyline: SmoothedPolyline},
+    toAncestor: EdgeToParent,
   ): ICurve {
     const reversed: boolean =
       (sourcePortLocal instanceof FloatingPort && targetPortLocal instanceof CurvePort) ||
-      sourcePortLocal instanceof HookUpAnywhereFromInsidePort
+      sourcePortLocal instanceof HookUpAnywhereFromInsidePort ||
+      toAncestor == EdgeToParent.FromAncestor
     if (reversed) {
       const tmp: Port = sourcePortLocal
       sourcePortLocal = targetPortLocal
       targetPortLocal = tmp
+      toAncestor = flip(toAncestor)
     }
 
     this.sourcePort = sourcePortLocal
     this.targetPort = targetPortLocal
     this.FigureOutSourceTargetPolylinesAndActiveRectangle()
-    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t)
+    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t, toAncestor)
     if (curve == null) {
       return null
     }
@@ -1515,7 +1528,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     return curve
   }
 
-  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
+  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}, toParent: EdgeToParent): ICurve {
     this.targetIsInsideOfSourceTightPolyline =
       this.SourceTightPolyline == null ||
       Curve.PointRelativeToCurveLocation(this.targetPort.Location, this.SourceTightPolyline) == PointLocation.Inside
@@ -1537,12 +1550,13 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
       } else {
         curve = this.RouteFromBoundaryPortToFloatingPort(this.targetLoosePolyline, smooth, t)
       }
-    } else if (this.targetPort instanceof FloatingPort) {
+    } else if (toParent != EdgeToParent.ToAncestor && this.targetPort instanceof FloatingPort) {
       this.ExtendVisibilityGraphFromFloatingSourcePort()
       // Assert.assert(this.sourceVV != null)
       // the edge has to be reversed to route from CurvePort to FloatingPort
       curve = this.RouteFromFloatingPortToFloatingPort(this.targetLoosePolyline, smooth, t)
     } else {
+      Assert.assert(toParent == EdgeToParent.ToAncestor)
       curve = this.RouteFromFloatingPortToAnywherePort(
         (<HookUpAnywhereFromInsidePort>this.targetPort).LoosePolyline,
         smooth,
@@ -1763,22 +1777,12 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
   }
 
   FigureOutSourceTargetPolylinesAndActiveRectangle() {
-    this._sourceTightPolyline = InteractiveEdgeRouter.GetFirstHitPolyline(
-      this.sourcePort.Location,
-      this.ObstacleCalculator.RootOfTightHierarchy,
-    )
-    this.SourceLoosePolyline = InteractiveEdgeRouter.GetFirstHitPolyline(
-      this.sourcePort.Location,
-      this.ObstacleCalculator.RootOfLooseHierarchy,
-    )
-    this.targetTightPolyline = InteractiveEdgeRouter.GetFirstHitPolyline(
-      this.targetPort.Location,
-      this.ObstacleCalculator.RootOfTightHierarchy,
-    )
-    this.targetLoosePolyline = InteractiveEdgeRouter.GetFirstHitPolyline(
-      this.targetPort.Location,
-      this.ObstacleCalculator.RootOfLooseHierarchy,
-    )
+    let p = this.sourcePort.Curve.value(this.sourcePort.Curve.parStart)
+    this._sourceTightPolyline = InteractiveEdgeRouter.GetFirstHitPolyline(p, this.ObstacleCalculator.RootOfTightHierarchy)
+    this.SourceLoosePolyline = InteractiveEdgeRouter.GetFirstHitPolyline(p, this.ObstacleCalculator.RootOfLooseHierarchy)
+    p = this.targetPort.Curve.value(this.targetPort.Curve.parStart)
+    this.targetTightPolyline = InteractiveEdgeRouter.GetFirstHitPolyline(p, this.ObstacleCalculator.RootOfTightHierarchy)
+    this.targetLoosePolyline = InteractiveEdgeRouter.GetFirstHitPolyline(p, this.ObstacleCalculator.RootOfLooseHierarchy)
     this.activeRectangle = Rectangle.mkPP(
       new Point(Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY),
       new Point(Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY),
@@ -1812,5 +1816,15 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
 
   ClearActivePolygons() {
     this.activePolygons = []
+  }
+}
+function flip(toAncestor: EdgeToParent): EdgeToParent {
+  switch (toAncestor) {
+    case EdgeToParent.FromAncestor:
+      return EdgeToParent.ToAncestor
+    case EdgeToParent.None:
+      return EdgeToParent.None
+    case EdgeToParent.ToAncestor:
+      return EdgeToParent.FromAncestor
   }
 }
