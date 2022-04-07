@@ -38,7 +38,7 @@ import {EdgeRoutingSettings} from './EdgeRoutingSettings'
 import {ShapeCreatorForRoutingToParents} from './ShapeCreatorForRoutingToParents'
 import {Port} from '../layout/core/port'
 import {ShapeObstacleCalculator} from './ShapeObstacleCalculator'
-import {EdgeToParent, InteractiveEdgeRouter} from './InteractiveEdgeRouter'
+import {InteractiveEdgeRouter} from './InteractiveEdgeRouter'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {addRange, uniteSets, insertRange, setIntersection, setsAreEqual} from '../utils/setOperations'
 import {Queue} from 'queue-typescript'
@@ -753,9 +753,10 @@ export class SplineRouter extends Algorithm {
       addRange(addedEdges, this.AddVisibilityEdgesFromPort(edge.targetPort))
     }
 
-    const toAncestor = SplineRouter.EdgeIsToAncestor(edge)
+    const toAncestor = edge.EdgeToAncestor()
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
     if (toAncestor || !Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
+      // todo: use Hook...
       edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t, toAncestor)
     } else {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
@@ -773,23 +774,10 @@ export class SplineRouter extends Algorithm {
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     //   SetTransparency(transparentShapes, false);
   }
-  /** returns 0 if the source and the target are just siblings
-   *          1 if the source is a descendant of the target
+  /** returns ToAncestorEnum.None if the source and the target are just siblings
+   *          ToAncestorEnum. if the source is a descendant of the target
    *         -1 if the target is a descendant of the source
    */
-  static EdgeIsToAncestor(geomEdge: GeomEdge): EdgeToParent {
-    const e = geomEdge.edge
-    const s = e.source
-    const t = e.target
-    if (s instanceof Graph) {
-      if (t.isDescendantOf(<Graph>s)) return EdgeToParent.FromAncestor
-    }
-    if (t instanceof Graph) {
-      if (s.isDescendantOf(<Graph>t)) return EdgeToParent.FromAncestor
-    }
-    return EdgeToParent.None
-  }
-
   KeepOriginalSpline = false
 
   ArrowHeadRatio = 0

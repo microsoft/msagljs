@@ -31,16 +31,8 @@ import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {Assert} from '../utils/assert'
+import {ToAncestorEnum} from '../structs/edge'
 
-/** characterize edge if it connects an node and its ancestor */
-export enum EdgeToParent {
-  /** the source and the target are siblings */
-  None,
-  /** the source is an ancestor of the target */
-  FromAncestor,
-  /** the target is an ancestor of the source */
-  ToAncestor,
-}
 export class InteractiveEdgeRouter extends Algorithm {
   //  the obstacles for routing
   obstacles_: Array<ICurve>
@@ -1498,12 +1490,12 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     targetPortLocal: Port,
     smooth: boolean,
     t: {smoothedPolyline: SmoothedPolyline},
-    toAncestor: EdgeToParent,
+    toAncestor: ToAncestorEnum,
   ): ICurve {
     const reversed: boolean =
       (sourcePortLocal instanceof FloatingPort && targetPortLocal instanceof CurvePort) ||
       sourcePortLocal instanceof HookUpAnywhereFromInsidePort ||
-      toAncestor == EdgeToParent.FromAncestor
+      toAncestor == ToAncestorEnum.FromAncestor
     if (reversed) {
       const tmp: Port = sourcePortLocal
       sourcePortLocal = targetPortLocal
@@ -1514,7 +1506,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     this.sourcePort = sourcePortLocal
     this.targetPort = targetPortLocal
     this.FigureOutSourceTargetPolylinesAndActiveRectangle()
-    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t, toAncestor)
+    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t)
     if (curve == null) {
       return null
     }
@@ -1528,10 +1520,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     return curve
   }
 
-  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}, toParent: EdgeToParent): ICurve {
-    this.targetIsInsideOfSourceTightPolyline =
-      this.SourceTightPolyline == null ||
-      Curve.PointRelativeToCurveLocation(this.targetPort.Location, this.SourceTightPolyline) == PointLocation.Inside
+  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     this.sourceIsInsideOfTargetTightPolyline =
       this.TargetTightPolyline == null ||
       Curve.PointRelativeToCurveLocation(this.sourcePort.Location, this.TargetTightPolyline) == PointLocation.Inside
@@ -1550,13 +1539,13 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
       } else {
         curve = this.RouteFromBoundaryPortToFloatingPort(this.targetLoosePolyline, smooth, t)
       }
-    } else if (toParent != EdgeToParent.ToAncestor && this.targetPort instanceof FloatingPort) {
+    } else if (this.targetPort instanceof FloatingPort) {
       this.ExtendVisibilityGraphFromFloatingSourcePort()
       // Assert.assert(this.sourceVV != null)
       // the edge has to be reversed to route from CurvePort to FloatingPort
       curve = this.RouteFromFloatingPortToFloatingPort(this.targetLoosePolyline, smooth, t)
     } else {
-      Assert.assert(toParent == EdgeToParent.ToAncestor)
+      Assert.assert(this.targetPort instanceof HookUpAnywhereFromInsidePort)
       curve = this.RouteFromFloatingPortToAnywherePort(
         (<HookUpAnywhereFromInsidePort>this.targetPort).LoosePolyline,
         smooth,
@@ -1818,13 +1807,13 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     this.activePolygons = []
   }
 }
-function flip(toAncestor: EdgeToParent): EdgeToParent {
+function flip(toAncestor: ToAncestorEnum): ToAncestorEnum {
   switch (toAncestor) {
-    case EdgeToParent.FromAncestor:
-      return EdgeToParent.ToAncestor
-    case EdgeToParent.None:
-      return EdgeToParent.None
-    case EdgeToParent.ToAncestor:
-      return EdgeToParent.FromAncestor
+    case ToAncestorEnum.FromAncestor:
+      return ToAncestorEnum.ToAncestor
+    case ToAncestorEnum.None:
+      return ToAncestorEnum.None
+    case ToAncestorEnum.ToAncestor:
+      return ToAncestorEnum.FromAncestor
   }
 }

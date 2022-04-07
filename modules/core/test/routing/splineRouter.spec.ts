@@ -751,8 +751,15 @@ test('edge to a parent', () => {
   g.addNode(a)
   const b = a.addNode(new Node('b'))
   const c = a.addNode(new Node('c'))
+  const d = a.addNode(new Node('d'))
+  const e = a.addNode(new Node('e'))
   const ab = new Edge(a, b)
+  const ba = new Edge(b, a)
   // create geometry
+
+  new GeomEdge(ab)
+  new GeomEdge(ba)
+
   const gg = new GeomGraph(g)
   const ag = new GeomGraph(a)
   ag.boundaryCurve = CurveFactory.mkCircle(100, new Point(0, 0))
@@ -760,13 +767,18 @@ test('edge to a parent', () => {
   const bg = new GeomNode(b)
   // create a smaller circle for bg
   bg.boundaryCurve = CurveFactory.mkCircle(30, new Point(0, 0))
-  new GeomEdge(ab)
 
   const cg = new GeomNode(c)
   cg.boundaryCurve = CurveFactory.mkCircle(10, new Point(-50, -50))
 
-  const sr = SplineRouter.mk4(gg, 2, 4, Math.PI / 6)
-  // sr.BundlingSettings = new BundlingSettings() : this will crash!!!
+  const dg = new GeomNode(d)
+  dg.boundaryCurve = CurveFactory.mkCircle(10, new Point(50, -50))
+
+  const eg = new GeomNode(e)
+  eg.boundaryCurve = CurveFactory.mkCircle(10, new Point(60, 0))
+
+  const sr = SplineRouter.mk4(gg, 1, 1, Math.PI / 6)
+  // sr.BundlingSettings = new BundlingSettings() //: this will crash!!!
   sr.run()
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent.svg')
   t.writeGeomGraph(gg)

@@ -1,6 +1,7 @@
 import {Entity} from './entity'
 import {Edge} from './edge'
 import {Graph} from './graph'
+import {Assert} from '../utils/assert'
 /** Represent a node of a graph: has id, which is a string, and sets of in/out/self edges */
 export class Node extends Entity {
   private _id: string
@@ -33,7 +34,9 @@ export class Node extends Entity {
   }
 
   private addInEdge(edge: Edge): void {
-    /*Assert.assert(edge.target == this)*/
+    Assert.assert(edge != null)
+    Assert.assert(edge.target == this)
+
     this.inEdges.add(edge)
   }
 

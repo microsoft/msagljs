@@ -69,6 +69,13 @@ export class Graph extends Node {
         yield e
       }
     }
+
+    for (const e of this.outEdges) {
+      yield e
+    }
+    for (const e of this.selfEdges) {
+      yield e
+    }
   }
 
   isConsistent(): boolean {

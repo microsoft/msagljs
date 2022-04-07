@@ -187,12 +187,12 @@ export class BundleRouter extends Algorithm {
   }
 
   FigureOutHookLocation(poly: Polyline, otherEdgeEndPort: Port, edgeGeom: GeomEdge): Point {
-    const clusterPort = <ClusterBoundaryPort>otherEdgeEndPort
-    if (clusterPort == null) {
+    const isClusterPort = otherEdgeEndPort instanceof ClusterBoundaryPort
+    if (!isClusterPort) {
       return this.FigureOutHookLocationForSimpleOtherPort(poly, otherEdgeEndPort, edgeGeom)
     }
 
-    return this.FigureOutHookLocationForClusterOtherPort(poly, clusterPort, edgeGeom)
+    return this.FigureOutHookLocationForClusterOtherPort(poly, <ClusterBoundaryPort>otherEdgeEndPort, edgeGeom)
   }
 
   FigureOutHookLocationForClusterOtherPort(poly: Polyline, otherEdgeEndPort: ClusterBoundaryPort, edgeGeom: GeomEdge): Point {
@@ -219,7 +219,7 @@ export class BundleRouter extends Algorithm {
     //     shapes.Select(sh => sh.BoundaryCurve), new[] { new LineSegment(edgeGeom.SourcePort.Location, edgeGeom.TargetPort.Location) });
     const s = new SingleSourceMultipleTargetsShortestPathOnVisibilityGraph(
       this.VisibilityGraph.FindVertex(otherEdgeEnd),
-      Array.from(poly).map(this.VisibilityGraph.FindVertex.bind),
+      Array.from(poly).map((p) => this.VisibilityGraph.FindVertex(p)),
       this.VisibilityGraph,
     )
     const path = s.GetPath()

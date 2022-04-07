@@ -1,9 +1,13 @@
 ﻿///  Class for creating Shape elements from a Graph.
 
 import {GeomGraph, GeomNode, GeomEdge} from '../layout/core'
+import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
 import {Port} from '../layout/core/port'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
+import {ToAncestorEnum} from '../structs/edge'
+import {Assert} from '../utils/assert'
 import {ClusterBoundaryPort} from './ClusterBoundaryPort'
+import {InteractiveEdgeRouter} from './InteractiveEdgeRouter'
 import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
 
@@ -63,25 +67,40 @@ export class ShapeCreator {
   }
 
   /**   Creates a ClusterBoundaryPort for the cluster boundary, attaches it to the shape and all edges */
-  static CreateShapeWithClusterBoundaryPort(node: GeomNode): Shape {
+  static CreateShapeWithClusterBoundaryPort(cluster: GeomGraph): Shape {
     //  Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
-    /*Assert.assert(nodeinstanceof Graph)*/
-    const shape = new RelativeShape(() => node.boundaryCurve)
+    Assert.assert(cluster instanceof GeomGraph)
+    const shape = new RelativeShape(() => cluster.boundaryCurve)
 
     const port = ClusterBoundaryPort.mk(
-      () => node.boundaryCurve,
-      () => node.center,
+      () => cluster.boundaryCurve,
+      () => cluster.center,
     )
     shape.Ports.add(port)
-    for (const e of node.inEdges()) {
-      ShapeCreator.FixPortAtTarget(port, e)
+    let clusterPort: HookUpAnywhereFromInsidePort = undefined
+
+    for (const e of cluster.inEdges()) {
+      if (e.EdgeToAncestor() == ToAncestorEnum.ToAncestor) {
+        if (clusterPort == undefined) {
+          clusterPort = new HookUpAnywhereFromInsidePort(() => cluster.boundaryCurve)
+        }
+        e.targetPort = clusterPort
+      } else {
+        ShapeCreator.FixPortAtTarget(port, e)
+      }
+    }
+    for (const e of cluster.outEdges()) {
+      if (e.EdgeToAncestor() == ToAncestorEnum.FromAncestor) {
+        if (clusterPort == undefined) {
+          clusterPort = new HookUpAnywhereFromInsidePort(() => cluster.boundaryCurve)
+        }
+        e.sourcePort = clusterPort
+      } else {
+        ShapeCreator.FixPortAtSource(port, e)
+      }
     }
 
-    for (const e of node.outEdges()) {
-      ShapeCreator.FixPortAtSource(port, e)
-    }
-
-    for (const e of node.selfEdges()) {
+    for (const e of cluster.selfEdges()) {
       ShapeCreator.FixPortAtSource(port, e)
       ShapeCreator.FixPortAtTarget(port, e)
     }
@@ -104,7 +123,7 @@ export class ShapeCreator {
 function getShapesUnderGraph(graph: GeomGraph, nodesToShapes: Map<GeomNode, Shape>) {
   for (const n of graph.shallowNodes()) {
     if (n instanceof GeomGraph) {
-      const nShape = ShapeCreator.CreateShapeWithClusterBoundaryPort(n)
+      const nShape = ShapeCreator.CreateShapeWithClusterBoundaryPort(<GeomGraph>n)
       nodesToShapes.set(n, nShape)
       const ng = <GeomGraph>n
       if (!ng.graph.isCollapsed) {

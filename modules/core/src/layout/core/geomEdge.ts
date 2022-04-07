@@ -1,5 +1,5 @@
 import {GeomNode} from './geomNode'
-import {Edge} from './../../structs/edge'
+import {Edge, ToAncestorEnum} from './../../structs/edge'
 import {GeomObject} from './geomObject'
 import {Rectangle} from './../../math/geometry/rectangle'
 import {ICurve} from './../../math/geometry/icurve'
@@ -11,8 +11,20 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 
 export class GeomEdge extends GeomObject {
-  sourcePort: Port
-  targetPort: Port
+  private _sourcePort: Port
+  public get sourcePort(): Port {
+    return this._sourcePort
+  }
+  public set sourcePort(value: Port) {
+    this._sourcePort = value
+  }
+  private _targetPort: Port
+  public get targetPort(): Port {
+    return this._targetPort
+  }
+  public set targetPort(value: Port) {
+    this._targetPort = value
+  }
   curve: ICurve
   smoothedPolyline: SmoothedPolyline
 
@@ -126,5 +138,8 @@ export class GeomEdge extends GeomObject {
 
   underCollapsedCluster(): boolean {
     return this.source.underCollapsedCluster() || this.target.underCollapsedCluster()
+  }
+  EdgeToAncestor(): ToAncestorEnum {
+    return this.edge.EdgeToAncestor()
   }
 }
