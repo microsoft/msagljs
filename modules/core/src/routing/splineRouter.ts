@@ -174,17 +174,6 @@ export class SplineRouter extends Algorithm {
     this.LoosePadding = loosePadding
     this.tightPadding = tightPadding
     this.coneAngle = coneAngle
-    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this._edges)
-    if (
-      this.BundlingSettings == null &&
-      graph.layoutSettings &&
-      graph.layoutSettings.edgeRoutingSettings &&
-      graph.layoutSettings.edgeRoutingSettings.BundlingSettings
-    ) {
-      this.BundlingSettings = graph.layoutSettings.edgeRoutingSettings.BundlingSettings
-    }
-
-    this.Initialize(obstacles, this.coneAngle)
   }
 
   _edges: GeomEdge[]
@@ -214,6 +203,17 @@ export class SplineRouter extends Algorithm {
     if (this.geomGraph.isEmpty()) {
       return
     }
+    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this._edges)
+    if (
+      this.BundlingSettings == null &&
+      this.geomGraph.layoutSettings &&
+      this.geomGraph.layoutSettings.edgeRoutingSettings &&
+      this.geomGraph.layoutSettings.edgeRoutingSettings.BundlingSettings
+    ) {
+      this.BundlingSettings = this.geomGraph.layoutSettings.edgeRoutingSettings.BundlingSettings
+    }
+
+    this.Initialize(obstacles, this.coneAngle)
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
@@ -753,11 +753,9 @@ export class SplineRouter extends Algorithm {
       addRange(addedEdges, this.AddVisibilityEdgesFromPort(edge.targetPort))
     }
 
-    const toAncestor = edge.EdgeToAncestor()
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
-    if (toAncestor || !Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
-      // todo: use Hook...
-      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t, toAncestor)
+    if (!Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
+      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t)
     } else {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
     }

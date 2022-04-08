@@ -1490,17 +1490,14 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     targetPortLocal: Port,
     smooth: boolean,
     t: {smoothedPolyline: SmoothedPolyline},
-    toAncestor: ToAncestorEnum,
   ): ICurve {
     const reversed: boolean =
       (sourcePortLocal instanceof FloatingPort && targetPortLocal instanceof CurvePort) ||
-      sourcePortLocal instanceof HookUpAnywhereFromInsidePort ||
-      toAncestor == ToAncestorEnum.FromAncestor
+      sourcePortLocal instanceof HookUpAnywhereFromInsidePort
     if (reversed) {
       const tmp: Port = sourcePortLocal
       sourcePortLocal = targetPortLocal
       targetPortLocal = tmp
-      toAncestor = flip(toAncestor)
     }
 
     this.sourcePort = sourcePortLocal
@@ -1805,15 +1802,5 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
 
   ClearActivePolygons() {
     this.activePolygons = []
-  }
-}
-function flip(toAncestor: ToAncestorEnum): ToAncestorEnum {
-  switch (toAncestor) {
-    case ToAncestorEnum.FromAncestor:
-      return ToAncestorEnum.ToAncestor
-    case ToAncestorEnum.None:
-      return ToAncestorEnum.None
-    case ToAncestorEnum.ToAncestor:
-      return ToAncestorEnum.FromAncestor
   }
 }
