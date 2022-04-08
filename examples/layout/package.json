@@ -12,8 +12,8 @@
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/renderer": "^0.0.20",
-    "msagl-js": "^0.0.53",
+    "@msagl/renderer": "^0.0.21",
+    "msagl-js": "^0.0.54",
     "typescript": "^4.5.5"
   },
   "devDependencies": {

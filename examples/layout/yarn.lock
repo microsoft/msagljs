@@ -1454,14 +1454,14 @@
     "@babel/runtime" "^7.12.0"
     gl-matrix "~3.3.0"
 
-"@msagl/renderer@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@msagl/renderer/-/renderer-0.0.20.tgz#0ffa6603b05a8aa65483fe58b573050fc38dbfa6"
-  integrity sha512-Su45U4oH1HFKC24dExeOptPXHgqCJzKJOruLKsHPz6Uubtx9znCtr30Zs78fSGfH0LT+egfuul08/2HlIQblHw==
+"@msagl/renderer@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@msagl/renderer/-/renderer-0.0.21.tgz#0733ce66ded6df80a372b4fd64d5e1e4a8cd92df"
+  integrity sha512-zzLrPIlz5xqwi0/8dmIqLYb30v1MyhPqNnGj/2GCs2tVjwliLPW2V0yVxk1UVH227KYFojV2D7LuAUYP7hhAGw==
   dependencies:
     "@danmarshall/deckgl-typings" "^4.9.13"
     deck.gl "^8.6.0"
-    msagl-js "^0.0.53"
+    msagl-js "^0.0.54"
 
 "@nicolo-ribaudo/chokidar-2@2.1.8-no-fsevents.3":
   version "2.1.8-no-fsevents.3"
@@ -4266,10 +4266,10 @@ ms@2.1.3, ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-msagl-js@^0.0.53:
-  version "0.0.53"
-  resolved "https://registry.yarnpkg.com/msagl-js/-/msagl-js-0.0.53.tgz#ad0a150b27a91531220d8f6c86b4f984f92c2f59"
-  integrity sha512-8Q09cUVDv3cWprMZXTZXGaquxK5zeDfSDyd58pp2dLOu+CeaHj4q79FMnzvFK1Au6pWQ2rtdMUIumKrGbdwYFA==
+msagl-js@^0.0.54:
+  version "0.0.54"
+  resolved "https://registry.yarnpkg.com/msagl-js/-/msagl-js-0.0.54.tgz#d8fccb3f69e214f1e9baa9505f77b1fdc2e7e829"
+  integrity sha512-Nwf03sDI8hAaKTB3SA7ZVVyEkT3TkDALBKN3+MXyZGNGQ164SrVLlc8YRkTijOSsnh0Fmf9kWQom9gAv8C0wuw==
   dependencies:
     "@esfx/collections" "^1.0.0-pre.19"
     "@esfx/collections-sortedmap" "^1.0.0-pre.19"
