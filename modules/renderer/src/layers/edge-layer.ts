@@ -60,7 +60,10 @@ export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> 
           },
         }),
         {
-          getPath: (e: GeomEdge) => Array.from(interpolateICurve(e.curve, 0.5)).map((p: Point) => [p.x, p.y]),
+          getPath: (e: GeomEdge) =>
+            Array.from(interpolateICurve(e.curve, 0.01 /* this is a sensitive parameter: diminishing it creates more segments */)).map(
+              (p: Point) => [p.x, p.y],
+            ),
           getColor: getEdgeColor,
           widthUnits: 'pixels',
         },

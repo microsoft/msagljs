@@ -9,10 +9,10 @@ export class DrawingNode extends DrawingObject {
   padding = 2
 
   public get labelText(): string {
-    return this.label.text
+    return this.label ? this.label.text : null
   }
   public set labelText(value) {
-    this.label.text = value
+    if (this.label != null) this.label.text = value
   }
 
   get Padding(): number {

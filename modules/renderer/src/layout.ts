@@ -1,12 +1,11 @@
-import {MdsLayoutSettings} from 'msagl-js'
 import {
   GeomGraph,
   Size,
   layoutGraphWithSugiayma,
   layoutGraphWithMds,
-  LayoutSettings,
+  layoutGeomGraph,
+  MdsLayoutSettings,
   SugiyamaLayoutSettings,
-  EdgeRoutingMode,
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
@@ -28,27 +27,36 @@ export function layoutDrawingGraph(dg: DrawingGraph, stringMeasure = measureText
     geomGraph = dg.createGeometry(stringMeasure)
   }
 
-  if (geomGraph.layoutSettings == null) {
+  for (const subgraph of geomGraph.subgraphs()) {
+    figureOutLayoutSetting(subgraph)
+  }
+  figureOutLayoutSetting(geomGraph)
+  layoutGeomGraph(geomGraph, null)
+  return geomGraph
+
+  function figureOutLayoutSetting(subgraph: GeomGraph) {
+    if (subgraph.layoutSettings != null) return
+
     // directed is true iff the dot starts with keyword 'digraph'
-    const directed = dg.hasDirectedEdge()
+    let directed = false
+    for (const e of subgraph.edges()) {
+      if (e.sourceArrowhead != null || e.targetArrowhead != null) {
+        directed = true
+        break
+      }
+    }
     // figure out if the graph is too large for the layered layout
-    const tooLargeForLayered = geomGraph.graph.nodeCollection.nodeDeepCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 2000
+    const tooLargeForLayered = subgraph.graph.shallowNodeCount > 500 || subgraph.graph.nodeCollection.edgeCount > 500
     if (directed && !tooLargeForLayered) {
       // the graph is not tool large and has directed edges: use layered layout
-      const ss = (geomGraph.layoutSettings = new SugiyamaLayoutSettings())
+      const ss = (subgraph.layoutSettings = new SugiyamaLayoutSettings())
       // rankdir sets up the layer direction: can be left-righ, right-left, top-bottom, and bottom-top
       if (dg.rankdir) {
         ss.layerDirection = dg.rankdir
       }
     } else {
       // the graph is more suitable for the pivot mds layout
-      geomGraph.layoutSettings = new MdsLayoutSettings()
+      subgraph.layoutSettings = new MdsLayoutSettings()
     }
   }
-  if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
-    layoutGraphWithSugiayma(geomGraph) // calculate the layout
-  } else {
-    layoutGraphWithMds(geomGraph) // calculate the layout
-  }
-  return geomGraph
 }
