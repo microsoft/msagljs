@@ -151,9 +151,27 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
           drawingObj.headlabel = str
           break
         case 'label':
-          if (typeof str === 'string' || typeof str == 'number')
+          // ignore html labels, for example
+
+          if (typeof str === 'string') {
             // ignore html labels, for example
+            const find = '\\n'
+            let j = 0
+            drawingObj.labelText = ''
+            do {
+              const i = str.indexOf(find, j)
+              if (i >= 0) {
+                drawingObj.labelText += str.substring(j, i) + '\n'
+                j = i + 2
+              } else {
+                drawingObj.labelText += str.substring(j)
+                break
+              }
+            } while (true)
+          } else if (typeof str == 'number') {
             drawingObj.labelText = str.toString()
+          }
+
           break
         case 'size':
           drawingObj.size = parseFloatTuple(str)
