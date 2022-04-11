@@ -1,12 +1,4 @@
-import {
-  GeomGraph,
-  Size,
-  layoutGraphWithSugiayma,
-  layoutGraphWithMds,
-  layoutGeomGraph,
-  MdsLayoutSettings,
-  SugiyamaLayoutSettings,
-} from 'msagl-js'
+import {GeomGraph, Size, layoutGeomGraph, MdsLayoutSettings, SugiyamaLayoutSettings, Graph} from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
 // TODO - use user-specified font
@@ -16,12 +8,14 @@ function measureTextSize(str: string): Size {
 }
 
 /** lay out the DrawingGraph dg*/
-export function layoutDrawingGraph(dg: DrawingGraph, stringMeasure = measureTextSize): GeomGraph {
-  let geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grap the GeomGraph from the underlying Graph
+export function layoutDrawingGraph(
+  dg: DrawingGraph,
+  adjustLayoutSettins: (graph: Graph) => void,
+  stringMeasure = measureTextSize,
+): GeomGraph {
+  let geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grab the GeomGraph from the underlying Graph
   if (
-    geomGraph == null || // there is no geometry yet
-    geomGraph.layoutSettings == null || // or layout settings are not set
-    !geomGraph.layoutSettings.runRoutingOnly // or we are not rerouting only
+    geomGraph == null // there is no geometry yet
   ) {
     //  Go over the underlying Graph, dg.graph, and for every element of this Graph create a geometry attribute: GeomGraph for Graph, GeomNode for Node, GeomEdge for Edge, and GeomLabel for Label.
     geomGraph = dg.createGeometry(stringMeasure)
@@ -29,8 +23,10 @@ export function layoutDrawingGraph(dg: DrawingGraph, stringMeasure = measureText
 
   for (const subgraph of geomGraph.subgraphs()) {
     figureOutLayoutSetting(subgraph)
+    adjustLayoutSettins(subgraph.graph)
   }
   figureOutLayoutSetting(geomGraph)
+  adjustLayoutSettins(geomGraph.graph)
   layoutGeomGraph(geomGraph, null)
   return geomGraph
 

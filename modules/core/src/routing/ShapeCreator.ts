@@ -7,7 +7,6 @@ import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
 import {ToAncestorEnum} from '../structs/edge'
 import {Assert} from '../utils/assert'
 import {ClusterBoundaryPort} from './ClusterBoundaryPort'
-import {InteractiveEdgeRouter} from './InteractiveEdgeRouter'
 import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
 

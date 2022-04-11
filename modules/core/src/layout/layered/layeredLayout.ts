@@ -38,7 +38,7 @@ import {Routing} from './routing'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
-import {edgeRouter, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
+import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
 function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
@@ -47,7 +47,7 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
 export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null, flipToScreenCoords = true) {
   const ss: LayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
   enforceLayoutSettings(geomGraph, ss)
-  layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, edgeRouter, optimalPackingRunner, flipToScreenCoords)
+  layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner, flipToScreenCoords)
 }
 
 export class LayeredLayout extends Algorithm {

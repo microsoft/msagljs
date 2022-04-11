@@ -1635,16 +1635,6 @@ function interpolate(a: number, ap: Point, b: number, bp: Point, s: ICurve, eps:
   return r
 }
 
-// this function always produces at least two segments
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function interpolateWithAtLeastTwoSegs(eps: number, a: number, ap: Point, b: number, bp: Point, s: ICurve) {
-  const m = (a + b) / 2
-  const mp = s.value(m)
-  const ret = interpolate(a, ap, m, mp, s, eps * eps)
-  ret.concat(interpolate(m, mp, b, bp, s, eps * eps))
-  return ret
-}
-
 export function interpolateICurve(s: ICurve, eps: number): Point[] {
   return interpolate(s.parStart, s.start, s.parEnd, s.end, s, eps)
 }

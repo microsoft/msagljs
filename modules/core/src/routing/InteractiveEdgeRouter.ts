@@ -31,13 +31,12 @@ import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {Assert} from '../utils/assert'
-import {ToAncestorEnum} from '../structs/edge'
 
 export class InteractiveEdgeRouter extends Algorithm {
   //  the obstacles for routing
   obstacles_: Array<ICurve>
   targetVV: VisibilityVertex
-  IgnoreTightPadding = false
+  IgnoreTightPadding = true
   get Obstacles(): Array<ICurve> {
     return this.obstacles_
   }

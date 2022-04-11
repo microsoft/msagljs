@@ -6,7 +6,7 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {GeomGraph, Rectangle, LayoutSettings, GeomNode, Point} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, LayoutSettings, GeomNode, Point, routeEdges as routeEdgesFromDriver} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 
@@ -26,10 +26,15 @@ const MaxZoom = 4
 export default class Renderer extends EventSource {
   private _deck: any
   private _drawingGraph?: DrawingGraph
+  private _layoutSettingsAdjuster: (graph: Graph) => void
   get drawingGraph() {
     return this._drawingGraph
   }
-  private _geomGraph?: GeomGraph
+
+  private get _geomGraph() {
+    return this._drawingGraph ? GeomGraph.getGeom(this.drawingGraph.graph) : null
+  }
+
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
 
@@ -97,15 +102,17 @@ export default class Renderer extends EventSource {
   }
 
   get layoutOptions(): LayoutSettings {
-    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._drawingGraph.graph)
+    const geomGraph = GeomGraph.getGeom(this._drawingGraph.graph)
     return geomGraph == null ? null : geomGraph.layoutSettings
   }
-
-  setGraph(drawingGraph: DrawingGraph = this._drawingGraph) {
+  /** when the graph is set : the geometry for it is created and the layout is done */
+  setGraph(drawingGraph: DrawingGraph, adjustLayoutSettings: (ls: Graph) => void, needToCalculateLayout = true) {
     this._drawingGraph = drawingGraph
+    this._layoutSettingsAdjuster = adjustLayoutSettings
     if (this._deck.layerManager) {
       // deck is ready
-      this._update()
+      if (needToCalculateLayout) this._update()
+      else this._updateWithoutLayoutCalculation()
     }
   }
 
@@ -126,24 +133,26 @@ export default class Renderer extends EventSource {
   private _update() {
     if (!this._drawingGraph) return
 
-    const geomGraph = (this._geomGraph = layoutDrawingGraph(this._drawingGraph))
-
-    const center = geomGraph.boundingBox.center
+    layoutDrawingGraph(this._drawingGraph, this._layoutSettingsAdjuster)
 
     // todo - render edge labels
+    this._updateWithoutLayoutCalculation()
+  }
+
+  private _updateWithoutLayoutCalculation() {
+    const center = this._geomGraph.boundingBox.center
     const edgeLayer = new EdgeLayer({
       id: 'edges',
-      data: Array.from(geomGraph.deepEdges()),
+      data: Array.from(this._geomGraph.deepEdges()),
       getWidth: 1,
     })
 
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
-      data: Array.from(geomGraph.deepNodes()),
+      data: Array.from(this._geomGraph.deepNodes()),
       getWidth: 1,
       getSize: 14,
       sizeMaxPixels: 24,
-      onClick: (a, b) => callMe(a, b),
       pickable: true,
     })
 
@@ -157,13 +166,7 @@ export default class Renderer extends EventSource {
 
     this.emit({
       type: 'graphload',
-      data: geomGraph,
+      data: this._geomGraph,
     } as Event)
   }
-}
-function callMe(a: any, b: any) {
-  console.log(a)
-  console.log(b)
-  const geomNode = <GeomNode>a.object
-  geomNode.center = geomNode.center.add(new Point(100, 0))
 }

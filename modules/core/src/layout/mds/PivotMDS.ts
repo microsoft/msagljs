@@ -3,7 +3,7 @@ import {Algorithm} from '../../utils/algorithm'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph, optimalPackingRunner} from '../core/GeomGraph'
-import {edgeRouter, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
+import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
 import {MdsGraphLayout} from './MDSGraphLayout'
 import {MdsLayoutSettings} from './MDSLayoutSettings'
 
@@ -15,7 +15,7 @@ export function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToke
 
   enforceLayoutSettings(geomGraph, mdsSettings)
 
-  layoutGeomGraphDetailed(geomGraph, cancelToken, mdsLayoutRunner, edgeRouter, optimalPackingRunner, flipToScreenCoords)
+  layoutGeomGraphDetailed(geomGraph, cancelToken, mdsLayoutRunner, routeEdges, optimalPackingRunner, flipToScreenCoords)
 }
 
 // Initial layout using PivotMDS method for a graph with subgraphs

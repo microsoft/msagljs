@@ -51,7 +51,7 @@ export function enforceLayoutSettings(geomGraph: GeomGraph, ss: LayoutSettings) 
 
 export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken): void {
   createSettingsIfNeeded(geomGraph)
-  layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, edgeRouter, optimalPackingRunner)
+  layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
   // end of the function body
 
   function createSettingsIfNeeded(geomGraph: GeomGraph) {
@@ -95,7 +95,7 @@ export function getEdgeRoutingSettingsFromAncestors(geomGraph: GeomGraph): EdgeR
   return ers
 }
 
-export function edgeRouter(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) {
+export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) {
   const ers: EdgeRoutingSettings = getEdgeRoutingSettingsFromAncestors(geomGraph)
   if (ers.EdgeRoutingMode == EdgeRoutingMode.Rectilinear) {
     routeRectilinearEdges(geomGraph, edgesToRoute, cancelToken)
@@ -120,10 +120,6 @@ export function layoutGeomGraphDetailed(
   flipToScreenCoords = true,
 ) {
   if (geomG.graph.isEmpty()) {
-    return
-  }
-  if (geomG.layoutSettings && geomG.layoutSettings.runRoutingOnly) {
-    edgeRouter(geomG, Array.from(geomG.deepEdges()), cancelToken)
     return
   }
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
