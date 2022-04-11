@@ -48,6 +48,18 @@
         background: #fff;
         box-shadow: 0 -1px 12px rgba(0, 2, 0, 0.3);
       }
+      #layout {
+        cursor: pointer;
+        position: fixed;
+        display: flex;
+        align-items: center;
+        z-index: 10;
+        left: 580;
+        bottom: 0;
+        height: 50px;
+        background: #fff;
+        box-shadow: 0 -1px 12px rgba(0, 2, 0, 0.3);
+      }
       #drop-target.active {
         background: #ddd;
       }
@@ -75,6 +87,18 @@
         <option value="straight">Straight</option>
       </select>
     </div>
+    <div id="layout_div">
+      <label for="layout">Layout:</label>
+      <select name="layout" id="layout">
+        <option value="default" selected="true">Default</option>
+        <option value="tb">Layered Top-Bottom</option>
+        <option value="lr">Layered Left-Right</option>
+        <option value="bt">Layered Bottom-Top</option>
+        <option value="rl">Layered Right-Left</option>
+        <option value="mds">Pivot MDS</option>
+      </select>
+    </div>
+
     <div id="dot_files">
       <label for="dot">Dot graphs:</label>
       <select name="gv" id="gv">

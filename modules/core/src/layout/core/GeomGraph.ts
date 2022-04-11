@@ -9,8 +9,7 @@ import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/Opti
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/RTree'
 import {Curve, PointLocation} from '../../math/geometry'
-import {InteractiveObstacleCalculator} from '../../routing/interactiveObstacleCalculator'
-import {mkRectangleNode, RectangleNode} from '../../math/geometry/RTree/RectangleNode'
+import {Entity} from '../../structs/entity'
 
 // import {Curve} from '../../math/geometry/curve'
 // import {Ellipse} from '../../math/geometry/ellipse'
@@ -43,7 +42,11 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
-  _rtree: RTree<GeomObject, Point>;
+  _rtree: RTree<GeomObject, Point>
+
+  static getGeom(attrCont: Graph): GeomGraph {
+    return <GeomGraph>attrCont.getAttr(0)
+  }
 
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
   *intersectedObjects(rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {

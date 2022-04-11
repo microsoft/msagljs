@@ -25,7 +25,6 @@ export class InteractiveObstacleCalculator {
   LooseObstacles: Polyline[]
   TightObstacles: Set<Polyline>
   OverlapsDetected: boolean
-  ignoreTightPadding: any
   private static PadCorner(poly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number): boolean {
     const padInfo = InteractiveObstacleCalculator.GetPaddedCorner(p0, p1, p2, padding)
     if (padInfo.numberOfPoints == -1) {
@@ -93,7 +92,7 @@ export class InteractiveObstacleCalculator {
   }
 
   Calculate() {
-    if (!this.ignoreTightPadding) this.CreateTightObstacles()
+    if (!this.IgnoreTightPadding) this.CreateTightObstacles()
     else this.CreateTightObstaclesIgnoringTightPadding()
     if (!this.IsEmpty()) this.CreateLooseObstacles()
   }

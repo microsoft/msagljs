@@ -188,7 +188,8 @@ export class RTree<T, P> {
   //  Does minimal work to determine if any objects of the tree intersect with the query region
   public IsIntersecting(queryRegion: IRectangle<P>): boolean {
     if (this._rootNode == null || this.Count == 0) return false
-    for (const n of this._rootNode.GetNodeItemsIntersectingRectangle(queryRegion)) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const _ of this._rootNode.GetNodeItemsIntersectingRectangle(queryRegion)) {
       return true
     }
     return false
