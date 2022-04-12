@@ -7,6 +7,8 @@ import {GeomConstants} from './geomConstants'
 import {PlaneTransformation} from './planeTransformation'
 import {ClosestPointOnCurve} from './closestPointOnCurve'
 import {closeDistEps} from '../../utils/compare'
+
+/** ellipse: also represents a circle and an arc */
 export class Ellipse implements ICurve {
   box: Rectangle
 
@@ -17,9 +19,9 @@ export class Ellipse implements ICurve {
   parStart: number
   parEnd: number
 
-  // offsets the curve in the given direction
+  /** offsets the curve in the given direction */
   offsetCurve(offset: number, dir: Point): ICurve {
-    //is dir inside or outside of the ellipse
+    /**is dir inside or outside of the ellipse */
     const d = dir.sub(this.center)
     const angle = Point.angle(this.aAxis, d)
     const s = this.aAxis.mul(Math.cos(angle)).add(this.bAxis.mul(Math.sin(angle)))
@@ -35,7 +37,7 @@ export class Ellipse implements ICurve {
     }
   }
 
-  // Reverse the ellipe: not implemented.
+  /** Reverse the ellipe: not implemented. */
   reverse(): ICurve {
     return null // throw new Exception("not implemented");
   }
@@ -43,10 +45,10 @@ export class Ellipse implements ICurve {
   static mkEllipsePPP(a: Point, b: Point, center: Point) {
     return new Ellipse(0, Math.PI * 2, a, b, center)
   }
-  // The point on the ellipse corresponding to the parameter t is calculated by
-  // the formula center + cos(t)*axis0 + sin(t) * axis1.
-  // To get an ellipse rotating clockwise use, for example,
-  // axis0=(-1,0) and axis1=(0,1)
+  /** The point on the ellipse corresponding to the parameter t is calculated by
+   * the formula center + cos(t)*axis0 + sin(t) * axis1.
+   * To get an ellipse rotating clockwise use, for example,
+   * axis0=(-1,0) and axis1=(0,1) */
   constructor(parStart: number, parEnd: number, axis0: Point, axis1: Point, center: Point) {
     //    assert(parStart <= parEnd);
     this.parStart = parStart
@@ -65,7 +67,7 @@ export class Ellipse implements ICurve {
     return this.value(this.parEnd)
   }
 
-  // Trims the curve
+  /** Trims the curve */
   trim(start: number, end: number): ICurve {
     // Assert.assert(start <= end);
     // Assert.assert(start >= ParStart - GeomConstants.tolerance);
@@ -79,41 +81,41 @@ export class Ellipse implements ICurve {
     return null
   }
 
-  // The bounding box of the ellipse
+  /** The bounding box of the ellipse */
   get boundingBox() {
     return this.box
   }
 
-  // Returns the point on the curve corresponding to parameter t
+  /** Returns the point on the curve corresponding to parameter t */
   value(t: number) {
     return this.center.add(Point.mkPoint(Math.cos(t), this.aAxis, Math.sin(t), this.bAxis))
   }
 
-  // first derivative
+  /** first derivative */
   derivative(t: number) {
     return Point.mkPoint(-Math.sin(t), this.aAxis, Math.cos(t), this.bAxis)
   }
 
-  // second derivative
+  /** second derivative */
   secondDerivative(t: number) {
     return Point.mkPoint(-Math.cos(t), this.aAxis, -Math.sin(t), this.bAxis)
   }
 
-  // third derivative
+  /** third derivative */
   thirdDerivative(t: number) {
     return Point.mkPoint(Math.sin(t), this.aAxis, -Math.cos(t), this.bAxis)
   }
 
-  // a tree of ParallelogramNodes covering the edge
+  /** a tree of ParallelogramNodes covering the edge */
   pNodeOverICurve(): PN {
     if (this.pNode != null) return this.pNode
     return (this.pNode = ParallelogramNode.createParallelogramNodeForCurveSegDefaultOffset(this))
   }
 
-  setBoundingBox() {
+  private setBoundingBox() {
     if (closeDistEps(this.parStart, 0) && closeDistEps(this.parEnd, Math.PI * 2)) this.box = this.fullBox()
     else {
-      //the idea is that the box of an arc staying in one quadrant is just the box of the start and the end point of the arc
+      // the idea is that the box of an arc staying in one quadrant is just the box of the start and the end point of the arc
       this.box = Rectangle.mkPP(this.start, this.end)
       //now Start and End are in the box, we need just add all k*P/2 that are in between
       let t: number
@@ -126,28 +128,28 @@ export class Ellipse implements ICurve {
     return new Ellipse(parStart, parEnd, axis0, axis1, new Point(centerX, centerY))
   }
 
-  // Construct a full ellipse by two axes
+  /** Construct a full ellipse by two axes */
   static mkFullEllipsePPP(axis0: Point, axis1: Point, center: Point) {
     return new Ellipse(0, Math.PI * 2, axis0, axis1, center)
   }
 
-  // Constructs a full ellipse with axes aligned to X and Y directions
+  /** Constructs a full ellipse with axes aligned to X and Y directions */
   static mkFullEllipseNNP(axisA: number, axisB: number, center: Point) {
     return new Ellipse(0, Math.PI * 2, new Point(axisA, 0), new Point(0, axisB), center)
   }
-
+  /** creates a circle by a given radius and the center */
   static mkCircle(radius: number, center: Point) {
     return Ellipse.mkFullEllipseNNP(radius, radius, center)
   }
 
-  // Moves the ellipse to the delta vector
+  /** Moves the ellipse to the delta vector */
   translate(delta: Point) {
     this.center = this.center.add(delta)
     this.box.center = this.box.center.add(delta)
     this.pNode = null
   }
 
-  // Scales the ellipse by x and by y
+  /** Scales the ellipse by x and by y */
   scaleFromOrigin(xScale: number, yScale: number) {
     return new Ellipse(this.parStart, this.parEnd, this.aAxis.mul(xScale), this.bAxis.mul(yScale), this.center.scale(xScale, yScale))
   }
@@ -171,7 +173,7 @@ export class Ellipse implements ICurve {
     return (u + l) / 2
   }
 
-  // Transforms the ellipse
+  /** Transforms the ellipse */
   transform(transformation: PlaneTransformation): ICurve {
     if (transformation != null) {
       const ap = transformation.multiplyPoint(this.aAxis).sub(transformation.offset())
@@ -181,8 +183,8 @@ export class Ellipse implements ICurve {
     return this
   }
 
-  // returns a parameter t such that the distance between curve[t] and targetPoint is minimal
-  // and t belongs to the closed segment [low,high]
+  /** returns a parameter t such that the distance between curve[t] and targetPoint is minimal
+   * and t belongs to the closed segment [low,high] */
   closestParameterWithinBounds(targetPoint: Point, low: number, high: number): number {
     const numberOfTestPoints = 8
     const t = (high - low) / (numberOfTestPoints + 1)
@@ -212,12 +214,12 @@ export class Ellipse implements ICurve {
     return Curve.lengthWithInterpolation(this)
   }
 
-  // clones the ellipse .
+  /** clones the ellipse . */
   clone() {
     return new Ellipse(this.parStart, this.parEnd, this.aAxis.clone(), this.bAxis.clone(), this.center.clone())
   }
 
-  // returns a parameter t such that the distance between curve[t] and a is minimal
+  /** returns a parameter t such that the distance between curve[t] and a is minimal */
   closestParameter(targetPoint: Point) {
     let savedParStart = 0
     const numberOfTestPoints = 8
@@ -285,7 +287,7 @@ export class Ellipse implements ICurve {
     return Rectangle.mkPP(this.center.add(del), this.center.sub(del))
   }
 
-  //is it a proper arc?
+  /**is it a proper arc? meaning that it just a part of a circle */
   isArc() {
     return (
       Math.abs(this.aAxis.dot(this.bAxis)) < GeomConstants.tolerance &&

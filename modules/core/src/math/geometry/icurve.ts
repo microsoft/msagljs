@@ -3,9 +3,9 @@ import {Point} from './point'
 import {PN} from './parallelogramNode'
 import {Rectangle} from './rectangle'
 
-// The interface for curves
+/**  The interface for curves */
 export interface ICurve {
-  // Returns the point on the curve corresponding to parameter t
+  /**  Returns the point on the curve corresponding to parameter t */
   value(t: number): Point
   // first derivative at t
   derivative(t: number): Point
@@ -18,68 +18,68 @@ export interface ICurve {
   // This tree is used in curve intersections routines.
   pNodeOverICurve(): PN
 
-  // XY bounding box of the curve
+  /**  XY bounding box of the curve */
   boundingBox: Rectangle
 
-  // the start of the parameter domain
+  /**  the start of the parameter domain */
   parStart: number
 
-  // the end of the parameter domain
+  /**  the end of the parameter domain */
   parEnd: number
 
-  // Returns the trim curve between start and end, without wrap
+  /** Returns the trim curve between start and end, without wrap */
   trim(start: number, end: number): ICurve
 
-  // Returns the trim curve between start and end, with wrap, if supported by the implementing class.
+  /** Returns the trim curve between start and end, with wrap, if supported by the implementing class. */
   trimWithWrap(start: number, end: number): ICurve
 
-  // Moves the curve by the delta.
+  /** Moves the curve by the delta. */
   translate(delta: Point): void
 
-  // Returns the curved with all points scaled from the original by x and y
+  /** Returns the curved with all points scaled from the original by x and y */
   scaleFromOrigin(xScale: number, yScale: number): ICurve
 
-  // this[ParStart]
+  /** the curve start,  this.value(ParStart)  */
   start: Point
 
-  // this[ParEnd]
+  /** the curve end,  this.value(ParEnd) */
   end: Point
 
-  // this[Reverse[t]]=this[ParEnd+ParStart-t]
+  /** this[Reverse[t]]=this[ParEnd+ParStart-t] */
   reverse(): ICurve
 
-  // Offsets the curve in the direction of dir
+  /** Offsets the curve in the direction of dir */
   offsetCurve(offset: number, dir: Point): ICurve
 
-  // return length of the curve segment [start,end]
+  /** return length of the curve segment [start,end] */
   lengthPartial(start: number, end: number): number
 
-  // Get the length of the curve
+  /** Get the length of the curve */
   length: number
 
   getParameterAtLength(length: number): number
 
-  // Return the transformed curve
+  /** Return the transformed curve */
   transform(transformation: PlaneTransformation): ICurve
 
-  // and t belongs to the closed segment [low,high]
+  /** and t belongs to the closed segment [low,high] */
   closestParameterWithinBounds(targetPoint: Point, low: number, high: number): number
 
   closestParameter(targetPoint: Point): number
-  // clones the curve.
+  /** clones the curve. */
   clone(): ICurve
 
-  // The left derivative at t.
+  /** The left derivative at t. */
   leftDerivative(t: number): Point
 
-  // the right derivative at t
+  /** the right derivative at t */
   rightDerivative(t: number): Point
 
-  // the signed curvature of the segment at t
+  /** the signed curvature of the segment at t */
   curvature(t: number): number
-  // the derivative of the curvature at t
+  /** the derivative of the curvature at t */
   curvatureDerivative(t: number): number
 
-  // the derivative of CurvatureDerivative
+  /** the derivative of CurvatureDerivative */
   curvatureSecondDerivative(t: number): number
 }

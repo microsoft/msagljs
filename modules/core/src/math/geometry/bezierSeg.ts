@@ -7,6 +7,7 @@ import {GeomConstants} from './geomConstants'
 import {PlaneTransformation} from './planeTransformation'
 import {ClosestPointOnCurve} from './closestPointOnCurve'
 
+/** the standard implementation of a cubic bezier curve */
 export class BezierSeg implements ICurve {
   leftDerivative(t: number) {
     return this.derivative(t)
@@ -16,28 +17,28 @@ export class BezierSeg implements ICurve {
     return this.derivative(t)
   }
 
-  // control points
+  /** control points */
   b: Point[] = new Array(4)
 
-  // coefficients
+  /** coefficients */
   l: Point
   e: Point
   c: Point
 
-  // get a control point
+  /** get a control point */
   B(controlPointIndex: number) {
     return this.b[controlPointIndex]
   }
 
   pBoxNode: PN
-  // A tree of ParallelogramNodes covering the curve.
-  // This tree is used in curve intersections routines.
-  // <value></value>
+  /** A tree of ParallelogramNodes covering the curve. 
+   This tree is used in curve intersections routines. */
+
   pNodeOverICurve(): PN {
     if (this.pBoxNode != null) return this.pBoxNode
     return (this.pBoxNode = ParallelogramNode.createParallelogramNodeForCurveSegDefaultOffset(this))
   }
-  // Returns the point on the curve corresponding to parameter t
+  /** Returns the point on the curve corresponding to parameter t */
   value(t: number) {
     const t2 = t * t
     const t3 = t2 * t
@@ -51,8 +52,8 @@ export class BezierSeg implements ICurve {
     return u
   }
 
-  //throw away the segments [0,u] and [v,1] of the segment
-  // Returns the trimmed curve
+  /**throw away the segments [0,u] and [v,1] of the segment,
+  Returns the trimmed curve */
   trim(u: number, v: number): ICurve {
     u = BezierSeg.adjustParamTo01(u)
     v = BezierSeg.adjustParamTo01(v)
@@ -81,7 +82,7 @@ export class BezierSeg implements ICurve {
   }
 
   //array for casteljau method
-  casteljau(t: number, b1: Point[], b2: Point[]): Point {
+  private casteljau(t: number, b1: Point[], b2: Point[]): Point {
     const f = 1.0 - t
     for (let i = 0; i < 3; i++) b1[i] = Point.mkPoint(f, this.b[i], t, this.b[i + 1])
 

@@ -15,6 +15,7 @@ type AdjustedPar = {
   b: Point
   t: number
 }
+/** the curve corresponding to the sequence of lines, could be closed when the start coincides with the end */
 export class Polyline implements ICurve {
   RemoveStartPoint() {
     const p = this.startPoint.next
@@ -43,15 +44,14 @@ export class Polyline implements ICurve {
     this.addPoint(new Point(x, y))
   }
 
-  // true in general for convex polylines
-
+  /** should true, by internal assumptions,  in general for convex polylines */
   isClockwise() {
     return (
       Point.getTriangleOrientation(this.startPoint.point, this.startPoint.next.point, this.startPoint.next.next.point) ==
       TriangleOrientation.Clockwise
     )
   }
-
+  /**  adds a point to the polyline */
   addPoint(p: Point) {
     // Assert.assert(
     //   this.endPoint == null || !Point.closeDistEps(p, this.endPoint.point),
