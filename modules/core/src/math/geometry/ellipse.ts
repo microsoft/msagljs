@@ -8,14 +8,22 @@ import {PlaneTransformation} from './planeTransformation'
 import {ClosestPointOnCurve} from './closestPointOnCurve'
 import {closeDistEps} from '../../utils/compare'
 
-/** ellipse: also represents a circle and an arc */
+/** ellipse: also represents a circle and an arc.
+ * The point on the ellipse corresponding to the parameter t is calculated by
+ * the formula center + cos(t)*aAxis + sin(t) * bAxis.
+ * To get an ellipse rotating clockwise use, for example,
+ * aAxis = (-1,0) and bAxis=(0,1) */
+
 export class Ellipse implements ICurve {
   box: Rectangle
 
   pNode: PN
+  /** the aAxis of the ellips*/
   aAxis: Point
+  /** the bAxis of the ellipse */
   bAxis: Point
-  center: Point
+  // center: Point
+
   parStart: number
   parEnd: number
 
@@ -45,10 +53,6 @@ export class Ellipse implements ICurve {
   static mkEllipsePPP(a: Point, b: Point, center: Point) {
     return new Ellipse(0, Math.PI * 2, a, b, center)
   }
-  /** The point on the ellipse corresponding to the parameter t is calculated by
-   * the formula center + cos(t)*axis0 + sin(t) * axis1.
-   * To get an ellipse rotating clockwise use, for example,
-   * axis0=(-1,0) and axis1=(0,1) */
   constructor(parStart: number, parEnd: number, axis0: Point, axis1: Point, center: Point) {
     //    assert(parStart <= parEnd);
     this.parStart = parStart
