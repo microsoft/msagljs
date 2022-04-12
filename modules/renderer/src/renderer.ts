@@ -115,27 +115,39 @@ export default class Renderer extends EventSource {
 
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(drawingGraph: DrawingGraph, options: RenderOptions = this._renderOptions) {
-    this._drawingGraph = drawingGraph
-    this._renderOptions = options
-    this._textMeasurer.setOptions(options.label || {})
-    this._geomGraph = drawingGraph.createGeometry(this._textMeasurer.measure)
+    if (this._drawingGraph === drawingGraph) {
+      this.setRenderOptions(options)
+    } else {
+      this._drawingGraph = drawingGraph
+      this._renderOptions = options
+      this._textMeasurer.setOptions(options.label || {})
 
-    if (this._deck.layerManager) {
-      // deck is ready
-      this._update()
+      drawingGraph.createGeometry(this._textMeasurer.measure)
+      this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, true)
+
+      if (this._deck.layerManager) {
+        // deck is ready
+        this._update()
+      }
     }
   }
 
   setRenderOptions(options: RenderOptions) {
     const oldLabelSettings = this._renderOptions.label
     const newLabelSettings = options.label
+    const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)
 
     this._renderOptions = options
 
-    if (this._drawingGraph && !deepEqual(oldLabelSettings, newLabelSettings)) {
-      this._textMeasurer.setOptions(options.label || {})
-      this._geomGraph = this._drawingGraph.createGeometry(this._textMeasurer.measure)
+    if (!this._drawingGraph) {
+      return
     }
+
+    if (fontChanged) {
+      this._textMeasurer.setOptions(options.label || {})
+      this._drawingGraph.createGeometry(this._textMeasurer.measure)
+    }
+    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, fontChanged)
 
     if (this._deck.layerManager) {
       // deck is ready
@@ -159,8 +171,6 @@ export default class Renderer extends EventSource {
 
   private _update() {
     if (!this._drawingGraph) return
-
-    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions)
 
     const fontSettings = this._textMeasurer.opts
 

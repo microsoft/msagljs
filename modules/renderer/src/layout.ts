@@ -14,9 +14,9 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import type {RenderOptions} from './renderer'
 
 /** lay out the DrawingGraph dg*/
-export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions = {}): GeomGraph {
+export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions, forceUpdate = false): GeomGraph {
   let needsReroute = false
-  let needsLayout = false
+  let needsLayout = forceUpdate
   const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grab the GeomGraph from the underlying Graph
 
   function updateLayoutSettings(gg: GeomGraph) {
