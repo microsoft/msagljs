@@ -6,11 +6,12 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {Graph, GeomGraph, Rectangle, LayoutSettings, LayerDirectionEnum, EdgeRoutingMode} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, LayoutSettings, LayerDirectionEnum, EdgeRoutingMode, SugiyamaLayoutSettings} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
 import {deepEqual} from './utils'
+import {SsstRectilinearPath} from 'msagl-js/src/routing/rectilinear/SsstRectilinearPath'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -147,14 +148,26 @@ export default class Renderer extends EventSource {
       this._textMeasurer.setOptions(options.label || {})
       this._drawingGraph.createGeometry(this._textMeasurer.measure)
     }
-    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, fontChanged)
+    const relout = fontChanged || this.specialCaseForSugiamaRelayout()
+    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, relout)
 
     if (this._deck.layerManager) {
       // deck is ready
       this._update()
     }
   }
-
+  specialCaseForSugiamaRelayout(): boolean {
+    const geomGraph = GeomGraph.getGeom(this._drawingGraph.graph)
+    if (geomGraph == null) return true
+    const layoutSettings = geomGraph.layoutSettings
+    if (layoutSettings == null) return true
+    if (layoutSettings instanceof SugiyamaLayoutSettings) {
+      if (this._renderOptions.edgeRoutingMode == null) {
+        return true
+      }
+    }
+    return false
+  }
   zoomTo(rectangle: Rectangle) {
     const scale = Math.min(this._deck.width / rectangle.width, this._deck.height / rectangle.height)
     const zoom = Math.min(Math.log2(scale) - 1, MaxZoom)
