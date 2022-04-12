@@ -148,8 +148,8 @@ export default class Renderer extends EventSource {
       this._textMeasurer.setOptions(options.label || {})
       this._drawingGraph.createGeometry(this._textMeasurer.measure)
     }
-    const relout = fontChanged || this.specialCaseForSugiamaRelayout()
-    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, relout)
+    const relayout = fontChanged || this.specialCaseForSugiamaRelayout()
+    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, relayout)
 
     if (this._deck.layerManager) {
       // deck is ready
