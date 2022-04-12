@@ -82,7 +82,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
   }
 
   if (ss instanceof SugiyamaLayoutSettings) {
-    if (overrides.layerDirection === undefined) {
+    if (overrides.layerDirection == null) {
       if (root.rankdir) {
         ss.layerDirection = root.rankdir
       }
@@ -91,7 +91,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     }
   }
 
-  if (overrides.edgeRoutingMode === undefined) {
+  if (overrides.edgeRoutingMode == null) {
     // Use default
     if (ss instanceof SugiyamaLayoutSettings) {
       ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
