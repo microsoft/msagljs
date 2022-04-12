@@ -6,14 +6,23 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {Graph, GeomGraph, Rectangle, LayoutSettings, GeomNode, Point, routeEdges as routeEdgesFromDriver} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, LayoutSettings, LayerDirectionEnum, EdgeRoutingMode} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
+import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
+import {deepEqual} from './utils'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
   onRemove(renderer: Renderer): void
   getElement(): HTMLElement | null
+}
+
+export type RenderOptions = {
+  type?: 'Sugiyama' | 'MDS'
+  label?: TextMeasurerOptions
+  layerDirection?: LayerDirectionEnum
+  edgeRoutingMode?: EdgeRoutingMode
 }
 
 const MaxZoom = 4
@@ -26,22 +35,20 @@ const MaxZoom = 4
 export default class Renderer extends EventSource {
   private _deck: any
   private _drawingGraph?: DrawingGraph
-  private _layoutSettingsAdjuster: (graph: Graph) => void
-  get drawingGraph() {
-    return this._drawingGraph
-  }
-
-  private get _geomGraph() {
-    return this._drawingGraph ? GeomGraph.getGeom(this.drawingGraph.graph) : null
-  }
-
+  private _geomGraph?: GeomGraph
+  private _renderOptions: RenderOptions = {}
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
+  private _textMeasurer: TextMeasurer
 
   constructor(container: HTMLElement = document.body) {
     super()
 
-    container.style.position = 'relative'
+    this._textMeasurer = new TextMeasurer()
+
+    if (window.getComputedStyle(container).position === 'static') {
+      container.style.position = 'relative'
+    }
 
     const divs = Array.from({length: 2}, () => {
       const c = document.createElement('div')
@@ -101,18 +108,38 @@ export default class Renderer extends EventSource {
     return this._geomGraph
   }
 
-  get layoutOptions(): LayoutSettings {
-    const geomGraph = GeomGraph.getGeom(this._drawingGraph.graph)
+  get layoutSettings(): LayoutSettings {
+    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._drawingGraph.graph)
     return geomGraph == null ? null : geomGraph.layoutSettings
   }
+
   /** when the graph is set : the geometry for it is created and the layout is done */
-  setGraph(drawingGraph: DrawingGraph, adjustLayoutSettings: (ls: Graph) => void, needToCalculateLayout = true) {
+  setGraph(drawingGraph: DrawingGraph, options: RenderOptions = this._renderOptions) {
     this._drawingGraph = drawingGraph
-    this._layoutSettingsAdjuster = adjustLayoutSettings
+    this._renderOptions = options
+    this._textMeasurer.setOptions(options.label || {})
+    this._geomGraph = drawingGraph.createGeometry(this._textMeasurer.measure)
+
     if (this._deck.layerManager) {
       // deck is ready
-      if (needToCalculateLayout) this._update()
-      else this._updateWithoutLayoutCalculation()
+      this._update()
+    }
+  }
+
+  setRenderOptions(options: RenderOptions) {
+    const oldLabelSettings = this._renderOptions.label
+    const newLabelSettings = options.label
+
+    this._renderOptions = options
+
+    if (this._drawingGraph && !deepEqual(oldLabelSettings, newLabelSettings)) {
+      this._textMeasurer.setOptions(options.label || {})
+      this._geomGraph = this._drawingGraph.createGeometry(this._textMeasurer.measure)
+    }
+
+    if (this._deck.layerManager) {
+      // deck is ready
+      this._update()
     }
   }
 
@@ -133,13 +160,10 @@ export default class Renderer extends EventSource {
   private _update() {
     if (!this._drawingGraph) return
 
-    layoutDrawingGraph(this._drawingGraph, this._layoutSettingsAdjuster)
+    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions)
 
-    // todo - render edge labels
-    this._updateWithoutLayoutCalculation()
-  }
+    const fontSettings = this._textMeasurer.opts
 
-  private _updateWithoutLayoutCalculation() {
     const center = this._geomGraph.boundingBox.center
     const edgeLayer = new EdgeLayer({
       id: 'edges',
@@ -150,8 +174,11 @@ export default class Renderer extends EventSource {
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
       data: Array.from(this._geomGraph.deepNodes()),
+      fontFamily: fontSettings.fontFamily,
+      fontWeight: fontSettings.fontWeight,
+      lineHeight: fontSettings.lineHeight,
       getWidth: 1,
-      getSize: 14,
+      getSize: fontSettings.fontSize,
       sizeMaxPixels: 24,
       pickable: true,
     })

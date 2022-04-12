@@ -1,7 +1,8 @@
 {
-  "name": "msagl-renderer",
+  "name": "msagl-example",
   "version": "1.0.0",
-  "description": "Renderer for msagl-js",
+  "private": true,
+  "description": "Public demo for msagl-js",
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
@@ -12,8 +13,8 @@
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/renderer": "^0.0.21",
-    "msagl-js": "^0.0.54",
+    "@msagl/renderer": "0.0.21",
+    "msagl-js": "0.0.54",
     "typescript": "^4.5.5"
   },
   "devDependencies": {

@@ -8,7 +8,8 @@
     "url": "git+https://github.com/msaglJS/msagl-js"
   },
   "workspaces": [
-    "modules/*"
+    "modules/*",
+    "examples/*"
   ],
   "license": "MIT",
   "scripts": {
