@@ -22,7 +22,7 @@ export class Ellipse implements ICurve {
   aAxis: Point
   /** the bAxis of the ellipse */
   bAxis: Point
-  // center: Point
+  center: Point
 
   parStart: number
   parEnd: number
