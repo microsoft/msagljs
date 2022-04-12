@@ -168,7 +168,7 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
                 break
               }
             } while (true)
-          } else if (typeof str == 'number') {
+          } else if (typeof str === 'number') {
             drawingObj.labelText = str.toString()
           }
 
