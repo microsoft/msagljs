@@ -219,7 +219,7 @@ export class SvgDebugWriter {
 
   writeDebugCurves(dcurves: DebugCurve[], flip = true) {
     if (flip) flipDebugCurvesByY(dcurves)
-    this.open(SvgDebugWriter.getBoundingBox(dcurves), false)
+    this.open(SvgDebugWriter.getBoundingBox(dcurves), true)
     for (const c of dcurves) {
       this.writeDebugCurve(c)
     }

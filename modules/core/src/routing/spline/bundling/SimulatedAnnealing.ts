@@ -362,13 +362,10 @@ export class SimulatedAnnealing {
     const force: Point = direction.mul(this.bundlingSettings.HubRepulsionImportance)
     return force
   }
-  static debcount = 0
   /** calculates the direction to push a bundle away from obstacle*/
   BuildForceForBundle(station: Station): Point {
     let direction = new Point(0, 0)
     for (const adjStation of station.Neighbors) {
-      SimulatedAnnealing.debcount++
-
       const idealWidth = this.metroGraphData.GetWidthSSN(station, adjStation, this.bundlingSettings.EdgeSeparation)
       const t: {closestDist: Array<[Point, Point]>} = {closestDist: []}
       const res = this.metroGraphData.cdtIntersections.BundleAvoidsObstacles(

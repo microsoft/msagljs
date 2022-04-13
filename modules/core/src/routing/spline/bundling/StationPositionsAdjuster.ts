@@ -243,9 +243,7 @@ export class StationPositionsAdjuster {
     this.metroGraphData.Edges[edgeIndex].curve = Polyline.mkFromPoints(StationPositionsAdjuster.GluedPolyline(metrolines, gluingMap))
     return
   }
-  static debCount = 0
   static GluedPolyline(metroline: Station[], gluedMap: Map<Station, Station>): Array<Point> {
-    StationPositionsAdjuster.debCount++
     let i: number
     const ret = new Stack<Station>()
     ret.push(metroline[0])

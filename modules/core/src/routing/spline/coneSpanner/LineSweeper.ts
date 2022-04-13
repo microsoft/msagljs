@@ -1,7 +1,6 @@
 //  sweeps a given direction of cones and adds discovered edges to the graph
 
 import {Point} from '../../..'
-//import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
 import {Polyline, GeomConstants, ICurve, CurveFactory, LineSegment} from '../../../math/geometry'
 import {DebugCurve} from '../../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../../math/geometry/point'
@@ -96,7 +95,6 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   Calculate() {
-    LineSweeper.debCount++
     this.InitQueueOfEvents()
     while (this.EventQueue.Count > 0) {
       this.ProcessEvent(this.EventQueue.Dequeue())
@@ -342,12 +340,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   ProcessEvent(p: SweepEvent) {
     //  Assert.assert(this.invariant())
-    if (
-      LineSweeper.debCount == 5682 &&
-      (p.Site.sub(new Point(616.167, 807.958)).length < 0.1 || p.Site.sub(new Point(525.8332738110422, 807.9582738110422)).length < 0.1)
-    ) {
-      console.log(this)
-    }
+
     const vertexEvent = p instanceof VertexEvent
     if (vertexEvent) {
       this.ProcessVertexEvent(<VertexEvent>p)
@@ -1006,18 +999,20 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   Show(curves: ICurve[], fn: string) {
-    let l = Array.from(this.Obstacles).map((o) => DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', o))
+    let l = Array.from(this.Obstacles).map((o) => DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Blue', o))
     for (const s of this.rightConeSides) {
       l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Brown', this.ExtendSegmentToZ(s)))
       if (s instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('brown', LineSweeper.Diamond(s.start)))
-      l.push(DebugCurve.mkDebugCurveWCI(0.5, 'green', this.ExtendSegmentToZ(s.Cone.LeftSide)))
+      l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Green', this.ExtendSegmentToZ(s.Cone.LeftSide)))
       if (s.Cone.LeftSide instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('green', LineSweeper.Diamond(s.Cone.LeftSide.start)))
     }
-    //            l.pushRange(
-    //                visibilityGraph.Edges.Select(
-    //                    edge => new DebugCurve(0.2, "maroon", new LineSegment(edge.SourcePoint, edge.TargetPoint))));
-    l = l.concat(curves.map((c) => DebugCurve.mkDebugCurveCI('red', c)))
-    //    SvgDebugWriter.dumpDebugCurves(fn, l)
+    l = l.concat(
+      Array.from(this.visibilityGraph.Edges).map((edge) =>
+        DebugCurve.mkDebugCurveWCI(2, 'Black', LineSegment.mkPP(edge.SourcePoint, edge.TargetPoint)),
+      ),
+    )
+    l = l.concat(curves.map((c) => DebugCurve.mkDebugCurveCI('Red', c)))
+    //SvgDebugWriter.dumpDebugCurves(fn, l)
   }
   //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
   //          static BezierSeg BezierOnEdge(VisibilityEdge edge) {
@@ -1037,7 +1032,6 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //              return new LineSegment(segment.start, segment.start + segment.Direction * t);
   //          }
   //  #endif
-  static debCount = 0
   GoOverConesSeeingVertexEvent(vertexEvent: SweepEvent) {
     let rbNode = this.FindFirstSegmentInTheRightTreeNotToTheLeftOfVertex(vertexEvent)
     if (rbNode == null) {

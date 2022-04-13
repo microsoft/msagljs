@@ -55,14 +55,12 @@ import {SdShortestPath} from './spline/bundling/SdShortestPath'
 import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
-import {Graph} from '../structs/graph'
 
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   //  setting this to true forces the calculation to go on even when node overlaps are present
   //
   continueOnOverlaps = true
-  static debCount = 0
 
   get ContinueOnOverlaps(): boolean {
     return this.continueOnOverlaps
