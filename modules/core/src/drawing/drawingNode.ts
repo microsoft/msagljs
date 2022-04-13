@@ -56,7 +56,7 @@ export class DrawingNode extends DrawingObject {
     DrawingNode.defaultFillColor = value
   }
 
-  private fillcolor: Color = Color.Transparent
+  private fillcolor: Color = DrawingNode.defaultFillColor
 
   // Node fill color.
 

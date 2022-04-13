@@ -211,7 +211,7 @@ export default class Renderer extends EventSource {
         target: [center.x, center.y, 0],
         zoom: 0,
       },
-      layers: [nodeLayer, edgeLayer],
+      layers: [edgeLayer, nodeLayer],
     })
 
     this.emit({

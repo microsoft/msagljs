@@ -70,7 +70,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
 
     default: {
       // figure out if the graph is too large for the layered layout
-      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 500 || subgraph.graph.nodeCollection.edgeCount > 500
+      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 1000 || subgraph.graph.nodeCollection.edgeCount > 1000
       if (directed && !tooLargeForLayered) {
         // the graph is not tool large and has directed edges: use layered layout
         ss = new SugiyamaLayoutSettings()
