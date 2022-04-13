@@ -200,8 +200,8 @@ export default class Renderer extends EventSource {
       fontFamily: fontSettings.fontFamily,
       fontWeight: fontSettings.fontWeight,
       lineHeight: fontSettings.lineHeight,
-      getWidth: 1,
-      getSize: fontSettings.fontSize,
+      getLineWidth: 1,
+      getTextSize: fontSettings.fontSize,
       sizeMaxPixels: 24,
       pickable: true,
     })

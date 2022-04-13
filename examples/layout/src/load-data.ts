@@ -2,25 +2,21 @@ import {Graph, Edge, Node} from 'msagl-js'
 import {DrawingEdge, DrawingGraph, DrawingNode, parseDotString, ArrowTypeEnum, Color, ShapeEnum} from 'msagl-js/drawing'
 
 export async function loadDefaultGraph(): Promise<DrawingGraph> {
-  const resp = await fetch(
-    'https://gist.githubusercontent.com/mohdsanadzakirizvi/6fc325042ce110e1afc1a7124d087130/raw/ab9a310cfc2003f26131a7149950947645391e28/got_social_graph.json',
-  )
+  const resp = await fetch('./data/gameofthrones.json')
   const data = await resp.json()
-  const g = new Graph('got_social_graph.json')
+  const g = new Graph('gameofthrones.json')
 
   const nodeMap: any = {}
   for (const node of data.nodes) {
     nodeMap[node.id] = node
-    const n = g.addNode(new Node(node.character))
+    const n = g.addNode(new Node(node.name))
     const dn = new DrawingNode(n)
-    dn.labelText = node.character
+    dn.labelText = node.name
     dn.ShapeEnum = ShapeEnum.box
-    dn.color = dn.labelText == 'Arya' ? Color.Red : Color.Black
   }
-  for (const edge of data.links) {
-    const e = g.setEdge(nodeMap[edge.source].character, nodeMap[edge.target].character)
+  for (const edge of data.edges) {
+    const e = g.setEdge(nodeMap[edge.source].name, nodeMap[edge.target].name)
     const de = new DrawingEdge(e)
-    if (connectedToArya(e)) de.color = Color.Blue
     de.arrowtail = ArrowTypeEnum.none
     de.arrowhead = ArrowTypeEnum.none
     de.directed = false
@@ -34,8 +30,4 @@ export async function loadDotFile(file: File): Promise<DrawingGraph> {
   const dg = parseDotString(content)
   dg.graph.id = file.name
   return dg
-}
-
-function connectedToArya(e: Edge) {
-  return e.source.id == 'Arya' || e.target.id == 'Arya'
 }

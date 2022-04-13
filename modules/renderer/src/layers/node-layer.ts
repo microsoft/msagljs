@@ -3,12 +3,18 @@ import {TextLayer, PathLayer, PathLayerProps, TextLayerProps, PolygonLayer} from
 import {interpolateICurve, GeomNode, GeomGraph, Point} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
 
-type NodeLayerProps = PathLayerProps<GeomNode> & TextLayerProps<GeomNode>
+import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
+
+type NodeLayerProps = GeometryLayerProps<GeomNode> &
+  TextLayerProps<GeomNode> & {
+    getTextSize: TextLayerProps<GeomNode>['getSize']
+  }
 
 export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> {
   static defaultProps = {
-    ...PathLayer.defaultProps,
     ...TextLayer.defaultProps,
+    ...GeometryLayer.defaultProps,
+    getTextSize: {type: 'accessor', value: 16},
   }
 
   props: NodeLayerProps
@@ -17,20 +23,26 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
     const {updateTriggers = {}} = this.props
 
     return [
-      new PolygonLayer<GeomNode>(
+      new GeometryLayer<GeomNode>(
         this.props,
         // @ts-ignore
         this.getSubLayerProps({
           id: 'boundary',
           updateTriggers: {
-            getPath: updateTriggers.getPath,
-            getWidth: updateTriggers.getWidth,
-            getColor: updateTriggers.getColor,
+            getPosition: updateTriggers.getPosition,
+            getSize: updateTriggers.getSize,
+            getFillColor: updateTriggers.getColor,
+            getLineColor: updateTriggers.getColor,
           },
-          widthUnits: 'pixels',
+          lineWidthUnits: 'pixels',
         }),
+        // @ts-ignore
         {
-          getPolygon: (e: GeomNode) => Array.from(interpolateICurve(e.boundaryCurve, 0.1)).map((p: Point) => [p.x, p.y]),
+          getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
+          getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
+          getShape: SHAPE.Rectangle,
+          // @ts-ignore
+          cornerRadius: getCornerRadius(this.props.data[0]),
           getLineColor: getNodeColor,
           getFillColor: getNodeFillColor,
         },
@@ -54,12 +66,19 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
           getPosition: (n: GeomNode) => getLabelPosition(n),
           getText: (n: GeomNode) => (<DrawingNode>DrawingNode.getDrawingObj(n.node)).labelText,
           getColor: getNodeColor,
+          getSize: this.props.getTextSize,
           // @ts-ignore
           sizeUnits: 'common',
         },
       ),
     ]
   }
+}
+
+function getCornerRadius(n: GeomNode): number {
+  if (!n) return 0
+  const dn = <DrawingNode>DrawingNode.getDrawingObj(n.node)
+  return dn.xRad
 }
 
 function getLabelPosition(n: GeomNode): [number, number] {
@@ -84,5 +103,5 @@ function getNodeFillColor(e: GeomNode): [number, number, number, number] {
     const color = drawingNode.fillColor
     if (color) return [color.R, color.G, color.B, color.A]
   }
-  return [0, 0, 0, 0]
+  return [255, 255, 255, 255]
 }
