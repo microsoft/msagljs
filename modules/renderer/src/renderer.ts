@@ -117,7 +117,7 @@ export default class Renderer extends EventSource {
   get graph(): GeomGraph {
     return this._geomGraph
   }
-
+  /** returns layout settings that are kept under the current GeomGraph */
   get layoutSettings(): LayoutSettings {
     const geomGraph = <GeomGraph>GeomGraph.getGeom(this._drawingGraph.graph)
     return geomGraph == null ? null : geomGraph.layoutSettings
