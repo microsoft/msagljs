@@ -1,5 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core'
-import {Buffer} from '@luma.gl/core'
+import {Buffer} from '@luma.gl/webgl'
 import {PathLayer, PathLayerProps, IconLayer} from '@deck.gl/layers'
 import {iconAtlas, iconMapping} from './arrows'
 import {interpolateICurve, GeomEdge, Point} from 'msagl-js'

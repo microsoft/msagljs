@@ -1,5 +1,7 @@
 import GL from '@luma.gl/constants'
-import {Buffer, Model, Transform, Framebuffer, Texture2D, readPixelsToArray, withParameters, readPixelsToBuffer} from '@luma.gl/core'
+import {Buffer, Framebuffer, Texture2D, readPixelsToArray, readPixelsToBuffer} from '@luma.gl/webgl'
+import {withParameters} from '@luma.gl/gltools'
+import {Model, Transform} from '@luma.gl/engine'
 import {Graph, GeomGraph} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 

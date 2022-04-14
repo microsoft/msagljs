@@ -1,5 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core'
-import {Buffer} from '@luma.gl/core'
+import {Buffer} from '@luma.gl/webgl'
 import {TextLayer, PathLayer, PathLayerProps, TextLayerProps, PolygonLayer} from '@deck.gl/layers'
 import {interpolateICurve, GeomNode, GeomGraph, Point} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'

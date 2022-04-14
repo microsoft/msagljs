@@ -1,6 +1,8 @@
 import {Layer, project32, UNIT} from '@deck.gl/core'
 import GL from '@luma.gl/constants'
-import {Model, Geometry, Buffer, picking} from '@luma.gl/core'
+import {Model, Geometry} from '@luma.gl/engine'
+import {Buffer} from '@luma.gl/webgl'
+import {picking} from '@luma.gl/shadertools'
 
 import type {LayerProps} from '@deck.gl/core/lib/layer'
 
