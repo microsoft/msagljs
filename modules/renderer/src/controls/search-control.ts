@@ -22,7 +22,7 @@ export default class SearchControl implements IRendererControl {
     this._dropdown = new Dropdown({
       getLabel: (node: GeomNode) => node.id,
       onSelect: (node: GeomNode) => {
-        renderer.zoomTo(node.boundingBox)
+        renderer.highlight(node.id)
       },
     })
     this._updateNodeList(renderer.graph)

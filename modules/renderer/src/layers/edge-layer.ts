@@ -1,10 +1,13 @@
 import {CompositeLayer} from '@deck.gl/core'
+import {Buffer} from '@luma.gl/core'
 import {PathLayer, PathLayerProps, IconLayer} from '@deck.gl/layers'
 import {iconAtlas, iconMapping} from './arrows'
 import {interpolateICurve, GeomEdge, Point} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
-type EdgeLayerProps = PathLayerProps<GeomEdge>
+type EdgeLayerProps = PathLayerProps<GeomEdge> & {
+  getDepth?: Buffer
+}
 
 export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> {
   static defaultProps = {

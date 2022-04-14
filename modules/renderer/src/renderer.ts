@@ -11,7 +11,8 @@ import {Graph, GeomGraph, Rectangle, LayoutSettings, LayerDirectionEnum, EdgeRou
 import EventSource, {Event} from './event-source'
 import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
 import {deepEqual} from './utils'
-import {SsstRectilinearPath} from 'msagl-js/src/routing/rectilinear/SsstRectilinearPath'
+
+import GraphHighlighter from './layers/graph-highlighter'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -41,6 +42,8 @@ export default class Renderer extends EventSource {
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
   private _textMeasurer: TextMeasurer
+  private _graphHighlighter: GraphHighlighter
+  private _highlightedNodeId: string | null
 
   constructor(container: HTMLElement = document.body) {
     super()
@@ -75,6 +78,12 @@ export default class Renderer extends EventSource {
       onLoad: () => {
         this.emit('load')
         this._update()
+      },
+      onClick: ({object}) => {
+        if (!object && this._highlightedNodeId) {
+          // deseclect
+          this.highlight(null)
+        }
       },
     })
 
@@ -122,6 +131,7 @@ export default class Renderer extends EventSource {
       this._drawingGraph = drawingGraph
       this._renderOptions = options
       this._textMeasurer.setOptions(options.label || {})
+      this._highlightedNodeId = null
 
       drawingGraph.createGeometry(this._textMeasurer.measure)
       this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, true)
@@ -182,28 +192,53 @@ export default class Renderer extends EventSource {
     })
   }
 
+  highlight(nodeId: string | null) {
+    this._highlightedNodeId = nodeId
+    this._highlight(nodeId)
+  }
+
+  private _highlight(nodeId: string | null, depth = 2) {
+    if (this._geomGraph && this._deck.layerManager) {
+      this._graphHighlighter.update({
+        sourceId: nodeId,
+        maxDepth: depth,
+        edgeDepth: false,
+      })
+      this._deck.layerManager.setNeedsRedraw('hightlight changed')
+    }
+  }
+
   private _update() {
     if (!this._drawingGraph) return
 
     const fontSettings = this._textMeasurer.opts
+
+    this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
+    this._graphHighlighter.setGraph(this._geomGraph)
 
     const center = this._geomGraph.boundingBox.center
     const edgeLayer = new EdgeLayer({
       id: 'edges',
       data: Array.from(this._geomGraph.deepEdges()),
       getWidth: 1,
+      getDepth: this._graphHighlighter.edgeDepthBuffer,
     })
 
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
       data: Array.from(this._geomGraph.deepNodes()),
+      getDepth: this._graphHighlighter.nodeDepthBuffer,
       fontFamily: fontSettings.fontFamily,
       fontWeight: fontSettings.fontWeight,
       lineHeight: fontSettings.lineHeight,
       getLineWidth: 1,
       getTextSize: fontSettings.fontSize,
-      sizeMaxPixels: 24,
       pickable: true,
+      onHover: ({object}) => {
+        if (!this._highlightedNodeId) {
+          this._highlight(object?.id)
+        }
+      },
     })
 
     this._deck.setProps({

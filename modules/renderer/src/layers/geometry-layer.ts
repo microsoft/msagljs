@@ -1,6 +1,6 @@
-import {Layer, project32, picking, UNIT} from '@deck.gl/core'
+import {Layer, project32, UNIT} from '@deck.gl/core'
 import GL from '@luma.gl/constants'
-import {Model, Geometry} from '@luma.gl/core'
+import {Model, Geometry, Buffer, picking} from '@luma.gl/core'
 
 import type {LayerProps} from '@deck.gl/core/lib/layer'
 
@@ -25,6 +25,9 @@ export type GeometryLayerProps<DataT> = LayerProps<DataT> & {
   /** Only applies to SHAPE.Rectangle */
   cornerRadius?: number
 
+  getDepth?: Buffer
+  highlightColor?: number[][]
+
   getPosition?: Accessor<DataT, number[]>
   getSize?: Accessor<DataT, [number, number]>
   getFillColor?: Accessor<DataT, number[]>
@@ -43,6 +46,15 @@ const defaultProps = {
   filled: true,
 
   cornerRadius: {type: 'number', min: 0, value: 0},
+  highlightColor: {
+    type: 'array',
+    compare: true,
+    value: [
+      [255, 100, 0],
+      [255, 200, 80],
+      [255, 255, 200],
+    ],
+  },
 
   getPosition: {type: 'accessor', value: (x: any) => x.position},
   getSize: {type: 'accessor', value: (x: any) => x.size},
@@ -63,7 +75,9 @@ attribute float instanceLineWidths;
 attribute vec4 instanceFillColors;
 attribute vec4 instanceLineColors;
 attribute vec3 instancePickingColors;
+attribute vec4 instanceDepths;
 
+uniform mat4 depthHighlightColors;
 uniform float opacity;
 uniform float lineWidthScale;
 uniform float lineWidthMinPixels;
@@ -77,6 +91,11 @@ varying vec4 vLineColor;
 varying vec2 vPosition;
 varying vec4 shape; // [width, height, lineWidth, SHAPE]
 
+void applyHighlight(int i) {
+  if (i >= 3) return;
+  vFillColor.rgb = mix(vFillColor.rgb, depthHighlightColors[i].rgb, depthHighlightColors[i].a);
+}
+
 void main(void) {
   geometry.worldPosition = instancePositions;
 
@@ -88,7 +107,6 @@ void main(void) {
   float lineWidthCommon = project_pixel_size(lineWidthPixels);
 
   geometry.uv = positions.xy;
-  geometry.pickingColor = instancePickingColors;
 
   vec3 offset = vec3((instanceSizes + 1.0) / 2.0 * positions.xy, 0.0);
   DECKGL_FILTER_SIZE(offset, geometry);
@@ -104,6 +122,10 @@ void main(void) {
   DECKGL_FILTER_COLOR(vFillColor, geometry);
   vLineColor = vec4(instanceLineColors.rgb, instanceLineColors.a * opacity);
   DECKGL_FILTER_COLOR(vLineColor, geometry);
+
+  picking_setPickingColor(instancePickingColors);
+
+  applyHighlight(int(instanceDepths.r));
 }
 `
 
@@ -184,6 +206,11 @@ void main(void) {
   if (inShape == 0.0) {
     discard;
   }
+  if (picking_uActive) {
+    gl_FragColor = picking_filterPickingColor(vFillColor);
+    return;
+  }
+
   if (stroked) {
     if (filled) {
       gl_FragColor = mix(vLineColor, vFillColor, inFill);
@@ -260,7 +287,10 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
   updateState(params: any) {
     super.updateState(params)
 
-    if (params.changeFlags.extensionsChanged) {
+    const {props, oldProps, changeFlags} = params
+    let modelChanged = false
+
+    if (changeFlags.extensionsChanged) {
       // @ts-ignore
       const {gl} = this.context
       // @ts-ignore
@@ -269,6 +299,28 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
       this.state.model = this._getModel(gl)
       // @ts-ignore
       this.getAttributeManager().invalidateAll()
+      modelChanged = true
+    }
+
+    if (modelChanged || props.getDepth !== oldProps.getDepth) {
+      if (props.getDepth) {
+        this.state.model.setAttributes({
+          instanceDepths: props.getDepth,
+        })
+      }
+    }
+    if (modelChanged || props.highlightColor !== oldProps.highlightColor) {
+      const depthHighlightColors = new Float32Array(16)
+      for (let i = 0; i < 4; i++) {
+        const color = props.highlightColor[i]
+        if (color) {
+          depthHighlightColors[i * 4] = color[0] / 255
+          depthHighlightColors[i * 4 + 1] = color[1] / 255
+          depthHighlightColors[i * 4 + 2] = color[2] / 255
+          depthHighlightColors[i * 4 + 3] = Number.isFinite(color[3]) ? color[3] / 255 : 1
+        }
+      }
+      this.state.model.setUniforms({depthHighlightColors})
     }
   }
 

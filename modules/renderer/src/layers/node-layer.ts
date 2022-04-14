@@ -1,4 +1,5 @@
 import {CompositeLayer} from '@deck.gl/core'
+import {Buffer} from '@luma.gl/core'
 import {TextLayer, PathLayer, PathLayerProps, TextLayerProps, PolygonLayer} from '@deck.gl/layers'
 import {interpolateICurve, GeomNode, GeomGraph, Point} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
@@ -7,6 +8,7 @@ import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 
 type NodeLayerProps = GeometryLayerProps<GeomNode> &
   TextLayerProps<GeomNode> & {
+    getDepth: Buffer
     getTextSize: TextLayerProps<GeomNode>['getSize']
   }
 
@@ -14,6 +16,7 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
   static defaultProps = {
     ...TextLayer.defaultProps,
     ...GeometryLayer.defaultProps,
+    getDepth: null,
     getTextSize: {type: 'accessor', value: 16},
   }
 
@@ -67,6 +70,7 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
           getText: (n: GeomNode) => (<DrawingNode>DrawingNode.getDrawingObj(n.node)).labelText,
           getColor: getNodeColor,
           getSize: this.props.getTextSize,
+          sizeMaxPixels: 48,
           // @ts-ignore
           sizeUnits: 'common',
         },
