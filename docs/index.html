@@ -17,36 +17,53 @@
         align-items: center;
         z-index: 1;
         left: 0;
-        bottom: 0;
+        top: 0;
         width: 100vw;
         height: 50px;
         background: #fff;
         box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
       }
-
-      #routing {
-        cursor: pointer;
+      #viewer {
         position: fixed;
-        display: flex;
-        align-items: center;
-        z-index: 10;
-        left: 130;
+        top: 50px;
         bottom: 0;
-        height: 50px;
-        background: #fff;
-        box-shadow: 0 -1px 12px rgba(0, 2, 0, 0.3);
+        left: 0;
+        right: 0;
       }
       #dot_files {
         cursor: pointer;
         position: fixed;
-        display: flex;
-        align-items: center;
-        z-index: 10;
-        left: 340;
-        bottom: 0;
-        height: 50px;
+        top: 0;
+        right: 0;
+        padding: 0 12px;
+        line-height: 50px;
+        z-index: 2;
+      }
+      #dot_files select {
+        position: absolute;
+        right: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #settings {
+        position: fixed;
+        margin: 20px;
+        padding: 20px;
         background: #fff;
-        box-shadow: 0 -1px 12px rgba(0, 2, 0, 0.3);
+        box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
+        bottom: 0;
+      }
+      #settings > div {
+        margin: 4px 0;
+      }
+      #settings label {
+        font-weight: bold;
+        min-width: 120px;
+        display: inline-block;
+      }
+      #settings select {
+        width: 120px;
       }
       #drop-target.active {
         background: #ddd;
@@ -65,281 +82,24 @@
       </svg>
       <span id="graph-name"></span>
     </div>
-    <div id="routing">
-      <label for="routing_mode">Edge routing:</label>
-      <select name="rs" id="rs">
-        <option value="default" selected="true">Default</option>
-        <option value="splines">Splines</option>
-        <option value="rectilinear">Rectilinear</option>
-        <option value="bundles">Bundles</option>
-        <option value="straight">Straight</option>
-      </select>
-    </div>
+    <div id="viewer" ></div>
     <div id="dot_files">
-      <label for="dot">Dot graphs:</label>
-      <select name="gv" id="gv">
-        <option value="abstract.gv">abstract.gv</option>
-        <option value="a.gv">a.gv</option>
-        <option value="alf.gv">alf.gv</option>
-        <option value="arrows.gv">arrows.gv</option>
-        <option value="arrowsize.gv">arrowsize.gv</option>
-        <option value="AvantGarde.gv">AvantGarde.gv</option>
-        <option value="awilliams.gv">awilliams.gv</option>
-        <option value="b100.gv">b100.gv</option>
-        <option value="b102.gv">b102.gv</option>
-        <option value="b103.gv">b103.gv</option>
-        <option value="b104.gv">b104.gv</option>
-        <option value="b106.gv">b106.gv</option>
-        <option value="b117.gv">b117.gv</option>
-        <option value="b123.gv">b123.gv</option>
-        <option value="b124.gv">b124.gv</option>
-        <option value="b135.gv">b135.gv</option>
-        <option value="b143.gv">b143.gv</option>
-        <option value="b145.gv">b145.gv</option>
-        <option value="b146.gv">b146.gv</option>
-        <option value="b155.gv">b155.gv</option>
-        <option value="b15.gv">b15.gv</option>
-        <option value="b22.gv">b22.gv</option>
-        <option value="b29.gv">b29.gv</option>
-        <option value="b33.gv">b33.gv</option>
-        <option value="b34.gv">b34.gv</option>
-        <option value="b36.gv">b36.gv</option>
-        <option value="b3.gv">b3.gv</option>
-        <option value="b491.gv">b491.gv</option>
-        <option value="b51.gv">b51.gv</option>
-        <option value="b53.gv">b53.gv</option>
-        <option value="b545.gv">b545.gv</option>
-        <option value="b56.gv">b56.gv</option>
-        <option value="b57.gv">b57.gv</option>
-        <option value="b58.gv">b58.gv</option>
-        <option value="b60.gv">b60.gv</option>
-        <option value="b62.gv">b62.gv</option>
-        <option value="b68.gv">b68.gv</option>
-        <option value="b69.gv">b69.gv</option>
-        <option value="b71.gv">b71.gv</option>
-        <option value="b73a.gv">b73a.gv</option>
-        <option value="b73.gv">b73.gv</option>
-        <option value="b76.gv">b76.gv</option>
-        <option value="b77.gv">b77.gv</option>
-        <option value="b786.gv">b786.gv</option>
-        <option value="b79.gv">b79.gv</option>
-        <option value="b7.gv">b7.gv</option>
-        <option value="b80a.gv">b80a.gv</option>
-        <option value="b80.gv">b80.gv</option>
-        <option value="b81.gv">b81.gv</option>
-        <option value="b85.gv">b85.gv</option>
-        <option value="b94.gv">b94.gv</option>
-        <option value="b993.gv">b993.gv</option>
-        <option value="bad.gv">bad.gv</option>
-        <option value="badvoro.gv">badvoro.gv</option>
-        <option value="b.gv">b.gv</option>
-        <option value="big.gv">big.gv</option>
-        <option value="biglabel.gv">biglabel.gv</option>
-        <option value="Bookman.gv">Bookman.gv</option>
-        <option value="cairo.gv">cairo.gv</option>
-        <option value="center.gv">center.gv</option>
-        <option value="channel.gv">channel.gv</option>
-        <option value="clover.gv">clover.gv</option>
-        <option value="clust1.gv">clust1.gv</option>
-        <option value="clust2.gv">clust2.gv</option>
-        <option value="clust3.gv">clust3.gv</option>
-        <option value="clust4.gv">clust4.gv</option>
-        <option value="clust5.gv">clust5.gv</option>
-        <option value="clusters.gv">clusters.gv</option>
-        <option value="clust.gv">clust.gv</option>
-        <option value="clustlabel.gv">clustlabel.gv</option>
-        <option value="color.gv">color.gv</option>
-        <option value="colorscheme.gv">colorscheme.gv</option>
-        <option value="colors.gv">colors.gv</option>
-        <option value="compound.gv">compound.gv</option>
-        <option value="Courier.gv">Courier.gv</option>
-        <option value="crazy.gv">crazy.gv</option>
-        <option value="ctext.gv">ctext.gv</option>
-        <option value="dd.gv">dd.gv</option>
-        <option value="decorate.gv">decorate.gv</option>
-        <option value="dfa.gv">dfa.gv</option>
-        <option value="d.gv">d.gv</option>
-        <option value="dir.gv">dir.gv</option>
-        <option value="dpd.gv">dpd.gv</option>
-        <option value="edgeclip.gv">edgeclip.gv</option>
-        <option value="ER.gv">ER.gv</option>
-        <option value="fdp.gv">fdp.gv</option>
-        <option value="fig6.gv">fig6.gv</option>
-        <option value="flatedge.gv">flatedge.gv</option>
-        <option value="fsm.gv">fsm.gv</option>
-        <option value="grammar.gv">grammar.gv</option>
-        <option value="grdangles.gv">grdangles.gv</option>
-        <option value="grdcluster.gv">grdcluster.gv</option>
-        <option value="grdcolors.gv">grdcolors.gv</option>
-        <option value="grdfillcolor.gv">grdfillcolor.gv</option>
-        <option value="grdlinear_angle.gv">grdlinear_angle.gv</option>
-        <option value="grdlinear.gv">grdlinear.gv</option>
-        <option value="grdlinear_node.gv">grdlinear_node.gv</option>
-        <option value="grdradial_angle.gv">grdradial_angle.gv</option>
-        <option value="grdradial.gv">grdradial.gv</option>
-        <option value="grdradial_node.gv">grdradial_node.gv</option>
-        <option value="grdshapes.gv">grdshapes.gv</option>
-        <option value="hashtable.gv">hashtable.gv</option>
-        <option value="Heawood.gv">Heawood.gv</option>
-        <option value="Helvetica.gv">Helvetica.gv</option>
-        <option value="honda-tokoro.gv">honda-tokoro.gv</option>
-        <option value="html2.gv">html2.gv</option>
-        <option value="html.gv">html.gv</option>
-        <option value="in.gv">in.gv</option>
-        <option value="inv_inv.gv">inv_inv.gv</option>
-        <option value="inv_nul.gv">inv_nul.gv</option>
-        <option value="inv_val.gv">inv_val.gv</option>
-        <option value="japanese.gv">japanese.gv</option>
-        <option value="jcctree.gv">jcctree.gv</option>
-        <option value="jsort.gv">jsort.gv</option>
-        <option value="KW91.gv">KW91.gv</option>
-        <option value="labelclust-fbc.gv">labelclust-fbc.gv</option>
-        <option value="labelclust-fbd.gv">labelclust-fbd.gv</option>
-        <option value="labelclust-fbl.gv">labelclust-fbl.gv</option>
-        <option value="labelclust-fbr.gv">labelclust-fbr.gv</option>
-        <option value="labelclust-fdc.gv">labelclust-fdc.gv</option>
-        <option value="labelclust-fdd.gv">labelclust-fdd.gv</option>
-        <option value="labelclust-fdl.gv">labelclust-fdl.gv</option>
-        <option value="labelclust-fdr.gv">labelclust-fdr.gv</option>
-        <option value="labelclust-ftc.gv">labelclust-ftc.gv</option>
-        <option value="labelclust-ftd.gv">labelclust-ftd.gv</option>
-        <option value="labelclust-ftl.gv">labelclust-ftl.gv</option>
-        <option value="labelclust-ftr.gv">labelclust-ftr.gv</option>
-        <option value="labelclust-nbc.gv">labelclust-nbc.gv</option>
-        <option value="labelclust-nbd.gv">labelclust-nbd.gv</option>
-        <option value="labelclust-nbl.gv">labelclust-nbl.gv</option>
-        <option value="labelclust-nbr.gv">labelclust-nbr.gv</option>
-        <option value="labelclust-ndc.gv">labelclust-ndc.gv</option>
-        <option value="labelclust-ndd.gv">labelclust-ndd.gv</option>
-        <option value="labelclust-ndl.gv">labelclust-ndl.gv</option>
-        <option value="labelclust-ndr.gv">labelclust-ndr.gv</option>
-        <option value="labelclust-ntc.gv">labelclust-ntc.gv</option>
-        <option value="labelclust-ntd.gv">labelclust-ntd.gv</option>
-        <option value="labelclust-ntl.gv">labelclust-ntl.gv</option>
-        <option value="labelclust-ntr.gv">labelclust-ntr.gv</option>
-        <option value="labelroot-fbc.gv">labelroot-fbc.gv</option>
-        <option value="labelroot-fbd.gv">labelroot-fbd.gv</option>
-        <option value="labelroot-fbl.gv">labelroot-fbl.gv</option>
-        <option value="labelroot-fbr.gv">labelroot-fbr.gv</option>
-        <option value="labelroot-fdc.gv">labelroot-fdc.gv</option>
-        <option value="labelroot-fdd.gv">labelroot-fdd.gv</option>
-        <option value="labelroot-fdl.gv">labelroot-fdl.gv</option>
-        <option value="labelroot-fdr.gv">labelroot-fdr.gv</option>
-        <option value="labelroot-ftc.gv">labelroot-ftc.gv</option>
-        <option value="labelroot-ftd.gv">labelroot-ftd.gv</option>
-        <option value="labelroot-ftl.gv">labelroot-ftl.gv</option>
-        <option value="labelroot-ftr.gv">labelroot-ftr.gv</option>
-        <option value="labelroot-nbc.gv">labelroot-nbc.gv</option>
-        <option value="labelroot-nbd.gv">labelroot-nbd.gv</option>
-        <option value="labelroot-nbl.gv">labelroot-nbl.gv</option>
-        <option value="labelroot-nbr.gv">labelroot-nbr.gv</option>
-        <option value="labelroot-ndc.gv">labelroot-ndc.gv</option>
-        <option value="labelroot-ndd.gv">labelroot-ndd.gv</option>
-        <option value="labelroot-ndl.gv">labelroot-ndl.gv</option>
-        <option value="labelroot-ndr.gv">labelroot-ndr.gv</option>
-        <option value="labelroot-ntc.gv">labelroot-ntc.gv</option>
-        <option value="labelroot-ntd.gv">labelroot-ntd.gv</option>
-        <option value="labelroot-ntl.gv">labelroot-ntl.gv</option>
-        <option value="labelroot-ntr.gv">labelroot-ntr.gv</option>
-        <option value="Latin1.gv">Latin1.gv</option>
-        <option value="layer2.gv">layer2.gv</option>
-        <option value="layer.gv">layer.gv</option>
-        <option value="layers.gv">layers.gv</option>
-        <option value="ldbxtried.gv">ldbxtried.gv</option>
-        <option value="longflat.gv">longflat.gv</option>
-        <option value="lsunix1.gv">lsunix1.gv</option>
-        <option value="lsunix2.gv">lsunix2.gv</option>
-        <option value="lsunix3.gv">lsunix3.gv</option>
-        <option value="mike.gv">mike.gv</option>
-        <option value="mode.gv">mode.gv</option>
-        <option value="multi.gv">multi.gv</option>
-        <option value="NaN.gv">NaN.gv</option>
-        <option value="nestedclust.gv">nestedclust.gv</option>
-        <option value="newarrows.gv">newarrows.gv</option>
-        <option value="NewCenturySchlbk.gv">NewCenturySchlbk.gv</option>
-        <option value="ngk10_4.gv">ngk10_4.gv</option>
-        <option value="nhg.gv">nhg.gv</option>
-        <option value="nojustify.gv">nojustify.gv</option>
-        <option value="nul_inv.gv">nul_inv.gv</option>
-        <option value="nul_nul.gv">nul_nul.gv</option>
-        <option value="nul_val.gv">nul_val.gv</option>
-        <option value="ordering.gv">ordering.gv</option>
-        <option value="overlap.gv">overlap.gv</option>
-        <option value="p2.gv">p2.gv</option>
-        <option value="p3.gv">p3.gv</option>
-        <option value="p4.gv">p4.gv</option>
-        <option value="pack.gv">pack.gv</option>
-        <option value="Palatino.gv">Palatino.gv</option>
-        <option value="Petersen.gv">Petersen.gv</option>
-        <option value="pgram.gv">pgram.gv</option>
-        <option value="p.gv">p.gv</option>
-        <option value="pm2way.gv">pm2way.gv</option>
-        <option value="pmpipe.gv">pmpipe.gv</option>
-        <option value="polypoly.gv">polypoly.gv</option>
-        <option value="ports.gv">ports.gv</option>
-        <option value="proc3d.gv">proc3d.gv</option>
-        <option value="process.gv">process.gv</option>
-        <option value="ps.gv">ps.gv</option>
-        <option value="pslib.gv">pslib.gv</option>
-        <option value="ps_user_shapes.gv">ps_user_shapes.gv</option>
-        <option value="rd_rules.gv">rd_rules.gv</option>
-        <option value="record2.gv">record2.gv</option>
-        <option value="record.gv">record.gv</option>
-        <option value="records.gv">records.gv</option>
-        <option value="root.gv">root.gv</option>
-        <option value="rootlabel.gv">rootlabel.gv</option>
-        <option value="rowcolsep.gv">rowcolsep.gv</option>
-        <option value="rowe.gv">rowe.gv</option>
-        <option value="russian.gv">russian.gv</option>
-        <option value="sb_box_dbl.gv">sb_box_dbl.gv</option>
-        <option value="sb_box.gv">sb_box.gv</option>
-        <option value="sb_circle_dbl.gv">sb_circle_dbl.gv</option>
-        <option value="sb_circle.gv">sb_circle.gv</option>
-        <option value="shapes.gv">shapes.gv</option>
-        <option value="shells.gv">shells.gv</option>
-        <option value="sides.gv">sides.gv</option>
-        <option value="size.gv">size.gv</option>
-        <option value="sl_box_dbl.gv">sl_box_dbl.gv</option>
-        <option value="sl_box.gv">sl_box.gv</option>
-        <option value="sl_circle_dbl.gv">sl_circle_dbl.gv</option>
-        <option value="sl_circle.gv">sl_circle.gv</option>
-        <option value="smlred.gv">smlred.gv</option>
-        <option value="sq_rules.gv">sq_rules.gv</option>
-        <option value="sr_box_dbl.gv">sr_box_dbl.gv</option>
-        <option value="sr_box.gv">sr_box.gv</option>
-        <option value="sr_circle_dbl.gv">sr_circle_dbl.gv</option>
-        <option value="sr_circle.gv">sr_circle.gv</option>
-        <option value="states.gv">states.gv</option>
-        <option value="st_box_dbl.gv">st_box_dbl.gv</option>
-        <option value="st_box.gv">st_box.gv</option>
-        <option value="st_circle_dbl.gv">st_circle_dbl.gv</option>
-        <option value="st_circle.gv">st_circle.gv</option>
-        <option value="structs.gv">structs.gv</option>
-        <option value="style.gv">style.gv</option>
-        <option value="Symbol.gv">Symbol.gv</option>
-        <option value="Times.gv">Times.gv</option>
-        <option value="train11.gv">train11.gv</option>
-        <option value="trapeziumlr.gv">trapeziumlr.gv</option>
-        <option value="tree.gv">tree.gv</option>
-        <option value="triedds.gv">triedds.gv</option>
-        <option value="try.gv">try.gv</option>
-        <option value="unix2.gv">unix2.gv</option>
-        <option value="unix2k.gv">unix2k.gv</option>
-        <option value="unix.gv">unix.gv</option>
-        <option value="url.gv">url.gv</option>
-        <option value="user_shapes.gv">user_shapes.gv</option>
-        <option value="val_inv.gv">val_inv.gv</option>
-        <option value="val_nul.gv">val_nul.gv</option>
-        <option value="val_val.gv">val_val.gv</option>
-        <option value="viewfile.gv">viewfile.gv</option>
-        <option value="viewport.gv">viewport.gv</option>
-        <option value="weight.gv">weight.gv</option>
-        <option value="world.gv">world.gv</option>
-        <option value="xlabels.gv">xlabels.gv</option>
-        <option value="xx.gv">xx.gv</option>
-        <option value="ZapfChancery.gv">ZapfChancery.gv</option>
-        <option value="ZapfDingbats.gv">ZapfDingbats.gv</option>
-      </select>
+      <label >Sample graphs ▼</label>
+      <select id="gv"></select>
+    </div>
+    <div id="settings">
+      <div>
+        <label>Layout:</label>
+        <select id="layouts"></select>
+      </div>
+      <div>
+        <label>Edge routing</label>
+        <select id="routings"></select>
+      </div>
+      <div>
+        <label>Fonts</label>
+        <select id="fonts"></select>
+      </div>
     </div>
     <script src="./app.js"></script>
   </body>
