@@ -180,19 +180,15 @@ test('undirected pach', () => {
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
-xtest('layer and node separation', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+xtest('austin', () => {
+  const dg = parseDotGraph('C:/Users/levnach/Downloads/dots/tesla-processes.dot')
   createGeometry(dg, labelRectFunc)
-  const ss = new SugiyamaLayoutSettings()
-  ss.LayerSeparation = 100
-  let ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
-  ll.run()
-  let t: SvgDebugWriter = new SvgDebugWriter('/tmp/abstract' + ss.LayerSeparation + '_' + ss.NodeSeparation + '.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
-  ss.NodeSeparation = 60
-  ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
-  ll.run()
-  t = new SvgDebugWriter('/tmp/abstract' + ss.LayerSeparation + '_' + ss.NodeSeparation + '.svg')
+  const gg = GeomGraph.getGeom(dg.graph)
+  layoutGraphWithSugiayma(gg)
+  for (const e of gg.deepEdges()) {
+    expect(e.curve == null).toBe(false)
+  }
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/teslaprocesses..svg')
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 

@@ -115,9 +115,9 @@ export function nodeBoundaryFunc(label: string): ICurve {
   return CurveFactory.mkRectangleWithRoundedCorners(size.width, size.height, size.width / 10, size.height / 10, new Point(0, 0))
 }
 
-export function parseDotGraph(fileName: string): DrawingGraph {
+export function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
-    const fpath = path.resolve(__dirname, '../data', fileName)
+    const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
     return parseDotString(graphStr)
   } catch (Error) {
