@@ -114,8 +114,11 @@ function diffLayoutSettings(
 } {
   if (!oldSettings) return {layoutChanged: true, routingChanged: true}
 
+  const routingChanged = oldSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.edgeRoutingSettings.EdgeRoutingMode
+  const specialCaseSugiamaRelayout = routingChanged && newSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines
+
   return {
-    layoutChanged: oldSettings.constructor !== newSettings.constructor,
-    routingChanged: oldSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.edgeRoutingSettings.EdgeRoutingMode,
+    layoutChanged: oldSettings.constructor !== newSettings.constructor || specialCaseSugiamaRelayout,
+    routingChanged,
   }
 }
