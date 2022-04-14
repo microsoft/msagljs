@@ -8,6 +8,7 @@ import {
   LayoutSettings,
   EdgeRoutingMode,
   routeEdges,
+  LayerDirectionEnum,
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
@@ -58,51 +59,52 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     }
   }
 
-  let ss: LayoutSettings
+  let layoutSettings: LayoutSettings
   switch (overrides.type) {
-    case 'Sugiyama':
-      ss = new SugiyamaLayoutSettings()
+    case 'Sugiyama': {
+      const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
       break
+    }
 
     case 'MDS':
-      ss = new MdsLayoutSettings()
+      layoutSettings = new MdsLayoutSettings()
       break
 
     default: {
       // figure out if the graph is too large for the layered layout
-      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 1000 || subgraph.graph.nodeCollection.edgeCount > 1000
+      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 2000 || subgraph.graph.nodeCollection.edgeCount > 4000
       if (directed && !tooLargeForLayered) {
-        // the graph is not tool large and has directed edges: use layered layout
-        ss = new SugiyamaLayoutSettings()
+        // the graph is not too large and has directed edges: use layered layout
+        layoutSettings = new SugiyamaLayoutSettings()
       } else {
         // the graph is more suitable for the pivot mds layout
-        ss = new MdsLayoutSettings()
+        layoutSettings = new MdsLayoutSettings()
       }
     }
   }
 
-  if (ss instanceof SugiyamaLayoutSettings) {
+  if (layoutSettings instanceof SugiyamaLayoutSettings) {
     if (overrides.layerDirection == null) {
       if (root.rankdir) {
-        ss.layerDirection = root.rankdir
+        layoutSettings.layerDirection = root.rankdir
       }
     } else {
-      ss.layerDirection = overrides.layerDirection
+      layoutSettings.layerDirection = overrides.layerDirection
     }
   }
 
   if (overrides.edgeRoutingMode == null) {
     // Use default
-    if (ss instanceof SugiyamaLayoutSettings) {
-      ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
+    if (layoutSettings instanceof SugiyamaLayoutSettings) {
+      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
     } else {
-      ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
+      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
     }
   } else {
-    ss.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode
+    layoutSettings.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode
   }
 
-  return ss
+  return layoutSettings
 }
 
 function diffLayoutSettings(
@@ -117,8 +119,12 @@ function diffLayoutSettings(
   const routingChanged = oldSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.edgeRoutingSettings.EdgeRoutingMode
   const specialCaseSugiamaRelayout = routingChanged && newSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines
 
+  const layerDirectionChange =
+    oldSettings instanceof SugiyamaLayoutSettings &&
+    newSettings instanceof SugiyamaLayoutSettings &&
+    (<SugiyamaLayoutSettings>oldSettings).layerDirection != (<SugiyamaLayoutSettings>newSettings).layerDirection
   return {
-    layoutChanged: oldSettings.constructor !== newSettings.constructor || specialCaseSugiamaRelayout,
+    layoutChanged: oldSettings.constructor !== newSettings.constructor || specialCaseSugiamaRelayout || layerDirectionChange,
     routingChanged,
   }
 }
