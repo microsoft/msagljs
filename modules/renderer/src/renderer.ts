@@ -21,9 +21,8 @@ export interface IRendererControl {
 }
 
 export type RenderOptions = {
-  type?: 'Sugiyama' | 'MDS'
+  layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'
   label?: Partial<TextMeasurerOptions>
-  layerDirection?: LayerDirectionEnum
   edgeRoutingMode?: EdgeRoutingMode
 }
 

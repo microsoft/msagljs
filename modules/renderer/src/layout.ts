@@ -60,9 +60,27 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
   }
 
   let layoutSettings: LayoutSettings
-  switch (overrides.type) {
-    case 'Sugiyama': {
+  switch (overrides.layoutType) {
+    case 'Sugiyama LR': {
       const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
+      ss.layerDirection = LayerDirectionEnum.LR
+      break
+    }
+
+    case 'Sugiyama RL': {
+      const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
+      ss.layerDirection = LayerDirectionEnum.RL
+      break
+    }
+
+    case 'Sugiyama TB': {
+      const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
+      ss.layerDirection = LayerDirectionEnum.TB
+      break
+    }
+    case 'Sugiyama BT': {
+      const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
+      ss.layerDirection = LayerDirectionEnum.BT
       break
     }
 
@@ -80,16 +98,6 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
         // the graph is more suitable for the pivot mds layout
         layoutSettings = new MdsLayoutSettings()
       }
-    }
-  }
-
-  if (layoutSettings instanceof SugiyamaLayoutSettings) {
-    if (overrides.layerDirection == null) {
-      if (root.rankdir) {
-        layoutSettings.layerDirection = root.rankdir
-      }
-    } else {
-      layoutSettings.layerDirection = overrides.layerDirection
     }
   }
 

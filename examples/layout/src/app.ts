@@ -89,23 +89,19 @@ function getSettings(): RenderOptions {
 
   switch (layoutSelect.value) {
     case 'lr':
-      opts.type = 'Sugiyama'
-      opts.layerDirection = LayerDirectionEnum.LR
+      opts.layoutType = 'Sugiyama LR'
       break
     case 'rl':
-      opts.type = 'Sugiyama'
-      opts.layerDirection = LayerDirectionEnum.RL
+      opts.layoutType = 'Sugiyama RL'
       break
     case 'tb':
-      opts.type = 'Sugiyama'
-      opts.layerDirection = LayerDirectionEnum.TB
+      opts.layoutType = 'Sugiyama TB'
       break
     case 'bt':
-      opts.type = 'Sugiyama'
-      opts.layerDirection = LayerDirectionEnum.BT
+      opts.layoutType = 'Sugiyama BT'
       break
     case 'mds':
-      opts.type = 'MDS'
+      opts.layoutType = 'MDS'
       break
     default:
       break
