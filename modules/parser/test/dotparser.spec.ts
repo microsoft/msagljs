@@ -6,7 +6,7 @@ import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
 
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
-    const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
+    const fpath = absolutePath ? fileName : path.resolve(__dirname, '../../core/test/data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
     const graph = parseDot(graphStr)
     return <DrawingGraph>DrawingGraph.getDrawingObj(graph)

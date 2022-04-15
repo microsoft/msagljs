@@ -21,7 +21,7 @@ import {
   GeomEdge,
 } from '../../../src'
 import {DrawingGraph} from '../../../src/drawing'
-import {parseDot} from '@msagl/parser'
+import {parseDot} from '../../../../parser/src'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {LineSegment} from '../../../src/math/geometry'

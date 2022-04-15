@@ -441,7 +441,7 @@ export function parseDot(graphStr: string): Graph {
   const graph = new Graph()
   const drawingGraph = new DrawingGraph(graph)
   parseUnderGraph(ast[0].children, drawingGraph, ast[0].type == 'digraph')
-  return drawingGraph.graph
+  return graph
 }
 
 function process_same_rank(o: any, dg: DrawingGraph): boolean {

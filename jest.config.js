@@ -3,6 +3,6 @@ module.exports = {
   roots: ['<rootDir>/modules'],
   testMatch: ['**/?(*.)+(spec|test).+(ts|tsx)'],
   transform: {
-    '^.+\\.([tj]s)$': 'ts-jest',
+    '^.+\\.[tj]s$': 'ts-jest',
   },
 }
