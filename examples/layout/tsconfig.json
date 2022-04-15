@@ -1,15 +1,8 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2018",
-    "declaration": true,
-    "outDir": "./dist",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "lib": ["dom", "es2018"],
-    "importHelpers": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true
+    "noEmit": false,
+    "outDir": "./dist"
   },
   "include": ["src/**/*"]
 }

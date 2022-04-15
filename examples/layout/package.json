@@ -7,8 +7,7 @@
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --progress --hot --open --env.local",
-    "build": "rm -rf dist && webpack --env.prod && cp index.html dist",
-    "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
+    "build": "rm -rf dist && webpack --env.prod --env.local && cp index.html dist"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",

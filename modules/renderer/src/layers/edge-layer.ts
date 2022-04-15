@@ -1,11 +1,11 @@
 import {CompositeLayer} from '@deck.gl/core'
 import {Buffer} from '@luma.gl/webgl'
-import {PathLayer, PathLayerProps, IconLayer} from '@deck.gl/layers'
+import {PathLayer, IconLayer} from '@deck.gl/layers'
 import {iconAtlas, iconMapping} from './arrows'
 import {interpolateICurve, GeomEdge, Point} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
-type EdgeLayerProps = PathLayerProps<GeomEdge> & {
+type EdgeLayerProps = {
   getDepth?: Buffer
 }
 
@@ -48,7 +48,6 @@ export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> 
 
   renderLayers() {
     const props = this.props
-    const {updateTriggers = {}} = props
 
     return [
       new PathLayer<GeomEdge>(
@@ -56,11 +55,6 @@ export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> 
         // @ts-ignore
         this.getSubLayerProps({
           id: 'path',
-          updateTriggers: {
-            getPath: updateTriggers.getPath,
-            getWidth: updateTriggers.getWidth,
-            getColor: updateTriggers.getColor,
-          },
         }),
         {
           getPath: (e: GeomEdge) =>
@@ -76,10 +70,6 @@ export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> 
         // @ts-ignore
         this.getSubLayerProps({
           id: 'arrow',
-          updateTriggers: {
-            getPosition: updateTriggers.getPath,
-            getColor: updateTriggers.getColor,
-          },
         }),
         {
           // @ts-ignore

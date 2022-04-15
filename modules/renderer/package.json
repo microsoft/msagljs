@@ -19,7 +19,8 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf dist && tsc --build tsconfig.prod.json && npm run build-bundle",
-    "build-bundle": "esbuild src/index.ts --bundle --minify --format=iife --global-name=msagl --outfile=dist.min.js"
+    "build-bundle": "esbuild src/index.ts --bundle --minify --format=iife --global-name=msagl --outfile=dist.min.js",
+    "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },
   "dependencies": {
     "deck.gl": "^8.6.0",

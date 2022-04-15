@@ -1,16 +1,15 @@
 import {CompositeLayer} from '@deck.gl/core'
 import {Buffer} from '@luma.gl/webgl'
-import {TextLayer, PathLayer, PathLayerProps, TextLayerProps, PolygonLayer} from '@deck.gl/layers'
-import {interpolateICurve, GeomNode, GeomGraph, Point} from 'msagl-js'
+import {TextLayer} from '@deck.gl/layers'
+import {GeomNode, GeomGraph} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 
-type NodeLayerProps = GeometryLayerProps<GeomNode> &
-  TextLayerProps<GeomNode> & {
-    getDepth: Buffer
-    getTextSize: TextLayerProps<GeomNode>['getSize']
-  }
+type NodeLayerProps = GeometryLayerProps<GeomNode> & {
+  getDepth: Buffer
+  getTextSize: ((d: GeomNode) => number) | number
+}
 
 export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> {
   static defaultProps = {
@@ -23,8 +22,6 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
   props: NodeLayerProps
 
   renderLayers() {
-    const {updateTriggers = {}} = this.props
-
     return [
       new GeometryLayer<GeomNode>(
         // @ts-ignore
@@ -32,12 +29,6 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
         // @ts-ignore
         this.getSubLayerProps({
           id: 'boundary',
-          updateTriggers: {
-            getPosition: updateTriggers.getPosition,
-            getSize: updateTriggers.getSize,
-            getFillColor: updateTriggers.getColor,
-            getLineColor: updateTriggers.getColor,
-          },
           lineWidthUnits: 'pixels',
         }),
         // @ts-ignore
@@ -57,12 +48,6 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
         // @ts-ignore
         this.getSubLayerProps({
           id: 'label',
-          updateTriggers: {
-            getText: updateTriggers.getText,
-            getSize: updateTriggers.getSize,
-            getWidth: updateTriggers.getWidth,
-            getColor: updateTriggers.getColor,
-          },
         }),
         {
           // @ts-ignore
