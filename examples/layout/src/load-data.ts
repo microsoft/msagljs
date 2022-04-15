@@ -1,7 +1,7 @@
 import {Graph, Edge, Node} from 'msagl-js'
 import {DrawingEdge, DrawingGraph, DrawingNode, parseDotString, ArrowTypeEnum, Color, ShapeEnum} from 'msagl-js/drawing'
 
-export async function loadDefaultGraph(): Promise<DrawingGraph> {
+export async function loadDefaultGraph(): Promise<Graph> {
   const resp = await fetch('https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json')
   const data = await resp.json()
   const g = new Graph('gameofthrones.json')
@@ -22,12 +22,12 @@ export async function loadDefaultGraph(): Promise<DrawingGraph> {
     de.directed = false
   }
 
-  return new DrawingGraph(g)
+  return g
 }
 
-export async function loadDotFile(file: File): Promise<DrawingGraph> {
+export async function loadDotFile(file: File): Promise<Graph> {
   const content = await file.text()
   const dg = parseDotString(content)
   dg.graph.id = file.name
-  return dg
+  return dg.graph
 }

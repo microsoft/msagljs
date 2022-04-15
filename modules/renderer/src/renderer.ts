@@ -35,8 +35,7 @@ const MaxZoom = 4
  */
 export default class Renderer extends EventSource {
   private _deck: any
-  private _drawingGraph?: DrawingGraph
-  private _geomGraph?: GeomGraph
+  private _graph?: Graph
   private _renderOptions: RenderOptions = {}
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
@@ -113,27 +112,23 @@ export default class Renderer extends EventSource {
     }
   }
 
-  get graph(): GeomGraph {
-    return this._geomGraph
-  }
-  /** returns layout settings that are kept under the current GeomGraph */
-  get layoutSettings(): LayoutSettings {
-    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._drawingGraph.graph)
-    return geomGraph == null ? null : geomGraph.layoutSettings
+  get graph(): Graph {
+    return this._graph
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done */
-  setGraph(drawingGraph: DrawingGraph, options: RenderOptions = this._renderOptions) {
-    if (this._drawingGraph === drawingGraph) {
+  setGraph(graph: Graph, options: RenderOptions = this._renderOptions) {
+    if (this._graph === graph) {
       this.setRenderOptions(options)
     } else {
-      this._drawingGraph = drawingGraph
+      this._graph = graph
       this._renderOptions = options
       this._textMeasurer.setOptions(options.label || {})
       this._highlightedNodeId = null
 
+      const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
       drawingGraph.createGeometry(this._textMeasurer.measure)
-      this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, true)
+      layoutDrawingGraph(drawingGraph, this._renderOptions, true)
 
       if (this._deck.layerManager) {
         // deck is ready
@@ -149,22 +144,24 @@ export default class Renderer extends EventSource {
 
     this._renderOptions = options
 
-    if (!this._drawingGraph) {
+    if (!this._graph) {
       return
     }
 
+    const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(this._graph)
     if (fontChanged) {
       this._textMeasurer.setOptions(options.label || {})
-      this._drawingGraph.createGeometry(this._textMeasurer.measure)
+      drawingGraph.createGeometry(this._textMeasurer.measure)
     }
     const relayout = fontChanged
-    this._geomGraph = layoutDrawingGraph(this._drawingGraph, this._renderOptions, relayout)
+    layoutDrawingGraph(drawingGraph, this._renderOptions, relayout)
 
     if (this._deck.layerManager) {
       // deck is ready
       this._update()
     }
   }
+
   zoomTo(rectangle: Rectangle) {
     const scale = Math.min(this._deck.width / rectangle.width, this._deck.height / rectangle.height)
     const zoom = Math.min(Math.log2(scale) - 1, MaxZoom)
@@ -185,7 +182,7 @@ export default class Renderer extends EventSource {
   }
 
   private _highlight(nodeId: string | null, depth = 2) {
-    if (this._geomGraph && this._deck.layerManager) {
+    if (this._graph && this._deck.layerManager) {
       this._graphHighlighter.update({
         sourceId: nodeId,
         maxDepth: depth,
@@ -196,18 +193,19 @@ export default class Renderer extends EventSource {
   }
 
   private _update() {
-    if (!this._drawingGraph) return
+    if (!this._graph) return
 
     const fontSettings = this._textMeasurer.opts
 
+    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._graph)
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
-    this._graphHighlighter.setGraph(this._geomGraph)
+    this._graphHighlighter.setGraph(geomGraph)
 
-    const center = this._geomGraph.boundingBox.center
+    const center = geomGraph.boundingBox.center
     // @ts-ignore
     const edgeLayer = new EdgeLayer({
       id: 'edges',
-      data: Array.from(this._geomGraph.deepEdges()),
+      data: Array.from(geomGraph.deepEdges()),
       getWidth: 1,
       getDepth: this._graphHighlighter.edgeDepthBuffer,
     })
@@ -215,7 +213,7 @@ export default class Renderer extends EventSource {
     // @ts-ignore
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
-      data: Array.from(this._geomGraph.deepNodes()),
+      data: Array.from(geomGraph.deepNodes()),
       getDepth: this._graphHighlighter.nodeDepthBuffer,
       fontFamily: fontSettings.fontFamily,
       fontWeight: fontSettings.fontWeight,
@@ -240,7 +238,7 @@ export default class Renderer extends EventSource {
 
     this.emit({
       type: 'graphload',
-      data: this._geomGraph,
+      data: this._graph,
     } as Event)
   }
 }

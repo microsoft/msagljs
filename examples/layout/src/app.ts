@@ -23,7 +23,7 @@ dotFileSelect.onchange = () => {
   fetch(url)
     .then((resp) => resp.text())
     .then((data) => {
-      renderer.setGraph(parseDotString(data))
+      renderer.setGraph(parseDotString(data).graph)
       document.getElementById('graph-name').innerText = dotFileSelect.value
     })
 }
@@ -67,17 +67,17 @@ fontSelect.onchange = () => {
 
 // File selector
 dropZone('drop-target', async (f: File) => {
-  const drawingGraph = await loadDotFile(f)
-  renderer.setGraph(drawingGraph)
-  document.getElementById('graph-name').innerText = drawingGraph.graph.id
+  const graph = await loadDotFile(f)
+  renderer.setGraph(graph)
+  document.getElementById('graph-name').innerText = graph.id
 })
 ;(async () => {
   renderer.setRenderOptions(getSettings())
 
-  const drawingGraph = await loadDefaultGraph()
+  const graph = await loadDefaultGraph()
 
-  renderer.setGraph(drawingGraph)
-  document.getElementById('graph-name').innerText = drawingGraph.graph.id
+  renderer.setGraph(graph)
+  document.getElementById('graph-name').innerText = graph.id
 })()
 
 function getSettings(): RenderOptions {

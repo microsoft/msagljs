@@ -1,4 +1,4 @@
-import {GeomGraph, GeomNode} from 'msagl-js'
+import {Graph, Node} from 'msagl-js'
 
 import type Renderer from '../renderer'
 import type {IRendererControl} from '../renderer'
@@ -14,14 +14,14 @@ const DropdownStyle = `
 
 export default class SearchControl implements IRendererControl {
   private _dropdown: Dropdown
-  private _nodes: GeomNode[] = []
+  private _nodes: Node[] = []
 
   onAdd(renderer: Renderer) {
     renderer.on('graphload', this._onGraphLoad)
 
     this._dropdown = new Dropdown({
-      getLabel: (node: GeomNode) => node.id,
-      onSelect: (node: GeomNode) => {
+      getLabel: (node: Node) => node.id,
+      onSelect: (node: Node) => {
         renderer.highlight(node.id)
       },
     })
@@ -43,8 +43,8 @@ export default class SearchControl implements IRendererControl {
     this._updateNodeList(evt.data)
   }
 
-  private _updateNodeList(graph: GeomGraph) {
-    this._nodes = graph ? Array.from(graph.deepNodes()) : []
+  private _updateNodeList(graph: Graph) {
+    this._nodes = graph ? Array.from(graph.deepNodes) : []
     this._dropdown.update(this._nodes)
   }
 }
