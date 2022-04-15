@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && tsc --build tsconfig.prod.json && npm run build-bundle",
+    "build": "tsc --build tsconfig.prod.json && npm run build-bundle",
     "build-bundle": "esbuild src/index.ts --bundle --minify --format=iife --global-name=msagl --outfile=dist.min.js",
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },

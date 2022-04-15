@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && tsc --build tsconfig.prod.json"
+    "build": "tsc --build tsconfig.prod.json"
   },
   "dependencies": {
     "@esfx/collections": "^1.0.0-pre.19",

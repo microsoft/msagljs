@@ -17,7 +17,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && tsc --build tsconfig.prod.json"
+    "build": "tsc --build tsconfig.prod.json"
   },
   "dependencies": {
     "@types/parse-color": "^1.0.1",
