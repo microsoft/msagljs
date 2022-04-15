@@ -92,7 +92,7 @@ export default class GraphHighlighter {
     }
 
     this._graph = graph.graph
-    const edgeCount = graph.edgeCount
+    const edgeCount = this._graph.deepEdgesCount()
     this._nodeMap = new Map<string, number>()
     this._nodeList = []
     this._hasBidirectionalEdge = false

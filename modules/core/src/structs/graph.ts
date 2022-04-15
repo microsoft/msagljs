@@ -111,6 +111,14 @@ export class Graph extends Node {
     }
     return n
   }
+  /** return the number of all nodes in the graph, including the subgraphs */
+  deepEdgesCount(): number {
+    let count = 0
+    for (const p of this.deepNodes) {
+      count += p.outDegree + p.selfDegree
+    }
+    return count
+  }
 }
 
 export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node[]> {
