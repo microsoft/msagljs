@@ -8,5 +8,4 @@ vscode-profile-*
 *.code-workspace
 .DS_Store
 *.tsbuildinfo
-package-lock.json
 *.log
