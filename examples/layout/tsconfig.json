@@ -11,9 +11,5 @@
     "downlevelIteration": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*"],
-  "typeRoots": [
-    "./node_modules/@types/",
-    "./node_modules/@danmarshall/deckgl-typings"
-  ]
+  "include": ["src/**/*"]
 }

@@ -27,6 +27,7 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
 
     return [
       new GeometryLayer<GeomNode>(
+        // @ts-ignore
         this.props,
         // @ts-ignore
         this.getSubLayerProps({

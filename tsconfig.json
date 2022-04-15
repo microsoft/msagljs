@@ -2,9 +2,10 @@
   "compilerOptions": {
     "target": "es2018",
     "moduleResolution": "node",
+    "allowJs": true,
     "declaration": true,
     "sourceMap": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "skipLibCheck": true,
     "lib": ["dom", "es2018"],
     "importHelpers": true,
@@ -16,9 +17,5 @@
       "@msagl/renderer": ["./modules/renderer/src"]
     }
   },
-  "include": ["./modules/**/src/**/*", "./modules/**/test/**/*"],
-  "typeRoots": [
-    "./node_modules/@types/",
-    "./node_modules/@danmarshall/deckgl-typings"
-  ]
+  "include": ["./modules/**/src/**/*", "./modules/**/test/**/*"]
 }

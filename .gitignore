@@ -7,4 +7,5 @@ vscode-profile-*
 .vscode
 *.code-workspace
 .DS_Store
-
+*.tsbuildinfo
+*.log
