@@ -444,7 +444,7 @@ export class SplineRouter extends Algorithm {
     t.multiEdges = null
     for (const edgeGroup of portLocationPairsToEdges.values()) {
       if (edgeGroup.length == 1 || this.OverlapsDetected) {
-        t.regularEdges.push(edgeGroup[0])
+        addRange(t.regularEdges, edgeGroup)
       } else {
         if (t.multiEdges == null) {
           t.multiEdges = new Array<GeomEdge[]>()
