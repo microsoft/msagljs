@@ -14,7 +14,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "build": "lerna run build",
+    "build": "rm -f modules/*/*.tsbuildinfo && rm -rf moduls/*/dist && lerna run build",
     "publish": "lerna run build && lerna publish",
     "typecheck": "tsc",
     "eslint": "eslint modules/core/src",

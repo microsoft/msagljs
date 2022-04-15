@@ -3,8 +3,6 @@
     "target": "es2018",
     "moduleResolution": "node",
     "allowJs": true,
-    "declaration": true,
-    "sourceMap": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
     "lib": ["dom", "es2018"],
@@ -14,6 +12,7 @@
     "paths": {
       "msagl-js": ["./modules/core/src"],
       "msagl-js/drawing": ["./modules/core/src/drawing"],
+      "@msagl/parser": ["./modules/parser/src"],
       "@msagl/renderer": ["./modules/renderer/src"]
     }
   },

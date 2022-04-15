@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "lib": ["es2018"],
+    "importHelpers": true,
+    "esModuleInterop": true
+  }
+}

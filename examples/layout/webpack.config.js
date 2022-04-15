@@ -49,6 +49,7 @@ module.exports = (env) => {
   if (env.local) {
     config.resolve.alias = {
       'msagl-js': `${__dirname}/../../modules/core/src`,
+      '@msagl/parser': `${__dirname}/../../modules/parser/src`,
       '@msagl/renderer': `${__dirname}/../../modules/renderer/src`,
     }
   }

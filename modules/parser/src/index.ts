@@ -1,0 +1,1 @@
+export {parseDot} from './dotparser'
