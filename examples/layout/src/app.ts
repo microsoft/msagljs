@@ -1,10 +1,12 @@
-import {loadDefaultGraph, loadDotFile} from './load-data'
+import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl, RenderOptions} from '@msagl/renderer'
 
 import {EdgeRoutingMode, LayerDirectionEnum} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
+
+const DefaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 
 const renderer = new Renderer(document.getElementById('viewer'))
 renderer.addControl(new SearchControl())
@@ -19,7 +21,7 @@ for (const name of SAMPLE_DOT) {
 }
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
-  loadDotFile(url).then((graph) => {
+  loadGraphFromUrl(url).then((graph) => {
     renderer.setGraph(graph)
     document.getElementById('graph-name').innerText = graph.id
   })
@@ -64,14 +66,14 @@ fontSelect.onchange = () => {
 
 // File selector
 dropZone('drop-target', async (f: File) => {
-  const graph = await loadDotFile(f)
+  const graph = await loadGraphFromFile(f)
   renderer.setGraph(graph)
   document.getElementById('graph-name').innerText = graph.id
 })
 ;(async () => {
   renderer.setRenderOptions(getSettings())
 
-  const graph = await loadDefaultGraph()
+  const graph = await loadGraphFromUrl(DefaultGraph)
 
   renderer.setGraph(graph)
   document.getElementById('graph-name').innerText = graph.id

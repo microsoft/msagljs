@@ -1,10 +1,8 @@
 import parse from 'dotparser'
-import parseColor from 'parse-color'
 import {Edge, Graph, LayerDirectionEnum, Node, Label} from 'msagl-js'
 
 import {
   ArrowTypeEnum,
-  Color,
   DrawingEdge,
   DrawingGraph,
   DrawingLabel,
@@ -16,6 +14,8 @@ import {
   OrderingEnum,
   DirTypeEnum,
 } from 'msagl-js/drawing'
+
+import {parseColor} from './utils'
 
 function parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
   const nc = dg.graph.nodeCollection
@@ -111,19 +111,19 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
       const str = attr.eq
       switch (attr.id) {
         case 'color':
-          drawingObj.color = localParseColor(str)
+          drawingObj.color = parseColor(str)
           break
         case 'pencolor':
-          drawingObj.pencolor = localParseColor(str)
+          drawingObj.pencolor = parseColor(str)
           break
         case 'labelfontcolor':
-          drawingObj.labelfontcolor = localParseColor(str)
+          drawingObj.labelfontcolor = parseColor(str)
           break
         case 'fontcolor':
-          drawingObj.fontColor = localParseColor(str)
+          drawingObj.fontColor = parseColor(str)
           break
         case 'fillcolor':
-          drawingObj.fillColor = localParseColor(str)
+          drawingObj.fillColor = parseColor(str)
           break
         case 'style':
           drawingObj.styleEnum = styleEnumFromString(str)
@@ -259,7 +259,7 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
           drawingObj.ltail = str
           break
         case 'bgcolor':
-          drawingObj.bgcolor = localParseColor(str)
+          drawingObj.bgcolor = parseColor(str)
           break
         case 'center':
           drawingObj.center = str == true || parseInt(str) == 1
@@ -496,21 +496,6 @@ function process_same_rank(o: any, dg: DrawingGraph): boolean {
       throw new Error('incorrect rank')
       return false
   }
-}
-function localParseColor(s: string): Color {
-  const p = parseColor(s)
-  if (p != null) {
-    if (p.rgba != null) {
-      return new Color(p.rgba[3] * 255, p.rgba[0], p.rgba[1], p.rgba[2])
-    }
-    if (p.rgb != null) {
-      return Color.mkRGB(p.rgb[0], p.rgb[1], p.rgb[2])
-    }
-  }
-  if (p.keyword != null) {
-    return Color.parse(p.keyword)
-  }
-  return Color.Black
 }
 function parseGraphAttr(o: any, dg: DrawingGraph) {
   if (dg.defaultNode == null && o.target == 'node') {

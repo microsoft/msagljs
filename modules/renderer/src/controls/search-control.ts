@@ -1,4 +1,5 @@
 import {Graph, Node} from 'msagl-js'
+import {DrawingNode} from 'msagl-js/drawing'
 
 import type Renderer from '../renderer'
 import type {IRendererControl} from '../renderer'
@@ -20,7 +21,7 @@ export default class SearchControl implements IRendererControl {
     renderer.on('graphload', this._onGraphLoad)
 
     this._dropdown = new Dropdown({
-      getLabel: (node: Node) => node.id,
+      getLabel: (node: Node) => (<DrawingNode>DrawingNode.getDrawingObj(node)).labelText,
       onSelect: (node: Node) => {
         renderer.highlight(node.id)
       },
