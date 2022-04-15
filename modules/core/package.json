@@ -23,9 +23,6 @@
   "dependencies": {
     "@esfx/collections": "^1.0.0-pre.19",
     "@esfx/collections-sortedmap": "^1.0.0-pre.19",
-    "@types/parse-color": "^1.0.1",
-    "dotparser": "^1.1.0",
-    "parse-color": "^1.0.0",
     "queue-typescript": "^1.0.1",
     "reliable-random": "^0.0.1",
     "stack-typescript": "^1.0.4",

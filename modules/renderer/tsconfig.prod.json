@@ -1,15 +1,14 @@
 {
+  "extends": "../../tsconfig.prod.json",
   "compilerOptions": {
-    "target": "es2018",
-    "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "sourceMap": true,
-    "skipLibCheck": true,
     "lib": ["dom", "es2018"],
-    "importHelpers": true,
-    "esModuleInterop": true
+    "rootDir": "./src"
   },
+  "references": [
+    {
+      "path": "../core/tsconfig.prod.json"
+    }
+  ],
   "include": ["src/**/*"],
   "exclude": ["test/**/*"]
 }

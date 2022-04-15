@@ -1,32 +1,21 @@
 import parse from 'dotparser'
 import parseColor from 'parse-color'
-import {Edge, Graph, LayerDirectionEnum, Node} from '..'
-import {Label} from '../structs/label'
+import {Edge, Graph, LayerDirectionEnum, Node, Label} from 'msagl-js'
 
-import {ArrowTypeEnum} from './arrowTypeEnum'
-import {Color} from './color'
-import {DrawingEdge} from './drawingEdge'
-import {DrawingGraph} from './drawingGraph'
-import {DrawingLabel} from './drawingLabel'
-import {DrawingNode} from './drawingNode'
-import {DrawingObject} from './drawingObject'
-import {RankEnum} from './rankEnum'
-import {ShapeEnum} from './shapeEnum'
-import {StyleEnum} from './styleEnum'
-
-export enum OrderingEnum {
-  in,
-  out,
-}
-
-export enum DirTypeEnum {
-  forward,
-  back,
-
-  both,
-
-  none,
-}
+import {
+  ArrowTypeEnum,
+  Color,
+  DrawingEdge,
+  DrawingGraph,
+  DrawingLabel,
+  DrawingNode,
+  DrawingObject,
+  RankEnum,
+  ShapeEnum,
+  StyleEnum,
+  OrderingEnum,
+  DirTypeEnum
+} from 'msagl-js/drawing'
 
 function parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
   const nc = dg.graph.nodeCollection

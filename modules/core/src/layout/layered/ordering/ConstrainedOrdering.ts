@@ -11,6 +11,7 @@ import {SugiyamaLayoutSettings} from '../SugiyamaLayoutSettings'
 import {AdjacentSwapsWithConstraints} from './AdjacentSwapsWithConstraints'
 import {LayerInfo} from './LayerInfo'
 import {GetCrossingsTotal, Ordering} from './Ordering'
+import {Node} from '../../../structs/node'
 
 export class ConstrainedOrdering {
   geometryGraph: GeomGraph

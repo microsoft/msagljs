@@ -1,0 +1,28 @@
+{
+  "name": "@msagl/parser",
+  "version": "0.0.55",
+  "description": "Graph parser for MSAGL in JavaScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaglJS/msagl-js"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && tsc --build tsconfig.prod.json"
+  },
+  "dependencies": {
+    "@types/parse-color": "^1.0.1",
+    "dotparser": "^1.1.0",
+    "msagl-js": "^0.0.55",
+    "parse-color": "^1.0.0"
+  }
+}
