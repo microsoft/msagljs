@@ -20,7 +20,8 @@ import {
   Graph,
   GeomEdge,
 } from '../../../src'
-import {parseDotString, DrawingGraph} from '../../../src/drawing'
+import {DrawingGraph} from '../../../src/drawing'
+import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {LineSegment} from '../../../src/math/geometry'
@@ -62,9 +63,10 @@ test('self on node', () => {
 
 test('layered layout glued graph', () => {
   const graphString = 'digraph G {\n' + 'a -> b\n' + 'a -> b}'
-  const g = parseDotString(graphString)
-  createGeometry(g, labelRectFunc)
-  const ll = new LayeredLayout(GeomObject.getGeom(g.graph) as GeomGraph, new SugiyamaLayoutSettings(), new CancelToken())
+  const graph = parseDot(graphString)
+  const dg = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
+  createGeometry(dg, labelRectFunc)
+  const ll = new LayeredLayout(GeomObject.getGeom(graph) as GeomGraph, new SugiyamaLayoutSettings(), new CancelToken())
   ll.CreateGluedDagSkeletonForLayering()
   for (const e of ll.gluedDagSkeletonForLayering.edges) {
     expect(e.weight).toBe(2)

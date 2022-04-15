@@ -14,7 +14,7 @@ import {
   ShapeEnum,
   StyleEnum,
   OrderingEnum,
-  DirTypeEnum
+  DirTypeEnum,
 } from 'msagl-js/drawing'
 
 function parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
@@ -434,14 +434,14 @@ function parseUnderGraph(children: any, dg: DrawingGraph, directed: boolean) {
   }
 }
 
-export function parseDotString(graphStr: string): DrawingGraph {
+export function parseDot(graphStr: string): Graph {
   const ast = parse(graphStr)
   if (ast == null) return null
 
   const graph = new Graph()
   const drawingGraph = new DrawingGraph(graph)
   parseUnderGraph(ast[0].children, drawingGraph, ast[0].type == 'digraph')
-  return drawingGraph
+  return drawingGraph.graph
 }
 
 function process_same_rank(o: any, dg: DrawingGraph): boolean {

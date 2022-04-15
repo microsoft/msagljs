@@ -1,8 +1,9 @@
 {
   "extends": "../../tsconfig.prod.json",
   "compilerOptions": {
-    "rootDir": "./src"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["test/**/*"]
+  "include": ["src/**/*"]
 }

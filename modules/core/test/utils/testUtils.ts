@@ -17,7 +17,7 @@ import {
 } from '../../src'
 import {SvgDebugWriter} from './svgDebugWriter'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
-import {parseDotString} from '../../../parser/src/dotparser'
+import {parseDot} from '@msagl/parser'
 import {DrawingGraph} from '../../src/drawing'
 import {layoutGraphWithMds} from '../../src/layout/mds/PivotMDS'
 import {DrawingObject} from '../../src/drawing/drawingObject'
@@ -119,7 +119,8 @@ export function parseDotGraph(fileName: string, absolutePath = false): DrawingGr
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
-    return parseDotString(graphStr)
+    const graph = parseDot(graphStr)
+    return <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   } catch (Error) {
     // console.log('file = ' + fileName + ' error:' + Error.message)
     return null

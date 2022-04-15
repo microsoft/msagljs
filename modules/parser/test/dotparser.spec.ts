@@ -1,14 +1,25 @@
-import {join} from 'path'
-import {parseDotString} from '../src/dotparser'
-import {Color, DrawingNode} from '../../core/src/drawing'
+import * as fs from 'fs'
+import * as path from 'path'
+import {parseDot} from '../src/dotparser'
+import {Color, DrawingNode, DrawingGraph} from '../../core/src/drawing'
 import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
-import {parseDotGraph} from '../../core/test/utils/testUtils'
+
+function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
+  try {
+    const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
+    const graphStr = fs.readFileSync(fpath, 'utf-8')
+    const graph = parseDot(graphStr)
+    return <DrawingGraph>DrawingGraph.getDrawingObj(graph)
+  } catch (Error) {
+    // console.log('file = ' + fileName + ' error:' + Error.message)
+    return null
+  }
+}
 
 test('all gv files list ', () => {
-  const path = 'graphvis/'
   for (const f of sortedList) {
     try {
-      parseDotGraph(join(path, f))
+      parseDotGraph(path.join('graphvis/', f))
     } catch (Error) {
       console.log('Cannot parse file = ' + f + ' error:' + Error.message)
     }
@@ -39,8 +50,9 @@ test('parse with colors ', () => {
     '}\n' +
     'ddddddd -> eeeee [labelfontcolor=chocolate, headlabel=headlabel, label=flue, fontcolor=green, color=lightblue]\n' +
     '}'
-  const drawingGraph = parseDotString(dotString)
-  expect(drawingGraph != null).toBe(true)
+  const graph = parseDot(dotString)
+  expect(graph != null).toBe(true)
+  const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   const ddNode: DrawingNode = drawingGraph.findNode('ddddddd')
   expect(ddNode != null).toBe(true)
   expect(ddNode.node.id).toBe('ddddddd')

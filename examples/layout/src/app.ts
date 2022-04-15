@@ -1,7 +1,6 @@
 import {loadDefaultGraph, loadDotFile} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl, RenderOptions} from '@msagl/renderer'
-import {parseDotString} from 'msagl-js/drawing'
 
 import {EdgeRoutingMode, LayerDirectionEnum} from 'msagl-js'
 
@@ -20,12 +19,10 @@ for (const name of SAMPLE_DOT) {
 }
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
-  fetch(url)
-    .then((resp) => resp.text())
-    .then((data) => {
-      renderer.setGraph(parseDotString(data).graph)
-      document.getElementById('graph-name').innerText = dotFileSelect.value
-    })
+  loadDotFile(url).then((graph) => {
+    renderer.setGraph(graph)
+    document.getElementById('graph-name').innerText = graph.id
+  })
 }
 
 // Settings: edge routing

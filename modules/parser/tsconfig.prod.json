@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.prod.json",
   "compilerOptions": {
+    "outDir": "./dist",
     "rootDir": "./src"
   },
   "references": [
@@ -8,6 +9,5 @@
       "path": "../core/tsconfig.prod.json"
     }
   ],
-  "include": ["src/**/*"],
-  "exclude": ["test/**/*"]
+  "include": ["src/**/*"]
 }
