@@ -8,7 +8,6 @@ export async function loadGraphFromUrl(url: string): Promise<Graph> {
   let graph: Graph
 
   if (fileName.endsWith('.json')) {
-    debugger
     const json = await resp.json()
     graph = parseJSON(json)
   } else {
