@@ -4,8 +4,6 @@ import {Model, Geometry} from '@luma.gl/engine'
 import {Buffer} from '@luma.gl/webgl'
 import {picking} from '@luma.gl/shadertools'
 
-import type {LayerProps} from '@deck.gl/core/lib/layer'
-
 type Accessor<In, Out> = Out | ((object: In) => Out)
 
 // TODO - Use ShapeEnum from msagl-js
@@ -15,7 +13,7 @@ export enum SHAPE {
   Diamond = 2,
 }
 
-export type GeometryLayerProps<DataT> = LayerProps<DataT> & {
+export type GeometryLayerProps<DataT> = {
   lineWidthUnits?: 'meters' | 'pixels' | 'common'
   lineWidthScale?: number
   lineWidthMinPixels?: number
@@ -306,6 +304,7 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
 
     if (modelChanged || props.getDepth !== oldProps.getDepth) {
       if (props.getDepth) {
+        // @ts-ignore
         this.state.model.setAttributes({
           instanceDepths: props.getDepth,
         })
@@ -322,13 +321,14 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
           depthHighlightColors[i * 4 + 3] = Number.isFinite(color[3]) ? color[3] / 255 : 1
         }
       }
+      // @ts-ignore
       this.state.model.setUniforms({depthHighlightColors})
     }
   }
 
   draw({uniforms}: any) {
-    const {stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels} = this
-      .props as GeometryLayerProps<DataT>
+    // @ts-ignore
+    const { stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels } = this.props as GeometryLayerProps<DataT>
 
     // @ts-ignore (TS2531) state is always defined
     this.state.model

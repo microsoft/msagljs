@@ -7,4 +7,6 @@ vscode-profile-*
 .vscode
 *.code-workspace
 .DS_Store
-
+*.tsbuildinfo
+package-lock.json
+*.log

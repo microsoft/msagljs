@@ -205,6 +205,7 @@ export default class Renderer extends EventSource {
     this._graphHighlighter.setGraph(this._geomGraph)
 
     const center = this._geomGraph.boundingBox.center
+    // @ts-ignore
     const edgeLayer = new EdgeLayer({
       id: 'edges',
       data: Array.from(this._geomGraph.deepEdges()),
@@ -212,6 +213,7 @@ export default class Renderer extends EventSource {
       getDepth: this._graphHighlighter.edgeDepthBuffer,
     })
 
+    // @ts-ignore
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
       data: Array.from(this._geomGraph.deepNodes()),
