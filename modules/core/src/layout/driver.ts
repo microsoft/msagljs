@@ -103,14 +103,11 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
     routeSplines(geomGraph, edgesToRoute, cancelToken)
   } else if (ers.EdgeRoutingMode == EdgeRoutingMode.StraightLine) {
     straightLineEdgePatcher(geomGraph, edgesToRoute, cancelToken)
-  } else if (geomGraph.graph.parent == null) {
-    if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
-      const unroutedEdges = Array.from(geomGraph.deepEdges()).filter((e) => !e.curve)
-      if (unroutedEdges.length > 0) new SplineRouter(geomGraph, unroutedEdges).run()
-    }
+  } else if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
+    new SplineRouter(geomGraph, edgesToRoute).run()
   }
 }
-// Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs
+/** Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs */
 export function layoutGeomGraphDetailed(
   geomG: GeomGraph,
   cancelToken: CancelToken,
