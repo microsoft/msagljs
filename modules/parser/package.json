@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
+    "dist.min.js",
     "src"
   ],
   "publishConfig": {
@@ -17,7 +18,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc --build tsconfig.prod.json"
+    "build": "tsc --build tsconfig.prod.json && npm run build-bundle",
+    "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js"
   },
   "dependencies": {
     "@types/parse-color": "^1.0.1",

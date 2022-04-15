@@ -28,6 +28,7 @@
     "@typescript-eslint/parser": "^4.31.0",
     "babel-eslint": "^10.1.0",
     "esbuild": "^0.14.27",
+    "esbuild-plugin-external-global": "^1.0.1",
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.29.4",
     "husky": "^4.3.8",
