@@ -1,32 +1,22 @@
 {
   "name": "msagl-example",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Public demo for msagl-js",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --progress --hot --open",
-    "start-local": "webpack-dev-server --progress --hot --open --env.local",
-    "build": "rm -rf dist && webpack --env.prod && cp index.html dist",
-    "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
+    "start": "esbuild ./src/app.js --servedir=. --outfile=app.js --bundle",
+    "build": "rm -rf dist && esbuild ./src/app.js --outfile=dist/app.js --bundle --minify && cp index.html dist"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
     "@msagl/parser": "^0.0.56",
     "@msagl/renderer": "^0.0.24",
-    "msagl-js": "^0.0.56",
-    "typescript": "^4.5.5"
+    "msagl-js": "^0.0.56"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.8",
-    "@babel/core": "^7.16.12",
-    "@babel/plugin-transform-runtime": "^7.16.10",
-    "@babel/preset-env": "^7.16.11",
-    "babel-loader": "^8.2.3",
-    "ts-loader": "^8.0.12",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.11.3"
+    "esbuild": "^0.14.27",
+    "typescript": "^4.5.5"
   }
 }
