@@ -9,6 +9,7 @@ import {sortedList} from '../sortedBySizeListOfgvFiles'
 
 import {labelRectFunc, outputGraph, edgeString, parseDotGraph, setNode} from '../../utils/testUtils'
 import {
+  Node,
   GeomGraph,
   GeomNode,
   Rectangle,
@@ -19,8 +20,9 @@ import {
   LayerDirectionEnum,
   Graph,
   GeomEdge,
+  Edge,
 } from '../../../src'
-import {DrawingGraph} from '../../../src/drawing'
+import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
@@ -182,15 +184,37 @@ test('undirected pach', () => {
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
-xtest('austin', () => {
-  const dg = parseDotGraph('C:/Users/levnach/Downloads/dots/tesla-processes.dot')
+test('austin', () => {
+  const data = fs.readFileSync('examples/data/gameofthrones.json').toString()
+  const graphJson = JSON.parse(data)
+  const graph = new Graph()
+  const dg = new DrawingGraph(graph)
+  dg.rankdir = LayerDirectionEnum.LR
+  for (const node of graphJson.nodes) {
+    const n = graph.addNode(new Node(node.id))
+    const dn = new DrawingNode(n)
+    dn.labelText = node.label
+  }
+  for (const edge of graphJson.edges) {
+    const s = graph.findNode(edge.source)
+    const t = graph.findNode(edge.target)
+    const e = new Edge(s, t)
+    const de = new DrawingEdge(e)
+
+    de.arrowhead = ArrowTypeEnum.none
+    de.arrowtail = ArrowTypeEnum.none
+  }
+
   createGeometry(dg, labelRectFunc)
   const gg = GeomGraph.getGeom(dg.graph)
+  const ss = new SugiyamaLayoutSettings()
+  gg.layoutSettings = ss
+  ss.layerDirection = LayerDirectionEnum.LR
   layoutGraphWithSugiayma(gg)
   for (const e of gg.deepEdges()) {
     expect(e.curve == null).toBe(false)
   }
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/teslaprocesses..svg')
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/gameOfThrones.svg')
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 

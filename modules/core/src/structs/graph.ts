@@ -80,12 +80,14 @@ export class Graph extends Node {
   removeNode(n: Node): void {
     this.nodeCollection.removeNode(n)
   }
+  /** adds a node to the graph */
   addNode(n: Node): Node {
     /*Assert.assert(n.parent == null || n.parent == this)*/
     n.parent = this
     this.nodeCollection.addNode(n)
     return n
   }
+  /** adds an edge to the graph */
   addEdge(n: Edge) {
     this.nodeCollection.addEdge(n)
   }

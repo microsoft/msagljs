@@ -50,19 +50,6 @@ export class Node extends Entity {
     this.selfEdges.add(edge)
   }
 
-  addEdde(e: Edge): Edge {
-    if (this == e.source) {
-      if (e.target == this) this.addSelfEdge(e)
-      else this.addOutEdge(e)
-    } else if (this == e.target) {
-      this.addInEdge(e)
-    } else {
-      throw new Error('attaching an edge to non adjacent node')
-      // Assert.assert(false, 'attaching an edge to non adjacent node')
-    }
-    return e
-  }
-
   get edges(): IterableIterator<Edge> {
     return this._edges()
   }
