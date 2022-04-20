@@ -184,7 +184,7 @@ test('undirected pach', () => {
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
-test('austin', () => {
+xtest('austin', () => {
   const data = fs.readFileSync('examples/data/gameofthrones.json').toString()
   const graphJson = JSON.parse(data)
   const graph = new Graph()

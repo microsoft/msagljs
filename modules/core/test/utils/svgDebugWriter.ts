@@ -23,10 +23,9 @@ export class SvgDebugWriter {
   readonly arrowAngle = 25
 
   constructor(svgFileName: string) {
-    this.ws = fs.createWriteStream(svgFileName)
-    const wsCapture = this.ws
-    this.xw = new xmlw(true, function (string: string, encoding: string) {
-      wsCapture.write(string, encoding)
+    this.ws = fs.openSync(svgFileName, 'w', 0o666)
+    this.xw = new xmlw(true, (string: string) => {
+      fs.writeSync(this.ws, string)
     })
   }
 
@@ -230,7 +229,7 @@ export class SvgDebugWriter {
     if (transform) this.xw.endElement('g')
     this.xw.endDocument()
     this.xw.flush()
-    this.ws.close()
+    fs.close(this.ws)
   }
 
   static dumpICurves(fileName: string, icurves: ICurve[]) {
