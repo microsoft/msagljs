@@ -13,6 +13,7 @@ import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
 import {routeSplines, SplineRouter} from '../routing/splineRouter'
 import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
+import {initRandom} from '../utils/random'
 
 // function routeEdges(
 //   geomG: GeomGraph,
@@ -115,10 +116,12 @@ export function layoutGeomGraphDetailed(
   edgeRouter: (g: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) => void,
   packing: (g: GeomGraph, subGraphs: GeomGraph[]) => void,
   flipToScreenCoords = true,
+  randomSeed = 0,
 ) {
   if (geomG.graph.isEmpty()) {
     return
   }
+  initRandom(randomSeed)
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)

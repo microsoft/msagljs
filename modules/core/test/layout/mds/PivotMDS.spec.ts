@@ -1,4 +1,4 @@
-import {GeomGraph, layoutGraphWithMds} from '../../../src'
+import {GeomGraph, GeomNode, layoutGraphWithMds} from '../../../src'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {runMDSLayout, outputGraph, setNode} from '../../utils/testUtils'
@@ -35,6 +35,24 @@ test('graph with subgraphs', () => {
 test('compound', () => {
   const dg = runMDSLayout('graphvis/compound.gv')
   outputGraph(<GeomGraph>GeomObject.getGeom(dg.graph), 'compound.pivot.svg')
+})
+test('no randomness', () => {
+  const dg = runMDSLayout('graphvis/pack.gv')
+  const dg0 = runMDSLayout('graphvis/pack.gv')
+
+  let gn: GeomNode
+  for (const n of dg.graph.shallowNodes) {
+    gn = <GeomNode>GeomObject.getGeom(n)
+    break
+  }
+
+  let gn0: GeomNode
+  for (const n of dg0.graph.shallowNodes) {
+    gn0 = <GeomNode>GeomObject.getGeom(n)
+    break
+  }
+
+  expect(gn.center.equal(gn0.center)).toBe(true)
 })
 
 test('layout 0-50 gv files with MDS', () => {
