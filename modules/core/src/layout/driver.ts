@@ -116,7 +116,7 @@ export function layoutGeomGraphDetailed(
   edgeRouter: (g: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) => void,
   packing: (g: GeomGraph, subGraphs: GeomGraph[]) => void,
   flipToScreenCoords = true,
-  randomSeed = 0,
+  randomSeed = 1,
 ) {
   if (geomG.graph.isEmpty()) {
     return
