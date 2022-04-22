@@ -35,6 +35,7 @@ export class MultiEdgeRouter {
     this.multiEdges = multiEdges
     this.interactiveEdgeRouter = interactiveEdgeRouter
     this.bundlingSettings = bundlingSettings
+    this.bundlingSettings.ActualEdgeSeparation = Number.POSITIVE_INFINITY
     this.transparentShapeSetter = transparentShapeSetter
     this.nodeTree = CreateRectangleNodeOnData(nodeBoundaryCurves, (c) => c.boundingBox)
   }

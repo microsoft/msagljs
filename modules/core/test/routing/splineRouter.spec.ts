@@ -654,6 +654,7 @@ test('layout 0-50 gv files with MDS', () => {
   for (const f of sortedList) {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 50) return
+    if (i != 13) continue
     let dg: DrawingGraph
     try {
       dg = runMDSLayout(join(path, f), EdgeRoutingMode.Spline)

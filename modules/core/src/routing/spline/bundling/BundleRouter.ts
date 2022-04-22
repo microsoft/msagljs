@@ -60,8 +60,8 @@ export class BundleRouter extends Algorithm {
     loosePolylineOfPort: (a: Port) => Polyline,
   ) {
     super(null)
-
     this.bundlingSettings = bundlingSettings
+    this.bundlingSettings.ActualEdgeSeparation = Number.POSITIVE_INFINITY
     this.edgesToRoute = edgesToRoute
     this.regularEdges = edgesToRoute.filter((e) => e.source != e.target)
     this.VisibilityGraph = visibilityGraph
@@ -91,10 +91,8 @@ export class BundleRouter extends Algorithm {
     }
 
     this.FixLocationsForHookAnywherePorts(this.edgesToRoute)
-    if (!this.RoutePathsWithSteinerDijkstra()) {
-      this.Status = BundlingStatus.EdgeSeparationIsTooLarge
-      return
-    }
+    this.RoutePathsWithSteinerDijkstra()
+
     this.FixChildParentEdges()
     if (!this.bundlingSettings.StopAfterShortestPaths) {
       this.OrderOptimizeNudgeEtc()
@@ -233,7 +231,7 @@ export class BundleRouter extends Algorithm {
   EdgeLooseEnterable: Map<GeomEdge, Set<Polyline>>
   EdgeTightEnterable: Map<GeomEdge, Set<Polyline>>
 
-  RoutePathsWithSteinerDijkstra(): boolean {
+  RoutePathsWithSteinerDijkstra() {
     this.shortestPathRouter.VisibilityGraph = this.VisibilityGraph
     this.shortestPathRouter.BundlingSettings = this.bundlingSettings
     this.shortestPathRouter.geomEdges = this.regularEdges
@@ -241,12 +239,8 @@ export class BundleRouter extends Algorithm {
     this.shortestPathRouter.RouteEdges()
     // find appropriate edge separation
     if (this.shortestPathRouter.CdtProperty != null) {
-      if (!this.AnalyzeEdgeSeparation()) {
-        return false
-      }
+      this.AdjustEdgeSeparation()
     }
-
-    return true
   }
 
   ///  calculates maximum possible edge separation for the computed routing
@@ -256,32 +250,19 @@ export class BundleRouter extends Algorithm {
   ///      reduce edge separation, or
   ///      move obstacles to get more free space
 
-  AnalyzeEdgeSeparation(): boolean {
+  AdjustEdgeSeparation() {
     const crossedCdtEdges: Map<GeomEdge, Set<CdtEdge>> = new Map<GeomEdge, Set<CdtEdge>>()
     this.shortestPathRouter.FillCrossedCdtEdges(crossedCdtEdges)
     const pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>> = this.GetPathsOnCdtEdge(crossedCdtEdges)
-    const es: number = this.CalculateMaxAllowedEdgeSeparation(pathsOnCdtEdge)
-    //  TimeMeasurer.DebugOutput("opt es: " + es);
-    if (es >= this.bundlingSettings.EdgeSeparation) {
-      return true
-    }
-
-    // we can even enlarge it here
-    if (es <= 0.02) {
-      //  TimeMeasurer.DebugOutput("edge bundling can't be executed: not enough free space around obstacles")
-      for (const e of this.regularEdges) {
-        e.curve = null
-      }
-
-      return false
-    }
-
-    //  reducing edge separation
-    //  TimeMeasurer.DebugOutput("reducing edge separation to " + es);
-    this.bundlingSettings.EdgeSeparation = es
-    this.shortestPathRouter.RouteEdges()
-    return true
+    this.bundlingSettings.ActualEdgeSeparation = this.CalculateActualEdgeSeparation(pathsOnCdtEdge)
   }
+
+  //   //  reducing edge separation
+  //   //  TimeMeasurer.DebugOutput("reducing edge separation to " + es);
+  //   this.bundlingSettings.EdgeSeparation = es
+  //   this.shortestPathRouter.RouteEdges()
+  //   return true
+  // }
 
   GetPathsOnCdtEdge(crossedEdges: Map<GeomEdge, Set<CdtEdge>>): Map<CdtEdge, Set<GeomEdge>> {
     const res: Map<CdtEdge, Set<GeomEdge>> = new Map<CdtEdge, Set<GeomEdge>>()
@@ -294,18 +275,18 @@ export class BundleRouter extends Algorithm {
     return res
   }
 
-  CalculateMaxAllowedEdgeSeparation(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>): number {
-    let l = 0.01
-    let r = 10
-    //  ?TODO: change to bundlingSettings.EdgeSeparation;
+  CalculateActualEdgeSeparation(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>): number {
+    let l = -1000
+    let r = this.bundlingSettings.EdgeSeparation
     if (this.EdgeSeparationIsOkMN(pathsOnCdtEdge, r)) {
       return r
     }
-
-    while (Math.abs(r - l) > 0.01) {
+    let lHasChanged = false
+    while (!lHasChanged || Math.abs(r - l) > 0.01) {
       const cen: number = (l + r) / 2
       if (this.EdgeSeparationIsOkMN(pathsOnCdtEdge, cen)) {
         l = cen
+        lHasChanged = true
       } else {
         r = cen
       }
@@ -315,22 +296,12 @@ export class BundleRouter extends Algorithm {
   }
 
   EdgeSeparationIsOkMN(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>, separation: number): boolean {
-    // total number of cdt edges
-    const total: number = pathsOnCdtEdge.size
-    if (total == 0) {
-      return true
-    }
-
-    // number of edges with requiredWidth <= availableWidth
-    let ok = 0
     for (const edge of pathsOnCdtEdge.keys()) {
-      if (this.EdgeSeparationIsOk(edge, pathsOnCdtEdge.get(edge), separation)) {
-        ok++
+      if (!this.EdgeSeparationIsOk(edge, pathsOnCdtEdge.get(edge), separation)) {
+        return false
       }
     }
-
-    // at least 95% of edges should be okay
-    return ok / total > this.bundlingSettings.MinimalRatioOfGoodCdtEdges
+    return true
   }
 
   EdgeSeparationIsOk(edge: CdtEdge, paths: Set<GeomEdge>, separation: number): boolean {

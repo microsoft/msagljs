@@ -21,6 +21,9 @@ import {
   Graph,
   GeomEdge,
   Edge,
+  MdsLayoutSettings,
+  EdgeRoutingMode,
+  layoutGraphWithMds,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot} from '@msagl/parser'
@@ -207,10 +210,10 @@ xtest('austin', () => {
 
   createGeometry(dg, labelRectFunc)
   const gg = GeomGraph.getGeom(dg.graph)
-  const ss = new SugiyamaLayoutSettings()
+  const ss = new MdsLayoutSettings()
   gg.layoutSettings = ss
-  ss.layerDirection = LayerDirectionEnum.LR
-  layoutGraphWithSugiayma(gg)
+  ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
+  layoutGraphWithMds(gg)
   for (const e of gg.deepEdges()) {
     expect(e.curve == null).toBe(false)
   }

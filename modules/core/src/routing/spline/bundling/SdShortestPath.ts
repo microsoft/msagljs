@@ -381,7 +381,7 @@ export class SdShortestPath {
   ): number {
     let w = currentEdgeGeometry.lineWidth
     if (e.Capacity != e.ResidualCapacity) {
-      w = w + bundlingSettings.EdgeSeparation
+      w += bundlingSettings.EdgeSeparation
     }
 
     const del = e.ResidualCapacity - w
@@ -389,7 +389,7 @@ export class SdShortestPath {
       return 0
     }
 
-    return del * capacityOverflMult * -1
+    return -del * capacityOverflMult
   }
 
   CostOfCrossingCdtEdgeLocal(

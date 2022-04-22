@@ -50,15 +50,27 @@ export class BundlingSettings {
 
   edgeSeparation: number = BundlingSettings.DefaultEdgeSeparation
 
-  // default edge separation
+  /** default edge separation */
   public static DefaultEdgeSeparation = 0.5
 
-  //  Separation between to neighboring edges within a bundle
+  /** Separation between the neighbor edges within a bundle */
   public get EdgeSeparation(): number {
-    return this.edgeSeparation
+    return Math.min(this.edgeSeparation, this.ActualEdgeSeparation)
   }
+
   public set EdgeSeparation(value: number) {
     this.edgeSeparation = value
+  }
+
+  /** this could be different from bundlingSetting.EdgeSeparation
+   *    and could be a negative number
+   */
+  private _actualEdgeSeparation = Number.POSITIVE_INFINITY
+  public get ActualEdgeSeparation(): number {
+    return this._actualEdgeSeparation
+  }
+  public set ActualEdgeSeparation(value: number) {
+    this._actualEdgeSeparation = value
   }
 
   useCubicBezierSegmentsInsideOfHubs: boolean
