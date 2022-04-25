@@ -308,10 +308,11 @@ export class SdShortestPath {
   UpdateResidualCostsOfCrossedCdtEdges(boneEdge: SdBoneEdge) {
     for (const cdtEdge of boneEdge.CrossedCdtEdges) {
       if (this.AdjacentToSourceOrTarget(cdtEdge)) continue
-      if (cdtEdge.ResidualCapacity == cdtEdge.Capacity) cdtEdge.ResidualCapacity -= this.CurrentEdgeGeometry.lineWidth
-      else cdtEdge.ResidualCapacity -= this.CurrentEdgeGeometry.lineWidth + this.BundlingSettings.EdgeSeparation
-      //TODO: can we have negative here?
-      //Debug.//Assert(cdtEdge.ResidualCapacity >= 0);
+      if (cdtEdge.ResidualCapacity == cdtEdge.Capacity) {
+        cdtEdge.ResidualCapacity -= this.BundlingSettings.edgeWidthShrinkCoeff * this.CurrentEdgeGeometry.lineWidth
+      } else {
+        cdtEdge.ResidualCapacity -= this.BundlingSettings.ActualEdgeWidth(this.CurrentEdgeGeometry)
+      }
     }
   }
 
@@ -379,9 +380,9 @@ export class SdShortestPath {
     currentEdgeGeometry: GeomEdge,
     e: CdtEdge,
   ): number {
-    let w = currentEdgeGeometry.lineWidth
+    let w = currentEdgeGeometry.lineWidth * bundlingSettings.edgeWidthShrinkCoeff
     if (e.Capacity != e.ResidualCapacity) {
-      w += bundlingSettings.EdgeSeparation
+      w += bundlingSettings.EdgeSeparation * bundlingSettings.edgeWidthShrinkCoeff
     }
 
     const del = e.ResidualCapacity - w

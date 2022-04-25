@@ -61,7 +61,7 @@ export class BundleRouter extends Algorithm {
   ) {
     super(null)
     this.bundlingSettings = bundlingSettings
-    this.bundlingSettings.ActualEdgeSeparation = Number.POSITIVE_INFINITY
+    this.bundlingSettings.edgeWidthShrinkCoeff = 1
     this.edgesToRoute = edgesToRoute
     this.regularEdges = edgesToRoute.filter((e) => e.source != e.target)
     this.VisibilityGraph = visibilityGraph
@@ -254,7 +254,7 @@ export class BundleRouter extends Algorithm {
     const crossedCdtEdges: Map<GeomEdge, Set<CdtEdge>> = new Map<GeomEdge, Set<CdtEdge>>()
     this.shortestPathRouter.FillCrossedCdtEdges(crossedCdtEdges)
     const pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>> = this.GetPathsOnCdtEdge(crossedCdtEdges)
-    this.bundlingSettings.ActualEdgeSeparation = this.CalculateActualEdgeSeparation(pathsOnCdtEdge)
+    this.bundlingSettings.edgeWidthShrinkCoeff = this.CalculateEdgeWidthShrinkCoeff(pathsOnCdtEdge)
   }
 
   //   //  reducing edge separation
@@ -275,9 +275,9 @@ export class BundleRouter extends Algorithm {
     return res
   }
 
-  CalculateActualEdgeSeparation(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>): number {
-    let l = -1000
-    let r = this.bundlingSettings.EdgeSeparation
+  CalculateEdgeWidthShrinkCoeff(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>): number {
+    let l = 0
+    let r = this.bundlingSettings.edgeWidthShrinkCoeff
     if (this.EdgeSeparationIsOkMN(pathsOnCdtEdge, r)) {
       return r
     }
@@ -295,21 +295,19 @@ export class BundleRouter extends Algorithm {
     return l
   }
 
-  EdgeSeparationIsOkMN(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>, separation: number): boolean {
+  EdgeSeparationIsOkMN(pathsOnCdtEdge: Map<CdtEdge, Set<GeomEdge>>, widthShrinkCoeff: number): boolean {
     for (const edge of pathsOnCdtEdge.keys()) {
-      if (!this.EdgeSeparationIsOk(edge, pathsOnCdtEdge.get(edge), separation)) {
+      if (!this.EdgeSeparationIsOk(edge, pathsOnCdtEdge.get(edge), widthShrinkCoeff)) {
         return false
       }
     }
     return true
   }
 
-  EdgeSeparationIsOk(edge: CdtEdge, paths: Set<GeomEdge>, separation: number): boolean {
-    const requiredWidth: number =
-      Array.from(paths)
-        .map((v) => v.lineWidth)
-        .reduce((a, b) => a + b, 0) +
-      (paths.size - 1) * separation
+  EdgeSeparationIsOk(edge: CdtEdge, paths: Set<GeomEdge>, shrinkCoeff: number): boolean {
+    const requiredWidth: number = Array.from(paths)
+      .map((e) => this.bundlingSettings.ActualEdgeWidth(e, shrinkCoeff))
+      .reduce((a, b) => a + b, 0)
     return requiredWidth <= edge.Capacity
   }
 

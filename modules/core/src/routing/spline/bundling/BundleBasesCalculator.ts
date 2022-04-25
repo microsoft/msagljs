@@ -111,7 +111,6 @@ export class BundleBasesCalculator {
             bb,
             bb2,
             obstaclesToIgnore,
-            this.bundlingSettings.EdgeSeparation,
             Array.from(this.metroOrdering.GetOrder(station, neighbor)).map((l) => l.Width / 2),
           )
           bb.OutgoingBundleInfo = bb2.IncomingBundleInfo = bundle

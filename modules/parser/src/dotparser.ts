@@ -180,6 +180,10 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
         case 'width':
           drawingObj.width = parseFloat(str)
           break
+        case 'penwidth':
+          drawingObj.penwidth = parseFloat(str)
+          break
+
         case 'height':
           drawingObj.height = parseFloat(str)
           break

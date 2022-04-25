@@ -31,7 +31,6 @@ export class BundleBase {
     return this.points.length
   }
 
-  //  constructor
   constructor(count: number, boundaryCurve: ICurve, position: Point, belongsToRealNode: boolean) {
     this.BelongsToRealNode = belongsToRealNode
     this.Curve = boundaryCurve

@@ -14,8 +14,6 @@ export class BundleInfo {
 
   obstaclesToIgnore: Set<Polyline>
 
-  EdgeSeparation: number
-
   HalfWidthArray: number[]
 
   longEnoughSideLength: number
@@ -24,19 +22,12 @@ export class BundleInfo {
 
   TotalRequiredWidth: number
 
-  constructor(
-    sourceBase: BundleBase,
-    targetBase: BundleBase,
-    obstaclesToIgnore: Set<Polyline>,
-    edgeSeparation: number,
-    halfWidthArray: number[],
-  ) {
+  constructor(sourceBase: BundleBase, targetBase: BundleBase, obstaclesToIgnore: Set<Polyline>, halfWidthArray: number[]) {
     this.SourceBase = sourceBase
     this.TargetBase = targetBase
     this.obstaclesToIgnore = obstaclesToIgnore
-    this.EdgeSeparation = edgeSeparation
     this.HalfWidthArray = halfWidthArray
-    this.TotalRequiredWidth = this.EdgeSeparation * (this.HalfWidthArray.length - 1) + this.HalfWidthArray.reduce((a, b) => a + b, 0) * 2
+    this.TotalRequiredWidth = this.HalfWidthArray.reduce((a, b) => a + b, 0) * 2
     this.longEnoughSideLength = sourceBase.Curve.boundingBox.addRec(targetBase.Curve.boundingBox).diagonal
     // sometimes TotalRequiredWidth is too large to fit into the circle, so we evenly scale everything
     const mn: number = Math.max(sourceBase.Curve.boundingBox.diagonal, targetBase.Curve.boundingBox.diagonal)
@@ -44,7 +35,6 @@ export class BundleInfo {
       const scale: number = this.TotalRequiredWidth / mn
       for (let i = 0; i < this.HalfWidthArray.length; i++) this.HalfWidthArray[i] /= scale
       this.TotalRequiredWidth /= scale
-      this.EdgeSeparation /= scale
     }
   }
 
@@ -300,7 +290,7 @@ export class BundleInfo {
     let t = this.HalfWidthArray[0]
     pns[0] = ls.value(t * scale)
     for (let i = 1; i < count; i++) {
-      t += this.HalfWidthArray[i - 1] + this.EdgeSeparation + this.HalfWidthArray[i]
+      t += this.HalfWidthArray[i - 1] + this.HalfWidthArray[i]
       pns[i] = ls.value(t * scale)
     }
   }

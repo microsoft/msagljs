@@ -60,7 +60,7 @@ export class MetroGraphData {
 
   //  triangulation
   Cdt: Cdt
-
+  bundlingSettings: BundlingSettings
   constructor(
     regularEdges: GeomEdge[],
     looseTree: RectangleNode<Polyline, Point>,
@@ -71,6 +71,7 @@ export class MetroGraphData {
     edgeTightEnterable: Map<GeomEdge, Set<Polyline>>,
     loosePolylineOfPort: (p: Port) => Polyline,
   ) {
+    this.bundlingSettings = bundlingSettings
     // Assert.assert(cdt != null);
     this.regularEdges = regularEdges
     if (cdt != null) {
@@ -266,7 +267,12 @@ export class MetroGraphData {
   }
 
   InitEdgeData(geomEdge: GeomEdge, index: number) {
-    const metroEdge = new Metroline(<Polyline>geomEdge.curve, geomEdge.lineWidth, this.EdgeSourceAndTargetFunc(geomEdge), index)
+    const metroEdge = new Metroline(
+      <Polyline>geomEdge.curve,
+      this.bundlingSettings.ActualEdgeWidth(geomEdge),
+      this.EdgeSourceAndTargetFunc(geomEdge),
+      index,
+    )
     this.metrolines.push(metroEdge)
     this.PointToStations.get(metroEdge.Polyline.start).BoundaryCurve = geomEdge.sourcePort.Curve
     this.PointToStations.get(metroEdge.Polyline.end).BoundaryCurve = geomEdge.targetPort.Curve

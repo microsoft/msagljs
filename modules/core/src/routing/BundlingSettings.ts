@@ -1,3 +1,5 @@
+import {GeomEdge} from '../layout/core'
+
 export class BundlingSettings {
   // the default value of CapacityOverflowCoefficient
   public static DefaultCapacityOverflowCoefficientMultiplier = 1000
@@ -55,7 +57,7 @@ export class BundlingSettings {
 
   /** Separation between the neighbor edges within a bundle */
   public get EdgeSeparation(): number {
-    return Math.min(this.edgeSeparation, this.ActualEdgeSeparation)
+    return this.edgeSeparation
   }
 
   public set EdgeSeparation(value: number) {
@@ -65,12 +67,15 @@ export class BundlingSettings {
   /** this could be different from bundlingSetting.EdgeSeparation
    *    and could be a negative number
    */
-  private _actualEdgeSeparation = Number.POSITIVE_INFINITY
-  public get ActualEdgeSeparation(): number {
-    return this._actualEdgeSeparation
+  private _edgeWidthShrinkCoeff = 1
+  public get edgeWidthShrinkCoeff() {
+    return this._edgeWidthShrinkCoeff
   }
-  public set ActualEdgeSeparation(value: number) {
-    this._actualEdgeSeparation = value
+  public set edgeWidthShrinkCoeff(value) {
+    this._edgeWidthShrinkCoeff = value
+  }
+  public ActualEdgeWidth(e: GeomEdge, coeff = this.edgeWidthShrinkCoeff): number {
+    return coeff * (this.edgeSeparation + e.lineWidth)
   }
 
   useCubicBezierSegmentsInsideOfHubs: boolean

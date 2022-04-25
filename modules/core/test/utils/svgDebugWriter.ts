@@ -316,7 +316,7 @@ export class SvgDebugWriter {
     this.xw.startElement('path')
     this.xw.writeAttribute('fill', 'none')
     this.xw.writeAttribute('stroke', 'Black')
-
+    this.xw.writeAttribute('stroke-width', edge.lineWidth)
     this.xw.writeAttribute('d', SvgDebugWriter.curveString(icurve))
     this.xw.endElement()
     if (edge != null && edge.sourceArrowhead != null) this.addArrow(icurve.start, edge.sourceArrowhead.tipPosition)

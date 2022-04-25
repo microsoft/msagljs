@@ -72,6 +72,9 @@ export class DrawingGraph extends DrawingNode {
       const size = textMeasure(e.label.text)
       ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), e.label)
     }
+    if (de.penwidth) {
+      ge.lineWidth = de.penwidth
+    }
   }
 
   curveByShape(width: number, height: number, center: Point, shape: ShapeEnum, drawingNode: DrawingNode): ICurve {
