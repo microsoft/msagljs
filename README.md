@@ -1,76 +1,133 @@
 # msagl-js
 
-## Sugiyama Scheme
+![Test Status](https://github.com/microsoft/msagljs/workflows/Test%20Status/badge.svg?branch=master)
 
-Here is the layered layout example, or Sugiyama Scheme. By default, it creates a layout with
-the nodes positioned on horizontal layers, where, if your directed graph does not have cycles, every
-edge spans at least one layer down. Here is an API example in Typescript
+`msagl-js` is a JavaScript implementation of advanced graph layout algorithms. It consists of the following modules:
 
-```typescript
-// Create a new geometry graph
-const g = GeomGraph.mk('graph', new Size(0, 0))
-// Add nodes to the graph. The first argument is the node id. The second is the size string
-setNode(g, 'kspacey', 10, 10)
-setNode(g, 'swilliams', 10, 10)
-setNode(g, 'bpitt', 10, 10)
-setNode(g, 'hford', 10, 10)
-setNode(g, 'lwilson', 10, 10)
-setNode(g, 'kbacon', 10, 10)
+- `msagl-js`: the core graph data structures and layout engine
+- `@msagl/parser`: convert common formats to MSAGL Graph instances
+- `@msagl/renderer`: a WebGL-powered rendering component
 
-// Add edges to the graph.
-g.setEdge('kspacey', 'swilliams')
-g.setEdge('swilliams', 'kbacon')
-g.setEdge('bpitt', 'kbacon')
-g.setEdge('hford', 'lwilson')
-g.setEdge('lwilson', 'kbacon')
-layoutGraphWithSugiayma(g)
-/// ... consume graph 'g' here
+## Installation
+
+Using NPM packages:
+
+```bash
+npm i msagl-js @msagl/parser @msagl/renderer
 ```
 
-The generated layout should look like this:
-![Alt text](./docs/images/showAPI.svg#gh-light-mode-only)
-![Alt text](./docs/images/showAPI_dark.svg#gh-dark-mode-only)
-
-That is the function that prepares a GeometryNode for layout.
-
-```typescript
-function setNode(g: GeomGraph, id: string, xRad: number, yRad: number): GeomNode {
-  let node = g.graph.findNode(id)
-  if (node == null) {
-    g.graph.addNode((node = new Node(id)))
-  }
-  const geomNode = new GeomNode(node)
-  const size = measureTextSize(id)
-  geomNode.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(size.width, size.height, xRad, yRad, new Point(0, 0))
-  return geomNode
-}
+```js
+import {Graph} from 'msagl-js'
+import {Renderer} from '@msagl-js/renderer'
 ```
 
-## Multi Dimensional Scaling
+Using script tags:
 
-Multi Dimensional Scaling works: the routing is with just straight or rectilinear edges for now. The routing with smooth edges avoiding the nodes is not implemented yet. If you replace in the example above the line
-
-```typescript
-layoutGraphWithSugiayma(g)
+```html
+<script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
 ```
 
-by the line
-
-```typescript
-layoutGraphWithMDS(g)
+```js
+const {Graph, Renderer} = msagl
 ```
 
-then the layout should look like this
-![Alt text](./docs/images/mdsShowAPI.svg#gh-light-mode-only)
-![Alt text](./docs/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
+## Usage
 
-![Test Status](https://github.com/msaglJS/msagl-js/workflows/Test%20Status/badge.svg?branch=master)
+Render a graph from a [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.) file:
+
+```js
+import {parseDot} from '@msagl-js/parser'
+import {Renderer} from '@msagl-js/renderer'
+
+const renderer = new msagl.Renderer()
+const graph = parseDot(`
+graph G {
+	kspacey -- swilliams;
+	swilliams -- kbacon;
+	bpitt -- kbacon;
+	hford -- lwilson;
+	lwilson -- kbacon;
+}`);
+renderer.setGraph(graph)
+```
+
+Render a graph from JSON:
+
+```js
+import {parseJSON} from '@msagl-js/parser'
+
+const graph = parseJSON({
+  nodes: [
+    {id: 'kspacey'},
+    {id: 'swilliams'},
+    {id: 'kbacon'},
+    {id: 'bpitt'},
+    {id: 'hford'},
+    {id: 'lwilson'},
+  ],
+  edges: [
+    {source: 'kspacey', target: 'swilliams'},
+    {source: 'swilliams', target: 'kbacon'},
+    {source: 'bpitt', target: 'kbacon'},
+    {source: 'hford', target: 'lwilson'},
+    {source: 'lwilson', target: 'kbacon'}
+  ]
+});
+renderer.setGraph(graph)
+```
+
+## Renderer API
+
+Constructor:
+
+```typescript
+new Renderer(container?: HTMLDivElement)
+```
+
+To layout and render a new graph:
+
+```typescript
+renderer.setGraph(g: Graph, options: RenderOptions)
+```
+
+To change the layout of the current graph:
+
+```typescript
+renderer.setRenderOptions(options: RenderOptions)
+```
+
+The renderer options accept the following fields:
+
+- `layoutType: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'` - algorithm used to layout the graph. By default, if all edges in the graph are undirected then Pivot MDS is used; otherwise, it applies the Sugiyama Scheme.
+
+  [Sugiyama](https://en.wikipedia.org/wiki/Layered_graph_drawing) TB (layered top-to-bottom):
+
+  ![Alt text](./docs/images/showAPI.svg#gh-light-mode-only)
+  ![Alt text](./docs/images/showAPI_dark.svg#gh-dark-mode-only)
+
+
+  [MDS](https://en.wikipedia.org/wiki/Multidimensional_scaling) (Multidemensional Scaling):
+
+  ![Alt text](./docs/images/mdsShowAPI.svg#gh-light-mode-only)
+  ![Alt text](./docs/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
+
+- `label`
+  + `fontFamily: string` - CSS font-family value. Default `'sans-serif'`.
+  + `fontSize: number` - Font size, default `16`.
+  + `lineHeight: number` - Line height relative to the font size, default `1`.
+  + `fontStyle: string` - CSS font-style value, default `'normal'`
+  + `fontWeight: string | number` - CSS font-weight value, default `'normal'`.
+- `edgeRoutingMode: EdgeRoutingMode` - Enum for supported routing modes, including `Spline`, `SplineBundling` `StraightLine`, `SugiyamaSplines`, `Rectilinear`, `RectilinearToCenter`, `None`. Default varies by `layoutType`.
 
 ## Examples
 
-Currently there are only two examples at the "examples" dir. One of them, examples/layout, can be seen at https://msagljs.github.io/msagl-js/.
-There, initially, the graph of relations between the characters of a known series is loaded. In addition, the page supports a visualization of DOT graphs.
-You can view a DOT graph by drag-dropping it into the folder at the bottom of the page. If all edges in the DOT file are undirected then Pivot MDS is applied for the layout calculation: Otherwise, it is the Sugiyama Scheme.
+Currently there are only two examples at the "examples" dir. One of them, examples/layout, can be seen at https://microsoft.github.io/msagljs/.
+
+In addition to the initially loaded graph, the page offers a list of graph samples.
+
+You can view a DOT graph by drag-dropping a file into the folder icon at the top of the page. 
 
 ## Contributing
 
