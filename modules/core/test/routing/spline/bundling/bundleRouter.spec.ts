@@ -60,6 +60,13 @@ test('smlred.gv', () => {
   t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
+test('shells.gv', () => {
+  const ss = new SugiyamaLayoutSettings()
+  const dg = runLayout('graphvis/shells.gv', ss)
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/shellsBundled.svg')
+  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+})
+
 test('random graphs', () => {
   for (let nodeCount = 7; nodeCount < 10; nodeCount++)
     for (let seed = 10; seed < 20; seed++) {

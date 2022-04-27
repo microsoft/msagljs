@@ -3,7 +3,7 @@ import {Curve, LineSegment, GeomConstants, CurveFactory} from '../../../math/geo
 import {BezierSeg} from '../../../math/geometry/bezierSeg'
 import {DebugCurve} from '../../../math/geometry/debugCurve'
 import {Ellipse} from '../../../math/geometry/ellipse'
-import {distPP} from '../../../math/geometry/point'
+import {distPP, TriangleOrientation} from '../../../math/geometry/point'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {Algorithm} from '../../../utils/algorithm'
 import {BundlingSettings} from '../../BundlingSettings'
@@ -15,6 +15,8 @@ import {MetroGraphData} from './MetroGraphData'
 import {Metroline} from './MetroLine'
 import {OrientedHubSegment} from './OrientedHubSegment'
 import {Station} from './Station'
+//import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
+import {Assert} from '../../../utils/assert'
 /** this class nudges the edges, sorts the edges that run in parallel in a way that minimezes the number of crossings*/
 export class EdgeNudger extends Algorithm {
   bundlingSettings: BundlingSettings
@@ -138,6 +140,7 @@ export class EdgeNudger extends Algorithm {
     }
   }
 
+  static debCount = 0
   CreateOrientedSegsOnLineVertex(line: Metroline, polyPoint: PolylinePoint) {
     const u: Station = this.metroGraphData.PointToStations.get(polyPoint.prev.point)
     const v: Station = this.metroGraphData.PointToStations.get(polyPoint.point)
@@ -146,11 +149,27 @@ export class EdgeNudger extends Algorithm {
     const h1: BundleBase = v.BundleBases.get(w)
     const j0: number = this.metroOrdering.GetLineIndexInOrder(u, v, line)
     const j1: number = this.metroOrdering.GetLineIndexInOrder(w, v, line)
+
     const seg = this.bundlingSettings.UseCubicBezierSegmentsInsideOfHubs
       ? EdgeNudger.StandardBezier(h0.Points[j0], h0.Tangents[j0], h1.Points[j1], h1.Tangents[j1])
       : EdgeNudger.BiArc(h0.Points[j0], h0.Tangents[j0], h1.Points[j1], h1.Tangents[j1])
     h0.OrientedHubSegments[j0].Segment = seg
     h1.OrientedHubSegments[j1].Segment = seg
+    // if (false && (h0.Points.length > 1 || h1.length > 0) {
+    //   const dc = [
+    //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Blue', LineSegment.mkPP(h1.Points[0], h1.Points[h1.length - 1])),
+    //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(h0.Points[0], h0.Points[h0.length - 1])),
+    //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Red', LineSegment.mkPP(h0.Points[j0], h0.Points[j0].add(h0.Tangents[j0]))),
+    //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Green', LineSegment.mkPP(h1.Points[j1], h1.Points[j1].add(h1.Tangents[j1]))),
+    //   ]
+    //   if (seg instanceof Curve) {
+    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Yellow', (<Curve>seg).segs[0]))
+    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', (<Curve>seg).segs[1]))
+    //   } else {
+    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', seg))
+    //   }
+    //   SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + ++EdgeNudger.debCount + '.svg', dc)
+    // }
   }
 
   static ShowHubs(
@@ -287,6 +306,11 @@ export class EdgeNudger extends Algorithm {
     const vtse = v.dot(ts.sub(te))
     const tste = -ts.dot(te)
 
+    //bad input for BiArc. we shouldn't allow such cases during bundle bases construction
+    if (ts.dot(p4.sub(p0)) <= 0 && ts.dot(te) <= 0) {
+      //switch to Bezier
+      return EdgeNudger.StandardBezier(p0, ts, p4, te)
+    }
     //solving a quadratic equation
     const a = 2 * (tste - 1)
     const b = 2 * vtse
@@ -311,24 +335,13 @@ export class EdgeNudger extends Algorithm {
     const p1 = p0.add(ts.mul(al))
     const p3 = p4.add(te.mul(al))
     const p2 = Point.middle(p1, p3)
+    const orient1 = Point.getTriangleOrientation(p0, p1, p2)
+    const orient2 = Point.getTriangleOrientation(p2, p3, p4)
+    if (orient1 != orient2) {
+      return EdgeNudger.StandardBezier(p0, ts, p4, te)
+    }
     const curve = new Curve()
     curve.addSegs([EdgeNudger.ArcOn(p0, p1, p2), EdgeNudger.ArcOn(p2, p3, p4)])
-
-    //bad input for BiArc. we shouldn't allow such cases during bundle bases construction
-    if (ts.dot(p4.sub(p0)) <= 0 && ts.dot(te) <= 0) {
-      //switch to Bezier
-      const curve2 = EdgeNudger.StandardBezier(p0, ts, p4, te)
-      // #if TEST_MSAGL
-      //                 /*List<DebugCurve> dc = new List<DebugCurve>();
-      //                 dc.Add(new DebugCurve(curve));
-      //                 dc.Add(new DebugCurve(0.3, "black", curve2));
-      //                 dc.Add(new DebugCurve(0.1, "red", new LineSegment(p0, p0 + 3 * ts)));
-      //                 dc.Add(new DebugCurve(0.1, "blue", new LineSegment(p4, p4 + 3 * te)));
-      //                 LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dc);*/
-      // #endif
-      return curve2
-    }
-
     return curve
   }
 

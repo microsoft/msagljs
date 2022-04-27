@@ -10,7 +10,7 @@ export class BundleBase {
 
   private points: Point[]
 
-  tangents: Point[]
+  private tangents: Point[]
 
   OrientedHubSegments: OrientedHubSegment[]
 
