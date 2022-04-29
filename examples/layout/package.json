@@ -5,7 +5,7 @@
   "description": "Public demo for msagl-js",
   "main": "index.js",
   "scripts": {
-    "start": "esbuild ./src/app.js --servedir=. --outfile=app.js --bundle",
+    "start": "esbuild ./src/app.js --sourcemap --servedir=. --outfile=app.js --bundle",
     "build": "rm -rf dist && esbuild ./src/app.js --outfile=dist/app.js --bundle --minify && cp index.html dist"
   },
   "author": "xiac@microsoft.com",
