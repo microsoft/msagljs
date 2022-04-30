@@ -252,7 +252,8 @@ export class PathFixer {
       return p.UserData
     }
 
-    const rect = Rectangle.mkOnPoints([x]).pad(GeomConstants.intersectionEpsilon)
+    const rect = Rectangle.mkOnPoints([x])
+    rect.pad(GeomConstants.intersectionEpsilon)
     tree.Add(rect, x)
     return x
   }

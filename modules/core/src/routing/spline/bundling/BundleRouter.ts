@@ -140,10 +140,11 @@ export class BundleRouter extends Algorithm {
 
   static CreateConstrainedDelaunayTriangulation(looseHierarchy: RectangleNode<Polyline, Point>): Cdt {
     const obstacles = Array.from(looseHierarchy.GetAllLeaves())
-    let rectangle: Rectangle = <Rectangle>looseHierarchy.irect
-    rectangle = rectangle.pad(rectangle.diagonal / 4)
-
-    return BundleRouter.GetConstrainedDelaunayTriangulation(obstacles.concat([rectangle.perimeter()]))
+    const rectangle: Rectangle = <Rectangle>looseHierarchy.irect
+    const del = rectangle.diagonal / 4
+    const nRect = rectangle.clone()
+    nRect.pad(del)
+    return BundleRouter.GetConstrainedDelaunayTriangulation(obstacles.concat([nRect.perimeter()]))
   }
 
   static GetConstrainedDelaunayTriangulation(obstacles: Array<Polyline>): Cdt {

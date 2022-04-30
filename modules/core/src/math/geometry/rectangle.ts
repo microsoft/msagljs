@@ -356,12 +356,11 @@ export class Rectangle implements IRectangle<Point> {
   }
 
   // pad the rectangle by the given padding
-  pad(padding: number) {
+  pad(padding: number): void {
     if (padding < -this.width / 2) padding = -this.width / 2
     if (padding < -this.height / 2) padding = -this.height / 2
     this.padWidth(padding)
     this.padHeight(padding)
-    return this
   }
 
   // Pad the rectangle by the given amount on each side

@@ -469,11 +469,6 @@ export class MetroGraphData {
                1 if the orientation is v0 v2 v1
                0  if v1 and v2 are collinear and codirectinal */
 export function getOrientationOf3Vectors(v0: Point, v1: Point, v2: Point): number {
-  const multiplier = 1000
-  // TODO, need to fix it?
-  v0 = v0.mul(multiplier)
-  v1 = v1.mul(multiplier)
-  v2 = v2.mul(multiplier)
   const xp2: number = Point.crossProduct(v0, v2)
   const dotp2: number = v0.dot(v2)
   const xp1: number = Point.crossProduct(v0, v1)
