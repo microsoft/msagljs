@@ -1734,24 +1734,6 @@
     "@babel/runtime" "^7.12.0"
     gl-matrix "~3.3.0"
 
-"@msagl/parser@^0.0.60":
-  version "0.0.60"
-  resolved "https://registry.yarnpkg.com/@msagl/parser/-/parser-0.0.60.tgz#1915a98f104438d81aa4337eddd752953d517667"
-  integrity sha512-LdpHrs06qCYg/oUk3gMcnmE+UYGQ0tOMg7U8r/8xWLDsLoFgvoyo5hpM3ZIuqITk8jLXJPmC1lUzhF2xy//mnA==
-  dependencies:
-    "@types/parse-color" "^1.0.1"
-    dotparser "^1.1.0"
-    msagl-js "^0.0.60"
-    parse-color "^1.0.0"
-
-"@msagl/renderer@^0.0.28":
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/@msagl/renderer/-/renderer-0.0.28.tgz#a451e8c09d23bb99343b18c6ae24ad39f703b3d4"
-  integrity sha512-vYWiWy+C6ZCN8yIf2lBsT14yMI1Xw4WFRZOhbMRpN2F6qY5UhtyEJTG/9Ro7Uh2d6sO7YvBsibc+0DGpZg1STA==
-  dependencies:
-    deck.gl "^8.6.0"
-    msagl-js "^0.0.60"
-
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"
@@ -5863,18 +5845,6 @@ ms@2.1.2, ms@^2.0.0:
   version "2.1.2"
   resolved "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
-
-msagl-js@^0.0.60:
-  version "0.0.60"
-  resolved "https://registry.yarnpkg.com/msagl-js/-/msagl-js-0.0.60.tgz#93c4a98d9fd095e61e9e3f0f9bd9490b0ad109b2"
-  integrity sha512-uXrO9ZQkKN6n1dy1hAKEtQ1vLsQZ3j46Qt8/4ZOmdi18pq3auMPGHBozRWa5ZL6fgXS2fFD7bwo2zSYKZCuhIw==
-  dependencies:
-    "@esfx/collections" "^1.0.0-pre.19"
-    "@esfx/collections-sortedmap" "^1.0.0-pre.19"
-    queue-typescript "^1.0.1"
-    reliable-random "^0.0.1"
-    stack-typescript "^1.0.4"
-    typescript-string-operations "^1.4.1"
 
 multimatch@^5.0.0:
   version "5.0.0"
