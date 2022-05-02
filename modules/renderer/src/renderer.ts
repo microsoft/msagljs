@@ -26,7 +26,7 @@ export type RenderOptions = {
   edgeRoutingMode?: EdgeRoutingMode
 }
 
-const MaxZoom = 4
+const MaxZoom = 2
 
 /**
  * Renders a MSAGL graph with WebGL
@@ -164,7 +164,7 @@ export default class Renderer extends EventSource {
 
   zoomTo(rectangle: Rectangle) {
     const scale = Math.min(this._deck.width / rectangle.width, this._deck.height / rectangle.height)
-    const zoom = Math.min(Math.log2(scale) - 1, MaxZoom)
+    const zoom = Math.min(Math.log2(scale), MaxZoom)
 
     this._deck.setProps({
       initialViewState: {
@@ -201,7 +201,6 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
-    const center = geomGraph.boundingBox.center
     // @ts-ignore
     const edgeLayer = new EdgeLayer({
       id: 'edges',
@@ -229,10 +228,6 @@ export default class Renderer extends EventSource {
     })
 
     this._deck.setProps({
-      initialViewState: {
-        target: [center.x, center.y, 0],
-        zoom: 0,
-      },
       layers: [nodeLayer, edgeLayer],
     })
 
@@ -240,5 +235,7 @@ export default class Renderer extends EventSource {
       type: 'graphload',
       data: this._graph,
     } as Event)
+
+    this.zoomTo(geomGraph.boundingBox)
   }
 }
