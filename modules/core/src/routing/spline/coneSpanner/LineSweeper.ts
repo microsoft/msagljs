@@ -430,8 +430,10 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   CreateConeClosureEvent(brokenConeSide: BrokenConeSide, otherSide: ConeSide) {
     const x: Point = Point.RayIntersectsRayInteriors(brokenConeSide.start, brokenConeSide.Direction, otherSide.Start, otherSide.Direction)
-    const cc = new ConeClosureEvent(x, brokenConeSide.Cone)
-    this.EnqueueEvent(cc)
+    if (x) {
+      const cc = new ConeClosureEvent(x, brokenConeSide.Cone)
+      this.EnqueueEvent(cc)
+    }
   }
 
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
