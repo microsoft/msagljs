@@ -1,6 +1,6 @@
 {
   "name": "msagl-example",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "description": "Public demo for msagl-js",
   "main": "index.js",
@@ -11,9 +11,9 @@
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/parser": "^0.0.60",
-    "@msagl/renderer": "^0.0.28",
-    "msagl-js": "^0.0.60"
+    "@msagl/parser": "^0.0.61",
+    "@msagl/renderer": "^0.0.29",
+    "msagl-js": "^0.0.61"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",
