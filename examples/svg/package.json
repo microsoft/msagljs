@@ -1,0 +1,22 @@
+{
+  "name": "svg-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public demo for svg from msagl-js",
+  "main": "index.js",
+  "scripts": {
+    "start": "esbuild ./src/app.js --sourcemap --servedir=. --outfile=app.js --bundle",
+    "build": "rm -rf dist && esbuild ./src/app.js --outfile=dist/app.js --bundle --minify && cp index.html dist"
+  },
+  "author": "levnach@microsoft.com",
+  "license": "MIT",
+  "dependencies": {
+    "@msagl/parser": "^0.0.60",
+    "@msagl/renderer": "^0.0.28",
+    "msagl-js": "^0.0.60"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.27",
+    "typescript": "^4.5.5"
+  }
+}

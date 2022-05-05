@@ -40,7 +40,7 @@ export default class TextMeasurer {
     const rowSpacing = fontSize * (lineHeight - 1)
     let w = 0
     const lines = text.split('\n')
-    for (const line of text.split('\n')) {
+    for (const line of lines) {
       const metrics = this.ctx.measureText(line)
       w = Math.max(w, metrics.width)
     }

@@ -6,7 +6,7 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {Graph, GeomGraph, Rectangle, LayoutSettings, LayerDirectionEnum, EdgeRoutingMode} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, EdgeRoutingMode} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
