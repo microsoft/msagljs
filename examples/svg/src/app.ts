@@ -1,12 +1,12 @@
 import {parseDot} from '@msagl/parser'
 import {GeomGraph, GeomNode, Graph, ICurve, layoutGraphWithSugiayma, Node, Rectangle} from 'msagl-js'
-import {DrawingGraph, DrawingNode, DrawingObject} from 'msagl-js/drawing'
+import {Color, DrawingGraph, DrawingNode, DrawingObject} from 'msagl-js/drawing'
 import {GeomObject} from '../../../modules/core/src/layout/core/geomObject'
 import {Curve, LineSegment, Point, Polyline} from '../../../modules/core/src/math/geometry'
 import {BezierSeg} from '../../../modules/core/src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../modules/core/src/math/geometry/ellipse'
 import {String, StringBuilder} from 'typescript-string-operations'
-const graphString = 'digraph G {\n' + 'a -> b\n' + 'a -> b}'
+const graphString = 'digraph G {\n' + 'a -> b\n' + 'a -> b\n' + 'a [color = "Red" fontcolor="Green"]\n' + ' b[fillcolor="#0000ff80"]  }'
 const graph = parseDot(graphString)
 const dg = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
 dg.createGeometry()
@@ -33,14 +33,6 @@ class SvgCreator {
     this.open()
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
-
-      /*const newRect = document.createElementNS(svgns, 'rect')
-      newRect.setAttribute('x', gn.boundingBox.left.toString())
-      newRect.setAttribute('y', gn.boundingBox.bottom.toString())
-      newRect.setAttribute('width', gn.boundingBox.width.toString())
-      newRect.setAttribute('height', gn.boundingBox.height.toString())
-      newRect.setAttribute('fill', '#5cceee')
-      this.svg.appendChild(newRect)*/
     }
     this.close()
     return this.svg
@@ -52,12 +44,16 @@ class SvgCreator {
     this.drawNodeOnCurve(boundaryCurve, node)
   }
   drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
-    const path = document.createElementNS(svgns, 'path')
-    path.setAttribute('fill', 'none')
-    path.setAttribute('d', curveString(boundaryCurve))
-    path.setAttribute('stroke', 'Green')
-    this.svg.appendChild(path)
     const dn = DrawingObject.getDrawingObj(node)
+    const path = document.createElementNS(svgns, 'path')
+    if (dn.fillColor) {
+      path.setAttribute('fill', msaglColorToSvgColor(dn.fillColor))
+    } else {
+      path.setAttribute('fill', 'none')
+    }
+    path.setAttribute('d', curveString(boundaryCurve))
+    path.setAttribute('stroke', msaglColorToSvgColor(dn.color))
+    this.svg.appendChild(path)
     this.drawLabel(node, dn)
   }
   private drawLabel(node: Node, dn: DrawingObject) {
@@ -87,7 +83,7 @@ class SvgCreator {
     textEl.setAttribute('font-family', drawingNode.fontname)
     textEl.setAttribute('font-size', fontSize.toString())
 
-    textEl.setAttribute('fill', drawingNode.fontColor ? drawingNode.fontColor.toString() : 'Black')
+    textEl.setAttribute('fill', msaglColorToSvgColor(drawingNode.fontColor))
     textEl.appendChild(document.createTextNode(drawingNode.labelText))
     this.svg.appendChild(textEl)
   }
@@ -209,3 +205,7 @@ function lineSegmentString(ls: LineSegment): string {
 const svgCreator = new SvgCreator(graph)
 
 document.body.appendChild(svgCreator.createSvg())
+function msaglColorToSvgColor(color: Color): string {
+  if (!color) return 'Black'
+  return 'rgba(' + color.R + ',' + color.G + ',' + color.B + ',' + color.A / 256.0 + ')'
+}

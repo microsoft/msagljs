@@ -56,18 +56,6 @@ export class DrawingNode extends DrawingObject {
     DrawingNode.defaultFillColor = value
   }
 
-  private fillcolor: Color = DrawingNode.defaultFillColor
-
-  // Node fill color.
-
-  get FillColor(): Color {
-    return this.fillcolor
-  }
-  set FillColor(value: Color) {
-    this.fillcolor = value
-    //RaiseVisualsChangedEvent(this, null);
-  }
-
   //  Node shape.
 
   get ShapeEnum(): ShapeEnum {
@@ -96,6 +84,7 @@ export class DrawingNode extends DrawingObject {
     }
     this.fontname = DrawingObject.defaultLabelFontName
     this.fontsize = DrawingObject.defaultLabelFontSize
+    this.fillColor = DrawingNode.defaultFillColor
   }
   //  the non adgjacent edges should avoid being closer to the node than Padding
 

@@ -1,7 +1,7 @@
 digraph process {
   rankdir=LR;
   node [fontname="Arial-Bold"];
-node1 [label="1 - Subscription page", shape=ellipse, color=purple, fillcolor=purple, fontcolor=white, style=filled];
+node1 [label="1 - Subscription page", shape=ellipse, color=purple, fillcolor="#0000ff20", fontcolor=white, style=filled];
 node2 [label="{Popup|2}|Drops out", shape=record, color=black, fillcolor=white, fontcolor=black, style=solid];
 node1 -> node2 [arrowhead=none];
 node2 -> node3 [arrowhead=normal];

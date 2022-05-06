@@ -111,19 +111,19 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
       const str = attr.eq
       switch (attr.id) {
         case 'color':
-          drawingObj.color = parseColor(str)
+          drawingObj.color = parseColor(str, 1)
           break
         case 'pencolor':
-          drawingObj.pencolor = parseColor(str)
+          drawingObj.pencolor = parseColor(str, 1)
           break
         case 'labelfontcolor':
-          drawingObj.labelfontcolor = parseColor(str)
+          drawingObj.labelfontcolor = parseColor(str, 1)
           break
         case 'fontcolor':
-          drawingObj.fontColor = parseColor(str)
+          drawingObj.fontColor = parseColor(str, 1)
           break
         case 'fillcolor':
-          drawingObj.fillColor = parseColor(str)
+          drawingObj.fillColor = parseColor(str, 1)
           break
         case 'style':
           drawingObj.styleEnum = styleEnumFromString(str)
