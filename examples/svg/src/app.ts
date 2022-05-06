@@ -1,6 +1,6 @@
 import {parseDot} from '@msagl/parser'
 import {GeomGraph, GeomNode, Graph, ICurve, layoutGraphWithSugiayma, Node, Rectangle} from 'msagl-js'
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph, DrawingNode, DrawingObject} from 'msagl-js/drawing'
 import {GeomObject} from '../../../modules/core/src/layout/core/geomObject'
 import {Curve, LineSegment, Point, Polyline} from '../../../modules/core/src/math/geometry'
 import {BezierSeg} from '../../../modules/core/src/math/geometry/bezierSeg'
@@ -31,8 +31,8 @@ class SvgCreator {
     if (!this.geomGraph) return null
     this.geomGraph.updateBoundingBox()
     this.open()
-    for (const gn of this.geomGraph.deepNodes()) {
-      this.drawNode(gn.node)
+    for (const node of this.graph.deepNodes) {
+      this.drawNode(node)
 
       /*const newRect = document.createElementNS(svgns, 'rect')
       newRect.setAttribute('x', gn.boundingBox.left.toString())
@@ -53,11 +53,45 @@ class SvgCreator {
   }
   drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
     const path = document.createElementNS(svgns, 'path')
-    path.setAttributeNS(null, 'fill', 'none')
-    path.setAttributeNS(null, 'd', curveString(boundaryCurve))
-    path.setAttributeNS(null, 'stroke', 'Green')
+    path.setAttribute('fill', 'none')
+    path.setAttribute('d', curveString(boundaryCurve))
+    path.setAttribute('stroke', 'Green')
     this.svg.appendChild(path)
+    const dn = DrawingObject.getDrawingObj(node)
+    this.drawLabel(node, dn)
   }
+  private drawLabel(node: Node, dn: DrawingObject) {
+    if (!dn) return
+    if (!dn.labelText || dn.labelText.length == 0) return
+
+    if (dn instanceof DrawingNode) {
+      this.writeLabelText(node)
+    } else if (dn instanceof DrawingGraph) {
+      throw new Error('not implemented')
+    } else {
+      throw new Error('not implemented')
+    }
+  }
+  private writeLabelText(node: Node) {
+    const geomNode = <GeomNode>GeomNode.getGeom(node)
+    const labelBox = geomNode.boundingBox
+    const x = labelBox.center.x
+    const y = labelBox.center.y
+    const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
+    const fontSize = drawingNode.fontsize
+    const textEl = document.createElementNS(svgns, 'text')
+    textEl.setAttribute('x', x.toString())
+    textEl.setAttribute('y', y.toString())
+    textEl.setAttribute('text-anchor', 'middle')
+    textEl.setAttribute('alignment-baseline', 'middle')
+    textEl.setAttribute('font-family', drawingNode.fontname)
+    textEl.setAttribute('font-size', fontSize.toString())
+
+    textEl.setAttribute('fill', drawingNode.fontColor ? drawingNode.fontColor.toString() : 'Black')
+    textEl.appendChild(document.createTextNode(drawingNode.labelText))
+    this.svg.appendChild(textEl)
+  }
+
   close() {
     if (this.transformRequired) {
       throw new Error('not implemented')
