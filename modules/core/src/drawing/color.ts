@@ -1,5 +1,5 @@
 export class Color {
-  static parse(keyword: string): Color {
+  static parse(keyword: string): Color | undefined {
     switch (keyword.toLowerCase()) {
       case 'aliceblue':
         return Color.AliceBlue
@@ -283,6 +283,8 @@ export class Color {
         return Color.Yellow
       case 'yellowgreen':
         return Color.YellowGreen
+      default:
+        return undefined
     }
   }
   a: number

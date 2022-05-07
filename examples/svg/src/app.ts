@@ -279,5 +279,5 @@ const svgCreator = new SvgCreator(graph)
 document.body.appendChild(svgCreator.createSvg())
 function msaglColorToSvgColor(color: Color): string {
   if (!color) return 'Black'
-  return 'rgba(' + color.R + ',' + color.G + ',' + color.B + ',' + color.A / 256.0 + ')'
+  return 'rgba(' + color.R + ',' + color.G + ',' + color.B + ',' + color.A / 255.0 + ')'
 }
