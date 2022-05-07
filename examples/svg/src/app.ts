@@ -77,6 +77,7 @@ const graphString =
   '  7 -> T8;\n' +
   '  23 -> T24;\n' +
   '  23 -> T1;\n' +
+  '  23 [fillcolor = "#0000FF1F"]\n' +
   '  }\n'
 const graph = parseDot(graphString)
 const dg = <DrawingGraph>DrawingGraph.getDrawingObj(graph)

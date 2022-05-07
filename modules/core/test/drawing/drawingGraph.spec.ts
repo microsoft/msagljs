@@ -82,11 +82,6 @@ import {measureTextSize, parseDotGraph} from '../utils/testUtils'
 // })
 // // done for SVG
 
-function layoutDrawingGraph(dg: DrawingGraph): void {
-  dg.createGeometry(measureTextSize)
-  layoutGeomGraph(<GeomGraph>GeomGraph.getGeom(dg.graph), dg.hasDirectedEdge())
-}
-
 function layoutGeomGraph(geomGraph: GeomGraph, directed: boolean, flipToScreenCoords = true) {
   if (directed) {
     layoutGraphWithSugiayma(geomGraph, null, flipToScreenCoords)
