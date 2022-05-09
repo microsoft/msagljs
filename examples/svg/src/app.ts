@@ -13,7 +13,7 @@ const graphString =
   'S24[color=deepskyblue]' +
   'S35[color=goldenrod]' +
   '	size="6,6";\n' +
-  '  S24 -> 27;\n' +
+  '  S24 -> 27[label="from S24\\n to 27"];\n' +
   '  S24 -> 25;\n' +
   '  S1 -> 10;\n' +
   '  S1 -> 2;\n' +
@@ -144,7 +144,11 @@ class SvgCreator {
         WriteLabel(edge.Label);*/
   }
   DrawEdgeLabel(edge: Edge) {
-    // throw new Error('Method not implemented.')
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
+    const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
+    const label = geometryEdge.label
+    if (!label) return
+    this.drawLabelOnCenter(de, label.center.x, label.center.y)
   }
   AddArrows(edge: Edge) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -211,17 +215,21 @@ class SvgCreator {
     const x = labelBox.center.x
     const y = labelBox.center.y
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-    const fontSize = drawingNode.fontsize
+    this.drawLabelOnCenter(drawingNode, x, y)
+  }
+
+  private drawLabelOnCenter(drawingObject: DrawingObject, x: number, y: number) {
+    const fontSize = drawingObject.fontsize
     const textEl = document.createElementNS(svgns, 'text')
     textEl.setAttribute('x', x.toString())
     textEl.setAttribute('y', y.toString())
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('alignment-baseline', 'middle')
-    textEl.setAttribute('font-family', drawingNode.fontname)
+    textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString())
 
-    textEl.setAttribute('fill', msaglToSvgColor(drawingNode.fontColor))
-    textEl.appendChild(document.createTextNode(drawingNode.labelText))
+    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
+    textEl.appendChild(document.createTextNode(drawingObject.labelText))
     this.svg.appendChild(textEl)
   }
 

@@ -117,6 +117,8 @@ export abstract class DrawingObject {
   constructor(attrCont: Entity) {
     this.attrCont = attrCont
     this.bind()
+    this.fontname = DrawingObject.defaultLabelFontName
+    this.fontsize = DrawingObject.defaultLabelFontSize
   }
 
   static getDrawingObj(attrCont: Entity): DrawingObject {
