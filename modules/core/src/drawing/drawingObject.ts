@@ -30,7 +30,7 @@ export abstract class DrawingObject {
   fontColor: Color
   styleEnum: StyleEnum
   pencolor: Color
-  penwidth: number
+  penwidth = 1
   peripheries: number
   size: [number, number]
   rankdir: LayerDirectionEnum

@@ -287,7 +287,7 @@ export class Color {
         return undefined
     }
   }
-  a: number
+  private a: number
 
   //  constructor with alpha and red, green, bluee components
   constructor(a: number, r: number, g: number, b: number) {

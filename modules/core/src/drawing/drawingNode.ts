@@ -84,7 +84,6 @@ export class DrawingNode extends DrawingObject {
     }
     this.fontname = DrawingObject.defaultLabelFontName
     this.fontsize = DrawingObject.defaultLabelFontSize
-    this.fillColor = DrawingNode.defaultFillColor
   }
   //  the non adgjacent edges should avoid being closer to the node than Padding
 

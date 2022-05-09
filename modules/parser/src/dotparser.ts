@@ -112,6 +112,9 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
       switch (attr.id) {
         case 'color':
           drawingObj.color = parseColor(str)
+          if (drawingObj instanceof DrawingNode && !drawingObj.fillColor) {
+            drawingObj.fillColor = drawingObj.color
+          }
           break
         case 'pencolor':
           drawingObj.pencolor = parseColor(str)

@@ -1,13 +1,17 @@
 import {parseDot} from '@msagl/parser'
-import {GeomGraph, GeomNode, Graph, ICurve, layoutGraphWithSugiayma, Node, Rectangle} from 'msagl-js'
-import {Color, DrawingGraph, DrawingNode, DrawingObject} from 'msagl-js/drawing'
+import {Edge, GeomEdge, GeomGraph, GeomNode, Graph, ICurve, layoutGraphWithSugiayma, Node, Rectangle} from 'msagl-js'
+import {Color, DrawingEdge, DrawingGraph, DrawingNode, DrawingObject} from 'msagl-js/drawing'
 import {GeomObject} from '../../../modules/core/src/layout/core/geomObject'
 import {Curve, LineSegment, Point, Polyline} from '../../../modules/core/src/math/geometry'
 import {BezierSeg} from '../../../modules/core/src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../modules/core/src/math/geometry/ellipse'
 import {String} from 'typescript-string-operations'
+import {Arrowhead} from '../../../modules/core/src/layout/core/arrowhead'
 const graphString =
   'digraph abstract {\n' +
+  'S1[color=blue fillcolor=salmon]' +
+  'S24[color=deepskyblue]' +
+  'S35[color=goldenrod]' +
   '	size="6,6";\n' +
   '  S24 -> 27;\n' +
   '  S24 -> 25;\n' +
@@ -38,7 +42,7 @@ const graphString =
   '  33 -> 34;\n' +
   '  42 -> 4;\n' +
   '  26 -> 4;\n' +
-  '  3 -> 4;\n' +
+  '  3 -> 4 [color = "yellow"];\n' +
   '  16 -> 15;\n' +
   '  17 -> 19;\n' +
   '  18 -> 29;\n' +
@@ -86,7 +90,9 @@ layoutGraphWithSugiayma(<GeomGraph>GeomGraph.getGeom(graph), null, false)
 
 const svgns = 'http://www.w3.org/2000/svg'
 
+/** this class creates SVG content for a given Graph */
 class SvgCreator {
+  static arrowAngle = 25
   svg: any
   graph: Graph
   geomGraph: GeomGraph
@@ -106,8 +112,67 @@ class SvgCreator {
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
     }
+    for (const edge of this.graph.deepEdges()) {
+      this.drawEdge(edge)
+    }
     this.close()
     return this.svg
+  }
+  drawEdge(edge: Edge) {
+    const path = document.createElementNS(svgns, 'path')
+    path.setAttribute('fill', 'none')
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
+    this.setStroke(path, de)
+    const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
+    path.setAttribute('d', curveString(geometryEdge.curve))
+    this.AddArrows(edge)
+    this.DrawEdgeLabel(edge)
+    this.svg.appendChild(path)
+    /*
+    WriteStartElement("path");
+    WriteAttribute("fill", "none");
+    var geometryEdge = edge.GeometryEdge;
+    var iCurve = geometryEdge.Curve;
+    WriteStroke(edge.Attr);
+    WriteAttribute("d", CurveString(iCurve));
+    WriteEndElement();
+    if (geometryEdge.EdgeGeometry != null && geometryEdge.EdgeGeometry.SourceArrowhead != null)
+        AddArrow(iCurve.Start, geometryEdge.EdgeGeometry.SourceArrowhead.TipPosition, edge);
+    if (geometryEdge.EdgeGeometry != null && geometryEdge.EdgeGeometry.TargetArrowhead != null)
+        AddArrow(iCurve.End, geometryEdge.EdgeGeometry.TargetArrowhead.TipPosition, edge);
+    if (edge.Label != null && edge.Label.GeometryLabel != null)
+        WriteLabel(edge.Label);*/
+  }
+  DrawEdgeLabel(edge: Edge) {
+    // throw new Error('Method not implemented.')
+  }
+  AddArrows(edge: Edge) {
+    const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
+    const curve = geomEdge.curve
+    this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start)
+
+    this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end)
+  }
+  AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point) {
+    if (!arrowhead) return
+
+    const path = document.createElementNS(svgns, 'polygon')
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
+    this.setStroke(path, de)
+    const points = getArrowheadPoints(base, arrowhead.tipPosition)
+    path.setAttribute('points', pointsToString(points))
+    this.svg.appendChild(path)
+  }
+
+  setStroke(path: SVGPathElement, de: DrawingObject) {
+    path.setAttribute('stroke', msaglToSvgColor(de.color))
+    path.setAttribute('stroke-opacity', (de.color.A / 255).toString())
+    path.setAttribute('stroke-width', de.penwidth.toString())
+    // if (attr.Styles.Any(style => style == Style.Dashed)) {
+    //     WriteAttribute("stroke-dasharray", 5);
+    // } else if (attr.Styles.Any(style => style == Style.Dotted)) {
+    //     WriteAttribute("stroke-dasharray", 2);
+    // }
   }
   drawNode(node: Node) {
     const gn = GeomObject.getGeom(node) as GeomNode
@@ -119,12 +184,12 @@ class SvgCreator {
     const dn = DrawingObject.getDrawingObj(node)
     const path = document.createElementNS(svgns, 'path')
     if (dn.fillColor) {
-      path.setAttribute('fill', msaglColorToSvgColor(dn.fillColor))
+      path.setAttribute('fill', msaglToSvgColor(dn.fillColor))
     } else {
-      path.setAttribute('fill', 'none')
+      path.setAttribute('fill', msaglToSvgColor(DrawingNode.defaultFillColor))
     }
     path.setAttribute('d', curveString(boundaryCurve))
-    path.setAttribute('stroke', msaglColorToSvgColor(dn.color))
+    path.setAttribute('stroke', msaglToSvgColor(dn.color))
     this.svg.appendChild(path)
     this.drawLabel(node, dn)
   }
@@ -155,7 +220,7 @@ class SvgCreator {
     textEl.setAttribute('font-family', drawingNode.fontname)
     textEl.setAttribute('font-size', fontSize.toString())
 
-    textEl.setAttribute('fill', msaglColorToSvgColor(drawingNode.fontColor))
+    textEl.setAttribute('fill', msaglToSvgColor(drawingNode.fontColor))
     textEl.appendChild(document.createTextNode(drawingNode.labelText))
     this.svg.appendChild(textEl)
   }
@@ -277,7 +342,16 @@ function lineSegmentString(ls: LineSegment): string {
 const svgCreator = new SvgCreator(graph)
 
 document.body.appendChild(svgCreator.createSvg())
-function msaglColorToSvgColor(color: Color): string {
+function msaglToSvgColor(color: Color): string {
   if (!color) return 'Black'
   return 'rgba(' + color.R + ',' + color.G + ',' + color.B + ',' + color.A / 255.0 + ')'
+}
+function getArrowheadPoints(start: Point, end: Point): Point[] {
+  let dir = end.sub(start)
+  const h = dir
+  dir = dir.normalize()
+  let s = new Point(-dir.y, dir.x)
+  const mul = h.length * Math.tan(SvgCreator.arrowAngle * 0.5 * (Math.PI / 180.0))
+  s = s.mul(mul)
+  return [start.add(s), end, start.sub(s)]
 }

@@ -20,7 +20,6 @@ export class SvgDebugWriter {
   //private xmlw = require('xml-writer')
   xw: any
   ws: any
-  readonly arrowAngle = 25
 
   constructor(svgFileName: string) {
     this.ws = fs.openSync(svgFileName, 'w', 0o666)
