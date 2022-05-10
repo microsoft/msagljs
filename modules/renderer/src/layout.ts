@@ -21,6 +21,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions, for
   const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grab the GeomGraph from the underlying Graph
 
   function updateLayoutSettings(gg: GeomGraph) {
+    if (!gg) return
     for (const subgraph of gg.subgraphs()) {
       updateLayoutSettings(subgraph)
     }

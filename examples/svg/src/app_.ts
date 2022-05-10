@@ -26,11 +26,10 @@ export class SvgCreator {
   _textMeasurer = new TextMeasurer()
 
   private _renderOptions: any
-  public constructor(svg: any, transformRequired = false) {
+  public constructor(transformRequired = false) {
     this.transformRequired = transformRequired
-    this.svg = svg
   }
-  public setGraph(graph: Graph, options: RenderOptions): any {
+  setGraph(graph: Graph, options: RenderOptions): any {
     this.graph = graph
     {
       this._renderOptions = options
@@ -40,11 +39,8 @@ export class SvgCreator {
       drawingGraph.createGeometry(this._textMeasurer.measure)
       layoutDrawingGraph(drawingGraph, this._renderOptions, true)
     }
-    if (!this.svg) {
-      this.svg = document.createElementNS(svgns, 'svg')
-    } else {
-      this.svg.remove()
-    }
+    this.svg = document.createElementNS(svgns, 'svg')
+
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
     if (!this.geomGraph) return null
@@ -188,9 +184,10 @@ export class SvgCreator {
   }
 }
 
-const DefaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
-const svg: any = document.getElementById('viewer').querySelector('svg')
-const svgCreator = new SvgCreator(svg)
+const viewer = document.getElementById('viewer')
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/cairo.gv'
+
+const svgCreator = new SvgCreator()
 // Dot file selector
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
 for (const name of SAMPLE_DOT) {
@@ -201,11 +198,16 @@ for (const name of SAMPLE_DOT) {
 }
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
-  loadGraphFromUrl(url).then((graph) => {
-    layoutDrawingGraph(<DrawingGraph>DrawingObject.getDrawingObj(graph), getSettings())
-    svgCreator.setGraph(graph)
-    document.getElementById('graph-name').innerText = graph.id
-  })
+  loadGraphFromUrl(url)
+    .then((graph) => {
+      return {svg_node: svgCreator.setGraph(graph, getSettings()), id: graph.id}
+    })
+    .then((p) => {
+      viewer.removeChild(viewer.lastChild)
+      viewer.appendChild(p.svg_node)
+      return p.id
+    })
+    .then((id) => (document.getElementById('graph-name').innerText = id))
 }
 
 // Settings: edge routing
@@ -247,18 +249,28 @@ fontSelect.onchange = () => {
 
 // File selector
 dropZone('drop-target', async (f: File) => {
-  const graph = await loadGraphFromFile(f)
-  layoutDrawingGraph(<DrawingGraph>DrawingObject.getDrawingObj(graph), getSettings())
-  svgCreator.setGraph(graph)
-  document.getElementById('graph-name').innerText = graph.id
+  loadGraphFromFile(f)
+    .then((graph) => {
+      return {svg_node: svgCreator.setGraph(graph, getSettings()), id: graph.id}
+    })
+    .then((p) => {
+      viewer.removeChild(viewer.lastChild)
+      viewer.appendChild(p.svg_node)
+      return p.id
+    })
+    .then((id) => (document.getElementById('graph-name').innerText = id))
 })
 ;(async () => {
   //renderer.setRenderOptions(getSettings())
-  const graph = await loadGraphFromUrl(DefaultGraph)
-  const svg = svgCreator.setGraph(graph, getSettings())
-  document.getElementById('viewer').appendChild(svg)
+  const graph = await loadGraphFromUrl(defaultGraph)
+  clearViewer()
+  viewer.appendChild(svgCreator.setGraph(graph, getSettings()))
   document.getElementById('graph-name').innerText = graph.id
 })()
+
+function clearViewer() {
+  while (viewer.childNodes.length > 1) viewer.removeChild(viewer.firstChild)
+}
 
 function getSettings(): RenderOptions {
   const opts: RenderOptions = {
@@ -329,7 +341,7 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
     } else {
       const isbezier = iCurve instanceof BezierSeg
       if (isbezier) {
-        yield this.bezierSegToString(iCurve as BezierSeg)
+        yield bezierSegToString(iCurve as BezierSeg)
       } else {
         const ispoly = iCurve instanceof Polyline
         if (ispoly) {
