@@ -91,7 +91,7 @@ layoutGraphWithSugiayma(<GeomGraph>GeomGraph.getGeom(graph), null, false)
 const svgns = 'http://www.w3.org/2000/svg'
 
 /** this class creates SVG content for a given Graph */
-class SvgCreator {
+class SvgCreator_ {
   static arrowAngle = 25
   svg: any
   graph: Graph
@@ -102,8 +102,11 @@ class SvgCreator {
     this.transformRequired = transformRequired
   }
   createSvg(): any {
-    this.svg = document.createElementNS(svgns, 'svg')
-
+    if (!this.svg) {
+      this.svg = document.createElementNS(svgns, 'svg')
+    } else {
+      this.svg.remove()
+    }
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
     if (!this.geomGraph) return null
@@ -347,7 +350,7 @@ function lineSegmentString(ls: LineSegment): string {
   return 'L ' + pointToString(ls.end)
 }
 
-const svgCreator = new SvgCreator(graph)
+const svgCreator = new SvgCreator_(graph)
 
 document.body.appendChild(svgCreator.createSvg())
 function msaglToSvgColor(color: Color): string {
@@ -359,7 +362,7 @@ function getArrowheadPoints(start: Point, end: Point): Point[] {
   const h = dir
   dir = dir.normalize()
   let s = new Point(-dir.y, dir.x)
-  const mul = h.length * Math.tan(SvgCreator.arrowAngle * 0.5 * (Math.PI / 180.0))
+  const mul = h.length * Math.tan(SvgCreator_.arrowAngle * 0.5 * (Math.PI / 180.0))
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
 }
