@@ -9,7 +9,9 @@ import {Entity} from '../structs/entity'
 
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject {
-  attrCont: Entity // this is the field from main graph - keep the connection with the underlying graph
+  static attachIndex = 1
+  /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
+  attrCont: Entity
 
   // not all attributes can be used in derived classes
   static defaultLabelFontName = 'Times-Roman'
@@ -110,7 +112,7 @@ export abstract class DrawingObject {
 
   bind() {
     if (this.attrCont != null) {
-      this.attrCont.setAttr(1, this) // the attribute at 0 is for geometry, at 1 is for drawing
+      this.attrCont.setAttr(DrawingObject.attachIndex, this) // the attribute at 0 is for geometry, at 1 is for drawing
     }
   }
 
@@ -125,7 +127,7 @@ export abstract class DrawingObject {
     if (attrCont == null) {
       return null
     } else {
-      return attrCont.getAttr(1) // the attribute at 0 is for geometry, at 1 is for drawing
+      return attrCont.getAttr(DrawingObject.attachIndex) // the attribute at 0 is for geometry, at 1 is for drawing
     }
   }
 }
