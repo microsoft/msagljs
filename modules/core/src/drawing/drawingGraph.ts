@@ -71,6 +71,7 @@ export class DrawingGraph extends DrawingNode {
     if (e.label) {
       const size = textMeasure(e.label.text)
       ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), e.label)
+      de.label.measuredTextSize = size
     }
     if (de.penwidth) {
       ge.lineWidth = de.penwidth
@@ -144,6 +145,7 @@ export class DrawingGraph extends DrawingNode {
       }
       const width = textSize.width + drawingNode.LabelMargin * 2
       const height = textSize.height + drawingNode.LabelMargin * 2
+      drawingNode.measuredTextSize = textSize
       const center = new Point(0, 0)
       const geomNode = new GeomNode(n)
       geomNode.boundaryCurve = this.curveByShape(width, height, center, drawingNode.shape, drawingNode)

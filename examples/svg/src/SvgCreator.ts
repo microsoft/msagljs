@@ -54,11 +54,7 @@ export class SvgRenderer {
   public constructor(transformRequired = false) {
     this.transformRequired = transformRequired
   }
-  private createAndBindWithGraph(entity: Entity, name: string) {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgObject(entity, svgNode)
-    return svgNode
-  }
+
   setGraph(graph: Graph, options: RenderOptions): any {
     this.graph = graph
     {
@@ -70,7 +66,7 @@ export class SvgRenderer {
       layoutDrawingGraph(drawingGraph, this._renderOptions, true)
     }
 
-    this.svg = this.createAndBindWithGraph(this.graph, 'svg')
+    this.svg = createAndBindWithGraph(this.graph, 'svg')
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
     if (!this.geomGraph) return null
@@ -86,7 +82,7 @@ export class SvgRenderer {
     return this.svg
   }
   private drawEdge(edge: Edge) {
-    const edgeGroup = this.createAndBindWithGraph(edge, 'g')
+    const edgeGroup = createAndBindWithGraph(edge, 'g')
 
     const path = document.createElementNS(svgns, 'path')
     edgeGroup.appendChild(path)
@@ -120,7 +116,7 @@ export class SvgRenderer {
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const label = geometryEdge.label
     if (!label) return
-    this.drawLabelOnCenter(de, label.center.x, label.center.y)
+    this.drawLabelAtXY(de, label.boundingBox.left + 1, label.boundingBox.bottom + 1)
   }
   private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -133,7 +129,7 @@ export class SvgRenderer {
   private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point): SVGElement | null {
     if (!arrowhead) return
 
-    const path = <SVGPathElement>(<unknown>this.createAndBindWithGraph(edge, 'polygon'))
+    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(edge, 'polygon'))
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
@@ -159,7 +155,7 @@ export class SvgRenderer {
   }
   drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
     const dn = DrawingObject.getDrawingObj(node)
-    const path = <SVGPathElement>(<unknown>this.createAndBindWithGraph(node, 'path'))
+    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
     if (dn.fillColor) {
       path.setAttribute('fill', msaglToSvgColor(dn.fillColor))
     } else {
@@ -185,24 +181,25 @@ export class SvgRenderer {
   private writeLabelText(node: Node) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const labelBox = geomNode.boundingBox
-    const x = labelBox.center.x
-    const y = labelBox.center.y
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-    this.drawLabelOnCenter(drawingNode, x, y)
+
+    const x = labelBox.center.x - drawingNode.measuredTextSize.width / 2 + drawingNode.labelMargin
+    const y = labelBox.center.y + drawingNode.measuredTextSize.height / 2 - drawingNode.labelMargin
+    this.drawLabelAtXY(drawingNode, x, y)
   }
 
-  private drawLabelOnCenter(drawingObject: DrawingObject, x: number, y: number) {
+  private drawLabelAtXY(drawingObject: DrawingObject, x: number, y: number) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>(<unknown>this.createAndBindWithGraph(drawingObject.attrCont, 'text'))
+    const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.attrCont, 'text'))
     textEl.setAttribute('x', x.toString())
     textEl.setAttribute('y', y.toString())
-    textEl.setAttribute('text-anchor', 'middle')
-    textEl.setAttribute('alignment-baseline', 'middle')
+    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString())
 
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
-    textEl.appendChild(document.createTextNode(drawingObject.labelText))
+    createTspan(drawingObject.labelText, textEl, fontSize, x)
+
     this.svg.appendChild(textEl)
   }
 
@@ -333,4 +330,46 @@ export function getArrowheadPoints(start: Point, end: Point): Point[] {
   const mul = h.length * Math.tan(SvgRenderer.arrowAngle * 0.5 * (Math.PI / 180.0))
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
+}
+function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number, x: number) {
+  const endOfLine = '\n'
+  const textLines = labelText.split(endOfLine)
+  let firstLine = true
+  for (const line of textLines) {
+    const tspan = document.createElementNS(svgns, 'tspan')
+    textEl.appendChild(tspan)
+    tspan.textContent = line
+    tspan.setAttribute('x', x.toString())
+    if (firstLine) {
+      firstLine = false
+      tspan.setAttribute('dy', (-fontSize * (textLines.length - 1)).toString())
+    } else {
+      tspan.setAttribute('dy', fontSize.toString())
+    }
+  }
+  /*
+
+            var textLines = Regex.Split(NodeSanitizer(text), "(\r\n|\r|\n)").Where(it => !endOfLines.Contains(it)).ToList();
+            var isFirstLine = true;
+            textLines.ForEach(line => 
+            {
+                WriteStartElement("tspan");
+                WriteAttribute("x", xContainer);
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    WriteAttribute("dy", -1 * fontSize * (textLines.Count - 1));
+                }
+                else 
+                {
+                    WriteAttribute("dy", fontSize);
+                }
+                xmlWriter.WriteRaw(line);
+                WriteEndElement();
+            });
+    */
+}
+function createAndBindWithGraph(entity: Entity, name: string) {
+  const svgNode = document.createElementNS(svgns, name)
+  new SvgObject(entity, svgNode)
+  return svgNode
 }
