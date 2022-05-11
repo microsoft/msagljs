@@ -42,7 +42,7 @@ class SvgObject {
   svgData: any
 }
 /** this class creates SVG content for a given Graph */
-export class SvgCreator {
+export class SvgRenderer {
   static arrowAngle = 25
   svg: any
   graph: Graph
@@ -330,7 +330,7 @@ export function getArrowheadPoints(start: Point, end: Point): Point[] {
   const h = dir
   dir = dir.normalize()
   let s = new Point(-dir.y, dir.x)
-  const mul = h.length * Math.tan(SvgCreator.arrowAngle * 0.5 * (Math.PI / 180.0))
+  const mul = h.length * Math.tan(SvgRenderer.arrowAngle * 0.5 * (Math.PI / 180.0))
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
 }

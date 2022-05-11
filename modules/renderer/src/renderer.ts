@@ -20,7 +20,7 @@ export interface IRendererControl {
   getElement(): HTMLElement | null
 }
 
-export type RenderOptions = {
+export type LayoutOptions = {
   layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
@@ -36,7 +36,7 @@ const MaxZoom = 2
 export default class Renderer extends EventSource {
   private _deck: any
   private _graph?: Graph
-  private _renderOptions: RenderOptions = {}
+  private _layoutOptions: LayoutOptions = {}
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
   private _textMeasurer: TextMeasurer
@@ -117,18 +117,18 @@ export default class Renderer extends EventSource {
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done */
-  setGraph(graph: Graph, options: RenderOptions = this._renderOptions) {
+  setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
       this.setRenderOptions(options)
     } else {
       this._graph = graph
-      this._renderOptions = options
+      this._layoutOptions = options
       this._textMeasurer.setOptions(options.label || {})
       this._highlightedNodeId = null
 
       const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
       drawingGraph.createGeometry(this._textMeasurer.measure)
-      layoutDrawingGraph(drawingGraph, this._renderOptions, true)
+      layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
 
       if (this._deck.layerManager) {
         // deck is ready
@@ -137,12 +137,12 @@ export default class Renderer extends EventSource {
     }
   }
 
-  setRenderOptions(options: RenderOptions) {
-    const oldLabelSettings = this._renderOptions.label
+  setRenderOptions(options: LayoutOptions) {
+    const oldLabelSettings = this._layoutOptions.label
     const newLabelSettings = options.label
     const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)
 
-    this._renderOptions = options
+    this._layoutOptions = options
 
     if (!this._graph) {
       return
@@ -154,7 +154,7 @@ export default class Renderer extends EventSource {
       drawingGraph.createGeometry(this._textMeasurer.measure)
     }
     const relayout = fontChanged
-    layoutDrawingGraph(drawingGraph, this._renderOptions, relayout)
+    layoutDrawingGraph(drawingGraph, this._layoutOptions, relayout)
 
     if (this._deck.layerManager) {
       // deck is ready

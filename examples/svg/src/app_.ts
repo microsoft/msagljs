@@ -11,12 +11,12 @@ import {Color} from 'msagl-js/drawing'
 import {Curve, LineSegment, Polyline} from '../../../modules/core/src/math/geometry'
 import {BezierSeg} from '../../../modules/core/src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../modules/core/src/math/geometry/ellipse'
-import {SvgCreator} from './SvgCreator'
+import {SvgRenderer} from './SvgCreator'
 
 const viewer = document.getElementById('viewer')
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/cairo.gv'
 
-const svgCreator = new SvgCreator()
+const svgCreator = new SvgRenderer()
 // Dot file selector
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
 for (const name of SAMPLE_DOT) {
