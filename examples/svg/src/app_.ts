@@ -48,7 +48,7 @@ for (const r in ROUTING) {
   edgeRoutingSelect.appendChild(option)
 }
 edgeRoutingSelect.onchange = () => {
-  //  renderer.setRenderOptions(getSettings())
+  //  renderer.setLayoutOptions(getSettings())
 }
 
 // Settings: layout
@@ -60,7 +60,7 @@ for (const l in LAYOUT) {
   layoutSelect.appendChild(option)
 }
 layoutSelect.onchange = () => {
-  //renderer.setRenderOptions(getSettings())
+  //renderer.setLayoutOptions(getSettings())
 }
 
 // Settings: font
@@ -73,7 +73,7 @@ for (const f of FONT) {
   fontSelect.appendChild(option)
 }
 fontSelect.onchange = () => {
-  //renderer.setRenderOptions(getSettings())
+  //renderer.setLayoutOptions(getSettings())
 }
 
 // File selector
@@ -90,7 +90,7 @@ dropZone('drop-target', async (f: File) => {
     .then((id) => (document.getElementById('graph-name').innerText = id))
 })
 ;(async () => {
-  //renderer.setRenderOptions(getSettings())
+  //renderer.setLayoutOptions(getSettings())
   const graph = await loadGraphFromUrl(defaultGraph)
   clearViewer()
   viewer.appendChild(svgCreator.setGraph(graph, getSettings()))
