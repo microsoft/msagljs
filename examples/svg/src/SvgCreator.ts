@@ -86,15 +86,20 @@ export class SvgCreator {
     return this.svg
   }
   private drawEdge(edge: Edge) {
+    const edgeGroup = this.createAndBindWithGraph(edge, 'g')
+
     const path = document.createElementNS(svgns, 'path')
+    edgeGroup.appendChild(path)
     path.setAttribute('fill', 'none')
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
-    this.AddArrows(edge)
+    for (const a of this.AddArrows(edge)) {
+      edgeGroup.appendChild(a)
+    }
     this.DrawEdgeLabel(edge)
-    this.svg.appendChild(path)
+    this.svg.appendChild(edgeGroup)
     /*
       WriteStartElement("path");
       WriteAttribute("fill", "none");
@@ -117,14 +122,15 @@ export class SvgCreator {
     if (!label) return
     this.drawLabelOnCenter(de, label.center.x, label.center.y)
   }
-  private AddArrows(edge: Edge) {
+  private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
-    this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start)
-
-    this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end)
+    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start)
+    if (a) yield a
+    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end)
+    if (a) yield a
   }
-  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point) {
+  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point): SVGElement | null {
     if (!arrowhead) return
 
     const path = <SVGPathElement>(<unknown>this.createAndBindWithGraph(edge, 'polygon'))
@@ -132,7 +138,7 @@ export class SvgCreator {
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
     path.setAttribute('points', pointsToString(points))
-    this.svg.appendChild(path)
+    return path
   }
 
   private setStroke(path: SVGPathElement, de: DrawingObject) {
