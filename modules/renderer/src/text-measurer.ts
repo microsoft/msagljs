@@ -34,7 +34,7 @@ export default class TextMeasurer {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string, fontSize: number, fontFamily: string, fontStyle = 'normal'): Size {
+  measure(text: string, fontSize: number, fontFamily: string, fontStyle: string): Size {
     let w = 0
     let h = 0
     const lines = text.split('\n')
