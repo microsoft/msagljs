@@ -1,7 +1,7 @@
 //import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 
 import {dropZone} from './drag-n-drop'
-import {Renderer, SearchControl, RenderOptions} from '@msagl/renderer'
+import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
 import {parseDot, parseJSON} from '@msagl/parser'
 
 import {EdgeRoutingMode, Graph, ICurve, Point} from 'msagl-js'
@@ -101,8 +101,8 @@ function clearViewer() {
   while (viewer.childNodes.length > 1) viewer.removeChild(viewer.firstChild)
 }
 
-function getSettings(): RenderOptions {
-  const opts: RenderOptions = {
+function getSettings(): LayoutOptions {
+  const opts: LayoutOptions = {
     label: {
       fontFamily: fontSelect.value,
     },

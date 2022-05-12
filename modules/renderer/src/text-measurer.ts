@@ -34,17 +34,19 @@ export default class TextMeasurer {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string): Size {
-    const {fontSize, lineHeight} = this.opts
-    const rowHeight = fontSize * 1.2
-    const rowSpacing = fontSize * (lineHeight - 1)
+  measure(text: string, fontSize: number, fontFamily: string, fontStyle = 'normal'): Size {
     let w = 0
+    let h = 0
     const lines = text.split('\n')
+    this.ctx.font = fontStyle + ' ' + fontSize.toString() + ' ' + fontFamily
+    let lineH: number
     for (const line of lines) {
       const metrics = this.ctx.measureText(line)
       w = Math.max(w, metrics.width)
+      lineH = metrics.actualBoundingBoxAscent
+      h += 2 * lineH
     }
-
-    return new Size(w, lines.length * rowHeight + (lines.length - 1) * rowSpacing)
+    h -= lineH
+    return new Size(w, h)
   }
 }
