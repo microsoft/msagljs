@@ -1,4 +1,4 @@
-import {Size} from '../../'
+import {Size} from '../'
 import {Color} from './color'
 
 export class DrawingLabel {
