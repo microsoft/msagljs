@@ -29,7 +29,7 @@ export type LayoutOptions = {
 const MaxZoom = 2
 
 /**
- * Renders a MSAGL graph with WebGL
+ * Renders an MSAGL graph with WebGL
  * @event load - fired once when the renderer is initialized
  * @event graphload - fired when a graph is rendered for the first time
  */
