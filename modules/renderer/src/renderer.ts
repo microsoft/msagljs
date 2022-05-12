@@ -119,7 +119,7 @@ export default class Renderer extends EventSource {
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
-      this.setLayoutOptions(options)
+      this.setOptions(options)
     } else {
       this._graph = graph
       this._layoutOptions = options
@@ -137,7 +137,7 @@ export default class Renderer extends EventSource {
     }
   }
 
-  setLayoutOptions(options: LayoutOptions) {
+  setOptions(options: LayoutOptions) {
     const oldLabelSettings = this._layoutOptions.label
     const newLabelSettings = options.label
     const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)

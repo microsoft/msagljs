@@ -37,7 +37,7 @@ for (const r in ROUTING) {
   edgeRoutingSelect.appendChild(option)
 }
 edgeRoutingSelect.onchange = () => {
-  renderer.setLayoutOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // Settings: layout
@@ -49,7 +49,7 @@ for (const l in LAYOUT) {
   layoutSelect.appendChild(option)
 }
 layoutSelect.onchange = () => {
-  renderer.setLayoutOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // Settings: font
@@ -62,7 +62,7 @@ for (const f of FONT) {
   fontSelect.appendChild(option)
 }
 fontSelect.onchange = () => {
-  renderer.setLayoutOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // File selector
@@ -72,7 +72,7 @@ dropZone('drop-target', async (f: File) => {
   document.getElementById('graph-name').innerText = graph.id
 })
 ;(async () => {
-  renderer.setLayoutOptions(getSettings())
+  renderer.setOptions(getSettings())
 
   const graph = await loadGraphFromUrl(defaultGraph)
 

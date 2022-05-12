@@ -26,17 +26,17 @@ dotFileSelect.onchange = () => {
 
 const edgeRoutingSelect = createEdgeRoutingSelect()
 edgeRoutingSelect.onchange = () => {
-  svgRenderer.setLayoutOptions(getLayoutOptions())
+  svgRenderer.setOptions(getLayoutOptions())
 }
 
 const layoutSelect = createLayoutSelect()
 layoutSelect.onchange = () => {
-  svgRenderer.setLayoutOptions(getLayoutOptions())
+  svgRenderer.setOptions(getLayoutOptions())
 }
 
 const fontSelect = createFontSelect()
 fontSelect.onchange = () => {
-  svgRenderer.setLayoutOptions(getLayoutOptions())
+  svgRenderer.setOptions(getLayoutOptions())
 }
 
 // File selector
@@ -50,7 +50,7 @@ dropZone('drop-target', async (f: File) => {
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
-  svgRenderer.setLayoutOptions(getLayoutOptions())
+  svgRenderer.setOptions(getLayoutOptions())
   svgRenderer.setGraph(graph)
   document.getElementById('graph-name').innerText = graph.id
 })()
