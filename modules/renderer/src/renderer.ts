@@ -29,7 +29,7 @@ export type LayoutOptions = {
 const MaxZoom = 2
 
 /**
- * Renders a MSAGL graph with WebGL
+ * Renders an MSAGL graph with WebGL
  * @event load - fired once when the renderer is initialized
  * @event graphload - fired when a graph is rendered for the first time
  */
@@ -119,7 +119,7 @@ export default class Renderer extends EventSource {
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
-      this.setRenderOptions(options)
+      this.setOptions(options)
     } else {
       this._graph = graph
       this._layoutOptions = options
@@ -137,7 +137,7 @@ export default class Renderer extends EventSource {
     }
   }
 
-  setRenderOptions(options: LayoutOptions) {
+  setOptions(options: LayoutOptions) {
     const oldLabelSettings = this._layoutOptions.label
     const newLabelSettings = options.label
     const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)

@@ -8,7 +8,7 @@ export type TextMeasurerOptions = {
   fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
 }
 
-export default class TextMeasurer {
+export default class TextMeasurerSvg {
   opts: TextMeasurerOptions = {
     fontFamily: 'sans-serif',
     fontSize: 16,
@@ -34,19 +34,18 @@ export default class TextMeasurer {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string, _fontSize: number, _fontFamily: string, _fontStyle: string): Size {
-    // Notice that lineHeight = 1, as it is set only one. That means that rowSpacing = 0 ...
-
-    const {fontSize, lineHeight} = this.opts
-    const rowHeight = fontSize * 1.2
-    const rowSpacing = fontSize * (lineHeight - 1)
+  measure(text: string, fontSize: number, fontFamily: string, fontStyle: string): Size {
+    const lineHeight = this.opts.lineHeight
+    const rowSpacing = fontSize * 0.2
     let w = 0
+    let h = 0
     const lines = text.split('\n')
+    this.ctx.font = fontStyle + ' ' + fontSize.toString() + 'px ' + fontFamily
     for (const line of lines) {
       const metrics = this.ctx.measureText(line)
       w = Math.max(w, metrics.width)
+      h += metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
     }
-
-    return new Size(w, lines.length * rowHeight + (lines.length - 1) * rowSpacing)
+    return new Size(w, h * lineHeight + rowSpacing * (lines.length - 1))
   }
 }

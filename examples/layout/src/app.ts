@@ -1,12 +1,13 @@
 import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {dropZone} from './drag-n-drop'
-import {Renderer, SearchControl, RenderOptions} from '@msagl/renderer'
+import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
 
 import {EdgeRoutingMode, LayerDirectionEnum} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
+import {DrawingObject} from 'msagl-js/drawing'
 
-const DefaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 
 const renderer = new Renderer(document.getElementById('viewer'))
 renderer.addControl(new SearchControl())
@@ -36,7 +37,7 @@ for (const r in ROUTING) {
   edgeRoutingSelect.appendChild(option)
 }
 edgeRoutingSelect.onchange = () => {
-  renderer.setRenderOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // Settings: layout
@@ -48,7 +49,7 @@ for (const l in LAYOUT) {
   layoutSelect.appendChild(option)
 }
 layoutSelect.onchange = () => {
-  renderer.setRenderOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // Settings: font
@@ -61,7 +62,7 @@ for (const f of FONT) {
   fontSelect.appendChild(option)
 }
 fontSelect.onchange = () => {
-  renderer.setRenderOptions(getSettings())
+  renderer.setOptions(getSettings())
 }
 
 // File selector
@@ -71,21 +72,21 @@ dropZone('drop-target', async (f: File) => {
   document.getElementById('graph-name').innerText = graph.id
 })
 ;(async () => {
-  renderer.setRenderOptions(getSettings())
+  renderer.setOptions(getSettings())
 
-  const graph = await loadGraphFromUrl(DefaultGraph)
+  const graph = await loadGraphFromUrl(defaultGraph)
 
   renderer.setGraph(graph)
   document.getElementById('graph-name').innerText = graph.id
 })()
 
-function getSettings(): RenderOptions {
-  const opts: RenderOptions = {
+function getSettings(): LayoutOptions {
+  const opts: LayoutOptions = {
     label: {
       fontFamily: fontSelect.value,
     },
   }
-
+  DrawingObject.defaultLabelFontName = opts.label.fontFamily
   switch (layoutSelect.value) {
     case 'lr':
       opts.layoutType = 'Sugiyama LR'

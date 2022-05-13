@@ -1,4 +1,3 @@
-import {RenderOptions} from '@msagl/renderer'
 import {
   Edge,
   Ellipse,
@@ -17,10 +16,9 @@ import {
   Arrowhead,
 } from 'msagl-js'
 import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color} from 'msagl-js/drawing'
-import {layoutDrawingGraph} from '../../../modules/renderer/src/layout'
-import TextMeasurer from '../../../modules/renderer/src/text-measurer'
+import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
-import {Entity} from '../../../modules/core/src/structs/entity'
+import {Entity} from '../../core/src/structs/entity'
 
 class SvgObject {
   static attachIndex = 2
@@ -42,7 +40,7 @@ class SvgObject {
   svgData: any
 }
 /** this class creates SVG content for a given Graph */
-export class SvgRenderer {
+export class SvgCreator {
   static arrowAngle = 25
   svg: any
   graph: Graph
@@ -50,27 +48,20 @@ export class SvgRenderer {
   transformRequired: boolean
   _textMeasurer = new TextMeasurer()
 
-  private _renderOptions: any
-  public constructor(transformRequired = false) {
+  private container: HTMLElement
+  public constructor(container: HTMLElement, transformRequired = false) {
     this.transformRequired = transformRequired
+    this.container = container
   }
-  private createAndBindWithGraph(entity: Entity, name: string) {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgObject(entity, svgNode)
-    return svgNode
+
+  private clearContainer() {
+    while (this.container.childNodes.length > 0) this.container.removeChild(this.container.firstChild)
   }
-  setGraph(graph: Graph, options: RenderOptions): any {
+  /** it alwais cleans the current SVG content and creates new one */
+  setGraph(graph: Graph) {
+    this.clearContainer()
     this.graph = graph
-    {
-      this._renderOptions = options
-      this._textMeasurer.setOptions(options.label || {})
-
-      const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
-      drawingGraph.createGeometry(this._textMeasurer.measure)
-      layoutDrawingGraph(drawingGraph, this._renderOptions, true)
-    }
-
-    this.svg = this.createAndBindWithGraph(this.graph, 'svg')
+    this.svg = createAndBindWithGraph(this.graph, 'svg')
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
     if (!this.geomGraph) return null
@@ -83,10 +74,11 @@ export class SvgRenderer {
       this.drawEdge(edge)
     }
     this.close()
-    return this.svg
+
+    this.container.appendChild(this.svg)
   }
   private drawEdge(edge: Edge) {
-    const edgeGroup = this.createAndBindWithGraph(edge, 'g')
+    const edgeGroup = createAndBindWithGraph(edge, 'g')
 
     const path = document.createElementNS(svgns, 'path')
     edgeGroup.appendChild(path)
@@ -100,27 +92,14 @@ export class SvgRenderer {
     }
     this.DrawEdgeLabel(edge)
     this.svg.appendChild(edgeGroup)
-    /*
-      WriteStartElement("path");
-      WriteAttribute("fill", "none");
-      var geometryEdge = edge.GeometryEdge;
-      var iCurve = geometryEdge.Curve;
-      WriteStroke(edge.Attr);
-      WriteAttribute("d", CurveString(iCurve));
-      WriteEndElement();
-      if (geometryEdge.EdgeGeometry != null && geometryEdge.EdgeGeometry.SourceArrowhead != null)
-          AddArrow(iCurve.Start, geometryEdge.EdgeGeometry.SourceArrowhead.TipPosition, edge);
-      if (geometryEdge.EdgeGeometry != null && geometryEdge.EdgeGeometry.TargetArrowhead != null)
-          AddArrow(iCurve.End, geometryEdge.EdgeGeometry.TargetArrowhead.TipPosition, edge);
-      if (edge.Label != null && edge.Label.GeometryLabel != null)
-          WriteLabel(edge.Label);*/
   }
+
   private DrawEdgeLabel(edge: Edge) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const label = geometryEdge.label
     if (!label) return
-    this.drawLabelOnCenter(de, label.center.x, label.center.y)
+    this.drawLabelAtXY(de, label.boundingBox.left + 1, label.boundingBox.bottom + 1)
   }
   private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -133,7 +112,7 @@ export class SvgRenderer {
   private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point): SVGElement | null {
     if (!arrowhead) return
 
-    const path = <SVGPathElement>(<unknown>this.createAndBindWithGraph(edge, 'polygon'))
+    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(edge, 'polygon'))
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
@@ -145,21 +124,16 @@ export class SvgRenderer {
     path.setAttribute('stroke', msaglToSvgColor(de.color))
     path.setAttribute('stroke-opacity', (de.color.A / 255).toString())
     path.setAttribute('stroke-width', de.penwidth.toString())
-    // if (attr.Styles.Any(style => style == Style.Dashed)) {
-    //     WriteAttribute("stroke-dasharray", 5);
-    // } else if (attr.Styles.Any(style => style == Style.Dotted)) {
-    //     WriteAttribute("stroke-dasharray", 2);
-    // }
   }
-  drawNode(node: Node) {
+  private drawNode(node: Node) {
     const gn = GeomObject.getGeom(node) as GeomNode
     const boundaryCurve = gn.boundaryCurve
     if (!boundaryCurve) return
     this.drawNodeOnCurve(boundaryCurve, node)
   }
-  drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
+  private drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
     const dn = DrawingObject.getDrawingObj(node)
-    const path = <SVGPathElement>(<unknown>this.createAndBindWithGraph(node, 'path'))
+    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
     if (dn.fillColor) {
       path.setAttribute('fill', msaglToSvgColor(dn.fillColor))
     } else {
@@ -185,24 +159,25 @@ export class SvgRenderer {
   private writeLabelText(node: Node) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const labelBox = geomNode.boundingBox
-    const x = labelBox.center.x
-    const y = labelBox.center.y
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-    this.drawLabelOnCenter(drawingNode, x, y)
+
+    const x = labelBox.center.x - drawingNode.measuredTextSize.width / 2 + drawingNode.labelMargin
+    const y = labelBox.center.y + drawingNode.measuredTextSize.height / 2 - drawingNode.labelMargin
+    this.drawLabelAtXY(drawingNode, x, y)
   }
 
-  private drawLabelOnCenter(drawingObject: DrawingObject, x: number, y: number) {
+  private drawLabelAtXY(drawingObject: DrawingObject, x: number, y: number) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>(<unknown>this.createAndBindWithGraph(drawingObject.attrCont, 'text'))
+    const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.attrCont, 'text'))
     textEl.setAttribute('x', x.toString())
     textEl.setAttribute('y', y.toString())
-    textEl.setAttribute('text-anchor', 'middle')
-    textEl.setAttribute('alignment-baseline', 'middle')
+    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
-    textEl.setAttribute('font-size', fontSize.toString())
+    textEl.setAttribute('font-size', fontSize.toString() + 'px')
 
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
-    textEl.appendChild(document.createTextNode(drawingObject.labelText))
+    createTspan(drawingObject.labelText, textEl, fontSize, x)
+
     this.svg.appendChild(textEl)
   }
 
@@ -298,7 +273,7 @@ function ellipseToString(ellipse: Ellipse): string {
 function ellipseRadiuses(ellipse: Ellipse): string {
   return doubleToString(ellipse.aAxis.length) + ',' + doubleToString(ellipse.bAxis.length)
 }
-export function pointsToString(points: Point[]) {
+function pointsToString(points: Point[]) {
   return String.Join(
     ' ',
     points.map((p) => pointToString(p)),
@@ -321,16 +296,38 @@ function lineSegmentString(ls: LineSegment): string {
   return 'L ' + pointToString(ls.end)
 }
 
-export function msaglToSvgColor(color: Color): string {
+function msaglToSvgColor(color: Color): string {
   if (!color) return 'Black'
   return 'rgba(' + color.R + ',' + color.G + ',' + color.B + ',' + color.A / 255.0 + ')'
 }
-export function getArrowheadPoints(start: Point, end: Point): Point[] {
+function getArrowheadPoints(start: Point, end: Point): Point[] {
   let dir = end.sub(start)
   const h = dir
   dir = dir.normalize()
   let s = new Point(-dir.y, dir.x)
-  const mul = h.length * Math.tan(SvgRenderer.arrowAngle * 0.5 * (Math.PI / 180.0))
+  const mul = h.length * Math.tan(SvgCreator.arrowAngle * 0.5 * (Math.PI / 180.0))
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
+}
+function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number, x: number) {
+  const endOfLine = '\n'
+  const textLines = labelText.split(endOfLine)
+  let firstLine = true
+  for (const line of textLines) {
+    const tspan = document.createElementNS(svgns, 'tspan')
+    textEl.appendChild(tspan)
+    tspan.textContent = line
+    tspan.setAttribute('x', x.toString())
+    if (firstLine) {
+      firstLine = false
+      tspan.setAttribute('dy', (-fontSize * (textLines.length - 1)).toString())
+    } else {
+      tspan.setAttribute('dy', fontSize.toString())
+    }
+  }
+}
+function createAndBindWithGraph(entity: Entity, name: string) {
+  const svgNode = document.createElementNS(svgns, name)
+  new SvgObject(entity, svgNode)
+  return svgNode
 }

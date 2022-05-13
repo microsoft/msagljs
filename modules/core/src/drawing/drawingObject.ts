@@ -4,11 +4,12 @@ import {StyleEnum} from './styleEnum'
 import {RankEnum} from './rankEnum'
 import {DirTypeEnum} from './dirTypeEnum'
 import {OrderingEnum} from './orderingEnum'
-import {LayerDirectionEnum} from '..'
+import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
 
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject {
+  measuredTextSize: Size
   static attachIndex = 1
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   attrCont: Entity
