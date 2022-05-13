@@ -1,12 +1,5 @@
 import {Size} from 'msagl-js'
-
-export type TextMeasurerOptions = {
-  fontFamily: string
-  fontSize: number
-  lineHeight: number
-  fontStyle: 'normal' | 'italic' | 'oblique'
-  fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
-}
+import {TextMeasurerOptions} from './text-measurer'
 
 export default class TextMeasurerSvg {
   opts: TextMeasurerOptions = {
@@ -34,13 +27,13 @@ export default class TextMeasurerSvg {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string, fontSize: number, fontFamily: string, fontStyle: string): Size {
+  measure(text: string, opts: Partial<TextMeasurerOptions>): Size {
+    this.setOptions(opts)
     const lineHeight = this.opts.lineHeight
-    const rowSpacing = fontSize * 0.2
+    const rowSpacing = opts.fontSize * 0.2
     let w = 0
     let h = 0
     const lines = text.split('\n')
-    this.ctx.font = fontStyle + ' ' + fontSize.toString() + 'px ' + fontFamily
     for (const line of lines) {
       const metrics = this.ctx.measureText(line)
       w = Math.max(w, metrics.width)

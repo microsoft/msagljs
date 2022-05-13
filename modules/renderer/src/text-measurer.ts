@@ -34,9 +34,8 @@ export default class TextMeasurer {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string, _fontSize: number, _fontFamily: string, _fontStyle: string): Size {
-    // Notice that lineHeight = 1, as it is set only one. That means that rowSpacing = 0 ...
-
+  measure(text: string, opts: Partial<TextMeasurerOptions>): Size {
+    this.setOptions(opts)
     const {fontSize, lineHeight} = this.opts
     const rowHeight = fontSize * 1.2
     const rowSpacing = fontSize * (lineHeight - 1)
