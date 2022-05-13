@@ -36,11 +36,11 @@ export default class TextMeasurerSvg {
 
   measure(text: string, fontSize: number, fontFamily: string, fontStyle: string): Size {
     const lineHeight = this.opts.lineHeight
-    const rowSpacing = fontSize * (lineHeight - 1)
+    const rowSpacing = fontSize * 0.2
     let w = 0
     let h = 0
     const lines = text.split('\n')
-    this.ctx.font = fontStyle + ' ' + fontSize.toString() + ' ' + fontFamily
+    this.ctx.font = fontStyle + ' ' + fontSize.toString() + 'px ' + fontFamily
     for (const line of lines) {
       const metrics = this.ctx.measureText(line)
       w = Math.max(w, metrics.width)

@@ -173,7 +173,7 @@ export class SvgCreator {
     textEl.setAttribute('y', y.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
-    textEl.setAttribute('font-size', fontSize.toString())
+    textEl.setAttribute('font-size', fontSize.toString() + 'px')
 
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     createTspan(drawingObject.labelText, textEl, fontSize, x)
