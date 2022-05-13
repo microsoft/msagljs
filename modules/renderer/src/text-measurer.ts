@@ -1,13 +1,5 @@
 import {Size} from 'msagl-js'
 
-export type TextMeasurerOptions = {
-  fontFamily: string
-  fontSize: number
-  lineHeight: number
-  fontStyle: 'normal' | 'italic' | 'oblique'
-  fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
-}
-
 export default class TextMeasurer {
   opts: TextMeasurerOptions = {
     fontFamily: 'sans-serif',

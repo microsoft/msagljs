@@ -59,6 +59,7 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
           sizeMaxPixels: 48,
           // @ts-ignore
           sizeUnits: 'common',
+          characterSet: 'auto',
         },
       ),
     ]

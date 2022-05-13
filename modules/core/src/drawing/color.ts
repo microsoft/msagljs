@@ -1,3 +1,10 @@
+export type TextMeasurerOptions = {
+  fontFamily: string
+  fontSize: number
+  lineHeight: number
+  fontStyle: 'normal' | 'italic' | 'oblique'
+  fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
+}
 export class Color {
   static parse(keyword: string): Color | undefined {
     switch (keyword.toLowerCase()) {
