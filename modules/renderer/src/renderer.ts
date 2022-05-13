@@ -1,6 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core'
 
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
 import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
@@ -9,7 +9,7 @@ import {layoutDrawingGraph} from './layout'
 import {Graph, GeomGraph, Rectangle, EdgeRoutingMode} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
-import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
+import TextMeasurer from './text-measurer'
 import {deepEqual} from './utils'
 
 import GraphHighlighter from './layers/graph-highlighter'

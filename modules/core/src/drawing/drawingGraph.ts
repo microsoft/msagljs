@@ -1,7 +1,7 @@
 import {DrawingEdge} from '.'
 import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size, SugiyamaLayoutSettings} from '..'
 import {Graph, Node} from '..'
-import {TextMeasurerOptions} from '../../../renderer/src/text-measurer'
+import {TextMeasurerOptions} from '.'
 import {Ellipse} from '../math/geometry/ellipse'
 import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
