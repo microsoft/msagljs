@@ -3,11 +3,11 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import {layoutDrawingGraph} from './layout'
 import {Graph} from 'msagl-js'
 
-import TextMeasurer from './text-measurer'
 import {deepEqual} from './utils'
 
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
+import TextMeasurerSvg from './text-measurer-svg'
 
 /**
  * Renders an MSAGL graph with SVG
@@ -15,11 +15,11 @@ import {SvgCreator} from './svgCreator'
 export class RendererSvg {
   private _graph?: Graph
   private _layoutOptions: LayoutOptions = {}
-  private _textMeasurer: TextMeasurer
+  private _textMeasurer: TextMeasurerSvg
   private _svgCreator: SvgCreator
 
   constructor(container: HTMLElement = document.body) {
-    this._textMeasurer = new TextMeasurer()
+    this._textMeasurer = new TextMeasurerSvg()
     this._svgCreator = new SvgCreator(container)
   }
 
