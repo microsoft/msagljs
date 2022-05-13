@@ -7,7 +7,7 @@ import {deepEqual} from './utils'
 
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
-import TextMeasurerSvg from './text-measurer-svg'
+import TextMeasurer from './text-measurer'
 
 /**
  * Renders an MSAGL graph with SVG
@@ -15,11 +15,11 @@ import TextMeasurerSvg from './text-measurer-svg'
 export class RendererSvg {
   private _graph?: Graph
   private _layoutOptions: LayoutOptions = {}
-  private _textMeasurer: TextMeasurerSvg
+  private _textMeasurer: TextMeasurer
   private _svgCreator: SvgCreator
 
   constructor(container: HTMLElement = document.body) {
-    this._textMeasurer = new TextMeasurerSvg()
+    this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
   }
 

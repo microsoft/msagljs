@@ -320,9 +320,9 @@ function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number
     tspan.setAttribute('x', x.toString())
     if (firstLine) {
       firstLine = false
-      tspan.setAttribute('dy', (-fontSize * (textLines.length - 1)).toString())
+      tspan.setAttribute('dy', (1.2 * (-fontSize * (textLines.length - 1))).toString())
     } else {
-      tspan.setAttribute('dy', fontSize.toString())
+      tspan.setAttribute('dy', (1.2 * fontSize).toString())
     }
   }
 }
