@@ -112,9 +112,7 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
       switch (attr.id) {
         case 'color':
           drawingObj.color = parseColor(str)
-          if (drawingObj instanceof DrawingNode && !drawingObj.fillColor) {
-            drawingObj.fillColor = drawingObj.color
-          }
+
           break
         case 'pencolor':
           drawingObj.pencolor = parseColor(str)
@@ -129,7 +127,7 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
           drawingObj.fillColor = parseColor(str)
           break
         case 'style':
-          drawingObj.styleEnum = styleEnumFromString(str)
+          drawingObj.styles.push(styleEnumFromString(str))
           break
         case 'shape': {
           const dn = <DrawingNode>drawingObj

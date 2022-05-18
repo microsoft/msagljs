@@ -31,7 +31,7 @@ export abstract class DrawingObject {
   headlabel: string
   taillabel: string
   fontColor: Color
-  styleEnum: StyleEnum
+  styles: StyleEnum[] = []
   pencolor: Color
   penwidth = 1
   peripheries: number

@@ -15,7 +15,7 @@ import {
   GeomObject,
   Arrowhead,
 } from 'msagl-js'
-import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color} from 'msagl-js/drawing'
+import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
@@ -134,10 +134,11 @@ export class SvgCreator {
   private drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
     const dn = DrawingObject.getDrawingObj(node)
     const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
-    if (dn.fillColor) {
-      path.setAttribute('fill', msaglToSvgColor(dn.fillColor))
+    if (dn.styles.find((s) => s == StyleEnum.filled)) {
+      const c = dn.fillColor ?? dn.color
+      path.setAttribute('fill', msaglToSvgColor(c))
     } else {
-      path.setAttribute('fill', msaglToSvgColor(DrawingNode.defaultFillColor))
+      path.setAttribute('fill', 'none')
     }
     path.setAttribute('d', curveString(boundaryCurve))
     path.setAttribute('stroke', msaglToSvgColor(dn.color))
