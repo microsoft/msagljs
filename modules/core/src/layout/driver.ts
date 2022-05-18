@@ -134,7 +134,7 @@ export function layoutGeomGraphDetailed(
     e[0].edge.remove()
     e[1].add()
   })
-
+  // restore the parent
   connectedGraphs.forEach((g) => {
     for (const n of g.graph.shallowNodes) n.parent = geomG.graph
   })
@@ -145,12 +145,14 @@ export function layoutGeomGraphDetailed(
 
   //the final touches
   if (geomG.graph.parent == null) {
+    positionLabelsIfNeeded(geomG)
     if (flipToScreenCoords) {
       geomG.FlipYAndMoveLeftTopToOrigin()
     }
   }
 
-  // end of function body
+  // end of layoutGeomGraphDetailed body
+
   function getUnroutedEdges(g: GeomGraph): Array<GeomEdge> {
     const edges = []
     for (const n of g.deepNodes()) {
@@ -262,4 +264,12 @@ export function routeRectilinearEdges(
 ) {
   const rr = RectilinearEdgeRouter.constructorGNANB(geomG, edgesToRoute, nodePadding, cornerFitRadius, true)
   rr.run()
+}
+function positionLabelsIfNeeded(geomG: GeomGraph) {
+  const edgesWithNonPositionedLabels = []
+  for (const edge of geomG.deepEdges()) {
+    if (edge.label && edge.label.isPositioned() == false) {
+      edgesWithNonPositionedLabels.push(edge)
+    }
+  }
 }

@@ -175,7 +175,6 @@ export class SvgCreator {
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString() + 'px')
 
-    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     createTspan(drawingObject.labelText, textEl, fontSize, x)
 
     this.svg.appendChild(textEl)
@@ -320,9 +319,9 @@ function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number
     tspan.setAttribute('x', x.toString())
     if (firstLine) {
       firstLine = false
-      tspan.setAttribute('dy', (1.2 * (-fontSize * (textLines.length - 1))).toString())
+      tspan.setAttribute('dy', (1.3 * (-fontSize * (textLines.length - 1))).toString())
     } else {
-      tspan.setAttribute('dy', (1.2 * fontSize).toString())
+      tspan.setAttribute('dy', (1.3 * fontSize).toString())
     }
   }
 }

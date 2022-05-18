@@ -7,7 +7,7 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
-import {mkRTree, RTree} from '../../math/geometry/RTree/RTree'
+import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, PointLocation} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
 

@@ -1,5 +1,5 @@
 import {Rectangle, Point} from '../../../../src'
-import {mkRTree} from '../../../../src/math/geometry/RTree/RTree'
+import {mkRTree} from '../../../../src/math/geometry/RTree/rTree'
 import {randomInt} from '../../../../src/utils/random'
 
 test('RTreeQuery_IncrementalRectangles', () => {
