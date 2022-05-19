@@ -340,7 +340,7 @@ export class EdgeLabelPlacement extends Algorithm {
     if (derivative.length < GeomConstants.distanceEpsilon) {
       derivative = new Point(1, 1)
     }
-
+    derivative = derivative.normalize()
     const widthHeight = new Size(label.width, label.height)
     const labelInfo = this.getLabelInfo(label)
     const side: number = EdgeLabelPlacement.GetPossibleSides(labelInfo.placementSide, derivative)[0]
@@ -383,6 +383,7 @@ export class EdgeLabelPlacement extends Algorithm {
     const wh = new Size(label.width, label.height)
     let bestConflictIndex = -1
     let bestRectangle = Rectangle.mkEmpty()
+    const curve = EdgeLabelPlacement.geomEdge(label).curve
     for (const index of EdgeLabelPlacement.ExpandingSearch(
       this.StartIndex(
         label,
@@ -392,8 +393,8 @@ export class EdgeLabelPlacement extends Algorithm {
       curvePoints.length,
     )) {
       const cp = curvePoints[index]
-      const curve = EdgeLabelPlacement.geomEdge(label).curve
-      const der: Point = curve.derivative(cp[0])
+
+      const der: Point = curve.derivative(cp[0]).normalize()
       if (closeDistEps(der.lengthSquared, 0)) {
         continue
       }
@@ -440,11 +441,9 @@ export class EdgeLabelPlacement extends Algorithm {
   //  <param name="side">The side (1 or -1) of the line to place the label on.</param>
   //  <returns>The label's desired position.</returns>
   static GetLabelBounds(point: Point, derivative: Point, size: Size, side: number): Rectangle {
-    const o: Point = derivative
-      .rotate(Math.PI / 2)
-      .normalize()
-      .mul(side * 2)
+    const o: Point = derivative.rotate(Math.PI / 2).mul(side * 2)
     const labelPos: Point = point.add(o)
+    const oLength = 2
     let left = o.x > 0 ? labelPos.x : labelPos.x - size.width
     let bottom = o.y > 0 ? labelPos.y : labelPos.y - size.height
     //  If the line is near horizontal, shift the placement
@@ -458,17 +457,17 @@ export class EdgeLabelPlacement extends Algorithm {
       //        /
       //       /
       //  Get the angle, 'o', between the line and the label
-      const horizontalAngle: number = Math.acos(Math.abs(o.y) / o.length)
+      const horizontalAngle: number = Math.acos(Math.abs(o.y) / oLength)
       //  Get the distance, 'w', from the tip of the normal to the line
-      const horizontalShift: number = o.length / Math.sin(horizontalAngle)
-      const verticalShift: number = o.length / Math.cos(horizontalAngle)
+      const horizontalShift: number = oLength / Math.sin(horizontalAngle)
+      const verticalShift: number = oLength / Math.cos(horizontalAngle)
       //  Shift the label by this amount, or by half the width.  Whichever is smaller
       left += (o.x > 0 ? -1 : 1) * Math.min(horizontalShift, size.width / 2.0)
       bottom += (o.y > 0 ? 1 : -1) * verticalShift
     } else if (Math.abs(o.y) < 0.75) {
-      const verticalAngle: number = Math.acos(Math.abs(o.x) / o.length)
-      const verticalShift: number = o.length / Math.sin(verticalAngle)
-      const horizontalShift: number = o.length / Math.cos(verticalAngle)
+      const verticalAngle: number = Math.acos(Math.abs(o.x) / oLength)
+      const verticalShift: number = oLength / Math.sin(verticalAngle)
+      const horizontalShift: number = oLength / Math.cos(verticalAngle)
       left += (o.x > 0 ? 1 : -1) * horizontalShift
       bottom += (o.y > 0 ? -1 : 1) * Math.min(verticalShift, size.height / 2.0)
     }
