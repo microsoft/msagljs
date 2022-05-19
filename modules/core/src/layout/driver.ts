@@ -14,6 +14,7 @@ import {routeSplines, SplineRouter} from '../routing/splineRouter'
 import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
 import {initRandom} from '../utils/random'
+import {EdgeLabelPlacement} from './edgeLabelPlacement'
 
 // function routeEdges(
 //   geomG: GeomGraph,
@@ -122,6 +123,7 @@ export function layoutGeomGraphDetailed(
     return
   }
   initRandom(randomSeed)
+  markLabelsAsUnpositoned(geomG)
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)
@@ -266,10 +268,14 @@ export function routeRectilinearEdges(
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph) {
-  const edgesWithNonPositionedLabels = []
-  for (const edge of geomG.deepEdges()) {
-    if (edge.label && edge.label.isPositioned() == false) {
-      edgesWithNonPositionedLabels.push(edge)
-    }
+  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges()).filter((edge) => edge.label && edge.label.isPositioned == false)
+
+  if (edgesWithNonPositionedLabels.length == 0) return
+  const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
+  ep.run()
+}
+function markLabelsAsUnpositoned(geomG: GeomGraph) {
+  for (const e of geomG.deepEdges()) {
+    if (e.label) e.label.isPositioned = false
   }
 }

@@ -12,15 +12,15 @@ export enum LabelPlacementResult {
     */
   OverlapsOtherLabels = 0,
   /**
-    //Placement result meaning that the label overlaps a node, but not a label
+    Placement result meaning that the label overlaps a node, but not a label
     */
   OverlapsNodes = 1,
   /**
-    //Placement result meaning that the label overlaps an edge, but not a node or label.
+    Placement result meaning that the label overlaps an edge, but not a node or label.
     */
   OverlapsEdges = 2,
   /**
-    //Placement result meaning that the label overlaps nothing.
+    Placement result meaning that the label overlaps nothing.
     */
   OverlapsNothing = Number.MAX_VALUE,
 }
@@ -134,7 +134,7 @@ class LabelInfo {
   outerPoints: Point[] = []
   edgePoints: Array<[number, Point]>
   placementSide = PlacementSide.Any
-  placementOffset: number
+  placementOffset = 0.5
   placementResult: LabelPlacementResult
   constructor(edgePoints: Array<[number, Point]>) {
     this.edgePoints = edgePoints
@@ -148,7 +148,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   //      The list of labels to be placed
 
-  labels: GeomLabel[]
+  edges: GeomEdge[]
 
   obstacleMaps: RTree<IObstacle, Point>[] = []
 
@@ -190,27 +190,25 @@ export class EdgeLabelPlacement extends Algorithm {
   public static constructorG(graph: GeomGraph) {
     return new EdgeLabelPlacement(
       Array.from(graph.deepNodes()),
-      Array.from(graph.deepEdges())
-        .map((e) => e.label)
-        .filter((l) => l != null),
+      Array.from(graph.deepEdges()).filter((e) => e.label),
     )
   }
 
   //      Constructs an edge label placer that places the given labels in the graph.
 
-  public static constructorGA(graph: GeomGraph, labels: GeomLabel[]) {
-    return new EdgeLabelPlacement(Array.from(graph.deepNodes()), labels)
+  public static constructorGA(graph: GeomGraph, edges: GeomEdge[]) {
+    return new EdgeLabelPlacement(
+      Array.from(graph.deepNodes()),
+      edges.filter((e) => e.label),
+    )
   }
 
   //      Constructs a edge label placer that will only avoid overlaps with the given nodes and edges.
 
-  constructor(nodes: GeomNode[], labels: GeomLabel[]) {
+  constructor(nodes: GeomNode[], edges: GeomEdge[]) {
     super(null)
-    this.InitializeObstacles(
-      nodes,
-      labels.map((l) => GeomEdge.getGeom(l.label.parent) as GeomEdge),
-    )
-    this.labels = labels
+    this.InitializeObstacles(nodes, edges)
+    this.edges = edges
   }
 
   InitializeObstacles(nodes: GeomNode[], edgeList: GeomEdge[]) {
@@ -250,7 +248,7 @@ export class EdgeLabelPlacement extends Algorithm {
   static PlaceLabelsAtDefaultPositions(cancelToken: CancelToken, edges: GeomEdge[]) {
     for (const edge of edges) {
       if (edge.label) {
-        const placer = new EdgeLabelPlacement([edge.source, edge.target], [edge.label])
+        const placer = new EdgeLabelPlacement([edge.source, edge.target], [edge])
         placer.run()
       }
     }
@@ -276,36 +274,34 @@ export class EdgeLabelPlacement extends Algorithm {
     if (this.labelObstacleMap == null) {
       this.labelObstacleMap = mkRTree([[label.boundingBox, label]])
       this.obstacleMaps[0] = this.labelObstacleMap
-    } else this.labelObstacleMap.Add(label.boundingBox, label)
+    } else {
+      this.labelObstacleMap.Add(label.boundingBox, label)
+    }
   }
 
   //      Places the given labels.
 
   run() {
-    const lbs: GeomLabel[] = this.labels
-    //  Place outer most labels first, since their positions are more semantically important
-    //  Also place labels on short edges before labels on long edges, since short edges have less options.
-    lbs.sort((a, b) => {
-      const aEdge = GeomEdge.getGeom(a.label.parent) as GeomEdge
-      const bEdge = GeomEdge.getGeom(b.label.parent) as GeomEdge
-      return this.edgeInfos.get(bEdge).edgePoints.length - this.edgeInfos.get(aEdge).edgePoints.length
+    //  Place labels on short edges before labels on long edges, since short edges have less options.
+    this.edges.sort((a, b) => {
+      return this.edgeInfos.get(a).edgePoints.length - this.edgeInfos.get(b).edgePoints.length
     })
-    for (const label of lbs) {
-      this.PlaceLabel(label)
+    for (const edge of this.edges) {
+      this.PlaceLabel(edge)
     }
   }
 
   //      Places the given label in an available location.
 
-  PlaceLabel(label: GeomLabel) {
+  PlaceLabel(edge: GeomEdge) {
     let placed = false
     for (const s of this.placementStrategy) {
       switch (s) {
         case PlacementStrategy.AlongCurve:
-          placed = this.PlaceEdgeLabelOnCurve(label)
+          placed = this.PlaceEdgeLabelOnCurve(edge.label)
           break
         case PlacementStrategy.Horizontal:
-          placed = this.PlaceEdgeLabelHorizontally(label)
+          placed = this.PlaceEdgeLabelHorizontally(edge.label)
           break
         default:
           throw new Error('unexpected case')
@@ -316,9 +312,9 @@ export class EdgeLabelPlacement extends Algorithm {
     }
 
     if (placed) {
-      this.CalculateCenterLabelInfoCenter(label)
+      this.CalculateCenterLabelInfoCenter(edge.label)
     } else {
-      this.PlaceLabelAtFirstPosition(label)
+      this.PlaceLabelAtFirstPosition(edge.label)
     }
   }
 

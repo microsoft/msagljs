@@ -78,7 +78,7 @@ function parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any
   const drawingEdge = new DrawingEdge(edge)
   fillDrawingObjectAttrs(o, drawingEdge)
   if (drawingEdge.labelText) {
-    edge.label = new Label(drawingEdge.labelText)
+    edge.label = new Label(drawingEdge.labelText, edge)
     drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
   }
   drawingEdge.directed = directed

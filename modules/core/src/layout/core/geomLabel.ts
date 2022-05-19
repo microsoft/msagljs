@@ -32,7 +32,11 @@ export class GeomLabel extends GeomObject {
     this.boundingBox.center = value
   }
 
-  isPositioned(): boolean {
-    return this.boundingBox.left != 0 || this.boundingBox.bottom != 0
+  private _isPositioned = false
+  public get isPositioned() {
+    return this._isPositioned
+  }
+  public set isPositioned(value) {
+    this._isPositioned = value
   }
 }
