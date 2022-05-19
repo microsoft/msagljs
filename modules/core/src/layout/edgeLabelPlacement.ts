@@ -445,8 +445,8 @@ export class EdgeLabelPlacement extends Algorithm {
       .normalize()
       .mul(side * 2)
     const labelPos: Point = point.add(o)
-    let left = o.x > 0 ? labelPos.x : labelPos.x - size.height
-    let bottom = o.y > 0 ? labelPos.y : labelPos.y - size.width
+    let left = o.x > 0 ? labelPos.x : labelPos.x - size.width
+    let bottom = o.y > 0 ? labelPos.y : labelPos.y - size.height
     //  If the line is near horizontal, shift the placement
     //  to make it naturally transistion from o.X being negative to positive.
     if (Math.abs(o.x) < 0.75) {
