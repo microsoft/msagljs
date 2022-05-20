@@ -78,7 +78,7 @@ const graph = parseJSON({
 renderer.setGraph(graph)
 ```
 
-## Renderer API
+## Renderer with Deck.gl API
 
 Constructor:
 
@@ -97,6 +97,25 @@ To change the layout of the current graph:
 ```typescript
 renderer.setRenderOptions(options: RenderOptions)
 ```
+## Renderer with SVG API
+
+Constructor:
+
+```typescript
+rendererSvg=new RendererSVG(container?: HTMLDivElement)
+```
+
+To layout and render a new graph:
+
+```typescript
+rendererSvg.setGraph(g: Graph, options: RenderOptions)
+```
+
+To change the layout of the current graph:
+
+```typescript
+rendererSvg.setRenderOptions(options: RenderOptions)
+```
 
 The renderer options accept the following fields:
 
@@ -108,7 +127,7 @@ The renderer options accept the following fields:
   ![Alt text](./docs/images/showAPI_dark.svg#gh-dark-mode-only)
 
 
-  [MDS](https://en.wikipedia.org/wiki/Multidimensional_scaling) (Multidemensional Scaling):
+  [MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf) (Multidemensional Scaling):
 
   ![Alt text](./docs/images/mdsShowAPI.svg#gh-light-mode-only)
   ![Alt text](./docs/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
@@ -123,11 +142,12 @@ The renderer options accept the following fields:
 
 ## Examples
 
-Currently there are only two examples at the "examples" dir. One of them, examples/layout, can be seen at https://microsoft.github.io/msagljs/.
+Renderings graphs with Deck.gl and with SVG can be seen at https://microsoft.github.io/msagljs/.
 
-In addition to the initially loaded graph, the page offers a list of graph samples.
-
-You can view a DOT graph by drag-dropping a file into the folder icon at the top of the page. 
+In addition to the initially loaded graph, the page offers a list of
+graph samples and the option of loading a DOT or JSON graph from the
+local disk: You can view a DOT graph by drag-dropping its file into the
+folder icon at the left-upper corner of the page. 
 
 ## Contributing
 
