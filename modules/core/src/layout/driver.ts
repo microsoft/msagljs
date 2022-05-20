@@ -108,6 +108,8 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
   } else if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }
+  requireLabelPositioning(geomGraph)
+  positionLabelsIfNeeded(geomGraph)
 }
 /** Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs */
 export function layoutGeomGraphDetailed(
@@ -123,7 +125,7 @@ export function layoutGeomGraphDetailed(
     return
   }
   initRandom(randomSeed)
-  markLabelsAsUnpositoned(geomG)
+  requireLabelPositioning(geomG)
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)
@@ -274,8 +276,9 @@ function positionLabelsIfNeeded(geomG: GeomGraph) {
   const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
   ep.run()
 }
-function markLabelsAsUnpositoned(geomG: GeomGraph) {
+/** mark labels as required positoning */
+function requireLabelPositioning(geomG: GeomGraph) {
   for (const e of geomG.deepEdges()) {
-    if (e.label) e.label.isPositioned = false
+    if (e.label) e.label.requirePositioning()
   }
 }

@@ -141,6 +141,13 @@ export class DrawingGraph extends DrawingNode {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
       subDg.createGeometry(this.textMeasure)
+      if (subDg.labelText) {
+        subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
+          fontSize: subDg.fontsize,
+          fontFamily: subDg.fontname,
+          fontStyle: 'normal',
+        })
+      }
     } else {
       const drawingNode = <DrawingNode>DrawingNode.getDrawingObj(n)
       let textSize = new Size(1, 1)

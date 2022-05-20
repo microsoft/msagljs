@@ -183,7 +183,7 @@ export class EdgeLabelPlacement extends Algorithm {
   }
 
   /**      True if the edge collision granularity should be degraded as the number of edges increases. */
-  ScaleCollisionGranularity: boolean
+  ScaleCollisionGranularity = true
 
   //      Constructs an edge label placer that places all labels in the graph.
 
@@ -207,13 +207,24 @@ export class EdgeLabelPlacement extends Algorithm {
 
   constructor(nodes: GeomNode[], edges: GeomEdge[]) {
     super(null)
+    this.granularity = this.ScaleCollisionGranularity ? this.interpolateGranularity(edges.length) : EdgeLabelPlacement.MinGranularity
     this.InitializeObstacles(nodes, edges)
     this.edges = edges
   }
+  interpolateGranularity(edgeCount: number): number {
+    if (edgeCount <= EdgeLabelPlacement.LowerEdgeBound) {
+      return EdgeLabelPlacement.MaxGranularity
+    }
+    if (edgeCount >= EdgeLabelPlacement.UpperEdgeBound) {
+      return EdgeLabelPlacement.MinGranularity
+    }
+
+    const delta = (EdgeLabelPlacement.UpperEdgeBound - EdgeLabelPlacement.LowerEdgeBound) / (edgeCount - EdgeLabelPlacement.LowerEdgeBound)
+    return Math.ceil(EdgeLabelPlacement.MinGranularity + delta)
+  }
 
   InitializeObstacles(nodes: GeomNode[], edgeList: GeomEdge[]) {
-    const modifiedGranularity = this.CollisionGranularity
-    const edgeObstacles = this.GetEdgeObstacles(edgeList, modifiedGranularity)
+    const edgeObstacles = this.GetEdgeObstacles(edgeList)
     this.obstacleMaps[1] = mkRTree(nodes.map((n) => [n.boundingBox, new RectangleObstacle(n.boundingBox, n)]))
     // later we init obstacleMaps[0] to lableObstacleMap
     this.obstacleMaps[2] = mkRTree(edgeObstacles.map((e) => [e.boundingBox, new RectangleObstacle(e.boundingBox, e)]))
@@ -254,11 +265,11 @@ export class EdgeLabelPlacement extends Algorithm {
     }
   }
 
-  GetEdgeObstacles(edges: Array<GeomEdge>, modifiedGranularity: number): Array<IObstacle> {
+  GetEdgeObstacles(edges: Array<GeomEdge>): Array<IObstacle> {
     const edgeObstacles = []
     for (const e of edges) {
       if (e.curve == null) continue
-      const curvePoints = EdgeLabelPlacement.CurvePoints(e.curve, modifiedGranularity)
+      const curvePoints = EdgeLabelPlacement.CurvePoints(e.curve, this.CollisionGranularity)
       this.edgeInfos.set(e, new LabelInfo(curvePoints))
       for (const p of curvePoints) {
         edgeObstacles.push(new PortObstacle(p[1]))
@@ -441,9 +452,9 @@ export class EdgeLabelPlacement extends Algorithm {
   //  <param name="side">The side (1 or -1) of the line to place the label on.</param>
   //  <returns>The label's desired position.</returns>
   static GetLabelBounds(point: Point, derivative: Point, size: Size, side: number): Rectangle {
-    const o: Point = derivative.rotate(Math.PI / 2).mul(side * 2)
+    const o: Point = derivative.rotate(Math.PI / 2).mul(side)
     const labelPos: Point = point.add(o)
-    const oLength = 2
+    const oLength = 1
     let left = o.x > 0 ? labelPos.x : labelPos.x - size.width
     let bottom = o.y > 0 ? labelPos.y : labelPos.y - size.height
     //  If the line is near horizontal, shift the placement

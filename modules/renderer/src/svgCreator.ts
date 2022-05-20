@@ -19,6 +19,7 @@ import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum}
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
+import {getLabelPosition} from './utils'
 
 class SvgObject {
   static attachIndex = 2
@@ -99,7 +100,7 @@ export class SvgCreator {
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const label = geometryEdge.label
     if (!label) return
-    this.drawLabelAtXY(de, label.boundingBox.left + 1, label.boundingBox.bottom + 1)
+    this.drawLabelAtXY(de, label.boundingBox.left + 1, label.boundingBox.bottom - 1, label.boundingBox.height)
   }
   private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -151,32 +152,28 @@ export class SvgCreator {
 
     if (dn instanceof DrawingNode) {
       this.writeLabelText(node)
-    } else if (dn instanceof DrawingGraph) {
-      throw new Error('not implemented')
     } else {
       throw new Error('not implemented')
     }
   }
   private writeLabelText(node: Node) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
-    const labelBox = geomNode.boundingBox
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-
-    const x = labelBox.center.x - drawingNode.measuredTextSize.width / 2 + drawingNode.labelMargin
-    const y = labelBox.center.y + drawingNode.measuredTextSize.height / 2 - drawingNode.labelMargin
-    this.drawLabelAtXY(drawingNode, x, y)
+    const [x, y] = getLabelPosition(geomNode)
+    this.drawLabelAtXY(drawingNode, x, y, drawingNode.measuredTextSize.height)
   }
 
-  private drawLabelAtXY(drawingObject: DrawingObject, x: number, y: number) {
+  private drawLabelAtXY(drawingObject: DrawingObject, x: number, y: number, height: number) {
     const fontSize = drawingObject.fontsize
     const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.attrCont, 'text'))
     textEl.setAttribute('x', x.toString())
-    textEl.setAttribute('y', y.toString())
+    textEl.setAttribute('text-anchor', 'middle')
+    const labelMargin = drawingObject instanceof DrawingNode ? drawingObject.LabelMargin : 0
+    textEl.setAttribute('y', (y - labelMargin).toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString() + 'px')
-
-    createTspan(drawingObject.labelText, textEl, fontSize, x)
+    createTspan(drawingObject.labelText, textEl, fontSize, x, height)
 
     this.svg.appendChild(textEl)
   }
@@ -309,7 +306,7 @@ function getArrowheadPoints(start: Point, end: Point): Point[] {
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
 }
-function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number, x: number) {
+function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number, x: number, height: number) {
   const endOfLine = '\n'
   const textLines = labelText.split(endOfLine)
   let firstLine = true
@@ -317,10 +314,12 @@ function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number
     const tspan = document.createElementNS(svgns, 'tspan')
     textEl.appendChild(tspan)
     tspan.textContent = line
+    tspan.setAttribute('text-anchor', 'middle')
     tspan.setAttribute('x', x.toString())
+
     if (firstLine) {
       firstLine = false
-      tspan.setAttribute('dy', (1.3 * (-fontSize * (textLines.length - 1))).toString())
+      tspan.setAttribute('dy', (1.3 * (-fontSize * (textLines.length - 1)) + height / 2).toString())
     } else {
       tspan.setAttribute('dy', (1.3 * fontSize).toString())
     }

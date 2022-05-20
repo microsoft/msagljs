@@ -1,3 +1,5 @@
+import {GeomGraph, GeomNode} from 'msagl-js'
+
 export function deepEqual(a: any, b: any): boolean {
   if (a === b) {
     return true
@@ -35,4 +37,12 @@ export function deepEqual(a: any, b: any): boolean {
     return true
   }
   return false
+}
+
+export function getLabelPosition(n: GeomNode): [number, number] {
+  if (n instanceof GeomGraph) {
+    const box = n.boundingBox
+    return [box.center.x, box.bottom + (<GeomGraph>n).labelSize.height / 2 + 2]
+  }
+  return [n.center.x, n.center.y]
 }
