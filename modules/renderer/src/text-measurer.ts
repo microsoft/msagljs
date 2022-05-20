@@ -1,12 +1,5 @@
 import {Size} from 'msagl-js'
-
-export type TextMeasurerOptions = {
-  fontFamily: string
-  fontSize: number
-  lineHeight: number
-  fontStyle: 'normal' | 'italic' | 'oblique'
-  fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
-}
+import {TextMeasurerOptions} from 'msagl-js/drawing'
 
 export default class TextMeasurer {
   opts: TextMeasurerOptions = {
@@ -34,7 +27,8 @@ export default class TextMeasurer {
     this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`
   }
 
-  measure(text: string): Size {
+  measure(text: string, opts: Partial<TextMeasurerOptions>): Size {
+    this.setOptions(opts)
     const {fontSize, lineHeight} = this.opts
     const rowHeight = fontSize * 1.2
     const rowSpacing = fontSize * (lineHeight - 1)

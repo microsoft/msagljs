@@ -1,6 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core'
 
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
 import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
@@ -9,7 +9,7 @@ import {layoutDrawingGraph} from './layout'
 import {Graph, GeomGraph, Rectangle, EdgeRoutingMode} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
-import TextMeasurer, {TextMeasurerOptions} from './text-measurer'
+import TextMeasurer from './text-measurer'
 import {deepEqual} from './utils'
 
 import GraphHighlighter from './layers/graph-highlighter'
@@ -20,7 +20,7 @@ export interface IRendererControl {
   getElement(): HTMLElement | null
 }
 
-export type RenderOptions = {
+export type LayoutOptions = {
   layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
@@ -29,14 +29,14 @@ export type RenderOptions = {
 const MaxZoom = 2
 
 /**
- * Renders a MSAGL graph with WebGL
+ * Renders an MSAGL graph with WebGL
  * @event load - fired once when the renderer is initialized
  * @event graphload - fired when a graph is rendered for the first time
  */
 export default class Renderer extends EventSource {
   private _deck: any
   private _graph?: Graph
-  private _renderOptions: RenderOptions = {}
+  private _layoutOptions: LayoutOptions = {}
   private _controls: IRendererControl[] = []
   private _controlsContainer: HTMLDivElement
   private _textMeasurer: TextMeasurer
@@ -117,18 +117,18 @@ export default class Renderer extends EventSource {
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done */
-  setGraph(graph: Graph, options: RenderOptions = this._renderOptions) {
+  setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
-      this.setRenderOptions(options)
+      this.setOptions(options)
     } else {
       this._graph = graph
-      this._renderOptions = options
+      this._layoutOptions = options
       this._textMeasurer.setOptions(options.label || {})
       this._highlightedNodeId = null
 
       const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
       drawingGraph.createGeometry(this._textMeasurer.measure)
-      layoutDrawingGraph(drawingGraph, this._renderOptions, true)
+      layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
 
       if (this._deck.layerManager) {
         // deck is ready
@@ -137,12 +137,12 @@ export default class Renderer extends EventSource {
     }
   }
 
-  setRenderOptions(options: RenderOptions) {
-    const oldLabelSettings = this._renderOptions.label
+  setOptions(options: LayoutOptions) {
+    const oldLabelSettings = this._layoutOptions.label
     const newLabelSettings = options.label
     const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)
 
-    this._renderOptions = options
+    this._layoutOptions = options
 
     if (!this._graph) {
       return
@@ -154,7 +154,7 @@ export default class Renderer extends EventSource {
       drawingGraph.createGeometry(this._textMeasurer.measure)
     }
     const relayout = fontChanged
-    layoutDrawingGraph(drawingGraph, this._renderOptions, relayout)
+    layoutDrawingGraph(drawingGraph, this._layoutOptions, relayout)
 
     if (this._deck.layerManager) {
       // deck is ready

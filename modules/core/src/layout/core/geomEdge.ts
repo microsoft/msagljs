@@ -11,6 +11,10 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 
 export class GeomEdge extends GeomObject {
+  requireRouting() {
+    this.curve = null
+    this.underlyingPolyline = null
+  }
   private _sourcePort: Port
   public get sourcePort(): Port {
     return this._sourcePort

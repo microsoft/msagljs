@@ -12,15 +12,16 @@ import {
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
-import type {RenderOptions} from './renderer'
+import type {LayoutOptions} from './renderer'
 
 /** lay out the DrawingGraph dg*/
-export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions, forceUpdate = false): GeomGraph {
+export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, forceUpdate = false): GeomGraph {
   let needsReroute = false
   let needsLayout = forceUpdate
   const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grab the GeomGraph from the underlying Graph
 
   function updateLayoutSettings(gg: GeomGraph) {
+    if (!gg) return
     for (const subgraph of gg.subgraphs()) {
       updateLayoutSettings(subgraph)
     }
@@ -37,7 +38,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions, for
   // Clear cached curves
   if (needsLayout || needsReroute) {
     for (const e of geomGraph.deepEdges()) {
-      e.curve = null
+      e.requireRouting()
     }
   }
 
@@ -49,7 +50,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: RenderOptions, for
   return geomGraph
 }
 
-function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: RenderOptions): LayoutSettings {
+function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: LayoutOptions): LayoutSettings {
   // directed is true iff the dot starts with keyword 'digraph'
   let directed = false
   for (const e of subgraph.edges()) {

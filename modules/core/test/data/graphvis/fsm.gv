@@ -10,7 +10,7 @@ digraph finite_state_machine {
 	LR_2 -> LR_5 [ label = "SS(a)" ];
 	LR_2 -> LR_4 [ label = "S(A)" ];
 	LR_5 -> LR_7 [ label = "S(b)" ];
-	LR_5 -> LR_5 [ label = "S(a)" ];
+	LR_5 -> LR_5 [ label = "S(a self)" ];
 	LR_6 -> LR_6 [ label = "S(b)" ];
 	LR_6 -> LR_5 [ label = "S(a)" ];
 	LR_7 -> LR_8 [ label = "S(b)" ];

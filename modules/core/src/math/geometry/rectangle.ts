@@ -185,9 +185,9 @@ export class Rectangle implements IRectangle<Point> {
     return new Rectangle({left: p.x, right: p.x, top: p.y, bottom: p.y})
   }
 
-  static rectangleFromLeftBottomAndSize(left: number, bottom: number, sizeF: Point) {
-    const right = left + sizeF.x
-    const top = bottom + sizeF.y
+  static mkLeftBottomSize(left: number, bottom: number, sizeF: Size) {
+    const right = left + sizeF.width
+    const top = bottom + sizeF.height
     return new Rectangle({left: left, right: right, top: top, bottom: bottom})
   }
 

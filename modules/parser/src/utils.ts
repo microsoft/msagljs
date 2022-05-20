@@ -4,7 +4,7 @@ import {Color} from 'msagl-js/drawing'
 export function parseColor(s: string): Color {
   const p = parseCSSColor(s)
   if (p.keyword != null) {
-    return Color.parse(p.keyword)
+    return Color.parse(p.keyword.toString())
   }
   if (p != null) {
     if (p.rgba != null) {

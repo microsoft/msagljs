@@ -5,6 +5,7 @@ import {GeomNode, GeomGraph} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
+import {getLabelPosition} from '../utils'
 
 type NodeLayerProps = GeometryLayerProps<GeomNode> & {
   getDepth: Buffer
@@ -59,6 +60,7 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
           sizeMaxPixels: 48,
           // @ts-ignore
           sizeUnits: 'common',
+          characterSet: 'auto',
         },
       ),
     ]
@@ -69,14 +71,6 @@ function getCornerRadius(n: GeomNode): number {
   if (!n) return 0
   const dn = <DrawingNode>DrawingNode.getDrawingObj(n.node)
   return dn.xRad
-}
-
-function getLabelPosition(n: GeomNode): [number, number] {
-  if (n instanceof GeomGraph) {
-    const box = n.boundingBox
-    return [box.center.x, box.bottom + (<GeomGraph>n).labelSize.height / 2 + 2]
-  }
-  return [n.center.x, n.center.y]
 }
 
 function getNodeColor(e: GeomNode): [number, number, number, number] {

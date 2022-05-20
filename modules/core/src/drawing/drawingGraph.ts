@@ -1,6 +1,7 @@
 import {DrawingEdge} from '.'
 import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size, SugiyamaLayoutSettings} from '..'
 import {Graph, Node} from '..'
+import {TextMeasurerOptions} from '.'
 import {Ellipse} from '../math/geometry/ellipse'
 import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
@@ -46,31 +47,35 @@ export class DrawingGraph extends DrawingNode {
     return false
   }
 
+  textMeasure: (text: string, opts: Partial<TextMeasurerOptions>) => Size
   createGeometry(
-    textMeasure: (label: string) => Size = (str: string) => {
+    textMeasure: (label: string, opts: Partial<TextMeasurerOptions>) => Size = (str: string) => {
       if (!str) return null
       return new Size(str.length * 8 + 8, 20)
     },
   ): GeomGraph {
     const geomGraph = new GeomGraph(this.graph)
-    geomGraph.labelSize = textMeasure(this.labelText)
+    this.textMeasure = textMeasure
+    const opts: Partial<TextMeasurerOptions> = {fontFamily: this.fontname, fontSize: this.fontsize, fontStyle: 'normal'}
+    geomGraph.labelSize = textMeasure(this.labelText, opts)
     for (const n of this.graph.deepNodes) {
-      this.createNodeGeometry(n, textMeasure)
+      this.createNodeGeometry(n)
     }
     for (const e of this.graph.edges) {
-      this.createEdgeGeometry(e, textMeasure)
+      this.createEdgeGeometry(e)
     }
     return geomGraph
   }
-  createEdgeGeometry(e: Edge, textMeasure: (label: string) => Size) {
+  createEdgeGeometry(e: Edge) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)
     const ge = new GeomEdge(e)
     if (de.directed == false) {
       ge.targetArrowhead = null
     }
     if (e.label) {
-      const size = textMeasure(e.label.text)
+      const size = this.textMeasure(e.label.text, {fontSize: de.fontsize, fontFamily: de.fontname, fontStyle: 'normal'})
       ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), e.label)
+      de.label.measuredTextSize = size
     }
     if (de.penwidth) {
       ge.lineWidth = de.penwidth
@@ -132,18 +137,30 @@ export class DrawingGraph extends DrawingNode {
     return curve ?? Ellipse.mkFullEllipseNNP(width / 2, height / 2, center)
   }
 
-  createNodeGeometry(n: Node, textMeasure: (label: string) => Size): void {
+  createNodeGeometry(n: Node): void {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
-      subDg.createGeometry(textMeasure)
+      subDg.createGeometry(this.textMeasure)
+      if (subDg.labelText) {
+        subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
+          fontSize: subDg.fontsize,
+          fontFamily: subDg.fontname,
+          fontStyle: 'normal',
+        })
+      }
     } else {
       const drawingNode = <DrawingNode>DrawingNode.getDrawingObj(n)
       let textSize = new Size(1, 1)
       if (drawingNode.labelText) {
-        textSize = textMeasure(drawingNode.labelText)
+        textSize = this.textMeasure(drawingNode.labelText, {
+          fontSize: drawingNode.fontsize,
+          fontFamily: drawingNode.fontname,
+          fontStyle: 'normal',
+        })
       }
       const width = textSize.width + drawingNode.LabelMargin * 2
       const height = textSize.height + drawingNode.LabelMargin * 2
+      drawingNode.measuredTextSize = textSize
       const center = new Point(0, 0)
       const geomNode = new GeomNode(n)
       geomNode.boundaryCurve = this.curveByShape(width, height, center, drawingNode.shape, drawingNode)

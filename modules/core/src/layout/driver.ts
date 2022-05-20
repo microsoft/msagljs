@@ -14,6 +14,7 @@ import {routeSplines, SplineRouter} from '../routing/splineRouter'
 import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
 import {initRandom} from '../utils/random'
+import {EdgeLabelPlacement} from './edgeLabelPlacement'
 
 // function routeEdges(
 //   geomG: GeomGraph,
@@ -107,6 +108,8 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
   } else if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }
+  requireLabelPositioning(geomGraph)
+  positionLabelsIfNeeded(geomGraph)
 }
 /** Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs */
 export function layoutGeomGraphDetailed(
@@ -122,6 +125,7 @@ export function layoutGeomGraphDetailed(
     return
   }
   initRandom(randomSeed)
+  requireLabelPositioning(geomG)
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)
@@ -134,7 +138,7 @@ export function layoutGeomGraphDetailed(
     e[0].edge.remove()
     e[1].add()
   })
-
+  // restore the parent
   connectedGraphs.forEach((g) => {
     for (const n of g.graph.shallowNodes) n.parent = geomG.graph
   })
@@ -145,12 +149,14 @@ export function layoutGeomGraphDetailed(
 
   //the final touches
   if (geomG.graph.parent == null) {
+    positionLabelsIfNeeded(geomG)
     if (flipToScreenCoords) {
       geomG.FlipYAndMoveLeftTopToOrigin()
     }
   }
 
-  // end of function body
+  // end of layoutGeomGraphDetailed body
+
   function getUnroutedEdges(g: GeomGraph): Array<GeomEdge> {
     const edges = []
     for (const n of g.deepNodes()) {
@@ -262,4 +268,17 @@ export function routeRectilinearEdges(
 ) {
   const rr = RectilinearEdgeRouter.constructorGNANB(geomG, edgesToRoute, nodePadding, cornerFitRadius, true)
   rr.run()
+}
+function positionLabelsIfNeeded(geomG: GeomGraph) {
+  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges()).filter((edge) => edge.label && edge.label.isPositioned == false)
+
+  if (edgesWithNonPositionedLabels.length == 0) return
+  const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
+  ep.run()
+}
+/** mark labels as required positoning */
+function requireLabelPositioning(geomG: GeomGraph) {
+  for (const e of geomG.deepEdges()) {
+    if (e.label) e.label.requirePositioning()
+  }
 }

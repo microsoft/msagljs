@@ -1,7 +1,7 @@
 import {Interval} from '../../math/geometry/Interval'
 import {Point} from '../../math/geometry/point'
 import {Size} from '../../math/geometry/rectangle'
-import {RTree, mkRTree} from '../../math/geometry/RTree/RTree'
+import {RTree, mkRTree} from '../../math/geometry/RTree/rTree'
 import {BinaryHeapPriorityQueue} from '../../structs/BinaryHeapPriorityQueue'
 
 import {GTreeOverlapRemoval} from './GTreeOverlapRemoval'

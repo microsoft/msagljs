@@ -31,4 +31,13 @@ export class GeomLabel extends GeomObject {
   set center(value) {
     this.boundingBox.center = value
   }
+
+  public get isPositioned() {
+    const center = this.center
+    return center.x != -77 || center.y != -77
+  }
+  /** mark the label as not having a position */
+  requirePositioning() {
+    this.boundingBox.center = new Point(-77, -77)
+  }
 }
