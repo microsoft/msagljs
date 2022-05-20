@@ -127,7 +127,8 @@ The renderer options accept the following fields:
   ![Alt text](./docs/images/showAPI_dark.svg#gh-dark-mode-only)
 
 
-  [MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf) (Multidemensional Scaling):
+  [MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf)
+  (Multidemensional Scaling or Pivot MDS):
 
   ![Alt text](./docs/images/mdsShowAPI.svg#gh-light-mode-only)
   ![Alt text](./docs/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
