@@ -94,7 +94,12 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
       const tooLargeForLayered = subgraph.graph.shallowNodeCount > 2000 || subgraph.graph.nodeCollection.edgeCount > 4000
       if (directed && !tooLargeForLayered) {
         // the graph is not too large and has directed edges: use layered layout
-        layoutSettings = new SugiyamaLayoutSettings()
+        const ss = (layoutSettings = new SugiyamaLayoutSettings())
+        if (root) {
+          if (root.rankdir) {
+            ss.layerDirection = root.rankdir
+          }
+        }
       } else {
         // the graph is more suitable for the pivot mds layout
         layoutSettings = new MdsLayoutSettings()

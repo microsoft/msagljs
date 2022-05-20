@@ -14,6 +14,8 @@ import {
   Polyline,
   GeomObject,
   Arrowhead,
+  Rectangle,
+  Size,
 } from 'msagl-js'
 import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
@@ -100,7 +102,7 @@ export class SvgCreator {
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const label = geometryEdge.label
     if (!label) return
-    this.drawLabelAtXY(de, label.boundingBox.left + 1, label.boundingBox.bottom - 1, label.boundingBox.height)
+    this.drawLabelAtXY(de, label.boundingBox)
   }
   private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -151,31 +153,62 @@ export class SvgCreator {
     if (!dn.labelText || dn.labelText.length == 0) return
 
     if (dn instanceof DrawingNode) {
-      this.writeLabelText(node)
+      this.writeLabelText(node, dn.measuredTextSize)
     } else {
       throw new Error('not implemented')
     }
   }
-  private writeLabelText(node: Node) {
+  private writeLabelText(node: Node, measuredTextSize: Size) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-    const [x, y] = getLabelPosition(geomNode)
-    this.drawLabelAtXY(drawingNode, x, y, drawingNode.measuredTextSize.height)
+    const isGraph = node instanceof Graph
+    const rect = isGraph
+      ? Rectangle.creatRectangleWithSize(
+          measuredTextSize,
+          new Point(geomNode.center.x, geomNode.boundingBox.bottom + measuredTextSize.height / 2 + drawingNode.LabelMargin),
+        )
+      : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
+    this.drawLabelAtXY(drawingNode, rect)
   }
 
-  private drawLabelAtXY(drawingObject: DrawingObject, x: number, y: number, height: number) {
+  private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle) {
     const fontSize = drawingObject.fontsize
     const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.attrCont, 'text'))
-    textEl.setAttribute('x', x.toString())
     textEl.setAttribute('text-anchor', 'middle')
-    const labelMargin = drawingObject instanceof DrawingNode ? drawingObject.LabelMargin : 0
-    textEl.setAttribute('y', (y - labelMargin).toString())
+    textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString() + 'px')
-    createTspan(drawingObject.labelText, textEl, fontSize, x, height)
+
+    this.createTspans(drawingObject.labelText, textEl, fontSize, rect)
 
     this.svg.appendChild(textEl)
+  }
+
+  createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
+    const endOfLine = '\n'
+    const textLines = text.split(endOfLine)
+    if (textLines.length == 1) {
+      const tspan = document.createElementNS(svgns, 'tspan')
+      textEl.appendChild(tspan)
+      tspan.textContent = text
+      tspan.setAttribute('text-anchor', 'middle')
+      tspan.setAttribute('x', rect.center.x.toString())
+      tspan.setAttribute('alignment-baseline', 'middle')
+      tspan.setAttribute('y', rect.center.y.toString())
+    } else {
+      let y = rect.bottom + 1
+      for (let i = 0; i < textLines.length; i++) {
+        const tspan = document.createElementNS(svgns, 'tspan')
+        textEl.appendChild(tspan)
+        tspan.textContent = textLines[i]
+        tspan.setAttribute('text-anchor', 'middle')
+        tspan.setAttribute('x', rect.center.x.toString())
+        tspan.setAttribute('alignment-baseline', 'hanging')
+        tspan.setAttribute('y', y.toString())
+        y += 1.3 * fontSize
+      }
+    }
   }
 
   private close() {
@@ -306,25 +339,7 @@ function getArrowheadPoints(start: Point, end: Point): Point[] {
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
 }
-function createTspan(labelText: string, textEl: SVGTextElement, fontSize: number, x: number, height: number) {
-  const endOfLine = '\n'
-  const textLines = labelText.split(endOfLine)
-  let firstLine = true
-  for (const line of textLines) {
-    const tspan = document.createElementNS(svgns, 'tspan')
-    textEl.appendChild(tspan)
-    tspan.textContent = line
-    tspan.setAttribute('text-anchor', 'middle')
-    tspan.setAttribute('x', x.toString())
 
-    if (firstLine) {
-      firstLine = false
-      tspan.setAttribute('dy', (1.3 * (-fontSize * (textLines.length - 1)) + height / 2).toString())
-    } else {
-      tspan.setAttribute('dy', (1.3 * fontSize).toString())
-    }
-  }
-}
 function createAndBindWithGraph(entity: Entity, name: string) {
   const svgNode = document.createElementNS(svgns, name)
   new SvgObject(entity, svgNode)
