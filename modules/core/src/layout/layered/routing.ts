@@ -133,10 +133,9 @@ export class Routing extends Algorithm {
           offset = dx
           if (intEdge.edge.label != null) {
             offset += intEdge.edge.label.width
-            const center = (intEdge.edge.label.center = new Point(
-              c.value((c.parStart + c.parEnd) / 2).x + intEdge.labelWidth / 2,
-              anchor.y,
-            ))
+            const curveMiddle = c.value((c.parStart + c.parEnd) / 2)
+
+            const center = new Point(curveMiddle.x + intEdge.labelWidth / 2, anchor.y)
             const del = new Point(intEdge.edge.label.width / 2, intEdge.edge.label.height / 2)
             const box = Rectangle.mkPP(center.add(del), center.sub(del))
             intEdge.edge.label.boundingBox = box

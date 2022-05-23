@@ -108,7 +108,6 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
   } else if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }
-  requireLabelPositioning(geomGraph)
   positionLabelsIfNeeded(geomGraph)
 }
 /** Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs */

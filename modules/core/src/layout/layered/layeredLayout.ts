@@ -130,32 +130,10 @@ export class LayeredLayout extends Algorithm {
     const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
-    switch (mode) {
-      case EdgeRoutingMode.SugiyamaSplines:
-        this.calculateEdgeSplines()
-        break
-      case EdgeRoutingMode.StraightLine:
-        throw new Error('not implemented')
-
-        // StraightLineEdges.SetStraightLineEdgesWithUnderlyingPolylines(
-        //   this.originalGraph,
-        // )
-        this.SetLabels()
-        break
-      case EdgeRoutingMode.Spline:
-        throw new Error('not implemented')
-
-        break
-      case EdgeRoutingMode.SplineBundling:
-        throw new Error('not implemented')
-        break
-      case EdgeRoutingMode.Rectilinear:
-      case EdgeRoutingMode.RectilinearToCenter:
-        throw new Error('Not implemented yet')
-
-        break
-      default:
-        throw new Error('Unexpected mode ' + mode)
+    if (mode == EdgeRoutingMode.SugiyamaSplines) {
+      this.calculateEdgeSplines()
+    } else {
+      routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges()), this.cancelToken)
     }
   }
 
