@@ -6,18 +6,15 @@ import {Graph} from 'msagl-js'
 import {deepEqual} from './utils'
 
 import {LayoutOptions} from './renderer'
-import {SvgCreator, svgSave} from './svgCreator'
+import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 
 /**
  * Renders an MSAGL graph with SVG
  */
 export class RendererSvg {
-  saveSvg() {
-    if (this._graph == null) {
-      return
-    }
-    svgSave(this._svgCreator.svg, this._graph.id)
+  getSvgString(): string {
+    return this._svgCreator.getSvgString()
   }
   private _graph?: Graph
   private _layoutOptions: LayoutOptions = {}

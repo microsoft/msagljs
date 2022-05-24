@@ -39,9 +39,22 @@ fontSelect.onchange = () => {
 
 const svgSaveDiv = document.getElementById('save-svg')
 svgSaveDiv.onclick = () => {
-  svgRenderer.saveSvg()
+  const svgString = svgRenderer.getSvgString()
+  download(svgRenderer.graph.id + '.svg', svgString)
 }
 
+function download(filename, text) {
+  const element = document.createElement('a')
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+  element.setAttribute('download', filename)
+
+  element.style.display = 'none'
+  document.body.appendChild(element)
+
+  element.click()
+
+  document.body.removeChild(element)
+}
 // File selector
 dropZone('drop-target', async (f: File) => {
   loadGraphFromFile(f)

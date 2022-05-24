@@ -44,6 +44,10 @@ class SvgObject {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  getSvgString(): string {
+    if (this.svg == null) return null
+    return new XMLSerializer().serializeToString(this.svg)
+  }
   static arrowAngle = 25
   svg: any
   graph: Graph
@@ -344,22 +348,4 @@ function createAndBindWithGraph(entity: Entity, name: string) {
   const svgNode = document.createElementNS(svgns, name)
   new SvgObject(entity, svgNode)
   return svgNode
-}
-export function svgSave(svg: SVGAElement, graphName: string) {
-  if (svg == null || graphName == null) return
-  saveSvg(svg, graphName + '.svg')
-}
-
-function saveSvg(svgEl: SVGAElement, name: string) {
-  svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-  const svgData = svgEl.outerHTML
-  const preface = '<?xml version="1.0" standalone="no"?>\r\n'
-  const svgBlob = new Blob([preface, svgData], {type: 'image/svg+xml;charset=utf-8'})
-  const svgUrl = URL.createObjectURL(svgBlob)
-  const downloadLink = document.createElement('a')
-  downloadLink.href = svgUrl
-  downloadLink.download = name
-  document.body.appendChild(downloadLink)
-  downloadLink.click()
-  document.body.removeChild(downloadLink)
 }
