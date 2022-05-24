@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "deck.gl": "^8.6.0",
-    "msagl-js": "^0.0.65"
+    "msagl-js": "^0.0.65",
+    "svg-pan-zoom": "^3.6.1"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }

@@ -21,8 +21,7 @@ import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum}
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
-import {getLabelPosition} from './utils'
-
+import {default as svgPanZoom} from 'svg-pan-zoom'
 class SvgObject {
   static attachIndex = 2
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
@@ -83,6 +82,7 @@ export class SvgCreator {
     this.close()
 
     this.container.appendChild(this.svg)
+    svgPanZoom(this.svg)
   }
   private drawEdge(edge: Edge) {
     const edgeGroup = createAndBindWithGraph(edge, 'g')
