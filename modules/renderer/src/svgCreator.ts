@@ -82,7 +82,29 @@ export class SvgCreator {
     this.close()
 
     this.container.appendChild(this.svg)
-    svgPanZoom(this.svg)
+    svgPanZoom(this.svg, {
+      viewportSelector: '.svg-pan-zoom_viewport',
+      panEnabled: true,
+      controlIconsEnabled: false,
+      zoomEnabled: true,
+      dblClickZoomEnabled: true,
+      mouseWheelZoomEnabled: true,
+      preventMouseEventsDefault: true,
+      zoomScaleSensitivity: 0.2,
+      minZoom: 0.05,
+      maxZoom: 10,
+      fit: true,
+      contain: false,
+      center: true,
+      refreshRate: 'auto',
+      // beforeZoom: function () =>{},
+      // onZoom: function ()=> {},
+      // beforePan: function () {},
+      // onPan: function () {},
+      // onUpdatedCTM: function () {},
+      // customEventsHandler: {},
+      // eventsListenerElement: null,
+    })
   }
   private drawEdge(edge: Edge) {
     const edgeGroup = createAndBindWithGraph(edge, 'g')
@@ -128,8 +150,9 @@ export class SvgCreator {
   }
 
   private setStroke(path: SVGPathElement, de: DrawingObject) {
-    path.setAttribute('stroke', msaglToSvgColor(de.color))
-    path.setAttribute('stroke-opacity', (de.color.A / 255).toString())
+    const msaglColor = msaglToSvgColor(de.color)
+    path.setAttribute('stroke', msaglColor)
+    path.setAttribute('stroke-opacity', (de.color ? de.color.A / 255 : 1).toString())
     path.setAttribute('stroke-width', de.penwidth.toString())
   }
   private drawNode(node: Node) {
@@ -265,9 +288,9 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
           if (isellipse) {
             const ellipse = iCurve as Ellipse
             if (isFullEllipse(ellipse)) {
-              yield this.ellipseToString(new Ellipse(0, Math.PI, ellipse.aAxis, ellipse.bAxis, ellipse.center))
-              yield this.ellipseToString(new Ellipse(Math.PI, Math.PI * 2, ellipse.aAxis, ellipse.bAxis, ellipse.center))
-            } else yield this.ellipseToString(ellipse)
+              yield ellipseToString(new Ellipse(0, Math.PI, ellipse.aAxis, ellipse.bAxis, ellipse.center))
+              yield ellipseToString(new Ellipse(Math.PI, Math.PI * 2, ellipse.aAxis, ellipse.bAxis, ellipse.center))
+            } else this.ellipseToString(ellipse)
           }
         }
       }
