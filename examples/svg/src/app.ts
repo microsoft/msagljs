@@ -1,5 +1,3 @@
-//import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
-
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 import {parseDot, parseJSON} from '@msagl/parser'
@@ -37,6 +35,11 @@ layoutSelect.onchange = () => {
 const fontSelect = createFontSelect()
 fontSelect.onchange = () => {
   svgRenderer.setOptions(getLayoutOptions())
+}
+
+const svgSaveDiv = document.getElementById('save-svg')
+svgSaveDiv.onclick = () => {
+  svgRenderer.saveSvg()
 }
 
 // File selector
