@@ -5,7 +5,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/msaglJS/msagl-js"
+    "url": "git+https://github.com/microsoft/msagljs"
   },
   "workspaces": [
     "modules/*",
@@ -51,5 +51,4 @@
       "npm run prettier"
     ]
   }
- 
 }
