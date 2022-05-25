@@ -142,12 +142,12 @@ export function layoutGeomGraphDetailed(
     for (const n of g.graph.shallowNodes) n.parent = geomG.graph
   })
 
-  const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
   removedEdges.forEach((e) => e.add())
-  edgeRouter(geomG, edgesToRoute, cancelToken)
 
   //the final touches
   if (geomG.graph.parent == null) {
+    const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
+    edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG)
     if (flipToScreenCoords) {
       geomG.FlipYAndMoveLeftTopToOrigin()

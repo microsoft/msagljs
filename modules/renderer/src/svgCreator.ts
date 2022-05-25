@@ -248,7 +248,7 @@ export class SvgCreator {
         tspan.setAttribute('x', rect.center.x.toString())
         tspan.setAttribute('alignment-baseline', 'hanging')
         tspan.setAttribute('y', y.toString())
-        y += 1.3 * fontSize
+        y += 1.21 * fontSize
       }
     }
   }

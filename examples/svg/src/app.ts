@@ -8,7 +8,7 @@ import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
 
 const viewer = document.getElementById('viewer')
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/b117.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/b53.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
