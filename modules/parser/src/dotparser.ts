@@ -1,6 +1,6 @@
 import parse from 'dotparser'
 import {Edge, Graph, LayerDirectionEnum, Node, Label} from 'msagl-js'
-
+import {Graph as DGraph} from 'dotparser'
 import {
   ArrowTypeEnum,
   DrawingEdge,
@@ -17,93 +17,6 @@ import {
 
 import {parseColor} from './utils'
 
-function parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
-  const nc = dg.graph.nodeCollection
-  let sn: Node
-  let tn: Node
-  if (so.type == 'node_id') {
-    const s = so.id.toString()
-    if (!nc.hasNode(s)) {
-      dg.graph.addNode((sn = new Node(s)))
-      const dn = new DrawingNode(sn)
-      dn.labelText = s
-    } else {
-      sn = nc.getNode(s)
-    }
-  } else {
-    const drObjs = []
-    for (const ch of so.children) {
-      if (ch.type === 'node_stmt') {
-        for (const e of parseEdge(ch.node_id, to, dg, directed, o)) drObjs.push(e)
-      } else if (ch.type === 'attr_stmt') {
-      } else {
-        throw new Error('not implemented')
-      }
-    }
-    for (const ch of so.children) {
-      if (ch.type === 'attr_stmt') {
-        for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
-      } // ignore anything else
-    }
-    return drObjs
-  }
-  if (to.type == 'node_id') {
-    const t = to.id.toString()
-    if (!nc.hasNode(t)) {
-      dg.graph.addNode((tn = new Node(t)))
-      const dn = new DrawingNode(tn)
-      dn.labelText = t
-    } else {
-      tn = nc.getNode(t)
-    }
-  } else if (to.type == 'subgraph') {
-    const drObjs = new Array<DrawingEdge>()
-    for (const ch of to.children) {
-      if (ch.type === 'node_stmt') {
-        for (const e of parseEdge(so, ch.node_id, dg, directed, o)) drObjs.push(e)
-      } else if (ch.type === 'attr_stmt') {
-      } else {
-        throw new Error('not implemented')
-      }
-    }
-    for (const ch of to.children) {
-      if (ch.type === 'attr_stmt') {
-        for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
-      } // ignore anything else
-    }
-    return drObjs
-  }
-  const edge = new Edge(sn, tn)
-  nc.addEdge(edge)
-  const drawingEdge = new DrawingEdge(edge)
-  fillDrawingObjectAttrs(o, drawingEdge)
-  if (drawingEdge.labelText) {
-    edge.label = new Label(drawingEdge.labelText, edge)
-    drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
-  }
-  drawingEdge.directed = directed
-  return [drawingEdge]
-}
-
-function parseGraph(o: any, dg: DrawingGraph, directed: boolean) {
-  parseUnderGraph(o.children, dg, directed)
-}
-
-function parseNode(o: any, dg: DrawingGraph): DrawingNode {
-  const id = o.node_id.id.toString()
-  let node = dg.graph.findNode(id)
-  let drawingNode: DrawingNode
-  if (node) {
-    drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
-    if (!drawingNode) drawingNode = new DrawingNode(node)
-  } else {
-    node = new Node(id)
-    dg.graph.addNode(node)
-    drawingNode = new DrawingNode(node)
-  }
-  fillDrawingObjectAttrs(o, drawingNode)
-  return drawingNode
-}
 function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
   if (o.attr_list == null) return
   for (const attr of o.attr_list) {
@@ -405,47 +318,186 @@ function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
   }
 }
 
-function parseUnderGraph(children: any, dg: DrawingGraph, directed: boolean) {
-  for (const o of children) {
-    switch (o.type) {
-      case 'node_stmt':
-        parseNode(o, dg)
-        break
-      case 'edge_stmt':
-        {
-          const edgeList: any[] = o.edge_list
-          for (let i = 0; i < edgeList.length - 1; i++) parseEdge(edgeList[i], edgeList[i + 1], dg, directed, o)
-        }
-        break
-      case 'subgraph':
-        // is it really a subgraph?
-        if (process_same_rank(o, dg)) {
-        } else if (o.id == null) {
-          const entities: DrawingObject[] = getEntitiesSubg(o, dg, directed)
-          applyAttributesToEntities(o, dg, entities)
+class DotParser {
+  ast: DGraph[]
+  graph: Graph
+  drawingGraph: DrawingGraph
+  defaultNodeAttr: any
+  constructor(ast: DGraph[]) {
+    this.ast = ast
+  }
+
+  parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
+    const nc = dg.graph.nodeCollection
+    let sn: Node
+    let tn: Node
+    if (so.type == 'node_id') {
+      const s = so.id.toString()
+      if (!nc.hasNode(s)) {
+        sn = this.newNode(s, dg).node
+      } else {
+        sn = nc.getNode(s)
+      }
+    } else {
+      const drObjs = []
+      for (const ch of so.children) {
+        if (ch.type === 'node_stmt') {
+          for (const e of this.parseEdge(ch.node_id, to, dg, directed, o)) drObjs.push(e)
+        } else if (ch.type === 'attr_stmt') {
         } else {
-          const subg = new Graph(o.id)
-          const sdg = new DrawingGraph(subg)
-          parseGraph(o, sdg, directed)
-          if (!subg.isEmpty()) dg.graph.addNode(subg)
+          throw new Error('not implemented')
         }
-        break
-      case 'attr_stmt':
-        parseGraphAttr(o, dg)
-        break
-      default:
-        throw new Error('not implemented')
+      }
+      for (const ch of so.children) {
+        if (ch.type === 'attr_stmt') {
+          for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
+        } // ignore anything else
+      }
+      return drObjs
+    }
+    if (to.type == 'node_id') {
+      const t = to.id.toString()
+      if (!nc.hasNode(t)) {
+        tn = this.newNode(t, dg).node
+      } else {
+        tn = nc.getNode(t)
+      }
+    } else if (to.type == 'subgraph') {
+      const drObjs = new Array<DrawingEdge>()
+      for (const ch of to.children) {
+        if (ch.type === 'node_stmt') {
+          for (const e of this.parseEdge(so, ch.node_id, dg, directed, o)) drObjs.push(e)
+        } else if (ch.type === 'attr_stmt') {
+        } else {
+          throw new Error('not implemented')
+        }
+      }
+      for (const ch of to.children) {
+        if (ch.type === 'attr_stmt') {
+          for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
+        } // ignore anything else
+      }
+      return drObjs
+    }
+    const edge = new Edge(sn, tn)
+    nc.addEdge(edge)
+    const drawingEdge = new DrawingEdge(edge)
+    fillDrawingObjectAttrs(o, drawingEdge)
+    if (drawingEdge.labelText) {
+      edge.label = new Label(drawingEdge.labelText, edge)
+      drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
+    }
+    drawingEdge.directed = directed
+    return [drawingEdge]
+  }
+
+  newNode(id: string, dg: DrawingGraph): DrawingNode {
+    const n = new Node(id)
+    dg.graph.addNode(n)
+    const dn = new DrawingNode(n)
+    dn.labelText = id
+    if (this.defaultNodeAttr) {
+      fillDrawingObjectAttrs(this.defaultNodeAttr, dn)
+    }
+    return dn
+  }
+  parseNode(o: any, dg: DrawingGraph): DrawingNode {
+    const id = o.node_id.id.toString()
+    const node = dg.graph.findNode(id)
+    let drawingNode: DrawingNode
+    if (node) {
+      drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
+      if (!drawingNode) drawingNode = new DrawingNode(node)
+      if (this.defaultNodeAttr) {
+        fillDrawingObjectAttrs(this.defaultNodeAttr, drawingNode)
+      }
+    } else {
+      drawingNode = this.newNode(id, dg)
+    }
+    fillDrawingObjectAttrs(o, drawingNode)
+    return drawingNode
+  }
+  parse(): Graph {
+    if (this.ast == null) return null
+    this.graph = new Graph()
+    this.drawingGraph = new DrawingGraph(this.graph)
+    this.parseUnderGraph(this.ast[0].children, this.drawingGraph, this.ast[0].type == 'digraph')
+    return this.graph
+  }
+  parseGraphAttr(o: any, dg: DrawingGraph) {
+    if (o.target == 'node') {
+      this.defaultNodeAttr = o // will parse it for each node
+    } else if (o.target == 'graph') {
+      fillDrawingObjectAttrs(o, dg)
+    }
+  }
+
+  getEntitiesSubg(o: any, dg: DrawingGraph, directed: boolean): DrawingObject[] {
+    let ret: DrawingObject[] = []
+    for (const ch of o.children) {
+      if (ch.type == 'edge_stmt') {
+        const edgeList: any[] = ch.edge_list
+        for (let i = 0; i < edgeList.length - 1; i++) {
+          for (const e of this.parseEdge(edgeList[i], edgeList[i + 1], dg, directed, ch)) ret.push(e)
+        }
+      } else if (ch.type == 'attr_stmt') {
+      } else if (ch.type == 'node_stmt') {
+        ret.push(this.parseNode(ch, dg))
+      } else if (ch.type === 'subgraph') {
+        if (ch.id != null) {
+          const subg = new Graph(ch.id)
+          dg.graph.addNode(subg)
+          const sdg = new DrawingGraph(subg)
+          this.parseUnderGraph(ch.children, sdg, directed)
+          ret.push(sdg)
+        } else {
+          ret = ret.concat(this.getEntitiesSubg(ch, dg, directed))
+        }
+      } else {
+        throw new Error('Function not implemented.')
+      }
+    }
+    return ret
+  }
+
+  parseUnderGraph(children: any, dg: DrawingGraph, directed: boolean) {
+    for (const o of children) {
+      switch (o.type) {
+        case 'node_stmt':
+          this.parseNode(o, dg)
+          break
+        case 'edge_stmt':
+          {
+            const edgeList: any[] = o.edge_list
+            for (let i = 0; i < edgeList.length - 1; i++) this.parseEdge(edgeList[i], edgeList[i + 1], dg, directed, o)
+          }
+          break
+        case 'subgraph':
+          // is it really a subgraph?
+          if (process_same_rank(o, dg)) {
+          } else if (o.id == null) {
+            const entities: DrawingObject[] = this.getEntitiesSubg(o, dg, directed)
+            applyAttributesToEntities(o, dg, entities)
+          } else {
+            const subg = new Graph(o.id)
+            const sdg = new DrawingGraph(subg)
+            this.parseUnderGraph(o.children, sdg, directed)
+            if (!subg.isEmpty()) dg.graph.addNode(subg)
+          }
+          break
+        case 'attr_stmt':
+          this.parseGraphAttr(o, dg)
+          break
+        default:
+          throw new Error('not implemented')
+      }
     }
   }
 }
 
 export function parseDot(graphStr: string): Graph {
-  const ast = parse(graphStr)
-  if (ast == null) return null
-  const graph = new Graph()
-  const drawingGraph = new DrawingGraph(graph)
-  parseUnderGraph(ast[0].children, drawingGraph, ast[0].type == 'digraph')
-  return graph
+  const dp = new DotParser(parse(graphStr))
+  return dp.parse()
 }
 
 function process_same_rank(o: any, dg: DrawingGraph): boolean {
@@ -502,14 +554,6 @@ function process_same_rank(o: any, dg: DrawingGraph): boolean {
       return false
   }
 }
-function parseGraphAttr(o: any, dg: DrawingGraph) {
-  if (dg.defaultNode == null && o.target == 'node') {
-    dg.defaultNode = new DrawingNode(null)
-    fillDrawingObjectAttrs(o, dg.defaultNode)
-  } else if (o.target == 'graph') {
-    fillDrawingObjectAttrs(o, dg)
-  }
-}
 
 function styleEnumFromString(t: string): StyleEnum {
   const typedStyleString = t as keyof typeof StyleEnum
@@ -548,33 +592,6 @@ function dirTypeEnumFromString(t: string): DirTypeEnum {
 function parseFloatQuatriple(str: any): any {
   const p = str.split(',')
   return [parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2]), parseFloat(p[3])]
-}
-function getEntitiesSubg(o: any, dg: DrawingGraph, directed: boolean): DrawingObject[] {
-  let ret: DrawingObject[] = []
-  for (const ch of o.children) {
-    if (ch.type == 'edge_stmt') {
-      const edgeList: any[] = ch.edge_list
-      for (let i = 0; i < edgeList.length - 1; i++) {
-        for (const e of parseEdge(edgeList[i], edgeList[i + 1], dg, directed, ch)) ret.push(e)
-      }
-    } else if (ch.type == 'attr_stmt') {
-    } else if (ch.type == 'node_stmt') {
-      ret.push(parseNode(ch, dg))
-    } else if (ch.type === 'subgraph') {
-      if (ch.id != null) {
-        const subg = new Graph(ch.id)
-        dg.graph.addNode(subg)
-        const sdg = new DrawingGraph(subg)
-        parseGraph(ch, sdg, directed)
-        ret.push(sdg)
-      } else {
-        ret = ret.concat(getEntitiesSubg(ch, dg, directed))
-      }
-    } else {
-      throw new Error('Function not implemented.')
-    }
-  }
-  return ret
 }
 
 function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: DrawingObject[]) {

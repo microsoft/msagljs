@@ -18,7 +18,6 @@ type GraphVisData = {
 export class DrawingGraph extends DrawingNode {
   /** this node does not belong to the graph,
    but rather serves as a template for the other node's attributes (like filledColor, style, etc.) */
-  defaultNode: DrawingNode
   graphVisData: GraphVisData = {
     sameRanks: new Array<string[]>(),
     minRanks: new Array<string>(),
