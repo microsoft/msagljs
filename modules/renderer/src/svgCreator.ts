@@ -168,7 +168,7 @@ export class SvgCreator {
       this.makePathOnCurve(node, dn, boundaryCurve)
       if (dn.shape == ShapeEnum.doublecircle) {
         let ellipse = boundaryCurve as Ellipse
-        const r = ellipse.aAxis.length - 2.5 * dn.penwidth
+        const r = ellipse.aAxis.length - 2 * dn.penwidth
         ellipse = CurveFactory.mkCircle(r, ellipse.center)
         this.makePathOnCurve(node, dn, ellipse)
       }

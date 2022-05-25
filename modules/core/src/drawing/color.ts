@@ -143,6 +143,7 @@ export class Color {
       case 'lightgoldenrodyellow':
         return Color.LightGoldenrodYellow
       case 'lightgray':
+      case 'lightgrey':
         return Color.LightGray
       case 'lightgreen':
         return Color.LightGreen
