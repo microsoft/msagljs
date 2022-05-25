@@ -16,8 +16,9 @@ import {
   Arrowhead,
   Rectangle,
   Size,
+  CurveFactory,
 } from 'msagl-js'
-import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum} from 'msagl-js/drawing'
+import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum, ShapeEnum} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
@@ -162,7 +163,19 @@ export class SvgCreator {
     this.drawNodeOnCurve(boundaryCurve, node)
   }
   private drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
-    const dn = DrawingObject.getDrawingObj(node)
+    const dn = DrawingObject.getDrawingObj(node) as DrawingNode
+    if (dn.shape != ShapeEnum.plaintext) {
+      this.makePathOnCurve(node, dn, boundaryCurve)
+      if (dn.shape == ShapeEnum.doublecircle) {
+        let ellipse = boundaryCurve as Ellipse
+        const r = ellipse.aAxis.length - 2.5 * dn.penwidth
+        ellipse = CurveFactory.mkCircle(r, ellipse.center)
+        this.makePathOnCurve(node, dn, ellipse)
+      }
+    }
+    this.drawLabel(node, dn)
+  }
+  private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve) {
     const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
     if (dn.styles.find((s) => s == StyleEnum.filled)) {
       const c = dn.fillColor ?? dn.color
@@ -172,9 +185,11 @@ export class SvgCreator {
     }
     path.setAttribute('d', curveString(boundaryCurve))
     path.setAttribute('stroke', msaglToSvgColor(dn.color))
+    path.setAttribute('stroke-width', dn.penwidth.toString())
+
     this.svg.appendChild(path)
-    this.drawLabel(node, dn)
   }
+
   private drawLabel(node: Node, dn: DrawingObject) {
     if (!dn) return
     if (!dn.labelText || dn.labelText.length == 0) return

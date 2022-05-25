@@ -108,7 +108,7 @@ export class DrawingGraph extends DrawingNode {
       case ShapeEnum.polygon:
         break
       case ShapeEnum.doublecircle:
-        curve = CurveFactory.mkCircle(width / 2, center)
+        curve = CurveFactory.mkCircle(Math.sqrt(width * width + height * height) + 2.5 * drawingNode.penwidth, center)
         break
       case ShapeEnum.house:
         curve = CurveFactory.createHouse(width, height, center)
