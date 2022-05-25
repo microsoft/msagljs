@@ -89,13 +89,12 @@ export class DrawingGraph extends DrawingNode {
         break
       case ShapeEnum.ellipse:
         break
+      case ShapeEnum.record:
       case ShapeEnum.box:
         curve = CurveFactory.mkRectangleWithRoundedCorners(width, height, drawingNode.XRadius, drawingNode.YRadius, center)
         break
       case ShapeEnum.circle:
         curve = CurveFactory.mkCircle(Math.sqrt(width * width + height * height), center)
-        break
-      case ShapeEnum.record:
         break
       case ShapeEnum.plaintext:
         break
@@ -133,7 +132,7 @@ export class DrawingGraph extends DrawingNode {
         curve = CurveFactory.createHexagon(width, height, center)
         break
     }
-    return curve ?? Ellipse.mkFullEllipseNNP(width / 2, height / 2, center)
+    return curve ?? CurveFactory.mkRectangleWithRoundedCorners(width, height, drawingNode.XRadius, drawingNode.YRadius, center)
   }
 
   createNodeGeometry(n: Node): void {
