@@ -90,7 +90,7 @@ export class SvgCreator {
       dblClickZoomEnabled: true,
       mouseWheelZoomEnabled: true,
       preventMouseEventsDefault: true,
-      zoomScaleSensitivity: 0.2,
+      zoomScaleSensitivity: 0.3,
       minZoom: 0.05,
       maxZoom: 10,
       fit: true,

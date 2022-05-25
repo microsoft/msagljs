@@ -93,7 +93,7 @@ export class DrawingGraph extends DrawingNode {
         curve = CurveFactory.mkRectangleWithRoundedCorners(width, height, drawingNode.XRadius, drawingNode.YRadius, center)
         break
       case ShapeEnum.circle:
-        curve = CurveFactory.mkCircle(width / 2, center)
+        curve = CurveFactory.mkCircle(Math.sqrt(width * width + height * height), center)
         break
       case ShapeEnum.record:
         break
