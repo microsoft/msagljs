@@ -18,7 +18,7 @@ export abstract class DrawingObject {
   static defaultLabelFontName = 'Times-Roman'
   static defaultLabelFontSize = 12
 
-  color: Color = Color.parse('Black')
+  color: Color
   fillColor: Color
   labelfontcolor: Color = Color.parse('Black')
   private _labelText: string

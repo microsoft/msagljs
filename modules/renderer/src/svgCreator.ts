@@ -178,7 +178,7 @@ export class SvgCreator {
   private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve) {
     const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
     if (dn.styles.find((s) => s == StyleEnum.filled)) {
-      const c = dn.fillColor ?? dn.color
+      const c = dn.fillColor ?? dn.color ?? DrawingNode.defaultFillColor
       path.setAttribute('fill', msaglToSvgColor(c))
     } else {
       path.setAttribute('fill', 'none')
