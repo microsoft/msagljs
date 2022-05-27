@@ -1,5 +1,5 @@
 import parse from 'dotparser'
-import {Edge, Graph, LayerDirectionEnum, Node, Label} from 'msagl-js'
+import {Edge, Graph, LayerDirectionEnum, Node, Label, setNewParent} from 'msagl-js'
 import {Graph as DGraph} from 'dotparser'
 import {
   ArrowTypeEnum,
@@ -323,6 +323,7 @@ class DotParser {
   graph: Graph
   drawingGraph: DrawingGraph
   defaultNodeAttr: any
+  nodeMap = new Map<string, Node>()
   constructor(ast: DGraph[]) {
     this.ast = ast
   }
@@ -393,6 +394,7 @@ class DotParser {
 
   newNode(id: string, dg: DrawingGraph): DrawingNode {
     const n = new Node(id)
+    this.nodeMap.set(id, n)
     dg.graph.addNode(n)
     const dn = new DrawingNode(n)
     dn.labelText = id
@@ -403,19 +405,26 @@ class DotParser {
   }
   parseNode(o: any, dg: DrawingGraph): DrawingNode {
     const id = o.node_id.id.toString()
-    const node = dg.graph.findNode(id)
+    const node = this.findNode(id)
     let drawingNode: DrawingNode
     if (node) {
       drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
       if (!drawingNode) drawingNode = new DrawingNode(node)
-      if (this.defaultNodeAttr) {
-        fillDrawingObjectAttrs(this.defaultNodeAttr, drawingNode)
+
+      if (node.parent && node.parent != dg.graph) {
+        setNewParent(dg.graph, node)
       }
     } else {
       drawingNode = this.newNode(id, dg)
+      if (this.defaultNodeAttr) {
+        fillDrawingObjectAttrs(this.defaultNodeAttr, drawingNode)
+      }
     }
     fillDrawingObjectAttrs(o, drawingNode)
     return drawingNode
+  }
+  findNode(id: string) {
+    return this.nodeMap.get(id)
   }
   parse(): Graph {
     if (this.ast == null) return null

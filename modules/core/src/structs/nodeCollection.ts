@@ -55,7 +55,7 @@ export class NodeCollection {
   interGraphEdges(): IterableIterator<Edge> {
     throw new Error('not implemented')
   }
-
+  /** this is a recursive search */
   hasNode(id: string) {
     if (this.nodeMap.has(id)) return true
     for (const p of this.nodeMap) {

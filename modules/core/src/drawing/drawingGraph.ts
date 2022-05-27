@@ -60,7 +60,7 @@ export class DrawingGraph extends DrawingNode {
     for (const n of this.graph.deepNodes) {
       this.createNodeGeometry(n)
     }
-    for (const e of this.graph.edges) {
+    for (const e of this.graph.deepEdges()) {
       this.createEdgeGeometry(e)
     }
     return geomGraph
@@ -138,7 +138,7 @@ export class DrawingGraph extends DrawingNode {
   createNodeGeometry(n: Node): void {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
-      subDg.createGeometry(this.textMeasure)
+      new GeomGraph(n)
       if (subDg.labelText) {
         subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
           fontSize: subDg.fontsize,

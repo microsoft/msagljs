@@ -77,9 +77,11 @@ export class Graph extends Node {
   nodeIsConsistent(n: Node): boolean {
     return this.nodeCollection.nodeIsConsistent(n)
   }
+  /** detouches all the node's edges and removes the node from the graph */
   removeNode(n: Node): void {
     this.nodeCollection.removeNode(n)
   }
+
   /** adds a node to the graph */
   addNode(n: Node): Node {
     /*Assert.assert(n.parent == null || n.parent == this)*/
@@ -149,4 +151,13 @@ export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node
       enqueueed.add(n)
     }
   }
+}
+/** sets a new Graph as the parent of the node */
+export function setNewParent(newParent: Graph, node: Node) {
+  if (node.parent) {
+    const oldParent = node.parent as Graph
+    oldParent.nodeCollection.nodeMap.delete(node.id)
+  }
+  newParent.nodeCollection.nodeMap.set(node.id, node)
+  node.parent = newParent
 }
