@@ -22,7 +22,7 @@ import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum,
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
-import {default as svgPanZoom} from 'svg-pan-zoom'
+import {default as svgPanZoom} from 'panzoom'
 class SvgObject {
   static attachIndex = 2
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
@@ -83,29 +83,7 @@ export class SvgCreator {
     this.close()
 
     this.container.appendChild(this.svg)
-    svgPanZoom(this.svg, {
-      viewportSelector: '.svg-pan-zoom_viewport',
-      panEnabled: true,
-      controlIconsEnabled: false,
-      zoomEnabled: true,
-      dblClickZoomEnabled: true,
-      mouseWheelZoomEnabled: true,
-      preventMouseEventsDefault: true,
-      zoomScaleSensitivity: 0.3,
-      minZoom: 0.05,
-      maxZoom: 10,
-      fit: true,
-      contain: false,
-      center: true,
-      refreshRate: 'auto',
-      // beforeZoom: function () =>{},
-      // onZoom: function ()=> {},
-      // beforePan: function () {},
-      // onPan: function () {},
-      // onUpdatedCTM: function () {},
-      // customEventsHandler: {},
-      // eventsListenerElement: null,
-    })
+    svgPanZoom(this.svg)
   }
   private drawEdge(edge: Edge) {
     const edgeGroup = createAndBindWithGraph(edge, 'g')
