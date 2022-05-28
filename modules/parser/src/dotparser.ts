@@ -411,7 +411,9 @@ class DotParser {
       drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
       if (!drawingNode) drawingNode = new DrawingNode(node)
 
-      if (node.parent && node.parent != dg.graph) {
+      if (node.parent && node.parent != dg.graph && o.attr_list.length == 0) {
+        // If o.attr_list.length == 0 then the intent is to put the node into a subgraph.
+        //  Otherwise, consider it as just setting attributes on the node.
         setNewParent(dg.graph, node)
       }
     } else {
@@ -431,6 +433,7 @@ class DotParser {
     this.graph = new Graph()
     this.drawingGraph = new DrawingGraph(this.graph)
     this.parseUnderGraph(this.ast[0].children, this.drawingGraph, this.ast[0].type == 'digraph')
+    removeEmptySubgraphs(this.graph)
     return this.graph
   }
   parseGraphAttr(o: any, dg: DrawingGraph) {
@@ -607,6 +610,20 @@ function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: DrawingOb
   for (const ch of o.children) {
     if (ch.type == 'attr_stmt') {
       for (const ent of entities) fillDrawingObjectAttrs(ch, ent)
+    }
+  }
+}
+function removeEmptySubgraphs(graph: Graph) {
+  const emptySubgraphList: Graph[] = []
+  for (const sg of graph.subgraphs()) {
+    if (sg.isEmpty()) {
+      emptySubgraphList.push(sg)
+    }
+  }
+  for (const sg of emptySubgraphList) {
+    const parent = sg.parent as Graph
+    if (parent) {
+      parent.removeNode(sg)
     }
   }
 }
