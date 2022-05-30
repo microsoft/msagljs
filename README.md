@@ -35,7 +35,7 @@ const {Graph, Renderer} = msagl
 
 ## Usage
 
-Render a graph from a [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.) file:
+Render a graph from a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>) file:
 
 ```js
 import {parseDot} from '@msagl-js/parser'
@@ -49,7 +49,7 @@ graph G {
 	bpitt -- kbacon;
 	hford -- lwilson;
 	lwilson -- kbacon;
-}`);
+}`)
 renderer.setGraph(graph)
 ```
 
@@ -59,22 +59,15 @@ Render a graph from JSON:
 import {parseJSON} from '@msagl-js/parser'
 
 const graph = parseJSON({
-  nodes: [
-    {id: 'kspacey'},
-    {id: 'swilliams'},
-    {id: 'kbacon'},
-    {id: 'bpitt'},
-    {id: 'hford'},
-    {id: 'lwilson'},
-  ],
+  nodes: [{id: 'kspacey'}, {id: 'swilliams'}, {id: 'kbacon'}, {id: 'bpitt'}, {id: 'hford'}, {id: 'lwilson'}],
   edges: [
     {source: 'kspacey', target: 'swilliams'},
     {source: 'swilliams', target: 'kbacon'},
     {source: 'bpitt', target: 'kbacon'},
     {source: 'hford', target: 'lwilson'},
-    {source: 'lwilson', target: 'kbacon'}
-  ]
-});
+    {source: 'lwilson', target: 'kbacon'},
+  ],
+})
 renderer.setGraph(graph)
 ```
 
@@ -97,6 +90,7 @@ To change the layout of the current graph:
 ```typescript
 renderer.setRenderOptions(options: RenderOptions)
 ```
+
 ## Renderer with SVG API
 
 Constructor:
@@ -117,6 +111,12 @@ To change the layout of the current graph:
 rendererSvg.setRenderOptions(options: RenderOptions)
 ```
 
+To get the SVG representation of the graph:
+
+```typescript
+getSvg(): SVGAElement
+```
+
 The renderer options accept the following fields:
 
 - `layoutType: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'` - algorithm used to layout the graph. By default, if all edges in the graph are undirected then Pivot MDS is used; otherwise, it applies the Sugiyama Scheme.
@@ -126,7 +126,6 @@ The renderer options accept the following fields:
   ![Alt text](./docs/images/showAPI.svg#gh-light-mode-only)
   ![Alt text](./docs/images/showAPI_dark.svg#gh-dark-mode-only)
 
-
   [MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf)
   (Multidemensional Scaling or Pivot MDS):
 
@@ -134,11 +133,11 @@ The renderer options accept the following fields:
   ![Alt text](./docs/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
 
 - `label`
-  + `fontFamily: string` - CSS font-family value. Default `'sans-serif'`.
-  + `fontSize: number` - Font size, default `16`.
-  + `lineHeight: number` - Line height relative to the font size, default `1`.
-  + `fontStyle: string` - CSS font-style value, default `'normal'`
-  + `fontWeight: string | number` - CSS font-weight value, default `'normal'`.
+  - `fontFamily: string` - CSS font-family value. Default `'sans-serif'`.
+  - `fontSize: number` - Font size, default `16`.
+  - `lineHeight: number` - Line height relative to the font size, default `1`.
+  - `fontStyle: string` - CSS font-style value, default `'normal'`
+  - `fontWeight: string | number` - CSS font-weight value, default `'normal'`.
 - `edgeRoutingMode: EdgeRoutingMode` - Enum for supported routing modes, including `Spline`, `SplineBundling` `StraightLine`, `SugiyamaSplines`, `Rectilinear`, `RectilinearToCenter`, `None`. Default varies by `layoutType`.
 
 ## Examples
@@ -148,11 +147,11 @@ Renderings graphs with Deck.gl and with SVG can be seen at https://microsoft.git
 In addition to the initially loaded graph, the page offers a list of
 graph samples and the option of loading a DOT or JSON graph from the
 local disk: You can view a DOT graph by drag-dropping its file into the
-folder icon at the left-upper corner of the page. 
+folder icon at the left-upper corner of the page.
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
@@ -166,8 +165,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
