@@ -1,11 +1,21 @@
 import {ICurve} from './icurve'
-import {Point} from './point'
+import {Point, PointJSON} from './point'
 import {Parallelogram} from './parallelogram'
 import {PlaneTransformation} from './planeTransformation'
 import {Rectangle} from './rectangle'
 import {GeomConstants} from './geomConstants'
 import {PN} from './parallelogramNode'
+export type LineJSON = {start: PointJSON; end: PointJSON}
+
 export class LineSegment implements ICurve {
+  static fromJSON(lineData: LineJSON): LineSegment {
+    return LineSegment.mkPP(Point.fromJSON(lineData.start), Point.fromJSON(lineData.end))
+  }
+
+  toJSON(): LineJSON {
+    return {start: this.start.toJSON(), end: this.end.toJSON()}
+  }
+
   start: Point //the line goes from start to end
   end: Point // the line end point
   readonly parStart = 0

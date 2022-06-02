@@ -2,13 +2,22 @@
 import {ICurve} from './icurve'
 import {Rectangle} from './rectangle'
 import {PN, ParallelogramNode} from './parallelogramNode'
-import {Point} from './point'
+import {Point, PointJSON} from './point'
 import {GeomConstants} from './geomConstants'
 import {PlaneTransformation} from './planeTransformation'
 import {ClosestPointOnCurve} from './closestPointOnCurve'
 
+export type BezierJSON = {
+  b: PointJSON[]
+}
 /** the standard implementation of a cubic bezier curve */
 export class BezierSeg implements ICurve {
+  toJSON(): BezierJSON {
+    return {b: this.b.map((p) => p.toJSON())}
+  }
+  static fromJSON(bData: BezierJSON): BezierSeg {
+    return BezierSeg.mkBezier(bData.b.map(Point.fromJSON))
+  }
   leftDerivative(t: number) {
     return this.derivative(t)
   }

@@ -2,7 +2,7 @@ import {ICurve} from './icurve'
 import {Curve} from './curve'
 import {Rectangle} from './rectangle'
 import {PN, ParallelogramNode} from './parallelogramNode'
-import {Point} from './point'
+import {Point, PointJSON} from './point'
 import {GeomConstants} from './geomConstants'
 import {PlaneTransformation} from './planeTransformation'
 import {ClosestPointOnCurve} from './closestPointOnCurve'
@@ -14,7 +14,21 @@ import {closeDistEps} from '../../utils/compare'
  * To get an ellipse rotating clockwise use, for example,
  * aAxis = (-1,0) and bAxis=(0,1) */
 
+export type EllipseJSON = {parStart: number; parEnd: number; axis0: PointJSON; axis1: PointJSON; center: PointJSON}
+
 export class Ellipse implements ICurve {
+  static fromJSON(eData: EllipseJSON): Ellipse {
+    return new Ellipse(eData.parStart, eData.parEnd, Point.fromJSON(eData.axis0), Point.fromJSON(eData.axis1), Point.fromJSON(eData.center))
+  }
+  toJSON(): EllipseJSON {
+    return {
+      parStart: this.parStart,
+      parEnd: this.parEnd,
+      axis0: this.aAxis.toJSON(),
+      axis1: this.bAxis.toJSON(),
+      center: this.center.toJSON(),
+    }
+  }
   box: Rectangle
 
   pNode: PN

@@ -8,11 +8,22 @@ export enum TriangleOrientation {
   Collinear,
 }
 
+export type PointJSON = {
+  x: number
+  y: number
+}
+
 export function distPP(a: Point, b: Point) {
   return a.sub(b).length
 }
 /** represents a point with two coordinates on the plane */
 export class Point {
+  toJSON(): PointJSON {
+    return {x: this.x, y: this.y}
+  }
+  static fromJSON(pData: PointJSON): Point {
+    return new Point(pData.x, pData.y)
+  }
   /** c is projected to line through a, b */
   public static ProjectionToLine(a: Point, b: Point, c: Point): Point {
     let d = b.sub(a)
