@@ -88,7 +88,7 @@ renderer.setGraph(g: Graph, options: RenderOptions)
 To change the layout of the current graph:
 
 ```typescript
-renderer.setRenderOptions(options: RenderOptions)
+renderer.setOptions(options: LayoutOptions)
 ```
 
 ## Renderer with SVG API
@@ -108,7 +108,7 @@ rendererSvg.setGraph(g: Graph, options: RenderOptions)
 To change the layout of the current graph:
 
 ```typescript
-rendererSvg.setRenderOptions(options: RenderOptions)
+rendererSvg.setOptions(options: LayoutOptions)
 ```
 
 To get the SVG representation of the graph:
