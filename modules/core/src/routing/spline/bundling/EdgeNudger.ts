@@ -254,7 +254,7 @@ export class EdgeNudger extends Algorithm {
     const dc: Array<DebugCurve> = new Array<DebugCurve>()
     for (const s of metroGraphData.Stations) {
       for (const h of s.BundleBases.values()) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'red', LineSegment.mkPP(h.LeftPoint, h.RightPoint)))
+        dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'red', LineSegment.mkPP(h.EndPoint, h.StartPoint)))
       }
     }
     return dc

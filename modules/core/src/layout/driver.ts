@@ -75,8 +75,20 @@ export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken):
   }
 
   function figureOutSettings(geomGraph: GeomGraph): LayoutSettings {
-    if (geomGraph.shallowNodeCount < 200 || geomGraph.edgeCount < 200) return new SugiyamaLayoutSettings()
-    return new MdsLayoutSettings()
+    const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
+    if (tooLargeForLayered) {
+      return new MdsLayoutSettings()
+    }
+
+    let directed = false
+    for (const e of geomGraph.edges()) {
+      if (e.sourceArrowhead != null || e.targetArrowhead != null) {
+        directed = true
+        break
+      }
+    }
+
+    return directed ? new SugiyamaLayoutSettings() : new MdsLayoutSettings()
   }
 } // end of layoutGeomGraph
 

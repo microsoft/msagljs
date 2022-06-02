@@ -2,6 +2,7 @@
 import {Curve, GeomConstants, LineSegment, Point, Polyline} from '../../../math/geometry'
 import {IntersectionInfo} from '../../../math/geometry/intersectionInfo'
 import {RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
+import {Assert} from '../../../utils/assert'
 
 import {BundleBase} from './BundleBase'
 import {Intersections} from './Intersections'
@@ -95,8 +96,8 @@ export class BundleInfo {
     }
 
     //Assert.assert(mw > BundleInfo.FeasibleWidthEpsilon)
-    this.SourceBase.InitialMidParameter = this.SourceBase.AdjustParam(this.SourceBase.ParRight + this.SourceBase.Span / 2)
-    this.TargetBase.InitialMidParameter = this.TargetBase.AdjustParam(this.TargetBase.ParRight + this.TargetBase.Span / 2)
+    this.SourceBase.InitialMidParameter = this.SourceBase.AdjustParam(this.SourceBase.ParStart + this.SourceBase.Span / 2)
+    this.TargetBase.InitialMidParameter = this.TargetBase.AdjustParam(this.TargetBase.ParStart + this.TargetBase.Span / 2)
   }
 
   mkNameFromLRST(): string {
@@ -131,20 +132,20 @@ export class BundleInfo {
     }
 
     if (this.SourceBase.IsParent) {
-      this.SourceBase.ParRight = sourceLParam.par
-      this.SourceBase.ParLeft = sourceRParam.par
+      this.SourceBase.ParStart = sourceLParam.par
+      this.SourceBase.ParEnd = sourceRParam.par
     } else {
-      this.SourceBase.ParRight = sourceRParam.par
-      this.SourceBase.ParLeft = sourceLParam.par
+      this.SourceBase.ParStart = sourceRParam.par
+      this.SourceBase.ParEnd = sourceLParam.par
     }
 
     // SourceBase.InitialMidParameter = SourceBase.AdjustParam(SourceBase.ParRight + SourceBase.Span / 2);
     if (this.TargetBase.IsParent) {
-      this.TargetBase.ParRight = targetLParam.par
-      this.TargetBase.ParLeft = targetRParam.par
+      this.TargetBase.ParStart = targetLParam.par
+      this.TargetBase.ParEnd = targetRParam.par
     } else {
-      this.TargetBase.ParRight = targetRParam.par
-      this.TargetBase.ParLeft = targetLParam.par
+      this.TargetBase.ParStart = targetRParam.par
+      this.TargetBase.ParEnd = targetLParam.par
     }
     //   SvgDebugWriter.dumpDebugCurves(this.mkNameFromLRST(), [
     //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Red', this.SourceBase.Curve),
@@ -156,6 +157,7 @@ export class BundleInfo {
     // }
     // //Assert.assert(this.SourceBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) > 0)
     // //Assert.assert(this.TargetBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) < 0)
+    Assert.assert(this.SourceBase.isCorrectlyOrienected() && this.TargetBase.isCorrectlyOrienected())
 
     return true
   }
@@ -168,8 +170,8 @@ export class BundleInfo {
       this.SourceBase.InitialMidParameter = s.par
       this.TargetBase.InitialMidParameter = t.par
     } else {
-      this.SourceBase.InitialMidParameter = this.SourceBase.AdjustParam(this.SourceBase.ParRight + this.SourceBase.Span / 2)
-      this.TargetBase.InitialMidParameter = this.TargetBase.AdjustParam(this.TargetBase.ParRight + this.TargetBase.Span / 2)
+      this.SourceBase.InitialMidParameter = this.SourceBase.AdjustParam(this.SourceBase.ParStart + this.SourceBase.Span / 2)
+      this.TargetBase.InitialMidParameter = this.TargetBase.AdjustParam(this.TargetBase.ParStart + this.TargetBase.Span / 2)
     }
     // SvgDebugWriter.dumpDebugCurves(this.mkNameFromST(), [
     //   DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
@@ -278,6 +280,8 @@ export class BundleInfo {
         d = d.div(len)
         this.TargetBase.Tangents[i] = d
         this.SourceBase.Tangents[count - 1 - i] = d.neg()
+      } else {
+        Assert.assert(false)
       }
     }
   }
@@ -285,7 +289,7 @@ export class BundleInfo {
   UpdatePointsOnBundleBase(bb: BundleBase) {
     const count: number = bb.length
     const pns: Point[] = bb.Points
-    const ls = LineSegment.mkPP(bb.LeftPoint, bb.RightPoint)
+    const ls = LineSegment.mkPP(bb.EndPoint, bb.StartPoint)
     const scale = 1.0 / this.TotalRequiredWidth
     let t = this.HalfWidthArray[0]
     pns[0] = ls.value(t * scale)

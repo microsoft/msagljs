@@ -25,10 +25,19 @@ export function closeDistEps(a: number, b: number): boolean {
   return -GeomConstants.distanceEpsilon <= d && d <= GeomConstants.distanceEpsilon
 }
 
+/** return true iff a >= b + GeomConstants.distanceEpsilon */
 export function greaterDistEps(a: number, b: number): boolean {
   return compareNumbersDistEps(a, b) > 0
 }
+/** return true iff a <= b - GeomConstants.distanceEpsilon */
+export function lessDistEps(a: number, b: number): boolean {
+  return compareNumbersDistEps(a, b) < 0
+}
 
+/** returns -1 when a-b <= - GeomConstants.distanceEpsilon
+ * returns 1 when a-b >=  GeomConstants.distanceEpsilon
+ * return 0 otherwise
+ */
 export function compareNumbersDistEps(a: number, b: number): number {
   const c: number = a - b
   //  The <= and >= here complement the < and > in Close(double, double).

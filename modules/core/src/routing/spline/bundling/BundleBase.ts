@@ -1,9 +1,20 @@
-﻿import {ICurve, Point} from '../../..'
-import {compareNumbersDistEps} from '../../../utils/compare'
+﻿import {ICurve, Point, parameterSpan} from '../../..'
+import {GeomConstants} from '../../../math/geometry'
+import {TriangleOrientation} from '../../../math/geometry/point'
+import {Assert} from '../../../utils/assert'
+import {lessDistEps} from '../../../utils/compare'
 import {BundleInfo} from './BundleInfo'
 import {OrientedHubSegment} from './OrientedHubSegment'
 
 export class BundleBase {
+  isCorrectlyOrienected(): boolean {
+    const orientation = Point.getTriangleOrientation(
+      this.Curve.boundingBox.center,
+      this.Curve.value(this.parEnd),
+      this.Curve.value(this.parStart),
+    )
+    return orientation != TriangleOrientation.Counterclockwise
+  }
   //  only one of those is not null
   OutgoingBundleInfo: BundleInfo
   IncomingBundleInfo: BundleInfo
@@ -38,7 +49,6 @@ export class BundleBase {
     this.points = new Array(count)
     this.tangents = new Array(count)
     this.OrientedHubSegments = new Array(count)
-    this.ParameterSpan = this.Curve.parEnd - this.Curve.parStart
   }
 
   get CurveCenter(): Point {
@@ -73,36 +83,41 @@ export class BundleBase {
 
   InitialMidPoint: Point
 
-  parRight: number
+  parStart: number
 
-  //  corresponds to the left point of the base
-  get ParRight(): number {
-    return this.parRight
+  /**
+   * corresponds to the left point of the base: if looking from the center of
+   * this.Curve.boundingBox.center
+   */
+  get ParStart(): number {
+    return this.parStart
   }
-  set ParRight(value: number) {
-    this.parRight = value
-    this.RightPoint = this.Curve.value(this.parRight)
+  set ParStart(value: number) {
+    this.parStart = value
+    this.StartPoint = this.Curve.value(this.parStart)
   }
 
-  parLeft: number
+  parEnd: number
 
-  //  corresponds to the right point of the base
-  get ParLeft(): number {
-    return this.parLeft
+  /**
+   * corresponds to the right point of the base: if looking from the center of
+   * this.Curve.boundingBox.center */
+  get ParEnd(): number {
+    return this.parEnd
   }
-  set ParLeft(value: number) {
-    this.parLeft = value
-    this.LeftPoint = this.Curve.value(this.parLeft)
+  set ParEnd(value: number) {
+    this.parEnd = value
+    this.EndPoint = this.Curve.value(this.parEnd)
   }
 
   get ParMid(): number {
-    return (this.parRight + this.parLeft) / 2
+    return (this.parStart + this.parEnd) / 2
   }
 
-  RightPoint: Point
-  LeftPoint: Point
+  StartPoint: Point
+  EndPoint: Point
   get MidPoint(): Point {
-    return Point.middle(this.RightPoint, this.LeftPoint)
+    return Point.middle(this.StartPoint, this.EndPoint)
   }
 
   // previous in ccw order
@@ -111,30 +126,32 @@ export class BundleBase {
   // next in ccw order
   Next: BundleBase
 
-  ParameterSpan: number
-
-  get Span(): number {
-    return this.SpanBetweenTwoPoints(this.parRight, this.parLeft)
+  get ParameterSpan() {
+    return parameterSpan(this.Curve)
   }
 
-  SpanBetweenTwoPoints(right: number, left: number): number {
-    return right <= left ? left - right : left - right + this.ParameterSpan
+  get Span(): number {
+    return this.SpanBetweenTwoPoints(this.parStart, this.parEnd)
+  }
+
+  SpanBetweenTwoPoints(start: number, end: number): number {
+    return start <= end ? end - start : end - start + this.ParameterSpan
   }
 
   RotateLeftPoint(rotationOfSourceLeftPoint: number, parameterChange: number): Point {
     if (rotationOfSourceLeftPoint == 0) {
-      return this.LeftPoint
+      return this.EndPoint
     }
 
-    return this.RotatePoint(rotationOfSourceLeftPoint, this.parLeft, parameterChange)
+    return this.RotatePoint(rotationOfSourceLeftPoint, this.parEnd, parameterChange)
   }
 
   RotateRigthPoint(rotationOfSourceRightPoint: number, parameterChange: number): Point {
     if (rotationOfSourceRightPoint == 0) {
-      return this.RightPoint
+      return this.StartPoint
     }
 
-    return this.RotatePoint(rotationOfSourceRightPoint, this.parRight, parameterChange)
+    return this.RotatePoint(rotationOfSourceRightPoint, this.parStart, parameterChange)
   }
 
   RotatePoint(rotation: number, t: number, parameterChange: number): Point {
@@ -155,55 +172,23 @@ export class BundleBase {
   RotateBy(rotationOfRightPoint: number, rotationOfLeftPoint: number, parameterChange: number) {
     const change: number = this.ParameterSpan * parameterChange
     if (rotationOfRightPoint != 0) {
-      this.ParRight = this.AdjustParam(this.ParRight + rotationOfRightPoint * change)
+      this.ParStart = this.AdjustParam(this.ParStart + rotationOfRightPoint * change)
     }
 
     if (rotationOfLeftPoint != 0) {
-      this.ParLeft = this.AdjustParam(this.ParLeft + rotationOfLeftPoint * change)
+      this.ParEnd = this.AdjustParam(this.ParEnd + rotationOfLeftPoint * change)
     }
-  }
-
-  Intersect(other: BundleBase): boolean {
-    return this.IntersectNNNB(this.parRight, this.parLeft, other.parRight, other.parLeft)
-  }
-
-  IntersectNNNB(lParRight: number, lParLeft: number, rParRight: number, rParLeft: number): boolean {
-    if (lParRight > lParLeft) {
-      return (
-        this.IntersectNNNB(lParRight, this.Curve.parEnd, rParRight, rParLeft) ||
-        this.IntersectNNNB(this.Curve.parStart, lParLeft, rParRight, rParLeft)
-      )
-    }
-
-    if (rParRight > rParLeft) {
-      return (
-        this.IntersectNNNB(lParRight, lParLeft, rParRight, this.Curve.parEnd) ||
-        this.IntersectNNNB(lParRight, lParLeft, this.Curve.parStart, rParLeft)
-      )
-    }
-
-    //Assert.assert(lParRight <= lParLeft)
-    //Assert.assert(rParRight <= rParLeft)
-    if (compareNumbersDistEps(lParLeft, rParRight)) {
-      return false
-    }
-
-    if (compareNumbersDistEps(rParLeft, lParRight)) {
-      return false
-    }
-
-    return true
   }
 
   RelativeOrderOfBasesIsPreserved(rotationOfRightPoint: number, rotationOfLeftPoint: number, parameterChange: number): boolean {
     const change = this.ParameterSpan * parameterChange
 
     //we do not swap parRight and parLeft
-    const rnew = this.parRight + rotationOfRightPoint * change
+    const rnew = this.parStart + rotationOfRightPoint * change
     const lnew =
-      this.parRight < this.parLeft
-        ? this.parLeft + rotationOfLeftPoint * change
-        : this.parLeft + this.ParameterSpan + rotationOfLeftPoint * change
+      this.parStart < this.parEnd
+        ? this.parEnd + rotationOfLeftPoint * change
+        : this.parEnd + this.ParameterSpan + rotationOfLeftPoint * change
     if (rnew > lnew) return false
 
     //span could not be greater than pi

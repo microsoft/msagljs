@@ -11,3 +11,12 @@ test('layoutGeomGraph', () => {
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/test_layoutGeomGraph.svg')
   t.writeGeomGraph(geomGraph)
 })
+
+test('ldbxtried', () => {
+  const dg = parseDotGraph('graphvis/ldbxtried.gv')
+  createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
+  const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
+  layoutGeomGraph(geomGraph, null)
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/ldbxtried.svg')
+  t.writeGeomGraph(geomGraph)
+})

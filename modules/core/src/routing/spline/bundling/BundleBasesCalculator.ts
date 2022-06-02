@@ -3,8 +3,9 @@ import {ICurve, Point} from '../../..'
 //import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
 import {Curve, PointLocation, LineSegment, GeomConstants} from '../../../math/geometry'
 import {Ellipse} from '../../../math/geometry/ellipse'
-import {TriangleOrientation} from '../../../math/geometry/point'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
+import {Assert} from '../../../utils/assert'
+import {closeDistEps} from '../../../utils/compare'
 
 import {addToMapOfArrays} from '../../../utils/setOperations'
 import {BundlingSettings} from '../../BundlingSettings'
@@ -199,8 +200,8 @@ export class BundleBasesCalculator {
     for (const bundle of this.Bundles) {
       const sbase = bundle.SourceBase
       const tbase = bundle.TargetBase
-      sbase.ParLeft = sbase.ParRight = this.GetBaseMiddleParamInDirection(sbase, sbase.Position, tbase.Position)
-      tbase.ParLeft = tbase.ParRight = this.GetBaseMiddleParamInDirection(tbase, tbase.Position, sbase.Position)
+      sbase.ParEnd = sbase.ParStart = this.GetBaseMiddleParamInDirection(sbase, sbase.Position, tbase.Position)
+      tbase.ParEnd = tbase.ParStart = this.GetBaseMiddleParamInDirection(tbase, tbase.Position, sbase.Position)
     }
   }
 
@@ -235,8 +236,8 @@ export class BundleBasesCalculator {
   }
 
   AdjustStartEndParamsToAvoidBaseOverlaps() {
-    for (const c of this.externalBases.keys()) this.AdjustCurrentBundleWidthsOnCurve(this.externalBases.get(c))
-    for (const c of this.internalBases.keys()) this.AdjustCurrentBundleWidthsOnCurve(this.internalBases.get(c))
+    for (const c of this.externalBases.values()) this.AdjustCurrentBundleWidthsOnCurve(c)
+    for (const c of this.internalBases.values()) this.AdjustCurrentBundleWidthsOnCurve(c)
   }
 
   AdjustCurrentBundleWidthsOnCurve(bases: Array<BundleBase>) {
@@ -248,64 +249,31 @@ export class BundleBasesCalculator {
       const lBase = rBase.Next
 
       this.ShrinkBasesToMakeTwoConsecutiveNeighborsHappy(rBase, lBase)
-      //Assert.assert(!rBase.Intersect(lBase))
+      Assert.assert(rBase.isCorrectlyOrienected() && lBase.isCorrectlyOrienected())
     }
   }
 
   ShrinkBasesToMakeTwoConsecutiveNeighborsHappy(rBase: BundleBase, lBase: BundleBase) {
-    if (!rBase.Intersect(lBase)) {
-      return
+    const interval = intersectBases(rBase, lBase)
+    if (interval == null) return
+    if (closeDistEps(interval.start, interval.end)) return
+
+    const rM = interval.rbaseMiddle
+    const lM = interval.lbaseMiddle
+    if (rM < lM) {
+      //swap
+      const t = rBase
+      rBase = lBase
+      lBase = t
     }
+    const rBaseSpan = rBase.Span
+    const lBaseSpan = lBase.Span
 
-    // segments are now [l1..r1] and [l2..r2]
-    let l1: number = rBase.ParRight
-    let r1: number = rBase.ParLeft
-    let l2: number = lBase.ParRight
-    let r2: number = lBase.ParLeft
-    const span: number = lBase.ParameterSpan
-    // make them regular
-    //make them regular
-    if (l1 > r1) l1 -= span
-    if (l2 > r2) l2 -= span
+    const x = (interval.end * rBaseSpan + interval.start * lBaseSpan) / (lBaseSpan + rBaseSpan)
 
-    //make them intersecting
-    if (l2 > r1) {
-      l2 -= span
-      r2 -= span
-    }
-
-    if (l1 > r2) {
-      l1 -= span
-      r1 -= span
-    }
-
-    // they do intersect!
-    //Assert.assert(!(l2 >= r1) && !(l1 >= r2))
-    const t: number = this.RegularCut(l1, r1, l2, r2, rBase.Span, lBase.Span)
-    const to: TriangleOrientation = Point.getTriangleOrientation(
-      lBase.CurveCenter,
-      lBase.OppositeBase.InitialMidPoint,
-      rBase.OppositeBase.InitialMidPoint,
-    )
-    if (to == TriangleOrientation.Clockwise) {
-      r1 = t
-      l2 = t
-    } else if (to == TriangleOrientation.Counterclockwise) {
-      r2 = t
-      l1 = t
-    } else if (r2 - l1 >= r1 - l2) {
-      r1 = t
-      l2 = t
-    } else {
-      r2 = t
-      l1 = t
-    }
-
-    // //Assert.assert(!rBase.Intersect(l1, r1, l2, r2));
-    lBase.ParRight = lBase.AdjustParam(l2)
-    lBase.ParLeft = lBase.AdjustParam(r2)
-    rBase.ParRight = rBase.AdjustParam(l1)
-    rBase.ParLeft = rBase.AdjustParam(r1)
+    rBase.ParStart = rBase.AdjustParam(x + GeomConstants.distanceEpsilon)
+    lBase.ParEnd = lBase.AdjustParam(x - GeomConstants.distanceEpsilon)
+    Assert.assert(intersectBases(rBase, lBase) == null)
   }
 
   //  find a cut point for 2 segments
@@ -544,8 +512,8 @@ export class BundleBasesCalculator {
   SqueezeCost(bundleInfo: BundleInfo): number {
     const middleLineDir = bundleInfo.TargetBase.MidPoint.sub(bundleInfo.SourceBase.MidPoint).normalize()
     const perp = middleLineDir.rotate90Ccw()
-    const projecton0 = Math.abs(bundleInfo.SourceBase.RightPoint.sub(bundleInfo.SourceBase.LeftPoint).dot(perp))
-    const projecton1 = Math.abs(bundleInfo.TargetBase.RightPoint.sub(bundleInfo.TargetBase.LeftPoint).dot(perp))
+    const projecton0 = Math.abs(bundleInfo.SourceBase.StartPoint.sub(bundleInfo.SourceBase.EndPoint).dot(perp))
+    const projecton1 = Math.abs(bundleInfo.TargetBase.StartPoint.sub(bundleInfo.TargetBase.EndPoint).dot(perp))
     const del0: number = Math.abs(bundleInfo.TotalRequiredWidth - projecton0) / bundleInfo.TotalRequiredWidth
     const del1: number = Math.abs(bundleInfo.TotalRequiredWidth - projecton1) / bundleInfo.TotalRequiredWidth
     const del: number = Math.abs(projecton0 - projecton1) / bundleInfo.TotalRequiredWidth
@@ -641,7 +609,7 @@ export class BundleBasesCalculator {
   SeparationCostForAdjacentBundleBases(base0: BundleBase, base1: BundleBase): number {
     //Assert.assert(base0.Curve == base1.Curve)
     const boundaryCurve: ICurve = base0.Curve
-    const len: number = this.IntervalsOverlapLength(base0.ParRight, base0.ParLeft, base1.ParRight, base1.ParLeft, boundaryCurve)
+    const len: number = this.IntervalsOverlapLength(base0.ParStart, base0.ParEnd, base1.ParStart, base1.ParEnd, boundaryCurve)
     const mn: number = Math.min(base0.Span, base1.Span)
     ////Assert.assert(ApproximateComparer.LessOrEqual(len, mn));
     ////Assert.assert((mn > 0));
@@ -690,4 +658,22 @@ export class BundleBasesCalculator {
     }
     return cost
   }
+}
+
+function intersectBases(rBase: BundleBase, lBase: BundleBase): {start: number; end: number; rbaseMiddle: number; lbaseMiddle: number} {
+  const e = rBase.ParEnd
+  const s = rBase.ParStart < rBase.ParEnd ? rBase.ParStart : rBase.ParStart - rBase.ParameterSpan
+  const oe = lBase.ParEnd
+  const os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - lBase.ParameterSpan
+  // We have where s < e, and os < oe. Also e,s, os, oe <= rBase.Curve.ParEnd, but we can have s, os < rBase.Curve.ParStart
+  Assert.assert(s < e)
+  Assert.assert(os < oe)
+
+  Assert.assert(s <= rBase.Curve.parEnd)
+  Assert.assert(e <= rBase.Curve.parEnd)
+  Assert.assert(os <= rBase.Curve.parEnd)
+  Assert.assert(oe <= rBase.Curve.parEnd)
+  const xEnd = Math.min(e, oe)
+  const xStart = Math.max(s, os)
+  return xStart <= xEnd ? {start: xStart, end: xEnd, rbaseMiddle: (s + e) / 2, lbaseMiddle: (os + oe) / 2} : null
 }

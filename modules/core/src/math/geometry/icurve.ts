@@ -3,6 +3,9 @@ import {Point} from './point'
 import {PN} from './parallelogramNode'
 import {Rectangle} from './rectangle'
 
+export function parameterSpan(curve: ICurve) {
+  return curve.parEnd - curve.parStart
+}
 /**  The interface for curves */
 export interface ICurve {
   /**  Returns the point on the curve corresponding to parameter t */
