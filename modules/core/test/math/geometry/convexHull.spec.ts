@@ -517,10 +517,10 @@ function VerifyAndDisplayConvexHull(points: Point[], filename: string) {
   VerifyPointsAreInOrOnHull(points, hull)
 
   const poly = Polyline.mkClosedFromPoints(points)
-  SvgDebugWriter.dumpDebugCurves('/tmp/' + filename + '.svg', [
-    DebugCurve.mkDebugCurveTWCI(200, 1.0, 'magenta', hull),
-    DebugCurve.mkDebugCurveTWCI(150, 0.1, 'green', poly),
-  ])
+  // SvgDebugWriter.dumpDebugCurves('/tmp/' + filename + '.svg', [
+  //   DebugCurve.mkDebugCurveTWCI(200, 1.0, 'magenta', hull),
+  //   DebugCurve.mkDebugCurveTWCI(150, 0.1, 'green', poly),
+  // ])
 }
 
 function VerifyPointsAreInOrOnHull(points: Array<Point>, hull: Polyline) {
