@@ -2,7 +2,7 @@
 import {ICurve} from './icurve'
 import {PN} from './parallelogramNode'
 import {PlaneTransformation} from './planeTransformation'
-import {Point, TriangleOrientation} from './point'
+import {Point, PointJSON, TriangleOrientation} from './point'
 import {Rectangle} from './rectangle'
 import {PolylinePoint} from './polylinePoint'
 
@@ -15,8 +15,17 @@ type AdjustedPar = {
   b: Point
   t: number
 }
+
+export type PolylineJSON = {points: PointJSON[]}
+
 /** the curve corresponding to the sequence of lines, could be closed when the start coincides with the end */
 export class Polyline implements ICurve {
+  toJSON(): PolylineJSON {
+    return {points: Array.from(this).map((p) => p.toJSON())}
+  }
+  static fromJSON(data: PolylineJSON): Polyline {
+    return Polyline.mkFromPoints(data.points.map((p) => Point.fromJSON(p)))
+  }
   RemoveStartPoint() {
     const p = this.startPoint.next
     p.prev = null

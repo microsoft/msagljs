@@ -67,8 +67,57 @@ export enum PointLocation {
   Boundary,
   Inside,
 }
+export enum SegmentTag {
+  Ellipse,
+  LineSegment,
+  Bezier,
+  Polyline,
+}
+export type CurveJSON = {
+  segs: {tag: SegmentTag; segData: any}[]
+}
+
+function getJSONforSeg(seg: ICurve): {tag: SegmentTag; segData: any} {
+  if (seg instanceof Ellipse) {
+    return {tag: SegmentTag.Ellipse, segData: seg.toJSON()}
+  }
+  if (seg instanceof LineSegment) {
+    return {tag: SegmentTag.LineSegment, segData: seg.toJSON()}
+  }
+  if (seg instanceof BezierSeg) {
+    return {tag: SegmentTag.Bezier, segData: seg.toJSON()}
+  }
+  if (seg instanceof Polyline) {
+    return {tag: SegmentTag.Polyline, segData: seg.toJSON()}
+  }
+  throw new Error('not implemented')
+}
 
 export class Curve implements ICurve {
+  static fromJSON(eData: CurveJSON): Curve {
+    const curve = new Curve()
+    for (const p of eData.segs) {
+      switch (p.tag) {
+        case SegmentTag.Bezier:
+          curve.addSegment(BezierSeg.fromJSON(p.segData))
+          break
+        case SegmentTag.Ellipse:
+          curve.addSegment(Ellipse.fromJSON(p.segData))
+          break
+        case SegmentTag.LineSegment:
+          curve.addSegment(LineSegment.fromJSON(p.segData))
+          break
+        default:
+          throw new Error('not implemented')
+      }
+    }
+    return curve
+  }
+
+  toJSON(): CurveJSON {
+    return {segs: this.segs.map((seg) => getJSONforSeg(seg))}
+  }
+
   static CurvesIntersect(curve1: ICurve, curve2: ICurve): boolean {
     return curve1 == curve2 || Curve.intersectionOne(curve1, curve2, false) != null
   }

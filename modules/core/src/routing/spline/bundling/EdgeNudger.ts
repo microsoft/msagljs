@@ -3,7 +3,7 @@ import {Curve, LineSegment, GeomConstants, CurveFactory} from '../../../math/geo
 import {BezierSeg} from '../../../math/geometry/bezierSeg'
 import {DebugCurve} from '../../../math/geometry/debugCurve'
 import {Ellipse} from '../../../math/geometry/ellipse'
-import {distPP, TriangleOrientation} from '../../../math/geometry/point'
+import {distPP} from '../../../math/geometry/point'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {Algorithm} from '../../../utils/algorithm'
 import {BundlingSettings} from '../../BundlingSettings'
