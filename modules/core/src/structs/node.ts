@@ -75,7 +75,4 @@ export class Node extends Entity {
       g = g.parent as unknown as Graph
     }
   }
-  isUnderCollapsedGraph(): boolean {
-    return this.parent != null && (this.parent as unknown as Graph).isCollapsed
-  }
 }

@@ -42,6 +42,8 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  isCollapsed = false
+
   _rtree: RTree<GeomObject, Point>
 
   static getGeom(attrCont: Graph): GeomGraph {
@@ -192,7 +194,7 @@ export class GeomGraph extends GeomNode {
   pumpTheBoxToTheGraph(t: {b: Rectangle}) {
     //Assert.assert(this.graph.isEmpty() == false)
     for (const e of this.edges()) {
-      if (e.underCollapsedCluster()) continue
+      if (e.underCollapsedGraph()) continue
       if (e.curve != null) {
         const cb = e.curve.boundingBox
         cb.pad(e.lineWidth)
@@ -202,7 +204,7 @@ export class GeomGraph extends GeomNode {
     }
 
     for (const n of this.shallowNodes()) {
-      if (n.underCollapsedCluster() || !n.boundingBox) continue
+      if (n.underCollapsedGraph() || !n.boundingBox) continue
       t.b.addRecSelf(n.boundingBox)
     }
   }

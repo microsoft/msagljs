@@ -5,6 +5,10 @@ import {Node} from './node'
 import {NodeCollection} from './nodeCollection'
 /** This class keeps the connection between the nodes and the edges of the graph. Some nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  toJSON() {
+    return null
+    throw new Error('Method not implemented.')
+  }
   *graphs(): IterableIterator<Graph> {
     for (const g of this.nodeCollection.graphs) {
       yield g
@@ -42,7 +46,7 @@ export class Graph extends Node {
     this.addEdge(e)
     return e
   }
-  isCollapsed = false
+
   get shallowNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesShallow
   }

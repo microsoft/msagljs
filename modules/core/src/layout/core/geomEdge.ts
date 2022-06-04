@@ -140,8 +140,8 @@ export class GeomEdge extends GeomObject {
     return t.smoothedPolyline.createCurve()
   }
 
-  underCollapsedCluster(): boolean {
-    return this.source.underCollapsedCluster() || this.target.underCollapsedCluster()
+  underCollapsedGraph(): boolean {
+    return this.source.underCollapsedGraph() || this.target.underCollapsedGraph()
   }
   EdgeToAncestor(): ToAncestorEnum {
     return this.edge.EdgeToAncestor()

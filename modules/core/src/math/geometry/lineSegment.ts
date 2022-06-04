@@ -5,14 +5,14 @@ import {PlaneTransformation} from './planeTransformation'
 import {Rectangle} from './rectangle'
 import {GeomConstants} from './geomConstants'
 import {PN} from './parallelogramNode'
-export type LineJSON = {start: PointJSON; end: PointJSON}
+export type LineSegmentJSON = {start: PointJSON; end: PointJSON}
 
 export class LineSegment implements ICurve {
-  static fromJSON(lineData: LineJSON): LineSegment {
+  static fromJSON(lineData: LineSegmentJSON): LineSegment {
     return LineSegment.mkPP(Point.fromJSON(lineData.start), Point.fromJSON(lineData.end))
   }
 
-  toJSON(): LineJSON {
+  toJSON(): LineSegmentJSON {
     return {start: this.start.toJSON(), end: this.end.toJSON()}
   }
 

@@ -2,10 +2,15 @@ import {PlaneTransformation} from './planeTransformation'
 import {Point} from './point'
 import {PN} from './parallelogramNode'
 import {Rectangle} from './rectangle'
+import {EllipseJSON} from './ellipse'
+import {CurveJSON} from './curve'
+import {LineSegmentJSON} from './lineSegment'
+import {BezierJSON} from './bezierSeg'
 
 export function parameterSpan(curve: ICurve) {
   return curve.parEnd - curve.parStart
 }
+export type ICurveJSON = EllipseJSON | CurveJSON | LineSegmentJSON | BezierJSON
 /**  The interface for curves */
 export interface ICurve {
   /**  Returns the point on the curve corresponding to parameter t */

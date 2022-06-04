@@ -1,7 +1,5 @@
-import {SugiyamaLayoutSettings, LayeredLayout, GeomGraph, CancelToken, Size, GeomNode, GeomEdge} from '../../../src'
-import {GeomObject} from '../../../src/layout/core/geomObject'
-import {parseDotGraph, labelRectFunc} from '../../utils/testUtils'
-import {createGeometry} from '../mds/SingleSourceDistances.spec'
+import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, GeomEdge} from '../../../src'
+import {parseDotGraph} from '../../utils/testUtils'
 
 test('intersectedEnities', () => {
   const dg = parseDotGraph('graphvis/abstract.gv')

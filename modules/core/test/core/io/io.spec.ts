@@ -1,6 +1,8 @@
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
+import {Graph} from '../../../src/structs/graph'
+import {parseDotGraph} from '../../utils/testUtils'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -54,4 +56,11 @@ test('polyline', () => {
   const eData = JSON.parse(eString)
   poly = Polyline.fromJSON(eData)
   expect(poly.count).toBe(3)
+})
+
+test('graph', () => {
+  const dg = parseDotGraph('graphvis/clust3.gv')
+  const graph = dg.graph
+  const graphJSON = graph.toJSON()
+  console.log(graphJSON)
 })

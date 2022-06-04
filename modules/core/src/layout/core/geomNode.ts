@@ -1,6 +1,6 @@
 // A node of a GeomGraph
 
-import {ICurve} from './../../math/geometry/icurve'
+import {ICurve, ICurveJSON} from './../../math/geometry/icurve'
 import {Rectangle} from './../../math/geometry/rectangle'
 import {Point} from './../../math/geometry/point'
 import {CurveFactory} from './../../math/geometry/curveFactory'
@@ -8,8 +8,17 @@ import {PlaneTransformation} from './../../math/geometry/planeTransformation'
 import {Node} from './../../structs/node'
 import {GeomObject} from './geomObject'
 import {GeomEdge} from './geomEdge'
+import {GeomGraph} from './GeomGraph'
+import {Graph} from '../../structs/graph'
 
+export type GeomNodeJSON = {
+  boundaryCurve: ICurveJSON
+  padding: number
+}
 export class GeomNode extends GeomObject {
+  toJSON(): GeomNodeJSON {
+    return {boundaryCurve: this.boundaryCurve, padding: this.padding}
+  }
   static minHeight = 2
   static minWidth = 3
 
@@ -124,7 +133,15 @@ export class GeomNode extends GeomObject {
   transform(t: PlaneTransformation, updateBoundingBox = true) {
     if (this.boundaryCurve != null) this.boundaryCurve = this.boundaryCurve.transform(t)
   }
-  underCollapsedCluster(): boolean {
-    return this.node != null && this.node.isUnderCollapsedGraph()
+
+  underCollapsedGraph(): boolean {
+    const graph = <Graph>this.node.parent
+    if (graph == null) return false
+    const gGraph = GeomGraph.getGeom(graph)
+    if (gGraph == null) return false
+    if (gGraph.isCollapsed) {
+      return true
+    }
+    return gGraph.underCollapsedGraph()
   }
 }

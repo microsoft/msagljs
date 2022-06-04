@@ -125,7 +125,7 @@ function getShapesUnderGraph(graph: GeomGraph, nodesToShapes: Map<GeomNode, Shap
       const nShape = ShapeCreator.CreateShapeWithClusterBoundaryPort(<GeomGraph>n)
       nodesToShapes.set(n, nShape)
       const ng = <GeomGraph>n
-      if (!ng.graph.isCollapsed) {
+      if (!ng.isCollapsed) {
         getShapesUnderGraph(ng, nodesToShapes)
         for (const ch of ng.shallowNodes()) {
           nShape.AddChild(nodesToShapes.get(ch))
