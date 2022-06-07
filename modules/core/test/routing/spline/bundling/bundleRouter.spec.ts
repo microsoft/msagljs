@@ -13,6 +13,7 @@ import {
   Edge,
   GeomEdge,
 } from '../../../../src'
+import {DrawingGraph} from '../../../../src/drawing/drawingGraph'
 import {GeomObject} from '../../../../src/layout/core/geomObject'
 import {BundlingSettings} from '../../../../src/routing/BundlingSettings'
 import {EdgeRoutingMode} from '../../../../src/routing/EdgeRoutingMode'
@@ -40,7 +41,7 @@ test('two edges', () => {
 })
 
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
-  const dg = parseDotGraph(fname)
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
   dg.createGeometry(labelRectFunc)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)

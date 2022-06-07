@@ -167,7 +167,7 @@ test('disconnected comps', () => {
 })
 
 test('margins', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   createGeometry(dg, labelRectFunc)
   const ss = new SugiyamaLayoutSettings()
   ss.margins = {left: 100, right: 10, top: 170, bottom: 50}
@@ -178,7 +178,7 @@ test('margins', () => {
 })
 
 test('undirected pach', () => {
-  const dg = parseDotGraph('graphvis/pack.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/pack.gv'))
   createGeometry(dg, labelRectFunc)
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
@@ -257,7 +257,7 @@ test('b51.gv', () => {
 })
 
 test('arrowhead size default', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   Arrowhead.defaultArrowheadLength *= 2
   const geomGraph = createGeometry(dg, labelRectFunc)
   const ss = new SugiyamaLayoutSettings()
@@ -268,7 +268,7 @@ test('arrowhead size default', () => {
 })
 
 test('arrowhead size per edge', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   const geomGraph = createGeometry(dg, labelRectFunc)
   for (const e of geomGraph.edges()) {
     if (e.sourceArrowhead) {
@@ -286,7 +286,7 @@ test('arrowhead size per edge', () => {
 })
 
 test('graphvis/ER.gv', () => {
-  const dg = parseDotGraph('graphvis/ER.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/ER.gv'))
   if (dg == null) return
   createGeometry(dg, labelRectFunc)
 })
@@ -372,7 +372,7 @@ test('layered layout nodes only', () => {
 })
 
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
-  const dg = parseDotGraph(fname)
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
   const gg = createGeometry(dg, labelRectFunc)
   if (settings) {
@@ -392,7 +392,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
 //   fname: string,
 //   ss: SugiyamaLayoutSettings = new SugiyamaLayoutSettings(),
 // ) {
-//   const dg = parseDotGraph(fname)
+//   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
 //   if (dg == null) return null
 //   createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
 //   const ll = new LayeredLayout(

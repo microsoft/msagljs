@@ -1,10 +1,12 @@
 import {GeomGraph} from '../../src'
+import {DrawingGraph} from '../../src/drawing/drawingGraph'
 import {layoutGeomGraph} from '../../src/layout/driver'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {parseDotGraph, createGeometry, nodeBoundaryFunc, labelRectFunc} from '../utils/testUtils'
 
 test('layoutGeomGraph', () => {
-  const dg = parseDotGraph('graphvis/clust.gv')
+  const g = parseDotGraph('graphvis/clust.gv')
+  const dg = DrawingGraph.getDrawingGraph(g)
   createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
   const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
   layoutGeomGraph(geomGraph, null)
@@ -13,7 +15,8 @@ test('layoutGeomGraph', () => {
 })
 
 test('ldbxtried', () => {
-  const dg = parseDotGraph('graphvis/ldbxtried.gv')
+  const g = parseDotGraph('graphvis/ldbxtried.gv')
+  const dg = DrawingGraph.getDrawingGraph(g)
   createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
   const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
   layoutGeomGraph(geomGraph, null)

@@ -12,7 +12,7 @@ test('fsm', () => {
 })
 
 function runLayout(fname: string): DrawingGraph {
-  const dg = parseDotGraph(fname)
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   dg.createGeometry()
   layoutGraphWithMds(GeomGraph.getGeom(dg.graph))
   return dg

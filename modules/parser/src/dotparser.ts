@@ -431,7 +431,7 @@ class DotParser {
   }
   parse(): Graph {
     if (this.ast == null) return null
-    this.graph = new Graph(this.ast[0].id.toString())
+    this.graph = new Graph(this.ast[0].id ? this.ast[0].id.toString() : '__graph__')
     this.drawingGraph = new DrawingGraph(this.graph)
     this.parseUnderGraph(this.ast[0].children, this.drawingGraph, this.ast[0].type == 'digraph')
     removeEmptySubgraphs(this.graph)

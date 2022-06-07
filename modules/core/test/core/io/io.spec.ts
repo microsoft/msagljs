@@ -2,7 +2,6 @@ import {graphToJSON, parseJSON} from '../../../../parser/src/dotparser'
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
-import {Graph} from '../../../src/structs/graph'
 import {parseDotGraph} from '../../utils/testUtils'
 import {Graph as DGraph} from 'dotparser'
 test('point', () => {
@@ -59,24 +58,23 @@ test('polyline', () => {
   expect(poly.count).toBe(3)
 })
 
-test('graph clust3', () => {
-  const g = parseDotGraph('graphvis/clust3.gv')
-  const subgraphsWas = Array.from(g.graph.subgraphs()).length
-  const nodesWas = g.graph.nodeCountDeep
-  const parsedGraph: DGraph = graphToJSON(g.graph)
+test('graph ldbxtried.gv', () => {
+  const g = parseDotGraph('graphvis/ldbxtried.gv')
+  const subgraphsWas = Array.from(g.subgraphs()).length
+  const parsedGraph: DGraph = graphToJSON(g)
 
   console.log(parsedGraph)
   const graph = parseJSON(parsedGraph)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(subgraphsWas)
-  expect(graph.nodeCountDeep).toBe(nodesWas)
+  expect(graph.nodeCountDeep).toBe(g.nodeCountDeep)
 })
 
 test('graph smlred', () => {
   const g = parseDotGraph('graphvis/smlred.gv')
-  const subgraphsWas = Array.from(g.graph.subgraphs()).length
-  const nodesWas = g.graph.nodeCountDeep
-  const parsedGraph: DGraph = graphToJSON(g.graph)
+  const subgraphsWas = Array.from(g.subgraphs()).length
+  const nodesWas = g.nodeCountDeep
+  const parsedGraph: DGraph = graphToJSON(g)
 
   console.log(parsedGraph)
   const graph = parseJSON(parsedGraph)

@@ -1,8 +1,7 @@
 import {DrawingEdge} from '.'
-import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size, SugiyamaLayoutSettings} from '..'
+import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size} from '..'
 import {Graph, Node} from '..'
 import {TextMeasurerOptions} from '.'
-import {Ellipse} from '../math/geometry/ellipse'
 import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
 import {ShapeEnum} from './shapeEnum'
@@ -14,8 +13,15 @@ type GraphVisData = {
   sourceRanks: string[]
   sinkRanks: string[]
 }
-/** DrawingGraph meant to be an attribute on Graph. It facilitates the geometry creation, mostly for the bounding curves of the nodes, from drawing attributes and labels  */
+/**
+ * DrawingGraph is an attribute on Graph.
+ * It keeps the attributes for nodes and edges rendering.
+ *  It facilitates the geometry creation, mostly for the bounding curves of the nodes, from drawing attributes and labels
+ * */
 export class DrawingGraph extends DrawingNode {
+  static getDrawingGraph(g: Graph): DrawingGraph {
+    return DrawingObject.getDrawingObj(g) as DrawingGraph
+  }
   /** this node does not belong to the graph,
    but rather serves as a template for the other node's attributes (like filledColor, style, etc.) */
   graphVisData: GraphVisData = {

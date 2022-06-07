@@ -1,8 +1,10 @@
 import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, GeomEdge} from '../../../src'
+import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {parseDotGraph} from '../../utils/testUtils'
 
 test('intersectedEnities', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const g = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   const geomGraph = dg.createGeometry(() => new Size(20, 20))
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())

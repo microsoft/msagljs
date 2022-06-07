@@ -78,7 +78,8 @@ function addArrow(start: Point, end: Point, arrowAngle: number): Point[] {
 }
 
 export function runMDSLayout(fname: string, edgeRoutingMode = EdgeRoutingMode.StraightLine) {
-  const dg = parseDotGraph(fname)
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
+
   if (dg == null) return null
   dg.createGeometry(labelRectFunc)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
@@ -91,7 +92,7 @@ export function runMDSLayout(fname: string, edgeRoutingMode = EdgeRoutingMode.St
 }
 
 export function runMDSLayoutNoSubgraphs(fname: string, edgeRoutingMode: EdgeRoutingMode) {
-  const dg = parseDotGraph(fname)
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
   if (dg.graph.hasSubgraphs()) return null
 
@@ -115,12 +116,11 @@ export function nodeBoundaryFunc(label: string): ICurve {
   return CurveFactory.mkRectangleWithRoundedCorners(size.width, size.height, size.width / 10, size.height / 10, new Point(0, 0))
 }
 
-export function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
+export function parseDotGraph(fileName: string, absolutePath = false): Graph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
-    const graph = parseDot(graphStr)
-    return <DrawingGraph>DrawingGraph.getDrawingObj(graph)
+    return parseDot(graphStr)
   } catch (Error) {
     console.log('file = ' + fileName + ' error:' + Error.message)
     return null

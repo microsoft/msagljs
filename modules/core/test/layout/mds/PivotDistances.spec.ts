@@ -1,10 +1,11 @@
+import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {PivotDistances} from '../../../src/layout/mds/PivotDistances'
 import {layoutGraphWithMds} from '../../../src/layout/mds/PivotMDS'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, labelRectFunc, parseDotGraph, createGeometry} from '../../utils/testUtils'
 
 test('pivot distances', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   const gg = createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
   const pivotArray = new Array<number>(7)
   const pivotDistances = new PivotDistances(gg, pivotArray, () => 1)
@@ -27,7 +28,7 @@ test('pivot distances', () => {
   }
 })
 test('MDSGraphLayout - lay out a flat graph, no subgraphs', () => {
-  const dg = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   const gg = createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
   layoutGraphWithMds(gg, null)
   new SvgDebugWriter('/tmp/abstractMDS.svg').writeGeomGraph(gg)
