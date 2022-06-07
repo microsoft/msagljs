@@ -1,4 +1,10 @@
-digraph G {
-  a -> b
-  label="this is a graph"
+digraph  {
+  graph [bb="0,0,54,108"];
+        a    [height=2,
+             pos="27,90",
+             width=0.75];
+        b    [height=0.5,
+             pos="27,18",
+             width=0.75];
+        a -> b  [pos="e,27,36.104 27,71.697 27,63.983 27,54.712 27,46.112"];
 }

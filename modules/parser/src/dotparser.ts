@@ -1,4 +1,4 @@
-import parse from 'dotparser'
+import parse, {Stmt, Subgraph} from 'dotparser'
 import {Edge, Graph, LayerDirectionEnum, Node, Label, setNewParent} from 'msagl-js'
 import {Graph as DGraph} from 'dotparser'
 import {
@@ -16,6 +16,7 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
+import {Assert} from '../../core/src/utils/assert'
 
 function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
   if (o.attr_list == null) return
@@ -411,7 +412,7 @@ class DotParser {
       drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
       if (!drawingNode) drawingNode = new DrawingNode(node)
 
-      if (node.parent && node.parent != dg.graph && o.attr_list.length == 0) {
+      if (node.parent && node.parent != dg.graph && (o.attr_list == null || o.attr_list.length == 0)) {
         // If o.attr_list.length == 0 then the intent is to put the node into a subgraph.
         //  Otherwise, consider it as just setting attributes on the node.
         setNewParent(dg.graph, node)
@@ -430,7 +431,7 @@ class DotParser {
   }
   parse(): Graph {
     if (this.ast == null) return null
-    this.graph = new Graph()
+    this.graph = new Graph(this.ast[0].id.toString())
     this.drawingGraph = new DrawingGraph(this.graph)
     this.parseUnderGraph(this.ast[0].children, this.drawingGraph, this.ast[0].type == 'digraph')
     removeEmptySubgraphs(this.graph)
@@ -509,6 +510,11 @@ class DotParser {
 
 export function parseDot(graphStr: string): Graph {
   const dp = new DotParser(parse(graphStr))
+  return dp.parse()
+}
+
+export function parseJSON(ast: DGraph): Graph {
+  const dp = new DotParser([ast])
   return dp.parse()
 }
 
@@ -624,6 +630,115 @@ function removeEmptySubgraphs(graph: Graph) {
     const parent = sg.parent as Graph
     if (parent) {
       parent.removeNode(sg)
+    }
+  }
+}
+
+export function graphToJSON(graph: Graph): DGraph {
+  const idToLevel = getNodeLevels(graph)
+  return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevel)}
+}
+
+function edgeStmt(edge: Edge): any {
+  //create edge_list from one element
+  return {
+    type: 'edge_stmt',
+    edge_list: [
+      {type: 'node_id', id: edge.source.id},
+      {type: 'node_id', id: edge.target.id},
+    ],
+    attr_list: Array.from(getEdgeAttrs(edge)),
+  }
+}
+function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<any> {
+  const idToStmt = new Map<string, any>()
+  const children = []
+  // fill the map
+  for (const n of graph.deepNodes) {
+    idToStmt.set(n.id, getNodeStatement(n))
+  }
+  // attach node and subgraphs stmts to their parents
+  for (const n of graph.deepNodes) {
+    if (n.parent == graph) {
+      continue
+    }
+    const subGraph = idToStmt.get((n.parent as Graph).id)
+    subGraph.children.push(idToStmt.get(n.id))
+  }
+  // attach edge statements to their parents
+  for (const e of graph.deepEdges()) {
+    const parent: Node = edgeParent(e, nodeLevels)
+    if (parent == graph) {
+      children.push(edgeStmt(e))
+    } else {
+      const subGraph = idToStmt.get(parent.id)
+      subGraph.children.push(edgeStmt(e))
+    }
+  }
+  for (const n of graph.shallowNodes) {
+    children.push(idToStmt.get(n.id))
+  }
+  return children
+}
+
+function* getEdgeAttrs(edge: Edge): IterableIterator<unknown> {
+  //throw new Error('Function not implemented.')
+}
+
+function getNodeStatement(node: Node): any {
+  const isGraph = node instanceof Graph
+  if (!isGraph) {
+    return {
+      type: 'node_stmt',
+      node_id: {type: 'node_id', id: node.id},
+    }
+  } else {
+    return {type: 'subgraph', children: [], id: node.id, attr_list: Array.from(getNodeAttrList(node))}
+  }
+}
+
+function* getNodeAttrList(node: Node): IterableIterator<any> {
+  //throw new Error('Function not implemented.')
+}
+
+function getGraphType(graph: Graph): any {
+  return 'digraph' // todo: revisit later
+}
+function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {
+  // make the levels equal
+  let s = e.source
+  let t = e.target
+  let sLevel = nodeLevels.get(s.id)
+  let tLevel = nodeLevels.get(t.id)
+  while (sLevel > tLevel) {
+    s = s.parent as Node
+    sLevel--
+  }
+  while (sLevel < tLevel) {
+    t = t.parent as Node
+    tLevel--
+  }
+  Assert.assert(sLevel == tLevel)
+  while (s.parent != t.parent) {
+    s = s.parent as Node
+    t = t.parent as Node
+  }
+
+  return s.parent as Node
+}
+function getNodeLevels(graph: Graph): Map<string, number> {
+  const levels = new Map<string, number>()
+  levels.set(graph.id, 0)
+  getNodeLevelsOnMap(graph, levels)
+  return levels
+}
+
+function getNodeLevelsOnMap(graph: Graph, levels: Map<string, number>): void {
+  const graphLevel = levels.get(graph.id) + 1
+  for (const n of graph.shallowNodes) {
+    levels.set(n.id, graphLevel)
+    if (n instanceof Graph) {
+      getNodeLevelsOnMap(n, levels)
     }
   }
 }
