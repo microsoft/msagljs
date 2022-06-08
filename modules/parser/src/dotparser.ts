@@ -1,6 +1,6 @@
-import parse, {Stmt, Subgraph} from 'dotparser'
+import parse, {AttrStmt, EdgeStmt, NodeId, NodeStmt, Stmt, Subgraph} from 'dotparser'
 import {Edge, Graph, LayerDirectionEnum, Node, Label, setNewParent} from 'msagl-js'
-import {Graph as DGraph} from 'dotparser'
+import {Graph as DGraph, Attr} from 'dotparser'
 import {
   ArrowTypeEnum,
   DrawingEdge,
@@ -329,7 +329,7 @@ class DotParser {
     this.ast = ast
   }
 
-  parseEdge(so: any, to: any, dg: DrawingGraph, directed: boolean, o: any): DrawingEdge[] {
+  parseEdge(so: Subgraph | NodeId, to: Subgraph | NodeId, dg: DrawingGraph, directed: boolean, o: EdgeStmt): DrawingEdge[] {
     const nc = dg.graph.nodeCollection
     let sn: Node
     let tn: Node
@@ -404,7 +404,7 @@ class DotParser {
     }
     return dn
   }
-  parseNode(o: any, dg: DrawingGraph): DrawingNode {
+  parseNode(o: NodeStmt, dg: DrawingGraph): DrawingNode {
     const id = o.node_id.id.toString()
     const node = this.findNode(id)
     let drawingNode: DrawingNode
@@ -437,7 +437,7 @@ class DotParser {
     removeEmptySubgraphs(this.graph)
     return this.graph
   }
-  parseGraphAttr(o: any, dg: DrawingGraph) {
+  parseGraphAttr(o: AttrStmt, dg: DrawingGraph) {
     if (o.target == 'node') {
       this.defaultNodeAttr = o // will parse it for each node
     } else if (o.target == 'graph') {
@@ -445,20 +445,19 @@ class DotParser {
     }
   }
 
-  getEntitiesSubg(o: any, dg: DrawingGraph, directed: boolean): DrawingObject[] {
+  getEntitiesSubg(o: Subgraph, dg: DrawingGraph, directed: boolean): DrawingObject[] {
     let ret: DrawingObject[] = []
     for (const ch of o.children) {
       if (ch.type == 'edge_stmt') {
-        const edgeList: any[] = ch.edge_list
-        for (let i = 0; i < edgeList.length - 1; i++) {
-          for (const e of this.parseEdge(edgeList[i], edgeList[i + 1], dg, directed, ch)) ret.push(e)
+        for (let i = 0; i < ch.edge_list.length - 1; i++) {
+          for (const e of this.parseEdge(ch.edge_list[i], ch.edge_list[i + 1], dg, directed, ch)) ret.push(e)
         }
       } else if (ch.type == 'attr_stmt') {
       } else if (ch.type == 'node_stmt') {
         ret.push(this.parseNode(ch, dg))
       } else if (ch.type === 'subgraph') {
         if (ch.id != null) {
-          const subg = new Graph(ch.id)
+          const subg = new Graph(ch.id.toString())
           dg.graph.addNode(subg)
           const sdg = new DrawingGraph(subg)
           this.parseUnderGraph(ch.children, sdg, directed)
@@ -473,7 +472,7 @@ class DotParser {
     return ret
   }
 
-  parseUnderGraph(children: any, dg: DrawingGraph, directed: boolean) {
+  parseUnderGraph(children: Array<Stmt>, dg: DrawingGraph, directed: boolean) {
     for (const o of children) {
       switch (o.type) {
         case 'node_stmt':
@@ -481,7 +480,7 @@ class DotParser {
           break
         case 'edge_stmt':
           {
-            const edgeList: any[] = o.edge_list
+            const edgeList = o.edge_list
             for (let i = 0; i < edgeList.length - 1; i++) this.parseEdge(edgeList[i], edgeList[i + 1], dg, directed, o)
           }
           break
@@ -492,7 +491,7 @@ class DotParser {
             const entities: DrawingObject[] = this.getEntitiesSubg(o, dg, directed)
             applyAttributesToEntities(o, dg, entities)
           } else {
-            const subg = new Graph(o.id)
+            const subg = new Graph(o.id.toString())
             const sdg = new DrawingGraph(subg)
             this.parseUnderGraph(o.children, sdg, directed)
             if (!subg.isEmpty()) dg.graph.addNode(subg)
@@ -518,7 +517,7 @@ export function parseJSON(ast: DGraph): Graph {
   return dp.parse()
 }
 
-function process_same_rank(o: any, dg: DrawingGraph): boolean {
+function process_same_rank(o: Subgraph, dg: DrawingGraph): boolean {
   const attr = o.children[0]
   if (attr == undefined) return false
   if (attr.type != 'attr_stmt') return false
@@ -531,39 +530,60 @@ function process_same_rank(o: any, dg: DrawingGraph): boolean {
   switch (attr_0.eq) {
     case 'min':
       for (let i = 1; i < o.children.length; i++) {
-        const e = o.children[i]
-        dg.graphVisData.minRanks.push(e.id)
+        const c = o.children[i]
+        if (c.type == 'node_stmt') {
+          dg.graphVisData.minRanks.push(c.node_id.id.toString())
+        } else {
+          throw new Error()
+        }
       }
       return true
 
     case 'max':
       for (let i = 1; i < o.children.length; i++) {
-        const e = o.children[i]
-        dg.graphVisData.maxRanks.push(e.id)
+        const c = o.children[i]
+        if (c.type == 'node_stmt') {
+          dg.graphVisData.minRanks.push(c.node_id.id.toString())
+        } else {
+          throw new Error()
+        }
       }
       return true
 
     case 'same': {
-      const sameRankIds = []
+      const sameRank = []
       for (let i = 1; i < o.children.length; i++) {
-        const e = o.children[i]
-        sameRankIds.push(e.id)
+        const c = o.children[i]
+        if (c.type == 'node_stmt') {
+          sameRank.push(c.node_id.id.toString())
+        } else {
+          throw new Error()
+        }
       }
-      dg.graphVisData.sameRanks.push(sameRankIds)
+      dg.graphVisData.sameRanks.push(sameRank)
+
       return true
     }
     case 'source': {
       for (let i = 1; i < o.children.length; i++) {
-        const e = o.children[i]
-        dg.graphVisData.sourceRanks.push(e.id)
+        const c = o.children[i]
+        if (c.type == 'node_stmt') {
+          dg.graphVisData.sourceRanks.push(c.node_id.id.toString())
+        } else {
+          throw new Error()
+        }
       }
       return true
     }
     case 'sink':
       {
         for (let i = 1; i < o.children.length; i++) {
-          const e = o.children[i]
-          dg.graphVisData.sinkRanks.push(e.id)
+          const c = o.children[i]
+          if (c.type == 'node_stmt') {
+            dg.graphVisData.sinkRanks.push(c.node_id.id.toString())
+          } else {
+            throw new Error()
+          }
         }
       }
       return true
@@ -639,7 +659,7 @@ export function graphToJSON(graph: Graph): DGraph {
   return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevel)}
 }
 
-function edgeStmt(edge: Edge): any {
+function edgeStmt(edge: Edge): EdgeStmt {
   //create edge_list from one element
   return {
     type: 'edge_stmt',
@@ -650,8 +670,8 @@ function edgeStmt(edge: Edge): any {
     attr_list: Array.from(getEdgeAttrs(edge)),
   }
 }
-function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<any> {
-  const idToStmt = new Map<string, any>()
+function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<Stmt> {
+  const idToStmt = new Map<string, Stmt>()
   const children = []
   // fill the map
   for (const n of graph.deepNodes) {
@@ -662,7 +682,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<an
     if (n.parent == graph) {
       continue
     }
-    const subGraph = idToStmt.get((n.parent as Graph).id)
+    const subGraph = idToStmt.get((n.parent as Graph).id) as Subgraph
     subGraph.children.push(idToStmt.get(n.id))
   }
   // attach edge statements to their parents
@@ -671,7 +691,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<an
     if (parent == graph) {
       children.push(edgeStmt(e))
     } else {
-      const subGraph = idToStmt.get(parent.id)
+      const subGraph = idToStmt.get(parent.id) as Subgraph
       subGraph.children.push(edgeStmt(e))
     }
   }
@@ -681,27 +701,45 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<an
   return children
 }
 
-function* getEdgeAttrs(edge: Edge): IterableIterator<unknown> {
+function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   //throw new Error('Function not implemented.')
 }
 
-function getNodeStatement(node: Node): any {
+function getNodeStatement(node: Node): NodeStmt | Subgraph {
   const isGraph = node instanceof Graph
   if (!isGraph) {
     return {
       type: 'node_stmt',
       node_id: {type: 'node_id', id: node.id},
+      attr_list: Array.from(getNodeAttrList(node)),
     }
   } else {
-    return {type: 'subgraph', children: [], id: node.id, attr_list: Array.from(getNodeAttrList(node))}
+    return {type: 'subgraph', children: [], id: node.id}
   }
 }
 
-function* getNodeAttrList(node: Node): IterableIterator<any> {
+function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   //throw new Error('Function not implemented.')
+  /* [
+    {
+      type: 'attr',
+      id: 'height',
+      eq: 2,
+    },
+    {
+      type: 'attr',
+      id: 'pos',
+      eq: '27,90',
+    },
+    {
+      type: 'attr',
+      id: 'width',
+      eq: 0.75,
+    },
+  ]*/
 }
 
-function getGraphType(graph: Graph): any {
+function getGraphType(graph: Graph): 'digraph' | 'graph' {
   return 'digraph' // todo: revisit later
 }
 function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {

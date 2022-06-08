@@ -2,6 +2,7 @@ import {Point} from './../../math/geometry/point'
 
 import {String} from 'typescript-string-operations'
 import {VisibilityVertex} from './VisibilityVertex'
+//import {Assert} from '../../utils/assert'
 //  an edge connecting two VisibilityVertices
 export class VisibilityEdge {
   LengthMultiplier = 1
@@ -15,9 +16,7 @@ export class VisibilityEdge {
 
   constructor(s: VisibilityVertex, t: VisibilityVertex, weight = 1) {
     // Assert.assert(!source.point.equal(target.point), 'Self-edges are not allowed')
-    if (VisibilityEdge.closeuv(s, t) || VisibilityEdge.closeuv(t, s)) {
-      console.log(s)
-    }
+    //  Assert.assert(!(VisibilityEdge.closeuv(s, t) || VisibilityEdge.closeuv(t, s)))
     this.Source = s
     this.Target = t
     this.Weight = weight

@@ -51,7 +51,7 @@ export function enforceLayoutSettings(geomGraph: GeomGraph, ss: LayoutSettings) 
   }
 }
 
-export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken): void {
+export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken = null): void {
   createSettingsIfNeeded(geomGraph)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
   // end of the function body

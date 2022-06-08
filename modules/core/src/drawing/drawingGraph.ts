@@ -71,7 +71,7 @@ export class DrawingGraph extends DrawingNode {
     }
     return geomGraph
   }
-  createEdgeGeometry(e: Edge) {
+  private createEdgeGeometry(e: Edge) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)
     const ge = new GeomEdge(e)
     if (de.directed == false) {
@@ -141,7 +141,7 @@ export class DrawingGraph extends DrawingNode {
     return curve ?? CurveFactory.mkRectangleWithRoundedCorners(width, height, drawingNode.XRadius, drawingNode.YRadius, center)
   }
 
-  createNodeGeometry(n: Node): void {
+  private createNodeGeometry(n: Node): void {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
       new GeomGraph(n)
