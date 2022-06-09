@@ -74,7 +74,7 @@ export class SvgCreator {
     if (!this.geomGraph) return null
     this.geomGraph.updateBoundingBox()
     this.open()
-    for (const node of this.graph.deepNodes()) {
+    for (const node of this.graph.deepNodes) {
       this.drawNode(node)
     }
     for (const edge of this.graph.deepEdges()) {

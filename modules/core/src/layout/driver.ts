@@ -31,7 +31,7 @@ import {EdgeLabelPlacement} from './edgeLabelPlacement'
 // }
 
 // function routeStraightEdges(geomG: GeomGraph) {
-//   for (const u of geomG.deepNodes()) {
+//   for (const u of geomG.deepNodes) {
 //     for (const e of u.outEdges()) {
 //       if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
 //     }
@@ -170,7 +170,7 @@ export function layoutGeomGraphDetailed(
 
   function getUnroutedEdges(g: GeomGraph): Array<GeomEdge> {
     const edges = []
-    for (const n of g.deepNodes()) {
+    for (const n of g.deepNodesIt()) {
       for (const e of n.outEdges()) if (e.curve == null) edges.push(e)
       for (const e of n.selfEdges()) if (e.curve == null) edges.push(e)
     }
@@ -233,7 +233,7 @@ export function layoutGeomGraphDetailed(
 // returns arrays of pairs (new lifted GeomEdge, existing Edge)
 function createLiftedEdges(graph: Graph): Array<[GeomEdge, Edge]> {
   const liftedEdges = new Array<[GeomEdge, Edge]>()
-  for (const u of graph.deepNodes()) {
+  for (const u of graph.deepNodes) {
     const liftedU = graph.liftNode(u)
     if (liftedU == null) continue
     for (const uv of u.outEdges.values()) {

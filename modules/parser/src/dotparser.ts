@@ -681,11 +681,11 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
   const idToStmt = new Map<string, Stmt>()
   const children = []
   // fill the map
-  for (const n of graph.deepNodes()) {
+  for (const n of graph.deepNodes) {
     idToStmt.set(n.id, getNodeStatement(n))
   }
   // attach node and subgraphs stmts to their parents
-  for (const n of graph.deepNodes()) {
+  for (const n of graph.deepNodes) {
     if (n.parent == graph) {
       continue
     }

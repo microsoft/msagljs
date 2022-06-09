@@ -47,7 +47,7 @@ export default class SearchControl implements IRendererControl {
   }
 
   private _updateNodeList(graph: Graph) {
-    this._nodes = graph ? Array.from(graph.deepNodes()) : []
+    this._nodes = graph ? Array.from(graph.deepNodes) : []
     this._dropdown.update(this._nodes)
   }
 }

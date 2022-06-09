@@ -285,7 +285,7 @@ export function generateRandomGraphOnQueue(q: Queue<Graph>, nodeCount: number, c
 }
 
 function generateEdges(g: Graph, edgeCount: number) {
-  const nodes = Array.from(g.deepNodes())
+  const nodes = Array.from(g.deepNodes)
   if (nodes.length == 0) return
   while (edgeCount-- > 0) {
     const i = randomInt(nodes.length)
@@ -298,7 +298,7 @@ function generateEdges(g: Graph, edgeCount: number) {
 }
 function mkGeomForGraph(g: Graph, curveDelegate: (w: number, h: number, xy: Point) => ICurve): GeomGraph {
   const gg = new GeomGraph(g)
-  for (const n of g.deepNodes()) {
+  for (const n of g.deepNodes) {
     if (n instanceof Graph) {
       new GeomGraph(<Graph>n).labelSize = measureTextSize(n.id)
     } else {

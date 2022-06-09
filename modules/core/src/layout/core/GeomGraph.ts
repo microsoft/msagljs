@@ -72,7 +72,7 @@ export class GeomGraph extends GeomNode {
   }
 
   buildRTree(): RTree<GeomObject, Point> {
-    const data: Array<[Rectangle, GeomObject]> = (Array.from(this.deepNodes()) as GeomObject[])
+    const data: Array<[Rectangle, GeomObject]> = (Array.from(this.deepNodes) as GeomObject[])
       .concat(Array.from(this.deepEdges()) as GeomObject[])
       .map((o) => [o.boundingBox, o])
     return mkRTree(data)
@@ -83,7 +83,7 @@ export class GeomGraph extends GeomNode {
   }
   setSettingsRecursively(ls: LayoutSettings) {
     this.layoutSettings = ls
-    for (const n of this.deepNodes()) {
+    for (const n of this.deepNodes) {
       const gg = <GeomGraph>n
       gg.layoutSettings = ls
     }
@@ -155,8 +155,11 @@ export class GeomGraph extends GeomNode {
       this.updateBoundingBox()
     }
   }
-  *deepNodes(): IterableIterator<GeomNode> {
-    for (const n of this.graph.deepNodes()) {
+  get deepNodes(): IterableIterator<GeomNode> {
+    return this.deepNodesIt()
+  }
+  *deepNodesIt(): IterableIterator<GeomNode> {
+    for (const n of this.graph.deepNodes) {
       yield GeomObject.getGeom(n) as unknown as GeomNode
     }
   }
@@ -332,7 +335,7 @@ export class GeomGraph extends GeomNode {
   FlipYAndMoveLeftTopToOrigin() {
     const m = new PlaneTransformation(1, 0, -this.left, 0, -1, this.top)
     this.transform(m, false)
-    for (const v of this.deepNodes()) {
+    for (const v of this.deepNodes) {
       if (v instanceof GeomGraph) {
         const g = <GeomGraph>v
         if (!g.graph.isEmpty()) {

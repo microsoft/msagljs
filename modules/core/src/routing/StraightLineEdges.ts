@@ -25,7 +25,7 @@ export function straightLineEdgePatcher(geomGraph: GeomGraph, edgesToRoute: Geom
       StraightLineEdges.RouteEdge(e, geomGraph.padding)
     }
   } else {
-    for (const n of geomGraph.deepNodes()) {
+    for (const n of geomGraph.deepNodesIt()) {
       if (cancelToken && cancelToken.canceled) {
         return
       }

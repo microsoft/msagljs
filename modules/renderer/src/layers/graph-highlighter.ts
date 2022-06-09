@@ -105,7 +105,7 @@ export default class GraphHighlighter {
 
     let nodeIndex = 0
     let edgeIndex = 0
-    for (const node of graph.deepNodes()) {
+    for (const node of graph.deepNodesIt()) {
       this._nodeList[nodeIndex] = node.id
       this._nodeMap.set(node.id, nodeIndex)
       nodeIndex++
@@ -177,7 +177,9 @@ export default class GraphHighlighter {
 
       for (let i = 0; i < maxDepth; i++) {
         // Swap
-        ;[sourceTexture, targetTexture] = [targetTexture, sourceTexture]
+        {
+          ;[sourceTexture, targetTexture] = [targetTexture, sourceTexture]
+        }
         this._nodeDepthFB.attach({
           [GL.COLOR_ATTACHMENT0]: targetTexture,
         })

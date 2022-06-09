@@ -26,7 +26,7 @@ export class Graph extends Node {
   }
 
   *subgraphs(): IterableIterator<Graph> {
-    for (const n of this.deepNodes()) {
+    for (const n of this.deepNodes) {
       if (n instanceof Graph) yield <Graph>n
     }
   }
@@ -49,10 +49,8 @@ export class Graph extends Node {
     return this.nodeCollection.nodesShallow
   }
 
-  *deepNodes(): IterableIterator<Node> {
-    for (const n of this.nodeCollection.nodesDeep()) {
-      yield n
-    }
+  get deepNodes(): IterableIterator<Node> {
+    return this.nodeCollection.nodesDeep()
   }
 
   constructor(id = '__graph__') {
@@ -66,7 +64,7 @@ export class Graph extends Node {
   }
 
   *deepEdges() {
-    for (const node of this.deepNodes()) {
+    for (const node of this.deepNodes) {
       for (const e of node.outEdges) {
         yield e
       }
@@ -127,14 +125,14 @@ export class Graph extends Node {
   /** return the number of all nodes in the graph, including the subgraphs */
   deepEdgesCount(): number {
     let count = 0
-    for (const p of this.deepNodes()) {
+    for (const p of this.deepNodes) {
       count += p.outDegree + p.selfDegree
     }
     return count
   }
   eachNodeIdIsUnique(): boolean {
     const ids = new Set<string>()
-    for (const n of this.deepNodes()) {
+    for (const n of this.deepNodes) {
       if (ids.has(n.id)) {
         return false
       }

@@ -74,7 +74,7 @@ export class Routing extends Algorithm {
   }
 
   RouteUnroutedEdges() {
-    for (const n of this.OriginalGraph.deepNodes()) {
+    for (const n of this.OriginalGraph.deepNodesIt()) {
       for (const e of n.outEdges()) {
         if (!e.curve) StraightLineEdges.RouteEdge(e, Math.max(e.source.padding, e.target.padding))
       }

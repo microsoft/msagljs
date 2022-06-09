@@ -212,7 +212,7 @@ export default class Renderer extends EventSource {
     // @ts-ignore
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
-      data: Array.from(geomGraph.deepNodes()),
+      data: Array.from(geomGraph.deepNodesIt()),
       getDepth: this._graphHighlighter.nodeDepthBuffer,
       fontFamily: fontSettings.fontFamily,
       fontWeight: fontSettings.fontWeight,

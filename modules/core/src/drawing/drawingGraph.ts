@@ -63,7 +63,7 @@ export class DrawingGraph extends DrawingNode {
     this.textMeasure = textMeasure
     const opts: Partial<TextMeasurerOptions> = {fontFamily: this.fontname, fontSize: this.fontsize, fontStyle: 'normal'}
     geomGraph.labelSize = textMeasure(this.labelText, opts)
-    for (const n of this.graph.deepNodes()) {
+    for (const n of this.graph.deepNodes) {
       this.createNodeGeometry(n)
     }
     for (const e of this.graph.deepEdges()) {

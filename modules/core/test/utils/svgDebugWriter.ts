@@ -248,7 +248,7 @@ export class SvgDebugWriter {
   writeGeomGraph(g: GeomGraph) {
     g.updateBoundingBox()
     this.open(g.boundingBox)
-    for (const n of g.deepNodes()) {
+    for (const n of g.deepNodesIt()) {
       if (!n.boundaryCurve) continue
       this.writeDebugCurve(DebugCurve.mkDebugCurveI(n.boundaryCurve))
       let box = n.boundingBox
