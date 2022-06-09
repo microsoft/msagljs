@@ -1,7 +1,7 @@
 ﻿import {ICurve, Point, parameterSpan} from '../../..'
 import {GeomConstants} from '../../../math/geometry'
 import {TriangleOrientation} from '../../../math/geometry/point'
-import {Assert} from '../../../utils/assert'
+// import {Assert} from '../../../utils/assert'
 import {lessDistEps} from '../../../utils/compare'
 import {BundleInfo} from './BundleInfo'
 import {OrientedHubSegment} from './OrientedHubSegment'

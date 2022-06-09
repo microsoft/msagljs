@@ -889,7 +889,7 @@ export class Nudger {
     const t = {points: (path.PathPoints as Array<Point>).map((p) => p.clone())}
     Nudger.ExtendPolylineToPorts(t, path)
     /* for (let i = 0; i < t.points.length - 1; i++) {
-      Assert.assert(
+// Assert.assert(
         CompassVector.IsPureDirectionPP(t.points[i], t.points[i + 1]),
       )
     }*/

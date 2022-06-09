@@ -30,7 +30,7 @@ import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
-import {Assert} from '../utils/assert'
+// import {Assert} from '../utils/assert'
 
 export class InteractiveEdgeRouter extends Algorithm {
   //  the obstacles for routing
@@ -1541,7 +1541,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
       // the edge has to be reversed to route from CurvePort to FloatingPort
       curve = this.RouteFromFloatingPortToFloatingPort(this.targetLoosePolyline, smooth, t)
     } else {
-      Assert.assert(this.targetPort instanceof HookUpAnywhereFromInsidePort)
+      // Assert.assert(this.targetPort instanceof HookUpAnywhereFromInsidePort)
       curve = this.RouteFromFloatingPortToAnywherePort(
         (<HookUpAnywhereFromInsidePort>this.targetPort).LoosePolyline,
         smooth,

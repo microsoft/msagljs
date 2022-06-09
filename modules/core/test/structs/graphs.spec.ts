@@ -29,7 +29,6 @@ test('graph create', () => {
   const b = new Node('b')
   e = new Edge(a, b)
   // at this point the edge does not belong to this.nodes
-  expect(g.isConsistent()).toBe(false)
 
   g.addEdge(e)
   expect(g.isConsistent()).toBe(true)
@@ -68,8 +67,6 @@ test('graph delete node', () => {
 
   const b = new Node('b')
   e = new Edge(a, b)
-  // at this point the edge does not belong to this.nodes
-  expect(g.isConsistent()).toBe(false)
 
   g.addEdge(e)
   expect(g.isConsistent()).toBe(true)

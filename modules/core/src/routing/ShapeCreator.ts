@@ -5,7 +5,7 @@ import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromIns
 import {Port} from '../layout/core/port'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
 import {ToAncestorEnum} from '../structs/edge'
-import {Assert} from '../utils/assert'
+// import {Assert} from '../utils/assert'
 import {ClusterBoundaryPort} from './ClusterBoundaryPort'
 import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
@@ -68,7 +68,7 @@ export class ShapeCreator {
   /**   Creates a ClusterBoundaryPort for the cluster boundary, attaches it to the shape and all edges */
   static CreateShapeWithClusterBoundaryPort(cluster: GeomGraph): Shape {
     //  Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
-    Assert.assert(cluster instanceof GeomGraph)
+    // Assert.assert(cluster instanceof GeomGraph)
     const shape = new RelativeShape(() => cluster.boundaryCurve)
 
     const port = ClusterBoundaryPort.mk(

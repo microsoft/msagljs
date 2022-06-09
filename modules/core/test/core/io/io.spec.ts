@@ -5,7 +5,6 @@ import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {parseDotGraph} from '../../utils/testUtils'
 import {Graph as DGraph} from 'dotparser'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {layoutDrawingGraph} from '../../../../renderer/src/layout'
 import {layoutGeomGraph} from '../../../src/layout/driver'
 import {GeomGraph} from '../../../src/layout/core'
 test('point', () => {
@@ -64,11 +63,13 @@ test('polyline', () => {
 
 test('graph ldbxtried.gv', () => {
   const g = parseDotGraph('graphvis/ldbxtried.gv')
+  expect(g.isConsistent()).toBe(true)
   DrawingGraph.getDrawingGraph(g).createGeometry()
   layoutGeomGraph(GeomGraph.getGeom(g) as GeomGraph)
   const parsedGraph: DGraph = graphToJSON(g)
 
   const graph = parseJSON(parsedGraph)
+  expect(graph.isConsistent()).toBe(true)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(Array.from(g.subgraphs()).length)
   expect(graph.nodeCountDeep).toBe(g.nodeCountDeep)

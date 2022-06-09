@@ -1,5 +1,5 @@
 import {Queue} from 'queue-typescript'
-import {Assert} from '../utils/assert'
+// import {Assert} from '../utils/assert'
 
 import {Edge} from './edge'
 import {Node} from './node'
@@ -26,7 +26,7 @@ export class Graph extends Node {
   }
 
   *subgraphs(): IterableIterator<Graph> {
-    for (const n of this.deepNodes) {
+    for (const n of this.deepNodes()) {
       if (n instanceof Graph) yield <Graph>n
     }
   }
@@ -48,8 +48,11 @@ export class Graph extends Node {
   get shallowNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesShallow
   }
-  get deepNodes(): IterableIterator<Node> {
-    return this.nodeCollection.nodesDeep()
+
+  *deepNodes(): IterableIterator<Node> {
+    for (const n of this.nodeCollection.nodesDeep()) {
+      yield n
+    }
   }
 
   constructor(id = '__graph__') {
@@ -63,7 +66,7 @@ export class Graph extends Node {
   }
 
   *deepEdges() {
-    for (const node of this.deepNodes) {
+    for (const node of this.deepNodes()) {
       for (const e of node.outEdges) {
         yield e
       }
@@ -74,7 +77,9 @@ export class Graph extends Node {
   }
 
   isConsistent(): boolean {
-    return this.nodeCollection.isConsistent()
+    if (this.parent) return (this.parent as Graph).isConsistent()
+
+    return this.eachNodeIdIsUnique() && this.nodeCollection.isConsistent()
   }
   nodeIsConsistent(n: Node): boolean {
     return this.nodeCollection.nodeIsConsistent(n)
@@ -89,11 +94,13 @@ export class Graph extends Node {
     /*Assert.assert(n.parent == null || n.parent == this)*/
     n.parent = this
     this.nodeCollection.addNode(n)
+    // Assert.assert(this.isConsistent())
     return n
   }
   /** adds an edge to the graph */
   addEdge(n: Edge) {
     this.nodeCollection.addEdge(n)
+    // Assert.assert(this.isConsistent())
   }
   nodeCollection: NodeCollection = new NodeCollection()
   get shallowNodeCount() {
@@ -120,10 +127,20 @@ export class Graph extends Node {
   /** return the number of all nodes in the graph, including the subgraphs */
   deepEdgesCount(): number {
     let count = 0
-    for (const p of this.deepNodes) {
+    for (const p of this.deepNodes()) {
       count += p.outDegree + p.selfDegree
     }
     return count
+  }
+  eachNodeIdIsUnique(): boolean {
+    const ids = new Set<string>()
+    for (const n of this.deepNodes()) {
+      if (ids.has(n.id)) {
+        return false
+      }
+      ids.add(n.id)
+    }
+    return true
   }
 }
 
@@ -162,4 +179,7 @@ export function setNewParent(newParent: Graph, node: Node) {
   }
   newParent.nodeCollection.nodeMap.set(node.id, node)
   node.parent = newParent
+  // let p = newParent
+  // while (p.parent) p = p.parent as Graph
+  // Assert.assert(p.isConsistent())
 }

@@ -6,13 +6,15 @@ import {EllipseJSON} from './ellipse'
 import {CurveJSON} from './curve'
 import {LineSegmentJSON} from './lineSegment'
 import {BezierJSON} from './bezierSeg'
+import {PolylineJSON} from './polyline'
 
 export function parameterSpan(curve: ICurve) {
   return curve.parEnd - curve.parStart
 }
-export type ICurveJSON = EllipseJSON | CurveJSON | LineSegmentJSON | BezierJSON
+export type ICurveJSON = EllipseJSON | CurveJSON | LineSegmentJSON | BezierJSON | PolylineJSON
 /**  The interface for curves */
 export interface ICurve {
+  toJSON(): ICurveJSON
   /**  Returns the point on the curve corresponding to parameter t */
   value(t: number): Point
   // first derivative at t

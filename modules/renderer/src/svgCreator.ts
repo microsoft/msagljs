@@ -74,7 +74,7 @@ export class SvgCreator {
     if (!this.geomGraph) return null
     this.geomGraph.updateBoundingBox()
     this.open()
-    for (const node of this.graph.deepNodes) {
+    for (const node of this.graph.deepNodes()) {
       this.drawNode(node)
     }
     for (const edge of this.graph.deepEdges()) {
@@ -280,7 +280,7 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
           const isellipse = iCurve instanceof Ellipse
           if (isellipse) {
             const ellipse = iCurve as Ellipse
-            if (isFullEllipse(ellipse)) {
+            if (ellipse.isFullEllipse()) {
               yield ellipseToString(new Ellipse(0, Math.PI, ellipse.aAxis, ellipse.bAxis, ellipse.center))
               yield ellipseToString(new Ellipse(Math.PI, Math.PI * 2, ellipse.aAxis, ellipse.bAxis, ellipse.center))
             } else this.ellipseToString(ellipse)
@@ -289,9 +289,6 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
       }
     }
   }
-}
-function isFullEllipse(ell: Ellipse): boolean {
-  return ell.parEnd == Math.PI * 2 && ell.parStart == 0
 }
 
 function pointToString(start: Point) {

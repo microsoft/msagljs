@@ -156,7 +156,7 @@ export class GeomGraph extends GeomNode {
     }
   }
   *deepNodes(): IterableIterator<GeomNode> {
-    for (const n of this.graph.deepNodes) {
+    for (const n of this.graph.deepNodes()) {
       yield GeomObject.getGeom(n) as unknown as GeomNode
     }
   }

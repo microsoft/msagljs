@@ -2,7 +2,7 @@ import {Point} from './../../math/geometry/point'
 
 import {String} from 'typescript-string-operations'
 import {VisibilityVertex} from './VisibilityVertex'
-//import {Assert} from '../../utils/assert'
+//// import {Assert} from '../../utils/assert'
 //  an edge connecting two VisibilityVertices
 export class VisibilityEdge {
   LengthMultiplier = 1

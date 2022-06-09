@@ -17,6 +17,10 @@ import {closeDistEps} from '../../utils/compare'
 export type EllipseJSON = {parStart: number; parEnd: number; axis0: PointJSON; axis1: PointJSON; center: PointJSON}
 
 export class Ellipse implements ICurve {
+  isFullEllipse(): boolean {
+    return this.parEnd == Math.PI * 2 && this.parStart == 0
+  }
+
   static fromJSON(eData: EllipseJSON): Ellipse {
     return new Ellipse(eData.parStart, eData.parEnd, Point.fromJSON(eData.axis0), Point.fromJSON(eData.axis1), Point.fromJSON(eData.center))
   }

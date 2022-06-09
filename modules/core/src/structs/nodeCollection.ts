@@ -146,9 +146,6 @@ export class NodeCollection {
       if (e.source == e.target) {
         return false
       }
-      if (!this.nodeMap.has(e.target.id)) {
-        return false
-      }
     }
     for (const e of n.inEdges) {
       if (e.target != n) {
@@ -158,17 +155,13 @@ export class NodeCollection {
       if (e.source == e.target) {
         return false
       }
-      if (!this.nodeMap.has(e.source.id)) {
-        return false
-      }
-      return true
     }
 
     for (const e of n.selfEdges) {
       if (e.target != e.source) {
         return false
       }
-      if (e.source == n) {
+      if (e.source != n) {
         return false
       }
     }
@@ -177,8 +170,8 @@ export class NodeCollection {
   }
 
   isConsistent(): boolean {
-    for (const pair of this.nodeMap) {
-      if (!this.nodeIsConsistent(pair[1])) {
+    for (const node of this.nodeMap.values()) {
+      if (!this.nodeIsConsistent(node)) {
         return false
       }
     }

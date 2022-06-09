@@ -2,7 +2,7 @@
 import {Curve, GeomConstants, LineSegment, Point, Polyline} from '../../../math/geometry'
 import {IntersectionInfo} from '../../../math/geometry/intersectionInfo'
 import {RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
-import {Assert} from '../../../utils/assert'
+// import {Assert} from '../../../utils/assert'
 
 import {BundleBase} from './BundleBase'
 import {Intersections} from './Intersections'
@@ -157,7 +157,7 @@ export class BundleInfo {
     // }
     // //Assert.assert(this.SourceBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) > 0)
     // //Assert.assert(this.TargetBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) < 0)
-    Assert.assert(this.SourceBase.isCorrectlyOrienected() && this.TargetBase.isCorrectlyOrienected())
+    // Assert.assert(this.SourceBase.isCorrectlyOrienected() && this.TargetBase.isCorrectlyOrienected())
 
     return true
   }
@@ -281,7 +281,7 @@ export class BundleInfo {
         this.TargetBase.Tangents[i] = d
         this.SourceBase.Tangents[count - 1 - i] = d.neg()
       } else {
-        Assert.assert(false)
+        // Assert.assert(false)
       }
     }
   }

@@ -1,7 +1,7 @@
 import {Entity} from './entity'
 import {Edge} from './edge'
 import {Graph} from './graph'
-import {Assert} from '../utils/assert'
+// import {Assert} from '../utils/assert'
 /** Represent a node of a graph: has id, which is a string, and sets of in/out/self edges */
 export class Node extends Entity {
   private _id: string
@@ -31,23 +31,6 @@ export class Node extends Entity {
     for (const e of this.inEdges) yield e
     for (const e of this.outEdges) yield e
     for (const e of this.selfEdges) yield e
-  }
-
-  private addInEdge(edge: Edge): void {
-    Assert.assert(edge != null)
-    Assert.assert(edge.target == this)
-
-    this.inEdges.add(edge)
-  }
-
-  private addOutEdge(edge: Edge): void {
-    /*Assert.assert(edge.source == this)*/
-    this.outEdges.add(edge)
-  }
-
-  private addSelfEdge(edge: Edge): void {
-    /*Assert.assert(edge.source == edge.target && edge.source == this)*/
-    this.selfEdges.add(edge)
   }
 
   get edges(): IterableIterator<Edge> {

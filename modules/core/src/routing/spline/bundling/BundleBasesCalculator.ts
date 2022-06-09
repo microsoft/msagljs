@@ -4,7 +4,7 @@ import {ICurve, Point} from '../../..'
 import {Curve, PointLocation, LineSegment, GeomConstants} from '../../../math/geometry'
 import {Ellipse} from '../../../math/geometry/ellipse'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-import {Assert} from '../../../utils/assert'
+// import {Assert} from '../../../utils/assert'
 import {closeDistEps} from '../../../utils/compare'
 
 import {addToMapOfArrays} from '../../../utils/setOperations'
@@ -249,7 +249,7 @@ export class BundleBasesCalculator {
       const lBase = rBase.Next
 
       this.ShrinkBasesToMakeTwoConsecutiveNeighborsHappy(rBase, lBase)
-      Assert.assert(rBase.isCorrectlyOrienected() && lBase.isCorrectlyOrienected())
+      // Assert.assert(rBase.isCorrectlyOrienected() && lBase.isCorrectlyOrienected())
     }
   }
 
@@ -273,7 +273,7 @@ export class BundleBasesCalculator {
 
     rBase.ParStart = rBase.AdjustParam(x + GeomConstants.distanceEpsilon)
     lBase.ParEnd = lBase.AdjustParam(x - GeomConstants.distanceEpsilon)
-    Assert.assert(intersectBases(rBase, lBase) == null)
+    // Assert.assert(intersectBases(rBase, lBase) == null)
   }
 
   //  find a cut point for 2 segments
@@ -666,13 +666,13 @@ function intersectBases(rBase: BundleBase, lBase: BundleBase): {start: number; e
   const oe = lBase.ParEnd
   const os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - lBase.ParameterSpan
   // We have where s < e, and os < oe. Also e,s, os, oe <= rBase.Curve.ParEnd, but we can have s, os < rBase.Curve.ParStart
-  Assert.assert(s < e)
-  Assert.assert(os < oe)
+  // Assert.assert(s < e)
+  // Assert.assert(os < oe)
 
-  Assert.assert(s <= rBase.Curve.parEnd)
-  Assert.assert(e <= rBase.Curve.parEnd)
-  Assert.assert(os <= rBase.Curve.parEnd)
-  Assert.assert(oe <= rBase.Curve.parEnd)
+  // Assert.assert(s <= rBase.Curve.parEnd)
+  // Assert.assert(e <= rBase.Curve.parEnd)
+  // Assert.assert(os <= rBase.Curve.parEnd)
+  // Assert.assert(oe <= rBase.Curve.parEnd)
   const xEnd = Math.min(e, oe)
   const xStart = Math.max(s, os)
   return xStart <= xEnd ? {start: xStart, end: xEnd, rbaseMiddle: (s + e) / 2, lbaseMiddle: (os + oe) / 2} : null
