@@ -14,6 +14,7 @@ import {
   LineSegment,
   BezierSeg,
   Polyline,
+  Entity,
 } from 'msagl-js'
 import {Graph as DGraph, Attr} from 'dotparser'
 import {
@@ -32,9 +33,9 @@ import {
 
 import {parseColor} from './utils'
 // import {Assert} from '../../core/src/utils/assert'
-import {BasicVertexEvent} from '../../core/src/routing/rectilinear/BasicVertexEvent'
 
-function fillDrawingObjectAttrs(o: any, drawingObj: DrawingObject) {
+function parseDrawingObjectAttrs(o: any, graphEntity: Entity) {
+  const drawingObj = DrawingObject.getDrawingObj(graphEntity)
   if (o.attr_list == null) return
   for (const attr of o.attr_list) {
     if (attr.type == 'attr') {
@@ -345,7 +346,7 @@ class DotParser {
     this.ast = ast
   }
 
-  parseEdge(so: Subgraph | NodeId, to: Subgraph | NodeId, graph: Graph, directed: boolean, o: EdgeStmt): DrawingEdge[] {
+  parseEdge(so: Subgraph | NodeId, to: Subgraph | NodeId, graph: Graph, directed: boolean, o: EdgeStmt): Edge[] {
     const nc = graph.nodeCollection
     let sn: Node
     let tn: Node
@@ -368,7 +369,7 @@ class DotParser {
       }
       for (const ch of so.children) {
         if (ch.type === 'attr_stmt') {
-          for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
+          for (const drObj of drObjs) parseDrawingObjectAttrs(ch, drObj)
         } // ignore anything else
       }
       return drObjs
@@ -381,10 +382,10 @@ class DotParser {
         tn = nc.getNode(t)
       }
     } else if (to.type == 'subgraph') {
-      const drObjs = new Array<DrawingEdge>()
+      const subgraphEdges = new Array<Edge>()
       for (const ch of to.children) {
         if (ch.type === 'node_stmt') {
-          for (const e of this.parseEdge(so, ch.node_id, graph, directed, o)) drObjs.push(e)
+          for (const e of this.parseEdge(so, ch.node_id, graph, directed, o)) subgraphEdges.push(e)
         } else if (ch.type === 'attr_stmt') {
         } else {
           throw new Error('not implemented')
@@ -392,21 +393,21 @@ class DotParser {
       }
       for (const ch of to.children) {
         if (ch.type === 'attr_stmt') {
-          for (const drObj of drObjs) fillDrawingObjectAttrs(ch, drObj)
+          for (const drObj of subgraphEdges) parseDrawingObjectAttrs(ch, drObj)
         } // ignore anything else
       }
-      return drObjs
+      return subgraphEdges
     }
     const edge = new Edge(sn, tn)
     nc.addEdge(edge)
     const drawingEdge = new DrawingEdge(edge)
-    fillDrawingObjectAttrs(o, drawingEdge)
+    parseDrawingObjectAttrs(o, edge)
     if (drawingEdge.labelText) {
       edge.label = new Label(drawingEdge.labelText, edge)
       drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
     }
     drawingEdge.directed = directed
-    return [drawingEdge]
+    return [edge]
   }
 
   newNode(id: string, g: Graph, underSubgraph: boolean): Node {
@@ -418,7 +419,7 @@ class DotParser {
       const dn = new DrawingNode(n)
       dn.labelText = id
       if (this.defaultNodeAttr) {
-        fillDrawingObjectAttrs(this.defaultNodeAttr, dn)
+        parseDrawingObjectAttrs(this.defaultNodeAttr, n)
       }
     } else if (underSubgraph) {
       // if the node is under a subgraph - change its parent to the subgraph
@@ -427,14 +428,16 @@ class DotParser {
 
     return n
   }
-  parseNode(o: NodeStmt, graph: Graph, underSubgraph: boolean): DrawingNode {
+  parseNode(o: NodeStmt, graph: Graph, underSubgraph: boolean): Node {
     const id = o.node_id.id.toString()
     const node = this.newNode(id, graph, underSubgraph)
 
-    const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node) ?? new DrawingNode(node)
+    if (<DrawingNode>DrawingObject.getDrawingObj(node) == null) {
+      new DrawingNode(node)
+    }
 
-    fillDrawingObjectAttrs(o, drawingNode)
-    return drawingNode
+    parseDrawingObjectAttrs(o, node)
+    return node
   }
   parse(): Graph {
     if (this.ast == null) return null
@@ -444,16 +447,16 @@ class DotParser {
     removeEmptySubgraphs(this.graph)
     return this.graph
   }
-  parseGraphAttr(o: AttrStmt, dg: DrawingGraph) {
+  parseGraphAttr(o: AttrStmt, graph: Graph) {
     if (o.target == 'node') {
       this.defaultNodeAttr = o // will parse it for each node
     } else if (o.target == 'graph') {
-      fillDrawingObjectAttrs(o, dg)
+      parseDrawingObjectAttrs(o, graph)
     }
   }
 
-  getEntitiesSubg(o: Subgraph, graph: Graph, directed: boolean): DrawingObject[] {
-    let ret: DrawingObject[] = []
+  getEntitiesSubg(o: Subgraph, graph: Graph, directed: boolean): Entity[] {
+    let ret = []
     for (const ch of o.children) {
       if (ch.type == 'edge_stmt') {
         for (let i = 0; i < ch.edge_list.length - 1; i++) {
@@ -495,7 +498,7 @@ class DotParser {
           // is it really a subgraph?
           if (process_same_rank(o, DrawingGraph.getDrawingGraph(graph))) {
           } else if (o.id == null) {
-            const entities: DrawingObject[] = this.getEntitiesSubg(o, graph, directed)
+            const entities: Entity[] = this.getEntitiesSubg(o, graph, directed)
             applyAttributesToEntities(o, DrawingGraph.getDrawingGraph(graph), entities)
           } else {
             const subg = new Graph(o.id.toString())
@@ -505,7 +508,7 @@ class DotParser {
           }
           break
         case 'attr_stmt':
-          this.parseGraphAttr(o, DrawingGraph.getDrawingGraph(graph))
+          this.parseGraphAttr(o, graph)
           break
         default:
           throw new Error('not implemented')
@@ -639,10 +642,10 @@ function parseFloatQuatriple(str: any): any {
   return [parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2]), parseFloat(p[3])]
 }
 
-function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: DrawingObject[]) {
+function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: Entity[]) {
   for (const ch of o.children) {
     if (ch.type == 'attr_stmt') {
-      for (const ent of entities) fillDrawingObjectAttrs(ch, ent)
+      for (const ent of entities) parseDrawingObjectAttrs(ch, ent)
     }
   }
 }
@@ -748,7 +751,7 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   if (geomNode == null || geomNode.boundaryCurve == null) return
   const bc = geomNode.boundaryCurve as ICurve
 
-  yield {type: 'attr', id: getICurveType(bc), eq: bc.toJSON().toString()}
+  yield {type: 'attr', id: getICurveType(bc), eq: JSON.stringify(bc.toJSON())} as Attr
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {

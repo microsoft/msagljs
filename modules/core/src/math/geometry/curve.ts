@@ -67,29 +67,24 @@ export enum PointLocation {
   Boundary,
   Inside,
 }
-export enum SegmentTag {
-  Ellipse,
-  LineSegment,
-  Bezier,
-  Polyline,
-}
+
+export type SegmentTag = 'ellipse' | 'lineSegment' | 'bezier'
+
 export type CurveJSON = {
   segs: {tag: SegmentTag; segData: any}[]
 }
 
 function getJSONforSeg(seg: ICurve): {tag: SegmentTag; segData: any} {
   if (seg instanceof Ellipse) {
-    return {tag: SegmentTag.Ellipse, segData: seg.toJSON()}
+    return {tag: 'ellipse', segData: seg.toJSON()}
   }
   if (seg instanceof LineSegment) {
-    return {tag: SegmentTag.LineSegment, segData: seg.toJSON()}
+    return {tag: 'lineSegment', segData: seg.toJSON()}
   }
   if (seg instanceof BezierSeg) {
-    return {tag: SegmentTag.Bezier, segData: seg.toJSON()}
+    return {tag: 'bezier', segData: seg.toJSON()}
   }
-  if (seg instanceof Polyline) {
-    return {tag: SegmentTag.Polyline, segData: seg.toJSON()}
-  }
+
   throw new Error('not implemented')
 }
 
@@ -98,13 +93,13 @@ export class Curve implements ICurve {
     const curve = new Curve()
     for (const p of eData.segs) {
       switch (p.tag) {
-        case SegmentTag.Bezier:
+        case 'bezier':
           curve.addSegment(BezierSeg.fromJSON(p.segData))
           break
-        case SegmentTag.Ellipse:
+        case 'ellipse':
           curve.addSegment(Ellipse.fromJSON(p.segData))
           break
-        case SegmentTag.LineSegment:
+        case 'lineSegment':
           curve.addSegment(LineSegment.fromJSON(p.segData))
           break
         default:
