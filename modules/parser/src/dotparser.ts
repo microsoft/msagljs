@@ -15,6 +15,9 @@ import {
   BezierSeg,
   Polyline,
   Entity,
+  CurveJSON,
+  LineSegmentJSON,
+  PolylineJSON,
 } from 'msagl-js'
 import {Graph as DGraph, Attr} from 'dotparser'
 import {
@@ -32,7 +35,56 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
+import {EllipseJSON} from '../../core/src/math/geometry/ellipse'
 // import {Assert} from '../../core/src/utils/assert'
+
+function parseGeometryAttrs(o: any, node: Node) {
+  if (o.attr_list == null) return
+  for (const attr of o.attr_list) {
+    if (attr.type == 'attr') {
+      const str = attr.eq
+      switch (attr.id) {
+        case 'curve':
+          {
+            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
+            const json = JSON.parse(str) as CurveJSON
+            geomNode.boundaryCurve = Curve.fromJSON(json)
+          }
+
+          break
+        case 'ellipse':
+          {
+            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
+            const json = JSON.parse(str) as EllipseJSON
+            geomNode.boundaryCurve = Ellipse.fromJSON(json)
+          }
+
+          break
+        case 'lineSegment':
+          {
+            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
+            const json = JSON.parse(str) as LineSegmentJSON
+            geomNode.boundaryCurve = LineSegment.fromJSON(json)
+          }
+
+          break
+        case 'polyline':
+          {
+            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
+            const json = JSON.parse(str) as PolylineJSON
+            geomNode.boundaryCurve = Polyline.fromJSON(json)
+          }
+
+          break
+        default:
+          break // remove the comment below to catch unsupported attributes
+        // throw new Error('not implemented for ' + attr.id)
+      }
+    } else {
+      throw new Error('unexpected type ' + attr.type)
+    }
+  }
+}
 
 function parseDrawingObjectAttrs(o: any, graphEntity: Entity) {
   const drawingObj = DrawingObject.getDrawingObj(graphEntity)
@@ -432,10 +484,10 @@ class DotParser {
     const id = o.node_id.id.toString()
     const node = this.newNode(id, graph, underSubgraph)
 
-    if (<DrawingNode>DrawingObject.getDrawingObj(node) == null) {
+    if (DrawingObject.getDrawingObj(node) == null) {
       new DrawingNode(node)
     }
-
+    parseGeometryAttrs(o, node)
     parseDrawingObjectAttrs(o, node)
     return node
   }
