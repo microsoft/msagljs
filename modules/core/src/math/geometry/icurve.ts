@@ -2,16 +2,55 @@ import {PlaneTransformation} from './planeTransformation'
 import {Point} from './point'
 import {PN} from './parallelogramNode'
 import {Rectangle} from './rectangle'
-import {EllipseJSON} from './ellipse'
-import {CurveJSON} from './curve'
-import {LineSegmentJSON} from './lineSegment'
-import {BezierJSON} from './bezierSeg'
-import {PolylineJSON} from './polyline'
+import {Ellipse, EllipseJSON} from './ellipse'
+import {Curve, CurveJSON} from './curve'
+import {LineSegment, LineSegmentJSON} from './lineSegment'
+import {BezierJSON, BezierSeg} from './bezierSeg'
+import {Polyline, PolylineJSON} from './polyline'
 
 export function parameterSpan(curve: ICurve) {
   return curve.parEnd - curve.parStart
 }
-export type ICurveJSON = EllipseJSON | CurveJSON | LineSegmentJSON | BezierJSON | PolylineJSON
+
+export type ICurveJSON = LineSegmentJSON | CurveJSON | BezierJSON | PolylineJSON | EllipseJSON
+export type CurveTag = 'bezier' | 'ellipse' | 'curve' | 'polyline' | 'curve' | 'lineSegment'
+export type ICurveJSONTyped = {type: CurveTag; data: ICurveJSON}
+
+export function JSONToICurve(json: ICurveJSONTyped): ICurve {
+  switch (json.type) {
+    case 'ellipse':
+      return Ellipse.fromJSON(json.data as EllipseJSON)
+    case 'curve':
+      return Curve.fromJSON(json.data as CurveJSON)
+    case 'lineSegment':
+      return LineSegment.fromJSON(json.data as LineSegmentJSON)
+    case 'bezier':
+      return BezierSeg.fromJSON(json.data as BezierJSON)
+    case 'polyline':
+      return Polyline.fromJSON(json.data as PolylineJSON)
+  }
+}
+
+function getICurveType(bc: ICurve): CurveTag {
+  if (bc instanceof Ellipse) {
+    return 'ellipse'
+  } else if (bc instanceof Curve) {
+    return 'curve'
+  } else if (bc instanceof LineSegment) {
+    return 'lineSegment'
+  } else if (bc instanceof BezierSeg) {
+    return 'bezier'
+  } else if (bc instanceof Polyline) {
+    return 'polyline'
+  } else {
+    throw new Error('not implemented')
+  }
+}
+
+export function iCurveToJSON(bc: ICurve): ICurveJSONTyped {
+  return {type: getICurveType(bc), data: bc.toJSON()}
+}
+
 /**  The interface for curves */
 export interface ICurve {
   toJSON(): ICurveJSON

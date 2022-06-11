@@ -18,6 +18,9 @@ import {
   CurveJSON,
   LineSegmentJSON,
   PolylineJSON,
+  GeomEdge,
+  Point,
+  GeomGraph,
 } from 'msagl-js'
 import {Graph as DGraph, Attr} from 'dotparser'
 import {
@@ -35,64 +38,45 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
-import {EllipseJSON} from '../../core/src/math/geometry/ellipse'
+import {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from '../../core/src/math/geometry/icurve'
 // import {Assert} from '../../core/src/utils/assert'
 
-function parseGeometryAttrs(o: any, node: Node) {
+function parseAttrs(o: any, entity: Entity) {
+  const drawingObj = DrawingObject.getDrawingObj(entity)
   if (o.attr_list == null) return
   for (const attr of o.attr_list) {
     if (attr.type == 'attr') {
       const str = attr.eq
       switch (attr.id) {
-        case 'curve':
+        // geometry attributes
+        case 'edgeCurve':
           {
-            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
-            const json = JSON.parse(str) as CurveJSON
-            geomNode.boundaryCurve = Curve.fromJSON(json)
+            const geom = getOrCreateGeomObj(entity) as GeomEdge
+            const json = JSON.parse(str) as ICurveJSONTyped
+            geom.curve = JSONToICurve(json)
           }
 
           break
-        case 'ellipse':
+        case 'boundaryCurve':
           {
-            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
-            const json = JSON.parse(str) as EllipseJSON
-            geomNode.boundaryCurve = Ellipse.fromJSON(json)
+            const geom = getOrCreateGeomObj(entity) as GeomNode
+            const json = JSON.parse(str) as ICurveJSONTyped
+            geom.boundaryCurve = JSONToICurve(json)
           }
 
           break
-        case 'lineSegment':
-          {
-            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
-            const json = JSON.parse(str) as LineSegmentJSON
-            geomNode.boundaryCurve = LineSegment.fromJSON(json)
-          }
 
+        case 'sourceArrowhead': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
-        case 'polyline':
-          {
-            const geomNode = <GeomNode>GeomNode.getGeom(node) ?? new GeomNode(node)
-            const json = JSON.parse(str) as PolylineJSON
-            geomNode.boundaryCurve = Polyline.fromJSON(json)
-          }
-
+        }
+        case 'targetArrowhead': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
-        default:
-          break // remove the comment below to catch unsupported attributes
-        // throw new Error('not implemented for ' + attr.id)
-      }
-    } else {
-      throw new Error('unexpected type ' + attr.type)
-    }
-  }
-}
-
-function parseDrawingObjectAttrs(o: any, graphEntity: Entity) {
-  const drawingObj = DrawingObject.getDrawingObj(graphEntity)
-  if (o.attr_list == null) return
-  for (const attr of o.attr_list) {
-    if (attr.type == 'attr') {
-      const str = attr.eq
-      switch (attr.id) {
+        }
+        // end of geometry attributes
         case 'color':
           drawingObj.color = parseColor(str)
 
@@ -421,7 +405,7 @@ class DotParser {
       }
       for (const ch of so.children) {
         if (ch.type === 'attr_stmt') {
-          for (const drObj of drObjs) parseDrawingObjectAttrs(ch, drObj)
+          for (const drObj of drObjs) parseAttrs(ch, drObj)
         } // ignore anything else
       }
       return drObjs
@@ -445,7 +429,7 @@ class DotParser {
       }
       for (const ch of to.children) {
         if (ch.type === 'attr_stmt') {
-          for (const drObj of subgraphEdges) parseDrawingObjectAttrs(ch, drObj)
+          for (const drObj of subgraphEdges) parseAttrs(ch, drObj)
         } // ignore anything else
       }
       return subgraphEdges
@@ -453,7 +437,7 @@ class DotParser {
     const edge = new Edge(sn, tn)
     nc.addEdge(edge)
     const drawingEdge = new DrawingEdge(edge)
-    parseDrawingObjectAttrs(o, edge)
+    parseAttrs(o, edge)
     if (drawingEdge.labelText) {
       edge.label = new Label(drawingEdge.labelText, edge)
       drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
@@ -471,7 +455,7 @@ class DotParser {
       const dn = new DrawingNode(n)
       dn.labelText = id
       if (this.defaultNodeAttr) {
-        parseDrawingObjectAttrs(this.defaultNodeAttr, n)
+        parseAttrs(this.defaultNodeAttr, n)
       }
     } else if (underSubgraph) {
       // if the node is under a subgraph - change its parent to the subgraph
@@ -487,8 +471,7 @@ class DotParser {
     if (DrawingObject.getDrawingObj(node) == null) {
       new DrawingNode(node)
     }
-    parseGeometryAttrs(o, node)
-    parseDrawingObjectAttrs(o, node)
+    parseAttrs(o, node)
     return node
   }
   parse(): Graph {
@@ -503,7 +486,7 @@ class DotParser {
     if (o.target == 'node') {
       this.defaultNodeAttr = o // will parse it for each node
     } else if (o.target == 'graph') {
-      parseDrawingObjectAttrs(o, graph)
+      parseAttrs(o, graph)
     }
   }
 
@@ -697,7 +680,7 @@ function parseFloatQuatriple(str: any): any {
 function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: Entity[]) {
   for (const ch of o.children) {
     if (ch.type == 'attr_stmt') {
-      for (const ent of entities) parseDrawingObjectAttrs(ch, ent)
+      for (const ent of entities) parseAttrs(ch, ent)
     }
   }
 }
@@ -764,7 +747,18 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 }
 
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
-  //throw new Error('Function not implemented.')
+  const geomEdge = GeomObject.getGeom(edge) as GeomEdge
+  if (geomEdge == null) return
+  if (geomEdge.curve == null) return
+  yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
+
+  if (geomEdge.sourceArrowhead) {
+    yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+  }
+
+  if (geomEdge.targetArrowhead) {
+    yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+  }
 }
 
 function getNodeStatement(node: Node): NodeStmt | Subgraph {
@@ -776,8 +770,17 @@ function getNodeStatement(node: Node): NodeStmt | Subgraph {
       attr_list: Array.from(getNodeAttrList(node)),
     }
   } else {
-    return {type: 'subgraph', children: [], id: node.id}
+    const attr_list = Array.from(getNodeAttrList(node))
+    const children = []
+    const attr_stmt: AttrStmt = {type: 'attr_stmt', target: 'graph', attr_list: attr_list}
+    children.push(attr_stmt)
+    return {type: 'subgraph', children: children, id: node.id}
   }
+}
+
+function getNodeBoundaryCurve(node: Node): Attr {
+  const bc = (<GeomNode>GeomNode.getGeom(node)).boundaryCurve
+  return {type: 'attr', id: 'boundaryCurve', eq: JSON.stringify(iCurveToJSON(bc))}
 }
 
 function* getNodeAttrList(node: Node): IterableIterator<Attr> {
@@ -801,9 +804,7 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   ]*/
   const geomNode = GeomObject.getGeom(node) as GeomNode
   if (geomNode == null || geomNode.boundaryCurve == null) return
-  const bc = geomNode.boundaryCurve as ICurve
-
-  yield {type: 'attr', id: getICurveType(bc), eq: JSON.stringify(bc.toJSON())} as Attr
+  yield getNodeBoundaryCurve(node)
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {
@@ -847,18 +848,20 @@ function getNodeLevelsOnMap(graph: Graph, levels: Map<string, number>): void {
     }
   }
 }
-function getICurveType(bc: ICurve): string {
-  if (bc instanceof Ellipse) {
-    return 'ellipse'
-  } else if (bc instanceof Curve) {
-    return 'curve'
-  } else if (bc instanceof LineSegment) {
-    return 'lineSegment'
-  } else if (bc instanceof BezierSeg) {
-    return 'bezier'
-  } else if (bc instanceof Polyline) {
-    return 'polyline'
-  } else {
-    throw new Error('not implemented')
+
+function getOrCreateGeomObj(entity: Entity): GeomObject {
+  return GeomObject.getGeom(entity) ?? createNewGeomObj(entity)
+}
+function createNewGeomObj(entity: Entity): GeomObject {
+  if (entity instanceof Node) {
+    return new GeomNode(entity)
   }
+
+  if (entity instanceof Edge) {
+    return new GeomEdge(entity)
+  }
+  if (entity instanceof Graph) {
+    return new GeomGraph(entity)
+  }
+  throw new Error('unsupported type ' + entity)
 }

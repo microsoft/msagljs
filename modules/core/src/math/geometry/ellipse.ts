@@ -1,4 +1,4 @@
-import {ICurve} from './icurve'
+import {ICurve, ICurveJSON} from './icurve'
 import {Curve} from './curve'
 import {Rectangle} from './rectangle'
 import {PN, ParallelogramNode} from './parallelogramNode'
@@ -24,7 +24,7 @@ export class Ellipse implements ICurve {
   static fromJSON(eData: EllipseJSON): Ellipse {
     return new Ellipse(eData.parStart, eData.parEnd, Point.fromJSON(eData.axis0), Point.fromJSON(eData.axis1), Point.fromJSON(eData.center))
   }
-  toJSON(): EllipseJSON {
+  toJSON(): ICurveJSON {
     return {
       parStart: this.parStart,
       parEnd: this.parEnd,
