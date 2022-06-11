@@ -8,7 +8,7 @@ import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
-import {graphToJSON} from '../../parser/src/dotparser'
+import {graphToJSON} from '@msagl/parser'
 
 /**
  * Renders an MSAGL graph with SVG

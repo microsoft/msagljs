@@ -12,6 +12,9 @@ import {
   GeomEdge,
   Point,
   GeomGraph,
+  ICurveJSONTyped,
+  iCurveToJSON,
+  JSONToICurve,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -29,7 +32,6 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
-import {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from '../../core/src/math/geometry/icurve'
 // import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrs(o: any, entity: Entity) {
