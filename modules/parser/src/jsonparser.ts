@@ -1,9 +1,9 @@
-import {Graph, Edge, Node} from 'msagl-js'
+import {Graph, Node} from 'msagl-js'
 import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum} from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
 
-export function parseJSON(json: {
+export function parseSimpleJSON(json: {
   /** List of nodes in the graph */
   nodes: {
     /** Id of the node */

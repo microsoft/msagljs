@@ -16,7 +16,7 @@
         display: flex;
         align-items: center;
         z-index: 1;
-        left: 130;
+        left: 250;
         top: 0;
         width: 100vw;
         height: 50px;
@@ -29,6 +29,19 @@
         display: flex;
         align-items: center;
         z-index: 1;
+        left: 120;
+        top: 0;
+        width: 18vw;
+        height: 50px;
+        background: #fff;
+        box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
+      }
+      #save-JSON {
+        cursor: pointer;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        z-index: 0;
         left: 0;
         top: 0;
         width: 18vw;
@@ -84,6 +97,9 @@
       #save-svg.active {
         background: #ddd;
       }
+      #save-JSON.active {
+        background: rgb(117, 18, 18);
+      }
       svg {
         margin: 0 12px;
       }
@@ -93,7 +109,14 @@
   <body>
     <div id="the whole thing" style="height: 100%; width: 100%; overflow: hidden">
       <div id="save-svg">
-        <label>Save SVG</label>
+        <label>Save as SVG</label>
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+          <path d="M0 0h24v24H0V0z" fill="none" />
+          <path d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+        </svg>
+      </div>
+      <div id="save-JSON">
+        <label>Save as JSON</label>
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
           <path d="M0 0h24v24H0V0z" fill="none" />
           <path d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />

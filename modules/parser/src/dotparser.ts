@@ -8,21 +8,12 @@ import {
   setNewParent,
   GeomObject,
   GeomNode,
-  ICurve,
-  Ellipse,
-  Curve,
-  LineSegment,
-  BezierSeg,
-  Polyline,
   Entity,
-  CurveJSON,
-  LineSegmentJSON,
-  PolylineJSON,
   GeomEdge,
   Point,
   GeomGraph,
 } from 'msagl-js'
-import {Graph as DGraph, Attr} from 'dotparser'
+import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
   ArrowTypeEnum,
   DrawingEdge,
@@ -373,12 +364,12 @@ function parseAttrs(o: any, entity: Entity) {
 }
 
 class DotParser {
-  ast: DGraph[]
+  ast: JSONGraph[]
   graph: Graph
   drawingGraph: DrawingGraph
   defaultNodeAttr: any
   nodeMap = new Map<string, Node>()
-  constructor(ast: DGraph[]) {
+  constructor(ast: JSONGraph[]) {
     this.ast = ast
   }
 
@@ -552,13 +543,25 @@ class DotParser {
   }
 }
 
+/** parses a string representing a Graph in DOT format */
 export function parseDot(graphStr: string): Graph {
   const dp = new DotParser(parse(graphStr))
   return dp.parse()
 }
-
-export function parseJSON(ast: DGraph): Graph {
-  const dp = new DotParser([ast])
+/** parses a string representing a Graph in JSON format, corresponding to JSONGraph type */
+export function parseJSON(graphStr: string): Graph {
+  try {
+    const ast: JSONGraph = JSON.parse(graphStr)
+    const dp = new DotParser([ast])
+    return dp.parse()
+  } catch (Error) {
+    console.log(Error.message)
+    return null
+  }
+}
+/** parses JSONGraph type to a Graph */
+export function parseJSONGraph(jsonObj: JSONGraph): Graph {
+  const dp = new DotParser([jsonObj])
   return dp.parse()
 }
 
@@ -699,7 +702,7 @@ function removeEmptySubgraphs(graph: Graph) {
   }
 }
 
-export function graphToJSON(graph: Graph): DGraph {
+export function graphToJSON(graph: Graph): JSONGraph {
   const idToLevel = getNodeLevels(graph)
   return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevel)}
 }

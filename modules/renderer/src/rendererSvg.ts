@@ -8,6 +8,7 @@ import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
+import {graphToJSON} from '../../parser/src/dotparser'
 
 /**
  * Renders an MSAGL graph with SVG
@@ -15,6 +16,11 @@ import TextMeasurer from './text-measurer'
 export class RendererSvg {
   getSvgString(): string {
     return this._svgCreator.getSvgString()
+  }
+
+  getJSONString(): string {
+    if (this.graph == null) return 'no graph'
+    return JSON.stringify(graphToJSON(this.graph))
   }
   private _graph?: Graph
   private _layoutOptions: LayoutOptions = {}

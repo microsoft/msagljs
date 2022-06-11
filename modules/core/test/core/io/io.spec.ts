@@ -1,9 +1,9 @@
-import {graphToJSON, parseJSON} from '../../../../parser/src/dotparser'
+import {graphToJSON, parseJSONGraph} from '../../../../parser/src/dotparser'
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
-import {parseDotGraph} from '../../utils/testUtils'
-import {Graph as DGraph} from 'dotparser'
+import {parseDotGraph, parseJSONFile} from '../../utils/testUtils'
+import {Graph as JSONGraph} from 'dotparser'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph} from '../../../src/layout/driver'
 import {GeomGraph} from '../../../src/layout/core'
@@ -62,13 +62,13 @@ test('polyline', () => {
 })
 
 test('graph ldbxtried.gv', () => {
-  const g = parseDotGraph('graphvis/ldbxtried.gv')
+  const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
   expect(g.isConsistent()).toBe(true)
   DrawingGraph.getDrawingGraph(g).createGeometry()
   layoutGeomGraph(GeomGraph.getGeom(g) as GeomGraph)
-  const parsedGraph: DGraph = graphToJSON(g)
+  const parsedGraph: JSONGraph = graphToJSON(g)
 
-  const graph = parseJSON(parsedGraph)
+  const graph = parseJSONGraph(parsedGraph)
   expect(graph.isConsistent()).toBe(true)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(Array.from(g.subgraphs()).length)
@@ -79,9 +79,9 @@ test('graph smlred', () => {
   const g = parseDotGraph('graphvis/smlred.gv')
   const subgraphsWas = Array.from(g.subgraphs()).length
   const nodesWas = g.nodeCountDeep
-  const parsedGraph: DGraph = graphToJSON(g)
+  const parsedGraph: JSONGraph = graphToJSON(g)
 
-  const graph = parseJSON(parsedGraph)
+  const graph = parseJSONGraph(parsedGraph)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(subgraphsWas)
   expect(graph.nodeCountDeep).toBe(nodesWas)
@@ -91,9 +91,9 @@ test('graph a.gv', () => {
   const g = parseDotGraph('graphvis/a.gv')
   const subgraphsWas = Array.from(g.subgraphs()).length
   const nodesWas = g.nodeCountDeep
-  const parsedGraph: DGraph = graphToJSON(g)
+  const parsedGraph: JSONGraph = graphToJSON(g)
 
-  const graph = parseJSON(parsedGraph)
+  const graph = parseJSONGraph(parsedGraph)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(subgraphsWas)
   expect(graph.nodeCountDeep).toBe(nodesWas)
