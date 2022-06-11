@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "deck.gl": "^8.6.0",
-    "msagl-js": "^0.0.66",
+    "msagl-js": "^0.0.67",
     "panzoom": "^9.4.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
