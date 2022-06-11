@@ -25,6 +25,7 @@
   "dependencies": {
     "deck.gl": "^8.6.0",
     "msagl-js": "^0.0.67",
+    "@msagl/parser": "^0.0.68",
     "panzoom": "^9.4.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
