@@ -7,6 +7,7 @@ import {Graph as JSONGraph} from 'dotparser'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph} from '../../../src/layout/driver'
 import {GeomGraph} from '../../../src/layout/core'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -63,16 +64,9 @@ test('polyline', () => {
 
 test('graph ldbxtried.gv', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
-  expect(g.isConsistent()).toBe(true)
-  DrawingGraph.getDrawingGraph(g).createGeometry()
-  layoutGeomGraph(GeomGraph.getGeom(g) as GeomGraph)
-  const parsedGraph: JSONGraph = graphToJSON(g)
 
-  const graph = parseJSONGraph(parsedGraph)
-  expect(graph.isConsistent()).toBe(true)
-  const subgraphs = Array.from(graph.subgraphs())
-  expect(subgraphs.length).toBe(Array.from(g.subgraphs()).length)
-  expect(graph.nodeCountDeep).toBe(g.nodeCountDeep)
+  const w = new SvgDebugWriter('/tmp/ldbug.svg')
+  w.writeGeomGraph(GeomGraph.getGeom(g))
 })
 
 test('graph smlred', () => {

@@ -7,6 +7,15 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. Some nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  hasSomeAttrOnIndex(index: number): boolean {
+    for (const n of this.deepNodes) {
+      if (n.getAttr(index)) return true
+    }
+    for (const n of this.deepEdges()) {
+      if (n.getAttr(index)) return true
+    }
+    return false
+  }
   *graphs(): IterableIterator<Graph> {
     for (const g of this.nodeCollection.graphs) {
       yield g

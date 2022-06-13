@@ -29,7 +29,7 @@ export class SvgDebugWriter {
     })
   }
 
-  static getBoundingBox(dcurves: DebugCurve[]): Rectangle {
+  private static getBoundingBox(dcurves: DebugCurve[]): Rectangle {
     const r = Rectangle.mkEmpty()
     for (const c of dcurves) {
       r.addRecSelf(c.icurve.boundingBox)
@@ -39,7 +39,7 @@ export class SvgDebugWriter {
     return r
   }
 
-  writeBoundingBox(box: Rectangle) {
+  private writeBoundingBox(box: Rectangle) {
     this.xw.writeAttribute('width', box.width)
 
     this.xw.writeAttribute('version', '1.1')
@@ -47,7 +47,7 @@ export class SvgDebugWriter {
     this.xw.writeAttribute('transform', 'translate(' + -box.left + ',' + -box.bottom + ')')
   }
 
-  open(box: Rectangle, transform = true) {
+  private open(box: Rectangle, transform = true) {
     this.xw.startElement('svg')
     this.xw.writeAttribute('xmlns:svg', 'http://www.w3.org/2000/svg')
     this.xw.writeAttribute('xmlns', 'http://www.w3.org/2000/svg')
@@ -61,15 +61,15 @@ export class SvgDebugWriter {
     }
   }
 
-  static pointToString(start: Point) {
+  private static pointToString(start: Point) {
     return SvgDebugWriter.doubleToString(start.x) + ' ' + SvgDebugWriter.doubleToString(start.y)
   }
 
-  static doubleToString(d: number) {
+  private static doubleToString(d: number) {
     return Math.abs(d) < 1e-11 ? '0' : d.toString() //formatForDoubleString, CultureInfo.InvariantCulture);
   }
 
-  static segmentString(c: ICurve): string {
+  private static segmentString(c: ICurve): string {
     const isls = c instanceof LineSegment
     if (isls) return this.lineSegmentString(c as LineSegment)
 
@@ -82,26 +82,26 @@ export class SvgDebugWriter {
     throw new Error('NotImplementedException')
   }
 
-  static lineSegmentString(ls: LineSegment): string {
+  private static lineSegmentString(ls: LineSegment): string {
     return 'L ' + SvgDebugWriter.pointToString(ls.end)
   }
 
-  static pointsToString(points: Point[]) {
+  private static pointsToString(points: Point[]) {
     return String.Join(
       ' ',
       points.map((p) => SvgDebugWriter.pointToString(p)),
     )
   }
 
-  static bezierSegToString(cubic: BezierSeg): string {
+  private static bezierSegToString(cubic: BezierSeg): string {
     return 'C' + this.pointsToString([cubic.B(1), cubic.B(2), cubic.B(3)])
   }
 
-  static isFullEllipse(ell: Ellipse): boolean {
+  private static isFullEllipse(ell: Ellipse): boolean {
     return ell.parEnd == Math.PI * 2 && ell.parStart == 0
   }
 
-  static ellipseToString(ellipse: Ellipse): string {
+  private static ellipseToString(ellipse: Ellipse): string {
     const largeArc = Math.abs(ellipse.parEnd - ellipse.parStart) >= Math.PI ? '1' : '0'
     const sweepFlag = ellipse.orientedCounterclockwise() ? '1' : '0'
 
@@ -123,7 +123,7 @@ export class SvgDebugWriter {
     return String.Join(' ', Array.from(SvgDebugWriter.curveStringTokens(iCurve)))
   }
 
-  static *curveStringTokens(iCurve: ICurve): IterableIterator<string> {
+  private static *curveStringTokens(iCurve: ICurve): IterableIterator<string> {
     yield 'M'
     yield SvgDebugWriter.pointToString(iCurve.start)
     const iscurve = iCurve instanceof Curve
@@ -164,7 +164,7 @@ export class SvgDebugWriter {
     }
   }
 
-  writeStroke(c: DebugCurve, div = 1) {
+  private writeStroke(c: DebugCurve, div = 1) {
     const color = SvgDebugWriter.validColor(c.color)
     this.xw.writeAttribute('stroke', color)
     this.xw.writeAttribute('stroke-opacity', c.transparency / 255.0 / div)
@@ -176,7 +176,7 @@ export class SvgDebugWriter {
     return 'Black'
   }
 
-  dashArrayString(da: number[]): string {
+  private dashArrayString(da: number[]): string {
     const stringBuilder = new StringBuilder('stroke-dasharray:')
     for (let i = 0; ; ) {
       stringBuilder.Append(da[i].toString())
@@ -225,7 +225,7 @@ export class SvgDebugWriter {
     this.close(false)
   }
 
-  close(transform = true) {
+  private close(transform = true) {
     if (transform) this.xw.endElement('g')
     this.xw.endDocument()
     this.xw.flush()
@@ -273,7 +273,7 @@ export class SvgDebugWriter {
     this.close()
   }
 
-  writeLabelText(text: string, xContainer: number, dy = 0) {
+  private writeLabelText(text: string, xContainer: number, dy = 0) {
     this.xw.startElement('tspan')
     this.xw.writeAttribute('x', xContainer)
     this.xw.writeAttribute('dy', dy)
@@ -281,12 +281,12 @@ export class SvgDebugWriter {
     this.xw.writeRaw(this.myEscape(text))
     this.xw.endElement()
   }
-  myEscape(text: string): string {
+  private myEscape(text: string): string {
     const chars = Array.from(text)
     const ret = chars.map((a) => (a == '<' ? '&lt;' : a == '>' ? '&gt;' : a))
     return ret.join('')
   }
-  writeLabel(node: Node, label: Rectangle) {
+  private writeLabel(node: Node, label: Rectangle) {
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
     const text = drawingNode ? drawingNode.labelText ?? node.id : node.id
     const margin = drawingNode ? drawingNode.LabelMargin : 2
@@ -333,7 +333,7 @@ export class SvgDebugWriter {
   //   this.writeDebugCurve(dc)
   // }
 
-  addArrow(start: Point, end: Point) {
+  private addArrow(start: Point, end: Point) {
     let dir = end.sub(start)
     const l = dir.length
     dir = dir.div(l).rotate90Ccw()
@@ -341,7 +341,7 @@ export class SvgDebugWriter {
     this.drawArrowPolygon([start.add(dir), end, start.sub(dir)])
   }
 
-  drawPolygon(points: Point[]) {
+  private drawPolygon(points: Point[]) {
     this.xw.writeStartElement('polygon')
     this.xw.writeAttribute('stroke', 'Black')
     this.xw.writeAttribute('fill', 'none')
@@ -349,7 +349,7 @@ export class SvgDebugWriter {
     this.xw.endElement()
   }
 
-  drawArrowPolygon(points: Point[]) {
+  private drawArrowPolygon(points: Point[]) {
     this.xw.startElement('polygon')
     this.xw.writeAttribute('stroke', 'Black')
     this.xw.writeAttribute('fill', 'none')

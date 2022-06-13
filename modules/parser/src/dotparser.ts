@@ -473,6 +473,7 @@ class DotParser {
     this.drawingGraph = new DrawingGraph(this.graph)
     this.parseUnderGraph(this.ast[0].children, this.graph, this.ast[0].type == 'digraph', false)
     removeEmptySubgraphs(this.graph)
+    createGeomForSubgraphs(this.graph)
     return this.graph
   }
   parseGraphAttr(o: AttrStmt, graph: Graph) {
@@ -704,6 +705,17 @@ function removeEmptySubgraphs(graph: Graph) {
   }
 }
 
+function createGeomForSubgraphs(graph: Graph) {
+  for (const sg of graph.subgraphs()) {
+    if (GeomGraph.getGeom(sg) == null && sg.hasSomeAttrOnIndex(GeomObject.attachIndex)) {
+      new GeomGraph(sg)
+    }
+  }
+
+  if (GeomGraph.getGeom(graph) == null && graph.hasSomeAttrOnIndex(GeomGraph.attachIndex)) {
+    new GeomGraph(graph)
+  }
+}
 export function graphToJSON(graph: Graph): JSONGraph {
   const idToLevel = getNodeLevels(graph)
   return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevel)}

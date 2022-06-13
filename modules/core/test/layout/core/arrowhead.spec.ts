@@ -43,5 +43,4 @@ test('trim edge with arrowheads', () => {
   const gg = new GeomGraph(g)
   const xw = new SvgDebugWriter('/tmp/gg.svg')
   xw.writeGeomGraph(gg)
-  xw.close()
 })

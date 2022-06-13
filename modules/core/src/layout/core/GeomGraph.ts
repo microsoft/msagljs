@@ -9,7 +9,6 @@ import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/Opti
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, PointLocation} from '../../math/geometry'
-import {Entity} from '../../structs/entity'
 
 // import {Curve} from '../../math/geometry/curve'
 // import {Ellipse} from '../../math/geometry/ellipse'
@@ -47,7 +46,7 @@ export class GeomGraph extends GeomNode {
   _rtree: RTree<GeomObject, Point>
 
   static getGeom(attrCont: Graph): GeomGraph {
-    return <GeomGraph>attrCont.getAttr(0)
+    return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
   }
 
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */

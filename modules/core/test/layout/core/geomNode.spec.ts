@@ -16,7 +16,6 @@ test('node fit', () => {
   n.boundingBox = rect
   const w = new SvgDebugWriter('/tmp/fit.svg')
   w.writeDebugCurves([DebugCurve.mkDebugCurveI(boundary), DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)])
-  w.close()
   const p = new Point(50, 90)
   n.center = p
 
