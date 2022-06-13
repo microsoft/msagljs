@@ -870,15 +870,15 @@ function getOrCreateGeomObj(entity: Entity): GeomObject {
   return GeomObject.getGeom(entity) ?? createNewGeomObj(entity)
 }
 function createNewGeomObj(entity: Entity): GeomObject {
+  if (entity instanceof Graph) {
+    return new GeomGraph(entity)
+  }
   if (entity instanceof Node) {
     return new GeomNode(entity)
   }
 
   if (entity instanceof Edge) {
     return new GeomEdge(entity)
-  }
-  if (entity instanceof Graph) {
-    return new GeomGraph(entity)
   }
   throw new Error('unsupported type ' + entity)
 }

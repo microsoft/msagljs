@@ -6,8 +6,10 @@ import {parseDotGraph, parseJSONFile} from '../../utils/testUtils'
 import {Graph as JSONGraph} from 'dotparser'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph} from '../../../src/layout/driver'
-import {GeomGraph} from '../../../src/layout/core'
+import {GeomEdge, GeomGraph} from '../../../src/layout/core'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+import {GeomObject} from '../../../src/layout/core/geomObject'
+import {SplineRouter} from '../../../src/routing/splineRouter'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -66,6 +68,17 @@ test('graph ldbxtried.gv', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
 
   const w = new SvgDebugWriter('/tmp/ldbug.svg')
+  const gg = GeomGraph.getGeom(g)
+  const edges = []
+  for (const e of g.deepEdges()) {
+    if (e.source.parent != e.target.parent) {
+      const geomEdge = GeomObject.getGeom(e) as GeomEdge
+      geomEdge.curve = null
+      edges.push(geomEdge)
+    }
+  }
+  const router = new SplineRouter(gg, edges, /*tightPadding*/ 3)
+  router.run()
   w.writeGeomGraph(GeomGraph.getGeom(g))
 })
 

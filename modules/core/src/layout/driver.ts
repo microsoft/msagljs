@@ -51,46 +51,45 @@ export function enforceLayoutSettings(geomGraph: GeomGraph, ss: LayoutSettings) 
   }
 }
 
+function createSettingsIfNeeded(geomGraph: GeomGraph) {
+  if (!geomGraph.layoutSettings) {
+    geomGraph.layoutSettings = figureOutSettings(geomGraph)
+  }
+}
+
+function figureOutSettings(geomGraph: GeomGraph): LayoutSettings {
+  const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
+  if (tooLargeForLayered) {
+    return new MdsLayoutSettings()
+  }
+
+  let directed = false
+  for (const e of geomGraph.edges()) {
+    if (e.sourceArrowhead != null || e.targetArrowhead != null) {
+      directed = true
+      break
+    }
+  }
+
+  return directed ? new SugiyamaLayoutSettings() : new MdsLayoutSettings()
+}
+function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
+  createSettingsIfNeeded(geomGraph)
+  if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
+    const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
+    ll.run()
+  } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
+    const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
+    pivotMds.run()
+  } else {
+    throw Error('not implemented')
+  }
+}
+
 export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken = null): void {
   createSettingsIfNeeded(geomGraph)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
-  // end of the function body
-
-  function createSettingsIfNeeded(geomGraph: GeomGraph) {
-    if (!geomGraph.layoutSettings) {
-      geomGraph.layoutSettings = figureOutSettings(geomGraph)
-    }
-  }
-  function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
-    createSettingsIfNeeded(geomGraph)
-    if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
-      const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
-      ll.run()
-    } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
-      const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
-      pivotMds.run()
-    } else {
-      throw Error('not implemented')
-    }
-  }
-
-  function figureOutSettings(geomGraph: GeomGraph): LayoutSettings {
-    const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
-    if (tooLargeForLayered) {
-      return new MdsLayoutSettings()
-    }
-
-    let directed = false
-    for (const e of geomGraph.edges()) {
-      if (e.sourceArrowhead != null || e.targetArrowhead != null) {
-        directed = true
-        break
-      }
-    }
-
-    return directed ? new SugiyamaLayoutSettings() : new MdsLayoutSettings()
-  }
-} // end of layoutGeomGraph
+}
 
 export function getEdgeRoutingSettingsFromAncestors(geomGraph: GeomGraph): EdgeRoutingSettings {
   do {
