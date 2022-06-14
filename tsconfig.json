@@ -4,7 +4,6 @@
     "moduleResolution": "node",
     "allowJs": true,
     "noImplicitAny": false,
-    "skipLibCheck": true,
     "lib": ["dom", "es2018"],
     "importHelpers": true,
     "noEmit": true,
