@@ -64,10 +64,10 @@ export class SvgCreator {
   private clearContainer() {
     while (this.container.childNodes.length > 0) this.container.removeChild(this.container.firstChild)
   }
-  /** it cleans the current SVG content
+
+  /** It cleans the current SVG content
    * and creates the new one corresponding to the graph
    * */
-
   setGraph(graph: Graph) {
     this.clearContainer()
     this.graph = graph
