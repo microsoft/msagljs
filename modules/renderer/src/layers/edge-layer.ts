@@ -1,28 +1,37 @@
-import {CompositeLayer} from '@deck.gl/core'
+import {CompositeLayer, UpdateParameters, Position, LayersList} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
-import {PathLayer, IconLayer} from '@deck.gl/layers'
+import {PathLayer, PathLayerProps, IconLayer} from '@deck.gl/layers/typed'
 import {iconAtlas, iconMapping} from './arrows'
 import {interpolateICurve, GeomEdge, Point} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
-type EdgeLayerProps = {
+type EdgeLayerProps = PathLayerProps<GeomEdge> & {
   getDepth?: Buffer
 }
 
-export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> {
+type Arrow = {
+  edge: GeomEdge
+  type: string
+  tip: Point
+  end: Point
+}
+
+export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
   static defaultProps = {
     ...PathLayer.defaultProps,
   }
 
-  props: EdgeLayerProps
+  state!: {
+    arrows: Arrow[]
+  }
 
-  updateState(params: any) {
+  updateState(params: UpdateParameters<this>) {
     super.updateState(params)
 
     if (params.changeFlags.dataChanged) {
-      const arrows: {edge: GeomEdge; type: string; tip: Point; end: Point}[] = []
+      const arrows: Arrow[] = []
 
-      for (const e of params.props.data) {
+      for (const e of params.props.data as GeomEdge[]) {
         const eg = e
         if (eg.sourceArrowhead) {
           arrows.push({
@@ -41,49 +50,43 @@ export default class EdgeLayer extends CompositeLayer<GeomEdge, EdgeLayerProps> 
           })
         }
       }
-      // @ts-ignore
       this.setState({arrows})
     }
   }
 
-  renderLayers() {
+  renderLayers(): LayersList {
     const props = this.props
 
     return [
       new PathLayer<GeomEdge>(
         props,
-        // @ts-ignore
         this.getSubLayerProps({
           id: 'path',
         }),
         {
           getPath: (e: GeomEdge) =>
             Array.from(interpolateICurve(e.curve, 0.01 /* this is a sensitive parameter: diminishing it creates more segments */)).map(
-              (p: Point) => [p.x, p.y],
+              (p: Point) => [p.x, p.y] as Position,
             ),
           getColor: getEdgeColor,
           widthUnits: 'pixels',
         },
       ),
 
-      new IconLayer<{edge: GeomEdge; type: string; tip: Point; end: Point}>(
-        // @ts-ignore
+      new IconLayer<Arrow>(
         this.getSubLayerProps({
           id: 'arrow',
         }),
         {
-          // @ts-ignore
           data: this.state.arrows,
           // @ts-ignore
           iconAtlas,
           iconMapping,
           getPosition: (d) => [d.tip.x, d.tip.y],
           getColor: (d) => getEdgeColor(d.edge),
-          // @ts-ignore
           getIcon: (d) => d.type,
           getSize: (d) => getArrowSize(d.tip, d.end),
           getAngle: (d) => getArrowAngle(d.tip, d.end),
-          // @ts-ignore
           sizeUnits: 'common',
         },
       ),

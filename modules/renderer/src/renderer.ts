@@ -1,4 +1,4 @@
-import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core'
+import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
@@ -66,11 +66,11 @@ export default class Renderer extends EventSource {
 
     this._deck = new Deck({
       parent: divs[0],
-      views: [new OrthographicView({maxZoom: MaxZoom})],
+      views: [new OrthographicView({})],
       initialViewState: {
-        // @ts-ignore
         target: [0, 0, 0],
         zoom: 0,
+        maxZoom: MaxZoom,
       },
       controller: true,
       onLoad: () => {
@@ -201,7 +201,6 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
-    // @ts-ignore
     const edgeLayer = new EdgeLayer({
       id: 'edges',
       data: Array.from(geomGraph.deepEdges()),
@@ -209,7 +208,6 @@ export default class Renderer extends EventSource {
       getDepth: this._graphHighlighter.edgeDepthBuffer,
     })
 
-    // @ts-ignore
     const nodeLayer = new NodeLayer({
       id: 'nodeBoundaries',
       data: Array.from(geomGraph.deepNodesIt()),

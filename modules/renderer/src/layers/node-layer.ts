@@ -1,43 +1,37 @@
-import {CompositeLayer} from '@deck.gl/core'
+import {CompositeLayer, LayersList, Accessor} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
-import {TextLayer} from '@deck.gl/layers'
+import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {GeomNode, GeomGraph} from 'msagl-js'
 import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 import {getLabelPosition} from '../utils'
 
-type NodeLayerProps = GeometryLayerProps<GeomNode> & {
-  getDepth: Buffer
-  getTextSize: ((d: GeomNode) => number) | number
-}
+type NodeLayerProps = GeometryLayerProps<GeomNode> &
+  TextLayerProps<GeomNode> & {
+    getDepth?: Buffer
+    getTextSize: Accessor<GeomNode, number>
+  }
 
-export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> {
+export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
   static defaultProps = {
     ...TextLayer.defaultProps,
     ...GeometryLayer.defaultProps,
-    getDepth: null,
     getTextSize: {type: 'accessor', value: 16},
   }
 
-  props: NodeLayerProps
-
-  renderLayers() {
+  renderLayers(): LayersList {
     return [
       new GeometryLayer<GeomNode>(
-        // @ts-ignore
         this.props,
-        // @ts-ignore
         this.getSubLayerProps({
           id: 'boundary',
           lineWidthUnits: 'pixels',
         }),
-        // @ts-ignore
         {
           getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
           getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
           getShape: SHAPE.Rectangle,
-          // @ts-ignore
           cornerRadius: getCornerRadius(this.props.data[0]),
           getLineColor: getNodeColor,
           getFillColor: getNodeFillColor,
@@ -46,19 +40,16 @@ export default class NodeLayer extends CompositeLayer<GeomNode, NodeLayerProps> 
 
       new TextLayer<GeomNode>(
         this.props,
-        // @ts-ignore
         this.getSubLayerProps({
           id: 'label',
         }),
         {
-          // @ts-ignore
           dataTransform: (data: GeomNode[]) => data.filter((n) => !(n instanceof GeomGraph) || (<GeomGraph>n).labelSize),
           getPosition: (n: GeomNode) => getLabelPosition(n),
           getText: (n: GeomNode) => (<DrawingNode>DrawingNode.getDrawingObj(n.node)).labelText,
           getColor: getNodeColor,
           getSize: this.props.getTextSize,
           sizeMaxPixels: 48,
-          // @ts-ignore
           sizeUnits: 'common',
           characterSet: 'auto',
         },

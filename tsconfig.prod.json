@@ -5,8 +5,7 @@
     "noEmit": false,
     "declaration": true,
     "sourceMap": true,
-    "skipLibCheck": true,
-    "lib": ["es2018"],
+    "lib": ["dom", "es2018"],
     "importHelpers": true,
     "esModuleInterop": true
   }

@@ -1,10 +1,8 @@
-import {Layer, project32, UNIT} from '@deck.gl/core'
+import {Layer, project32, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
 import GL from '@luma.gl/constants'
 import {Model, Geometry} from '@luma.gl/engine'
 import {Buffer} from '@luma.gl/webgl'
 import {picking} from '@luma.gl/shadertools'
-
-type Accessor<In, Out> = Out | ((object: In) => Out)
 
 // TODO - Use ShapeEnum from msagl-js
 export enum SHAPE {
@@ -13,8 +11,8 @@ export enum SHAPE {
   Diamond = 2,
 }
 
-export type GeometryLayerProps<DataT> = {
-  lineWidthUnits?: 'meters' | 'pixels' | 'common'
+export type GeometryLayerProps<DataT = any> = {
+  lineWidthUnits?: Unit
   lineWidthScale?: number
   lineWidthMinPixels?: number
   lineWidthMaxPixels?: number
@@ -26,7 +24,7 @@ export type GeometryLayerProps<DataT> = {
   cornerRadius?: number
 
   getDepth?: Buffer
-  highlightColor?: number[][]
+  highlightColors?: number[][]
 
   getPosition?: Accessor<DataT, number[]>
   getSize?: Accessor<DataT, [number, number]>
@@ -34,9 +32,9 @@ export type GeometryLayerProps<DataT> = {
   getLineColor?: Accessor<DataT, number[]>
   getLineWidth?: Accessor<DataT, number>
   getShape?: Accessor<DataT, SHAPE>
-}
+} & LayerProps<DataT>
 
-const defaultProps = {
+const defaultProps: DefaultProps<GeometryLayerProps> = {
   lineWidthUnits: 'common',
   lineWidthScale: {type: 'number', min: 0, value: 1},
   lineWidthMinPixels: {type: 'number', min: 0, value: 0},
@@ -46,7 +44,7 @@ const defaultProps = {
   filled: true,
 
   cornerRadius: {type: 'number', min: 0, value: 0},
-  highlightColor: {
+  highlightColors: {
     type: 'array',
     compare: true,
     value: [
@@ -231,16 +229,19 @@ void main(void) {
 }
 `
 
-export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProps<DataT>> {
-  static defaultProps: any = defaultProps
+export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerProps<DataT>>> {
+  static defaultProps = defaultProps
   static layerName = 'GeometryLayer'
+
+  state!: {
+    model?: Model
+  }
 
   getShaders() {
     return super.getShaders({vs, fs, modules: [project32, picking]})
   }
 
   initializeState() {
-    // @ts-ignore
     this.getAttributeManager().addInstanced({
       instancePositions: {
         size: 3,
@@ -284,36 +285,31 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
     })
   }
 
-  updateState(params: any) {
+  updateState(params: UpdateParameters<this>) {
     super.updateState(params)
 
     const {props, oldProps, changeFlags} = params
     let modelChanged = false
 
     if (changeFlags.extensionsChanged) {
-      // @ts-ignore
       const {gl} = this.context
-      // @ts-ignore
       this.state.model?.delete()
-      // @ts-ignore
       this.state.model = this._getModel(gl)
-      // @ts-ignore
       this.getAttributeManager().invalidateAll()
       modelChanged = true
     }
 
     if (modelChanged || props.getDepth !== oldProps.getDepth) {
       if (props.getDepth) {
-        // @ts-ignore
         this.state.model.setAttributes({
           instanceDepths: props.getDepth,
         })
       }
     }
-    if (modelChanged || props.highlightColor !== oldProps.highlightColor) {
+    if (modelChanged || props.highlightColors !== oldProps.highlightColors) {
       const depthHighlightColors = new Float32Array(16)
       for (let i = 0; i < 4; i++) {
-        const color = props.highlightColor[i]
+        const color = props.highlightColors[i]
         if (color) {
           depthHighlightColors[i * 4] = color[0] / 255
           depthHighlightColors[i * 4 + 1] = color[1] / 255
@@ -321,16 +317,13 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
           depthHighlightColors[i * 4 + 3] = Number.isFinite(color[3]) ? color[3] / 255 : 1
         }
       }
-      // @ts-ignore
       this.state.model.setUniforms({depthHighlightColors})
     }
   }
 
   draw({uniforms}: any) {
-    // @ts-ignore
-    const { stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels } = this.props as GeometryLayerProps<DataT>
+    const {stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels} = this.props
 
-    // @ts-ignore (TS2531) state is always defined
     this.state.model
       .setUniforms(uniforms)
       .setUniforms({
@@ -345,13 +338,12 @@ export default class GeometryLayer<DataT> extends Layer<DataT, GeometryLayerProp
       .draw()
   }
 
-  _getModel(gl: WebGLRenderingContext) {
+  protected _getModel(gl: WebGLRenderingContext): Model {
     // a square that minimally cover the unit circle
     const positions = [-1, -1, 1, -1, 1, 1, -1, 1]
 
     return new Model(gl, {
       ...this.getShaders(),
-      // @ts-ignore
       id: this.props.id,
       geometry: new Geometry({
         drawMode: GL.TRIANGLE_FAN,

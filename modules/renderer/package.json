@@ -23,7 +23,7 @@
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },
   "dependencies": {
-    "deck.gl": "^8.6.0",
+    "deck.gl": "^8.8.0-beta.2",
     "msagl-js": "^0.0.67",
     "@msagl/parser": "^0.0.68",
     "panzoom": "^9.4.2"
