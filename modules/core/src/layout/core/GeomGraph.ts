@@ -311,6 +311,9 @@ export class GeomGraph extends GeomNode {
       padding = Math.max(padding, ge.lineWidth)
     }
     for (const gn of this.shallowNodes()) {
+      if (gn instanceof GeomGraph) {
+        gn.updateBoundingBox()
+      }
       if (gn.boundingBox) {
         rect.addRecSelf(gn.boundingBox)
         padding = Math.max(padding, gn.padding)
@@ -332,6 +335,7 @@ export class GeomGraph extends GeomNode {
   }
 
   FlipYAndMoveLeftTopToOrigin() {
+    if (this.boundingBox == null) this.updateBoundingBox()
     const m = new PlaneTransformation(1, 0, -this.left, 0, -1, this.top)
     this.transform(m, false)
     for (const v of this.deepNodes) {

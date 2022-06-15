@@ -136,12 +136,11 @@ export class EdgeNudger extends Algorithm {
 
   CreateOrientedSegsOnLine(line: Metroline) {
     for (let polyPoint: PolylinePoint = line.Polyline.startPoint.next; polyPoint.next != null; polyPoint = polyPoint.next) {
-      this.CreateOrientedSegsOnLineVertex(line, polyPoint)
+      this.CreateICurveForOrientedSeg(line, polyPoint)
     }
   }
 
-  static debCount = 0
-  CreateOrientedSegsOnLineVertex(line: Metroline, polyPoint: PolylinePoint) {
+  CreateICurveForOrientedSeg(line: Metroline, polyPoint: PolylinePoint) {
     const u: Station = this.metroGraphData.PointToStations.get(polyPoint.prev.point)
     const v: Station = this.metroGraphData.PointToStations.get(polyPoint.point)
     const w: Station = this.metroGraphData.PointToStations.get(polyPoint.next.point)
@@ -149,26 +148,24 @@ export class EdgeNudger extends Algorithm {
     const h1: BundleBase = v.BundleBases.get(w)
     const j0: number = this.metroOrdering.GetLineIndexInOrder(u, v, line)
     const j1: number = this.metroOrdering.GetLineIndexInOrder(w, v, line)
-
     const seg = this.bundlingSettings.UseCubicBezierSegmentsInsideOfHubs
       ? EdgeNudger.StandardBezier(h0.Points[j0], h0.Tangents[j0], h1.Points[j1], h1.Tangents[j1])
       : EdgeNudger.BiArc(h0.Points[j0], h0.Tangents[j0], h1.Points[j1], h1.Tangents[j1])
     h0.OrientedHubSegments[j0].Segment = seg
     h1.OrientedHubSegments[j1].Segment = seg
-    // if (false && (h0.Points.length > 1 || h1.length > 0) {
+    // if (seg instanceof BezierSeg) {
     //   const dc = [
     //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Blue', LineSegment.mkPP(h1.Points[0], h1.Points[h1.length - 1])),
     //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(h0.Points[0], h0.Points[h0.length - 1])),
     //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Red', LineSegment.mkPP(h0.Points[j0], h0.Points[j0].add(h0.Tangents[j0]))),
     //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Green', LineSegment.mkPP(h1.Points[j1], h1.Points[j1].add(h1.Tangents[j1]))),
     //   ]
-    //   if (seg instanceof Curve) {
-    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Yellow', (<Curve>seg).segs[0]))
-    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', (<Curve>seg).segs[1]))
-    //   } else {
-    //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', seg))
-    //   }
-    //   SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + ++EdgeNudger.debCount + '.svg', dc)
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', seg))
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Pink', line.Polyline))
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Tan', u.BoundaryCurve))
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Plum', v.BoundaryCurve))
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'DarkOrange', w.BoundaryCurve))
+    //   SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + EdgeNudger.debCount + '.svg', dc)
     // }
   }
 

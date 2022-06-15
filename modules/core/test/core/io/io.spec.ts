@@ -10,6 +10,7 @@ import {GeomEdge, GeomGraph} from '../../../src/layout/core'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
+import {initRandom, random} from '../../../src/utils/random'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -67,8 +68,9 @@ test('polyline', () => {
 test('graph ldbxtried.gv', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
 
-  const w = new SvgDebugWriter('/tmp/ldbug.svg')
   const gg = GeomGraph.getGeom(g)
+  gg.FlipYAndMoveLeftTopToOrigin()
+
   const edges = []
   for (const e of g.deepEdges()) {
     if (e.source.parent != e.target.parent) {
@@ -77,8 +79,11 @@ test('graph ldbxtried.gv', () => {
       edges.push(geomEdge)
     }
   }
+  initRandom(1)
+  for (let i = 0; i < 32; i++) random()
   const router = new SplineRouter(gg, edges, /*tightPadding*/ 3)
   router.run()
+  const w = new SvgDebugWriter('/tmp/ldbug.svg')
   w.writeGeomGraph(GeomGraph.getGeom(g))
 })
 

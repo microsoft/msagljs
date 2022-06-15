@@ -27,10 +27,10 @@ export class BundleBasesCalculator {
   Bundles: Array<BundleInfo>
 
   // boundary curve with bases going outside the hub
-  externalBases: Map<ICurve, Array<BundleBase>>
+  externalBases: Map<Station, Array<BundleBase>>
 
   // boundary curve with bases going inside the cluster
-  internalBases: Map<ICurve, Array<BundleBase>>
+  internalBases: Map<Station, Array<BundleBase>>
 
   constructor(metroOrdering: GeneralMetroMapOrdering, metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings) {
     this.metroOrdering = metroOrdering
@@ -68,8 +68,8 @@ export class BundleBasesCalculator {
   }
 
   AllocateBundleBases() {
-    this.externalBases = new Map<ICurve, Array<BundleBase>>()
-    this.internalBases = new Map<ICurve, Array<BundleBase>>()
+    this.externalBases = new Map<Station, Array<BundleBase>>()
+    this.internalBases = new Map<Station, Array<BundleBase>>()
     this.Bundles = new Array<BundleInfo>()
     for (const station of this.metroGraphData.Stations) {
       if (station.BoundaryCurve == null) station.BoundaryCurve = Ellipse.mkCircle(station.Radius, station.Position)
@@ -96,15 +96,15 @@ export class BundleBasesCalculator {
 
           if (Curve.PointRelativeToCurveLocation(neighbor.Position, station.BoundaryCurve) != PointLocation.Outside) {
             bb.IsParent = true
-            addToMapOfArrays(this.internalBases, station.BoundaryCurve, bb)
-            addToMapOfArrays(this.externalBases, neighbor.BoundaryCurve, bb2)
+            addToMapOfArrays(this.internalBases, station, bb)
+            addToMapOfArrays(this.externalBases, neighbor, bb2)
           } else if (Curve.PointRelativeToCurveLocation(station.Position, neighbor.BoundaryCurve) != PointLocation.Outside) {
             bb2.IsParent = true
-            addToMapOfArrays(this.externalBases, station.BoundaryCurve, bb)
-            addToMapOfArrays(this.internalBases, neighbor.BoundaryCurve, bb2)
+            addToMapOfArrays(this.externalBases, station, bb)
+            addToMapOfArrays(this.internalBases, neighbor, bb2)
           } else {
-            addToMapOfArrays(this.externalBases, station.BoundaryCurve, bb)
-            addToMapOfArrays(this.externalBases, neighbor.BoundaryCurve, bb2)
+            addToMapOfArrays(this.externalBases, station, bb)
+            addToMapOfArrays(this.externalBases, neighbor, bb2)
           }
 
           const obstaclesToIgnore = this.metroGraphData.tightIntersections.ObstaclesToIgnoreForBundle(station, neighbor)
@@ -661,11 +661,31 @@ export class BundleBasesCalculator {
 }
 
 function intersectBases(rBase: BundleBase, lBase: BundleBase): {start: number; end: number; rbaseMiddle: number; lbaseMiddle: number} {
-  const e = rBase.ParEnd
-  const s = rBase.ParStart < rBase.ParEnd ? rBase.ParStart : rBase.ParStart - rBase.ParameterSpan
-  const oe = lBase.ParEnd
-  const os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - lBase.ParameterSpan
+  let e = rBase.ParEnd
+  let s = rBase.ParStart < rBase.ParEnd ? rBase.ParStart : rBase.ParStart - rBase.ParameterSpan
+  let oe = lBase.ParEnd
+  let os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - lBase.ParameterSpan
   // We have where s < e, and os < oe. Also e,s, os, oe <= rBase.Curve.ParEnd, but we can have s, os < rBase.Curve.ParStart
+  const e_s = [e, s]
+  const oe_os = [oe, os]
+  // In addition, all intervals have to fit into a span of length 2*pi.
+  // To achive this we might need to shift one of the intervals by 2*pi
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      const a = e_s[i]
+      const b = oe_os[j]
+      if (Math.abs(a - b) > Math.PI * 2) {
+        if (a > b) {
+          oe += Math.PI * 2
+          os += Math.PI * 2
+        } else {
+          e += Math.PI * 2
+          s += Math.PI * 2
+        }
+      }
+    }
+  }
+
   // Assert.assert(s < e)
   // Assert.assert(os < oe)
 

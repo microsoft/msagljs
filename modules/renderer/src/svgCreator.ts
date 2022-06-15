@@ -89,6 +89,7 @@ export class SvgCreator {
     svgPanZoom(this.svg)
   }
   private drawEdge(edge: Edge) {
+    if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
     const edgeGroup = createAndBindWithGraph(edge, 'g')
 
     const path = document.createElementNS(svgns, 'path')
