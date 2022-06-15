@@ -24,6 +24,7 @@ import {EdgeNudger} from './EdgeNudger'
 import {MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph} from '../../MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph'
 import {addToMap} from '../../../utils/setOperations'
 import {Arrowhead} from '../../../layout/core/arrowhead'
+import {initRandom} from '../../../utils/random'
 
 export class BundleRouter extends Algorithm {
   bundlingSettings: BundlingSettings
@@ -72,6 +73,7 @@ export class BundleRouter extends Algorithm {
     this.EdgeLooseEnterable = edgeLooseEnterable
     this.EdgeTightEnterable = edgeTightEnterable
     this.loosePolylineOfPort = loosePolylineOfPort
+    initRandom(0)
   }
 
   ThereAreOverlaps(hierarchy: RectangleNode<Polyline, Point>): boolean {
@@ -84,7 +86,6 @@ export class BundleRouter extends Algorithm {
   ///  3. order paths
 
   run() {
-    // TimeMeasurer.DebugOutput("edge bundling started");
     if (this.ThereAreOverlaps(this.TightHierarchy)) {
       this.Status = BundlingStatus.Overlaps
       return

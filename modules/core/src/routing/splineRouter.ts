@@ -421,13 +421,14 @@ export class SplineRouter extends Algorithm {
       for (const ch of p.Children) nodeBoundaries.push(ch.BoundaryCurve)
     }
     const bs = new BundlingSettings()
+    //giving more importance to ink might produce weird routings with huge detours, maybe 0 is the best value here
     bs.InkImportance = 0.00001
     bs.EdgeSeparation = this.MultiEdgesSeparation
 
     const mer = new MultiEdgeRouter(multiEdges, interactiveEdgeRouter, nodeBoundaries, bs, (a) =>
       this.MakeTransparentShapesOfEdgeGeometryAndGetTheShapes(a),
     )
-    //giving more importance to ink might produce weird routings with huge detours, maybe 0 is the best value here
+
     mer.run()
   }
 
