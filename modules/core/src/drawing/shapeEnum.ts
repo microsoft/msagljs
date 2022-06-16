@@ -35,7 +35,7 @@ export enum ShapeEnum {
 
   trapezium,
 
-  drawfromgeometry,
+  drawFromGeometry,
 
   hexagon,
 }

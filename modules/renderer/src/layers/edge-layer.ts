@@ -64,6 +64,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           id: 'path',
         }),
         {
+          // todo: use exact geometry to render e.curve
           getPath: (e: GeomEdge) =>
             Array.from(interpolateICurve(e.curve, 0.01 /* this is a sensitive parameter: diminishing it creates more segments */)).map(
               (p: Point) => [p.x, p.y] as Position,
