@@ -123,6 +123,10 @@ function getShapeFromNode(node: Node): SHAPE {
       // use the exact geometry of GeomNode.boundaryCurve
       return SHAPE.Rectangle
 
+    case ShapeEnum.house:
+      return SHAPE.Rectangle
+    case ShapeEnum.invhouse:
+      return SHAPE.Rectangle
     default:
       return SHAPE.Rectangle
   }
