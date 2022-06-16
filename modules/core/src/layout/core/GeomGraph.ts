@@ -101,7 +101,7 @@ export class GeomGraph extends GeomNode {
     const m = new PlaneTransformation(1, 0, delta.x, 0, 1, delta.y)
     this.transform(m)
   }
-  private _boundingBox: Rectangle
+  private _boundingBox_: Rectangle
   private _labelSize: Size
 
   public get labelSize() {
@@ -111,47 +111,29 @@ export class GeomGraph extends GeomNode {
     this._labelSize = value
   }
   public get boundingBox(): Rectangle {
-    return this._boundingBox
+    if (this._boundingBox_ == null) {
+      this.updateBoundingBox()
+    }
+
+    return this._boundingBox_
   }
   public set boundingBox(value: Rectangle) {
-    this._boundingBox = value
-    /*
-    if (this.boundaryCurve) {
-      // suppose it is a rectangle with rounded corners
-      if (this.boundaryCurve instanceof Curve) {
-        const r = <Curve>this.boundaryCurve
-        let rx = 0
-        let ry = 0
-        for (const seg of r.segs) {
-          if (seg instanceof Ellipse) {
-            const ell = <Ellipse>seg
-            rx = ell.aAxis.length
-            ry = ell.bAxis.length
-            break
-          }
-        }
-        this.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(
-          value.width,
-          value.height,
-          rx,
-          ry,
-          value.center,
-        )
-      }
-    }*/
+    this._boundingBox_ = value
   }
-  transform(matrix: PlaneTransformation, updateBoundingBox = true) {
+  transform(matrix: PlaneTransformation) {
     if (matrix.isIdentity()) return
-    if (this.boundaryCurve != null) this.boundaryCurve = this.boundaryCurve.transform(matrix)
+    if (this.boundaryCurve != null) {
+      this.boundaryCurve = this.boundaryCurve.transform(matrix)
+      this.boundingBox = this.boundaryCurve.boundingBox
+    } else {
+      this.boundingBox = null
+    }
 
     for (const n of this.shallowNodes()) {
-      n.transform(matrix, updateBoundingBox)
+      n.transform(matrix)
     }
     for (const e of this.edges()) {
       e.transform(matrix)
-    }
-    if (updateBoundingBox) {
-      this.updateBoundingBox()
     }
   }
   get deepNodes(): IterableIterator<GeomNode> {
@@ -176,7 +158,7 @@ export class GeomGraph extends GeomNode {
     if (this.MinimalWidth > 0) t.b.width = Math.max(t.b.width, this.MinimalWidth)
     if (this.MinimalHeight > 0) t.b.height = Math.max(t.b.height, this.MinimalHeight)
 
-    this._boundingBox = t.b
+    this._boundingBox_ = t.b
 
     return t.b
   }
@@ -335,9 +317,8 @@ export class GeomGraph extends GeomNode {
   }
 
   FlipYAndMoveLeftTopToOrigin() {
-    if (this.boundingBox == null) this.updateBoundingBox()
     const m = new PlaneTransformation(1, 0, -this.left, 0, -1, this.top)
-    this.transform(m, false)
+    this.transform(m)
     for (const v of this.deepNodes) {
       if (v instanceof GeomGraph) {
         const g = <GeomGraph>v

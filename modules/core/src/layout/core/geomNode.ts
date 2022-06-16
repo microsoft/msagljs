@@ -130,7 +130,7 @@ export class GeomNode extends GeomObject {
     return this.boundaryCurve.boundingBox.height
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  transform(t: PlaneTransformation, updateBoundingBox = true) {
+  transform(t: PlaneTransformation) {
     if (this.boundaryCurve != null) this.boundaryCurve = this.boundaryCurve.transform(t)
   }
 
