@@ -321,7 +321,7 @@ export class Rectangle implements IRectangle<Point> {
     return ret
   }
 
-  // Return copy of specified rectangle translated by the specified delta
+  /**  Returns the translated clone of the specified rectangle */
   static translate(rectangle: Rectangle, delta: Point): Rectangle {
     const r = rectangle.clone()
     r.center = rectangle.center.add(delta)

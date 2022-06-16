@@ -219,6 +219,7 @@ export class Curve implements ICurve {
 
   translate(delta: Point) {
     for (const s of this.segs) s.translate(delta)
+    this.boundingBox_ = Rectangle.translate(this.boundingBox_, delta)
     this.pBNode = null
   }
 
@@ -254,6 +255,7 @@ export class Curve implements ICurve {
   // Adds a segment to the curve
   addSegment(curve: ICurve) {
     if (curve == null) return this //nothing happens
+    this.boundingBox_ = null
     /*Assert.assert(
       this.segs.length == 0 || Point.close(this.end, curve.start, 0.001),
     )*/
@@ -1248,20 +1250,29 @@ export class Curve implements ICurve {
     return null
   }
 
-  // The bounding rectangle of the curve
+  private boundingBox_: Rectangle
+  /**
+   * The bounding rectangle of the curve
+   */
   get boundingBox() {
-    if (this.segs.length == 0) return Rectangle.mkEmpty()
-    const b = this.segs[0].boundingBox.clone()
+    if (this.boundingBox_) return this.boundingBox_
 
-    for (let i = 1; i < this.segs.length; i++) b.addRecSelf(this.segs[i].boundingBox)
+    if (this.segs.length == 0) {
+      this.boundingBox_ = Rectangle.mkEmpty()
+    } else {
+      const b = this.segs[0].boundingBox.clone()
 
-    return b
+      for (let i = 1; i < this.segs.length; i++) b.addRecSelf(this.segs[i].boundingBox)
+
+      return (this.boundingBox_ = b)
+    }
   }
 
   // clones the curve.
   clone() {
     const c = new Curve()
     for (const seg of this.segs) c.addSegment(seg.clone())
+    c.boundingBox_ = this.boundingBox_.clone()
     return c
   }
 
