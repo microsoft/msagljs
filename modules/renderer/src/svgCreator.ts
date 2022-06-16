@@ -189,7 +189,10 @@ export class SvgCreator {
     const rect = isGraph
       ? Rectangle.creatRectangleWithSize(
           measuredTextSize,
-          new Point(geomNode.center.x, geomNode.boundingBox.bottom + measuredTextSize.height / 2 + drawingNode.LabelMargin),
+          new Point(
+            geomNode.boundaryCurve.boundingBox.center.x,
+            geomNode.boundaryCurve.boundingBox.bottom + measuredTextSize.height / 2 + drawingNode.LabelMargin,
+          ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
     this.drawLabelAtXY(drawingNode, rect)

@@ -35,7 +35,7 @@ export class MdsGraphLayout extends Algorithm {
   }
 
   SetGraphBoundingBox() {
-    this.graph.boundingBox = this.graph.pumpTheBoxToTheGraphWithMargins(this.settings.NodeSeparation / 2)
+    this.graph.pumpTheBoxToTheGraphWithMargins(this.settings.NodeSeparation / 2)
   }
 
   //  Scales a configuration such that the average edge length in the drawing

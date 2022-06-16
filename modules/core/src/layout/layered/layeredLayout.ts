@@ -608,8 +608,8 @@ export class LayeredLayout extends Algorithm {
     })
   }
 
-  CalculateOriginalGraphBox(): number {
-    if (this.anchors.length == 0) return 0
+  CalculateOriginalGraphBox() {
+    if (this.anchors.length == 0) return
     const box = new Rectangle({
       left: this.anchors[0].left,
       top: this.anchors[0].top,
@@ -627,7 +627,6 @@ export class LayeredLayout extends Algorithm {
     box.add(box.leftTop.add(del))
     box.add(box.rightBottom.sub(del))
     this.originalGraph.boundingBox = box
-    return box.height != 0 ? box.width / box.height : 0
   }
 
   StraightensShortEdges() {

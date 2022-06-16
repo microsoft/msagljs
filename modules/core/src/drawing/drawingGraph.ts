@@ -144,9 +144,9 @@ export class DrawingGraph extends DrawingNode {
   private createNodeGeometry(n: Node): void {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
-      new GeomGraph(n)
+      const geomGraph = new GeomGraph(n)
       if (subDg.labelText) {
-        subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
+        geomGraph.labelSize = subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
           fontSize: subDg.fontsize,
           fontFamily: subDg.fontname,
           fontStyle: 'normal',

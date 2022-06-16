@@ -9,7 +9,7 @@ import {RendererSvg} from '@msagl/renderer'
 import {parseJSON} from '@msagl/parser'
 
 const viewer = document.getElementById('viewer')
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/abstract.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/clust3.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
