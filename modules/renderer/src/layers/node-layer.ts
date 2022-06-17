@@ -1,8 +1,8 @@
 import {CompositeLayer, LayersList, Accessor} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomGraph} from 'msagl-js'
-import {DrawingNode, DrawingObject} from 'msagl-js/drawing'
+import {GeomNode, GeomGraph, Node} from 'msagl-js'
+import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 import {getLabelPosition} from '../utils'
@@ -31,7 +31,7 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
         {
           getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
           getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
-          getShape: SHAPE.Rectangle,
+          getShape: (e: GeomNode) => getShapeFromNode(e.node),
           cornerRadius: getCornerRadius(this.props.data[0]),
           getLineColor: getNodeColor,
           getFillColor: getNodeFillColor,
@@ -79,4 +79,55 @@ function getNodeFillColor(e: GeomNode): [number, number, number, number] {
     if (color) return [color.R, color.G, color.B, color.A]
   }
   return [255, 255, 255, 255]
+}
+/** 
+the explanations of the shapes can be seen at
+https://graphviz.org/doc/info/shapes.html#polygon
+*/
+function getShapeFromNode(node: Node): SHAPE {
+  const drawingNode = DrawingObject.getDrawingObj(node) as DrawingNode
+  if (drawingNode == null) {
+    return SHAPE.Rectangle
+  }
+  switch (drawingNode.shape) {
+    case ShapeEnum.diamond:
+      return SHAPE.Diamond
+
+    case ShapeEnum.ellipse:
+      return SHAPE.Oval
+
+    case ShapeEnum.box:
+      return SHAPE.Rectangle
+
+    case ShapeEnum.circle:
+      return SHAPE.Oval
+
+    case ShapeEnum.record:
+      return SHAPE.Rectangle
+
+    case ShapeEnum.plaintext:
+      //here nothing is rendered except of the label
+      return SHAPE.Oval
+
+    case ShapeEnum.point:
+      // draw a tiny circle
+      return SHAPE.Oval
+
+    case ShapeEnum.doublecircle:
+      return SHAPE.Oval
+
+    case ShapeEnum.octagon:
+      return SHAPE.Oval
+
+    case ShapeEnum.drawFromGeometry:
+      // use the exact geometry of GeomNode.boundaryCurve
+      return SHAPE.Rectangle
+
+    case ShapeEnum.house:
+      return SHAPE.Rectangle
+    case ShapeEnum.invhouse:
+      return SHAPE.Rectangle
+    default:
+      return SHAPE.Rectangle
+  }
 }

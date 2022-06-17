@@ -132,7 +132,7 @@ export class DrawingGraph extends DrawingNode {
         break
       case ShapeEnum.trapezium:
         break
-      case ShapeEnum.drawfromgeometry:
+      case ShapeEnum.drawFromGeometry:
         break
       case ShapeEnum.hexagon:
         curve = CurveFactory.createHexagon(width, height, center)
