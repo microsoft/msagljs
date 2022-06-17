@@ -122,6 +122,7 @@ export class DrawingGraph extends DrawingNode {
         curve = CurveFactory.createInvertedHouse(width, height, center)
         break
       case ShapeEnum.parallelogram:
+        curve = CurveFactory.createParallelogram(width, height, center)
         break
       case ShapeEnum.octagon:
         curve = CurveFactory.createOctagon(width, height, center)

@@ -369,7 +369,10 @@ class DotParser {
   ast: JSONGraph[]
   graph: Graph
   drawingGraph: DrawingGraph
-  defaultNodeAttr: any
+  arrayOfDefaultAttrs: any[] = []
+  get defaultNodeAttr(): any {
+    return this.arrayOfDefaultAttrs[this.arrayOfDefaultAttrs.length - 1]
+  }
   nodeMap = new Map<string, Node>()
   constructor(ast: JSONGraph[]) {
     this.ast = ast
@@ -478,7 +481,7 @@ class DotParser {
   }
   parseGraphAttr(o: AttrStmt, graph: Graph) {
     if (o.target == 'node') {
-      this.defaultNodeAttr = o // will parse it for each node
+      this.arrayOfDefaultAttrs.push(o) // will parse it for each node
     } else if (o.target == 'graph') {
       parseAttrs(o, graph)
     }
@@ -524,16 +527,22 @@ class DotParser {
           }
           break
         case 'subgraph':
-          // is it really a subgraph?
-          if (process_same_rank(o, DrawingGraph.getDrawingGraph(graph))) {
-          } else if (o.id == null) {
-            const entities: Entity[] = this.getEntitiesSubg(o, graph, directed)
-            applyAttributesToEntities(o, DrawingGraph.getDrawingGraph(graph), entities)
-          } else {
-            const subg = new Graph(o.id.toString())
-            new DrawingGraph(subg)
-            this.parseUnderGraph(o.children, subg, directed, true)
-            if (!subg.isEmpty()) graph.addNode(subg)
+          {
+            const lengthOfAttr = this.arrayOfDefaultAttrs.length
+            // is it really a subgraph?
+            if (this.process_same_rank(o, DrawingGraph.getDrawingGraph(graph))) {
+            } else if (o.id == null) {
+              const entities: Entity[] = this.getEntitiesSubg(o, graph, directed)
+              applyAttributesToEntities(o, DrawingGraph.getDrawingGraph(graph), entities)
+            } else {
+              const subg = new Graph(o.id.toString())
+              new DrawingGraph(subg)
+              this.parseUnderGraph(o.children, subg, directed, true)
+              if (!subg.isEmpty()) graph.addNode(subg)
+            }
+            while (this.arrayOfDefaultAttrs.length > lengthOfAttr) {
+              this.arrayOfDefaultAttrs.pop()
+            }
           }
           break
         case 'attr_stmt':
@@ -542,6 +551,84 @@ class DotParser {
         default:
           throw new Error('not implemented')
       }
+    }
+  }
+  process_same_rank(o: Subgraph, dg: DrawingGraph): boolean {
+    const attr = o.children[0]
+    if (attr == undefined) return false
+    if (attr.type != 'attr_stmt') return false
+    const attr_list = attr.attr_list
+    if (attr_list == undefined) return false
+    if (attr_list.length == 0) return false
+    const attr_0 = attr_list[0]
+    if (attr_0.type != 'attr') return false
+    if (attr_0.id != 'rank') return false
+    switch (attr_0.eq) {
+      case 'min':
+        for (let i = 1; i < o.children.length; i++) {
+          const c = o.children[i]
+          if (c.type == 'node_stmt') {
+            dg.graphVisData.minRanks.push(c.node_id.id.toString())
+          } else {
+            throw new Error()
+          }
+        }
+        return true
+
+      case 'max':
+        for (let i = 1; i < o.children.length; i++) {
+          const c = o.children[i]
+          if (c.type == 'node_stmt') {
+            dg.graphVisData.minRanks.push(c.node_id.id.toString())
+          } else {
+            throw new Error()
+          }
+        }
+        return true
+
+      case 'same': {
+        const sameRank = []
+        for (let i = 1; i < o.children.length; i++) {
+          const c = o.children[i]
+          if (c.type == 'node_stmt') {
+            this.newNode(c.node_id.id.toString(), dg.graph, false)
+            sameRank.push(c.node_id.id.toString())
+          } else if (c.type == 'attr_stmt') {
+            if (c.target == 'node') {
+              this.arrayOfDefaultAttrs.push(c)
+            }
+          }
+        }
+        dg.graphVisData.sameRanks.push(sameRank)
+
+        return true
+      }
+      case 'source': {
+        for (let i = 1; i < o.children.length; i++) {
+          const c = o.children[i]
+          if (c.type == 'node_stmt') {
+            dg.graphVisData.sourceRanks.push(c.node_id.id.toString())
+          } else {
+            throw new Error()
+          }
+        }
+        return true
+      }
+      case 'sink':
+        {
+          for (let i = 1; i < o.children.length; i++) {
+            const c = o.children[i]
+            if (c.type == 'node_stmt') {
+              dg.graphVisData.sinkRanks.push(c.node_id.id.toString())
+            } else {
+              throw new Error()
+            }
+          }
+        }
+        return true
+      default:
+        throw new Error('incorrect rank')
+        return false
     }
   }
 }
@@ -566,82 +653,6 @@ export function parseJSON(graphStr: string): Graph {
 export function parseJSONGraph(jsonObj: JSONGraph): Graph {
   const dp = new DotParser([jsonObj])
   return dp.parse()
-}
-
-function process_same_rank(o: Subgraph, dg: DrawingGraph): boolean {
-  const attr = o.children[0]
-  if (attr == undefined) return false
-  if (attr.type != 'attr_stmt') return false
-  const attr_list = attr.attr_list
-  if (attr_list == undefined) return false
-  if (attr_list.length == 0) return false
-  const attr_0 = attr_list[0]
-  if (attr_0.type != 'attr') return false
-  if (attr_0.id != 'rank') return false
-  switch (attr_0.eq) {
-    case 'min':
-      for (let i = 1; i < o.children.length; i++) {
-        const c = o.children[i]
-        if (c.type == 'node_stmt') {
-          dg.graphVisData.minRanks.push(c.node_id.id.toString())
-        } else {
-          throw new Error()
-        }
-      }
-      return true
-
-    case 'max':
-      for (let i = 1; i < o.children.length; i++) {
-        const c = o.children[i]
-        if (c.type == 'node_stmt') {
-          dg.graphVisData.minRanks.push(c.node_id.id.toString())
-        } else {
-          throw new Error()
-        }
-      }
-      return true
-
-    case 'same': {
-      const sameRank = []
-      for (let i = 1; i < o.children.length; i++) {
-        const c = o.children[i]
-        if (c.type == 'node_stmt') {
-          sameRank.push(c.node_id.id.toString())
-        } else {
-          throw new Error()
-        }
-      }
-      dg.graphVisData.sameRanks.push(sameRank)
-
-      return true
-    }
-    case 'source': {
-      for (let i = 1; i < o.children.length; i++) {
-        const c = o.children[i]
-        if (c.type == 'node_stmt') {
-          dg.graphVisData.sourceRanks.push(c.node_id.id.toString())
-        } else {
-          throw new Error()
-        }
-      }
-      return true
-    }
-    case 'sink':
-      {
-        for (let i = 1; i < o.children.length; i++) {
-          const c = o.children[i]
-          if (c.type == 'node_stmt') {
-            dg.graphVisData.sinkRanks.push(c.node_id.id.toString())
-          } else {
-            throw new Error()
-          }
-        }
-      }
-      return true
-    default:
-      throw new Error('incorrect rank')
-      return false
-  }
 }
 
 function styleEnumFromString(t: string): StyleEnum {

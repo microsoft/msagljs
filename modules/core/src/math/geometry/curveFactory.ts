@@ -11,18 +11,33 @@ type RoundedRectRadii = {
 }
 
 export class CurveFactory {
+  static createParallelogram(width: number, height: number, center: Point): ICurve {
+    const h = height / 2
+    const w = width / 2
+    const x = center.x
+    const y = center.y
+    const angle = (80 * Math.PI) / 180
+    const deltax = h / Math.tan(angle)
+    const poly = Polyline.mkClosedFromPoints([
+      new Point(-w - deltax + x, -h + y),
+      new Point(w + x, -h + y),
+      new Point(w + x + deltax, h + y),
+      new Point(-w + x, h + y),
+    ])
+    return poly
+  }
   public static createHexagon(width: number, height: number, center: Point): ICurve {
     const h = height / 2
     const w = width / 2
     const x = center.x
     const y = center.y
     const poly = Polyline.mkClosedFromPoints([
-      new Point(w * -1 + x, h * -1 + y),
-      new Point(w + x, h * -1 + y),
+      new Point(-w + x, -h + y),
+      new Point(w + x, -h + y),
       new Point(w + (h + x), 0 + y),
       new Point(w + x, h + y),
-      new Point(w * -1 + x, h + y),
-      new Point((w - h) * -1 + x, 0 + y),
+      new Point(-w + x, h + y),
+      new Point(-(w - h) + x, 0 + y),
     ])
     return poly
   }

@@ -468,6 +468,15 @@ test('layout first 150 gv files from list', () => {
     }
   }
 })
+test('shapes', () => {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/pgram.gv'))
+  createGeometry(dg, labelRectFunc)
+  const ss = new SugiyamaLayoutSettings()
+  const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
+  ll.run()
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pgram.svg')
+  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+})
 
 xtest('layout all gv files', () => {
   const path = 'graphvis/'
