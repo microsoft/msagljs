@@ -6,9 +6,14 @@ import {DirTypeEnum} from './dirTypeEnum'
 import {OrderingEnum} from './orderingEnum'
 import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
-
+import {Attr} from 'dotparser'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject {
+  *attrIter(): IterableIterator<Attr> {
+    if (this.color && this.color.keyword.toLowerCase() != 'black') {
+      yield {type: 'attr', id: 'color', eq: this.color.toString()}
+    }
+  }
   toJSON(): Partial<DrawingObject> {
     const ret: Partial<DrawingObject> = {}
     if (this.color) {

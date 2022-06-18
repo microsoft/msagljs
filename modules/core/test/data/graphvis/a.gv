@@ -1,6 +1,7 @@
 digraph  {
   graph [bb="0,0,54,108"];
-        a    [height=2,
+        a    [color="Red",
+          height=2,
              pos="27,90",
              width=0.75];
         b    [height=0.5,

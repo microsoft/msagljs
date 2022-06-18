@@ -4,14 +4,11 @@ import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {parseDotGraph, parseJSONFile} from '../../utils/testUtils'
 import {Graph as JSONGraph} from 'dotparser'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {layoutGeomGraph} from '../../../src/layout/driver'
 import {GeomEdge, GeomGraph} from '../../../src/layout/core'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
-import * as fs from 'fs'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -102,9 +99,7 @@ test('graph smlred', () => {
 
 test('graph a.gv', () => {
   const g = parseDotGraph('graphvis/a.gv')
-  const parsedGraph: JSONGraph = graphToJSON(g)
-  const jsonContent = JSON.stringify(parsedGraph)
-  const stream = fs.openSync('/tmp/aTest.json', 'w', 0o666)
-  fs.writeSync(stream, jsonContent)
-  fs.close(stream)
+  const jsonOfG: JSONGraph = graphToJSON(g)
+  const newG = parseJSONGraph(jsonOfG)
+  expect(newG != null).toBe(true)
 })

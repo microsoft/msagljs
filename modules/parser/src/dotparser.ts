@@ -320,7 +320,10 @@ function parseAttrs(o: any, entity: Entity) {
           drawingObj.wt = str
           break
         case 'id':
-          drawingObj.id = str
+          if (drawingObj instanceof DrawingNode) {
+          } else {
+            drawingObj.id = str
+          }
           break
         case 'edgetooltip':
           drawingObj.edgetooltip = str
@@ -750,7 +753,7 @@ function edgeStmt(edge: Edge): EdgeStmt {
 function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<Stmt> {
   const idToStmt = new Map<string, Stmt>()
   const children = []
-  // fill the map
+  // fill the map of idToStmh
   for (const n of graph.deepNodes) {
     idToStmt.set(n.id, getNodeStatement(n))
   }
@@ -840,7 +843,9 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   }
   const drawingNode = DrawingNode.getDrawingObj(node)
   if (drawingNode) {
-    yield {type: 'attr', id: node instanceof Graph ? 'graph' : 'node', eq: JSON.stringify(drawingNode.toJSON())}
+    for (const attr of drawingNode.attrIter()) {
+      yield attr
+    }
   }
 }
 
