@@ -6,6 +6,11 @@ export type TextMeasurerOptions = {
   fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
 }
 export class Color {
+  private static mkWithKeyword(a: number, r: number, g: number, b: number, keyword: string): Color {
+    const ret = new Color(a, r, g, b)
+    ret.keyword = keyword
+    return ret
+  }
   static parse(keyword: string): Color | undefined {
     switch (keyword.toLowerCase()) {
       case 'aliceblue':
@@ -13,9 +18,9 @@ export class Color {
       case 'antiquewhite':
         return Color.AntiqueWhite
       case 'aqua':
-        Color.Aqua
+        return Color.Aqua
       case 'aquamarine':
-        Color.Aquamarine
+        return Color.Aquamarine
       case 'azure':
         return Color.Azure
       case 'beige':
@@ -295,6 +300,15 @@ export class Color {
         return undefined
     }
   }
+
+  private keyword_: string
+  public get keyword(): string {
+    return this.keyword_
+  }
+  public set keyword(value: string) {
+    this.keyword_ = value
+  }
+
   private a: number
 
   //  constructor with alpha and red, green, bluee components
@@ -311,7 +325,7 @@ export class Color {
     return new Color(255, r, g, b)
   }
 
-  //  alpha - transparency
+  /**  The color opaqueness: changes from 0 to 255 */
 
   get A(): number {
     return this.a
@@ -323,11 +337,12 @@ export class Color {
 
   r: number
 
-  //  red
+  /** The red component: changes form 0 to 255 */
 
   get R(): number {
     return this.r
   }
+  /** The red component: changes form 0 to 255 */
 
   set R(value: number) {
     this.r = value
@@ -335,11 +350,12 @@ export class Color {
 
   g: number
 
-  //  green
+  /** The green component: changes form 0 to 255 */
 
   get G(): number {
     return this.g
   }
+  /** The red component: changes form 0 to 255 */
 
   set G(value: number) {
     this.g = value
@@ -347,12 +363,12 @@ export class Color {
 
   b: number
 
-  //  blue
+  /** The blue component: changes form 0 to 255 */
 
   get B(): number {
     return this.b
   }
-
+  /** The blue component: changes form 0 to 255 */
   set B(value: number) {
     this.b = value
   }
@@ -373,852 +389,854 @@ export class Color {
   //  !=
 
   toString(): string {
-    return '"#' + Color.Xex(this.R) + Color.Xex(this.G) + Color.Xex(this.B) + (this.A == 255 ? '' : Color.Xex(this.A)) + '"'
+    return this.keyword
+      ? this.keyword
+      : '"#' + Color.Xex(this.R) + Color.Xex(this.G) + Color.Xex(this.B) + (this.A == 255 ? '' : Color.Xex(this.A)) + '"'
   }
 
   //
 
   static get AliceBlue(): Color {
-    return new Color(255, 240, 248, 255)
+    return Color.mkWithKeyword(255, 240, 248, 255, 'aliceblue')
   }
 
   //
 
   static get AntiqueWhite(): Color {
-    return new Color(255, 250, 235, 215)
+    return Color.mkWithKeyword(255, 250, 235, 215, 'antiquewhite')
   }
 
   //
 
   static get Aqua(): Color {
-    return new Color(255, 0, 255, 255)
+    return Color.mkWithKeyword(255, 0, 255, 255, 'aqua')
   }
 
   //
 
   static get Aquamarine(): Color {
-    return new Color(255, 127, 255, 212)
+    return Color.mkWithKeyword(255, 127, 255, 212, 'aquamarine')
   }
 
   //
 
   static get Azure(): Color {
-    return new Color(255, 240, 255, 255)
+    return Color.mkWithKeyword(255, 240, 255, 255, 'azure')
   }
 
   //
 
   static get Beige(): Color {
-    return new Color(255, 245, 245, 220)
+    return Color.mkWithKeyword(255, 245, 245, 220, 'beige')
   }
 
   //
 
   static get Bisque(): Color {
-    return new Color(255, 255, 228, 196)
+    return Color.mkWithKeyword(255, 255, 228, 196, 'bisque')
   }
 
   //
 
   static get Black(): Color {
-    return new Color(255, 0, 0, 0)
+    return Color.mkWithKeyword(255, 0, 0, 0, 'black')
   }
 
   //
 
   static get BlanchedAlmond(): Color {
-    return new Color(255, 255, 235, 205)
+    return Color.mkWithKeyword(255, 255, 235, 205, 'blanchedalmond')
   }
 
   //
 
   static get Blue(): Color {
-    return new Color(255, 0, 0, 255)
+    return Color.mkWithKeyword(255, 0, 0, 255, 'blue')
   }
 
   //
 
   static get BlueViolet(): Color {
-    return new Color(255, 138, 43, 226)
+    return Color.mkWithKeyword(255, 138, 43, 226, 'blueviolet')
   }
 
   //
 
   static get Brown(): Color {
-    return new Color(255, 165, 42, 42)
+    return Color.mkWithKeyword(255, 165, 42, 42, 'brown')
   }
 
   //
 
   static get BurlyWood(): Color {
-    return new Color(255, 222, 184, 135)
+    return Color.mkWithKeyword(255, 222, 184, 135, 'burlywood')
   }
 
   //
 
   static get CadetBlue(): Color {
-    return new Color(255, 95, 158, 160)
+    return Color.mkWithKeyword(255, 95, 158, 160, 'cadetblue')
   }
 
   //
 
   static get Chartreuse(): Color {
-    return new Color(255, 127, 255, 0)
+    return Color.mkWithKeyword(255, 127, 255, 0, 'chartreuse')
   }
 
   //
 
   static get Chocolate(): Color {
-    return new Color(255, 210, 105, 30)
+    return Color.mkWithKeyword(255, 210, 105, 30, 'chocolate')
   }
 
   //
 
   static get Coral(): Color {
-    return new Color(255, 255, 127, 80)
+    return Color.mkWithKeyword(255, 255, 127, 80, 'coral')
   }
 
   //
 
   static get CornflowerBlue(): Color {
-    return new Color(255, 100, 149, 237)
+    return Color.mkWithKeyword(255, 100, 149, 237, 'cornflowerblue')
   }
 
   //
 
   static get Cornsilk(): Color {
-    return new Color(255, 255, 248, 220)
+    return Color.mkWithKeyword(255, 255, 248, 220, 'cornsilk')
   }
 
   //
 
   static get Crimson(): Color {
-    return new Color(255, 220, 20, 60)
+    return Color.mkWithKeyword(255, 220, 20, 60, 'crimson')
   }
 
   //
 
   static get Cyan(): Color {
-    return new Color(255, 0, 255, 255)
+    return Color.mkWithKeyword(255, 0, 255, 255, 'cyan')
   }
 
   //
 
   static get DarkBlue(): Color {
-    return new Color(255, 0, 0, 139)
+    return Color.mkWithKeyword(255, 0, 0, 139, 'darkblue')
   }
 
   //
 
   static get DarkCyan(): Color {
-    return new Color(255, 0, 139, 139)
+    return Color.mkWithKeyword(255, 0, 139, 139, 'darkcyan')
   }
 
   //
 
   static get DarkGoldenrod(): Color {
-    return new Color(255, 184, 134, 11)
+    return Color.mkWithKeyword(255, 184, 134, 11, 'darkgoldenrod')
   }
 
   //
 
   static get DarkGray(): Color {
-    return new Color(255, 169, 169, 169)
+    return Color.mkWithKeyword(255, 169, 169, 169, 'darkgray')
   }
 
   //
 
   static get DarkGreen(): Color {
-    return new Color(255, 0, 100, 0)
+    return Color.mkWithKeyword(255, 0, 100, 0, 'darkgreen')
   }
 
   //
 
   static get DarkKhaki(): Color {
-    return new Color(255, 189, 183, 107)
+    return Color.mkWithKeyword(255, 189, 183, 107, 'darkkhaki')
   }
 
   //
 
   static get DarkMagenta(): Color {
-    return new Color(255, 139, 0, 139)
+    return Color.mkWithKeyword(255, 139, 0, 139, 'darkmagenta')
   }
 
   //
 
   static get DarkOliveGreen(): Color {
-    return new Color(255, 85, 107, 47)
+    return Color.mkWithKeyword(255, 85, 107, 47, 'darkolivegreen')
   }
 
   //
 
   static get DarkOrange(): Color {
-    return new Color(255, 255, 140, 0)
+    return Color.mkWithKeyword(255, 255, 140, 0, 'darkorange')
   }
 
   //
 
   static get DarkOrchid(): Color {
-    return new Color(255, 153, 50, 204)
+    return Color.mkWithKeyword(255, 153, 50, 204, 'darkorchid')
   }
 
   //
 
   static get DarkRed(): Color {
-    return new Color(255, 139, 0, 0)
+    return Color.mkWithKeyword(255, 139, 0, 0, 'darkred')
   }
 
   //
 
   static get DarkSalmon(): Color {
-    return new Color(255, 233, 150, 122)
+    return Color.mkWithKeyword(255, 233, 150, 122, 'darksalmon')
   }
 
   //
 
   static get DarkSeaGreen(): Color {
-    return new Color(255, 143, 188, 139)
+    return Color.mkWithKeyword(255, 143, 188, 139, 'darkseagreen')
   }
 
   //
 
   static get DarkSlateBlue(): Color {
-    return new Color(255, 72, 61, 139)
+    return Color.mkWithKeyword(255, 72, 61, 139, 'darkslateblue')
   }
 
   //
 
   static get DarkSlateGray(): Color {
-    return new Color(255, 47, 79, 79)
+    return Color.mkWithKeyword(255, 47, 79, 79, 'darkslategray')
   }
 
   //
 
   static get DarkTurquoise(): Color {
-    return new Color(255, 0, 206, 209)
+    return Color.mkWithKeyword(255, 0, 206, 209, 'darkturquoise')
   }
 
   //
 
   static get DarkViolet(): Color {
-    return new Color(255, 148, 0, 211)
+    return Color.mkWithKeyword(255, 148, 0, 211, 'darkviolet')
   }
 
   //
 
   static get DeepPink(): Color {
-    return new Color(255, 255, 20, 147)
+    return Color.mkWithKeyword(255, 255, 20, 147, 'deeppink')
   }
 
   //
 
   static get DeepSkyBlue(): Color {
-    return new Color(255, 0, 191, 255)
+    return Color.mkWithKeyword(255, 0, 191, 255, 'deepskyblue')
   }
 
   //
 
   static get DimGray(): Color {
-    return new Color(255, 105, 105, 105)
+    return Color.mkWithKeyword(255, 105, 105, 105, 'dimgray')
   }
 
   //
 
   static get DodgerBlue(): Color {
-    return new Color(255, 30, 144, 255)
+    return Color.mkWithKeyword(255, 30, 144, 255, 'dodgerblue')
   }
 
   //
 
   static get Firebrick(): Color {
-    return new Color(255, 178, 34, 34)
+    return Color.mkWithKeyword(255, 178, 34, 34, 'firebrick')
   }
 
   //
 
   static get FloralWhite(): Color {
-    return new Color(255, 255, 250, 240)
+    return Color.mkWithKeyword(255, 255, 250, 240, 'floralwhite')
   }
 
   //
 
   static get ForestGreen(): Color {
-    return new Color(255, 34, 139, 34)
+    return Color.mkWithKeyword(255, 34, 139, 34, 'forestgreen')
   }
 
   //
 
   static get Fuchsia(): Color {
-    return new Color(255, 255, 0, 255)
+    return Color.mkWithKeyword(255, 255, 0, 255, 'fuchsia')
   }
 
   //
 
   static get Gainsboro(): Color {
-    return new Color(255, 220, 220, 220)
+    return Color.mkWithKeyword(255, 220, 220, 220, 'gainsboro')
   }
 
   //
 
   static get GhostWhite(): Color {
-    return new Color(255, 248, 248, 255)
+    return Color.mkWithKeyword(255, 248, 248, 255, 'ghostwhite')
   }
 
   //
 
   static get Gold(): Color {
-    return new Color(255, 255, 215, 0)
+    return Color.mkWithKeyword(255, 255, 215, 0, 'gold')
   }
 
   //
 
   static get Goldenrod(): Color {
-    return new Color(255, 218, 165, 32)
+    return Color.mkWithKeyword(255, 218, 165, 32, 'goldenrod')
   }
 
   //
 
   static get Gray(): Color {
-    return new Color(255, 128, 128, 128)
+    return Color.mkWithKeyword(255, 128, 128, 128, 'gray')
   }
 
   //
 
   static get Green(): Color {
-    return new Color(255, 0, 128, 0)
+    return Color.mkWithKeyword(255, 0, 128, 0, 'green')
   }
 
   //
 
   static get GreenYellow(): Color {
-    return new Color(255, 173, 255, 47)
+    return Color.mkWithKeyword(255, 173, 255, 47, 'greenyellow')
   }
 
   //
 
   static get Honeydew(): Color {
-    return new Color(255, 240, 255, 240)
+    return Color.mkWithKeyword(255, 240, 255, 240, 'honeydew')
   }
 
   //
 
   static get HotPink(): Color {
-    return new Color(255, 255, 105, 180)
+    return Color.mkWithKeyword(255, 255, 105, 180, 'hotpink')
   }
 
   //
 
   static get IndianRed(): Color {
-    return new Color(255, 205, 92, 92)
+    return Color.mkWithKeyword(255, 205, 92, 92, 'indianred')
   }
 
   //
 
   static get Indigo(): Color {
-    return new Color(255, 75, 0, 130)
+    return Color.mkWithKeyword(255, 75, 0, 130, 'indigo')
   }
 
   //
 
   static get Ivory(): Color {
-    return new Color(255, 255, 255, 240)
+    return Color.mkWithKeyword(255, 255, 255, 240, 'ivory')
   }
 
   //
 
   static get Khaki(): Color {
-    return new Color(255, 240, 230, 140)
+    return Color.mkWithKeyword(255, 240, 230, 140, 'khaki')
   }
 
   //
 
   static get Lavender(): Color {
-    return new Color(255, 230, 230, 250)
+    return Color.mkWithKeyword(255, 230, 230, 250, 'lavender')
   }
 
   //
 
   static get LavenderBlush(): Color {
-    return new Color(255, 255, 240, 245)
+    return Color.mkWithKeyword(255, 255, 240, 245, 'lavenderblush')
   }
 
   //
 
   static get LawnGreen(): Color {
-    return new Color(255, 124, 252, 0)
+    return Color.mkWithKeyword(255, 124, 252, 0, 'lawngreen')
   }
 
   //
 
   static get LemonChiffon(): Color {
-    return new Color(255, 255, 250, 205)
+    return Color.mkWithKeyword(255, 255, 250, 205, 'lemonchiffon')
   }
 
   //
 
   static get LightBlue(): Color {
-    return new Color(255, 173, 216, 230)
+    return Color.mkWithKeyword(255, 173, 216, 230, 'lightblue')
   }
 
   //
 
   static get LightCoral(): Color {
-    return new Color(255, 240, 128, 128)
+    return Color.mkWithKeyword(255, 240, 128, 128, 'lightcoral')
   }
 
   //
 
   static get LightCyan(): Color {
-    return new Color(255, 224, 255, 255)
+    return Color.mkWithKeyword(255, 224, 255, 255, 'lightcyan')
   }
 
   //
 
   static get LightGoldenrodYellow(): Color {
-    return new Color(255, 250, 250, 210)
+    return Color.mkWithKeyword(255, 250, 250, 210, 'lightgoldenrodyellow')
   }
 
   //
 
   static get LightGray(): Color {
-    return new Color(255, 211, 211, 211)
+    return Color.mkWithKeyword(255, 211, 211, 211, 'lightgray')
   }
 
   //
 
   static get LightGreen(): Color {
-    return new Color(255, 144, 238, 144)
+    return Color.mkWithKeyword(255, 144, 238, 144, 'lightgreen')
   }
 
   //
 
   static get LightPink(): Color {
-    return new Color(255, 255, 182, 193)
+    return Color.mkWithKeyword(255, 255, 182, 193, 'lightpink')
   }
 
   //
 
   static get LightSalmon(): Color {
-    return new Color(255, 255, 160, 122)
+    return Color.mkWithKeyword(255, 255, 160, 122, 'lightsalmon')
   }
 
   //
 
   static get LightSeaGreen(): Color {
-    return new Color(255, 32, 178, 170)
+    return Color.mkWithKeyword(255, 32, 178, 170, 'lightseagreen')
   }
 
   //
 
   static get LightSkyBlue(): Color {
-    return new Color(255, 135, 206, 250)
+    return Color.mkWithKeyword(255, 135, 206, 250, 'lightskyblue')
   }
 
   //
 
   static get LightSlateGray(): Color {
-    return new Color(255, 119, 136, 153)
+    return Color.mkWithKeyword(255, 119, 136, 153, 'lightslategray')
   }
 
   //
 
   static get LightSteelBlue(): Color {
-    return new Color(255, 176, 196, 222)
+    return Color.mkWithKeyword(255, 176, 196, 222, 'lightsteelblue')
   }
 
   //
 
   static get LightYellow(): Color {
-    return new Color(255, 255, 255, 224)
+    return Color.mkWithKeyword(255, 255, 255, 224, 'lightyellow')
   }
 
   //
 
   static get Lime(): Color {
-    return new Color(255, 0, 255, 0)
+    return Color.mkWithKeyword(255, 0, 255, 0, 'lime')
   }
 
   //
 
   static get LimeGreen(): Color {
-    return new Color(255, 50, 205, 50)
+    return Color.mkWithKeyword(255, 50, 205, 50, 'limegreen')
   }
 
   //
 
   static get Linen(): Color {
-    return new Color(255, 250, 240, 230)
+    return Color.mkWithKeyword(255, 250, 240, 230, 'linen')
   }
 
   //
 
   static get Magenta(): Color {
-    return new Color(255, 255, 0, 255)
+    return Color.mkWithKeyword(255, 255, 0, 255, 'magenta')
   }
 
   //
 
   static get Maroon(): Color {
-    return new Color(255, 128, 0, 0)
+    return Color.mkWithKeyword(255, 128, 0, 0, 'maroon')
   }
 
   //
 
   static get MediumAquamarine(): Color {
-    return new Color(255, 102, 205, 170)
+    return Color.mkWithKeyword(255, 102, 205, 170, 'mediumaquamarine')
   }
 
   //
 
   static get MediumBlue(): Color {
-    return new Color(255, 0, 0, 205)
+    return Color.mkWithKeyword(255, 0, 0, 205, 'mediumblue')
   }
 
   //
 
   static get MediumOrchid(): Color {
-    return new Color(255, 186, 85, 211)
+    return Color.mkWithKeyword(255, 186, 85, 211, 'mediumorchid')
   }
 
   //
 
   static get MediumPurple(): Color {
-    return new Color(255, 147, 112, 219)
+    return Color.mkWithKeyword(255, 147, 112, 219, 'mediumpurple')
   }
 
   //
 
   static get MediumSeaGreen(): Color {
-    return new Color(255, 60, 179, 113)
+    return Color.mkWithKeyword(255, 60, 179, 113, 'mediumseagreen')
   }
 
   //
 
   static get MediumSlateBlue(): Color {
-    return new Color(255, 123, 104, 238)
+    return Color.mkWithKeyword(255, 123, 104, 238, 'mediumslateblue')
   }
 
   //
 
   static get MediumSpringGreen(): Color {
-    return new Color(255, 0, 250, 154)
+    return Color.mkWithKeyword(255, 0, 250, 154, 'mediumspringgreen')
   }
 
   //
 
   static get MediumTurquoise(): Color {
-    return new Color(255, 72, 209, 204)
+    return Color.mkWithKeyword(255, 72, 209, 204, 'mediumturquoise')
   }
 
   //
 
   static get MediumVioletRed(): Color {
-    return new Color(255, 199, 21, 133)
+    return Color.mkWithKeyword(255, 199, 21, 133, 'mediumvioletred')
   }
 
   //
 
   static get MidnightBlue(): Color {
-    return new Color(255, 25, 25, 112)
+    return Color.mkWithKeyword(255, 25, 25, 112, 'midnightblue')
   }
 
   //
 
   static get MintCream(): Color {
-    return new Color(255, 245, 255, 250)
+    return Color.mkWithKeyword(255, 245, 255, 250, 'mintcream')
   }
 
   //
 
   static get MistyRose(): Color {
-    return new Color(255, 255, 228, 225)
+    return Color.mkWithKeyword(255, 255, 228, 225, 'mistyrose')
   }
 
   //
 
   static get Moccasin(): Color {
-    return new Color(255, 255, 228, 181)
+    return Color.mkWithKeyword(255, 255, 228, 181, 'moccasin')
   }
 
   //
 
   static get NavajoWhite(): Color {
-    return new Color(255, 255, 222, 173)
+    return Color.mkWithKeyword(255, 255, 222, 173, 'navajowhite')
   }
 
   //
 
   static get Navy(): Color {
-    return new Color(255, 0, 0, 128)
+    return Color.mkWithKeyword(255, 0, 0, 128, 'navy')
   }
 
   //
 
   static get OldLace(): Color {
-    return new Color(255, 253, 245, 230)
+    return Color.mkWithKeyword(255, 253, 245, 230, 'oldlace')
   }
 
   //
 
   static get Olive(): Color {
-    return new Color(255, 128, 128, 0)
+    return Color.mkWithKeyword(255, 128, 128, 0, 'olive')
   }
 
   //
 
   static get OliveDrab(): Color {
-    return new Color(255, 107, 142, 35)
+    return Color.mkWithKeyword(255, 107, 142, 35, 'olivedrab')
   }
 
   //
 
   static get Orange(): Color {
-    return new Color(255, 255, 165, 0)
+    return Color.mkWithKeyword(255, 255, 165, 0, 'orange')
   }
 
   //
 
   static get OrangeRed(): Color {
-    return new Color(255, 255, 69, 0)
+    return Color.mkWithKeyword(255, 255, 69, 0, 'orangered')
   }
 
   //
 
   static get Orchid(): Color {
-    return new Color(255, 218, 112, 214)
+    return Color.mkWithKeyword(255, 218, 112, 214, 'orchid')
   }
 
   //
 
   static get PaleGoldenrod(): Color {
-    return new Color(255, 238, 232, 170)
+    return Color.mkWithKeyword(255, 238, 232, 170, 'palegoldenrod')
   }
 
   //
 
   static get PaleGreen(): Color {
-    return new Color(255, 152, 251, 152)
+    return Color.mkWithKeyword(255, 152, 251, 152, 'palegreen')
   }
 
   //
 
   static get PaleTurquoise(): Color {
-    return new Color(255, 175, 238, 238)
+    return Color.mkWithKeyword(255, 175, 238, 238, 'paleturquoise')
   }
 
   //
 
   static get PaleVioletRed(): Color {
-    return new Color(255, 219, 112, 147)
+    return Color.mkWithKeyword(255, 219, 112, 147, 'palevioletred')
   }
 
   //
 
   static get PapayaWhip(): Color {
-    return new Color(255, 255, 239, 213)
+    return Color.mkWithKeyword(255, 255, 239, 213, 'papayawhip')
   }
 
   //
 
   static get PeachPuff(): Color {
-    return new Color(255, 255, 218, 185)
+    return Color.mkWithKeyword(255, 255, 218, 185, 'peachpuff')
   }
 
   //
 
   static get Peru(): Color {
-    return new Color(255, 205, 133, 63)
+    return Color.mkWithKeyword(255, 205, 133, 63, 'peru')
   }
 
   //
 
   static get Pink(): Color {
-    return new Color(255, 255, 192, 203)
+    return Color.mkWithKeyword(255, 255, 192, 203, 'pink')
   }
 
   //
 
   static get Plum(): Color {
-    return new Color(255, 221, 160, 221)
+    return Color.mkWithKeyword(255, 221, 160, 221, 'plum')
   }
 
   //
 
   static get PowderBlue(): Color {
-    return new Color(255, 176, 224, 230)
+    return Color.mkWithKeyword(255, 176, 224, 230, 'powderblue')
   }
 
   //
 
   static get Purple(): Color {
-    return new Color(255, 128, 0, 128)
+    return Color.mkWithKeyword(255, 128, 0, 128, 'purple')
   }
 
   //
 
   static get Red(): Color {
-    return new Color(255, 255, 0, 0)
+    return Color.mkWithKeyword(255, 255, 0, 0, 'red')
   }
 
   //
 
   static get RosyBrown(): Color {
-    return new Color(255, 188, 143, 143)
+    return Color.mkWithKeyword(255, 188, 143, 143, 'rosybrown')
   }
 
   //
 
   static get RoyalBlue(): Color {
-    return new Color(255, 65, 105, 225)
+    return Color.mkWithKeyword(255, 65, 105, 225, 'royalblue')
   }
 
   //
 
   static get SaddleBrown(): Color {
-    return new Color(255, 139, 69, 19)
+    return Color.mkWithKeyword(255, 139, 69, 19, 'saddlebrown')
   }
 
   //
 
   static get Salmon(): Color {
-    return new Color(255, 250, 128, 114)
+    return Color.mkWithKeyword(255, 250, 128, 114, 'salmon')
   }
 
   //
 
   static get SandyBrown(): Color {
-    return new Color(255, 244, 164, 96)
+    return Color.mkWithKeyword(255, 244, 164, 96, 'sandybrown')
   }
 
   //
 
   static get SeaGreen(): Color {
-    return new Color(255, 46, 139, 87)
+    return Color.mkWithKeyword(255, 46, 139, 87, 'seagreen')
   }
 
   //
 
   static get SeaShell(): Color {
-    return new Color(255, 255, 245, 238)
+    return Color.mkWithKeyword(255, 255, 245, 238, 'seashell')
   }
 
   //
 
   static get Sienna(): Color {
-    return new Color(255, 160, 82, 45)
+    return Color.mkWithKeyword(255, 160, 82, 45, 'sienna')
   }
 
   //
 
   static get Silver(): Color {
-    return new Color(255, 192, 192, 192)
+    return Color.mkWithKeyword(255, 192, 192, 192, 'silver')
   }
 
   //
 
   static get SkyBlue(): Color {
-    return new Color(255, 135, 206, 235)
+    return Color.mkWithKeyword(255, 135, 206, 235, 'skyblue')
   }
 
   //
 
   static get SlateBlue(): Color {
-    return new Color(255, 106, 90, 205)
+    return Color.mkWithKeyword(255, 106, 90, 205, 'slateblue')
   }
 
   //
 
   static get SlateGray(): Color {
-    return new Color(255, 112, 128, 144)
+    return Color.mkWithKeyword(255, 112, 128, 144, 'slategray')
   }
 
   //
 
   static get Snow(): Color {
-    return new Color(255, 255, 250, 250)
+    return Color.mkWithKeyword(255, 255, 250, 250, 'snow')
   }
 
   //
 
   static get SpringGreen(): Color {
-    return new Color(255, 0, 255, 127)
+    return Color.mkWithKeyword(255, 0, 255, 127, 'springgreen')
   }
 
   //
 
   static get SteelBlue(): Color {
-    return new Color(255, 70, 130, 180)
+    return Color.mkWithKeyword(255, 70, 130, 180, 'steelblue')
   }
 
   //
 
   static get Tan(): Color {
-    return new Color(255, 210, 180, 140)
+    return Color.mkWithKeyword(255, 210, 180, 140, 'tan')
   }
 
   //
 
   static get Teal(): Color {
-    return new Color(255, 0, 128, 128)
+    return Color.mkWithKeyword(255, 0, 128, 128, 'teal')
   }
 
   //
 
   static get Thistle(): Color {
-    return new Color(255, 216, 191, 216)
+    return Color.mkWithKeyword(255, 216, 191, 216, 'thistle')
   }
 
   //
 
   static get Tomato(): Color {
-    return new Color(255, 255, 99, 71)
+    return Color.mkWithKeyword(255, 255, 99, 71, 'tomato')
   }
 
   //
 
   static get Transparent(): Color {
-    return new Color(0, 255, 255, 255)
+    return Color.mkWithKeyword(0, 255, 255, 255, 'transparent')
   }
 
   //
 
   static get Turquoise(): Color {
-    return new Color(255, 64, 224, 208)
+    return Color.mkWithKeyword(255, 64, 224, 208, 'turquoise')
   }
 
   //
 
   static get Violet(): Color {
-    return new Color(255, 238, 130, 238)
+    return Color.mkWithKeyword(255, 238, 130, 238, 'violet')
   }
 
   //
 
   static get Wheat(): Color {
-    return new Color(255, 245, 222, 179)
+    return Color.mkWithKeyword(255, 245, 222, 179, 'wheat')
   }
 
   //
 
   static get White(): Color {
-    return new Color(255, 255, 255, 255)
+    return Color.mkWithKeyword(255, 255, 255, 255, 'white')
   }
 
   //
 
   static get WhiteSmoke(): Color {
-    return new Color(255, 245, 245, 245)
+    return Color.mkWithKeyword(255, 245, 245, 245, 'whitesmoke')
   }
 
   //
 
   static get Yellow(): Color {
-    return new Color(255, 255, 255, 0)
+    return Color.mkWithKeyword(255, 255, 255, 0, 'yellow')
   }
 
   //
 
   static get YellowGreen(): Color {
-    return new Color(255, 154, 205, 50)
+    return Color.mkWithKeyword(255, 154, 205, 50, 'yellowgreen')
   }
 }

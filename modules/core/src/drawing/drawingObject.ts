@@ -9,7 +9,92 @@ import {Entity} from '../structs/entity'
 
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject {
+  toJSON(): Partial<DrawingObject> {
+    const ret: Partial<DrawingObject> = {}
+    if (this.color) {
+      ret.color = this.color
+    }
+    if (this.fillColor) {
+      ret.fillColor = this.fillColor
+    }
+    if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() != 'black') {
+      ret.labelfontcolor = this.labelfontcolor
+    }
+    if (this.labelText && this.labelText != this.id) {
+      ret.labelText = this.labelText
+    }
+
+    if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
+      ret.fontColor = this.fontColor
+    }
+    if (this.styles && this.styles.length) {
+      ret.styles = this.styles
+    }
+
+    if (this.pencolor) {
+      ret.pencolor = this.pencolor
+    }
+
+    if (this.penwidth) {
+      ret.penwidth = this.penwidth
+    }
+
+    if (this.rankdir) {
+      ret.rankdir = this.rankdir
+    }
+
+    if (this.fontname && this.fontname != DrawingObject.defaultLabelFontName) {
+      ret.fontname = this.fontname
+    }
+    if (this.margin) {
+      ret.margin = this.margin
+    }
+    if (this.fontsize && this.fontsize != DrawingObject.defaultLabelFontSize) {
+      ret.fontsize = this.fontsize
+    }
+
+    if (this.orientation) {
+      ret.orientation = this.orientation
+    }
+    if (this.ranksep) {
+      ret.ranksep = this.ranksep
+    }
+    if (this.arrowtail) {
+      ret.arrowtail = this.arrowtail
+    }
+    if (this.ordering) {
+      ret.ordering = this.ordering
+    }
+    if (this.bgcolor) {
+      ret.bgcolor = this.bgcolor
+    }
+
+    if (this.pos) {
+      ret.pos = this.pos
+    }
+    if (this.nodesep) {
+      ret.nodesep = this.nodesep
+    }
+    if (this.arrowsize) {
+      ret.arrowsize = this.arrowsize
+    }
+
+    if (this.samehead) {
+      ret.samehead = this.samehead
+    }
+
+    if (this.layersep) {
+      ret.layersep = this.layersep
+    }
+
+    if (this.id) {
+      ret.id = this.id
+    }
+
+    return ret
+  }
   measuredTextSize: Size
+  /** the index of the DrawingObject in the list of attributes of Entity */
   static attachIndex = 1
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   attrCont: Entity
@@ -20,7 +105,8 @@ export abstract class DrawingObject {
 
   color: Color
   fillColor: Color
-  labelfontcolor: Color = Color.parse('Black')
+  labelfontcolor: Color = Color.Black
+
   private _labelText: string
   public get labelText(): string {
     return this._labelText
@@ -98,7 +184,13 @@ export abstract class DrawingObject {
   tailport: string
   headport: string
   wt: any
-  id: any
+  private _id: string
+  public get id(): string {
+    return this._id
+  }
+  public set id(value: string) {
+    this._id = value
+  }
   edgetooltip: any
   headURL: any
   tailURL: any

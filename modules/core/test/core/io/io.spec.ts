@@ -11,6 +11,7 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
+import * as fs from 'fs'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -101,12 +102,9 @@ test('graph smlred', () => {
 
 test('graph a.gv', () => {
   const g = parseDotGraph('graphvis/a.gv')
-  const subgraphsWas = Array.from(g.subgraphs()).length
-  const nodesWas = g.nodeCountDeep
   const parsedGraph: JSONGraph = graphToJSON(g)
-
-  const graph = parseJSONGraph(parsedGraph)
-  const subgraphs = Array.from(graph.subgraphs())
-  expect(subgraphs.length).toBe(subgraphsWas)
-  expect(graph.nodeCountDeep).toBe(nodesWas)
+  const jsonContent = JSON.stringify(parsedGraph)
+  const stream = fs.openSync('/tmp/aTest.json', 'w', 0o666)
+  fs.writeSync(stream, jsonContent)
+  fs.close(stream)
 })

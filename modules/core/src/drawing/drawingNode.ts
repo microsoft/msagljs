@@ -98,4 +98,8 @@ export class DrawingNode extends DrawingObject {
   get node(): Node {
     return this.attrCont as Node
   }
+
+  get id(): string {
+    return this.node.id
+  }
 }

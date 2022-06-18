@@ -727,9 +727,13 @@ function createGeomForSubgraphs(graph: Graph) {
     new GeomGraph(graph)
   }
 }
+/** Exports the graph into a JSONGraph object for further serialization */
 export function graphToJSON(graph: Graph): JSONGraph {
-  const idToLevel = getNodeLevels(graph)
-  return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevel)}
+  /** idToLevels are needed to figure out the edge membership efficiently:
+   * Edge belongs to the first Graph which is a common ancestor of the edge source and the edge target.
+   */
+  const idToLevels = getNodeLevels(graph)
+  return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
 }
 
 function edgeStmt(edge: Edge): EdgeStmt {
@@ -831,8 +835,13 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
     },
   ]*/
   const geomNode = GeomObject.getGeom(node) as GeomNode
-  if (geomNode == null || geomNode.boundaryCurve == null) return
-  yield getNodeBoundaryCurve(node)
+  if (geomNode && geomNode.boundaryCurve) {
+    yield getNodeBoundaryCurve(node)
+  }
+  const drawingNode = DrawingNode.getDrawingObj(node)
+  if (drawingNode) {
+    yield {type: 'attr', id: node instanceof Graph ? 'graph' : 'node', eq: JSON.stringify(drawingNode.toJSON())}
+  }
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {
@@ -860,6 +869,11 @@ function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {
 
   return s.parent as Node
 }
+/** The nodes belonging to the root graph have levels 0,
+ * In general, a node level is the distance, the number of hops,
+ *  from its parent to the root in the
+ * tree of graphs.
+ */
 function getNodeLevels(graph: Graph): Map<string, number> {
   const levels = new Map<string, number>()
   levels.set(graph.id, 0)
