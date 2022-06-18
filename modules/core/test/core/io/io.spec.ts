@@ -103,3 +103,9 @@ test('graph a.gv', () => {
   const newG = parseJSONGraph(jsonOfG)
   expect(newG != null).toBe(true)
 })
+test('graph arrowsize', () => {
+  const g = parseDotGraph('graphvis/arrowsize.gv')
+  const jsonOfG: JSONGraph = graphToJSON(g)
+  const newG = parseJSONGraph(jsonOfG)
+  expect(newG != null).toBe(true)
+})

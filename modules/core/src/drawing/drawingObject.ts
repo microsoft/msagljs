@@ -13,90 +13,72 @@ export abstract class DrawingObject {
     if (this.color && this.color.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'color', eq: this.color.toString()}
     }
-  }
-  toJSON(): Partial<DrawingObject> {
-    const ret: Partial<DrawingObject> = {}
-    if (this.color) {
-      ret.color = this.color
-    }
     if (this.fillColor) {
-      ret.fillColor = this.fillColor
+      yield {type: 'attr', id: 'fillColor', eq: this.fillColor.toString()}
     }
     if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() != 'black') {
-      ret.labelfontcolor = this.labelfontcolor
+      yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
     }
     if (this.labelText && this.labelText != this.id) {
-      ret.labelText = this.labelText
+      yield {type: 'attr', id: 'labelText', eq: this.labelText}
     }
-
     if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
-      ret.fontColor = this.fontColor
+      yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}
     }
     if (this.styles && this.styles.length) {
-      ret.styles = this.styles
+      throw new Error() // ret.styles = this.styles
     }
-
-    if (this.pencolor) {
-      ret.pencolor = this.pencolor
+    if (this.pencolor && this.pencolor.keyword != 'black') {
+      yield {type: 'attr', id: 'pencolor', eq: this.pencolor.toString()}
     }
-
-    if (this.penwidth) {
-      ret.penwidth = this.penwidth
+    if (this.penwidth && this.penwidth != 1) {
+      yield {type: 'attr', id: 'penwidth', eq: this.penwidth.toString()}
     }
-
     if (this.rankdir) {
-      ret.rankdir = this.rankdir
+      yield {type: 'attr', id: 'rankdir', eq: this.rankdir.toString()}
     }
-
     if (this.fontname && this.fontname != DrawingObject.defaultLabelFontName) {
-      ret.fontname = this.fontname
+      yield {type: 'attr', id: 'fontname', eq: this.fontname}
     }
     if (this.margin) {
-      ret.margin = this.margin
+      yield {type: 'attr', id: 'margin', eq: this.margin.toString()}
     }
     if (this.fontsize && this.fontsize != DrawingObject.defaultLabelFontSize) {
-      ret.fontsize = this.fontsize
+      yield {type: 'attr', id: 'fontsize', eq: this.fontsize.toString()}
     }
-
     if (this.orientation) {
-      ret.orientation = this.orientation
+      yield {type: 'attr', id: 'orientation', eq: this.orientation.toString()}
     }
     if (this.ranksep) {
-      ret.ranksep = this.ranksep
+      yield {type: 'attr', id: 'ranksep', eq: this.ranksep.toString()}
     }
     if (this.arrowtail) {
-      ret.arrowtail = this.arrowtail
+      yield {type: 'attr', id: 'arrowtail', eq: this.arrowtail.toString()}
+    }
+    if (this.arrowhead) {
+      yield {type: 'attr', id: 'arrowhead', eq: this.arrowhead.toString()}
     }
     if (this.ordering) {
-      ret.ordering = this.ordering
+      yield {type: 'attr', id: 'ordering', eq: this.ordering.toString()}
     }
     if (this.bgcolor) {
-      ret.bgcolor = this.bgcolor
+      yield {type: 'attr', id: 'bgcolor', eq: this.bgcolor.toString()}
     }
-
     if (this.pos) {
-      ret.pos = this.pos
+      yield {type: 'attr', id: 'pos', eq: this.pos.toString()}
     }
     if (this.nodesep) {
-      ret.nodesep = this.nodesep
+      yield {type: 'attr', id: 'nodesep', eq: this.nodesep.toString()}
     }
     if (this.arrowsize) {
-      ret.arrowsize = this.arrowsize
+      yield {type: 'attr', id: 'arrowsize', eq: this.arrowsize.toString()}
     }
-
     if (this.samehead) {
-      ret.samehead = this.samehead
+      yield {type: 'attr', id: 'samehead', eq: this.samehead.toString()}
     }
-
     if (this.layersep) {
-      ret.layersep = this.layersep
+      yield {type: 'attr', id: 'layersep', eq: this.layersep.toString()}
     }
-
-    if (this.id) {
-      ret.id = this.id
-    }
-
-    return ret
   }
   measuredTextSize: Size
   /** the index of the DrawingObject in the list of attributes of Entity */
