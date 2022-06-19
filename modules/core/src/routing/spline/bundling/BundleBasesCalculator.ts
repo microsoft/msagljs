@@ -1,12 +1,9 @@
 ﻿import {HashSet} from '@esfx/collections'
 import {ICurve, Point} from '../../..'
-//import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
-import {Curve, PointLocation, LineSegment, GeomConstants} from '../../../math/geometry'
+import {Curve, PointLocation, LineSegment, GeomConstants, parameterSpan} from '../../../math/geometry'
 import {Ellipse} from '../../../math/geometry/ellipse'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-// import {Assert} from '../../../utils/assert'
 import {closeDistEps} from '../../../utils/compare'
-
 import {addToMapOfArrays} from '../../../utils/setOperations'
 import {BundlingSettings} from '../../BundlingSettings'
 import {BundleBase} from './BundleBase'
@@ -537,7 +534,7 @@ export class BundleBasesCalculator {
     const currentMid: number = bundleBase.ParMid
     const mn: number = Math.min(bundleBase.InitialMidParameter, currentMid)
     const mx: number = Math.max(bundleBase.InitialMidParameter, currentMid)
-    const dist: number = Math.min(mx - mn, mn + (bundleBase.ParameterSpan - mx))
+    const dist: number = Math.min(mx - mn, mn + (parameterSpan(bundleBase.Curve) - mx))
     if (bundleBase.CurveCenter.equal(bundleBase.Position) || bundleBase.IsParent) {
       return 25 * (dist * dist)
     } else {
@@ -661,38 +658,37 @@ export class BundleBasesCalculator {
 }
 
 function intersectBases(rBase: BundleBase, lBase: BundleBase): {start: number; end: number; rbaseMiddle: number; lbaseMiddle: number} {
+  // here rBase.Curve is the same as lBase.Curve
+  // getting the parameter span of the curve
+  const fullSpan = parameterSpan(rBase.Curve)
   let e = rBase.ParEnd
-  let s = rBase.ParStart < rBase.ParEnd ? rBase.ParStart : rBase.ParStart - rBase.ParameterSpan
+  let s = rBase.ParStart < rBase.ParEnd ? rBase.ParStart : rBase.ParStart - fullSpan
   let oe = lBase.ParEnd
-  let os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - lBase.ParameterSpan
+  let os = lBase.ParStart < lBase.ParEnd ? lBase.ParStart : lBase.ParStart - fullSpan
   // We have where s < e, and os < oe. Also e,s, os, oe <= rBase.Curve.ParEnd, but we can have s, os < rBase.Curve.ParStart
-  const e_s = [e, s]
-  const oe_os = [oe, os]
-  // In addition, all intervals have to fit into a span of length 2*pi.
-  // To achive this we might need to shift one of the intervals by 2*pi
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 2; j++) {
-      const a = e_s[i]
-      const b = oe_os[j]
-      if (Math.abs(a - b) > Math.PI * 2) {
-        if (a > b) {
-          oe += Math.PI * 2
-          os += Math.PI * 2
-        } else {
-          e += Math.PI * 2
-          s += Math.PI * 2
-        }
-      }
+  // In addition, we are going to fit the intervals into an interval which is not longer then fullSpan.
+  // To achive this we might need to shift one of the intervals by fullSpan
+  if (e > oe) {
+    // here also e > os
+    if (e - os > fullSpan) {
+      os += fullSpan
+      oe += fullSpan
+    }
+  } else {
+    // here oe >= e > s
+    if (oe - s > fullSpan) {
+      s += fullSpan
+      e += fullSpan
     }
   }
 
   // Assert.assert(s < e)
   // Assert.assert(os < oe)
 
-  // Assert.assert(s <= rBase.Curve.parEnd)
-  // Assert.assert(e <= rBase.Curve.parEnd)
-  // Assert.assert(os <= rBase.Curve.parEnd)
-  // Assert.assert(oe <= rBase.Curve.parEnd)
+  // Assert.assert(Math.abs(e - s) <= fullSpan, 'e - s <= fullSpan')
+  // Assert.assert(Math.abs(oe - os) <= fullSpan, 'oe - os <= fullSpan')
+  // Assert.assert(Math.abs(oe - s) <= fullSpan, 'oe - s <= fullSpan')
+  // Assert.assert(Math.abs(e - os) <= fullSpan, 'e - os <= fullSpan')
   const xEnd = Math.min(e, oe)
   const xStart = Math.max(s, os)
   return xStart <= xEnd ? {start: xStart, end: xEnd, rbaseMiddle: (s + e) / 2, lbaseMiddle: (os + oe) / 2} : null

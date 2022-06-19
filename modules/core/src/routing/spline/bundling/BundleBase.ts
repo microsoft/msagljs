@@ -126,16 +126,12 @@ export class BundleBase {
   // next in ccw order
   Next: BundleBase
 
-  get ParameterSpan() {
-    return parameterSpan(this.Curve)
-  }
-
   get Span(): number {
-    return this.SpanBetweenTwoPoints(this.parStart, this.parEnd)
+    return this.SpanBetweenTwoParameters(this.parStart, this.parEnd)
   }
 
-  SpanBetweenTwoPoints(start: number, end: number): number {
-    return start <= end ? end - start : end - start + this.ParameterSpan
+  SpanBetweenTwoParameters(start: number, end: number): number {
+    return start <= end ? end - start : end - start + parameterSpan(this.Curve)
   }
 
   RotateLeftPoint(rotationOfSourceLeftPoint: number, parameterChange: number): Point {
@@ -155,7 +151,7 @@ export class BundleBase {
   }
 
   RotatePoint(rotation: number, t: number, parameterChange: number): Point {
-    const change = this.ParameterSpan * parameterChange
+    const change = parameterSpan(this.Curve) * parameterChange
 
     t += rotation * change
     t = this.AdjustParam(t)
@@ -170,7 +166,7 @@ export class BundleBase {
   }
 
   RotateBy(rotationOfRightPoint: number, rotationOfLeftPoint: number, parameterChange: number) {
-    const change: number = this.ParameterSpan * parameterChange
+    const change: number = parameterSpan(this.Curve) * parameterChange
     if (rotationOfRightPoint != 0) {
       this.ParStart = this.AdjustParam(this.ParStart + rotationOfRightPoint * change)
     }
@@ -181,26 +177,26 @@ export class BundleBase {
   }
 
   RelativeOrderOfBasesIsPreserved(rotationOfRightPoint: number, rotationOfLeftPoint: number, parameterChange: number): boolean {
-    const change = this.ParameterSpan * parameterChange
+    const change = parameterSpan(this.Curve) * parameterChange
 
     //we do not swap parRight and parLeft
     const rnew = this.parStart + rotationOfRightPoint * change
     const lnew =
       this.parStart < this.parEnd
         ? this.parEnd + rotationOfLeftPoint * change
-        : this.parEnd + this.ParameterSpan + rotationOfLeftPoint * change
+        : this.parEnd + parameterSpan(this.Curve) + rotationOfLeftPoint * change
     if (rnew > lnew) return false
 
     //span could not be greater than pi
-    if (this.SpanBetweenTwoPoints(rnew, lnew) > this.ParameterSpan / 2.0) return false
+    if (this.SpanBetweenTwoParameters(rnew, lnew) > parameterSpan(this.Curve) / 2.0) return false
 
     //the base is the only base in the hub
     if (this.Prev == null) return true
 
     //distance between mid points is larger than parameterChange => we can't change the order
     if (
-      this.SpanBetweenTwoPoints(this.Prev.ParMid, this.ParMid) > change &&
-      this.SpanBetweenTwoPoints(this.ParMid, this.Next.ParMid) > change
+      this.SpanBetweenTwoParameters(this.Prev.ParMid, this.ParMid) > change &&
+      this.SpanBetweenTwoParameters(this.ParMid, this.Next.ParMid) > change
     )
       return true
 
