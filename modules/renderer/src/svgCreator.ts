@@ -137,6 +137,24 @@ export class SvgCreator {
     path.setAttribute('stroke', msaglColor)
     path.setAttribute('stroke-opacity', (de.color ? de.color.A / 255 : 1).toString())
     path.setAttribute('stroke-width', de.penwidth.toString())
+    if (de.styles && de.styles.length) {
+      for (const style of de.styles) {
+        this.attachStyleToPath(path, style)
+      }
+    }
+  }
+  attachStyleToPath(path: SVGPathElement, style: StyleEnum) {
+    switch (style) {
+      case StyleEnum.dashed:
+        path.setAttribute('stroke-dasharray', '5')
+        break
+      case StyleEnum.dotted:
+        path.setAttribute('stroke-dasharray', '2')
+        break
+      default:
+        //todo: support more styles
+        break
+    }
   }
   private drawNode(node: Node) {
     const gn = GeomObject.getGeom(node) as GeomNode
