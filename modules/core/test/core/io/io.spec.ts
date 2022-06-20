@@ -9,6 +9,9 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
+import {DrawingGraph} from '../../../src/drawing/drawingGraph'
+import {layoutGeomGraph} from '../../../src/layout/driver'
+import * as fs from 'fs'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON())
@@ -108,4 +111,19 @@ test('graph arrowsize', () => {
   const jsonOfG: JSONGraph = graphToJSON(g)
   const newG = parseJSONGraph(jsonOfG)
   expect(newG != null).toBe(true)
+})
+
+test('graph style', () => {
+  const g = parseDotGraph('graphvis/style.gv')
+  const jsonOfG: JSONGraph = graphToJSON(g)
+  const content = JSON.stringify(jsonOfG)
+  const newG = parseJSONGraph(jsonOfG)
+  const ws = fs.openSync('/tmp/style_out.JSON', 'w', 0o666)
+  fs.writeFileSync(ws, content)
+  fs.close(ws)
+  expect(newG != null).toBe(true)
+  const dg = DrawingGraph.getDrawingObj(newG) as DrawingGraph
+  dg.createGeometry()
+  layoutGeomGraph(GeomGraph.getGeom(newG))
+  new SvgDebugWriter('/tmp/style.svg').writeGeomGraph(GeomGraph.getGeom(newG))
 })

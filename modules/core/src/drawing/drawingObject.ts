@@ -26,7 +26,8 @@ export abstract class DrawingObject {
       yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}
     }
     if (this.styles && this.styles.length) {
-      throw new Error() // ret.styles = this.styles
+      const styleString = this.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
+      yield {type: 'attr', id: 'style', eq: styleString}
     }
     if (this.pencolor && this.pencolor.keyword != 'black') {
       yield {type: 'attr', id: 'pencolor', eq: this.pencolor.toString()}

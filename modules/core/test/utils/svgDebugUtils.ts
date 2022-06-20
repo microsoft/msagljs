@@ -25,6 +25,5 @@ export function writeLeavesToSvg(nl0: PN, nl1: PN): void {
     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Red', poly1),
   ]
   w.writeDebugCurves(dc)
-  w.close()
   throw new Error('killed')
 }

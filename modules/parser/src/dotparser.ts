@@ -87,7 +87,9 @@ function parseAttrs(o: any, entity: Entity) {
           drawingObj.fillColor = parseColor(str)
           break
         case 'style':
-          drawingObj.styles.push(styleEnumFromString(str))
+          for (const style of stylesEnumFromString(str)) {
+            drawingObj.styles.push(style)
+          }
           break
         case 'shape': {
           const dn = <DrawingNode>drawingObj
@@ -658,9 +660,15 @@ export function parseJSONGraph(jsonObj: JSONGraph): Graph {
   return dp.parse()
 }
 
-function styleEnumFromString(t: string): StyleEnum {
-  const typedStyleString = t as keyof typeof StyleEnum
-  return StyleEnum[typedStyleString]
+function* stylesEnumFromString(str: string): IterableIterator<StyleEnum> {
+  const styles = str.split(',')
+  for (const t of styles) {
+    const typedStyleString = t as keyof typeof StyleEnum
+    const ret = StyleEnum[typedStyleString]
+    if (ret) {
+      yield ret
+    }
+  }
 }
 function shapeEnumFromString(t: string): ShapeEnum {
   const typedStyleString = t.toLowerCase() as keyof typeof ShapeEnum
@@ -767,12 +775,13 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
   }
   // attach edge statements to their parents
   for (const e of graph.deepEdges()) {
+    const es = edgeStmt(e)
     const parent: Node = edgeParent(e, nodeLevels)
     if (parent == graph) {
-      children.push(edgeStmt(e))
+      children.push(es)
     } else {
       const subGraph = idToStmt.get(parent.id) as Subgraph
-      subGraph.children.push(edgeStmt(e))
+      subGraph.children.push(es)
     }
   }
   for (const n of graph.shallowNodes) {
@@ -783,17 +792,18 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
-  if (geomEdge == null) return
-  if (geomEdge.curve == null) return
-  yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
+  if (geomEdge && geomEdge.curve == null) {
+    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
 
-  if (geomEdge.sourceArrowhead) {
-    yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
-  }
+    if (geomEdge.sourceArrowhead) {
+      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+    }
 
-  if (geomEdge.targetArrowhead) {
-    yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+    if (geomEdge.targetArrowhead) {
+      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+    }
   }
+  yield* drawingObjAttrIter(edge)
 }
 
 function getNodeStatement(node: Node): NodeStmt | Subgraph {
@@ -819,38 +829,29 @@ function getNodeBoundaryCurve(node: Node): Attr {
 }
 
 function* getNodeAttrList(node: Node): IterableIterator<Attr> {
-  //throw new Error('Function not implemented.')
-  /* [
-    {
-      type: 'attr',
-      id: 'height',
-      eq: 2,
-    },
-    {
-      type: 'attr',
-      id: 'pos',
-      eq: '27,90',
-    },
-    {
-      type: 'attr',
-      id: 'width',
-      eq: 0.75,
-    },
-  ]*/
   const geomNode = GeomObject.getGeom(node) as GeomNode
   if (geomNode && geomNode.boundaryCurve) {
     yield getNodeBoundaryCurve(node)
   }
-  const drawingNode = DrawingNode.getDrawingObj(node)
-  if (drawingNode) {
-    for (const attr of drawingNode.attrIter()) {
+  yield* drawingObjAttrIter(node)
+}
+
+function* drawingObjAttrIter(node: Entity) {
+  const drawingObj = DrawingObject.getDrawingObj(node)
+  if (drawingObj) {
+    for (const attr of drawingObj.attrIter()) {
       yield attr
     }
   }
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {
-  return 'digraph' // todo: revisit later
+  for (const e of graph.deepEdges()) {
+    const de = DrawingEdge.getDrawingObj(e)
+    if (de == null) return 'digraph'
+    if ((de.arrowhead && de.arrowhead != ArrowTypeEnum.none) || (de.arrowtail && de.arrowtail != ArrowTypeEnum.none)) return 'digraph'
+  }
+  return 'graph' // it seems that edges do not have direction
 }
 function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {
   // make the levels equal
