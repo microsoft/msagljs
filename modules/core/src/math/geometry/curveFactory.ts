@@ -48,12 +48,12 @@ export class CurveFactory {
     const w: number = width / 2
     const h: number = height / 2
     const ps: Point[] = new Array(8)
-    //  Pad out horizontally
+    // Pad out horizontally
     ps[0] = new Point(w + CurveFactory.octagonPad * w, h - h * CurveFactory.octagonPad)
     ps[3] = new Point(ps[0].x * -1, ps[0].y)
     ps[4] = new Point(ps[3].x, ps[3].y * -1)
     ps[7] = new Point(ps[0].x, ps[0].y * -1)
-    //  Pad out vertically
+    // Pad out vertically
     ps[1] = new Point(w - w * CurveFactory.octagonPad, h + h * CurveFactory.octagonPad)
     ps[2] = new Point(ps[1].x * -1, ps[1].y)
     ps[6] = new Point(ps[1].x, ps[1].y * -1)

@@ -1,7 +1,7 @@
 import {Point} from '../../../math/geometry/point'
 // import {CompassVector} from '../../../math/geometry/compassVector'
 
-//  represents a segment of a path
+// represents a segment of a path
 export class LinkedPoint {
   Point: Point
   Next: LinkedPoint

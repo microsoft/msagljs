@@ -22,13 +22,13 @@ import {SpliceUtility} from './SpliceUtility'
 import {StaticGraphUtility} from './StaticGraphUtility'
 
 export class ObstacleTree {
-  //  Ignore one (always) or both (depending on location) of these obstacles on Obstacle hit testing.
+  // Ignore one (always) or both (depending on location) of these obstacles on Obstacle hit testing.
   insideHitTestIgnoreObstacle1: Obstacle
 
   insideHitTestIgnoreObstacle2: Obstacle
 
   insideHitTestScanDirection: ScanDirection
-  //    The root of the hierarchy.
+  //   The root of the hierarchy.
 
   Root: RectangleNode<Obstacle, Point>
 
@@ -118,7 +118,7 @@ export class ObstacleTree {
   }
 
   private OverlapPairAlreadyFound(a: Obstacle, b: Obstacle): boolean {
-    //  If we already found it then we'll have enqueued it in the reverse order.
+    // If we already found it then we'll have enqueued it in the reverse order.
     this.lookupIntPair.x = b.Ordinal
     this.lookupIntPair.y = a.Ordinal
     return this.overlapPairs.has(this.lookupIntPair)
@@ -139,8 +139,8 @@ export class ObstacleTree {
       return
     }
 
-    //  One obstacle is inside the other.  If they're both groups, or a non-group is inside a group, nothing
-    //  further is needed; we process groups differently because we can go through their sides.
+    // One obstacle is inside the other.  If they're both groups, or a non-group is inside a group, nothing
+    // further is needed; we process groups differently because we can go through their sides.
     if (a.IsGroup && b.IsGroup) {
       return
     }
@@ -153,16 +153,16 @@ export class ObstacleTree {
   }
 
   private AccreteClumps() {
-    //  Clumps are only created once.  After that, as the result of convex hull creation, we may
-    //  overlap an obstacle of a clump, in which case we enclose the clump in the convex hull as well.
-    //  We only allow clumps of rectangular obstacles, to avoid angled sides in the scanline.
+    // Clumps are only created once.  After that, as the result of convex hull creation, we may
+    // overlap an obstacle of a clump, in which case we enclose the clump in the convex hull as well.
+    // We only allow clumps of rectangular obstacles, to avoid angled sides in the scanline.
     this.AccumulateObstaclesForClumps()
 
     this.CreateClumps()
   }
 
   private AccreteConvexHulls() {
-    //  Convex-hull creation is transitive, because the created hull may overlap additional obstacles.
+    // Convex-hull creation is transitive, because the created hull may overlap additional obstacles.
     for (;;) {
       this.AccumulateObstaclesForConvexHulls()
       if (!this.CreateConvexHulls()) {
@@ -228,9 +228,9 @@ export class ObstacleTree {
       return
     }
 
-    //  If either is in a convex hull, those must be coalesced.
+    // If either is in a convex hull, those must be coalesced.
     if (!a.IsInConvexHull && !b.IsInConvexHull) {
-      //  If the obstacles are rectangles, we don't need to do anything (for this pair).
+      // If the obstacles are rectangles, we don't need to do anything (for this pair).
       if (a.IsRectangle && b.IsRectangle) {
         return
       }
@@ -244,7 +244,7 @@ export class ObstacleTree {
   }
 
   GrowGroupsToAccommodateOverlaps() {
-    //  Group growth is transitive, because the created hull may overlap additional obstacles.
+    // Group growth is transitive, because the created hull may overlap additional obstacles.
     for (;;) {
       this.AccumulateObstaclesForGroupOverlaps()
       if (!this.GrowGroupsToResolveOverlaps()) {
@@ -276,11 +276,11 @@ export class ObstacleTree {
     }
 
     if (a.IsRectangle && b.IsRectangle) {
-      //  If these are already rectangles, we don't need to do anything here.  Non-group VisibilityPolylines
-      //  will not change by the group operations; we'll just grow the group if needed (if it is already
-      //  nonrectangular, either because it came in that way or because it has intersected a non-rectangle).
-      //  However, SparseVg needs to know about the overlap so it will create interior scansegments if the
-      //  obstacle is not otherwise overlapped.
+      // If these are already rectangles, we don't need to do anything here.  Non-group VisibilityPolylines
+      // will not change by the group operations; we'll just grow the group if needed (if it is already
+      // nonrectangular, either because it came in that way or because it has intersected a non-rectangle).
+      // However, SparseVg needs to know about the overlap so it will create interior scansegments if the
+      // obstacle is not otherwise overlapped.
       if (!b.IsGroup) {
         if (t.aIsInsideB || ObstacleTree.FirstRectangleContainsACornerOfTheOther(b.VisibilityBoundingBox, a.VisibilityBoundingBox)) {
           b.OverlapsGroupCorner = true
@@ -291,8 +291,8 @@ export class ObstacleTree {
     }
 
     if (!curvesIntersect) {
-      //  If the borders don't intersect, we don't need to do anything if both are groups or the
-      //  obstacle or convex hull is inside the group.  Otherwise we have to grow group a to encompass b.
+      // If the borders don't intersect, we don't need to do anything if both are groups or the
+      // obstacle or convex hull is inside the group.  Otherwise we have to grow group a to encompass b.
       if (b.IsGroup || t.bIsInsideA) {
         return
       }
@@ -315,7 +315,7 @@ export class ObstacleTree {
         this.overlapPairs.add(new IntPair(obstacle.Ordinal, sibling.Ordinal))
       }
 
-      //  Clear this now so any overlaps with other obstacles in the clump won't doubly insert.
+      // Clear this now so any overlaps with other obstacles in the clump won't doubly insert.
       obstacle.clump = []
     }
   }
@@ -326,7 +326,7 @@ export class ObstacleTree {
         this.overlapPairs.add(new IntPair(obstacle.Ordinal, sibling.Ordinal))
       }
 
-      //  Clear this now so any overlaps with other obstacles in the ConvexHull won't doubly insert.
+      // Clear this now so any overlaps with other obstacles in the ConvexHull won't doubly insert.
       obstacle.ConvexHull.Obstacles = []
     }
   }
@@ -335,7 +335,7 @@ export class ObstacleTree {
     const graph = mkGraphOnEdges(Array.from(this.overlapPairs.values()))
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
-      //  GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
+      // GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
       if (component.length == 1) {
         continue
       }
@@ -352,7 +352,7 @@ export class ObstacleTree {
     const graph = mkGraphOnEdges(Array.from(this.overlapPairs.values()))
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
-      //  GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
+      // GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
       if (component.length == 1) {
         continue
       }
@@ -371,7 +371,7 @@ export class ObstacleTree {
   }
 
   private GrowGroupsToResolveOverlaps(): boolean {
-    //  This is one-at-a-time so not terribly efficient but there should be a very small number of such overlaps, if any.
+    // This is one-at-a-time so not terribly efficient but there should be a very small number of such overlaps, if any.
     let found = false
     for (const pair of this.overlapPairs.values()) {
       found = true
@@ -387,7 +387,7 @@ export class ObstacleTree {
   }
 
   private static ResolveGroupAndGroupOverlap(a: Obstacle, b: Obstacle): boolean {
-    //  For simplicity, pick the larger group and make grow its convex hull to encompass the smaller.
+    // For simplicity, pick the larger group and make grow its convex hull to encompass the smaller.
     if (!b.IsGroup) {
       return false
     }
@@ -402,11 +402,11 @@ export class ObstacleTree {
   }
 
   private static ResolveGroupAndObstacleOverlap(group: Obstacle, obstacle: Obstacle) {
-    //  Create a convex hull for the group which goes outside the obstacle (which may also be a group).
-    //  It must go outside the obstacle so we don't have coinciding angled sides in the scanline.
+    // Create a convex hull for the group which goes outside the obstacle (which may also be a group).
+    // It must go outside the obstacle so we don't have coinciding angled sides in the scanline.
     let loosePolyline = obstacle.looseVisibilityPolyline
     ObstacleTree.GrowGroupAroundLoosePolyline(group, loosePolyline)
-    //  Due to rounding we may still report this to be close or intersecting; grow it again if so.
+    // Due to rounding we may still report this to be close or intersecting; grow it again if so.
     const t = {bIsInsideA: false, aIsInsideB: false}
     while (ObstacleTree.ObstaclesIntersect(obstacle, group, t) || !t.aIsInsideB) {
       loosePolyline = Obstacle.CreateLoosePolyline(loosePolyline)
@@ -429,7 +429,7 @@ export class ObstacleTree {
     t.aIsInsideB = ObstacleTree.FirstPolylineStartIsInsideSecondPolyline(a.VisibilityPolyline, b.VisibilityPolyline)
     t.bIsInsideA = !t.aIsInsideB && ObstacleTree.FirstPolylineStartIsInsideSecondPolyline(b.VisibilityPolyline, a.VisibilityPolyline)
     if (a.IsRectangle && b.IsRectangle) {
-      //  Rectangles do not require further evaluation.
+      // Rectangles do not require further evaluation.
       return false
     }
 
@@ -448,13 +448,13 @@ export class ObstacleTree {
     aIsInsideB: boolean,
     bIsInsideA: boolean,
   ): boolean {
-    //  This is only called when the obstacle.VisibilityPolylines don't intersect, thus one is inside the other
-    //  or both are outside. If both are outside then either one's LooseVisibilityPolyline may be used.
+    // This is only called when the obstacle.VisibilityPolylines don't intersect, thus one is inside the other
+    // or both are outside. If both are outside then either one's LooseVisibilityPolyline may be used.
     if (!aIsInsideB && !bIsInsideA) {
       return Curve.CurvesIntersect(a.looseVisibilityPolyline, b.VisibilityPolyline)
     }
 
-    //  Otherwise see if the inner one is close enough to the outer border to consider them touching.
+    // Otherwise see if the inner one is close enough to the outer border to consider them touching.
     const innerLoosePolyline = aIsInsideB ? a.looseVisibilityPolyline : b.looseVisibilityPolyline
     const outerPolyline = aIsInsideB ? b.VisibilityPolyline : a.VisibilityPolyline
 
@@ -478,7 +478,7 @@ export class ObstacleTree {
       return false
     }
 
-    //  Add each group to the AncestorSet of any spatial children (duplicate Insert() is ignored).
+    // Add each group to the AncestorSet of any spatial children (duplicate Insert() is ignored).
     for (const group of this.GetAllGroups()) {
       const groupBox = group.VisibilityBoundingBox
       for (const obstacle of this.Root.GetNodeItemsIntersectingRectangle(groupBox)) {
@@ -498,15 +498,15 @@ export class ObstacleTree {
       }
     }
 
-    //  Remove any hierarchical ancestors that are not spatial ancestors.  Otherwise, when trying to route to
-    //  obstacles that *are* spatial children of such a non-spatial-but-hierarchical ancestor, we won't enable
-    //  crossing the boundary the first time and will always go to the full "activate all groups" path.  By
-    //  removing them here we not only get a better graph (avoiding some spurious crossings) but we're faster
-    //  both in path generation and Nudging.
+    // Remove any hierarchical ancestors that are not spatial ancestors.  Otherwise, when trying to route to
+    // obstacles that *are* spatial children of such a non-spatial-but-hierarchical ancestor, we won't enable
+    // crossing the boundary the first time and will always go to the full "activate all groups" path.  By
+    // removing them here we not only get a better graph (avoiding some spurious crossings) but we're faster
+    // both in path generation and Nudging.
     let nonSpatialGroups = new Array<Shape>()
     for (const child of this.Root.GetAllLeaves()) {
       const childBox = child.VisibilityBoundingBox
-      //  This has to be two steps because we can't modify the Set during enumeration.
+      // This has to be two steps because we can't modify the Set during enumeration.
       nonSpatialGroups = nonSpatialGroups.concat(
         Array.from(this.AncestorSets.get(child.InputShape)).filter(
           (anc) => !childBox.intersects(this.shapeIdToObstacleMap.get(anc).VisibilityBoundingBox),
@@ -535,7 +535,7 @@ export class ObstacleTree {
     this.AncestorSets = null
   }
 
-  //  Create a LineSegment that contains the max visibility from startPoint in the desired direction.
+  // Create a LineSegment that contains the max visibility from startPoint in the desired direction.
 
   CreateMaxVisibilitySegment(startPoint: Point, dir: Direction, t: {pacList: PointAndCrossingsList}): LineSegment {
     const graphBoxBorderIntersect = StaticGraphUtility.RectangleBorderIntersect(this.GraphBox, startPoint, dir)
@@ -545,7 +545,7 @@ export class ObstacleTree {
     }
 
     const segment = this.RestrictSegmentWithObstacles(startPoint, graphBoxBorderIntersect)
-    //  Store this off before other operations which overwrite it.
+    // Store this off before other operations which overwrite it.
     t.pacList = this.CurrentGroupBoundaryCrossingMap.GetOrderedListBetween(segment.start, segment.end)
     return segment
   }
@@ -562,7 +562,7 @@ export class ObstacleTree {
     return this.Root.GetAllLeaves()
   }
 
-  //  Hit-testing.
+  // Hit-testing.
   IntersectionIsInsideAnotherObstacle(
     sideObstacle: Obstacle,
     eventObstacle: Obstacle,
@@ -596,24 +596,24 @@ export class ObstacleTree {
 
   InsideObstacleHitTest(location: Point, obstacle: Obstacle): HitTestBehavior {
     if (obstacle == this.insideHitTestIgnoreObstacle1 || obstacle == this.insideHitTestIgnoreObstacle2) {
-      //  It's one of the two obstacles we already know about.
+      // It's one of the two obstacles we already know about.
       return HitTestBehavior.Continue
     }
 
     if (obstacle.IsGroup) {
-      //  Groups are handled differently from overlaps; we create ScanSegments (overlapped
-      //  if within a non-group obstacle, else non-overlapped), and turn on/off access across
-      //  the Group boundary vertices.
+      // Groups are handled differently from overlaps; we create ScanSegments (overlapped
+      // if within a non-group obstacle, else non-overlapped), and turn on/off access across
+      // the Group boundary vertices.
       return HitTestBehavior.Continue
     }
 
     if (!StaticGraphUtility.PointIsInRectangleInterior(location, obstacle.VisibilityBoundingBox)) {
-      //  // The point is on the obstacle boundary, not inside it.
+      // // The point is on the obstacle boundary, not inside it.
       return HitTestBehavior.Continue
     }
 
-    //  Note: There are rounding issues using Curve.PointRelativeToCurveLocation at angled
-    //  obstacle boundaries, hence this function.
+    // Note: There are rounding issues using Curve.PointRelativeToCurveLocation at angled
+    // obstacle boundaries, hence this function.
     const high: Point = StaticGraphUtility.RectangleBorderIntersect(
       obstacle.VisibilityBoundingBox,
       location,
@@ -626,24 +626,24 @@ export class ObstacleTree {
     ).sub(this.insideHitTestScanDirection.DirectionAsPoint)
     const testSeg = LineSegment.mkPP(low, high)
     const xxs = Curve.getAllIntersections(testSeg, obstacle.VisibilityPolyline, true)
-    //  If this is an extreme point it can have one intersection, in which case we're either on the border
-    //  or outside; if it's a collinear flat boundary, there can be 3 intersections to this point which again
-    //  means we're on the border (and 3 shouldn't happen anymore with the curve intersection fixes and
-    //  PointIsInsideRectangle check above).  So the interesting case is that we have 2 intersections.
+    // If this is an extreme point it can have one intersection, in which case we're either on the border
+    // or outside; if it's a collinear flat boundary, there can be 3 intersections to this point which again
+    // means we're on the border (and 3 shouldn't happen anymore with the curve intersection fixes and
+    // PointIsInsideRectangle check above).  So the interesting case is that we have 2 intersections.
     if (2 == xxs.length) {
       const firstInt: Point = GeomConstants.RoundPoint(xxs[0].x)
       const secondInt: Point = GeomConstants.RoundPoint(xxs[1].x)
-      //  If we're on either intersection, we're on the border rather than inside.
+      // If we're on either intersection, we're on the border rather than inside.
       if (
         !PointComparer.EqualPP(location, firstInt) &&
         !PointComparer.EqualPP(location, secondInt) &&
         location.compareTo(firstInt) != location.compareTo(secondInt)
       ) {
-        //  We're inside.  However, this may be an almost-flat side, in which case rounding
-        //  could have reported the intersection with the start or end of the same side and
-        //  a point somewhere on the interior of that side.  Therefore if both intersections
-        //  are on the same side (integral portion of the parameter), we consider location
-        //  to be on the border.  testSeg is always xxs[*].Segment0.
+        // We're inside.  However, this may be an almost-flat side, in which case rounding
+        // could have reported the intersection with the start or end of the same side and
+        // a point somewhere on the interior of that side.  Therefore if both intersections
+        // are on the same side (integral portion of the parameter), we consider location
+        // to be on the border.  testSeg is always xxs[*].Segment0.
         /*Assert.assert(
           testSeg == xxs[0].seg0,
           'incorrect parameter ordering to GetAllIntersections',
@@ -671,7 +671,7 @@ export class ObstacleTree {
     return !PointComparer.EqualPP(obstacleIntersectSeg.end, endPoint)
   }
 
-  //  TEST_MSAGL
+  // TEST_MSAGL
   RestrictSegmentWithObstacles(startPoint: Point, endPoint: Point): LineSegment {
     this.stopAtGroups = false
     this.wantGroupCrossings = true
@@ -697,7 +697,7 @@ export class ObstacleTree {
     this.restrictedIntersectionTestSegment = LineSegment.mkPP(new Point(startX, startY), new Point(endX, endY))
   }
 
-  //  Due to rounding at the endpoints of the segment on intersection calculations, we need to preserve the original full-length segment.
+  // Due to rounding at the endpoints of the segment on intersection calculations, we need to preserve the original full-length segment.
   restrictedIntersectionTestSegment: LineSegment
 
   currentRestrictedRay: LineSegment
@@ -709,14 +709,14 @@ export class ObstacleTree {
   restrictedRayLengthSquared: number
 
   private RecurseRestrictRayWithObstacles(rectNode: RectangleNode<Obstacle, Point>) {
-    //  A lineSeg that moves along the boundary of an obstacle is not blocked by it.
+    // A lineSeg that moves along the boundary of an obstacle is not blocked by it.
     if (!StaticGraphUtility.RectangleInteriorsIntersect(this.currentRestrictedRay.boundingBox, <Rectangle>rectNode.irect)) {
       return
     }
 
     const obstacle: Obstacle = rectNode.UserData
     if (null != obstacle) {
-      //  Leaf node. Get the interior intersections.  Use the full-length original segment for the intersection calculation.
+      // Leaf node. Get the interior intersections.  Use the full-length original segment for the intersection calculation.
       const intersections = Curve.getAllIntersections(this.restrictedIntersectionTestSegment, obstacle.VisibilityPolyline, true)
       if (!obstacle.IsGroup || this.stopAtGroups) {
         this.LookForCloserNonGroupIntersectionToRestrictRay(intersections)
@@ -731,7 +731,7 @@ export class ObstacleTree {
       return
     }
 
-    //  Not a leaf; recurse into children.
+    // Not a leaf; recurse into children.
     this.RecurseRestrictRayWithObstacles(rectNode.Left)
     this.RecurseRestrictRayWithObstacles(rectNode.Right)
   }
@@ -761,8 +761,8 @@ export class ObstacleTree {
 
       const distSquared = intersect.sub(this.currentRestrictedRay.start).lengthSquared
       if (distSquared < localLeastDistSquared) {
-        //  Rounding may falsely report two intersections as different when they are actually "Close",
-        //  e.g. a horizontal vs. vertical intersection on a slanted edge.
+        // Rounding may falsely report two intersections as different when they are actually "Close",
+        // e.g. a horizontal vs. vertical intersection on a slanted edge.
         const rawDistSquared = intersectionInfo.x.sub(this.currentRestrictedRay.start).lengthSquared
         if (rawDistSquared < GeomConstants.squareOfDistanceEpsilon) {
           continue
@@ -774,8 +774,8 @@ export class ObstacleTree {
     }
 
     if (null != closestIntersectionInfo) {
-      //  If there was only one intersection and it is quite close to an end, ignore it.
-      //  If there is more than one intersection, we have crossed the obstacle so we want it.
+      // If there was only one intersection and it is quite close to an end, ignore it.
+      // If there is more than one intersection, we have crossed the obstacle so we want it.
       if (numberOfGoodIntersections == 1) {
         const intersect = GeomConstants.RoundPoint(closestIntersectionInfo.x)
         if (
@@ -796,11 +796,11 @@ export class ObstacleTree {
   }
 
   private AddGroupIntersectionsToRestrictedRay(obstacle: Obstacle, intersections: Array<IntersectionInfo>) {
-    //  We'll let the lines punch through any intersections with groups, but track the location so we can enable/disable crossing.
+    // We'll let the lines punch through any intersections with groups, but track the location so we can enable/disable crossing.
     for (const intersectionInfo of intersections) {
       const intersect = GeomConstants.RoundPoint(intersectionInfo.x)
-      //  Skip intersections that are past the end of the restricted segment (though there may still be some
-      //  there if we shorten it later, but we'll skip them later).
+      // Skip intersections that are past the end of the restricted segment (though there may still be some
+      // there if we shorten it later, but we'll skip them later).
       const distSquared = intersect.sub(this.currentRestrictedRay.start).lengthSquared
       if (distSquared > this.restrictedRayLengthSquared) {
         continue
@@ -808,10 +808,10 @@ export class ObstacleTree {
 
       const dirTowardIntersect = PointComparer.GetDirections(this.currentRestrictedRay.start, this.currentRestrictedRay.end)
       const polyline = <Polyline>intersectionInfo.seg1
-      //  this is the second arg to GetAllIntersections
+      // this is the second arg to GetAllIntersections
       const dirsOfSide = CompassVector.VectorDirection(polyline.derivative(intersectionInfo.par1))
-      //  // The derivative is always clockwise, so if the side contains the rightward rotation of the
-      //  direction from the ray origin, then we're hitting it from the inside; otherwise from the outside.
+      // // The derivative is always clockwise, so if the side contains the rightward rotation of the
+      // direction from the ray origin, then we're hitting it from the inside; otherwise from the outside.
       let dirToInsideOfGroup = dirTowardIntersect
       if (0 != (dirsOfSide & CompassVector.RotateRight(dirTowardIntersect))) {
         dirToInsideOfGroup = CompassVector.OppositeDir(dirToInsideOfGroup)

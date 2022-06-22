@@ -1,8 +1,8 @@
 //
-//  RectilinearEdgeRouter.cs
-//  MSAGL main class for Rectilinear Edge Routing.Routing.
+// RectilinearEdgeRouter.cs
+// MSAGL main class for Rectilinear Edge Routing.Routing.
 //
-//  Copyright Microsoft Corporation.
+// Copyright Microsoft Corporation.
 
 import {Nudger} from './nudging/Nudger'
 import {ICurve, Point} from '../../math/geometry'
@@ -31,24 +31,24 @@ import {VisibilityGraphGenerator} from './VisibilityGraphGenerator'
 import {Arrowhead} from '../../layout/core/arrowhead'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
 
-//  Provides rectilinear edge routing functionality
+// Provides rectilinear edge routing functionality
 
 export class RectilinearEdgeRouter extends Algorithm {
-  //  If an edge does not connect to an obstacle it should stay away from it at least at the padding distance
+  // If an edge does not connect to an obstacle it should stay away from it at least at the padding distance
 
   Padding = 0
 
-  //  The radius of the arc inscribed into the path corners.
+  // The radius of the arc inscribed into the path corners.
 
   CornerFitRadius = 0
 
-  //  The relative penalty of a bend, representated as a percentage of the Manhattan distance between
-  //  two ports being connected.
+  // The relative penalty of a bend, representated as a percentage of the Manhattan distance between
+  // two ports being connected.
 
   BendPenaltyAsAPercentageOfDistance = 0
 
-  //  If true, route to obstacle centers.  Initially false for greater accuracy with the current
-  //  MultiSourceMultiTarget approach.
+  // If true, route to obstacle centers.  Initially false for greater accuracy with the current
+  // MultiSourceMultiTarget approach.
 
   public get RouteToCenterOfObstacles(): boolean {
     return this.PortManager.RouteToCenterOfObstacles
@@ -57,8 +57,8 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.PortManager.RouteToCenterOfObstacles = value
   }
 
-  //  If true, limits the extension of port visibility splices into the visibility graph to the rectangle defined by
-  //  the path endpoints.
+  // If true, limits the extension of port visibility splices into the visibility graph to the rectangle defined by
+  // the path endpoints.
 
   public get LimitPortVisibilitySpliceToEndpointBoundingBox(): boolean {
     return this.PortManager.LimitPortVisibilitySpliceToEndpointBoundingBox
@@ -67,12 +67,12 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.PortManager.LimitPortVisibilitySpliceToEndpointBoundingBox = value
   }
 
-  //  Add an GeomEdge to route
+  // Add an GeomEdge to route
 
   public AddEdgeGeometryToRoute(edgeGeometry: GeomEdge) {
-    //  The Port.Location values are not necessarily rounded by the caller.  The values
-    //  will be rounded upon acquisition in PortManager.cs.  PointComparer.Equal expects
-    //  all values to be rounded.
+    // The Port.Location values are not necessarily rounded by the caller.  The values
+    // will be rounded upon acquisition in PortManager.cs.  PointComparer.Equal expects
+    // all values to be rounded.
     if (
       !Point.closeDistEps(
         GeomConstants.RoundPoint(edgeGeometry.sourcePort.Location),
@@ -85,29 +85,29 @@ export class RectilinearEdgeRouter extends Algorithm {
     }
   }
 
-  //  Array all edge routing specifications that are currently active.  We want to hide access to the
-  //  Array itself so people don't add or remove items directly.
+  // Array all edge routing specifications that are currently active.  We want to hide access to the
+  // Array itself so people don't add or remove items directly.
 
   public get EdgeGeometriesToRoute(): Array<GeomEdge> {
     return this.EdgesToRoute
   }
 
-  //  Remove all EdgeGeometries to route
+  // Remove all EdgeGeometries to route
 
   public RemoveAllEdgeGeometriesToRoute() {
-    //  Don't call RemoveEdgeGeometryToRoute as it will interrupt the EdgeGeometries enumerator.
+    // Don't call RemoveEdgeGeometryToRoute as it will interrupt the EdgeGeometries enumerator.
     this.EdgesToRoute = []
   }
 
-  //  If true, this router uses a sparse visibility graph, which saves memory for large graphs but
-  //  may choose suboptimal paths.  Set on constructor.
+  // If true, this router uses a sparse visibility graph, which saves memory for large graphs but
+  // may choose suboptimal paths.  Set on constructor.
 
   public get UseSparseVisibilityGraph(): boolean {
     return this.GraphGenerator instanceof SparseVisibilityGraphGenerator
   }
 
-  //  If true, this router uses obstacle bounding box rectangles in the visibility graph.
-  //  Set on constructor.
+  // If true, this router uses obstacle bounding box rectangles in the visibility graph.
+  // Set on constructor.
 
   UseObstacleRectangles = false
 
@@ -115,13 +115,13 @@ export class RectilinearEdgeRouter extends Algorithm {
     return Array.from(this.ShapeToObstacleMap.values()).map((obs) => obs.InputShape)
   }
 
-  //  The collection of padded obstacle boundary polylines around the input shapes to route around.
+  // The collection of padded obstacle boundary polylines around the input shapes to route around.
 
   get PaddedObstacles(): Array<Polyline> {
     return Array.from(this.ShapeToObstacleMap.values()).map((obs) => obs.PaddedPolyline)
   }
 
-  //  Add obstacles to the router.
+  // Add obstacles to the router.
 
   public AddObstacles(obstacles: Iterable<Shape>) {
     this.AddShapes(obstacles)
@@ -134,14 +134,14 @@ export class RectilinearEdgeRouter extends Algorithm {
     }
   }
 
-  //  Add a single obstacle to the router.
+  // Add a single obstacle to the router.
 
   public AddObstacle(shape: Shape) {
     this.AddObstacleWithoutRebuild(shape)
     this.RebuildTreeAndGraph()
   }
 
-  //  For each Shapes, update its position and reroute as necessary.
+  // For each Shapes, update its position and reroute as necessary.
 
   public UpdateObstacles(obstacles: Iterable<Shape>) {
     for (const shape of obstacles) {
@@ -151,14 +151,14 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.RebuildTreeAndGraph()
   }
 
-  //  For each Shapes, update its position and reroute as necessary.
+  // For each Shapes, update its position and reroute as necessary.
 
   public UpdateObstacle(obstacle: Shape) {
     this.UpdateObstacleWithoutRebuild(obstacle)
     this.RebuildTreeAndGraph()
   }
 
-  //  Remove obstacles from the router.
+  // Remove obstacles from the router.
 
   public RemoveObstacles(obstacles: Iterable<Shape>) {
     for (const shape of obstacles) {
@@ -168,15 +168,15 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.RebuildTreeAndGraph()
   }
 
-  //  Removes an obstacle from the router.
+  // Removes an obstacle from the router.
 
-  //  <returns>All EdgeGeometries affected by the re-routing and re-nudging in order to avoid the new obstacle.</returns>
+  // <returns>All EdgeGeometries affected by the re-routing and re-nudging in order to avoid the new obstacle.</returns>
   public RemoveObstacle(obstacle: Shape) {
     this.RemoveObstacleWithoutRebuild(obstacle)
     this.RebuildTreeAndGraph()
   }
 
-  //  utilities
+  // utilities
 
   AddObstacleWithoutRebuild(shape: Shape) {
     if (shape.BoundaryCurve == null) {
@@ -191,7 +191,7 @@ export class RectilinearEdgeRouter extends Algorithm {
       throw new Error('Shape must have a BoundaryCurve')
     }
 
-    //  Always do all of this even if the Shape objects are the same, because the BoundaryCurve probably changed.
+    // Always do all of this even if the Shape objects are the same, because the BoundaryCurve probably changed.
     this.PortManager.RemoveObstaclePorts(this.ShapeToObstacleMap.get(shape))
     this.CreatePaddedObstacle(shape)
   }
@@ -208,7 +208,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.PortManager.RemoveObstaclePorts(obstacle)
   }
 
-  //  Remove all obstacles from the graph.
+  // Remove all obstacles from the graph.
 
   public RemoveAllObstacles() {
     this.InternalClear(/* retainObstacles:*/ false)
@@ -227,14 +227,14 @@ export class RectilinearEdgeRouter extends Algorithm {
     }
   }
 
-  //  The visibility graph generated by GenerateVisibilityGraph.
+  // The visibility graph generated by GenerateVisibilityGraph.
 
   get VisibilityGraph(): VisibilityGraph {
     this.GenerateVisibilityGraph()
     return this.GraphGenerator.VisibilityGraph
   }
 
-  //  Clears all data set into the router.
+  // Clears all data set into the router.
 
   public Clear() {
     this.InternalClear(/* retainObstacles:*/ false)
@@ -242,17 +242,17 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   GraphGenerator: VisibilityGraphGenerator
 
-  //  To support dynamic obstacles, we index obstacles by their Shape, which is
-  //  the unpadded inner obstacle boundary and contains a unique ID so we can
-  //  handle overlap due to dragging.
+  // To support dynamic obstacles, we index obstacles by their Shape, which is
+  // the unpadded inner obstacle boundary and contains a unique ID so we can
+  // handle overlap due to dragging.
 
   ShapeToObstacleMap: Map<Shape, Obstacle> = new Map<Shape, Obstacle>()
 
-  //  The list of EdgeGeometries to route
+  // The list of EdgeGeometries to route
 
   EdgesToRoute: Array<GeomEdge> = new Array<GeomEdge>()
 
-  //  Manages the mapping between App-level Ports, their locations, and their containing EdgeGeometries.
+  // Manages the mapping between App-level Ports, their locations, and their containing EdgeGeometries.
 
   PortManager: PortManager
 
@@ -260,7 +260,7 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   static constructorEmpty(): RectilinearEdgeRouter {
     return RectilinearEdgeRouter.constructorC(null)
-    //  pass-through default arguments to parameterized ctor
+    // pass-through default arguments to parameterized ctor
   }
   static constructorC(cancelToket: CancelToken): RectilinearEdgeRouter {
     return new RectilinearEdgeRouter(
@@ -272,18 +272,18 @@ export class RectilinearEdgeRouter extends Algorithm {
     )
   }
 
-  //  The padding from an obstacle's curve to its enclosing polyline.
+  // The padding from an obstacle's curve to its enclosing polyline.
 
   static DefaultPadding = 1
 
-  //  The default radius of the arc inscribed into path corners.
+  // The default radius of the arc inscribed into path corners.
 
   static DefaultCornerFitRadius = 3
 
-  //  Constructor that takes the obstacles but uses defaults for other arguments.
+  // Constructor that takes the obstacles but uses defaults for other arguments.
 
-  //  <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
-  //  as well as any intervening obstacles.</param>
+  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
+  // as well as any intervening obstacles.</param>
   static constructorI(Obstacle: Iterable<Shape>): RectilinearEdgeRouter {
     return new RectilinearEdgeRouter(
       Obstacle,
@@ -294,14 +294,14 @@ export class RectilinearEdgeRouter extends Algorithm {
     )
   }
 
-  //  Constructor for a router that does not use obstacle rectangles in the visibility graph.
+  // Constructor for a router that does not use obstacle rectangles in the visibility graph.
 
-  //  <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
-  //  as well as any intervening obstacles.</param>
+  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
+  // as well as any intervening obstacles.</param>
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
-  //  but may select suboptimal paths</param>
+  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+  // but may select suboptimal paths</param>
   static constructorINNB(
     obstacles: Iterable<Shape>,
     padding: number,
@@ -311,14 +311,14 @@ export class RectilinearEdgeRouter extends Algorithm {
     return new RectilinearEdgeRouter(obstacles, padding, cornerFitRadius, useSparseVisibilityGraph, /* useObstacleRectangles:*/ false)
   }
 
-  //  Constructor specifying graph and shape information.
+  // Constructor specifying graph and shape information.
 
-  //  <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
-  //  as well as any intervening obstacles.</param>
+  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
+  // as well as any intervening obstacles.</param>
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
-  //  but may select suboptimal paths</param>
+  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+  // but may select suboptimal paths</param>
   // Use obstacle bounding boxes in visibility graph
   public constructor(
     obstacles: Iterable<Shape>,
@@ -338,13 +338,13 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.AddShapes(obstacles)
   }
 
-  //  Constructor specifying graph information.
+  // Constructor specifying graph information.
 
   // The graph whose edges are being routed.
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
-  //  but may select suboptimal paths</param>
+  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+  // but may select suboptimal paths</param>
   static constructorGNANB(
     graph: GeomGraph,
     geomEdges: GeomEdge[],
@@ -355,13 +355,13 @@ export class RectilinearEdgeRouter extends Algorithm {
     return this.constructorGNANBB(graph, geomEdges, padding, cornerFitRadius, useSparseVisibilityGraph, /* useObstacleRectangles:*/ false)
   }
 
-  //  Constructor specifying graph information.
+  // Constructor specifying graph information.
 
   // The graph whose edges are being routed.
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
-  //  but may select suboptimal paths</param>
+  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+  // but may select suboptimal paths</param>
   // If true, use obstacle bounding boxes in visibility graph
   static constructorGNANBB(
     graph: GeomGraph,
@@ -390,9 +390,9 @@ export class RectilinearEdgeRouter extends Algorithm {
     return ret
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
 
-  //  Calculates the routed edges geometry, optionally forcing re-routing for existing paths.
+  // Calculates the routed edges geometry, optionally forcing re-routing for existing paths.
   run() {
     this.GenerateVisibilityGraph()
     this.GeneratePaths()
@@ -441,7 +441,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.PortManager.AddControlPointsToGraph(edgePath.GeomEdge, this.ShapeToObstacleMap)
     // this.PortManager.TransUtil.DevTrace_VerifyAllVertices(this.VisibilityGraph)
     // this.PortManager.TransUtil.DevTrace_VerifyAllEdgeIntersections(
-    //   this.VisibilityGraph,
+    //  this.VisibilityGraph,
     // )
     if (!this.GeneratePath(shortestPathRouter, edgePath, false)) {
       this.RetryPathsWithAdditionalGroupsEnabled(shortestPathRouter, edgePath)
@@ -450,7 +450,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.PortManager.RemoveControlPointsFromGraph()
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
 
   GeneratePath(shortestPathRouter: MsmtRectilinearPath, edgePath: Path, lastChance: boolean): boolean {
     const sourceVertices = this.PortManager.FindVertices(edgePath.GeomEdge.sourcePort)
@@ -475,9 +475,9 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   private static EnsureNonNullPath(edgePath: Path) {
     if (edgePath.PathPoints == null) {
-      //  Probably a fully-landlocked obstacle such as RectilinearTests.Route_Between_Two_Separately_Landlocked_Obstacles
-      //  or disconnected subcomponents due to excessive overlaps, such as Rectilinear(File)Tests.*Disconnected*.  In this
-      //  case, just put the single-bend path in there, even though it most likely cuts across unrelated obstacles.
+      // Probably a fully-landlocked obstacle such as RectilinearTests.Route_Between_Two_Separately_Landlocked_Obstacles
+      // or disconnected subcomponents due to excessive overlaps, such as Rectilinear(File)Tests.*Disconnected*.  In this
+      // case, just put the single-bend path in there, even though it most likely cuts across unrelated obstacles.
       if (PointComparer.IsPureDirection(edgePath.GeomEdge.sourcePort.Location, edgePath.GeomEdge.targetPort.Location)) {
         edgePath.PathPoints = [edgePath.GeomEdge.sourcePort.Location, edgePath.GeomEdge.targetPort.Location]
       } else {
@@ -491,42 +491,42 @@ export class RectilinearEdgeRouter extends Algorithm {
   }
 
   RetryPathsWithAdditionalGroupsEnabled(shortestPathRouter: MsmtRectilinearPath, edgePath: Path) {
-    //  Insert any spatial parent groups that are not in our hierarchical parent tree and retry,
-    //  if we haven't already done this.
+    // Insert any spatial parent groups that are not in our hierarchical parent tree and retry,
+    // if we haven't already done this.
     if (
       !this.PortManager.SetAllAncestorsActive(edgePath.GeomEdge, this.ShapeToObstacleMap) ||
       !this.GeneratePath(shortestPathRouter, edgePath, false)
     ) {
-      //  Last chance: enable all groups (if we have any).  Only do this on a per-path basis so a single degenerate
-      //  path won't make the entire graph look bad.
+      // Last chance: enable all groups (if we have any).  Only do this on a per-path basis so a single degenerate
+      // path won't make the entire graph look bad.
       this.PortManager.SetAllGroupsActive()
       this.GeneratePath(shortestPathRouter, edgePath, true)
     }
   }
 
-  //  static ShowPointEnum(p: Iterable<Point>) {
-  //     //  ReSharper disable InconsistentNaming
-  //     const w0: number = 0.1;
-  //     const w1: number = 3;
-  //     let arr: Point[] = p.toArray();
-  //     let d: number = ((w1 - w0)
-  //                 / (arr.length - 1));
-  //     let l = new Array<DebugCurve>();
-  //     for (let i: number = 0; (i
-  //                 < (arr.length - 1)); i++) {
-  //         l.Add(new DebugCurve(100, (w0
-  //                             + (i * d)), "blue", new LineSegment(arr[i], arr[(i + 1)])));
-  //     }
+  // static ShowPointEnum(p: Iterable<Point>) {
+  //    //  ReSharper disable InconsistentNaming
+  //    const w0: number = 0.1;
+  //    const w1: number = 3;
+  //    let arr: Point[] = p.toArray();
+  //    let d: number = ((w1 - w0)
+  //                / (arr.length - 1));
+  //    let l = new Array<DebugCurve>();
+  //    for (let i: number = 0; (i
+  //                < (arr.length - 1)); i++) {
+  //        l.Add(new DebugCurve(100, (w0
+  //                            + (i * d)), "blue", new LineSegment(arr[i], arr[(i + 1)])));
+  //    }
 
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //     //  ReSharper restore InconsistentNaming
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //    //  ReSharper restore InconsistentNaming
   // }
 
   NudgePaths(edgePaths: Array<Path>) {
-    //  If we adjusted for spatial ancestors, this nudging can get very weird, so refetch in that case.
+    // If we adjusted for spatial ancestors, this nudging can get very weird, so refetch in that case.
     const ancestorSets = this.ObsTree.SpatialAncestorsAdjusted ? SplineRouter.GetAncestorSetsMap(this.Obstacles) : this.AncestorsSets
-    //  Using VisibilityPolyline retains any reflection/staircases on the convex hull borders; using
-    //  PaddedPolyline removes them.
+    // Using VisibilityPolyline retains any reflection/staircases on the convex hull borders; using
+    // PaddedPolyline removes them.
     Nudger.NudgePaths(edgePaths, this.CornerFitRadius, this.PaddedObstacles, ancestorSets, this.RemoveStaircases)
     // Nudger.NudgePaths(edgePaths, CornerFitRadius, this.ObstacleTree.GetAllPrimaryObstacles().Select(obs => obs.VisibilityPolyline), ancestorSets, RemoveStaircases);
   }
@@ -590,7 +590,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.GraphGenerator.Clear()
     this.ClearShortestPaths()
     if (retainObstacles) {
-      //  Remove precalculated visibility, since we're likely revising obstacle positions.
+      // Remove precalculated visibility, since we're likely revising obstacle positions.
       this.PortManager.ClearVisibility()
     } else {
       this.PortManager.Clear()
@@ -610,37 +610,37 @@ export class RectilinearEdgeRouter extends Algorithm {
       throw new Error('No obstacles have been set')
     }
 
-    //  Must test GraphGenerator.VisibilityGraph because this.VisibilityGraph calls back to
-    //  this function to ensure the graph is present.
+    // Must test GraphGenerator.VisibilityGraph because this.VisibilityGraph calls back to
+    // this function to ensure the graph is present.
     if (this.GraphGenerator.VisibilityGraph == null) {
       this.CreateVisibilityGraph()
     }
   }
 
-  //  ShowPathWithTakenEdgesAndGraph(path: Iterable<VisibilityVertex>, takenEdges: Set<VisibilityEdge>) {
-  //     let list = new Array<VisibilityVertex>(path);
-  //     let lines = new Array<LineSegment>();
-  //     for (let i: number = 0; (i
-  //                 < (list.Count - 1)); i++) {
-  //         lines.Add(new LineSegment(list[i].Point, list[(i + 1)].Point));
-  //     }
+  // ShowPathWithTakenEdgesAndGraph(path: Iterable<VisibilityVertex>, takenEdges: Set<VisibilityEdge>) {
+  //    let list = new Array<VisibilityVertex>(path);
+  //    let lines = new Array<LineSegment>();
+  //    for (let i: number = 0; (i
+  //                < (list.Count - 1)); i++) {
+  //        lines.Add(new LineSegment(list[i].Point, list[(i + 1)].Point));
+  //    }
 
-  //     //  ReSharper disable InconsistentNaming
-  //     let w0: number = 4;
-  //     const let w1: number = 8;
-  //     let delta: number = ((w1 - w0)
-  //                 / (list.Count - 1));
-  //     let dc = new Array<DebugCurve>();
-  //     for (let line: LineSegment of lines) {
-  //         dc.Add(new DebugCurve(50, w0, "red", line));
-  //         w0 = (w0 + delta);
-  //     }
+  //    //  ReSharper disable InconsistentNaming
+  //    let w0: number = 4;
+  //    const let w1: number = 8;
+  //    let delta: number = ((w1 - w0)
+  //                / (list.Count - 1));
+  //    let dc = new Array<DebugCurve>();
+  //    for (let line: LineSegment of lines) {
+  //        dc.Add(new DebugCurve(50, w0, "red", line));
+  //        w0 = (w0 + delta);
+  //    }
 
-  //     dc.AddRange(takenEdges.Select(() => {  }, new DebugCurve(50, 2, "black", new LineSegment(edge.SourcePoint, edge.TargetPoint))));
-  //     let k: Iterable<DebugCurve> = this.GetGraphDebugCurves();
-  //     dc.AddRange(k);
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dc);
-  //     //  ReSharper restore InconsistentNaming
+  //    dc.AddRange(takenEdges.Select(() => {  }, new DebugCurve(50, 2, "black", new LineSegment(edge.SourcePoint, edge.TargetPoint))));
+  //    let k: Iterable<DebugCurve> = this.GetGraphDebugCurves();
+  //    dc.AddRange(k);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dc);
+  //    //  ReSharper restore InconsistentNaming
   // }
 
   static FitArcsIntoCorners(radius: number, polyline: Point[]): ICurve {

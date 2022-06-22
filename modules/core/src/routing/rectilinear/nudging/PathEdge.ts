@@ -1,7 +1,7 @@
-//  A place holder for an edge in a path to keep it inside of a linked list representing a path.
-//  Each PathEdge belongs to only one path
+// A place holder for an edge in a path to keep it inside of a linked list representing a path.
+// Each PathEdge belongs to only one path
 
-//  PathEdge passes through the AxisEdge that it points to but may go to the different direction.
+// PathEdge passes through the AxisEdge that it points to but may go to the different direction.
 
 import {Point} from '../../../math/geometry/point'
 import {CompassVector} from '../../../math/geometry/compassVector'
@@ -11,7 +11,7 @@ import {AxisEdge} from './AxisEdge'
 import {LongestNudgedSegment} from './LongestNudgedSegment'
 import {Path} from './Path'
 
-//  In the last case the PathEdge is marked as Reversed. Several PathEdges can share the same AxisEdge.
+// In the last case the PathEdge is marked as Reversed. Several PathEdges can share the same AxisEdge.
 export class PathEdge {
   AxisEdge: AxisEdge
 
@@ -34,9 +34,9 @@ export class PathEdge {
 
   private longestNudgedSegment: LongestNudgedSegment
 
-  //  It is the offset of the edge from the underlying line segment
-  //  [VisibilityEdge.SourcePoint, VisibilityEdge.TargetPoint] in to the direction of the VisibilityEdge.Perpendicular.
-  //  Offset holder is the same for the maximal parallel sequence of connected PathEdges
+  // It is the offset of the edge from the underlying line segment
+  // [VisibilityEdge.SourcePoint, VisibilityEdge.TargetPoint] in to the direction of the VisibilityEdge.Perpendicular.
+  // Offset holder is the same for the maximal parallel sequence of connected PathEdges
 
   get LongestNudgedSegment(): LongestNudgedSegment {
     return this.longestNudgedSegment
@@ -49,8 +49,8 @@ export class PathEdge {
     }
   }
 
-  //  A fixed edge cannot be shifted from its visibility edge; offset is always 0.
-  //  Such an edge can be, for example, a terminal edge going to a port.
+  // A fixed edge cannot be shifted from its visibility edge; offset is always 0.
+  // Such an edge can be, for example, a terminal edge going to a port.
 
   IsFixed = false
 
@@ -77,14 +77,14 @@ export class PathEdge {
     return this.Reversed ? CompassVector.OppositeDir(this.AxisEdge.Direction) : this.AxisEdge.Direction
   }
 
-  //  if set to true then in the path the edge is reversed
+  // if set to true then in the path the edge is reversed
 
   Reversed = false
   index = -1
 
   // not set yet
 
-  //  the index of the edge in the order
+  // the index of the edge in the order
 
   get Index(): number {
     return this.index

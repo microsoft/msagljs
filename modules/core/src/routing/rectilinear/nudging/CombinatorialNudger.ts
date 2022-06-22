@@ -1,4 +1,4 @@
-//  sets the order of connector paths on the edges
+// sets the order of connector paths on the edges
 
 //
 import {Queue} from 'queue-typescript'
@@ -145,7 +145,7 @@ export class CombinatorialNudger {
 
   // axisEdge together with the axisEdgeIsReversed parameter define direction of the movement over the paths
 
-  //  <returns></returns>
+  // <returns></returns>
   static CompareInDirectionStartingFromAxisEdge(x: PathEdge, y: PathEdge, axisEdge: AxisEdge, direction: Direction): number {
     while (true) {
       x = CombinatorialNudger.GetNextPathEdgeInDirection(x, axisEdge, direction)
@@ -233,7 +233,7 @@ export class CombinatorialNudger {
 
   static *WalkGraphEdgesInTopologicalOrderIfPossible(visibilityGraph: VisibilityGraph): IterableIterator<AxisEdge> {
     // Here the visibility graph is always a DAG since the edges point only to North and East
-    //  where possible
+    // where possible
     const sourcesQueue = new Queue<VisibilityVertex>()
     const inDegreeLeftUnprocessed = new Map<VisibilityVertex, number>()
     CombinatorialNudger.InitQueueOfSources(sourcesQueue, inDegreeLeftUnprocessed, visibilityGraph)

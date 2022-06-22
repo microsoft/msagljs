@@ -8,11 +8,11 @@ import {LineSweeper} from './LineSweeper'
 export class ConeSpanner extends Algorithm {
   _obstacles: Array<Polyline>
 
-  //  double coneAngle = Math.PI / 18;// ten degrees
+  // double coneAngle = Math.PI / 18;// ten degrees
   // double coneAngle = Math.PI / 9;// twenty degrees
   _visibilityGraph: VisibilityGraph
 
-  //  thirty degrees
+  // thirty degrees
   coneAngle: number = Math.PI / 6
 
   _bidirectional: boolean
@@ -33,13 +33,13 @@ export class ConeSpanner extends Algorithm {
     const ret = new ConeSpanner(obstacles, visibilityGraph)
     // Assert.assert(borderPolyline == null || obstacles.every((o) => Curve.CurveIsInsideOther(o, borderPolyline)))
     // Assert.assert(
-    //   borderPolyline == null ||
-    //   Array.from(ports.values()).every((o) => Curve.PointRelativeToCurveLocation(o, borderPolyline) == PointLocation.Inside),
-    //  )
+    //  borderPolyline == null ||
+    //  Array.from(ports.values()).every((o) => Curve.PointRelativeToCurveLocation(o, borderPolyline) == PointLocation.Inside),
+    // )
     // Assert.assert(obstacles.All(o => ports.All(p => Curve.PointRelativeToCurveLocation(p, o) == PointLocation.Outside)));
     // todo: uncomment this assert - it failes on D:\progression\src\ddsuites\src\vs\Progression\ScenarioTests\Grouping\GroupingResources\GroupBySelection2.dgml
     // when dragging
-    //  Assert.assert(coneAngle > Math.PI / (180 * 2) && coneAngle <= Math.PI / 2)
+    // Assert.assert(coneAngle > Math.PI / (180 * 2) && coneAngle <= Math.PI / 2)
     ret.Ports = ports
     ret.BorderPolyline = borderPolyline
     ret.ConeAngle = coneAngle
@@ -68,9 +68,9 @@ export class ConeSpanner extends Algorithm {
     this.borderPolyline = value
   }
 
-  //  If set to true then a smaller visibility graph is created.
-  //  An edge is added to the visibility graph only if it is found at least twice:
-  //  once sweeping with a direction d and the second time with -d
+  // If set to true then a smaller visibility graph is created.
+  // An edge is added to the visibility graph only if it is found at least twice:
+  // once sweeping with a direction d and the second time with -d
 
   get Bidirectional(): boolean {
     return this._bidirectional

@@ -1,10 +1,10 @@
-//  Generic version priority queue based on the binary heap algorithm where
+// Generic version priority queue based on the binary heap algorithm where
 
 import {StringBuilder} from 'typescript-string-operations'
 import {compareNumbers} from '../utils/compare'
 import {GenericHeapElement} from './genericHeapElement'
 
-//  the priority of each element is passed as a parameter.
+// the priority of each element is passed as a parameter.
 export class GenericBinaryHeapPriorityQueue<T> {
   compare: (a: number, b: number) => number
   heapSize = 0
@@ -12,7 +12,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
   A: GenericHeapElement<T>[]
 
   // array of heap elements
-  //  it is a mapping from queue elements and their correspondent HeapElements
+  // it is a mapping from queue elements and their correspondent HeapElements
   cache: Map<T, GenericHeapElement<T>>
 
   get count(): number {

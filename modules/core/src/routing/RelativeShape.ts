@@ -1,10 +1,10 @@
-//  A shape wrapping an ICurve delegate, providing additional information.
+// A shape wrapping an ICurve delegate, providing additional information.
 
 import {ICurve} from '../math/geometry'
 import {Shape} from './shape'
 
 export class RelativeShape extends Shape {
-  //  The curve of the shape.
+  // The curve of the shape.
 
   public get BoundaryCurve(): ICurve {
     return this.curveDelegate()
@@ -15,7 +15,7 @@ export class RelativeShape extends Shape {
 
   curveDelegate: () => ICurve
 
-  //  Constructor taking the ID and the curve delegate for the shape.
+  // Constructor taking the ID and the curve delegate for the shape.
 
   constructor(curveDelegate: () => ICurve) {
     super(null)

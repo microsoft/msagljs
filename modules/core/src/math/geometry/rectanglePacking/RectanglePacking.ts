@@ -3,16 +3,16 @@ import {Point} from '../point'
 import {Rectangle} from '../rectangle'
 import {Packing} from './Packing'
 
-//  Greedily pack rectangles (without rotation) into a given aspect ratio
+// Greedily pack rectangles (without rotation) into a given aspect ratio
 export class GreedyRectanglePacking extends Packing {
   rectanglesByDescendingHeight: Rectangle[]
 
   wrapWidth: number
 
-  //  Constructor for packing, call Run to do the actual pack.
-  //  Each RectangleToPack.Rectangle is updated in place.
-  //  Pack rectangles tallest to shortest, left to right until wrapWidth is reached,
-  //  then wrap to right-most rectangle still with vertical space to fit the next rectangle
+  // Constructor for packing, call Run to do the actual pack.
+  // Each RectangleToPack.Rectangle is updated in place.
+  // Pack rectangles tallest to shortest, left to right until wrapWidth is reached,
+  // then wrap to right-most rectangle still with vertical space to fit the next rectangle
   constructor(rectangles: Rectangle[], wrapWidth: number, rectanglesPresorted = false) {
     super(null)
     this.rectsToCenters = new Map<Rectangle, Point>()
@@ -20,25 +20,25 @@ export class GreedyRectanglePacking extends Packing {
     this.wrapWidth = wrapWidth
   }
 
-  //  Sort rectangles by height
+  // Sort rectangles by height
   public static SortRectangles(rectangles: Rectangle[]): Rectangle[] {
     rectangles.sort((a, b) => b.height - a.height)
     return rectangles
   }
 
-  //  Pack rectangles tallest to shortest, left to right until wrapWidth is reached,
-  //  then wrap to right-most rectangle still with vertical space to fit the next rectangle
+  // Pack rectangles tallest to shortest, left to right until wrapWidth is reached,
+  // then wrap to right-most rectangle still with vertical space to fit the next rectangle
   run() {
     this.Pack()
   }
 
-  //  Traverses the rectangleEnumerator and places rectangles at the next available slot beneath the current parent,
-  //  until the parent is filled or until maxRowWidth is reached.  Each successfully placed rectangle is pushed onto
-  //  a stack, when there is no room for the rectangle we pop the stack for a new parent and try again.
+  // Traverses the rectangleEnumerator and places rectangles at the next available slot beneath the current parent,
+  // until the parent is filled or until maxRowWidth is reached.  Each successfully placed rectangle is pushed onto
+  // a stack, when there is no room for the rectangle we pop the stack for a new parent and try again.
   Pack() {
     this.PackedWidth = 0
     this.PackedHeight = 0
-    //  get next rectangle
+    // get next rectangle
     const stack = new Stack<Rectangle>()
     let wrap = false
     let verticalPosition = 0

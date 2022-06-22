@@ -1,4 +1,4 @@
-//  A priority queue based on the binary heap algorithm
+// A priority queue based on the binary heap algorithm
 export class BinaryHeapPriorityQueue {
   // indexing for A starts from 1
   _heap: number[]
@@ -6,8 +6,8 @@ export class BinaryHeapPriorityQueue {
   // array of heap elements
   _reverse_heap: number[]
 
-  //  the map from [0,..., n-1] to their places of heap
-  //  the array of priorities
+  // the map from [0,..., n-1] to their places of heap
+  // the array of priorities
   _priors: number[]
 
   get Count(): number {
@@ -16,8 +16,8 @@ export class BinaryHeapPriorityQueue {
 
   heapSize = 0
 
-  //  the constructor
-  //  we assume that all integers inserted into the queue will be non-negative and less then n
+  // the constructor
+  // we assume that all integers inserted into the queue will be non-negative and less then n
   constructor(n: number) {
     this._priors = new Array(n)
     this._heap = new Array(n + 1)
@@ -47,7 +47,7 @@ export class BinaryHeapPriorityQueue {
     this._reverse_heap[h] = i
   }
 
-  //  return the first element of the queue and removes it from the queue
+  // return the first element of the queue and removes it from the queue
   Dequeue(): number {
     if (this.heapSize == 0) {
       throw new Error()

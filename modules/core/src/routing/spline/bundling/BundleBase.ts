@@ -15,7 +15,7 @@ export class BundleBase {
     )
     return orientation != TriangleOrientation.Counterclockwise
   }
-  //  only one of those is not null
+  // only one of those is not null
   OutgoingBundleInfo: BundleInfo
   IncomingBundleInfo: BundleInfo
 
@@ -25,17 +25,17 @@ export class BundleBase {
 
   OrientedHubSegments: OrientedHubSegment[]
 
-  //  the boundary of a cluster or a hub containing this base
+  // the boundary of a cluster or a hub containing this base
   Curve: ICurve
 
-  //  this bundle base sits on a cluster boundary and the opposite base sits on a child of the cluster
+  // this bundle base sits on a cluster boundary and the opposite base sits on a child of the cluster
   IsParent: boolean
 
-  //  if true then the base sits on a real node or cluster, otherwise it belongs to an intermediate hub
+  // if true then the base sits on a real node or cluster, otherwise it belongs to an intermediate hub
   BelongsToRealNode: boolean
 
-  //  position of the station containing the base
-  //  (could be a center of a hub, or a point on the boundary of a cluster)
+  // position of the station containing the base
+  // (could be a center of a hub, or a point on the boundary of a cluster)
   Position: Point
 
   get Count() {

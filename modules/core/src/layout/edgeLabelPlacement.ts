@@ -146,7 +146,7 @@ class LabelInfo {
 export class EdgeLabelPlacement extends Algorithm {
   placementStrategy = [PlacementStrategy.Horizontal, PlacementStrategy.AlongCurve]
 
-  //      The list of labels to be placed
+  //     The list of labels to be placed
 
   edges: GeomEdge[]
 
@@ -173,7 +173,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   granularity: number = EdgeLabelPlacement.MinGranularity
 
-  //      The granularity with which to break up a curve into sub points.
+  //     The granularity with which to break up a curve into sub points.
 
   public get CollisionGranularity(): number {
     return this.granularity
@@ -185,7 +185,7 @@ export class EdgeLabelPlacement extends Algorithm {
   /**      True if the edge collision granularity should be degraded as the number of edges increases. */
   ScaleCollisionGranularity = true
 
-  //      Constructs an edge label placer that places all labels in the graph.
+  //     Constructs an edge label placer that places all labels in the graph.
 
   public static constructorG(graph: GeomGraph) {
     return new EdgeLabelPlacement(
@@ -194,7 +194,7 @@ export class EdgeLabelPlacement extends Algorithm {
     )
   }
 
-  //      Constructs an edge label placer that places the given labels in the graph.
+  //     Constructs an edge label placer that places the given labels in the graph.
 
   public static constructorGA(graph: GeomGraph, edges: GeomEdge[]) {
     return new EdgeLabelPlacement(
@@ -203,7 +203,7 @@ export class EdgeLabelPlacement extends Algorithm {
     )
   }
 
-  //      Constructs a edge label placer that will only avoid overlaps with the given nodes and edges.
+  //     Constructs a edge label placer that will only avoid overlaps with the given nodes and edges.
 
   constructor(nodes: GeomNode[], edges: GeomEdge[]) {
     super(null)
@@ -228,7 +228,7 @@ export class EdgeLabelPlacement extends Algorithm {
     this.obstacleMaps[1] = mkRTree(nodes.map((n) => [n.boundingBox, new RectangleObstacle(n.boundingBox, n)]))
     // later we init obstacleMaps[0] to lableObstacleMap
     this.obstacleMaps[2] = mkRTree(edgeObstacles.map((e) => [e.boundingBox, new RectangleObstacle(e.boundingBox, e)]))
-    //  Avoiding edge overlaps is lowest priority, so put it last
+    // Avoiding edge overlaps is lowest priority, so put it last
   }
 
   static CurvePoints(curve: ICurve, granularity: number) {
@@ -290,10 +290,10 @@ export class EdgeLabelPlacement extends Algorithm {
     }
   }
 
-  //      Places the given labels.
+  //     Places the given labels.
 
   run() {
-    //  Place labels on short edges before labels on long edges, since short edges have less options.
+    // Place labels on short edges before labels on long edges, since short edges have less options.
     this.edges.sort((a, b) => {
       return this.edgeInfos.get(a).edgePoints.length - this.edgeInfos.get(b).edgePoints.length
     })
@@ -302,7 +302,7 @@ export class EdgeLabelPlacement extends Algorithm {
     }
   }
 
-  //      Places the given label in an available location.
+  //     Places the given label in an available location.
 
   PlaceLabel(edge: GeomEdge) {
     let placed = false
@@ -334,7 +334,7 @@ export class EdgeLabelPlacement extends Algorithm {
     return this.edgeInfos.get(ge)
   }
 
-  //      Places the label at the first position requested.  Ignores all overlaps.
+  //     Places the label at the first position requested.  Ignores all overlaps.
 
   PlaceLabelAtFirstPosition(label: GeomLabel) {
     const edge = GeomEdge.getGeom(label.label.parent) as GeomEdge
@@ -346,8 +346,8 @@ export class EdgeLabelPlacement extends Algorithm {
     )
     const point: Point = points[index][1]
     let derivative: Point = curve.derivative(points[index][0])
-    //  If the curve is a line of length (close to) 0, the derivative may be (close to) 0.
-    //  Pick a direction in that case.
+    // If the curve is a line of length (close to) 0, the derivative may be (close to) 0.
+    // Pick a direction in that case.
     if (derivative.length < GeomConstants.distanceEpsilon) {
       derivative = new Point(1, 1)
     }
@@ -383,11 +383,11 @@ export class EdgeLabelPlacement extends Algorithm {
     return GeomEdge.getGeom(geomLabel.label.parent) as GeomEdge
   }
 
-  //  <returns></returns>
+  // <returns></returns>
   public PlaceEdgeLabelHorizontally(label: GeomLabel): boolean {
-    //  approximate label with a rectangle
-    //  process candidate points for label ordered by priority
-    //  check candidate point for conflicts - if none then stop and keep placement
+    // approximate label with a rectangle
+    // process candidate points for label ordered by priority
+    // check candidate point for conflicts - if none then stop and keep placement
     const labelInfo = this.getLabelInfo(label)
     const curvePoints = labelInfo.edgePoints
     const wh = new Size(label.width, label.height)
@@ -415,14 +415,14 @@ export class EdgeLabelPlacement extends Algorithm {
         if (conflictIndex > bestConflictIndex) {
           bestConflictIndex = conflictIndex
           bestRectangle = queryRect
-          //  If the best location was found, we're done
+          // If the best location was found, we're done
           if (bestConflictIndex == Number.MAX_VALUE) {
             break
           }
         }
       }
 
-      //  If the best location was found, we're done
+      // If the best location was found, we're done
       if (bestConflictIndex == Number.MAX_VALUE) {
         break
       }
@@ -443,35 +443,35 @@ export class EdgeLabelPlacement extends Algorithm {
     return false
   }
 
-  //      Gets the label placement bounds for the given location, side, and label size.
+  //     Gets the label placement bounds for the given location, side, and label size.
 
   // The point along a curve that the label should be placed near.
   // The derivative of the curve at the point position.
   // The width and height of the label.
   // The side (1 or -1) of the line to place the label on.
-  //  <returns>The label's desired position.</returns>
+  // <returns>The label's desired position.</returns>
   static GetLabelBounds(point: Point, derivative: Point, size: Size, side: number): Rectangle {
     const o: Point = derivative.rotate(Math.PI / 2).mul(side)
     const labelPos: Point = point.add(o)
     const oLength = 1
     let left = o.x > 0 ? labelPos.x : labelPos.x - size.width
     let bottom = o.y > 0 ? labelPos.y : labelPos.y - size.height
-    //  If the line is near horizontal, shift the placement
-    //  to make it naturally transistion from o.X being negative to positive.
+    // If the line is near horizontal, shift the placement
+    // to make it naturally transistion from o.X being negative to positive.
     if (Math.abs(o.x) < 0.75) {
-      //  _________  /
-      //  |______w_|/
-      //      \   o/
-      //       \  /
-      //        \/ <-- right angle
-      //        /
+      // _________  /
+      // |______w_|/
+      //     \   o/
+      //      \  /
+      //       \/ <-- right angle
       //       /
-      //  Get the angle, 'o', between the line and the label
+      //      /
+      // Get the angle, 'o', between the line and the label
       const horizontalAngle: number = Math.acos(Math.abs(o.y) / oLength)
-      //  Get the distance, 'w', from the tip of the normal to the line
+      // Get the distance, 'w', from the tip of the normal to the line
       const horizontalShift: number = oLength / Math.sin(horizontalAngle)
       const verticalShift: number = oLength / Math.cos(horizontalAngle)
-      //  Shift the label by this amount, or by half the width.  Whichever is smaller
+      // Shift the label by this amount, or by half the width.  Whichever is smaller
       left += (o.x > 0 ? -1 : 1) * Math.min(horizontalShift, size.width / 2.0)
       bottom += (o.y > 0 ? 1 : -1) * verticalShift
     } else if (Math.abs(o.y) < 0.75) {
@@ -485,16 +485,16 @@ export class EdgeLabelPlacement extends Algorithm {
     return Rectangle.mkLeftBottomSize(left, bottom, size)
   }
 
-  //      Sets the label's position to be the given bounds.
+  //     Sets the label's position to be the given bounds.
 
   SetLabelBounds(labelInfo: LabelInfo, bounds: Rectangle) {
     labelInfo.innerPoints = [bounds.leftTop, bounds.rightTop]
     labelInfo.outerPoints = [bounds.leftBottom, bounds.rightBottom]
   }
 
-  //      Gets the possible sides for the given label and the given derivative point.
+  //     Gets the possible sides for the given label and the given derivative point.
 
-  //  <returns>An enumeration of the possible sides (-1 or 1).</returns>
+  // <returns>An enumeration of the possible sides (-1 or 1).</returns>
   static GetPossibleSides(side: PlacementSide, derivative: Point): number[] {
     if (derivative.length == 0) {
       side = PlacementSide.Any
@@ -508,7 +508,7 @@ export class EdgeLabelPlacement extends Algorithm {
         return [1]
       case PlacementSide.Top:
         if (closeDistEps(derivative.x, 0)) {
-          //  If the line is vertical, Top becomes Left
+          // If the line is vertical, Top becomes Left
           return EdgeLabelPlacement.GetPossibleSides(PlacementSide.Left, derivative)
         }
 
@@ -564,9 +564,9 @@ export class EdgeLabelPlacement extends Algorithm {
   }
 
   PlaceEdgeLabelOnCurve(label: GeomLabel): boolean {
-    //  approximate label with a set of circles
-    //  generate list of candidate points for label ordered by priority
-    //  check candidate point for conflicts - if none then stop and keep placement
+    // approximate label with a set of circles
+    // generate list of candidate points for label ordered by priority
+    // check candidate point for conflicts - if none then stop and keep placement
     const edge = GeomEdge.getGeom(label.label.parent) as GeomEdge
     const labelInfo = this.getLabelInfo(label)
     labelInfo.innerPoints = null
@@ -604,7 +604,7 @@ export class EdgeLabelPlacement extends Algorithm {
     const orderedPoints = Array.from(placedPoints.points)
     const excess: number = coveredLength - labelLength
     if (excess > 0) {
-      //  move back the last point
+      // move back the last point
       let q: PointSet = orderedPoints[orderedPoints.length - 1]
       let p: PointSet = orderedPoints[orderedPoints.length - 2]
       let v: Point = q.Center.sub(p.Center)
@@ -623,7 +623,7 @@ export class EdgeLabelPlacement extends Algorithm {
     }
 
     this.GoOverOrderedPointsAndAddLabelObstacels(orderedPoints, innerPoints, outerPoints, wh)
-    //  placed all points in label so we are done
+    // placed all points in label so we are done
     const labelInfo = this.getLabelInfo(label)
     labelInfo.innerPoints = innerPoints
     labelInfo.outerPoints = outerPoints
@@ -665,7 +665,7 @@ export class EdgeLabelPlacement extends Algorithm {
       const labelPos: Point = pnt.add(o.mul(radius + distanceFromCurve))
 
       if (!this.Conflict(labelPos, radius, wh)) {
-        //  found a valid candidate position
+        // found a valid candidate position
         const ps = new PointSet()
         ps.Center = labelPos
         ps.Inner = pnt.add(o.mul(distanceFromCurve))
@@ -676,7 +676,7 @@ export class EdgeLabelPlacement extends Algorithm {
           break
         }
       } else {
-        //  not going to work!
+        // not going to work!
         break
       }
     }
@@ -687,15 +687,15 @@ export class EdgeLabelPlacement extends Algorithm {
     return EdgeLabelPlacement.GetPossibleSides(this.getLabelInfo(label).placementSide, initialDer)
   }
 
-  //      Determines if the query point intersects with any of the obstacles.
+  //     Determines if the query point intersects with any of the obstacles.
 
-  //  <returns>True if the query point itnersects with any of the obstacles.</returns>
+  // <returns>True if the query point itnersects with any of the obstacles.</returns>
   Conflict(labelPos: Point, radius: number, wh: Size): boolean {
     return this.ConflictIndex(labelPos, radius, wh) != Number.MAX_VALUE
   }
 
-  //     Determines the index of the first obstacle map that the rectangle intersects.
-  //     Clusters that are parents/grandparents of the label's source/target nodes are not considered intersection.
+  //    Determines the index of the first obstacle map that the rectangle intersects.
+  //    Clusters that are parents/grandparents of the label's source/target nodes are not considered intersection.
 
   // <returns>The index of the first obstacle map that the rectangle intersects. int.MaxValue if there is no intersection.</returns>
   ConflictIndexRL(queryRect: Rectangle, label: GeomLabel): number {
@@ -708,15 +708,15 @@ export class EdgeLabelPlacement extends Algorithm {
       }
 
       for (const obstacle of this.obstacleMaps[i].GetAllIntersecting(queryRect)) {
-        //  If we're overlapping a node...
+        // If we're overlapping a node...
         if (<LabelPlacementResult>i == LabelPlacementResult.OverlapsNodes) {
-          //  ...and the node is a cluster...
+          // ...and the node is a cluster...
           const isRectangleObstacle = obstacle instanceof RectangleObstacle
           if (isRectangleObstacle) {
             const isCluster = obstacle.data instanceof GeomGraph
-            //  ...and the cluster is a grandparent of the source or target...
+            // ...and the cluster is a grandparent of the source or target...
             if (isCluster != null && (source.node.isDescendantOf(obstacle.data.graph) || target.node.isDescendantOf(obstacle.data))) {
-              //  ...don't consider the overlap to be a conflict.
+              // ...don't consider the overlap to be a conflict.
               continue
             }
           }

@@ -1,4 +1,4 @@
-//  Creates the convex hull of a set of points following "Computational Geometry, second edition" of O'Rourke
+// Creates the convex hull of a set of points following "Computational Geometry, second edition" of O'Rourke
 
 import {GeomConstants} from './geomConstants'
 import {Point, TriangleOrientation} from './point'
@@ -65,7 +65,7 @@ export class ConvexHull {
     return this.stack.next.point
   }
 
-  //  calculates the convex hull of the given set of points
+  // calculates the convex hull of the given set of points
 
   static *CalculateConvexHull(pointsOfTheBody: Iterable<Point>): IterableIterator<Point> {
     const convexHull = new ConvexHull(pointsOfTheBody)
@@ -187,22 +187,22 @@ export class ConvexHull {
     const convexHull = Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(points)))
     // #if (TEST_MSAGL)
     // for (let point of points) {
-    //     if ((Curve.PointRelativeToCurveLocation(point, convexHull) == PointLocation.Outside)) {
-    //         let hullPoint = convexHull[convexHull.closestParameter(point)];
-    //         //  This can be too restrictive if very close points are put into the hull.  It is probably
-    //         //  better to clean up in the caller before doing this, but this assert can also be relaxed.
-    //         Assert.assert(ApproximateComparer.Close(point, hullPoint, (ApproximateComparer.IntersectionEpsilon * 20)), String.Format("not CloseIntersections: initial point {0}, hull point {1}", point, hullPoint));
-    //     }
+    //    if ((Curve.PointRelativeToCurveLocation(point, convexHull) == PointLocation.Outside)) {
+    //        let hullPoint = convexHull[convexHull.closestParameter(point)];
+    //        //  This can be too restrictive if very close points are put into the hull.  It is probably
+    //        //  better to clean up in the caller before doing this, but this assert can also be relaxed.
+    //        Assert.assert(ApproximateComparer.Close(point, hullPoint, (ApproximateComparer.IntersectionEpsilon * 20)), String.Format("not CloseIntersections: initial point {0}, hull point {1}", point, hullPoint));
+    //    }
 
     // }
 
     // #endif
-    // //  TEST_MSAGL
+    // // TEST_MSAGL
     return convexHull
   }
 }
 
-//  note that this function can change "deleted" member for collinear points
+// note that this function can change "deleted" member for collinear points
 
 function hullPointComparer(pivot: Point): (i: HullPoint, j: HullPoint) => number {
   return (i: HullPoint, j: HullPoint) => {

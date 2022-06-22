@@ -64,9 +64,9 @@ test('check black height(s) are equal', () => {
   const vals: number[] = RbTreeUtils.getRandomArray(50, 100)
   const tree: RBTree<number> = RbTreeUtils.buildTreeWithNums(vals, comparer)
   const blackHeight = RbTreeUtils.computeBlackHeight(tree.getRoot())
-  //  console.log(blackHeight)
+  // console.log(blackHeight)
   expect(blackHeight != -1).toBe(true)
-  //    'difference in black height of left and right branch of a subtree',
+  //   'difference in black height of left and right branch of a subtree',
 })
 
 test('check removal', () => {

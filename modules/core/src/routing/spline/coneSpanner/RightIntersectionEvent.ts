@@ -3,7 +3,7 @@ import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {ConeRightSide} from './ConeRightSide'
 import {SweepEvent} from './SweepEvent'
 
-//  right here means an intersection of a right cone side with an obstacle edge
+// right here means an intersection of a right cone side with an obstacle edge
 export class RightIntersectionEvent extends SweepEvent {
   coneRightSide: ConeRightSide
 

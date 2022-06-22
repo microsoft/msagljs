@@ -74,8 +74,8 @@ export class Obstacle {
     this.ActiveLowSide = new LowObstacleSide(this, startPoint, scanDir)
     this.ActiveHighSide = new HighObstacleSide(this, startPoint, scanDir)
     if (scanDir.IsFlatS(this.ActiveHighSide)) {
-      //  No flat sides in the scanline; we'll do lookahead processing in the scanline to handle overlaps
-      //  with existing segments, and normal neighbor handling will take care of collinear OpenVertexEvents.
+      // No flat sides in the scanline; we'll do lookahead processing in the scanline to handle overlaps
+      // with existing segments, and normal neighbor handling will take care of collinear OpenVertexEvents.
       this.ActiveHighSide = new HighObstacleSide(this, this.ActiveHighSide.EndVertex, scanDir)
     }
   }
@@ -120,7 +120,7 @@ export class Obstacle {
       ppt = nextPpt
       nextPpt = ppt.nextOnPolyline
       const nextDir = CompassVector.DirectionFromPointToPoint(ppt.point, nextPpt.point)
-      //  We know the polyline is clockwise.
+      // We know the polyline is clockwise.
       if (nextDir != CompassVector.RotateRight(dir)) {
         return false
       }
@@ -134,8 +134,8 @@ export class Obstacle {
   static RoundVerticesAndSimplify(polyline: Polyline) {
     /*Assert.assert(polyline.isClockwise(), 'Polyline is not clockwise')*/
     /*Assert.assert(polyline.closed)*/
-    //  Following creation of the padded border, round off the vertices for consistency
-    //  in later operations (intersections and event ordering).
+    // Following creation of the padded border, round off the vertices for consistency
+    // in later operations (intersections and event ordering).
     let ppt: PolylinePoint = polyline.startPoint
     do {
       ppt.point = GeomConstants.RoundPoint(ppt.point)
@@ -143,9 +143,9 @@ export class Obstacle {
     } while (ppt != polyline.startPoint)
 
     Obstacle.RemoveCloseAndCollinearVerticesInPlace(polyline)
-    //  We've modified the points so the BoundingBox may have changed; force it to be recalculated.
+    // We've modified the points so the BoundingBox may have changed; force it to be recalculated.
     polyline.setInitIsRequired()
-    //  Verify that the polyline is still clockwise.
+    // Verify that the polyline is still clockwise.
     /*Assert.assert(
       polyline.isClockwise(),
       'Polyline is not clockwise after RoundVertices',
@@ -215,7 +215,7 @@ export class Obstacle {
     this.ActiveHighSide = null
   }
   SetConvexHull(hull: OverlapConvexHull) {
-    //  This obstacle may have been in a rectangular obstacle or clump that was now found to overlap with a non-rectangular obstacle.
+    // This obstacle may have been in a rectangular obstacle or clump that was now found to overlap with a non-rectangular obstacle.
     this.clump = null
     this.IsRectangle = false
     this.ConvexHull = hull

@@ -24,7 +24,7 @@ import {GeomEdge} from '../core/geomEdge'
 
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
 
-//  The class responsible for the routing of splines
+// The class responsible for the routing of splines
 export class Routing extends Algorithm {
   settings: SugiyamaLayoutSettings
 
@@ -55,12 +55,12 @@ export class Routing extends Algorithm {
     this.IntGraph = intGraph
   }
 
-  //  Executes the actual algorithm.
+  // Executes the actual algorithm.
   run() {
     this.createSplines()
   }
 
-  //  The method does the main work.
+  // The method does the main work.
   createSplines() {
     this.createRegularSplines()
     this.createSelfSplines()
@@ -82,7 +82,7 @@ export class Routing extends Algorithm {
   }
 
   RouteFlatEdges() {
-    //  throw new Error('not implemented')
+    // throw new Error('not implemented')
     // const flatEdgeRouter = new FlatEdgeRouter(this.settings, this)
     // flatEdgeRouter.run()
   }
@@ -184,11 +184,11 @@ export class Routing extends Algorithm {
   }
 
   // void UpdateEdgeLabelPosition(LayerEdge[][] list, int i) {
-  //     IntEdge e;
-  //     int labelNodeIndex;
-  //     if (Engine.GetLabelEdgeAndVirtualNode(list, i, out e, out labelNodeIndex)) {
-  //         UpdateLabel(e, labelNodeIndex, db.Anchors);
-  //     }
+  //    IntEdge e;
+  //    int labelNodeIndex;
+  //    if (Engine.GetLabelEdgeAndVirtualNode(list, i, out e, out labelNodeIndex)) {
+  //        UpdateLabel(e, labelNodeIndex, db.Anchors);
+  //    }
   // }
   static UpdateLabel(e: GeomEdge, anchor: Anchor) {
     let labelSide: LineSegment = null
@@ -234,7 +234,7 @@ export class Routing extends Algorithm {
     const w: number = e.lineWidth / 2
     const shift: Point = t.curveClosestPoint.sub(t.labelSideClosest)
     const shiftLength: number = shift.length
-    //    SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
+    //   SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
     if (shiftLength > w) {
       e.label.center = e.label.center.add(shift.div(shiftLength * (shiftLength - w)))
     }

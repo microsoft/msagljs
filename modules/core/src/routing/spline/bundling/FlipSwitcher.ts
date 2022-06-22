@@ -132,19 +132,19 @@ export class FlipSwitcher {
     ) {
       return false
     }
-    //     polyA.init()
+    //    polyA.init()
     // polyB.init()
     // FlipSwitcher.debugCount++
 
     // if (FlipSwitcher.debugCount == 3) {
-    //   const da = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', polyA)
-    //   const aStart = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(10, polyA.start))
-    //   const aEnd = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(5, polyA.end))
-    //   const db = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', polyB)
-    //   const bStart = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(4, polyB.start))
-    //   const bEnd = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(2, polyB.end))
-    //   SvgDebugWriter.dumpDebugCurves('/tmp/dadb_.svg', [da, db, aStart, aEnd, bStart, bEnd])
-    //   //   throw new Error()
+    //  const da = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', polyA)
+    //  const aStart = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(10, polyA.start))
+    //  const aEnd = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(5, polyA.end))
+    //  const db = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', polyB)
+    //  const bStart = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(4, polyB.start))
+    //  const bEnd = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(2, polyB.end))
+    //  SvgDebugWriter.dumpDebugCurves('/tmp/dadb_.svg', [da, db, aStart, aEnd, bStart, bEnd])
+    //  //   throw new Error()
     // }
 
     let pts = this.FindPointsOnPolyline(polyA, flipStart, flipEnd)

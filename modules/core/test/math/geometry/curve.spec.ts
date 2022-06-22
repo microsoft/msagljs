@@ -113,7 +113,7 @@ test('box translate behavior', () => {
 function intersectTwoRoundedRects(rr: Curve, rr0: Curve, i: number): void {
   const xx = Curve.getAllIntersections(rr, rr0, true)
   // const xxD = xx.map((x) =>
-  //   DebugCurve.mkDebugCurveWCI(0.5, 'Red', CurveFactory.mkCircle(3, x.x)),
+  //  DebugCurve.mkDebugCurveWCI(0.5, 'Red', CurveFactory.mkCircle(3, x.x)),
   // )
   // xxD.push(DebugCurve.mkDebugCurveI(rr))
   // xxD.push(DebugCurve.mkDebugCurveI(rr0))

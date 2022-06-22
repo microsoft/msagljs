@@ -4,14 +4,14 @@ import {Direction} from '../../../math/geometry/direction'
 import {SegmentBase} from '../../visibility/SegmentBase'
 import {PathEdge} from './PathEdge'
 
-//  Represent a maximal straight segment of a path
+// Represent a maximal straight segment of a path
 export class LongestNudgedSegment extends SegmentBase {
   constructor(variable: number) {
     super()
     this.Id = variable
   }
 
-  //  has to be North or East
+  // has to be North or East
 
   CompassDirection: Direction = Direction.None
 
@@ -30,7 +30,7 @@ export class LongestNudgedSegment extends SegmentBase {
     return this.end
   }
 
-  //  the list of edges holding the same offset and direction
+  // the list of edges holding the same offset and direction
 
   get Edges(): Array<PathEdge> {
     return this.edges
@@ -86,7 +86,7 @@ export class LongestNudgedSegment extends SegmentBase {
 
   _isFixed = false
 
-  //  the segments constraining "this" from the right
+  // the segments constraining "this" from the right
 
   get IsFixed(): boolean {
     return this._isFixed
@@ -97,7 +97,7 @@ export class LongestNudgedSegment extends SegmentBase {
 
   Id = -1
 
-  //  the maximal width of the edges
+  // the maximal width of the edges
 
   public get Width(): number {
     let w = 0

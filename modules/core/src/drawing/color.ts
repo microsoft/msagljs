@@ -311,7 +311,7 @@ export class Color {
 
   private a: number
 
-  //  constructor with alpha and red, green, bluee components
+  // constructor with alpha and red, green, bluee components
   constructor(a: number, r: number, g: number, b: number) {
     this.a = a
     this.r = r
@@ -319,7 +319,7 @@ export class Color {
     this.b = b
   }
 
-  //  opaque color
+  // opaque color
 
   static mkRGB(r: number, g: number, b: number): Color {
     return new Color(255, r, g, b)
@@ -386,7 +386,7 @@ export class Color {
     return a.a == b.a && a.r == b.r && a.b == b.b && a.g == b.g
   }
 
-  //  !=
+  // !=
 
   toString(): string {
     return this.keyword

@@ -1,6 +1,6 @@
 ﻿import {Polyline} from '../../../math/geometry'
 
-//  holds the data of a path
+// holds the data of a path
 export class Metroline {
   Width: number
 

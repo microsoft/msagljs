@@ -56,8 +56,8 @@ export class Polygon {
     return this.points[this.Module(i)]
   }
 
-  //  LineSegment ls(Point pivot, int p) {
-  //     return new LineSegment(pivot, Pnt(p));
+  // LineSegment ls(Point pivot, int p) {
+  //    return new LineSegment(pivot, Pnt(p));
   // }
   pnt(i: number): Point {
     return this.pp(i).point
@@ -67,7 +67,7 @@ export class Polygon {
     return this.polyline.toString()
   }
 
-  //  the median of a chunk going clockwise from p1 to p2
+  // the median of a chunk going clockwise from p1 to p2
   Median(p1: number, p2: number): number {
     /*Assert.assert(p1 != p2)*/
     // otherwise we do not know what arc is mean: the whole one or just the point
@@ -78,8 +78,8 @@ export class Polygon {
     return this.Module(p2 + Math.floor((this.count + p1) / 2))
   }
 
-  //  p1 and p2 represent the closest feature. Two cases are possible p1=p2, or p1 and p2 share an edge going from p1 to p2
-  //  Remind that the polygons are oriented clockwise
+  // p1 and p2 represent the closest feature. Two cases are possible p1=p2, or p1 and p2 share an edge going from p1 to p2
+  // Remind that the polygons are oriented clockwise
   FindTheFurthestVertexFromBisector(p1: number, p2: number, bisectorPivot: Point, bisectorRay: Point): number {
     let directionToTheHill: Point = bisectorRay.rotate(Math.PI / 2)
     if (this.polyline.startPoint.point.sub(bisectorPivot).dot(directionToTheHill) < 0) {
@@ -120,23 +120,23 @@ export class Polygon {
     return ret
   }
 
-  //  Distance between two polygons
-  //  p and q are the closest points
-  //  The function doesn't work if the polygons intersect each other
+  // Distance between two polygons
+  // p and q are the closest points
+  // The function doesn't work if the polygons intersect each other
   static Distance(a: Polygon, b: Polygon): {p: Point; q: Point; dist: number} {
     const tp = new TangentPair(a, b)
     const pq = tp.FindClosestPoints()
-    //     #if(TEST_MSAGL)
+    //    #if(TEST_MSAGL)
     // if (!Point.closeDistEps((p - q).length, Polygon.TestPolygonDist(a, b))) {
-    //   let stream = File.Open("c:\tmp\polygonBug", FileMode.Create);
-    //   let bf = new BinaryFormatter();
-    //   bf.Serialize(stream, a);
-    //   bf.Serialize(stream, b);
-    //   LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(100, 0.1, "red", a.Polyline), new DebugCurve(100, 0.1, "blue", b.Polyline), new DebugCurve(100, 0.1, "black", new LineSegment(p, q)));
-    //   System.Diagnostics.Debug.Fail("wrong distance between two polygons");
+    //  let stream = File.Open("c:\tmp\polygonBug", FileMode.Create);
+    //  let bf = new BinaryFormatter();
+    //  bf.Serialize(stream, a);
+    //  bf.Serialize(stream, b);
+    //  LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(100, 0.1, "red", a.Polyline), new DebugCurve(100, 0.1, "blue", b.Polyline), new DebugCurve(100, 0.1, "black", new LineSegment(p, q)));
+    //  System.Diagnostics.Debug.Fail("wrong distance between two polygons");
     // }
 
-    //     #endif
+    //    #endif
     return {
       p: pq.pClosest,
       q: pq.qClosest,
@@ -144,7 +144,7 @@ export class Polygon {
     }
   }
 
-  //  Distance between two polygons
+  // Distance between two polygons
   static DistanceOnly(a: Polygon, b: Polygon): number {
     /*Assert.assert(Polygon.PolygonIsLegalDebug(a))*/
     /*Assert.assert(Polygon.PolygonIsLegalDebug(b))*/
@@ -162,7 +162,7 @@ export class Polygon {
     return true
   }
 
-  //  Distance between polygon and point, assuming the point is outside of the polygon
+  // Distance between polygon and point, assuming the point is outside of the polygon
   static DistancePoint(poly: Polygon, b: Point): number {
     let res = Number.MAX_VALUE
     for (let i = 0; i < poly.count; i++) {

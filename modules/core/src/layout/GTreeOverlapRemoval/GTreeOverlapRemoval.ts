@@ -8,7 +8,7 @@ import {GeomNode} from '../core/geomNode'
 import {MstLineSweeper} from './MstLineSweeper'
 import {MstEdge, MstOnDelaunayTriangulation} from './MstOnDelaunayTriangulation'
 import {OverlapRemovalSettings} from './OverlapRemovalSettings'
-//  Overlap Removal using Minimum Spanning Tree on the delaunay triangulation. The edge weight corresponds to the amount of overlap between two nodes.
+// Overlap Removal using Minimum Spanning Tree on the delaunay triangulation. The edge weight corresponds to the amount of overlap between two nodes.
 export class GTreeOverlapRemoval {
   _settings: OverlapRemovalSettings
 
@@ -18,13 +18,13 @@ export class GTreeOverlapRemoval {
 
   _nodes: GeomNode[]
 
-  //  Settings to be used for the overlap removal, not all of them are used.
+  // Settings to be used for the overlap removal, not all of them are used.
   public constructor(settings: OverlapRemovalSettings, nodes: GeomNode[]) {
     this._settings = settings
     this._nodes = nodes
   }
 
-  //  Removes the overlap by using the default settings.
+  // Removes the overlap by using the default settings.
   public static RemoveOverlaps(nodes: GeomNode[], nodeSeparation: number) {
     const settings = new OverlapRemovalSettings()
     settings.RandomizeAllPointsOnStart = true
@@ -33,7 +33,7 @@ export class GTreeOverlapRemoval {
     mst.RemoveOverlaps()
   }
 
-  //  Removes the overlaps for the given graph.
+  // Removes the overlaps for the given graph.
   public RemoveOverlaps() {
     if (this._nodes.length < 3) {
       this.RemoveOverlapsOnTinyGraph()
@@ -109,8 +109,8 @@ export class GTreeOverlapRemoval {
     return count > 0 ? avgEdgeLength / count : 1
   }
 
-  //  Does one iterations in which a miniminum spanning tree is
-  //  determined on the delaunay triangulation and finally the tree is extended to resolve the overlaps.
+  // Does one iterations in which a miniminum spanning tree is
+  // determined on the delaunay triangulation and finally the tree is extended to resolve the overlaps.
   OneIteration(nodePositions: Point[], nodeSizes: Size[], scanlinePhase: boolean): boolean {
     const ts = new Array<[Point, number]>()
     for (let i = 0; i < nodePositions.length; i++) {
@@ -146,8 +146,8 @@ export class GTreeOverlapRemoval {
     if (numCrossings == 0 || scanlinePhase) {
       const additionalCrossings: number = this.FindProximityEdgesWithSweepLine(proximityEdges, nodeSizes, nodePositions)
       if (numCrossings == 0 && additionalCrossings == 0) {
-        //                     if(nodeSizes.Length>100)
-        //                     ShowAndMoveBoxesRemoveLater(null, proximityEdges, nodeSizes, nodePositions, -1);
+        //                    if(nodeSizes.Length>100)
+        //                    ShowAndMoveBoxesRemoveLater(null, proximityEdges, nodeSizes, nodePositions, -1);
         return false
       }
 
@@ -170,7 +170,7 @@ export class GTreeOverlapRemoval {
     return mstLineSweeper.Run()
   }
 
-  //  Returns an edge with: i, j, t(overlapFactor), ideal distance, edge weight.
+  // Returns an edge with: i, j, t(overlapFactor), ideal distance, edge weight.
   static GetIdealEdge(i: number, j: number, point1: Point, point2: Point, nodeSizes: Size[]): MstEdge {
     const t = {overlapFactor: 0}
     const idealDist: number = GTreeOverlapRemoval.GetIdealEdgeLength(i, j, point1, point2, nodeSizes, t)
@@ -189,7 +189,7 @@ export class GTreeOverlapRemoval {
     }
   }
 
-  //  Returns the ideal edge length, such that the overlap is removed.
+  // Returns the ideal edge length, such that the overlap is removed.
   static GetIdealEdgeLength(
     i: number,
     j: number,
@@ -234,7 +234,7 @@ export class GTreeOverlapRemoval {
     return t * dist
   }
 
-  //  Returns the distance between two given rectangles or zero if they intersect.
+  // Returns the distance between two given rectangles or zero if they intersect.
   static GetDistanceRects(a: Rectangle, b: Rectangle): number {
     if (a.intersects(b)) {
       return 0
@@ -258,7 +258,7 @@ export class GTreeOverlapRemoval {
     return euclid
   }
   /*
-  //  Shows the current state of the algorithm for debug purposes.
+  // Shows the current state of the algorithm for debug purposes.
   ShowAndMoveBoxesRemoveLater(treeEdges: Array<MstEdge>, proximityEdges: Array<MstEdge>, nodeSizes: Size[], nodePos: Point[], rootId: number) {
     let l = new Array<DebugCurve>();
     for (let tuple of proximityEdges) {
@@ -291,7 +291,7 @@ export class GTreeOverlapRemoval {
     return 2;
   }
 */
-  //  Lets the tree grow according to the ideal distances.
+  // Lets the tree grow according to the ideal distances.
   static MoveNodePositions(treeEdges: Array<MstEdge>, nodePositions: Point[], rootNodeId: number) {
     const posOld = nodePositions.map((p) => p.clone())
     const visited = new Set<number>()

@@ -11,7 +11,7 @@ import {PointComparer} from './PointComparer'
 import {ScanDirection} from './ScanDirection'
 
 export class StaticGraphUtility {
-  //  Determine the direction of an edge.
+  // Determine the direction of an edge.
   static EdgeDirectionVE(edge: VisibilityEdge): Direction {
     return StaticGraphUtility.EdgeDirectionVV(edge.Source, edge.Target)
   }
@@ -30,18 +30,18 @@ export class StaticGraphUtility {
   }
 
   static FindAdjacentVertex(vertex: VisibilityVertex, dir: Direction): VisibilityVertex {
-    //  This function finds the next vertex in the desired direction relative to the
-    //  current vertex, not necessarily the edge orientation, hence it does not use
-    //  EdgeDirection().  This is so the caller can operate on a desired movement
-    //  direction without having to track whether we're going forward or backward
-    //  through the In/OutEdge chain.
+    // This function finds the next vertex in the desired direction relative to the
+    // current vertex, not necessarily the edge orientation, hence it does not use
+    // EdgeDirection().  This is so the caller can operate on a desired movement
+    // direction without having to track whether we're going forward or backward
+    // through the In/OutEdge chain.
     for (const edge of vertex.InEdges) {
       if (PointComparer.GetDirections(vertex.point, edge.SourcePoint) == dir) {
         return edge.Source
       }
     }
 
-    //  Avoid GetEnumerator overhead.
+    // Avoid GetEnumerator overhead.
     for (const edge of vertex.OutEdges) {
       if (PointComparer.GetDirections(vertex.point, edge.TargetPoint) == dir) {
         return edge.Target
@@ -106,7 +106,7 @@ export class StaticGraphUtility {
     )*/
     const vertical: boolean = StaticGraphUtility.IsVerticalPP(start1, end1)
     if (StaticGraphUtility.IsVerticalPP(start2, end2) == vertical) {
-      //  This handles touching endpoints as well.
+      // This handles touching endpoints as well.
       return vertical ? PointComparer.Equal(start1.x, start2.x) : PointComparer.Equal(start1.y, start2.y)
     }
 
@@ -167,7 +167,7 @@ export class StaticGraphUtility {
   }
 
   static Slope(start: Point, end: Point, scanDir: ScanDirection): number {
-    //  Find the slope relative to scanline - how much scan coord changes per sweep change.
+    // Find the slope relative to scanline - how much scan coord changes per sweep change.
     const lineDir = end.sub(start)
     return lineDir.dot(scanDir.PerpDirectionAsPoint) / lineDir.dot(scanDir.DirectionAsPoint)
   }

@@ -15,7 +15,7 @@ import {SegmentBase} from './SegmentBase'
 import {PointSet} from '../../utils/PointSet'
 
 export class LineSweeperBase {
-  directionPerp: Point //  sweep direction rotated 90 degrees clockwse
+  directionPerp: Point // sweep direction rotated 90 degrees clockwse
 
   eventQueue: BinaryHeapWithComparer<SweepEvent>
 
@@ -46,7 +46,7 @@ export class LineSweeperBase {
 
   SweepDirection: Point
 
-  //  sweep direction rotated by 90 degrees clockwise
+  // sweep direction rotated by 90 degrees clockwise
 
   protected get DirectionPerp(): Point {
     return this.directionPerp
@@ -69,7 +69,7 @@ export class LineSweeperBase {
     this.z = value
   }
 
-  //  protected virtual bool TreesAreCorrect() { return true; }
+  // protected virtual bool TreesAreCorrect() { return true; }
   Obstacles: Array<Polyline>
 
   protected GetZS(eve: SweepEvent): number {
@@ -147,9 +147,9 @@ export class LineSweeperBase {
     return candidate
   }
 
-  //  imagine that direction points up,
-  //  lower events have higher priorities,
-  //  for events at the same level events to the left have higher priority
+  // imagine that direction points up,
+  // lower events have higher priorities,
+  // for events at the same level events to the left have higher priority
 
   public Compare(a: SweepEvent, b: SweepEvent): number {
     const aSite: Point = a.Site

@@ -25,7 +25,7 @@ export class EdgeNudger extends Algorithm {
 
   metroOrdering: GeneralMetroMapOrdering
 
-  //  Constructor
+  // Constructor
   constructor(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings) {
     super(null)
     this.metroGraphData = metroGraphData
@@ -41,7 +41,7 @@ export class EdgeNudger extends Algorithm {
     new HubRadiiCalculator(this.metroGraphData, this.bundlingSettings).CreateNodeRadii()
   }
 
-  //  bundle-map ordering
+  // bundle-map ordering
   CreateMetroOrdering() {
     this.metroOrdering = new GeneralMetroMapOrdering(this.metroGraphData.Metrolines)
   }
@@ -154,18 +154,18 @@ export class EdgeNudger extends Algorithm {
     h0.OrientedHubSegments[j0].Segment = seg
     h1.OrientedHubSegments[j1].Segment = seg
     // if (seg instanceof BezierSeg) {
-    //   const dc = [
-    //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Blue', LineSegment.mkPP(h1.Points[0], h1.Points[h1.length - 1])),
-    //     DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(h0.Points[0], h0.Points[h0.length - 1])),
-    //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Red', LineSegment.mkPP(h0.Points[j0], h0.Points[j0].add(h0.Tangents[j0]))),
-    //     DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Green', LineSegment.mkPP(h1.Points[j1], h1.Points[j1].add(h1.Tangents[j1]))),
-    //   ]
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', seg))
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Pink', line.Polyline))
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Tan', u.BoundaryCurve))
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Plum', v.BoundaryCurve))
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'DarkOrange', w.BoundaryCurve))
-    //   SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + EdgeNudger.debCount + '.svg', dc)
+    //  const dc = [
+    //    DebugCurve.mkDebugCurveTWCI(200, 1, 'Blue', LineSegment.mkPP(h1.Points[0], h1.Points[h1.length - 1])),
+    //    DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(h0.Points[0], h0.Points[h0.length - 1])),
+    //    DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Red', LineSegment.mkPP(h0.Points[j0], h0.Points[j0].add(h0.Tangents[j0]))),
+    //    DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Green', LineSegment.mkPP(h1.Points[j1], h1.Points[j1].add(h1.Tangents[j1]))),
+    //  ]
+    //  dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.1, 'Brown', seg))
+    //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Pink', line.Polyline))
+    //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Tan', u.BoundaryCurve))
+    //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Plum', v.BoundaryCurve))
+    //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'DarkOrange', w.BoundaryCurve))
+    //  SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + EdgeNudger.debCount + '.svg', dc)
     // }
   }
 
@@ -242,9 +242,9 @@ export class EdgeNudger extends Algorithm {
 
   static GetMonotoneColor(start: Point, end: Point, segs: Array<[Point, Point]>): string {
     return 'green'
-    //             Point dir = end - start;
-    //             bool monotone = segs.All(seg => (seg.Second - seg.First)*dir >= 0);
-    //             return monotone ? "green" : "magenta";
+    //            Point dir = end - start;
+    //            bool monotone = segs.All(seg => (seg.Second - seg.First)*dir >= 0);
+    //            return monotone ? "green" : "magenta";
   }
 
   static DebugHubBases(metroGraphData: MetroGraphData): Array<DebugCurve> {
@@ -256,8 +256,8 @@ export class EdgeNudger extends Algorithm {
     }
     return dc
     // return
-    //     metroGraphData.Stations.SelectMany(s => s.BundleBases.Values).Select(
-    //         h => new DebugCurve(100, 0.01, "red", new LineSegment(h.Points[0], h.Points.Last())));
+    //    metroGraphData.Stations.SelectMany(s => s.BundleBases.Values).Select(
+    //        h => new DebugCurve(100, 0.01, "red", new LineSegment(h.Points[0], h.Points.Last())));
   }
 
   static DebugCircles(metroGraphData: MetroGraphData): Array<DebugCurve> {
@@ -342,7 +342,7 @@ export class EdgeNudger extends Algorithm {
     return curve
   }
 
-  //  returns the arc that a,b,c touches
+  // returns the arc that a,b,c touches
   static ArcOn(a: Point, b: Point, c: Point): ICurve {
     const t: {center: Point} = {center: null}
     if (Math.abs(Point.signedDoubledTriangleArea(a, b, c)) < 0.0001 || !EdgeNudger.FindArcCenter(a, b, c, t)) {
@@ -423,7 +423,7 @@ export class EdgeNudger extends Algorithm {
     return ret
   }
 
-  //  fans the couple i,i+1
+  // fans the couple i,i+1
   FanCouple(bundleHub: BundleBase, i: number, center: Point, radius: number): boolean {
     const lSeg: OrientedHubSegment = bundleHub.OrientedHubSegments[i]
     const rSeg: OrientedHubSegment = bundleHub.OrientedHubSegments[i + 1]
@@ -485,7 +485,7 @@ export class EdgeNudger extends Algorithm {
     let seg: BezierSeg = <BezierSeg>longerOrientedSeg.Segment
     const start: Point = seg.start
     const end: Point = seg.end
-    //  LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve("green", shorterDebugOnly), new DebugCurve("red", seg));
+    // LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve("green", shorterDebugOnly), new DebugCurve("red", seg));
     let steps = 0
     const maxSteps = 10
     let lowP1: Point = seg.start.mul(1 - EdgeNudger.SqueezeBound).add(seg.B(1).mul(EdgeNudger.SqueezeBound))

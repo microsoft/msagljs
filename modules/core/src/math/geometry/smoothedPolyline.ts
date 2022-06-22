@@ -105,11 +105,11 @@ export class SmoothedPolyline {
     const kNext = b.nextBezierCoefficient
     const a = b.prev
     const c = b.next
-    //    s = kPrev*a.point + (1 - kPrev)*b.point;
+    //   s = kPrev*a.point + (1 - kPrev)*b.point;
     const s = a.point.mul(kPrev).add(b.point.mul(1 - kPrev))
-    //    const e = kNext * c.point + (1 - kNext) * b.point;
+    //   const e = kNext * c.point + (1 - kNext) * b.point;
     const e = c.point.mul(kNext).add(b.point.mul(1 - kNext))
-    //   u = s*b.PreviousTangentCoefficient + (1 - b.PreviousTangentCoefficient)*b.point;
+    //  u = s*b.PreviousTangentCoefficient + (1 - b.PreviousTangentCoefficient)*b.point;
 
     const u = s.mul(b.previousTangentCoefficient).add(b.point.mul(1 - b.previousTangentCoefficient))
     //const v = e * b.nextTangentCoefficient + (1 - b.nextTangentCoefficient) * b.point;

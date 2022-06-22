@@ -86,7 +86,7 @@ test('random graphs', () => {
         }
 
         // const svgDebugWriter = new SvgDebugWriter('/tmp/bundleRand' + nodeCount + 'seed' + seed + '.svg')
-        //        svgDebugWriter.writeGeomGraph(g)
+        //       svgDebugWriter.writeGeomGraph(g)
       }
     }
 })
@@ -180,8 +180,8 @@ xtest('brandom subgraphs 50_60', () => {
           if (edges.length == 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
-          //          //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
-          //          //
+          //         //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
+          //         //
           //console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
           console.log('seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
@@ -233,7 +233,7 @@ test('fans', () => {
   // todo : add a check that EdgeNudger create disjoint segments inside of the hub
   const sr = new SplineRouter(g, Array.from(g.edges()))
   sr.run()
-  //  const svgDebugWriter = new SvgDebugWriter('/tmp/fan.svg')
+  // const svgDebugWriter = new SvgDebugWriter('/tmp/fan.svg')
   //svgDebugWriter.writeGeomGraph(g)
 })
 

@@ -32,10 +32,10 @@ import {TupleMap} from './tupleMap'
 
 // Adjust current bundle-routing with a number of heuristic
 export class StationPositionsAdjuster {
-  //  Algorithm settings
+  // Algorithm settings
   bundlingSettings: BundlingSettings
 
-  //  bundle data
+  // bundle data
   metroGraphData: MetroGraphData
 
   constructor(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings) {
@@ -70,7 +70,7 @@ export class StationPositionsAdjuster {
     metroGraphData.Initialize(true)
     //this time initialize the tight enterables also
     // this time initialize the tight enterables also
-    //             HubDebugger.ShowHubs(metroGraphData, bundlingSettings);
+    //            HubDebugger.ShowHubs(metroGraphData, bundlingSettings);
     // TimeMeasurer.DebugOutput("NodePositionsAdjuster stopped after " + step + " steps");
     // HubDebugger.ShowHubs(metroGraphData, bundlingSettings, true);
     // TimeMeasurer.DebugOutput("Final cost: " + CostCalculator.Cost(metroGraphData, bundlingSettings));
@@ -281,8 +281,8 @@ export class StationPositionsAdjuster {
 
   polylineLength: Map<Metroline, number>
 
-  //  Unbundle unnecessary edges:
-  //   instead of one bundle (a->bcd) we get two bundles (a->b,a->cd) with smaller ink
+  // Unbundle unnecessary edges:
+  //  instead of one bundle (a->bcd) we get two bundles (a->b,a->cd) with smaller ink
   UnglueEdgesFromBundleToSaveInk(alwaysExecuteSA: boolean): boolean {
     const segsToPolylines = new PointPairMap<Set<Metroline>>()
     this.ink = this.metroGraphData.Ink
@@ -357,7 +357,7 @@ export class StationPositionsAdjuster {
     return false
   }
 
-  //  allowed iff line (a,c) is legal and inkgain > 0
+  // allowed iff line (a,c) is legal and inkgain > 0
   SeparationShortcutAllowed(
     pp: PolylinePoint,
     segsToPolylines: PointPairMap<Set<Metroline>>,
@@ -738,7 +738,7 @@ export class StationPositionsAdjuster {
     p.prev.next = p
   }
 
-  //  split each edge that is too much constrained by the obstacles
+  // split each edge that is too much constrained by the obstacles
   RelaxConstrainedEdges(): boolean {
     const affectedPoints: PointSet = new PointSet()
     let progress = false

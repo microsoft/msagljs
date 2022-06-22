@@ -5,7 +5,7 @@ import {CdtTriangle} from '../../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {BundleBase} from './BundleBase'
 import {MetroNodeInfo} from './MetroNodeInfo'
 
-//  (this needs to be public because it's used elsewhere in an interface implementation)
+// (this needs to be public because it's used elsewhere in an interface implementation)
 
 export class Station {
   constructor(serialNumber: number, isRealNode: boolean, position: Point) {
@@ -13,7 +13,7 @@ export class Station {
     this.IsReal = isRealNode
     this.Position = position
     // if (this.debStop()) {
-    //   console.log(this)
+    //  console.log(this)
     // }
   }
 
@@ -24,16 +24,16 @@ export class Station {
     )
   }
 
-  //  id of the station (used for comparison)
+  // id of the station (used for comparison)
   SerialNumber: number
 
-  //  if true the station is a center of an obstacle
+  // if true the station is a center of an obstacle
   IsReal: boolean
 
-  //  radius of the corresponding hub
+  // radius of the corresponding hub
   Radius = 0
 
-  //  position of the corresponding hub
+  // position of the corresponding hub
   private _Position: Point
   public get Position(): Point {
     return this._Position
@@ -41,41 +41,41 @@ export class Station {
   public set Position(value: Point) {
     this._Position = value
     // if (this.debStop()) {
-    //   console.log(this)
+    //  console.log(this)
     // }
   }
 
-  //  neighbors sorted in counter-clockwise order around the station
+  // neighbors sorted in counter-clockwise order around the station
   Neighbors: Station[]
 
-  //  it maps each neighbor to its hub
+  // it maps each neighbor to its hub
   BundleBases: Map<Station, BundleBase> = new Map<Station, BundleBase>()
 
-  //  it maps a node to a set of tight polylines that can contain the node
+  // it maps a node to a set of tight polylines that can contain the node
   EnterableTightPolylines: Set<Polyline>
 
-  //  it maps a node to a set of loose polylines that can contain the node
+  // it maps a node to a set of loose polylines that can contain the node
   private EnterableLoosePolylines: Set<Polyline>
   getELP(): Set<Polyline> {
     return this.EnterableLoosePolylines
   }
   setELP(s: Set<Polyline>) {
     // if (this.SerialNumber == 32 && s.size > 0) {
-    //   console.log(this)
+    //  console.log(this)
     // }
     this.EnterableLoosePolylines = s
   }
   addEL(p: Polyline) {
     // if (this.SerialNumber == 32) {
-    //   console.log(this)
+    //  console.log(this)
     // }
     this.EnterableLoosePolylines.add(p)
   }
 
-  //  MetroNodeInfos corresponding to the node
+  // MetroNodeInfos corresponding to the node
   MetroNodeInfos: Array<MetroNodeInfo> = new Array<MetroNodeInfo>()
 
-  //  curve of the hub
+  // curve of the hub
   BoundaryCurve: ICurve
 
   public static less(a: Station, b: Station): boolean {

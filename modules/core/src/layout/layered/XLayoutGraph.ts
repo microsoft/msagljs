@@ -1,5 +1,5 @@
-//  Follows the idea from Gansner etc 93, creating a special graph
-//  for x-coordinates calculation
+// Follows the idea from Gansner etc 93, creating a special graph
+// for x-coordinates calculation
 
 import {BasicGraphOnEdges} from '../../structs/basicGraphOnEdges'
 
@@ -18,7 +18,7 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
 
   virtualVerticesEnd: number
 
-  //  we have 0,,,virtualVerticesStart-1 - usual vertices
+  // we have 0,,,virtualVerticesStart-1 - usual vertices
   // virtualVerticesStart,...,virtualVerticesEnd -virtual vertices
   // and virtualVirticesEnd+1, ...NumberOfVertices - nvertices
   weightMultiplierOfOriginalOriginal = 1
@@ -45,7 +45,7 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
     this.layerArrays = layerArrays
   }
 
-  //  following Gansner etc 93 returning weight multplier bigger if there are virtual nodes
+  // following Gansner etc 93 returning weight multplier bigger if there are virtual nodes
 
   EdgeWeightMultiplier(edge: PolyIntEdge): number {
     const s: number = edge.source
@@ -62,7 +62,7 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
     let k = 0
     /*Assert.assert(s >= this.layeredGraph.NodeCount)*/
     // check the graph on correctness`
-    //     throw new Error();//"XLayout graph is incorrect");
+    //    throw new Error();//"XLayout graph is incorrect");
     // here (s0,t0) is the edge of underlying graph
     let t0 = -1
     let s0 = -1
@@ -88,7 +88,7 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
     return ret
   }
 
-  //  caching edges weights
+  // caching edges weights
   SetEdgeWeights() {
     for (const intEdge of this.edges) {
       intEdge.weight = intEdge.weight * this.EdgeWeightMultiplier(intEdge)

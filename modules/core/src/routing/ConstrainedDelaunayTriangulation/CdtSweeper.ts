@@ -58,10 +58,10 @@ export class CdtSweeper extends Algorithm {
     }
 
     this.FinalizeTriangulation()
-    //  #if TEST_MSAGL && TEST_MSAGL
-    //              //TestTriangles();
-    //              //ShowFront(triangles,null,null,null);
-    //  #endif
+    // #if TEST_MSAGL && TEST_MSAGL
+    //             //TestTriangles();
+    //             //ShowFront(triangles,null,null,null);
+    // #endif
   }
 
   FinalizeTriangulation() {
@@ -209,19 +209,19 @@ export class CdtSweeper extends Algorithm {
       }
     }
     //throw new Error()
-    //  TestThatFrontIsConnected();
+    // TestThatFrontIsConnected();
   }
 
-  //  #if TEST_MSAGL && TEST_MSAGL
-  //  void TestThatFrontIsConnected() {
-  //      CdtFrontElement p = null;
-  //      foreach(var cdtFrontElement of front) {
-  //          if (p != null)
-  //              Assert.assert(p.RightSite == cdtFrontElement.LeftSite);
-  //          p = cdtFrontElement;
-  //      }
-  //  }
-  //  #endif
+  // #if TEST_MSAGL && TEST_MSAGL
+  // void TestThatFrontIsConnected() {
+  //     CdtFrontElement p = null;
+  //     foreach(var cdtFrontElement of front) {
+  //         if (p != null)
+  //             Assert.assert(p.RightSite == cdtFrontElement.LeftSite);
+  //         p = cdtFrontElement;
+  //     }
+  // }
+  // #endif
   EdgeEvent(edge: CdtEdge) {
     /*Assert.assert(edge.Constrained)*/
     if (CdtSweeper.EdgeIsProcessed(edge)) {
@@ -323,7 +323,7 @@ export class CdtSweeper extends Algorithm {
       }
     }
     ls = ls.concat(dc)
-    //    SvgDebugWriter.dumpDebugCurves(fn, ls)
+    //   SvgDebugWriter.dumpDebugCurves(fn, ls)
   }
 
   static GetDebugCurveOfCdtEdge(e: CdtEdge): DebugCurve {
@@ -356,53 +356,53 @@ export class CdtSweeper extends Algorithm {
     this.TriangulateEmptySpaceToTheLeft(piNode)
   }
 
-  //  #if TEST_MSAGL && TEST_MSAGL
-  //  void TestTriangles() {
-  //      var usedSites = new Set<CdtSite>();
-  //      foreach(var t of triangles)
-  //      usedSites.InsertRange(t.Sites);
-  //      foreach(var triangle of triangles) {
-  //          TestTriangle(triangle, usedSites);
-  //      }
-  //  }
-  //  void TestTriangle(CdtTriangle triangle, Set < CdtSite > usedSites) {
-  //      var tsites = triangle.Sites;
-  //      foreach(var site of usedSites) {
-  //          if (!tsites.Contains(site)) {
-  //              if (!SeparatedByConstrainedEdge(triangle, site) && InCircle(site, tsites[0], tsites[1], tsites[2])) {
-  //                  Array < ICurve > redCurves=new Array<ICurve>();
-  //                  redCurves.push(new Ellipse(2, 2, site.point));
-  //                  Array < ICurve > blueCurves = new Array<ICurve>();
-  //                  blueCurves.push(Circumcircle(tsites[0].point, tsites[1].point, tsites[2].point));
-  //                  ShowFront(triangles, front, redCurves, blueCurves);
-  //              }
-  //          }
-  //      }
-  //  }
-  //          static bool SeparatedByConstrainedEdge(CdtTriangle triangle, CdtSite site) {
-  //      for (int i = 0; i < 3; i++)
-  //      if (SeparatedByEdge(triangle, i, site))
-  //          return true;
-  //      return false;
-  //  }
-  //          static bool SeparatedByEdge(CdtTriangle triangle, int i, CdtSite site) {
-  //      var e = triangle.Edges[i];
-  //      var s = triangle.Sites.getItem(i + 2);
-  //      var a0 = ApproximateComparer.Sign(Point.SignedDoubledTriangleArea(s.point, e.upperSite.point, e.lowerSite.point));
-  //      var a1 = ApproximateComparer.Sign(Point.SignedDoubledTriangleArea(site.point, e.upperSite.point, e.lowerSite.point));
-  //      return a0 * a1 <= 0;
-  //  }
-  //  #endif
+  // #if TEST_MSAGL && TEST_MSAGL
+  // void TestTriangles() {
+  //     var usedSites = new Set<CdtSite>();
+  //     foreach(var t of triangles)
+  //     usedSites.InsertRange(t.Sites);
+  //     foreach(var triangle of triangles) {
+  //         TestTriangle(triangle, usedSites);
+  //     }
+  // }
+  // void TestTriangle(CdtTriangle triangle, Set < CdtSite > usedSites) {
+  //     var tsites = triangle.Sites;
+  //     foreach(var site of usedSites) {
+  //         if (!tsites.Contains(site)) {
+  //             if (!SeparatedByConstrainedEdge(triangle, site) && InCircle(site, tsites[0], tsites[1], tsites[2])) {
+  //                 Array < ICurve > redCurves=new Array<ICurve>();
+  //                 redCurves.push(new Ellipse(2, 2, site.point));
+  //                 Array < ICurve > blueCurves = new Array<ICurve>();
+  //                 blueCurves.push(Circumcircle(tsites[0].point, tsites[1].point, tsites[2].point));
+  //                 ShowFront(triangles, front, redCurves, blueCurves);
+  //             }
+  //         }
+  //     }
+  // }
+  //         static bool SeparatedByConstrainedEdge(CdtTriangle triangle, CdtSite site) {
+  //     for (int i = 0; i < 3; i++)
+  //     if (SeparatedByEdge(triangle, i, site))
+  //         return true;
+  //     return false;
+  // }
+  //         static bool SeparatedByEdge(CdtTriangle triangle, int i, CdtSite site) {
+  //     var e = triangle.Edges[i];
+  //     var s = triangle.Sites.getItem(i + 2);
+  //     var a0 = ApproximateComparer.Sign(Point.SignedDoubledTriangleArea(s.point, e.upperSite.point, e.lowerSite.point));
+  //     var a1 = ApproximateComparer.Sign(Point.SignedDoubledTriangleArea(site.point, e.upperSite.point, e.lowerSite.point));
+  //     return a0 * a1 <= 0;
+  // }
+  // #endif
   LeftCase(pi: CdtSite, hittedFrontElementNode: RBNode<CdtFrontElement>, t: {rightSite: CdtSite}): CdtSite {
     // left case
-    //                 if(db)ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.upperSite.point), LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.lowerSite.point));
+    //                if(db)ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.upperSite.point), LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.lowerSite.point));
     /*Assert.assert(closeDistEps(pi.point.x, hittedFrontElementNode.item.x))*/
     const hittedFrontElement = hittedFrontElementNode.item
     this.InsertAndLegalizeTriangle(pi, hittedFrontElement)
     const prevToHitted = this.front.previous(hittedFrontElementNode)
     const leftSite = prevToHitted.item.LeftSite
     t.rightSite = hittedFrontElementNode.item.RightSite
-    //                 if(db)ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, leftSite.point), LineSegment.mkPP(pi.point, prevToHitted.Item.RightSite.point));
+    //                if(db)ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, leftSite.point), LineSegment.mkPP(pi.point, prevToHitted.Item.RightSite.point));
     this.InsertAndLegalizeTriangle(pi, prevToHitted.item)
     this.front.deleteNodeInternal(prevToHitted)
     const d = this.front.remove(hittedFrontElement)
@@ -411,8 +411,8 @@ export class CdtSweeper extends Algorithm {
   }
 
   MiddleCase(pi: CdtSite, hittedFrontElementNode: RBNode<CdtFrontElement>, t: {rightSite: CdtSite}): CdtSite {
-    //             if(db)
-    //                 ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.upperSite.point), LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.lowerSite.point));
+    //            if(db)
+    //                ShowFrontWithSite(pi, LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.upperSite.point), LineSegment.mkPP(pi.point, hittedFrontElementNode.Item.Edge.lowerSite.point));
     const leftSite = hittedFrontElementNode.item.LeftSite
     t.rightSite = hittedFrontElementNode.item.RightSite
     this.InsertAndLegalizeTriangle(pi, hittedFrontElementNode.item)
@@ -458,7 +458,7 @@ export class CdtSweeper extends Algorithm {
     return c
   }
 
-  //  aNode is to the left of bNode, and they are consecutive
+  // aNode is to the left of bNode, and they are consecutive
   ShortcutTwoFrontElements(aNode: RBNode<CdtFrontElement>, bNode: RBNode<CdtFrontElement>): RBNode<CdtFrontElement> {
     const aElem = aNode.item
     const bElem = bNode.item
@@ -507,7 +507,7 @@ export class CdtSweeper extends Algorithm {
       ) {
         stack.push(prev.item.LeftSite)
         this.ShortcutTwoFrontElements(prev, leftLegNode)
-        //       ShowFrontWithSite(site);
+        //      ShowFrontWithSite(site);
       } else if (leftLegNode.item.LeftSite.point.y > leftLegNode.item.RightSite.point.y) {
         stack.push(prev.item.LeftSite)
       } else {
@@ -577,7 +577,7 @@ export class CdtSweeper extends Algorithm {
       return
     }
 
-    //  ShowFrontWithSite(piNode.Item.LeftSite);
+    // ShowFrontWithSite(piNode.Item.LeftSite);
     const stack = new Stack<CdtSite>()
     stack.push(piNode.item.LeftSite)
     while (true) {
@@ -660,19 +660,19 @@ export class CdtSweeper extends Algorithm {
 
   LegalizeEdgeForOtherCwTriangle(pi: CdtSite, edge: CdtEdge) {
     const i = edge.CwTriangle.TriEdges.index(edge)
-    //            if (i == -1)
-    //            {
-    //                Array<DebugCurve> ls = new Array<DebugCurve>();
-    //                ls.Add(new DebugCurve(new Ellipse(2, 2, pi.point)));
-    //                for (int j = 0; j < 3; j++)
-    //                {
-    //                    var ee = edge.CwTriangle.Edges[j];
-    //                    ls.Add(new DebugCurve(100,1, j == i ? "red" : "blue", new LineSegment(ee.upperSite.point, ee.lowerSite.point)));
-    //                }
-    //                ls.Add(new DebugCurve("purple", new LineSegment(edge.upperSite.point, edge.lowerSite.point)));
+    //           if (i == -1)
+    //           {
+    //               Array<DebugCurve> ls = new Array<DebugCurve>();
+    //               ls.Add(new DebugCurve(new Ellipse(2, 2, pi.point)));
+    //               for (int j = 0; j < 3; j++)
+    //               {
+    //                   var ee = edge.CwTriangle.Edges[j];
+    //                   ls.Add(new DebugCurve(100,1, j == i ? "red" : "blue", new LineSegment(ee.upperSite.point, ee.lowerSite.point)));
+    //               }
+    //               ls.Add(new DebugCurve("purple", new LineSegment(edge.upperSite.point, edge.lowerSite.point)));
     //
-    //                LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
-    //            }
+    //               LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
+    //           }
     /*Assert.assert(i >= 0)*/
     if (IsIllegal(pi, edge.upperSite, edge.CwTriangle.Sites.getItem(i + 2), edge.lowerSite)) {
       //ShowIllegalEdge(edge, i, pi);
@@ -692,27 +692,27 @@ export class CdtSweeper extends Algorithm {
     }
   }
 
-  //  #if TEST_MSAGL && TEST_MSAGL
-  //  Array < DebugCurve > ShowIllegalEdge(CdtEdge edge, CdtSite pi, int i) {
-  //      Array < DebugCurve > ls = new Array<DebugCurve>();
-  //      ls.push(DebugCurve.mkDebugCurveTWCI(new Ellipse(2, 2, pi.point)));
-  //      for (int j = 0; j < 3; j++) {
-  //          var ee = edge.CcwTriangle.Edges[j];
-  //          ls.push(DebugCurve.mkDebugCurveTWCI(j == i ? "red" : "blue", LineSegment.mkPP(ee.upperSite.point, ee.lowerSite.point)));
-  //      }
-  //      ls.push(DebugCurve.mkDebugCurveTWCI(100, 1, "black", Circumcircle(edge.CcwTriangle.Sites.getItem(0].point, edge.CcwTriangle.Sites[1].point, edge.CcwTriangle.Sites[2).point)));
-  //      LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
-  //      return ls;
-  //  }
-  //          static Ellipse Circumcircle(Point a, Point b, Point c) {
-  //      var mab = 0.5 * (a + b);
-  //      var mbc = 0.5 * (c + b);
-  //      Point center;
-  //      Point.LineLineIntersection(mab, mab + (b - a).Rotate(Math.PI / 2), mbc, mbc + (b - c).Rotate(Math.PI / 2), out center);
-  //      var r = (center - a).Length;
-  //      return new Ellipse(r, r, center);
-  //  }
-  //  #endif
+  // #if TEST_MSAGL && TEST_MSAGL
+  // Array < DebugCurve > ShowIllegalEdge(CdtEdge edge, CdtSite pi, int i) {
+  //     Array < DebugCurve > ls = new Array<DebugCurve>();
+  //     ls.push(DebugCurve.mkDebugCurveTWCI(new Ellipse(2, 2, pi.point)));
+  //     for (int j = 0; j < 3; j++) {
+  //         var ee = edge.CcwTriangle.Edges[j];
+  //         ls.push(DebugCurve.mkDebugCurveTWCI(j == i ? "red" : "blue", LineSegment.mkPP(ee.upperSite.point, ee.lowerSite.point)));
+  //     }
+  //     ls.push(DebugCurve.mkDebugCurveTWCI(100, 1, "black", Circumcircle(edge.CcwTriangle.Sites.getItem(0].point, edge.CcwTriangle.Sites[1].point, edge.CcwTriangle.Sites[2).point)));
+  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
+  //     return ls;
+  // }
+  //         static Ellipse Circumcircle(Point a, Point b, Point c) {
+  //     var mab = 0.5 * (a + b);
+  //     var mbc = 0.5 * (c + b);
+  //     Point center;
+  //     Point.LineLineIntersection(mab, mab + (b - a).Rotate(Math.PI / 2), mbc, mbc + (b - c).Rotate(Math.PI / 2), out center);
+  //     var r = (center - a).Length;
+  //     return new Ellipse(r, r, center);
+  // }
+  // #endif
 
   ProjectToFront(site: CdtSite): RBNode<CdtFrontElement> {
     return this.front.findLast((s) => s.x <= site.point.x)
@@ -746,9 +746,9 @@ function InCone(pi: CdtSite, a: CdtSite, b: CdtSite, c: CdtSite): boolean {
     Point.getTriangleOrientation(b.point, pi.point, c.point) == TriangleOrientation.Clockwise
   )
 }
-//  Testing that d of inside of the circumcircle of (a,b,c).
-//  The good explanation of this test is of
-//  "Guibas, Stolfi,"Primitives for the Manipulation of General Subdivisions and the Computation of Voronoi Diagrams
+// Testing that d of inside of the circumcircle of (a,b,c).
+// The good explanation of this test is of
+// "Guibas, Stolfi,"Primitives for the Manipulation of General Subdivisions and the Computation of Voronoi Diagrams
 //
 export function InCircle(d: CdtSite, a: CdtSite, b: CdtSite, c: CdtSite): boolean {
   /*Assert.assert(
@@ -837,19 +837,19 @@ function Flip(pi: CdtSite, edge: CdtEdge): CdtEdge {
   return newEdge
 }
 // #if TEST_MSAGL && TEST_MSAGL
-//     static void ShowFlip(CdtSite pi, CdtTriangle t, CdtTriangle ot) {
-//         Array<DebugCurve> ls=new Array<DebugCurve>();
-//         ls.Add(new DebugCurve(new Ellipse(2,2, pi.point)));
-//         for(int i=0;i<3;i++) {
-//             var e=t.Edges[i];
-//             ls.Add(new DebugCurve(100, 1, "red", new LineSegment(e.upperSite.point,e.lowerSite.point)));
-//         }
-//         for (int i = 0; i < 3; i++)
-//         {
-//             var e = ot.Edges[i];
-//             ls.Add(new DebugCurve(100, 1, "blue", new LineSegment(e.upperSite.point, e.lowerSite.point)));
-//         }
-//         ls.Add(new DebugCurve(Circumcircle(t.Sites.getItem(0].point, t.Sites[1].point, t.Sites[2).point)));
-//         LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
-//     }
+//    static void ShowFlip(CdtSite pi, CdtTriangle t, CdtTriangle ot) {
+//        Array<DebugCurve> ls=new Array<DebugCurve>();
+//        ls.Add(new DebugCurve(new Ellipse(2,2, pi.point)));
+//        for(int i=0;i<3;i++) {
+//            var e=t.Edges[i];
+//            ls.Add(new DebugCurve(100, 1, "red", new LineSegment(e.upperSite.point,e.lowerSite.point)));
+//        }
+//        for (int i = 0; i < 3; i++)
+//        {
+//            var e = ot.Edges[i];
+//            ls.Add(new DebugCurve(100, 1, "blue", new LineSegment(e.upperSite.point, e.lowerSite.point)));
+//        }
+//        ls.Add(new DebugCurve(Circumcircle(t.Sites.getItem(0].point, t.Sites[1].point, t.Sites[2).point)));
+//        LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
+//    }
 // #endif

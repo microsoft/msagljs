@@ -28,7 +28,7 @@ import {HitTestBehavior} from '../../../math/geometry/RTree/HitTestBehavior'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
 import {GeomEdge} from '../../..'
 type PointProjection = (p: Point) => number
-//  following paper "Orthogonal Connector Routing" which is included  of the project
+// following paper "Orthogonal Connector Routing" which is included  of the project
 export class Nudger {
   get HasGroups(): boolean {
     return null != this.HierarchyOfGroups && this.HierarchyOfGroups.Count > 0
@@ -40,12 +40,12 @@ export class Nudger {
   Obstacles: Array<Polyline>
 
   PathVisibilityGraph: VisibilityGraph
-  //   "nudges" paths to decrease the number of intersections and stores the results inside WidePaths of "paths"
-  //  paths through the graph
-  //  two parallel paths should be separated by this distance if it is feasible
-  //  polygonal convex obstacles organized  of a tree; the obstacles here are padded original obstacles
+  //  "nudges" paths to decrease the number of intersections and stores the results inside WidePaths of "paths"
+  // paths through the graph
+  // two parallel paths should be separated by this distance if it is feasible
+  // polygonal convex obstacles organized  of a tree; the obstacles here are padded original obstacles
   //
-  //  <returns></returns>
+  // <returns></returns>
   constructor(paths: Array<Path>, cornerFitRad: number, obstacles: Array<Polyline>, ancestorsSets: Map<Shape, Set<Shape>>) {
     this.AncestorsSets = ancestorsSets
     this.HierarchyOfGroups = CreateRectNodeOnArrayOfRectNodes(
@@ -267,8 +267,8 @@ export class Nudger {
     return Nudger.RemoveSwitchbacksAndMiddlePoints(this.GetShiftedPointsSimple(path))
   }
 
-  //  sometimes we have very small mistakes  of the positions that have to be fixed
-  //  <returns></returns>
+  // sometimes we have very small mistakes  of the positions that have to be fixed
+  // <returns></returns>
   static Rectilinearise(a: Point, b: Point): Point {
     if (a.x == b.x || a.y == b.y) return b
     const dx = Math.abs(a.x - b.x)
@@ -301,183 +301,183 @@ export class Nudger {
     return this.NudgingDirection == Direction.North ? new Point(t, point.y) : new Point(point.x, -t)
   }
 
-  //  static ShowPathsFromPoints(paths: Array<Path>, enumerable: Array<Polyline>) {
-  //     let dd = new Array<DebugCurve>();
-  //     if ((enumerable != null)) {
-  //         dd=dd.concat(Nudger.GetObstacleBoundaries(enumerable, "grey"));
-  //     }
+  // static ShowPathsFromPoints(paths: Array<Path>, enumerable: Array<Polyline>) {
+  //    let dd = new Array<DebugCurve>();
+  //    if ((enumerable != null)) {
+  //        dd=dd.concat(Nudger.GetObstacleBoundaries(enumerable, "grey"));
+  //    }
 
-  //     let i: number = 0;
-  //     for (let p  of paths) {
-  //         dd = dd.concat(Nudger.PathDebugCurvesFromPoints(p, DebugCurve.colors[Math.min(DebugCurve.colors.length, i++)]));
-  //     }
+  //    let i: number = 0;
+  //    for (let p  of paths) {
+  //        dd = dd.concat(Nudger.PathDebugCurvesFromPoints(p, DebugCurve.colors[Math.min(DebugCurve.colors.length, i++)]));
+  //    }
 
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
   // }
 
   // static PathDebugCurvesFromPoints(path: Path, color: string): Array<DebugCurve> {
-  //     const let startWidth: number = 0.01;
-  //     const let endWidth: number = 3;
-  //     let pts = path.PathPoints.toArray();
-  //     let delta: number = ((endWidth - startWidth)
-  //                 / (pts.length - 1));
-  //     for (let i: number = 0; (i
-  //                 < (pts.length - 1)); i++) {
-  //         yield;
-  //     }
+  //    const let startWidth: number = 0.01;
+  //    const let endWidth: number = 3;
+  //    let pts = path.PathPoints.toArray();
+  //    let delta: number = ((endWidth - startWidth)
+  //                / (pts.length - 1));
+  //    for (let i: number = 0; (i
+  //                < (pts.length - 1)); i++) {
+  //        yield;
+  //    }
 
-  //     return new DebugCurve((startWidth
-  //                     + (delta * i)), color, new LineSegment(pts[i], pts[(i + 1)]));
+  //    return new DebugCurve((startWidth
+  //                    + (delta * i)), color, new LineSegment(pts[i], pts[(i + 1)]));
   // }
 
-  //  static ShowParamPaths(s: Point, e: Point, params paths: Path[]) {
-  //     Nudger.ShowOrderedPaths(null, paths, s, e);
+  // static ShowParamPaths(s: Point, e: Point, params paths: Path[]) {
+  //    Nudger.ShowOrderedPaths(null, paths, s, e);
   // }
 
-  // //          ReSharper disable UnusedMember.Local
-  //  static ShowOrderedPaths(obstacles: Array<Polyline>, paths: Array<Path>, s: Point, e: Point) {
-  //     //            ReSharper restore UnusedMember.Local
-  //     let colors: string[] = [
-  //             "red",
-  //             "green",
-  //             "blue",
-  //             "violet",
-  //             "rose",
-  //             "black"];
-  //     const let startWidth: number = 0.001;
-  //     const let endWidth: number = 0.1;
-  //     let dd = new Array<DebugCurve>();
-  //     if ((obstacles != null)) {
-  //         dd.AddRange(Nudger.GetObstacleBoundaries(obstacles, "grey"));
-  //     }
+  // //         ReSharper disable UnusedMember.Local
+  // static ShowOrderedPaths(obstacles: Array<Polyline>, paths: Array<Path>, s: Point, e: Point) {
+  //    //            ReSharper restore UnusedMember.Local
+  //    let colors: string[] = [
+  //            "red",
+  //            "green",
+  //            "blue",
+  //            "violet",
+  //            "rose",
+  //            "black"];
+  //    const let startWidth: number = 0.001;
+  //    const let endWidth: number = 0.1;
+  //    let dd = new Array<DebugCurve>();
+  //    if ((obstacles != null)) {
+  //        dd.AddRange(Nudger.GetObstacleBoundaries(obstacles, "grey"));
+  //    }
 
-  //     let i: number = 0;
-  //     for (let path  of paths) {
-  //         dd.AddRange(Nudger.GetTestPathAsDebugCurve(startWidth, endWidth, colors[Math.min((colors.length - 1), i++)], path));
-  //     }
+  //    let i: number = 0;
+  //    for (let path  of paths) {
+  //        dd.AddRange(Nudger.GetTestPathAsDebugCurve(startWidth, endWidth, colors[Math.min((colors.length - 1), i++)], path));
+  //    }
 
-  //     let ell = new DebugCurve(1, "black", new Ellipse(0.01, 0.01, s));
-  //     dd.Add(ell);
-  //     dd.Add(new DebugCurve(1, "black", new Ellipse(0.02, 0.02, e)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(Nudger.GetObstacleBoundaries(obstacles, "lightblue")));
+  //    let ell = new DebugCurve(1, "black", new Ellipse(0.01, 0.01, s));
+  //    dd.Add(ell);
+  //    dd.Add(new DebugCurve(1, "black", new Ellipse(0.02, 0.02, e)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(Nudger.GetObstacleBoundaries(obstacles, "lightblue")));
   // }
 
   // static GetTestPathAsDebugCurve(startWidth: number, endWidth: number, color: string, path: Path): Array<DebugCurve> {
-  //     if ((path.PathEdges.Count() > 0)) {
-  //         let count: number = path.PathEdges.Count();
-  //         let deltaW: number = ((endWidth - startWidth)
-  //                     / (count - 1));
-  //         // TODO: Warning!!!, inline IF is not supported ?
-  //         (count > 1);
-  //         1;
-  //         // if count ==1 the value of deltaW does not matter
-  //         let i: number = 0;
-  //         for (let e  of path.PathEdges) {
-  //             yield;
-  //         }
+  //    if ((path.PathEdges.Count() > 0)) {
+  //        let count: number = path.PathEdges.Count();
+  //        let deltaW: number = ((endWidth - startWidth)
+  //                    / (count - 1));
+  //        // TODO: Warning!!!, inline IF is not supported ?
+  //        (count > 1);
+  //        1;
+  //        // if count ==1 the value of deltaW does not matter
+  //        let i: number = 0;
+  //        for (let e  of path.PathEdges) {
+  //            yield;
+  //        }
 
-  //         return new DebugCurve(150, (startWidth
-  //                         + (deltaW
-  //                         * (i + 1))), color, new LineSegment(e.Source, e.Target));
-  //     }
-  //     else {
-  //         let count: number = path.PathPoints.count();
-  //         let pts = path.PathPoints.toArray();
-  //         let deltaW = ((endWidth - startWidth)
-  //                     / (count - 1));
-  //         // TODO: Warning!!!, inline IF is not supported ?
-  //         (count > 1);
-  //         1;
-  //         // if count ==1 the value of deltaW does not matter
-  //         for (let i: number = 0; (i
-  //                     < (count - 1)); i++) {
-  //             yield;
-  //         }
+  //        return new DebugCurve(150, (startWidth
+  //                        + (deltaW
+  //                        * (i + 1))), color, new LineSegment(e.Source, e.Target));
+  //    }
+  //    else {
+  //        let count: number = path.PathPoints.count();
+  //        let pts = path.PathPoints.toArray();
+  //        let deltaW = ((endWidth - startWidth)
+  //                    / (count - 1));
+  //        // TODO: Warning!!!, inline IF is not supported ?
+  //        (count > 1);
+  //        1;
+  //        // if count ==1 the value of deltaW does not matter
+  //        for (let i: number = 0; (i
+  //                    < (count - 1)); i++) {
+  //            yield;
+  //        }
 
-  //         return new DebugCurve(150, (startWidth
-  //                         + (deltaW * i)), color, new LineSegment(pts[i], pts[(i + 1)]));
-  //     }
+  //        return new DebugCurve(150, (startWidth
+  //                        + (deltaW * i)), color, new LineSegment(pts[i], pts[(i + 1)]));
+  //    }
 
   // }
 
-  //  static GetTestEdgePathAsDebugCurves(startWidth: number, endWidth: number, color: string, path: Path): Array<DebugCurve> {
-  //     let count: number = path.PathPoints.count();
-  //     let deltaW: number = ((endWidth - startWidth)
-  //                 / (count - 1));
-  //     // TODO: Warning!!!, inline IF is not supported ?
-  //     (count > 1);
-  //     1;
-  //     // if count ==1 the value of deltaW does not matter
-  //     let points = path.PathPoints.toArray();
-  //     for (let i: number = 0; (i
-  //                 < (points.length - 1)); i++) {
-  //         yield;
-  //     }
+  // static GetTestEdgePathAsDebugCurves(startWidth: number, endWidth: number, color: string, path: Path): Array<DebugCurve> {
+  //    let count: number = path.PathPoints.count();
+  //    let deltaW: number = ((endWidth - startWidth)
+  //                / (count - 1));
+  //    // TODO: Warning!!!, inline IF is not supported ?
+  //    (count > 1);
+  //    1;
+  //    // if count ==1 the value of deltaW does not matter
+  //    let points = path.PathPoints.toArray();
+  //    for (let i: number = 0; (i
+  //                < (points.length - 1)); i++) {
+  //        yield;
+  //    }
 
-  //     return new DebugCurve(125, (startWidth
-  //                     + (deltaW * i)), color, new LineSegment(points[i], points[(i + 1)]));
+  //    return new DebugCurve(125, (startWidth
+  //                    + (deltaW * i)), color, new LineSegment(points[i], points[(i + 1)]));
   // }
 
   // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // static GetEdgePathFromPathEdgesAsDebugCurves(startWidth: number, endWidth: number, color: string, path: Path): Array<DebugCurve> {
-  //     let points = path.PathPoints.toArray();
-  //     let count: number = points.length;
-  //     let deltaW: number = ((endWidth - startWidth)
-  //                 / (count - 1));
-  //     // TODO: Warning!!!, inline IF is not supported ?
-  //     (count > 1);
-  //     1;
-  //     // if count ==1 the value of deltaW does not matter
-  //     for (let i: number = 0; (i
-  //                 < (points.length - 1)); i++) {
-  //         yield;
-  //     }
+  //    let points = path.PathPoints.toArray();
+  //    let count: number = points.length;
+  //    let deltaW: number = ((endWidth - startWidth)
+  //                / (count - 1));
+  //    // TODO: Warning!!!, inline IF is not supported ?
+  //    (count > 1);
+  //    1;
+  //    // if count ==1 the value of deltaW does not matter
+  //    for (let i: number = 0; (i
+  //                < (points.length - 1)); i++) {
+  //        yield;
+  //    }
 
-  //     return new DebugCurve(120, (startWidth
-  //                     + (deltaW * i)), color, new LineSegment(points[i], points[(i + 1)]));
+  //    return new DebugCurve(120, (startWidth
+  //                    + (deltaW * i)), color, new LineSegment(points[i], points[(i + 1)]));
   // }
 
-  // //  ReSharper disable UnusedMember.Local
-  //  static ShowEdgePaths(obstacles: Array<Polyline>, edgePaths: Array<Path>) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let debCurves: Array<DebugCurve> = Nudger.GetDebCurvesOfPaths(obstacles, edgePaths);
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
+  // // ReSharper disable UnusedMember.Local
+  // static ShowEdgePaths(obstacles: Array<Polyline>, edgePaths: Array<Path>) {
+  //    //  ReSharper restore UnusedMember.Local
+  //    let debCurves: Array<DebugCurve> = Nudger.GetDebCurvesOfPaths(obstacles, edgePaths);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
   // }
 
-  //  static GetDebCurvesOfPaths(enumerable: Array<Polyline>, edgePaths: Array<Path>): Array<DebugCurve> {
-  //     let debCurves = Nudger.GetObstacleBoundaries(enumerable, "black");
-  //     let i: number = 0;
-  //     for (let edgePath  of edgePaths) {
-  //         debCurves.AddRange(Nudger.GetTestEdgePathAsDebugCurves(0.2, 4, DebugCurve.colors[((i + 1)
-  //                             % DebugCurve.colors.length)], edgePath));
-  //     }
+  // static GetDebCurvesOfPaths(enumerable: Array<Polyline>, edgePaths: Array<Path>): Array<DebugCurve> {
+  //    let debCurves = Nudger.GetObstacleBoundaries(enumerable, "black");
+  //    let i: number = 0;
+  //    for (let edgePath  of edgePaths) {
+  //        debCurves.AddRange(Nudger.GetTestEdgePathAsDebugCurves(0.2, 4, DebugCurve.colors[((i + 1)
+  //                            % DebugCurve.colors.length)], edgePath));
+  //    }
 
-  //     return debCurves;
+  //    return debCurves;
   // }
 
-  //  static ShowPathsInLoop(enumerable: Array<Polyline>, edgePaths: Array<Path>, point: Point) {
-  //     for (let edgePath  of edgePaths.where(() => {  }, (((path.PathPoints.First() - point).Length < 1)
-  //                     || ((path.PathPoints.Last() - point).Length < 1)))) {
-  //         let debCurves = Nudger.GetObstacleBoundaries(enumerable, "black");
-  //         debCurves.AddRange(Nudger.GetTestEdgePathAsDebugCurves(0.1, 4, "red", edgePath));
-  //         LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
-  //     }
+  // static ShowPathsInLoop(enumerable: Array<Polyline>, edgePaths: Array<Path>, point: Point) {
+  //    for (let edgePath  of edgePaths.where(() => {  }, (((path.PathPoints.First() - point).Length < 1)
+  //                    || ((path.PathPoints.Last() - point).Length < 1)))) {
+  //        let debCurves = Nudger.GetObstacleBoundaries(enumerable, "black");
+  //        debCurves.AddRange(Nudger.GetTestEdgePathAsDebugCurves(0.1, 4, "red", edgePath));
+  //        LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
+  //    }
 
   // }
 
-  // //  ReSharper disable UnusedMember.Local
+  // // ReSharper disable UnusedMember.Local
   // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowLongSegsWithIdealPositions(dir: Direction) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let debCurves = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
-  //     let i: number = 0;
-  //     debCurves.AddRange(this.LongestNudgedSegs.Select(() => {  }, Nudger.DebugCurveOfLongSeg(ls, DebugCurve.colors[i++, Percent, DebugCurve.colors.length], dir)));
-  //     DebugCurveCollection.WriteToFile(debCurves, "c:/tmp/longSegs");
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
+  //    //  ReSharper restore UnusedMember.Local
+  //    let debCurves = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
+  //    let i: number = 0;
+  //    debCurves.AddRange(this.LongestNudgedSegs.Select(() => {  }, Nudger.DebugCurveOfLongSeg(ls, DebugCurve.colors[i++, Percent, DebugCurve.colors.length], dir)));
+  //    DebugCurveCollection.WriteToFile(debCurves, "c:/tmp/longSegs");
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
   // }
 
   // static DebugCurveOfLongSeg(ls: LongestNudgedSegment, s: string, dir: Direction): DebugCurve {
-  //     return new DebugCurve(1, s, Nudger.LineSegOfLongestSeg(ls, dir));
+  //    return new DebugCurve(1, s, Nudger.LineSegOfLongestSeg(ls, dir));
   // }
 
   static LineSegOfLongestSeg(ls: LongestNudgedSegment, dir: Direction): ICurve {
@@ -506,79 +506,79 @@ export class Nudger {
   }
 
   // ShowPathsDebug(edgePaths: Array<Path>) {
-  //     let debCurves = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
-  //     let i: number = 0;
-  //     for (let edgePath  of edgePaths) {
-  //         debCurves.AddRange(Nudger.GetEdgePathFromPathEdgesAsDebugCurves(0.01, 0.4, DebugCurve.colors[((i + 1)
-  //                             % DebugCurve.colors.length)], edgePath));
-  //     }
+  //    let debCurves = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
+  //    let i: number = 0;
+  //    for (let edgePath  of edgePaths) {
+  //        debCurves.AddRange(Nudger.GetEdgePathFromPathEdgesAsDebugCurves(0.01, 0.4, DebugCurve.colors[((i + 1)
+  //                            % DebugCurve.colors.length)], edgePath));
+  //    }
 
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(debCurves);
   // }
 
   // static PathDebugCurves(path: Path, color: string): Array<DebugCurve> {
-  //     let d = path.PathEdges.Select(() => {  }, new DebugCurve(70, 0.5, color, new LineSegment(e.Source, e.Target)));
-  //     return d.Concat(Nudger.MarkPathVerts(path));
+  //    let d = path.PathEdges.Select(() => {  }, new DebugCurve(70, 0.5, color, new LineSegment(e.Source, e.Target)));
+  //    return d.Concat(Nudger.MarkPathVerts(path));
   // }
 
   // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // private static MarkPathVerts(path: Path): Array<DebugCurve> {
-  //     let first: boolean = true;
-  //     let p = new Point();
-  //     for (let p0  of path.PathPoints) {
-  //         if (first) {
-  //             yield;
-  //             return new DebugCurve(200, 1, "violet", CurveFactory.CreateDiamond(5, 5, p0));
-  //             first = false;
-  //         }
-  //         else {
-  //             yield;
-  //         }
+  //    let first: boolean = true;
+  //    let p = new Point();
+  //    for (let p0  of path.PathPoints) {
+  //        if (first) {
+  //            yield;
+  //            return new DebugCurve(200, 1, "violet", CurveFactory.CreateDiamond(5, 5, p0));
+  //            first = false;
+  //        }
+  //        else {
+  //            yield;
+  //        }
 
-  //         return new DebugCurve(100, 0.5, "brown", CurveFactory.CreateEllipse(1.5, 1.5, p0));
-  //         p = p0;
-  //     }
+  //        return new DebugCurve(100, 0.5, "brown", CurveFactory.CreateEllipse(1.5, 1.5, p0));
+  //        p = p0;
+  //    }
 
-  //     yield;
-  //     return new DebugCurve(200, 1, "green", CurveFactory.CreateDiamond(3, 3, p));
+  //    yield;
+  //    return new DebugCurve(200, 1, "green", CurveFactory.CreateDiamond(3, 3, p));
   // }
 
-  //  static PathDebugCurvesFromPoint(path: Path): Array<DebugCurve> {
-  //     let l = new Array<Point>(path.PathPoints);
-  //     for (let i: number = 0; (i
-  //                 < (l.Count - 1)); i++) {
-  //         yield;
-  //     }
+  // static PathDebugCurvesFromPoint(path: Path): Array<DebugCurve> {
+  //    let l = new Array<Point>(path.PathPoints);
+  //    for (let i: number = 0; (i
+  //                < (l.Count - 1)); i++) {
+  //        yield;
+  //    }
 
-  //     return new DebugCurve(4, "red", new LineSegment(l[i], l[(i + 1)]));
+  //    return new DebugCurve(4, "red", new LineSegment(l[i], l[(i + 1)]));
   // }
 
   //
-  //  ReSharper disable UnusedMember.Local
-  //         void ShowEdgesOfEdgePath(Path path){
-  //  ReSharper restore UnusedMember.Local
-  //             string[] colors = {"red", "brown", "purple"};
-  //             const double w0 = 1;
-  //             const double w1 = 3;
-  //             double dw = (w1 - w0)/path.OrientedSubpaths.Count;
-  //             int i = 0;
-  //             var dc = new Array<DebugCurve>();
-  //             foreach (var s  of path.OrientedSubpaths){
-  //                 dc.AddRange(SubpathDebugCurves(w0 + dw*i, colors[Math.Min(i++, colors.Length - 1)], s));
-  //             }
-  //             LayoutAlgorithmSettings.ShowDebugCurves(dc.ToArray());
-  //         }
+  // ReSharper disable UnusedMember.Local
+  //        void ShowEdgesOfEdgePath(Path path){
+  // ReSharper restore UnusedMember.Local
+  //            string[] colors = {"red", "brown", "purple"};
+  //            const double w0 = 1;
+  //            const double w1 = 3;
+  //            double dw = (w1 - w0)/path.OrientedSubpaths.Count;
+  //            int i = 0;
+  //            var dc = new Array<DebugCurve>();
+  //            foreach (var s  of path.OrientedSubpaths){
+  //                dc.AddRange(SubpathDebugCurves(w0 + dw*i, colors[Math.Min(i++, colors.Length - 1)], s));
+  //            }
+  //            LayoutAlgorithmSettings.ShowDebugCurves(dc.ToArray());
+  //        }
   //
-  //         static Array<DebugCurve> SubpathDebugCurves(double w, string color, OrientedSubpath subpath){
-  //             return subpath.LinkedPath.Select(e => new DebugCurve(w, color, new LineSegment(e.Source.Point, e.Target.Point)));
-  //         }
-  //  static GetObstacleBoundaries(obstacles: Array<Polyline>, color: string): Array<DebugCurve> {
-  //     let debugCurves = new Array<DebugCurve>();
-  //     if ((obstacles != null)) {
-  //         debugCurves.AddRange(obstacles.select(() => {  }, new DebugCurve(50, 0.3, color, poly)));
-  //     }
+  //        static Array<DebugCurve> SubpathDebugCurves(double w, string color, OrientedSubpath subpath){
+  //            return subpath.LinkedPath.Select(e => new DebugCurve(w, color, new LineSegment(e.Source.Point, e.Target.Point)));
+  //        }
+  // static GetObstacleBoundaries(obstacles: Array<Polyline>, color: string): Array<DebugCurve> {
+  //    let debugCurves = new Array<DebugCurve>();
+  //    if ((obstacles != null)) {
+  //        debugCurves.AddRange(obstacles.select(() => {  }, new DebugCurve(50, 0.3, color, poly)));
+  //    }
 
-  //     return debugCurves;
+  //    return debugCurves;
   // }
 
   CreateConstraintsBetweenLongestSegments() {
@@ -659,7 +659,7 @@ export class Nudger {
           segment.IdealPosition,
           segment.Width,
         )
-        //            Assert.assert(leftBound + Curve.DistanceEpsilon < rightBound); //this assert does not hold for overlaps
+        //           Assert.assert(leftBound + Curve.DistanceEpsilon < rightBound); //this assert does not hold for overlaps
         if (leftBound != Number.NEGATIVE_INFINITY) {
           this.Solver.SetLowBound(leftBound, segment.Id)
         }
@@ -677,41 +677,41 @@ export class Nudger {
     return direction == Direction.North ? segment.Start.x : -segment.Start.y
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   // ShowSegmentBounds(segment: LongestNudgedSegment) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let dd = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
-  //     let segtop = segment.Edges.Max(() => {  }, Math.max(e.Source.Y, e.Target.Y));
-  //     let segbottom = segment.Edges.Min(() => {  }, Math.min(e.Source.Y, e.Target.Y));
-  //     let segx = segment.Start.x;
-  //     let seg = new DebugCurve(80, 1, "brown", new LineSegment(new Point(segx, segbottom), new Point(segx, segtop)));
-  //     let leftbound = new DebugCurve(80, 1, "red", new LineSegment(new Point(segment.GetLeftBound(), segbottom), new Point(segment.GetLeftBound(), segtop)));
-  //     let rightbound = new DebugCurve(80, 1, "green", new LineSegment(new Point(segment.GetRightBound(), segbottom), new Point(segment.GetRightBound(), segtop)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(new, [));
-  //     seg;
-  //     leftbound;
-  //     rightbound;
+  //    //  ReSharper restore UnusedMember.Local
+  //    let dd = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
+  //    let segtop = segment.Edges.Max(() => {  }, Math.max(e.Source.Y, e.Target.Y));
+  //    let segbottom = segment.Edges.Min(() => {  }, Math.min(e.Source.Y, e.Target.Y));
+  //    let segx = segment.Start.x;
+  //    let seg = new DebugCurve(80, 1, "brown", new LineSegment(new Point(segx, segbottom), new Point(segx, segtop)));
+  //    let leftbound = new DebugCurve(80, 1, "red", new LineSegment(new Point(segment.GetLeftBound(), segbottom), new Point(segment.GetLeftBound(), segtop)));
+  //    let rightbound = new DebugCurve(80, 1, "green", new LineSegment(new Point(segment.GetRightBound(), segbottom), new Point(segment.GetRightBound(), segtop)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(new, [));
+  //    seg;
+  //    leftbound;
+  //    rightbound;
   // }
 
-  // //  ReSharper disable UnusedMember.Local
+  // // ReSharper disable UnusedMember.Local
   // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowSegment(segment: LongestNudgedSegment) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let dd = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
-  //     let segtop = segment.Edges.Max(() => {  }, Math.max(e.Source.Y, e.Target.Y));
-  //     let segbottom = segment.Edges.Min(() => {  }, Math.min(e.Source.Y, e.Target.Y));
-  //     let segx = segment.Start.x;
-  //     let seg = new DebugCurve(80, 1, "brown", new LineSegment(new Point(segx, segbottom), new Point(segx, segtop)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(new, [));
-  //     seg;
+  //    //  ReSharper restore UnusedMember.Local
+  //    let dd = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
+  //    let segtop = segment.Edges.Max(() => {  }, Math.max(e.Source.Y, e.Target.Y));
+  //    let segbottom = segment.Edges.Min(() => {  }, Math.min(e.Source.Y, e.Target.Y));
+  //    let segx = segment.Start.x;
+  //    let seg = new DebugCurve(80, 1, "brown", new LineSegment(new Point(segx, segbottom), new Point(segx, segtop)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.concat(new, [));
+  //    seg;
   // }
 
   LongestNudgedSegs: Array<LongestNudgedSegment>
 
   PathOrders: Map<AxisEdge, Array<PathEdge>>
 
-  //  maps each path to the pair of obstacles; the first element of the pair is
-  //  where the path starts and the second where the path ends
+  // maps each path to the pair of obstacles; the first element of the pair is
+  // where the path starts and the second where the path ends
   PathToObstacles: Map<Path, [Polyline, Polyline]>
 
   FindFreeSpaceInDirection(axisEdges: Array<AxisEdge>) {
@@ -765,7 +765,7 @@ export class Nudger {
       return this.AncestorsSets.get(shape)
     }
 
-    //  This is a FreePort or Waypoint; return all spatial parents.
+    // This is a FreePort or Waypoint; return all spatial parents.
     return new Set<Shape>(this.HierarchyOfGroups.AllHitItems(Rectangle.mkPP(port.Location, port.Location), null))
   }
 
@@ -900,9 +900,9 @@ export class Nudger {
   static ExtendPolylineToPorts(t: {points: Point[]}, path: Path) {
     Nudger.ExtendPolylineToSourcePort(t, path.GeomEdge.sourcePort.Location)
     Nudger.ExtendPolylineToTargetPort(t, path.GeomEdge.targetPort.Location)
-    //  In some overlapped cases where the source or target vertex used for the path
-    //  coincides with the target or source port location, we can end up with a single-point
-    //  path.  In that case, we just force a straightline path.
+    // In some overlapped cases where the source or target vertex used for the path
+    // coincides with the target or source port location, we can end up with a single-point
+    // path.  In that case, we just force a straightline path.
     if (t.points.length < 2) {
       t.points = new Array(2)
       t.points[0] = path.GeomEdge.sourcePort.Location
@@ -979,13 +979,13 @@ export class Nudger {
     return ret
   }
 
-  //  this function defines the final path coordinates
-  //  the set of paths, point sequences
-  //  the radius of the arc inscribed into the path corners
-  //  an enumeration of padded obstacles
+  // this function defines the final path coordinates
+  // the set of paths, point sequences
+  // the radius of the arc inscribed into the path corners
+  // an enumeration of padded obstacles
   //
   //
-  //  <returns>the mapping of the path to its modified path</returns>
+  // <returns>the mapping of the path to its modified path</returns>
   static NudgePaths(
     paths: Array<Path>,
     cornerFitRadius: number,
@@ -1026,20 +1026,20 @@ export class Nudger {
   }
 
   // ShowPathsDebug(edgePaths: Iterable<Path>, fn: string) {
-  //   const debCurves = GetObstacleBoundaries(this.Obstacles, 'black')
-  //   const i = 0
-  //   for (const edgePath of edgePaths) {
-  //     for (const c of Nudger.GetEdgePathFromPathEdgesAsDebugCurves(
-  //       0.1,
-  //       1.0,
-  //       DebugCurve.colors[(i + 1) % DebugCurve.colors.length],
-  //       edgePath,
-  //     )) {
-  //       debCurves.push(c)
-  //     }
-  //   }
+  //  const debCurves = GetObstacleBoundaries(this.Obstacles, 'black')
+  //  const i = 0
+  //  for (const edgePath of edgePaths) {
+  //    for (const c of Nudger.GetEdgePathFromPathEdgesAsDebugCurves(
+  //      0.1,
+  //      1.0,
+  //      DebugCurve.colors[(i + 1) % DebugCurve.colors.length],
+  //      edgePath,
+  //    )) {
+  //      debCurves.push(c)
+  //    }
+  //  }
 
-  //   SvgDebugWriter.dumpDebugCurves(fn, debCurves)
+  //  SvgDebugWriter.dumpDebugCurves(fn, debCurves)
   // }
   static *GetEdgePathFromPathEdgesAsDebugCurves(
     startWidth: number,
@@ -1058,15 +1058,15 @@ export class Nudger {
 }
 
 // function GetObstacleBoundaries(
-//   obstacles: Array<Polyline>,
-//   color: string,
+//  obstacles: Array<Polyline>,
+//  color: string,
 // ): Array<DebugCurve> {
-//   const debugCurves = new Array<DebugCurve>()
-//   if (obstacles != null) {
-//     for (const o of obstacles)
-//       debugCurves.push(DebugCurve.mkDebugCurveTWCI(50, 0.3, color, o))
-//   }
-//   return debugCurves
+//  const debugCurves = new Array<DebugCurve>()
+//  if (obstacles != null) {
+//    for (const o of obstacles)
+//      debugCurves.push(DebugCurve.mkDebugCurveTWCI(50, 0.3, color, o))
+//  }
+//  return debugCurves
 // }
 
 function IntersectSets<T>(a: Set<T>, b: Set<T>) {

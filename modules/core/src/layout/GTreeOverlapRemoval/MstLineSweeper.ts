@@ -85,9 +85,9 @@ export class MstLineSweeper {
       const h = this._nodeSizes[i].height / 2
       const nodeCenterY = this._nodePositions[i].y
       this._q.Enqueue(i, nodeCenterY - h)
-      //  enqueue the bottom event
+      // enqueue the bottom event
       this._q.Enqueue(this._nodeSizes.length + i, nodeCenterY + h)
-      //  enqueue the top event
+      // enqueue the top event
     }
   }
 }

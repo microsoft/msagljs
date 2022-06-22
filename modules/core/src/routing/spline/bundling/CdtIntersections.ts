@@ -11,7 +11,7 @@ import {CdtThreader} from './CdtThreader'
 import {MetroGraphData} from './MetroGraphData'
 import {Station} from './Station'
 
-//  Check intersections between edges and obstacles using triangulation (faster than kd-tree)
+// Check intersections between edges and obstacles using triangulation (faster than kd-tree)
 export class CdtIntersections {
   EdgeIsLegal_(start: Point, end: Point, currentTriangle: CdtTriangle, obstaclesToIgnore: Set<Polyline>): boolean {
     //Assert.assert(Cdt.PointIsInsideOfTriangle(start, currentTriangle))
@@ -73,7 +73,7 @@ export class CdtIntersections {
     return true
   }
 
-  //  returns null iff the edge overlap an obstacle
+  // returns null iff the edge overlap an obstacle
   FindCloseObstaclesForBundle(
     startTriangle: CdtTriangle,
     start: Point,
@@ -169,24 +169,24 @@ export class CdtIntersections {
     }
 
     //
-    //             int positiveSign, negativeSign;
-    //             CdtEdge piercedEdge = FindFirstPiercedEdge(currentTriangle, start, end, out negativeSign, out positiveSign,  null);
+    //            int positiveSign, negativeSign;
+    //            CdtEdge piercedEdge = FindFirstPiercedEdge(currentTriangle, start, end, out negativeSign, out positiveSign,  null);
     //
-    //             //Assert.assert(positiveSign > negativeSign);
+    //            //Assert.assert(positiveSign > negativeSign);
     //
-    //             //Assert.assert(piercedEdge != null);
+    //            //Assert.assert(piercedEdge != null);
     //
-    //             do {
-    //                 triangles.Add(currentTriangle);
-    //                 if (piercedEdge.Constrained) {
-    //                     //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner);
-    //                     Polyline poly = (Polyline)piercedEdge.lowerSite.Owner;
-    //                     if (!obstaclesToIgnore.Contains(poly)) return false;
-    //                 }
-    //             }
-    //             while (FindNextPierced(start, end, ref currentTriangle, ref piercedEdge, ref negativeSign, ref positiveSign));
-    //             if (currentTriangle != null)
-    //                 triangles.Add(currentTriangle);
+    //            do {
+    //                triangles.Add(currentTriangle);
+    //                if (piercedEdge.Constrained) {
+    //                    //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner);
+    //                    Polyline poly = (Polyline)piercedEdge.lowerSite.Owner;
+    //                    if (!obstaclesToIgnore.Contains(poly)) return false;
+    //                }
+    //            }
+    //            while (FindNextPierced(start, end, ref currentTriangle, ref piercedEdge, ref negativeSign, ref positiveSign));
+    //            if (currentTriangle != null)
+    //                triangles.Add(currentTriangle);
     return true
   }
 
@@ -215,8 +215,8 @@ export class CdtIntersections {
     throw new Error('polyline point ' + point + ' not found')
   }
 
-  //  checks if an edge intersects obstacles
-  //  otherwise it calulates distances to the closest obstacles
+  // checks if an edge intersects obstacles
+  // otherwise it calulates distances to the closest obstacles
   EdgeIsLegal(v: Station, u: Station, vPosition: Point, uPosition: Point): boolean {
     const list: Array<CdtTriangle> = []
     const obstaclesToIgnore: Set<Polyline> = this.metroGraphData.looseIntersections.ObstaclesToIgnoreForBundle(v, u)
@@ -227,11 +227,11 @@ export class CdtIntersections {
     return u.Position.sub(new Point(360.561, 428.416)).length < 0.1 && v.Position.sub(new Point(414.281, 440.732)).length < 0.1
   }
 
-  //  checks if an edge intersects obstacles
-  //  otherwise it calulates distances to the closest obstacles
+  // checks if an edge intersects obstacles
+  // otherwise it calulates distances to the closest obstacles
   EdgeIsLegalSSPPS(v: Station, u: Station, obstaclesToIgnore: Set<Polyline>): boolean {
     // if (CdtIntersections.closedeb(u, v) || CdtIntersections.closedeb(v, u)) {
-    //   console.log(this)
+    //  console.log(this)
     // }
     const start = v.Position
     const currentTriangle: CdtTriangle = v.CdtTriangle

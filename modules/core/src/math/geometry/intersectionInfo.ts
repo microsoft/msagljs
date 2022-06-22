@@ -25,23 +25,23 @@ export class IntersectionInfo {
       Point.close(x, s0.value(pr0), GeomConstants.intersectionEpsilon * 10),
     )*/
     //,
-    //   String.Format(
-    //     'intersection not at curve[param]; x = {0}, s0[pr0] = {1}, diff = {2}',
-    //     x,
-    //     s0.value(pr0),
-    //     x.sub(s0.value(pr0)),
-    //   ),
+    //  String.Format(
+    //    'intersection not at curve[param]; x = {0}, s0[pr0] = {1}, diff = {2}',
+    //    x,
+    //    s0.value(pr0),
+    //    x.sub(s0.value(pr0)),
+    //  ),
     // )
     /*Assert.assert(
       Point.close(x, s1.value(pr1), GeomConstants.intersectionEpsilon * 10),
     )*/
     //,
-    //   String.Format(
-    //     'intersection not at curve[param]; x = {1}, s1[pr1] = {1}, diff = {2}',
-    //     x,
-    //     s1.value(pr1),
-    //     x.sub(s1.value(pr1)),
-    //   ),
+    //  String.Format(
+    //    'intersection not at curve[param]; x = {1}, s1[pr1] = {1}, diff = {2}',
+    //    x,
+    //    s1.value(pr1),
+    //    x.sub(s1.value(pr1)),
+    //  ),
     // )
   }
 }

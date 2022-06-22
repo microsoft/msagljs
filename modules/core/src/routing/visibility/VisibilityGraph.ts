@@ -16,7 +16,7 @@ export class VisibilityGraph {
   get Edges(): IterableIterator<VisibilityEdge> {
     return this.edges_()
   }
-  //  needed for shortest path calculations
+  // needed for shortest path calculations
   _prevEdgesMap: Map<VisibilityVertex, VisibilityEdge> = new Map<VisibilityVertex, VisibilityEdge>()
 
   visVertexToId: Map<VisibilityVertex, number> = new Map<VisibilityVertex, number>()
@@ -29,7 +29,7 @@ export class VisibilityGraph {
     this._prevEdgesMap.get(v).LengthMultiplier = lengthMultiplier
   }
 
-  //  needed for shortest path calculations
+  // needed for shortest path calculations
   PreviosVertex(v: VisibilityVertex): VisibilityVertex {
     const prev: VisibilityEdge = this._prevEdgesMap.get(v)
     if (!prev) return null
@@ -46,38 +46,38 @@ export class VisibilityGraph {
     this._prevEdgesMap.set(v, e)
   }
 
-  //  the default is just to return a new VisibilityVertex
+  // the default is just to return a new VisibilityVertex
   VertexFactory = (p: Point) => new VisibilityVertex(p)
   pointToVertexMap: PointMap<VisibilityVertex> = new PointMap<VisibilityVertex>()
 
-  //   static GetVisibilityGraphForShortestPath(pathStart: Point, pathEnd: Point, obstacles: Array<Polyline>, /* out */sourceVertex: VisibilityVertex, /* out */targetVertex: VisibilityVertex): VisibilityGraph {
-  //       let holes = new Array<Polyline>(VisibilityGraph.OrientHolesClockwise(obstacles));
-  //       let visibilityGraph = VisibilityGraph.CalculateGraphOfBoundaries(holes);
-  //       let polygons = holes.Select(() => {  }, new Polygon(holes)).ToList();
-  //       TangentVisibilityGraphCalculator.AddTangentVisibilityEdgesToGraph(polygons, visibilityGraph);
-  //       PointVisibilityCalculator.CalculatePointVisibilityGraph(holes, visibilityGraph, pathStart, VisibilityKind.Tangent, /* out */sourceVertex);
-  //       PointVisibilityCalculator.CalculatePointVisibilityGraph(holes, visibilityGraph, pathEnd, VisibilityKind.Tangent, /* out */targetVertex);
-  //       return visibilityGraph;
-  //   }
+  //  static GetVisibilityGraphForShortestPath(pathStart: Point, pathEnd: Point, obstacles: Array<Polyline>, /* out */sourceVertex: VisibilityVertex, /* out */targetVertex: VisibilityVertex): VisibilityGraph {
+  //      let holes = new Array<Polyline>(VisibilityGraph.OrientHolesClockwise(obstacles));
+  //      let visibilityGraph = VisibilityGraph.CalculateGraphOfBoundaries(holes);
+  //      let polygons = holes.Select(() => {  }, new Polygon(holes)).ToList();
+  //      TangentVisibilityGraphCalculator.AddTangentVisibilityEdgesToGraph(polygons, visibilityGraph);
+  //      PointVisibilityCalculator.CalculatePointVisibilityGraph(holes, visibilityGraph, pathStart, VisibilityKind.Tangent, /* out */sourceVertex);
+  //      PointVisibilityCalculator.CalculatePointVisibilityGraph(holes, visibilityGraph, pathEnd, VisibilityKind.Tangent, /* out */targetVertex);
+  //      return visibilityGraph;
+  //  }
 
-  //   //  Calculates the tangent visibility graph
+  //  //  Calculates the tangent visibility graph
 
-  //   public static FillVisibilityGraphForShortestPath(obstacles: Array<Polyline>): VisibilityGraph {
-  //       let holes = new Array<Polyline>(VisibilityGraph.OrientHolesClockwise(obstacles));
-  //       let visibilityGraph = VisibilityGraph.CalculateGraphOfBoundaries(holes);
-  //       let polygons = holes.Select(() => {  }, new Polygon(hole)).ToList();
-  //       TangentVisibilityGraphCalculator.AddTangentVisibilityEdgesToGraph(polygons, visibilityGraph);
-  //       return visibilityGraph;
-  //   }
+  //  public static FillVisibilityGraphForShortestPath(obstacles: Array<Polyline>): VisibilityGraph {
+  //      let holes = new Array<Polyline>(VisibilityGraph.OrientHolesClockwise(obstacles));
+  //      let visibilityGraph = VisibilityGraph.CalculateGraphOfBoundaries(holes);
+  //      let polygons = holes.Select(() => {  }, new Polygon(hole)).ToList();
+  //      TangentVisibilityGraphCalculator.AddTangentVisibilityEdgesToGraph(polygons, visibilityGraph);
+  //      return visibilityGraph;
+  //  }
 
-  //   static CalculateGraphOfBoundaries(holes: Array<Polyline>): VisibilityGraph {
-  //       let graphOfHoleBoundaries = new VisibilityGraph();
-  //       for (let polyline: Polyline of holes) {
-  //           graphOfHoleBoundaries.AddHole(polyline);
-  //       }
+  //  static CalculateGraphOfBoundaries(holes: Array<Polyline>): VisibilityGraph {
+  //      let graphOfHoleBoundaries = new VisibilityGraph();
+  //      for (let polyline: Polyline of holes) {
+  //          graphOfHoleBoundaries.AddHole(polyline);
+  //      }
 
-  //       return graphOfHoleBoundaries;
-  //   }
+  //      return graphOfHoleBoundaries;
+  //  }
 
   AddHole(polyline: Polyline) {
     let p = polyline.startPoint
@@ -92,8 +92,8 @@ export class VisibilityGraph {
   static *OrientHolesClockwise(holes: Iterable<Polyline>): IterableIterator<Polyline> {
     for (const poly of holes) {
       for (let p = poly.startPoint; ; p = p.next) {
-        //  Find the first non-collinear segments and see which direction the triangle is.
-        //  If it's consistent with Clockwise, then return the polyline, else return its Reverse.
+        // Find the first non-collinear segments and see which direction the triangle is.
+        // If it's consistent with Clockwise, then return the polyline, else return its Reverse.
         const orientation = Point.getTriangleOrientation(p.point, p.next.point, p.next.next.point)
         if (orientation != TriangleOrientation.Collinear) {
           yield orientation == TriangleOrientation.Clockwise ? poly : <Polyline>poly.reverse()
@@ -103,65 +103,65 @@ export class VisibilityGraph {
     }
   }
 
-  //   static CheckThatPolylinesAreConvex(holes: Array<Polyline>) {
-  //       for (let polyline of holes) {
-  //           VisibilityGraph.CheckThatPolylineIsConvex(polyline);
-  //       }
+  //  static CheckThatPolylinesAreConvex(holes: Array<Polyline>) {
+  //      for (let polyline of holes) {
+  //          VisibilityGraph.CheckThatPolylineIsConvex(polyline);
+  //      }
 
-  //   }
+  //  }
 
-  //   @SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes")
-  //   static CheckThatPolylineIsConvex(polyline: Polyline) {
-  //       Assert.assert(polyline.closed, "Polyline is not closed");
-  //       let a: PolylinePoint = polyline.startPoint;
-  //       let b: PolylinePoint = a.next;
-  //       let c: PolylinePoint = b.next;
-  //       let orient: TriangleOrientation = Point.getTriangleOrientation(a.point, b.point, c.point);
-  //       while ((c != polyline.endPoint)) {
-  //           a = a.next;
-  //           b = b.next;
-  //           c = c.next;
-  //           let currentOrient = Point.getTriangleOrientation(a.point, b.point, c.point);
-  //           if ((currentOrient == TriangleOrientation.Collinear)) {
-  //               continue
-  //           }
+  //  @SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes")
+  //  static CheckThatPolylineIsConvex(polyline: Polyline) {
+  //      Assert.assert(polyline.closed, "Polyline is not closed");
+  //      let a: PolylinePoint = polyline.startPoint;
+  //      let b: PolylinePoint = a.next;
+  //      let c: PolylinePoint = b.next;
+  //      let orient: TriangleOrientation = Point.getTriangleOrientation(a.point, b.point, c.point);
+  //      while ((c != polyline.endPoint)) {
+  //          a = a.next;
+  //          b = b.next;
+  //          c = c.next;
+  //          let currentOrient = Point.getTriangleOrientation(a.point, b.point, c.point);
+  //          if ((currentOrient == TriangleOrientation.Collinear)) {
+  //              continue
+  //          }
 
-  //           if ((orient == TriangleOrientation.Collinear)) {
-  //               orient = currentOrient;
-  //           }
-  //           else if ((orient != currentOrient)) {
-  //               throw new InvalidOperationException();
-  //           }
+  //          if ((orient == TriangleOrientation.Collinear)) {
+  //              orient = currentOrient;
+  //          }
+  //          else if ((orient != currentOrient)) {
+  //              throw new InvalidOperationException();
+  //          }
 
-  //       }
+  //      }
 
-  //       let o = Point.getTriangleOrientation(polyline.endPoint.Point, polyline.startPoint.Point, polyline.startPoint.Next.Point);
-  //       if (((o != TriangleOrientation.Collinear)
-  //                   && (o != orient))) {
-  //           throw new InvalidOperationException();
-  //       }
+  //      let o = Point.getTriangleOrientation(polyline.endPoint.Point, polyline.startPoint.Point, polyline.startPoint.Next.Point);
+  //      if (((o != TriangleOrientation.Collinear)
+  //                  && (o != orient))) {
+  //          throw new InvalidOperationException();
+  //      }
 
-  //   }
+  //  }
 
-  //   //  TEST || VERIFY
+  //  //  TEST || VERIFY
 
-  //   //  Enumerate all VisibilityEdges in the VisibilityGraph.
+  //  //  Enumerate all VisibilityEdges in the VisibilityGraph.
 
-  //   public get Edges(): Array<VisibilityEdge> {
-  //       return PointToVertexMap.Values.SelectMany(() => {  }, vertex.OutEdges);
-  //   }
+  //  public get Edges(): Array<VisibilityEdge> {
+  //      return PointToVertexMap.Values.SelectMany(() => {  }, vertex.OutEdges);
+  //  }
 
-  //   get PointToVertexMap(): Map<Point, VisibilityVertex> {
-  //       return this.pointToVertexMap;
-  //   }
+  //  get PointToVertexMap(): Map<Point, VisibilityVertex> {
+  //      return this.pointToVertexMap;
+  //  }
 
-  //   get VertexCount(): number {
-  //       return this.PointToVertexMap.Count;
-  //   }
+  //  get VertexCount(): number {
+  //      return this.PointToVertexMap.Count;
+  //  }
 
-  //   AddVertex(polylinePoint: PolylinePoint): VisibilityVertex {
-  //       return this.AddVertex(polylinePoint.point);
-  //   }
+  //  AddVertex(polylinePoint: PolylinePoint): VisibilityVertex {
+  //      return this.AddVertex(polylinePoint.point);
+  //  }
 
   AddVertexP(point: Point): VisibilityVertex {
     const currentVertex = this.pointToVertexMap.get(point)
@@ -251,7 +251,7 @@ export class VisibilityGraph {
   }
 
   RemoveVertex(vertex: VisibilityVertex) {
-    //  Assert.assert(PointToVertexMap.ContainsKey(vertex.Point), "Cannot find vertex in PointToVertexMap");
+    // Assert.assert(PointToVertexMap.ContainsKey(vertex.Point), "Cannot find vertex in PointToVertexMap");
     for (const edge of vertex.OutEdges) {
       edge.Target.RemoveInEdge(edge)
     }
@@ -263,34 +263,34 @@ export class VisibilityGraph {
     this.pointToVertexMap.deleteP(vertex.point)
   }
 
-  //   RemoveEdge(v1: VisibilityVertex, v2: VisibilityVertex) {
-  //       let edge: VisibilityEdge;
-  //       if (!v1.TryGetEdge(v2, /* out */edge)) {
-  //           return;
-  //       }
+  //  RemoveEdge(v1: VisibilityVertex, v2: VisibilityVertex) {
+  //      let edge: VisibilityEdge;
+  //      if (!v1.TryGetEdge(v2, /* out */edge)) {
+  //          return;
+  //      }
 
-  //       edge.Source.RemoveOutEdge(edge);
-  //       edge.Target.RemoveInEdge(edge);
-  //   }
+  //      edge.Source.RemoveOutEdge(edge);
+  //      edge.Target.RemoveInEdge(edge);
+  //  }
 
-  //   RemoveEdge(p1: Point, p2: Point) {
-  //       //  the order of p1 and p2 is not important.
-  //       let edge: VisibilityEdge = this.FindEdge(p1, p2);
-  //       if ((edge == null)) {
-  //           return;
-  //       }
+  //  RemoveEdge(p1: Point, p2: Point) {
+  //      //  the order of p1 and p2 is not important.
+  //      let edge: VisibilityEdge = this.FindEdge(p1, p2);
+  //      if ((edge == null)) {
+  //          return;
+  //      }
 
-  //       edge.Source.RemoveOutEdge(edge);
-  //       edge.Target.RemoveInEdge(edge);
-  //   }
+  //      edge.Source.RemoveOutEdge(edge);
+  //      edge.Target.RemoveInEdge(edge);
+  //  }
 
-  //   static FindEdge(edge: VisibilityEdge): VisibilityEdge {
-  //       if (edge.Source.TryGetEdge(edge.Target, /* out */edge)) {
-  //           return edge;
-  //       }
+  //  static FindEdge(edge: VisibilityEdge): VisibilityEdge {
+  //      if (edge.Source.TryGetEdge(edge.Target, /* out */edge)) {
+  //          return edge;
+  //      }
 
-  //       return null;
-  //   }
+  //      return null;
+  //  }
 
   FindEdgePP(source: Point, target: Point): VisibilityEdge {
     const sourceV = this.FindVertex(source)

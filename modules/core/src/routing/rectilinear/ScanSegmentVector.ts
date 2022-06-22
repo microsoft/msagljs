@@ -1,4 +1,4 @@
-//  This forms the vector of ScanSegments for the sparse VisibilityGraph.
+// This forms the vector of ScanSegments for the sparse VisibilityGraph.
 
 import {Point} from '../../math/geometry/point'
 
@@ -19,7 +19,7 @@ export class ScanSegmentVector {
     }
   }
 
-  //  The index of the scan segment vector we're appending to on the ScanSegment-generation sweep.
+  // The index of the scan segment vector we're appending to on the ScanSegment-generation sweep.
 
   CurrentSlotIndex = 0
 
@@ -27,19 +27,19 @@ export class ScanSegmentVector {
     return this.vector.length
   }
 
-  //  The item at the index of the scan segment vector we're appending to on the ScanSegment-generation sweep.
+  // The item at the index of the scan segment vector we're appending to on the ScanSegment-generation sweep.
 
   get CurrentSlot(): ScanSegmentVectorItem {
     return this.vector[this.CurrentSlotIndex]
   }
 
-  //  The indexed item in the vector.
+  // The indexed item in the vector.
 
   Item(slot: number): ScanSegmentVectorItem {
     return this.vector[slot]
   }
 
-  //  Appends a ScanSegment to the linked list in the "Current" slot.
+  // Appends a ScanSegment to the linked list in the "Current" slot.
 
   CreateScanSegment(start: Point, end: Point, weight: number, gbcList: PointAndCrossingsList) {
     this.CurrentSlot.AppendScanSegment(new ScanSegment(start, end, weight, gbcList))
@@ -55,13 +55,13 @@ export class ScanSegmentVector {
     }
   }
 
-  //  Returns an enumeration of the vector of ScanSegmentVectorItems.
+  // Returns an enumeration of the vector of ScanSegmentVectorItems.
 
   Items(): ScanSegmentVectorItem[] {
     return this.vector
   }
 
-  //  Reset vector state between passes.
+  // Reset vector state between passes.
 
   ResetForIntersections() {
     for (const t of this.vector) {
@@ -69,14 +69,14 @@ export class ScanSegmentVector {
     }
   }
 
-  //  Indicates if this contains horizontal or vertical ScanSegments.
+  // Indicates if this contains horizontal or vertical ScanSegments.
 
   IsHorizontal: boolean
 
-  //  Search the vector for the nearest slot in the specified direction.
+  // Search the vector for the nearest slot in the specified direction.
 
   FindNearest(coord: number, directionIfMiss: number): number {
-    //  Array.BinarySearch doesn't allow mapping from ScanSegmentVectorItem to its Coord.
+    // Array.BinarySearch doesn't allow mapping from ScanSegmentVectorItem to its Coord.
     let low = 0
     let high: number = this.vector.length - 1
     if (coord <= this.vector[low].Coord) {
@@ -100,12 +100,12 @@ export class ScanSegmentVector {
         continue
       }
 
-      //  TODOsparse - profile - see if I really need the perpCoordMap
+      // TODOsparse - profile - see if I really need the perpCoordMap
       /*Assert.assert(false, 'Should not be here if coord is in the vector')*/
       return mid
     }
 
-    //  We know the value is between low and high, non-inclusive.
+    // We know the value is between low and high, non-inclusive.
     for (low++; low <= high; low++) {
       const item = this.vector[low]
       if (coord < item.Coord) {
@@ -117,7 +117,7 @@ export class ScanSegmentVector {
       }
     }
 
-    //  TODOsparse - profile - see if I really need the perpCoordMap
+    // TODOsparse - profile - see if I really need the perpCoordMap
     /*Assert.assert(false, 'Should not be here if coord is in the vector')*/
     return low
   }
@@ -131,21 +131,21 @@ export class ScanSegmentVector {
     }
   }
 
-  //  Get the coordinate that remains constant along a segment in this vector.
+  // Get the coordinate that remains constant along a segment in this vector.
   GetParallelCoord(site: Point): number {
     return this.IsHorizontal ? site.y : site.x
   }
 
-  //  Get the coordinate that changes along a segment in this vector (and is thus the parallel
-  //  coord of an intersecting segment).
+  // Get the coordinate that changes along a segment in this vector (and is thus the parallel
+  // coord of an intersecting segment).
   GetPerpendicularCoord(site: Point): number {
     return this.IsHorizontal ? site.x : site.y
   }
 
   ConnectAdjoiningSegmentEndpoints() {
-    //  Make sure that any series of segments (of different overlappedness) that have points in the
-    //  graph are connected at adjoining starts/ends and ends/starts (these adjoining points may not be
-    //  Steiner points in the graph if they are on indirect segments.
+    // Make sure that any series of segments (of different overlappedness) that have points in the
+    // graph are connected at adjoining starts/ends and ends/starts (these adjoining points may not be
+    // Steiner points in the graph if they are on indirect segments.
     for (const item of this.vector) {
       item.ResetForIntersections()
       let prevSegment = item.FirstSegment

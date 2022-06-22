@@ -17,7 +17,7 @@ export class VisibilityVertex {
 
   _outEdges: RBTree<VisibilityEdge>
 
-  //  this collection is sorted by the target point, in the lexicographical order
+  // this collection is sorted by the target point, in the lexicographical order
   get OutEdges(): RBTree<VisibilityEdge> {
     return this._outEdges
   }
@@ -34,7 +34,7 @@ export class VisibilityVertex {
     this._inEdges.push(e)
   }
 
-  //  needed for shortest path calculations
+  // needed for shortest path calculations
   Distance: number
 
   get IsTerminal(): boolean {
@@ -60,10 +60,10 @@ export class VisibilityVertex {
     return this.point.toString()
   }
 
-  //  These iterate from the end of the list because Array.Remove is linear in
-  //  the number of items, so callers have been optimized where possible to
-  //  remove only the last or next-to-last edges (but in some cases such as
-  //  rectilinear, this optimization isn't always possible).
+  // These iterate from the end of the list because Array.Remove is linear in
+  // the number of items, so callers have been optimized where possible to
+  // remove only the last or next-to-last edges (but in some cases such as
+  // rectilinear, this optimization isn't always possible).
 
   RemoveOutEdge(edge: VisibilityEdge) {
     this.OutEdges.remove(edge)
@@ -80,7 +80,7 @@ export class VisibilityVertex {
     this._inEdges.pop()
   }
 
-  //  avoiding using delegates in calling RBTree.FindFirst because of the memory allocations
+  // avoiding using delegates in calling RBTree.FindFirst because of the memory allocations
 
   static FindFirst(tree: RBTree<VisibilityEdge>, targetPoint: Point): RBNode<VisibilityEdge> {
     return VisibilityVertex.FindFirst_t(tree.root, tree, targetPoint)

@@ -70,7 +70,7 @@ export class EdgeTracer {
   }
 
   ProcessLeftFrontPiercedElement() {
-    //  CdtSweeper.ShowFront(triangles, front,new []{new LineSegment(a.point, b.point),new LineSegment(piercedToTheLeftFrontElemNode.item.Edge.lowerSite.point,piercedToTheLeftFrontElemNode.item.Edge.upperSite.point)},null);
+    // CdtSweeper.ShowFront(triangles, front,new []{new LineSegment(a.point, b.point),new LineSegment(piercedToTheLeftFrontElemNode.item.Edge.lowerSite.point,piercedToTheLeftFrontElemNode.item.Edge.upperSite.point)},null);
     let v = this.piercedToTheLeftFrontElemNode
     do {
       this.elementsToBeRemovedFromFront.push(v.item)
@@ -121,8 +121,8 @@ export class EdgeTracer {
   }
   ProcessPiercedEdge() {
     // if(CdtSweeper.db)
-    //           CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(a.point, b.point) },
-    //                       new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });
+    //          CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(a.point, b.point) },
+    //                      new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });
     if (this.piercedEdge.CcwTriangle == this.piercedTriangle) {
       this.AddSiteToLeftPolygon(this.piercedEdge.lowerSite)
       this.AddSiteToRightPolygon(this.piercedEdge.upperSite)
@@ -224,8 +224,8 @@ export class EdgeTracer {
   }
 
   Init() {
-    //             if (CdtSweeper.D)
-    //                 CdtSweeper.ShowFront(triangles, front, new[] {new LineSegment(a.point, b.point)},null);
+    //            if (CdtSweeper.D)
+    //                CdtSweeper.ShowFront(triangles, front, new[] {new LineSegment(a.point, b.point)},null);
     // new[] {new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point)});
     const frontElemNodeRightOfA = CdtSweeper.FindNodeInFrontBySite(this.front, this.a)
     const frontElemNodeLeftOfA = this.front.previous(frontElemNodeRightOfA)
@@ -251,8 +251,8 @@ export class EdgeTracer {
         if (Point.pointToTheLeftOfLineOrOnLine(this.b.point, site.point, e.upperSite.point)) {
           this.piercedEdge = t.TriEdges.getItem(eIndex + 1)
           this.piercedTriangle = t
-          //  CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(e.upperSite.point, e.lowerSite.point) },
-          //  new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });
+          // CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(e.upperSite.point, e.lowerSite.point) },
+          // new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });
           break
         }
       }

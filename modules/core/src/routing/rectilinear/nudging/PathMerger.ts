@@ -15,7 +15,7 @@ export class PathMerger {
   Paths: Iterable<Path>
   verticesToPathOffsets = new PointMap<Map<Path, LinkedPoint>>()
 
-  //  Avoid a situation where two paths cross each other more than once. Remove self loops.
+  // Avoid a situation where two paths cross each other more than once. Remove self loops.
 
   MergePaths() {
     this.InitVerticesToPathOffsetsAndRemoveSelfCycles()
@@ -53,22 +53,22 @@ export class PathMerger {
     }
   }
 
-  //         bool Correct() {
-  //             foreach (var kv of verticesToPathOffsets) {
-  //                 Point p = kv.Key;
-  //                 Map<Path, LinkedPoint> pathOffs = kv.Value;
-  //                 foreach (var pathOff of pathOffs) {
-  //                     var path = pathOff.Key;
-  //                     var linkedPoint = pathOff.Value;
-  //                     if (linkedPoint.Point != p)
-  //                         return false;
-  //                     if (FindLinkedPointInPath(path, p) == null) {
-  //                         return false;
-  //                     }
-  //                 }
-  //             }
-  //             return true;
-  //         }
+  //        bool Correct() {
+  //            foreach (var kv of verticesToPathOffsets) {
+  //                Point p = kv.Key;
+  //                Map<Path, LinkedPoint> pathOffs = kv.Value;
+  //                foreach (var pathOff of pathOffs) {
+  //                    var path = pathOff.Key;
+  //                    var linkedPoint = pathOff.Value;
+  //                    if (linkedPoint.Point != p)
+  //                        return false;
+  //                    if (FindLinkedPointInPath(path, p) == null) {
+  //                        return false;
+  //                    }
+  //                }
+  //            }
+  //            return true;
+  //        }
   CollapseLoopingPath(
     loopingPath: Path,
     departureFromLooping: LinkedPoint,
@@ -115,9 +115,9 @@ export class PathMerger {
     }
   }
 
-  //  checks that a is before b of the path
+  // checks that a is before b of the path
 
-  //  <returns>true is a is before b of the path</returns>
+  // <returns>true is a is before b of the path</returns>
   static Before(a: LinkedPoint, b: LinkedPoint): boolean {
     for (a = a.Next; a != null; a = a.Next) {
       if (a == b) {

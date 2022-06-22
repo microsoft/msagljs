@@ -10,7 +10,7 @@ export class LongestPathLayering implements LayerCalculator {
   GetLayers() {
     //sort the vertices in topological order
     const topoOrder = TopologicalSort.getOrderOnGraph(this.graph)
-    //  Assert.assert(this.checkTopoOrder(topoOrder))
+    // Assert.assert(this.checkTopoOrder(topoOrder))
     // initially all nodes belong to the same layer 0
     const layering = new Array<number>(this.graph.nodeCount).fill(0)
 

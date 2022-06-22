@@ -1,4 +1,4 @@
-//  enumerates the compass directions
+// enumerates the compass directions
 export enum Direction {
   None = 0,
 

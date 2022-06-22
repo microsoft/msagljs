@@ -4,12 +4,12 @@ import {CdtEdge} from './CdtEdge'
 import {CdtTriangle} from './CdtTriangle'
 import {Cdt} from './Cdt'
 export class CdtSite {
-  //  Object to which this site refers to.
+  // Object to which this site refers to.
   Owner: any = null
 
   point: Point
 
-  //  each CdtSite points to the edges for which it is the upper virtex ( for horizontal edges it is the left point)
+  // each CdtSite points to the edges for which it is the upper virtex ( for horizontal edges it is the left point)
   public Edges: Array<CdtEdge>
 
   InEdges = new Array<CdtEdge>()
@@ -30,15 +30,15 @@ export class CdtSite {
     this.Edges.push(edge)
   }
 
-  //  #if TEST_MSAGL && TEST_MSAGL
-  //          // Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
-  //          // A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
-  //          // <filterpriority>2</filterpriority>
-  //          public override string ToString()
-  //          {
-  //              return Point.ToString();
-  //          }
-  //  #endif
+  // #if TEST_MSAGL && TEST_MSAGL
+  //         // Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+  //         // A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+  //         // <filterpriority>2</filterpriority>
+  //         public override string ToString()
+  //         {
+  //             return Point.ToString();
+  //         }
+  // #endif
   EdgeBetweenUpperSiteAndLowerSite(b: CdtSite): CdtEdge {
     /*Assert.assert(Cdt.AboveCC(this, b) > 0)*/
     if (this.Edges != null) {

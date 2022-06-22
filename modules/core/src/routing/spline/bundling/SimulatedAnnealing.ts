@@ -1,4 +1,4 @@
-//  Adjust current bundle-routing
+// Adjust current bundle-routing
 
 import {Point} from '../../..'
 import {Curve, CurveFactory, LineSegment, PointLocation, Polyline, Rectangle} from '../../../math/geometry'
@@ -16,21 +16,21 @@ import {MetroGraphData} from './MetroGraphData'
 import {Station} from './Station'
 
 export class SimulatedAnnealing {
-  //  bundle data
+  // bundle data
 
   metroGraphData: MetroGraphData
 
-  //  Algorithm settings
+  // Algorithm settings
 
   bundlingSettings: BundlingSettings
 
-  //   calculates rouing cost
+  //  calculates rouing cost
   costCalculator: CostCalculator
 
-  //   used for fast calculation of intersections
+  //  used for fast calculation of intersections
   cache: IntersectionCache
 
-  //  fix routing by simulated annealing algorithm
+  // fix routing by simulated annealing algorithm
 
   static FixRouting(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings): boolean {
     return this.FixRoutingMBP(metroGraphData, bundlingSettings, null)
@@ -57,7 +57,7 @@ export class SimulatedAnnealing {
 
   stationsForOptimizations: Set<Station>
 
-  //  Use constraint edge routing to reduce ink
+  // Use constraint edge routing to reduce ink
 
   FixRoutingP(changedPoints: PointSet): boolean {
     //Assert.assert(SimulatedAnnealing.stationsArePositionedCorrectly(this.metroGraphData))
@@ -139,7 +139,7 @@ export class SimulatedAnnealing {
     }
   }
 
-  //  stop SA if relative changes are small
+  // stop SA if relative changes are small
 
   Converged(step: number, oldx: Array<Point>, newx: Array<Point>): boolean {
     // return false;
@@ -246,7 +246,7 @@ export class SimulatedAnnealing {
     return true
   }
 
-  //  Calculate the direction to improve the ink function
+  // Calculate the direction to improve the ink function
 
   BuildDirection(node: Station): Point {
     const forceInk = this.BuildForceForInk(node)
@@ -281,8 +281,8 @@ export class SimulatedAnnealing {
     return stepLength
   }
 
-  //  Computes cost delta when moving the node
-  //  the cost will be negative if a new position overlaps obstacles
+  // Computes cost delta when moving the node
+  // the cost will be negative if a new position overlaps obstacles
 
   CostGain(node: Station, newPosition: Point): number {
     const MInf = -12345678
@@ -301,7 +301,7 @@ export class SimulatedAnnealing {
     return rGain + inkGain + plGain + bundleGain
   }
 
-  //  force to decrease ink
+  // force to decrease ink
 
   BuildForceForInk(node: Station): Point {
     //return new Point(0,0);
@@ -316,7 +316,7 @@ export class SimulatedAnnealing {
     return force
   }
 
-  //  direction to decrease path lengths
+  // direction to decrease path lengths
 
   BuildForceForPathLengths(node: Station): Point {
     // return new Point(0,0);
@@ -335,7 +335,7 @@ export class SimulatedAnnealing {
     return force
   }
 
-  //  direction to increase radii
+  // direction to increase radii
 
   BuildForceForRadius(node: Station): Point {
     let direction: Point = new Point(0, 0)

@@ -1,7 +1,7 @@
 import {String} from 'typescript-string-operations'
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 
-//  represents a chunk of a hole boundary
+// represents a chunk of a hole boundary
 export class Stem {
   private start: PolylinePoint
 

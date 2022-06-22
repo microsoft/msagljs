@@ -2,12 +2,12 @@
 import {Point} from '../point'
 import {Rectangle} from '../rectangle'
 
-//  Algorithm to pack rectangles
+// Algorithm to pack rectangles
 export abstract class Packing extends Algorithm {
   // rectsToCenters defines the positions of the rectangles
   rectsToCenters: Map<Rectangle, Point>
 
-  //  The width of the widest row in the packed solution
+  // The width of the widest row in the packed solution
   private packedWidth: number
   public get PackedWidth(): number {
     return this.packedWidth
@@ -16,7 +16,7 @@ export abstract class Packing extends Algorithm {
     this.packedWidth = value
   }
 
-  //  The height of the bounding box of the packed solution
+  // The height of the bounding box of the packed solution
   private packedHeight: number
   public get PackedHeight(): number {
     return this.packedHeight
@@ -25,7 +25,7 @@ export abstract class Packing extends Algorithm {
     this.packedHeight = value
   }
 
-  //  Aspect ratio of the bounding box of the packed solution
+  // Aspect ratio of the bounding box of the packed solution
   public get PackedAspectRatio(): number {
     return this.PackedWidth / this.PackedHeight
   }

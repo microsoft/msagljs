@@ -22,7 +22,7 @@ export class Node extends Entity {
   }
   constructor(id: string) {
     super()
-    //  Assert.assert(id != null && id.toString() === id)
+    // Assert.assert(id != null && id.toString() === id)
 
     this.id = id
   }

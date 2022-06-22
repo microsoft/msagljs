@@ -297,17 +297,17 @@ export class Curve implements ICurve {
   // finds an intersection between to curves,
   static intersectionOne(curve0: ICurve, curve1: ICurve, liftIntersection: boolean): IntersectionInfo {
     /*Assert.assert(curve0 != curve1)*/
-    //            number c0S = curve0.parStart, c1S = curve1.parStart;
-    //            if (CurvesAreCloseAtParams(curve0, curve1, c0S, c1S)) {
-    //                number mc0 = 0.5 * (curve0.parStart + curve0.parEnd);
-    //                number mc1 = 0.5 * (curve1.parStart + curve1.parEnd);
-    //                number c0E = curve0.parEnd;
-    //                if (CurvesAreCloseAtParams(curve0, curve1, mc0, mc1)) {
-    //                    number c1E = curve1.parEnd;
-    //                    CurvesAreCloseAtParams(curve0, curve1, c0E, c1E);
-    //                    throw new Error();
-    //                }
-    //            }
+    //           number c0S = curve0.parStart, c1S = curve1.parStart;
+    //           if (CurvesAreCloseAtParams(curve0, curve1, c0S, c1S)) {
+    //               number mc0 = 0.5 * (curve0.parStart + curve0.parEnd);
+    //               number mc1 = 0.5 * (curve1.parStart + curve1.parEnd);
+    //               number c0E = curve0.parEnd;
+    //               if (CurvesAreCloseAtParams(curve0, curve1, mc0, mc1)) {
+    //                   number c1E = curve1.parEnd;
+    //                   CurvesAreCloseAtParams(curve0, curve1, c0E, c1E);
+    //                   throw new Error();
+    //               }
+    //           }
     //recurse down to find all PBLeaf pairs which intesect and try to cross their segments
 
     let ret = Curve.curveCurveXWithParallelogramNodesOne(curve0.pNodeOverICurve(), curve1.pNodeOverICurve())
@@ -319,18 +319,18 @@ export class Curve implements ICurve {
 
   // calculates all intersections between curve0 and curve1
   static getAllIntersections(curve0: ICurve, curve1: ICurve, liftIntersections: boolean): IntersectionInfo[] {
-    //            var c0S = curve0.parStart;
-    //            var c1S = curve1.parStart;
-    //            var c0E = curve0.parEnd;
-    //            var c1E = curve1.parEnd;
-    //            if (CurvesAreCloseAtParams(curve0, curve1, c0S, c1S)) {
-    //                if (CurvesAreCloseAtParams(curve0, curve1, c0E, c1E)) {
-    //                    var mc0 = 0.5*(curve0.parStart + curve0.parEnd);
-    //                    var mc1 = 0.5*(curve1.parStart + curve1.parEnd);
-    //                    if (CurvesAreCloseAtParams(curve0, curve1, mc0, mc1))
-    //                        throw new Error();
-    //                }
-    //            }
+    //           var c0S = curve0.parStart;
+    //           var c1S = curve1.parStart;
+    //           var c0E = curve0.parEnd;
+    //           var c1E = curve1.parEnd;
+    //           if (CurvesAreCloseAtParams(curve0, curve1, c0S, c1S)) {
+    //               if (CurvesAreCloseAtParams(curve0, curve1, c0E, c1E)) {
+    //                   var mc0 = 0.5*(curve0.parStart + curve0.parEnd);
+    //                   var mc1 = 0.5*(curve1.parStart + curve1.parEnd);
+    //                   if (CurvesAreCloseAtParams(curve0, curve1, mc0, mc1))
+    //                       throw new Error();
+    //               }
+    //           }
 
     if (curve0 instanceof LineSegment) {
       return Curve.getAllIntersectionsOfLineAndICurve(curve0, curve1, liftIntersections)
@@ -902,14 +902,14 @@ export class Curve implements ICurve {
   }
 
   // For curves A(s) and B(t), when we have some evidence that
-  //  there is at most one intersection point, and we have a guess for the parameters (s0, t0)...
+  // there is at most one intersection point, and we have a guess for the parameters (s0, t0)...
   // You are trying to bring to (0,0) the vector F(s,t) = A(s) - B(t).  To minimize the length of F(s,t)
   // we solve the system of equations:
   //F*Fs + (F*Fss + Fs*Fs)ds + (F*Fst + Fs*Ft)dt = 0
   //F*Ft + (F*Fst + Fs*Ft)ds + (F*Ftt + Ft*Ft)dt = 0
   //
   //Where F = F(si,ti), Fs and Ft are the first partials at si, ti, Fxx are the second partials,
-  //    and s(i+1) = si+ds, t(i+1) = ti+dt.
+  //   and s(i+1) = si+ds, t(i+1) = ti+dt.
   //We adjust ds and dt to stay in the domain.
 
   static crossWithinIntervalsWithGuess(
@@ -999,8 +999,8 @@ export class Curve implements ICurve {
       const ls = LineSegment.mkPP(point, point.add(lineDir.mul(l)))
       const intersections = this.getAllIntersectionsOfLineAndICurve(ls, curve, true)
       // SugiyamaLayoutSettings.Show(ls, curve);
-      //  CurveSerializer.Serialize("cornerC:\\tmp\\ls",ls);
-      //  CurveSerializer.Serialize("cornerC:\\tmp\\pol",curve);
+      // CurveSerializer.Serialize("cornerC:\\tmp\\ls",ls);
+      // CurveSerializer.Serialize("cornerC:\\tmp\\pol",curve);
       if (Curve.AllIntersectionsAreGood(intersections, curve)) {
         for (const xx of intersections) {
           if (Point.closeDistEps(xx.x, point)) {
@@ -1103,7 +1103,7 @@ export class Curve implements ICurve {
     return Math.abs(d) > GeomConstants.distanceEpsilon
   }
 
-  //    static boolean debug;
+  //   static boolean debug;
 
   // Returns true if curves do not touch in the intersection point
   // only when the second curve cuts the first one from the inside</param>
@@ -1354,7 +1354,7 @@ export class Curve implements ICurve {
     return Curve.addLineSegment(c, new Point(x, y), b)
   }
 
-  //  adds a line segment to the curve
+  // adds a line segment to the curve
   public static addLineSegmentCNNNN(curve: Curve, x0: number, y0: number, x1: number, y1: number) {
     Curve.addLineSegment(curve, new Point(x0, y0), new Point(x1, y1))
   }
@@ -1426,9 +1426,9 @@ export class Curve implements ICurve {
   static ClosestPoint(curve: ICurve, location: Point): Point {
     return curve.value(curve.closestParameter(location))
   }
-  //  Tests whether the first curve is inside the second.
-  //  We suppose that the curves are convex and they are
-  //  not degenerated into a point
+  // Tests whether the first curve is inside the second.
+  // We suppose that the curves are convex and they are
+  // not degenerated into a point
   public static CurveIsInsideOther(innerCurve: ICurve, outerCurve: ICurve): boolean {
     if (!outerCurve.boundingBox.containsRect(innerCurve.boundingBox)) {
       return false
@@ -1452,7 +1452,7 @@ export class Curve implements ICurve {
     }
     return true
   }
-  //  Return points between but not including the intersections.
+  // Return points between but not including the intersections.
   static *PointsBetweenIntersections(a: ICurve, xx: Array<IntersectionInfo>): IterableIterator<Point> {
     xx.sort((x, y) => (x.par0 < y.par0 ? -1 : x.par0 > y.par0 ? 1 : 0))
     for (let i = 0; i < xx.length - 1; i++) {
@@ -1470,19 +1470,19 @@ export class Curve implements ICurve {
     yield a.value(middle)
   }
   static NonIntersectingCurveIsInsideOther(a: ICurve, b: ICurve): boolean {
-    //  Due to rounding, even curves with 0 intersections may return Boundary.
+    // Due to rounding, even curves with 0 intersections may return Boundary.
     for (let par: number = a.parStart; par < a.parEnd; par += 0.5) {
-      //  continue as long as we have boundary points.
+      // continue as long as we have boundary points.
       const parLoc: PointLocation = Curve.PointRelativeToCurveLocation(a.value(par), b)
       if (PointLocation.Boundary != parLoc) {
         return PointLocation.Inside == parLoc
       }
     }
 
-    //  All points so far were on border so it is not considered inside; test the End.
+    // All points so far were on border so it is not considered inside; test the End.
     return PointLocation.Outside != Curve.PointRelativeToCurveLocation(a.end, b)
   }
-  //  Tests whether the interiors of two closed convex curves intersect
+  // Tests whether the interiors of two closed convex curves intersect
   static ClosedCurveInteriorsIntersect(c1: ICurve, c2: ICurve): boolean {
     if (!c2.boundingBox.intersects(c1.boundingBox)) {
       return false

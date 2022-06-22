@@ -313,7 +313,7 @@ export class Point {
     return Point.signedDoubledTriangleArea(point, linePoint0, linePoint1) >= 0
   }
 
-  //  returns true if "point" lies to the left of the line linePoint0, linePoint1
+  // returns true if "point" lies to the left of the line linePoint0, linePoint1
   public static pointToTheLeftOfLine(point: Point, linePoint0: Point, linePoint1: Point): boolean {
     return Point.signedDoubledTriangleArea(point, linePoint0, linePoint1) > 0
   }

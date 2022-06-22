@@ -1,4 +1,4 @@
-//  sweeps a given direction of cones and adds discovered edges to the graph
+// sweeps a given direction of cones and adds discovered edges to the graph
 
 import {Point} from '../../..'
 import {Polyline, GeomConstants, ICurve, CurveFactory, LineSegment} from '../../../math/geometry'
@@ -154,11 +154,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   static FindInsidePoint(leftPoint: Point, rightPoint: Point, cone: Cone): Point {
-    //             if (debug)
-    //                 LayoutAlgorithmSettings.Show(CurveFactory.CreateCircle(3, leftPoint),
-    //                                              CurveFactory.CreateDiamond(3, 3, rightPoint),
-    //                                              BorderPolyline, ExtendSegmentToZ(cone.LeftSide),
-    //                                              ExtendSegmentToZ(cone.RightSide));
+    //            if (debug)
+    //                LayoutAlgorithmSettings.Show(CurveFactory.CreateCircle(3, leftPoint),
+    //                                             CurveFactory.CreateDiamond(3, 3, rightPoint),
+    //                                             BorderPolyline, ExtendSegmentToZ(cone.LeftSide),
+    //                                             ExtendSegmentToZ(cone.RightSide));
     return LineSweeper.FindInsidePointBool(
       leftPoint,
       rightPoint,
@@ -223,23 +223,23 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     }
   }
 
-  //  #if TEST_MSAGL
-  //          // ReSharper disable UnusedMember.Local
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          static ICurve Box(Point p) {
-  //              // ReSharper restore UnusedMember.Local
-  //              return CurveFactory.CreateRectangle(2, 2, p);
-  //          }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-  //              "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
-  //          )]
-  //          void PrintOutRightSegTree() {
-  //              System.Diagnostics.Debug.WriteLine("right segment tree");
-  //              foreach(var t of rightConeSides)
-  //              System.Diagnostics.Debug.WriteLine(t);
-  //              System.Diagnostics.Debug.WriteLine("end of right segments");
-  //          }
-  //  #endif
+  // #if TEST_MSAGL
+  //         // ReSharper disable UnusedMember.Local
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         static ICurve Box(Point p) {
+  //             // ReSharper restore UnusedMember.Local
+  //             return CurveFactory.CreateRectangle(2, 2, p);
+  //         }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+  //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
+  //         )]
+  //         void PrintOutRightSegTree() {
+  //             System.Diagnostics.Debug.WriteLine("right segment tree");
+  //             foreach(var t of rightConeSides)
+  //             System.Diagnostics.Debug.WriteLine(t);
+  //             System.Diagnostics.Debug.WriteLine("end of right segments");
+  //         }
+  // #endif
 
   static GetSign(p: PolylinePoint, a: Point, b: Point): number {
     const d = Point.signedDoubledTriangleArea(a, b, p.point)
@@ -250,41 +250,41 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     return d > 0 ? -1 : 0
   }
 
-  //  #if TEST_MSAGL && TEST_MSAGL
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          void Showside(PolylinePoint p, Point a, Point b, PolylinePoint pn) {
-  //              ShowBothTrees(new DebugCurve(100, 1, "brown", BorderPolyline), new DebugCurve(100, 2, "blue",
-  //                  new LineSegment(a, b)),
-  //                  new DebugCurve(100, 2, "green",
-  //                      new LineSegment(
-  //                          pn.point, p.point)
-  //                  ));
-  //          }
-  //  #endif
-  //         void CheckThatPolylineIsLegal()
-  //         {
-  //             var p = BorderPolyline.startPoint;
-  //             do
-  //             {
-  //                 var pn = p.NextOnPolyline;
-  //                 Assert.assert(!Point.closeDistEps(p.point, pn.point));
-  //                 Assert.assert((pn.point - p.point)*(pn.NextOnPolyline.point - pn.point) > -GeomConstants.tolerance);
-  //                 p = pn;
-  //             } while (p != BorderPolyline.startPoint);
+  // #if TEST_MSAGL && TEST_MSAGL
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         void Showside(PolylinePoint p, Point a, Point b, PolylinePoint pn) {
+  //             ShowBothTrees(new DebugCurve(100, 1, "brown", BorderPolyline), new DebugCurve(100, 2, "blue",
+  //                 new LineSegment(a, b)),
+  //                 new DebugCurve(100, 2, "green",
+  //                     new LineSegment(
+  //                         pn.point, p.point)
+  //                 ));
   //         }
-  //  #if TEST_MSAGL
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          void ShowBoundaryPolyline() {
-  //              LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(CreateBoundaryPolyDebugCurves());
-  //          }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          Array < DebugCurve > CreateBoundaryPolyDebugCurves() {
-  //              int i = 0;
-  //              for (var p = BorderPolyline.startPoint; p != null; p = p.next) {
-  //                  yield return new DebugCurve(new Ellipse(1, 1, p.point), i++);
-  //              }
-  //          }
-  //  #endif
+  // #endif
+  //        void CheckThatPolylineIsLegal()
+  //        {
+  //            var p = BorderPolyline.startPoint;
+  //            do
+  //            {
+  //                var pn = p.NextOnPolyline;
+  //                Assert.assert(!Point.closeDistEps(p.point, pn.point));
+  //                Assert.assert((pn.point - p.point)*(pn.NextOnPolyline.point - pn.point) > -GeomConstants.tolerance);
+  //                p = pn;
+  //            } while (p != BorderPolyline.startPoint);
+  //        }
+  // #if TEST_MSAGL
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         void ShowBoundaryPolyline() {
+  //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(CreateBoundaryPolyDebugCurves());
+  //         }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         Array < DebugCurve > CreateBoundaryPolyDebugCurves() {
+  //             int i = 0;
+  //             for (var p = BorderPolyline.startPoint; p != null; p = p.next) {
+  //                 yield return new DebugCurve(new Ellipse(1, 1, p.point), i++);
+  //             }
+  //         }
+  // #endif
   AddEdgeAndRemoveCone(cone: Cone, p: Point) {
     if (this.Ports != null && this.Ports.has(cone.Apex)) {
       this.CreatePortEdge(cone, p)
@@ -329,17 +329,17 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     }
     np.polyline = borderPolyline
     // Assert.assert(
-    //   !(
-    //     Point.closeDistEps(np.point, np.prevOnPolyline.point) ||
-    //     Point.closeDistEps(np.point, np.nextOnPolyline.point)
-    //   ),
+    //  !(
+    //    Point.closeDistEps(np.point, np.prevOnPolyline.point) ||
+    //    Point.closeDistEps(np.point, np.nextOnPolyline.point)
+    //  ),
     // )
     borderPolyline.setInitIsRequired()
     return np
   }
 
   ProcessEvent(p: SweepEvent) {
-    //  Assert.assert(this.invariant())
+    // Assert.assert(this.invariant())
 
     const vertexEvent = p instanceof VertexEvent
     if (vertexEvent) {
@@ -371,21 +371,21 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   // #if TEST_MSAGL
-  //         protected override bool TreesAreCorrect() {
-  //             return TreeIsCorrect(leftConeSides) && TreeIsCorrect(rightConeSides);
-  //         }
+  //        protected override bool TreesAreCorrect() {
+  //            return TreeIsCorrect(leftConeSides) && TreeIsCorrect(rightConeSides);
+  //        }
   //
-  //         bool TreeIsCorrect(RBTree<ConeSide> tree) {
-  //             var y = Number.NEGATIVE_INFINITY;
-  //             foreach (var t of tree) {
-  //                 var x = coneSideComparer.IntersectionOfSegmentAndSweepLine(t);
-  //                 var yp = x*DirectionPerp;
-  //                 if (yp < y - GeomConstants.distanceEpsilon)
-  //                     return false;
-  //                 y = yp;
-  //             }
-  //             return true;
-  //         }
+  //        bool TreeIsCorrect(RBTree<ConeSide> tree) {
+  //            var y = Number.NEGATIVE_INFINITY;
+  //            foreach (var t of tree) {
+  //                var x = coneSideComparer.IntersectionOfSegmentAndSweepLine(t);
+  //                var yp = x*DirectionPerp;
+  //                if (yp < y - GeomConstants.distanceEpsilon)
+  //                    return false;
+  //                y = yp;
+  //            }
+  //            return true;
+  //        }
   // #endif
   ProcessPortObstacleEvent(portObstacleEvent: PortObstacleEvent) {
     this.Z = this.GetZS(portObstacleEvent)
@@ -438,7 +438,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
     // restore Z for the time being
-    //  Z = PreviousZ;
+    // Z = PreviousZ;
     if (rightIntersectionEvent.coneRightSide.Removed == false) {
       // it can happen that the cone side participating in the intersection is gone;
       // obstracted by another obstacle or because of a vertex found inside of the cone
@@ -506,90 +506,90 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     this.AddConeAndEnqueueEvents(vertexEvent)
   }
 
-  //  #if TEST_MSAGL
-  //          // ReSharper disable UnusedMember.Local
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          static Ellipse EllipseOnVert(SweepEvent vertexEvent) {
-  //              // ReSharper restore UnusedMember.Local
-  //              return new Ellipse(5, 5, vertexEvent.Site);
-  //          }
-  //          // ReSharper disable UnusedMember.Local
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          static Ellipse EllipseOnPolylinePoint(PolylinePoint pp) {
-  //              // ReSharper restore UnusedMember.Local
-  //              return EllipseOnPolylinePoint(pp, 5);
-  //          }
-  //          // ReSharper disable UnusedMember.Local
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          static Ellipse EllipseOnPolylinePoint(PolylinePoint pp, double i)
-  //          // ReSharper restore UnusedMember.Local
-  //          {
-  //              return new Ellipse(i, i, pp.point);
-  //          }
+  // #if TEST_MSAGL
+  //         // ReSharper disable UnusedMember.Local
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         static Ellipse EllipseOnVert(SweepEvent vertexEvent) {
+  //             // ReSharper restore UnusedMember.Local
+  //             return new Ellipse(5, 5, vertexEvent.Site);
+  //         }
+  //         // ReSharper disable UnusedMember.Local
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         static Ellipse EllipseOnPolylinePoint(PolylinePoint pp) {
+  //             // ReSharper restore UnusedMember.Local
+  //             return EllipseOnPolylinePoint(pp, 5);
+  //         }
+  //         // ReSharper disable UnusedMember.Local
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         static Ellipse EllipseOnPolylinePoint(PolylinePoint pp, double i)
+  //         // ReSharper restore UnusedMember.Local
+  //         {
+  //             return new Ellipse(i, i, pp.point);
+  //         }
   static Diamond(p: Point) {
     return CurveFactory.CreateDiamond(2, 2, p)
   }
-  //          // ReSharper disable UnusedMember.Local
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-  //              "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
-  //          ),
-  //          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          void CheckConsistency() {
-  //              // ReSharper restore UnusedMember.Local
-  //              foreach(var s of rightConeSides) {
-  //                  coneSideComparer.SetOperand(s);
-  //              }
-  //              foreach(var s of leftConeSides) {
-  //                  coneSideComparer.SetOperand(s);
-  //                  if (!rightConeSides.Contains(s.Cone.RightSide)) {
-  //                      PrintOutRightSegTree();
-  //                      PrintOutLeftSegTree();
-  //                      ShowLeftTree();
-  //                      ShowRightTree();
-  //                  }
-  //              }
-  //          }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          void ShowRightTree(params ICurve[] curves) {
-  //              var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
-  //              l.AddRange(rightConeSides.Select(s => new DebugCurve(100, 5, "blue", ExtendSegmentToZ(s))));
-  //              //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
-  //              //                l.Add(BezierOnEdge(edge));
-  //              l.AddRange(curves.Select(c => new DebugCurve(100, 5, "brown", c)));
-  //              LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //          }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "curves"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          void ShowBothTrees(params DebugCurve[] curves) {
-  //              var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
-  //              l.AddRange(leftConeSides.Select(s => new DebugCurve(ExtendSegmentToZ(s))));
-  //              l.AddRange(rightConeSides.Select(s => new DebugCurve(ExtendSegmentToZ(s))));
-  //              //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
-  //              //                l.Add(BezierOnEdge(edge));
-  //              LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //          }
-  //          void ShowLeftTree(params ICurve[] curves) {
-  //              var l = Obstacles.Select(p => new DebugCurve(100, 0.01, "green", p)).ToList();
-  //              var range = new RealNumberSpan();
-  //              var ellipseSize = 0.01;
-  //              foreach(var s of leftConeSides) {
-  //                  var curve = ExtendSegmentToZ(s);
-  //                  range.AddValue(curve.start * DirectionPerp);
-  //                  range.AddValue(curve.End * DirectionPerp);
-  //                  l.Add(new DebugCurve(100, 0.1, "red", curve));
-  //                  l.Add(new DebugCurve(200, 0.1, "black", new Ellipse(ellipseSize, ellipseSize, curve.End)));
-  //                  ellipseSize += 2;
-  //              }
-  //              l.Add(DebugSweepLine(range));
-  //              //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
-  //              //                l.Add(BezierOnEdge(edge));
-  //              l.AddRange(curves.Select(c => new DebugCurve(100, 0.5, "brown", c)));
-  //              LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //          }
-  //          DebugCurve DebugSweepLine(RealNumberSpan range) {
-  //              var ls = new LineSegment(Z * SweepDirection + DirectionPerp * range.Min, Z * SweepDirection + DirectionPerp * range.Max);
-  //              return new DebugCurve(100, 0.1, "magenta", ls);
-  //          }
-  //  #endif
+  //         // ReSharper disable UnusedMember.Local
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+  //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
+  //         ),
+  //         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         void CheckConsistency() {
+  //             // ReSharper restore UnusedMember.Local
+  //             foreach(var s of rightConeSides) {
+  //                 coneSideComparer.SetOperand(s);
+  //             }
+  //             foreach(var s of leftConeSides) {
+  //                 coneSideComparer.SetOperand(s);
+  //                 if (!rightConeSides.Contains(s.Cone.RightSide)) {
+  //                     PrintOutRightSegTree();
+  //                     PrintOutLeftSegTree();
+  //                     ShowLeftTree();
+  //                     ShowRightTree();
+  //                 }
+  //             }
+  //         }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         void ShowRightTree(params ICurve[] curves) {
+  //             var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
+  //             l.AddRange(rightConeSides.Select(s => new DebugCurve(100, 5, "blue", ExtendSegmentToZ(s))));
+  //             //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
+  //             //                l.Add(BezierOnEdge(edge));
+  //             l.AddRange(curves.Select(c => new DebugCurve(100, 5, "brown", c)));
+  //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //         }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "curves"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         void ShowBothTrees(params DebugCurve[] curves) {
+  //             var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
+  //             l.AddRange(leftConeSides.Select(s => new DebugCurve(ExtendSegmentToZ(s))));
+  //             l.AddRange(rightConeSides.Select(s => new DebugCurve(ExtendSegmentToZ(s))));
+  //             //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
+  //             //                l.Add(BezierOnEdge(edge));
+  //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //         }
+  //         void ShowLeftTree(params ICurve[] curves) {
+  //             var l = Obstacles.Select(p => new DebugCurve(100, 0.01, "green", p)).ToList();
+  //             var range = new RealNumberSpan();
+  //             var ellipseSize = 0.01;
+  //             foreach(var s of leftConeSides) {
+  //                 var curve = ExtendSegmentToZ(s);
+  //                 range.AddValue(curve.start * DirectionPerp);
+  //                 range.AddValue(curve.End * DirectionPerp);
+  //                 l.Add(new DebugCurve(100, 0.1, "red", curve));
+  //                 l.Add(new DebugCurve(200, 0.1, "black", new Ellipse(ellipseSize, ellipseSize, curve.End)));
+  //                 ellipseSize += 2;
+  //             }
+  //             l.Add(DebugSweepLine(range));
+  //             //            foreach (VisibilityEdge edge of visibilityGraph.Edges)
+  //             //                l.Add(BezierOnEdge(edge));
+  //             l.AddRange(curves.Select(c => new DebugCurve(100, 0.5, "brown", c)));
+  //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //         }
+  //         DebugCurve DebugSweepLine(RealNumberSpan range) {
+  //             var ls = new LineSegment(Z * SweepDirection + DirectionPerp * range.Min, Z * SweepDirection + DirectionPerp * range.Max);
+  //             return new DebugCurve(100, 0.1, "magenta", ls);
+  //         }
+  // #endif
   AddConeAndEnqueueEvents(vertexEvent: VertexEvent) {
     const isLeftVertexEvent = vertexEvent instanceof LeftVertexEvent
     if (isLeftVertexEvent) {
@@ -641,7 +641,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
         this.EnqueueRightVertexEvent(new RightVertexEvent(nextVertex))
       }
 
-      //   TryEnqueueRighVertexEvent(nextVertex);
+      //  TryEnqueueRighVertexEvent(nextVertex);
     } else if (Point.PointToTheLeftOfLineOrOnLine(nextSite, site, coneRp)) {
       this.CaseToTheLeftOfLineOrOnLineConeRp(rightVertexEvent, nextVertex)
     } else {
@@ -695,7 +695,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     obstacleSideVertex: PolylinePoint,
   ): RightIntersectionEvent {
     // Assert.assert(
-    //   Math.abs(this.GetZP(obstacleSideVertex.point.sub(intersection))) > 0,
+    //  Math.abs(this.GetZP(obstacleSideVertex.point.sub(intersection))) > 0,
     // )
     return new RightIntersectionEvent(coneRightSide, intersection, obstacleSideVertex)
   }
@@ -706,7 +706,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   LookForIntersectionOfObstacleSideAndLeftConeSide(obstacleSideStart: Point, obstacleSideVertex: PolylinePoint) {
     const node = this.GetFirstNodeToTheRightOfPoint(obstacleSideStart)
-    //           ShowLeftTree(Box(obstacleSideStart));
+    //          ShowLeftTree(Box(obstacleSideStart));
     if (node == null) {
       return
     }
@@ -779,7 +779,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     const coneLp = site.add(this.ConeLeftSideDirection)
     const coneRp = site.add(this.ConeRightSideDirection)
     const nextSite = nextVertex.point
-    //  SugiyamaLayoutSettings.Show(new LineSegment(site, coneLP), new LineSegment(site, coneRP), new LineSegment(site, nextSite));
+    // SugiyamaLayoutSettings.Show(new LineSegment(site, coneLP), new LineSegment(site, coneRP), new LineSegment(site, nextSite));
     if (this.GetZP(site.sub(prevSite)) > GeomConstants.distanceEpsilon) {
       this.RemoveLeftSide(new LeftObstacleSide(leftVertexEvent.Vertex.prevOnPolyline))
     }
@@ -820,7 +820,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       this.EnqueueEvent(new LeftVertexEvent(nextVertex))
       if (this.GetZP(toNext) > GeomConstants.distanceEpsilon) {
         // if( angle >- Pi/2
-        //  Assert.assert(angle > -Math.PI / 2);
+        // Assert.assert(angle > -Math.PI / 2);
         this.LookForIntersectionOfObstacleSideAndRightConeSide(leftVertexEvent.Site, nextVertex)
         this.InsertLeftSide(new LeftObstacleSide(leftVertexEvent.Vertex))
       }
@@ -828,16 +828,16 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   RemoveCone(cone: Cone) {
-    //  the following should not happen if the containment hierarchy is correct.
-    //  If containment is not correct it still should not result in a fatal error, just a funny looking route.
-    //  Assert.assert(cone.Removed == false);
+    // the following should not happen if the containment hierarchy is correct.
+    // If containment is not correct it still should not result in a fatal error, just a funny looking route.
+    // Assert.assert(cone.Removed == false);
     cone.Removed = true
     this.RemoveSegFromLeftTree(cone.LeftSide)
     this.RemoveSegFromRightTree(cone.RightSide)
   }
 
   RemoveSegFromRightTree(coneSide: ConeSide) {
-    //    ShowRightTree();
+    //   ShowRightTree();
     //Assert.assert(coneSide.Removed == false)
     this.coneSideComparer.SetOperand(coneSide)
     let b = this.rightConeSides.remove(coneSide)
@@ -849,11 +849,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       this.coneSideComparer.SetOperand(coneSide)
       b = this.rightConeSides.remove(coneSide)
       this.Z = tmpZ
-      //  #if TEST_MSAGL
-      //                  if (b == null) {
-      //                      PrintOutRightSegTree();
-      //                  }
-      //  #endif
+      // #if TEST_MSAGL
+      //                 if (b == null) {
+      //                     PrintOutRightSegTree();
+      //                 }
+      // #endif
     }
   }
 
@@ -866,17 +866,17 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       const tmpZ = this.Z
       this.Z = Math.max(this.GetZP(coneSide.Start), this.Z - 0.01)
       this.coneSideComparer.SetOperand(coneSide)
-      //  #if TEST_MSAGL
-      //                  b =
-      //  #endif
+      // #if TEST_MSAGL
+      //                 b =
+      // #endif
       this.leftConeSides.remove(coneSide)
       this.Z = tmpZ
-      //  #if TEST_MSAGL
-      //                  if (b == null) {
-      //                      PrintOutLeftSegTree();
-      //                      ShowLeftTree(new Ellipse(2, 2, coneSide.start));
-      //                  }
-      //  #endif
+      // #if TEST_MSAGL
+      //                 if (b == null) {
+      //                     PrintOutLeftSegTree();
+      //                     ShowLeftTree(new Ellipse(2, 2, coneSide.start));
+      //                 }
+      // #endif
     }
 
     //Assert.assert(b != null)
@@ -899,7 +899,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
         const seg = <ConeRightSide>rbNode.item
         if ((intersection = Point.IntervalIntersectsRay(rightSide.start, rightSide.End, seg.Start, seg.Direction))) {
           this.EnqueueEvent(this.CreateRightIntersectionEvent(seg, intersection, rightSide.EndVertex))
-          //  Show(CurveFactory.CreateDiamond(3, 3, intersection));
+          // Show(CurveFactory.CreateDiamond(3, 3, intersection));
         }
       }
     }
@@ -923,9 +923,9 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
       // leftNode = leftSegmentTree.TreePredecessor(leftNode);
       // if (leftNode != null) {
-      //     var seg = leftNode.item as ObstacleSideSegment;
-      //     if (seg != null)
-      //         TryIntersectionOfConeLeftSideAndObstacleConeSide(coneLeftSide, seg);
+      //    var seg = leftNode.item as ObstacleSideSegment;
+      //    if (seg != null)
+      //        TryIntersectionOfConeLeftSideAndObstacleConeSide(coneLeftSide, seg);
       // }
       const rightObstacleSide: RightObstacleSide = this.FindFirstObstacleSideToTheLeftOfPoint(coneLeftSide.Start)
       if (rightObstacleSide != null) {
@@ -949,9 +949,9 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       const crs = <ConeRightSide>rightNode.item
       // rightNode = rightSegmentTree.TreeSuccessor(rightNode);
       // if (rightNode != null) {
-      //     var seg = rightNode.item as ObstacleSideSegment;
-      //     if (seg != null)
-      //         TryIntersectionOfConeRightSideAndObstacleConeSide(coneRightSide, seg);
+      //    var seg = rightNode.item as ObstacleSideSegment;
+      //    if (seg != null)
+      //        TryIntersectionOfConeRightSideAndObstacleConeSide(coneRightSide, seg);
       // }
       const leftObstacleSide: LeftObstacleSide = this.FindFirstObstacleSideToToTheRightOfPoint(crs.Start)
       if (leftObstacleSide != null) {
@@ -996,7 +996,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     const x: Point = Point.IntervalIntersectsRay(side.Start, side.End, coneLeftSide.Start, coneLeftSide.Direction)
     if (x) {
       this.EnqueueEvent(new LeftIntersectionEvent(coneLeftSide, x, side.EndVertex))
-      //     Show(CurveFactory.CreateDiamond(3, 3, x));
+      //    Show(CurveFactory.CreateDiamond(3, 3, x));
     }
   }
 
@@ -1016,24 +1016,24 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     l = l.concat(curves.map((c) => DebugCurve.mkDebugCurveCI('Red', c)))
     //SvgDebugWriter.dumpDebugCurves(fn, l)
   }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //          static BezierSeg BezierOnEdge(VisibilityEdge edge) {
-  //              return new BezierSeg(edge.SourcePoint, 2.0 / 3.0 * edge.SourcePoint + 1.0 / 3.0 * edge.TargetPoint,
-  //                  1.0 / 3.0 * edge.SourcePoint + 2.0 / 3.0 * edge.TargetPoint, edge.TargetPoint);
-  //          }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //         static BezierSeg BezierOnEdge(VisibilityEdge edge) {
+  //             return new BezierSeg(edge.SourcePoint, 2.0 / 3.0 * edge.SourcePoint + 1.0 / 3.0 * edge.TargetPoint,
+  //                 1.0 / 3.0 * edge.SourcePoint + 2.0 / 3.0 * edge.TargetPoint, edge.TargetPoint);
+  //         }
   ExtendSegmentToZ(segment: ConeSide): ICurve {
     const den = segment.Direction.dot(this.SweepDirection)
     //Assert.assert(Math.Abs(den) > GeomConstants.distanceEpsilon);
     const t = (this.Z + 40 - segment.Start.dot(this.SweepDirection)) / den
     return LineSegment.mkPP(segment.Start, segment.Start.add(segment.Direction.mul(t)))
   }
-  //          internal ICurve ExtendSegmentToZPlus1(ConeSide segment) {
-  //              double den = segment.Direction * SweepDirection;
-  //              Assert.assert(Math.Abs(den) > GeomConstants.distanceEpsilon);
-  //              double t = (Z + 1 - segment.start * SweepDirection) / den;
-  //              return new LineSegment(segment.start, segment.start + segment.Direction * t);
-  //          }
-  //  #endif
+  //         internal ICurve ExtendSegmentToZPlus1(ConeSide segment) {
+  //             double den = segment.Direction * SweepDirection;
+  //             Assert.assert(Math.Abs(den) > GeomConstants.distanceEpsilon);
+  //             double t = (Z + 1 - segment.start * SweepDirection) / den;
+  //             return new LineSegment(segment.start, segment.start + segment.Direction * t);
+  //         }
+  // #endif
   GoOverConesSeeingVertexEvent(vertexEvent: SweepEvent) {
     let rbNode = this.FindFirstSegmentInTheRightTreeNotToTheLeftOfVertex(vertexEvent)
     if (rbNode == null) {
@@ -1057,26 +1057,26 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       this.coneSideComparer.SetOperand(leftConeSide)
       rbNode = this.leftConeSides.find(leftConeSide)
       this.Z = tmpZ
-      //  #if TEST_MSAGL
-      //  //                if (rbNode == null) {
-      //                      //GeometryGraph gg = CreateGraphFromObstacles();
-      //                      //gg.Save("c:\\tmp\\bug");
-      //  //                    PrintOutLeftSegTree();
-      //  //                    System.Diagnostics.Debug.WriteLine(leftConeSide);
-      //  //                    ShowLeftTree(new Ellipse(3, 3, vertexEvent.Site));
-      //  //                    ShowRightTree(new Ellipse(3, 3, vertexEvent.Site));
-      //  //                }
-      //  #endif
+      // #if TEST_MSAGL
+      // //                if (rbNode == null) {
+      //                     //GeometryGraph gg = CreateGraphFromObstacles();
+      //                     //gg.Save("c:\\tmp\\bug");
+      // //                    PrintOutLeftSegTree();
+      // //                    System.Diagnostics.Debug.WriteLine(leftConeSide);
+      // //                    ShowLeftTree(new Ellipse(3, 3, vertexEvent.Site));
+      // //                    ShowRightTree(new Ellipse(3, 3, vertexEvent.Site));
+      // //                }
+      // #endif
     }
 
-    //  the following should not happen if the containment hierarchy is correct.
-    //  If containment is not correct it still should not result in a fatal error, just a funny looking route.
-    //  Assert.assert(rbNode!=null);
+    // the following should not happen if the containment hierarchy is correct.
+    // If containment is not correct it still should not result in a fatal error, just a funny looking route.
+    // Assert.assert(rbNode!=null);
     if (rbNode == null) {
       // it is an emergency measure and should not happen
       rbNode = this.GetRbNodeEmergency(rbNode, leftConeSide)
       if (rbNode == null) {
-        return //  the cone is not there! and it is a bug
+        return // the cone is not there! and it is a bug
       }
     }
 
@@ -1100,28 +1100,28 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     return rbNode
   }
 
-  //  #if TEST_MSAGL
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-  //              MessageId = "System.Int32.ToString")]
-  //          internal static GeometryGraph CreateGraphFromObstacles(Array < Polyline > obstacles) {
-  //              var gg = new GeometryGraph();
-  //              foreach(var ob of obstacles) {
-  //                  gg.Nodes.Add(new Node(ob.ToCurve()));
-  //              }
-  //              return gg;
-  //          }
-  //          [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String,System.Object,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-  //              "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
-  //          )]
-  //          void PrintOutLeftSegTree() {
-  //              System.Diagnostics.Debug.WriteLine("Left cone segments########");
-  //              foreach(var t of leftConeSides) {
-  //                  var x = coneSideComparer.IntersectionOfSegmentAndSweepLine(t);
-  //                  System.Diagnostics.Debug.WriteLine("{0} x={1}", t, x * DirectionPerp);
-  //              }
-  //              System.Diagnostics.Debug.WriteLine("##########end of left cone segments");
-  //          }
-  //  #endif
+  // #if TEST_MSAGL
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
+  //             MessageId = "System.Int32.ToString")]
+  //         internal static GeometryGraph CreateGraphFromObstacles(Array < Polyline > obstacles) {
+  //             var gg = new GeometryGraph();
+  //             foreach(var ob of obstacles) {
+  //                 gg.Nodes.Add(new Node(ob.ToCurve()));
+  //             }
+  //             return gg;
+  //         }
+  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String,System.Object,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+  //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
+  //         )]
+  //         void PrintOutLeftSegTree() {
+  //             System.Diagnostics.Debug.WriteLine("Left cone segments########");
+  //             foreach(var t of leftConeSides) {
+  //                 var x = coneSideComparer.IntersectionOfSegmentAndSweepLine(t);
+  //                 System.Diagnostics.Debug.WriteLine("{0} x={1}", t, x * DirectionPerp);
+  //             }
+  //             System.Diagnostics.Debug.WriteLine("##########end of left cone segments");
+  //         }
+  // #endif
   static VertexIsToTheLeftOfSegment(vertexEvent: SweepEvent, seg: ConeSide): boolean {
     return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) == TriangleOrientation.Counterclockwise
   }
@@ -1146,7 +1146,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   invariant(): boolean {
     // if (this.leftConeSides.count != this.rightConeSides.count) {
-    //   return false
+    //  return false
     // }
     for (const cs of this.leftConeSides) {
       if (cs.Removed) {
@@ -1163,20 +1163,20 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     // if (lsSet.size != rsSet.size) return false
     // const cones = new Set<Cone>()
     // for (const ls of lsSet) {
-    //   const cone = ls.Cone
-    //   if (!rsSet.has(cone.RightSide)) return false
-    //   cones.add(cone)
+    //  const cone = ls.Cone
+    //  if (!rsSet.has(cone.RightSide)) return false
+    //  cones.add(cone)
     // }
     // if (cones.size != lsSet.size) return false
     // for (const rs of rsSet) {
-    //   if (!cones.has(rs.Cone)) {
-    //     return false
-    //   }
+    //  if (!cones.has(rs.Cone)) {
+    //    return false
+    //  }
     // }
     // for (const ls of lsSet) {
-    //   if (!cones.has(ls.Cone)) {
-    //     return false
-    //   }
+    //  if (!cones.has(ls.Cone)) {
+    //    return false
+    //  }
     // }
     return true
   }

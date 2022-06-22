@@ -1,6 +1,6 @@
-//  If two paths intersect then insert the intersection point as a vertex into both paths.
-//  Remove path self loops. Merge paths between the crossings if they have multiple crossings.
-//  If a path passes through a vertex of another path then insert this vertex into the first path.
+// If two paths intersect then insert the intersection point as a vertex into both paths.
+// Remove path self loops. Merge paths between the crossings if they have multiple crossings.
+// If a path passes through a vertex of another path then insert this vertex into the first path.
 
 import {Point} from '../../../math/geometry/point'
 import {Direction} from '../../../math/geometry/direction'
@@ -28,7 +28,7 @@ export class PathRefiner {
     }
   }
 
-  //  make sure that every two different points of paths are separated by at least 10e-6
+  // make sure that every two different points of paths are separated by at least 10e-6
 
   static AdjustPaths(paths: Array<Path>) {
     for (const path of paths) {
@@ -79,7 +79,7 @@ export class PathRefiner {
     PathRefiner.RefineInDirection(Direction.East, pathFirstPoints)
   }
 
-  //  refines all segments that are parallel to "direction"
+  // refines all segments that are parallel to "direction"
 
   static *groupByProj(proj: (a: Point) => number, linkedPointsInDirection: LinkedPoint[]): IterableIterator<Array<LinkedPoint>> {
     const map = new Map<number, Array<LinkedPoint>>()
@@ -142,8 +142,8 @@ export class PathRefiner {
     }
   }
 
-  //  refine vertices belonging to a bucket;
-  //  pathLinkedVertices belong to a line parallel to the direction of the refinement
+  // refine vertices belonging to a bucket;
+  // pathLinkedVertices belong to a line parallel to the direction of the refinement
 
   static RefineCollinearBucket(pathLinkedVertices: Iterable<LinkedPoint>, projectionToDirection: PointProjection) {
     const dict = new SortedMap<Point, number>(new PointByDelegateComparer(projectionToDirection))

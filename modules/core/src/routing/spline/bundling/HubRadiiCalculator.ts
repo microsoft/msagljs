@@ -6,12 +6,12 @@ import {BundlingSettings} from '../../BundlingSettings'
 import {MetroGraphData} from './MetroGraphData'
 import {Station} from './Station'
 
-//  Calculates node radii with 'water algorithm'
+// Calculates node radii with 'water algorithm'
 export class HubRadiiCalculator {
-  //  bundle data
+  // bundle data
   metroGraphData: MetroGraphData
 
-  //  Algorithm settings
+  // Algorithm settings
   bundlingSettings: BundlingSettings
 
   constructor(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings) {
@@ -19,7 +19,7 @@ export class HubRadiiCalculator {
     this.bundlingSettings = bundlingSettings
   }
 
-  //  calculate node radii with fixed hubs
+  // calculate node radii with fixed hubs
   CreateNodeRadii() {
     // set radii to zero
     for (const v of this.metroGraphData.VirtualStations()) {
@@ -37,7 +37,7 @@ export class HubRadiiCalculator {
     }
   }
 
-  //  Grow hubs
+  // Grow hubs
   GrowHubs(useHalfEdgesAsIdealR: boolean): boolean {
     const queue = new GenericBinaryHeapPriorityQueue<Station>(compareNumbers)
     for (const v of this.metroGraphData.VirtualStations()) {
@@ -94,7 +94,7 @@ export class HubRadiiCalculator {
     return (idealR - v.Radius) / idealR
   }
 
-  //  Returns the maximal possible radius of the node
+  // Returns the maximal possible radius of the node
   CalculateAllowedHubRadius(node: Station): number {
     let r = this.bundlingSettings.MaxHubRadius
 
@@ -113,7 +113,7 @@ export class HubRadiiCalculator {
     return Math.max(r, 0.1)
   }
 
-  //  Returns the ideal radius of the hub
+  // Returns the ideal radius of the hub
   static CalculateIdealHubRadius(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings, node: Station): number {
     let r = 1.0
     for (const adj of node.Neighbors) {
@@ -126,7 +126,7 @@ export class HubRadiiCalculator {
     return r
   }
 
-  //  Returns the ideal radius of the hub
+  // Returns the ideal radius of the hub
   static CalculateIdealHubRadiusWithNeighborsMBS(
     metroGraphData: MetroGraphData,
     bundlingSettings: BundlingSettings,
@@ -135,7 +135,7 @@ export class HubRadiiCalculator {
     return HubRadiiCalculator.CalculateIdealHubRadiusWithNeighborsMBNP(metroGraphData, bundlingSettings, node, node.Position)
   }
 
-  //  Returns the ideal radius of the hub
+  // Returns the ideal radius of the hub
   static CalculateIdealHubRadiusWithNeighborsMBNP(
     metroGraphData: MetroGraphData,
     bundlingSettings: BundlingSettings,
@@ -160,7 +160,7 @@ export class HubRadiiCalculator {
     return r
   }
 
-  //  Returns the ideal radius of the hub
+  // Returns the ideal radius of the hub
   static CalculateIdealHubRadiusWithAdjacentEdges(bundlingSettings: BundlingSettings, node: Station): number {
     let r: number = bundlingSettings.MaxHubRadius
     for (const adj of node.Neighbors) r = Math.min(r, node.Position.sub(adj.Position).length / 2)
@@ -189,7 +189,7 @@ export class HubRadiiCalculator {
     )
   }
 
-  //  Radius we need to draw to separate adjacent bundles ab and ac
+  // Radius we need to draw to separate adjacent bundles ab and ac
   static GetMinRadiusForTwoAdjacentBundlesNPPPNNB(
     r: number,
     a: Point,

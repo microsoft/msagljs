@@ -91,7 +91,7 @@ export class CdtThreader {
   FindNextPierced() {
     //Assert.assert(this.negativeSign < this.positiveSign)
     this.currentTriangle = this.currentPiercedEdge.GetOtherTriangle_T(this.currentTriangle)
-    //             ShowDebug(null,currentPiercedEdge,currentTriangle);
+    //            ShowDebug(null,currentPiercedEdge,currentTriangle);
     if (this.currentTriangle == null) {
       this.currentPiercedEdge = null
       return
@@ -137,19 +137,19 @@ export class CdtThreader {
         : null
   }
 
-  //         void ShowDebug(Array<CdtTriangle> cdtTriangles, CdtEdge cdtEdge, CdtTriangle cdtTriangle) {
-  //             var l = new Array<DebugCurve> { new DebugCurve(10,"red",new LineSegment(start,end)) };
-  //             if(cdtEdge!=null)
-  //                 l.Add(new DebugCurve(100,3,"navy", new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
-  //             AddTriangleToListOfDebugCurves(l,cdtTriangle,100,2,"brown");
-  //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //        void ShowDebug(Array<CdtTriangle> cdtTriangles, CdtEdge cdtEdge, CdtTriangle cdtTriangle) {
+  //            var l = new Array<DebugCurve> { new DebugCurve(10,"red",new LineSegment(start,end)) };
+  //            if(cdtEdge!=null)
+  //                l.Add(new DebugCurve(100,3,"navy", new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
+  //            AddTriangleToListOfDebugCurves(l,cdtTriangle,100,2,"brown");
+  //            LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   //
-  //         }
-  //         static void AddTriangleToListOfDebugCurves(Array<DebugCurve> debugCurves,CdtTriangle triangle,byte transparency,double width,string color) {
-  //             foreach(var cdtEdge of triangle.Edges) {
-  //                 debugCurves.Add(new DebugCurve(transparency,width,color,new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
-  //             }
-  //         }
+  //        }
+  //        static void AddTriangleToListOfDebugCurves(Array<DebugCurve> debugCurves,CdtTriangle triangle,byte transparency,double width,string color) {
+  //            foreach(var cdtEdge of triangle.Edges) {
+  //                debugCurves.Add(new DebugCurve(transparency,width,color,new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
+  //            }
+  //        }
   GetHyperplaneSign(cdtSite: CdtSite): number {
     const area = Point.signedDoubledTriangleArea(this.start, cdtSite.point, this.end)
     if (area > GeomConstants.distanceEpsilon) {

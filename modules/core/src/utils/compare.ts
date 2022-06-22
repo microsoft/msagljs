@@ -40,7 +40,7 @@ export function lessDistEps(a: number, b: number): boolean {
  */
 export function compareNumbersDistEps(a: number, b: number): number {
   const c: number = a - b
-  //  The <= and >= here complement the < and > in Close(double, double).
+  // The <= and >= here complement the < and > in Close(double, double).
   if (c <= -GeomConstants.distanceEpsilon) {
     return -1
   }

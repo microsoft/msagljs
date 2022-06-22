@@ -12,7 +12,7 @@ export class ObstacleSideComparer {
     this.lineSweeper = lineSweeper
   }
 
-  //  the intersection of the sweepline and the active segment
+  // the intersection of the sweepline and the active segment
   x: Point
 
   public Compare(a: SegmentBase, b: SegmentBase): number {

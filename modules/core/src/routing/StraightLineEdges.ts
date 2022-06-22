@@ -1,4 +1,4 @@
-﻿//  Basic geomedge router for producing straight edges.
+﻿// Basic geomedge router for producing straight edges.
 
 import {GeomGraph} from '../layout/core/GeomGraph'
 import {Arrowhead} from '../layout/core/arrowhead'
@@ -40,14 +40,14 @@ export class StraightLineEdges extends Algorithm {
 
   private padding: number
 
-  //  Constructs a basic straight geomedge router.
+  // Constructs a basic straight geomedge router.
   public constructor(edges: GeomEdge[], padding: number) {
     super(null)
     this.edges = edges
     this.padding = padding
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
   run() {
     SplineRouter.CreatePortsIfNeeded(this.edges)
     for (const geomedge of this.edges) {
@@ -55,9 +55,9 @@ export class StraightLineEdges extends Algorithm {
     }
   }
 
-  //  populate the geometry including curve and arrowhead positioning for the given geomedge using simple
-  //  straight line routing style.  Self edges will be drawn as a loop, padding is used to control the
-  //  size of the loop.
+  // populate the geometry including curve and arrowhead positioning for the given geomedge using simple
+  // straight line routing style.  Self edges will be drawn as a loop, padding is used to control the
+  // size of the loop.
   static RouteEdge(geomedge: GeomEdge, padding: number) {
     const eg = geomedge
     if (eg.sourcePort == null) {
@@ -106,7 +106,7 @@ export class StraightLineEdges extends Algorithm {
       : StraightLineEdges.CreateLoop_(sourceBox, targetBox, padding, true)
   }
 
-  //  creates a loop from sourceBox center to the closest point on the targetBox boundary
+  // creates a loop from sourceBox center to the closest point on the targetBox boundary
   static CreateLoop_(sourceBox: Rectangle, targetBox: Rectangle, howMuchToStickOut: number, reverse: boolean): Curve {
     const center = sourceBox.center
     const closestPoint = StraightLineEdges.FindClosestPointOnBoxBoundary(sourceBox.center, targetBox)
@@ -140,7 +140,7 @@ export class StraightLineEdges extends Algorithm {
     return Math.abs(x - c.x) < Math.abs(y - c.y) ? new Point(x, c.y) : new Point(c.x, y)
   }
 
-  //  Returns a line segment for the given geomedge.
+  // Returns a line segment for the given geomedge.
   static GetEdgeLine(geomedge: GeomEdge): LineSegment {
     let sourcePoint: Point
     let sourceBox: ICurve
@@ -182,7 +182,7 @@ export class StraightLineEdges extends Algorithm {
     return line
   }
 
-  //  creates an geomedge curve based only on the source and target geometry
+  // creates an geomedge curve based only on the source and target geometry
   public static CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge: GeomEdge) {
     const a = geomedge.source.center
     const b = geomedge.target.center

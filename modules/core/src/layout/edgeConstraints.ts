@@ -1,11 +1,11 @@
-//  Settings controlling how ideal edge lengths will be calculated for layouts that consider it.
+// Settings controlling how ideal edge lengths will be calculated for layouts that consider it.
 
 import {Direction} from '../math/geometry/direction'
 
 export class EdgeConstraints {
   direction = Direction.None
   constrainedEdgeSeparation = 0
-  //  If not equal to Direction.None, then direction separation constraints will be applied to all edges on InitializeLayout
+  // If not equal to Direction.None, then direction separation constraints will be applied to all edges on InitializeLayout
   public get Direction(): Direction {
     return this.direction
   }
@@ -13,7 +13,7 @@ export class EdgeConstraints {
     this.direction = value
   }
 
-  //  Controls the separation used in Edge Constraints
+  // Controls the separation used in Edge Constraints
   public get Separation(): number {
     return this.constrainedEdgeSeparation
   }

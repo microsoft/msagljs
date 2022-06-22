@@ -1,4 +1,4 @@
-//  the router between nodes
+// the router between nodes
 
 import {ICurve, Rectangle, Point, GeomEdge} from '..'
 import {CurvePort} from '../layout/core/curvePort'
@@ -33,7 +33,7 @@ import {CornerSite} from '../math/geometry/cornerSite'
 // import {Assert} from '../utils/assert'
 
 export class InteractiveEdgeRouter extends Algorithm {
-  //  the obstacles for routing
+  // the obstacles for routing
   obstacles_: Array<ICurve>
   targetVV: VisibilityVertex
   IgnoreTightPadding = true
@@ -44,8 +44,8 @@ export class InteractiveEdgeRouter extends Algorithm {
     this.obstacles_ = value
   }
 
-  //  the minimum angle between a node boundary curve and and an edge
-  //  curve at the place where the edge curve intersects the node boundary
+  // the minimum angle between a node boundary curve and and an edge
+  // curve at the place where the edge curve intersects the node boundary
   enteringAngleBound_: number
   get EnteringAngleBound(): number {
     return this.enteringAngleBound_
@@ -83,7 +83,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   // RectangleNode<Polyline, Point> RootOfTightHierarchy {
-  //     get { return this.obstacleCalculator.RootOfTightHierararchy; }
+  //    get { return this.obstacleCalculator.RootOfTightHierararchy; }
   // }
   activeRectangle: Rectangle = Rectangle.mkEmpty()
 
@@ -101,10 +101,10 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   alreadyAddedOrExcludedPolylines: Set<Polyline> = new Set<Polyline>()
 
-  //     Dictionary<Point, Polyline> pointsToObstacles = new Dicitonary<Point, Polyline>();
+  //    Dictionary<Point, Polyline> pointsToObstacles = new Dicitonary<Point, Polyline>();
   sourcePort: Port
 
-  //  the port of the edge start
+  // the port of the edge start
 
   get SourcePort(): Port {
     return this.sourcePort
@@ -129,7 +129,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   targetPort: Port
 
-  //  the port of the edge end
+  // the port of the edge end
 
   get TargetPort(): Port {
     return this.targetPort
@@ -138,13 +138,13 @@ export class InteractiveEdgeRouter extends Algorithm {
     this.targetPort = value
   }
 
-  //  the curve should not come closer than Padding to the nodes
+  // the curve should not come closer than Padding to the nodes
 
   TightPadding: number
 
   loosePadding: number
 
-  //  we further pad each node but not more than LoosePadding.
+  // we further pad each node but not more than LoosePadding.
 
   get LoosePadding(): number {
     return this.loosePadding
@@ -162,7 +162,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   OffsetForPolylineRelaxing: number
 
-  //  The expected number of progress steps this algorithm will take.
+  // The expected number of progress steps this algorithm will take.
 
   ExpectedProgressSteps: number
 
@@ -172,11 +172,11 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   UseEdgeLengthMultiplier = false
 
-  //  if set to true the algorithm will try to shortcut a shortest polyline inner points
+  // if set to true the algorithm will try to shortcut a shortest polyline inner points
 
   UseInnerPolylingShortcutting = true
 
-  //  if set to true the algorithm will try to shortcut a shortest polyline start and end
+  // if set to true the algorithm will try to shortcut a shortest polyline start and end
 
   UsePolylineEndShortcutting = true
 
@@ -305,31 +305,31 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   // Point TakeSourcePortOutsideOfLoosePolyline() {
-  //     CurvePort bp = SourcePort as CurvePort;
-  //     ICurve nodeBoundary = bp.Node.BoundaryCurve;
-  //     Point location = bp.Location;
-  //     Point tangent = (nodeBoundary.LeftDerivative(bp.Parameter).Normalize() + nodeBoundary.RightDerivative(bp.Parameter).Normalize()).Normalize();
-  //     if (Point.GetTriangleOrientation(bp.Node.Center, location, location + tangent) == TriangleOrientation.Counterclockwise)
-  //         tangent = -tangent;
-  //     tangent = tangent.Rotate(Math.PI / 2);
-  //     Number len = this.sourceLoosePolyline.BoundingBox.Diagonal;
-  //     Point portLocation = bp.Location;
-  //     LineSegment ls = LineSegment.mkPP(portLocation, portLocation + len * tangent);
-  //     Point p = Curve.GetAllIntersections(ls, this.SourceLoosePolyline, false)[0].x;
-  //     Point del = tangent * this.OffsetForPolylineRelaxing * 2;
-  //     while (true) {
-  //         ls = LineSegment.mkPP(portLocation, p + del);
-  //         bool foundIntersectionsOutsideOfSource = false;
-  //         foreach (IntersectionInfo ii in IntersectionsOfLineAndRectangleNodeOverPolyline(ls, this.obstacleCalculator.RootOfLooseHierarchy))
-  //             if (ii.seg1 != this.SourceLoosePolyline) {
-  //                 del /= 1.5;
-  //                 foundIntersectionsOutsideOfSource = true;
-  //                 break;
-  //             }
-  //         if (!foundIntersectionsOutsideOfSource)
-  //             break;
-  //     }
-  //     return ls.End;
+  //    CurvePort bp = SourcePort as CurvePort;
+  //    ICurve nodeBoundary = bp.Node.BoundaryCurve;
+  //    Point location = bp.Location;
+  //    Point tangent = (nodeBoundary.LeftDerivative(bp.Parameter).Normalize() + nodeBoundary.RightDerivative(bp.Parameter).Normalize()).Normalize();
+  //    if (Point.GetTriangleOrientation(bp.Node.Center, location, location + tangent) == TriangleOrientation.Counterclockwise)
+  //        tangent = -tangent;
+  //    tangent = tangent.Rotate(Math.PI / 2);
+  //    Number len = this.sourceLoosePolyline.BoundingBox.Diagonal;
+  //    Point portLocation = bp.Location;
+  //    LineSegment ls = LineSegment.mkPP(portLocation, portLocation + len * tangent);
+  //    Point p = Curve.GetAllIntersections(ls, this.SourceLoosePolyline, false)[0].x;
+  //    Point del = tangent * this.OffsetForPolylineRelaxing * 2;
+  //    while (true) {
+  //        ls = LineSegment.mkPP(portLocation, p + del);
+  //        bool foundIntersectionsOutsideOfSource = false;
+  //        foreach (IntersectionInfo ii in IntersectionsOfLineAndRectangleNodeOverPolyline(ls, this.obstacleCalculator.RootOfLooseHierarchy))
+  //            if (ii.seg1 != this.SourceLoosePolyline) {
+  //                del /= 1.5;
+  //                foundIntersectionsOutsideOfSource = true;
+  //                break;
+  //            }
+  //        if (!foundIntersectionsOutsideOfSource)
+  //            break;
+  //    }
+  //    return ls.End;
   // }
   *GetActivePolylines(): IterableIterator<Polyline> {
     for (const polygon of this.activePolygons) {
@@ -590,44 +590,44 @@ export class InteractiveEdgeRouter extends Algorithm {
     relaxedPoint.PolylinePoint.point = relaxedPoint.OriginalPosition.add(v)
   }
 
-  //  ShowPolylineAndObstacles(params curves: ICurve[]) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let ls: Array<DebugCurve> = this.GetDebugCurves(curves);
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
+  // ShowPolylineAndObstacles(params curves: ICurve[]) {
+  //    //  ReSharper restore UnusedMember.Local
+  //    let ls: Array<DebugCurve> = this.GetDebugCurves(curves);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
   // }
 
   // GetDebugCurves(params curves: ICurve[]): Array<DebugCurve> {
-  //     let ls = this.CreateListWithObstaclesAndPolyline(curves);
-  //     // ls.AddRange(this.VisibilityGraph.Edges.Select(e => new DebugCurve(100,0.1, e is TollFreeVisibilityEdge?"red":"green", LineSegment.mkPP(e.SourcePoint, e.TargetPoint))));
-  //     if ((this._sourceVisibilityVertex != null)) {
-  //         ls.Add(new DebugCurve("red", CurveFactory.CreateDiamond(4, 4, this._sourceVisibilityVertex.point)));
-  //     }
+  //    let ls = this.CreateListWithObstaclesAndPolyline(curves);
+  //    // ls.AddRange(this.VisibilityGraph.Edges.Select(e => new DebugCurve(100,0.1, e is TollFreeVisibilityEdge?"red":"green", LineSegment.mkPP(e.SourcePoint, e.TargetPoint))));
+  //    if ((this._sourceVisibilityVertex != null)) {
+  //        ls.Add(new DebugCurve("red", CurveFactory.CreateDiamond(4, 4, this._sourceVisibilityVertex.point)));
+  //    }
 
-  //     if ((this.targetVisibilityVertex != null)) {
-  //         ls.Add(new DebugCurve("purple", new Ellipse(4, 4, this.targetVisibilityVertex.Point)));
-  //     }
+  //    if ((this.targetVisibilityVertex != null)) {
+  //        ls.Add(new DebugCurve("purple", new Ellipse(4, 4, this.targetVisibilityVertex.Point)));
+  //    }
 
-  //     let anywerePort = (<HookUpAnywhereFromInsidePort>(this.targetPort));
-  //     if ((anywerePort != null)) {
-  //         ls.Add(new DebugCurve("purple", anywerePort.LoosePolyline));
-  //     }
+  //    let anywerePort = (<HookUpAnywhereFromInsidePort>(this.targetPort));
+  //    if ((anywerePort != null)) {
+  //        ls.Add(new DebugCurve("purple", anywerePort.LoosePolyline));
+  //    }
 
-  //     return ls;
+  //    return ls;
   // }
 
   // CreateListWithObstaclesAndPolyline(params curves: ICurve[]): Array<DebugCurve> {
-  //     let ls = new Array<DebugCurve>(this.ObstacleCalculator.RootOfLooseHierarchy.GetAllLeaves().select(() => {  }, new DebugCurve(100, 0.01, "green", e)));
-  //     ls.AddRange(curves.Select(() => {  }, new DebugCurve(100, 0.01, "red", c)));
-  //     ls.AddRange(this.ObstacleCalculator.RootOfTightHierarchy.GetAllLeaves().select(() => {  }, new DebugCurve(100, 0.01, "blue", e)));
-  //     //  ls.AddRange(visibilityGraph.Edges.Select(e => (ICurve) LineSegment.mkPP(e.SourcePoint, e.TargetPoint)));
-  //     if ((this._polyline != null)) {
-  //         ls.Add(new DebugCurve(100, 0.03, "blue", this._polyline));
-  //     }
+  //    let ls = new Array<DebugCurve>(this.ObstacleCalculator.RootOfLooseHierarchy.GetAllLeaves().select(() => {  }, new DebugCurve(100, 0.01, "green", e)));
+  //    ls.AddRange(curves.Select(() => {  }, new DebugCurve(100, 0.01, "red", c)));
+  //    ls.AddRange(this.ObstacleCalculator.RootOfTightHierarchy.GetAllLeaves().select(() => {  }, new DebugCurve(100, 0.01, "blue", e)));
+  //    //  ls.AddRange(visibilityGraph.Edges.Select(e => (ICurve) LineSegment.mkPP(e.SourcePoint, e.TargetPoint)));
+  //    if ((this._polyline != null)) {
+  //        ls.Add(new DebugCurve(100, 0.03, "blue", this._polyline));
+  //    }
 
-  //     return ls;
+  //    return ls;
   // }
 
-  //  smoothing the corners of the polyline
+  // smoothing the corners of the polyline
 
   SmoothCorners(edgePolyline: SmoothedPolyline) {
     let a: CornerSite = edgePolyline.headSite
@@ -725,22 +725,22 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   // internal Point TargetPoint {
-  //     get {
-  //         CurvePort tp = this.TargetPort as CurvePort;
-  //         if (tp != null)
-  //             return this.Target.BoundaryCurve[tp.Parameter];
-  //         else
-  //             return (this.TargetPort as FloatingPort).Location;
-  //     }
+  //    get {
+  //        CurvePort tp = this.TargetPort as CurvePort;
+  //        if (tp != null)
+  //            return this.Target.BoundaryCurve[tp.Parameter];
+  //        else
+  //            return (this.TargetPort as FloatingPort).Location;
+  //    }
   // }
   // internal Point SourcePoint {
-  //     get {
-  //         CurvePort sp = this.SourcePort as CurvePort;
-  //         if (sp != null)
-  //             return this.Source.BoundaryCurve[sp.Parameter];
-  //         else
-  //             return (this.SourcePort as FloatingPort).Location;
-  //     }
+  //    get {
+  //        CurvePort sp = this.SourcePort as CurvePort;
+  //        if (sp != null)
+  //            return this.Source.BoundaryCurve[sp.Parameter];
+  //        else
+  //            return (this.SourcePort as FloatingPort).Location;
+  //    }
   // }
   GetShortestPolyline(sourceVisVertex: VisibilityVertex, _targetVisVertex: VisibilityVertex): Polyline {
     this.CleanTheGraphForShortestPath()
@@ -761,24 +761,24 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   // private ShowIsPassable(sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex) {
-  //     let dd = new Array<DebugCurve>(this.visibilityGraph.Edges.Select(() => {  }, new DebugCurve(100, 0.5, "green", LineSegment.mkPP(e.SourcePoint, e.TargetPoint))));
-  //     // TODO: Warning!!!, inline IF is not supported ?
-  //     ((e.IsPassable == null)
-  //                 || e.IsPassable());
-  //     "red";
-  //     if ((sourceVisVertex != null)) {
-  //         dd.Add(new DebugCurve(CurveFactory.CreateDiamond(3, 3, sourceVisVertex.point)));
-  //     }
+  //    let dd = new Array<DebugCurve>(this.visibilityGraph.Edges.Select(() => {  }, new DebugCurve(100, 0.5, "green", LineSegment.mkPP(e.SourcePoint, e.TargetPoint))));
+  //    // TODO: Warning!!!, inline IF is not supported ?
+  //    ((e.IsPassable == null)
+  //                || e.IsPassable());
+  //    "red";
+  //    if ((sourceVisVertex != null)) {
+  //        dd.Add(new DebugCurve(CurveFactory.CreateDiamond(3, 3, sourceVisVertex.point)));
+  //    }
 
-  //     if ((targetVisVertex != null)) {
-  //         dd.Add(new DebugCurve(CurveFactory.CreateEllipse(3, 3, targetVisVertex.point)));
-  //     }
+  //    if ((targetVisVertex != null)) {
+  //        dd.Add(new DebugCurve(CurveFactory.CreateEllipse(3, 3, targetVisVertex.point)));
+  //    }
 
-  //     if ((this.Obstacles != null)) {
-  //         dd.AddRange(this.Obstacles.Select(() => {  }, new DebugCurve(o)));
-  //     }
+  //    if ((this.Obstacles != null)) {
+  //        dd.AddRange(this.Obstacles.Select(() => {  }, new DebugCurve(o)));
+  //    }
 
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
   // }
 
   CleanTheGraphForShortestPath() {
@@ -796,7 +796,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     return ret
   }
 
-  //  returns true if the nodes overlap or just positioned too close
+  // returns true if the nodes overlap or just positioned too close
 
   get OverlapsDetected(): boolean {
     return this.ObstacleCalculator.OverlapsDetected
@@ -875,7 +875,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     return edge
   }
 
-  //  routes the edge to the port
+  // routes the edge to the port
 
   //
 
@@ -1217,7 +1217,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
           this._polyline.addPoint(ls.end)
           curve = this.SmoothCornersAndReturnCurve(smooth, t)
         } else {
-          //  we still can make the polyline with two segs when the port sticking segs are intersecting
+          // we still can make the polyline with two segs when the port sticking segs are intersecting
           let x: Point
           if ((x = LineSegment.IntersectPPPP(sourcePortLocation, this.StartPointOfEdgeRouting, targetPortLocation, takenOutPoint))) {
             this._polyline = new Polyline()
@@ -1390,7 +1390,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     }
   }
 
-  //  returns the hit object
+  // returns the hit object
 
   GetHitLoosePolyline(point: Point): Polyline {
     if (this.ObstacleCalculator.IsEmpty() || this.ObstacleCalculator.RootOfLooseHierarchy == null) {
@@ -1431,7 +1431,7 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     this.activeRectangle.setToEmpty()
   }
 
-  //  setting source port and the loose polyline of the port
+  // setting source port and the loose polyline of the port
 
   SetSourcePortAndSourceLoosePolyline(port: Port, sourceLoosePolylinePar: Polyline) {
     this.SourceLoosePolyline = sourceLoosePolylinePar
@@ -1725,14 +1725,14 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     this.CleanTheGraphForShortestPath()
     // ShowPolylineAndObstacles(targets.Select(t=>new Ellipse(3,3,t.Point)).ToArray());
     const pathCalc = new SingleSourceMultipleTargetsShortestPathOnVisibilityGraph(sourceVisVertex, targets, this.VisibilityGraph)
-    //  { dd = ShowPolylineAndObstacles };
+    // { dd = ShowPolylineAndObstacles };
     const path = pathCalc.GetPath()
     if (path == null) {
       return null
     }
 
     // Assert.assert(((from(path).first() == sourceVisVertex)
-    //                 && targets.contains(path.last())));
+    //                && targets.contains(path.last())));
     const ret = new Polyline()
     for (const v of path) {
       ret.addPoint(v.point)
@@ -1786,13 +1786,13 @@ return from polygon in activePolygons where polygon.Polyline != targetLoosePoly 
     return this.VisibilityGraph
   }
 
-  //  ShowObstaclesAndVisGraph() {
-  //     let obs = this.ObstacleCalculator.LooseObstacles.Select(() => {  }, new DebugCurve(100, 1, "blue", o));
-  //     let edges = this.visibilityGraph.Edges.Select(() => {  }, new DebugCurve(70, 1, (e instanceof  "red"), LineSegment.mkPP(e.SourcePoint, e.TargetPoint)));
-  //     // TODO: Warning!!!, inline IF is not supported ?
-  //     TransientVisibilityEdge;
-  //     "green";
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(obs.Concat(edges));
+  // ShowObstaclesAndVisGraph() {
+  //    let obs = this.ObstacleCalculator.LooseObstacles.Select(() => {  }, new DebugCurve(100, 1, "blue", o));
+  //    let edges = this.visibilityGraph.Edges.Select(() => {  }, new DebugCurve(70, 1, (e instanceof  "red"), LineSegment.mkPP(e.SourcePoint, e.TargetPoint)));
+  //    // TODO: Warning!!!, inline IF is not supported ?
+  //    TransientVisibilityEdge;
+  //    "green";
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(obs.Concat(edges));
   // }
 
   AddActivePolygons(polygons: Array<Polygon>) {

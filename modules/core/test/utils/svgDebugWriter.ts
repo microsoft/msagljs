@@ -16,7 +16,7 @@ import {fontHeight} from './testUtils'
 // @ts-check
 export class SvgDebugWriter {
   // Here we import the File System module of node
-  //  private fs = require('fs')
+  // private fs = require('fs')
   //private xmlw = require('xml-writer')
   xw: any
   ws: any
@@ -327,10 +327,10 @@ export class SvgDebugWriter {
   }
 
   // writeLabel(label: GeomLabel) {
-  //   const dc = DebugCurve.mkDebugCurveI(label.boundingBox.perimeter())
-  //   dc.transparency = 124
-  //   dc.width /= 2
-  //   this.writeDebugCurve(dc)
+  //  const dc = DebugCurve.mkDebugCurveI(label.boundingBox.perimeter())
+  //  dc.transparency = 124
+  //  dc.width /= 2
+  //  this.writeDebugCurve(dc)
   // }
 
   private addArrow(start: Point, end: Point) {

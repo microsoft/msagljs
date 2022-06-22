@@ -1,11 +1,11 @@
 // Defines the anchors for a node; anchors can be not symmetrical in general
 //
-//           |TopAnchor
+//          |TopAnchor
 //Left anchor|
 // ======Origin==================RightAnchor
-//           |
-//           |
-//           |BottomAnchor
+//          |
+//          |
+//          |BottomAnchor
 import {Point, TriangleOrientation} from './../../math/geometry/point'
 import {Polyline} from './../../math/geometry/polyline'
 import {PolylinePoint} from './../../math/geometry/polylinePoint'
@@ -44,8 +44,8 @@ export class Anchor {
   set leftAnchor(value) {
     //the absence of this check allows a situation when an edge crosses its label or
     // a label which does not belong to the edge
-    //       if(value<-Curve.DistEps)
-    //       throw new Exception("assigning negative value to a anchor");
+    //      if(value<-Curve.DistEps)
+    //      throw new Exception("assigning negative value to a anchor");
     this.la = Math.max(value, 0)
   }
 
@@ -55,8 +55,8 @@ export class Anchor {
   }
 
   set rightAnchor(value) {
-    //   if(value<-Curve.DistEps)
-    //   throw new Exception("assigning negative value to a anchor: "+value );
+    //  if(value<-Curve.DistEps)
+    //  throw new Exception("assigning negative value to a anchor: "+value );
     this.ra = Math.max(value, 0)
   }
 
@@ -297,7 +297,7 @@ export class Anchor {
   }
 
   //private static number TurnAfterSeg(Curve curve, int i) {
-  //    return Point.SignedDoubledTriangleArea(curve.segs[i].start, curve.segs[i].End, curve.segs[(i + 1) / curve.segs.Count].End);
+  //   return Point.SignedDoubledTriangleArea(curve.segs[i].start, curve.segs[i].End, curve.segs[(i + 1) / curve.segs.Count].End);
   //}
 
   creatPolygonalBoundaryWithoutPadding(): Polyline {

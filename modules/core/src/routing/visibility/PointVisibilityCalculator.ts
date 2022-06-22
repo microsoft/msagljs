@@ -1,4 +1,4 @@
-//  following "Visibility Algorithms in the Plane", Ghosh
+// following "Visibility Algorithms in the Plane", Ghosh
 
 import {Point} from '../..'
 import {Polyline, GeomConstants} from '../../math/geometry'
@@ -20,7 +20,7 @@ export class PointVisibilityCalculator {
   activeEdgeComparer: ActiveEdgeComparerWithRay
   activeSidesTree: RBTree<PolylinePoint>
 
-  //  A mapping from sides to their RBNodes
+  // A mapping from sides to their RBNodes
 
   sideNodes: Map<PolylinePoint, RBNode<PolylinePoint>> = new Map<PolylinePoint, RBNode<PolylinePoint>>()
 
@@ -30,7 +30,7 @@ export class PointVisibilityCalculator {
 
   visibilityKind: VisibilityKind
 
-  //  These are parts of hole boundaries visible from q where each node is taken in isolation
+  // These are parts of hole boundaries visible from q where each node is taken in isolation
 
   visibleBoundaries: Map<Polyline, Stem> = new Map<Polyline, Stem>()
 
@@ -50,12 +50,12 @@ export class PointVisibilityCalculator {
   // the sorted list of possibly visible vertices
   sortedListOfPolypoints: Array<PolylinePoint> = new Array<PolylinePoint>()
 
-  //  We suppose that the holes are convex, oriented clockwise, and are mutually disjoint
+  // We suppose that the holes are convex, oriented clockwise, and are mutually disjoint
   holes: Array<Polyline>
 
-  //  "point" can belong to the boundary of one of the holes
-  //  tangent or regural visibility
-  //  "qVertex" : the graph vertex corresponding to the pivot
+  // "point" can belong to the boundary of one of the holes
+  // tangent or regural visibility
+  // "qVertex" : the graph vertex corresponding to the pivot
   static CalculatePointVisibilityGraph(
     listOfHoles: Iterable<Polyline>,
     visibilityGraph: VisibilityGraph,
@@ -77,12 +77,12 @@ export class PointVisibilityCalculator {
     this.ComputeHoleBoundariesPossiblyVisibleFromQ()
     if (this.visibleBoundaries.size > 0) {
       this.SortSAndInitActiveSides()
-      //  CheckActiveSidesAreConsistent();
+      // CheckActiveSidesAreConsistent();
       this.Sweep()
     }
   }
 
-  //  sorts the set of potentially visible vertices around point q
+  // sorts the set of potentially visible vertices around point q
 
   SortSAndInitActiveSides() {
     this.InitHeapAndInsertActiveSides()
@@ -106,11 +106,11 @@ export class PointVisibilityCalculator {
     }
   }
 
-  //  these are chuncks of the visible boundaries growing from the polyline  point just above its crossing with the horizontal ray or
-  //  from the visible part start
-  //  In the general case we have two stems from one polyline
+  // these are chuncks of the visible boundaries growing from the polyline  point just above its crossing with the horizontal ray or
+  // from the visible part start
+  // In the general case we have two stems from one polyline
 
-  //  <returns></returns>
+  // <returns></returns>
 
   *GetInitialVisibleBoundaryStemsAndInsertActiveSides(): IterableIterator<Stem> {
     for (const [hole, stem] of this.visibleBoundaries) {
@@ -157,13 +157,13 @@ export class PointVisibilityCalculator {
   }
 
   // private Polyline GetPolylineBetweenPolyPointsTest(Polyline hole, PolylinePoint p0, PolylinePoint p1) {
-  //     Polyline ret = new Polyline();
-  //     while (p0 != p1) {
-  //         ret.AddPoint(p0.Point);
-  //         p0 = hole.Next(p0);
-  //     }
-  //     ret.AddPoint(p1.Point);
-  //     return ret;
+  //    Polyline ret = new Polyline();
+  //    while (p0 != p1) {
+  //        ret.AddPoint(p0.Point);
+  //        p0 = hole.Next(p0);
+  //    }
+  //    ret.AddPoint(p1.Point);
+  //    return ret;
   // }
   constructor(holes: Iterable<Polyline>, visibilityGraph: VisibilityGraph, point: Point, visibilityKind: VisibilityKind) {
     this.holes = Array.from(holes)
@@ -189,12 +189,12 @@ export class PointVisibilityCalculator {
     const inSide: PolylinePoint = PointVisibilityCalculator.GetIncomingSide(v)
     const outSide: PolylinePoint = this.GetOutgoingSide(v)
     // if (inEdge != null && outEdge != null)
-    //     SugiyamaLayoutSettings.Show(new LineSegment(inEdge.Start.Point, inEdge.End.Point), new LineSegment(outEdge.Start.Point,
-    //         outEdge.End.Point), new LineSegment(this.q, v.Point));
+    //    SugiyamaLayoutSettings.Show(new LineSegment(inEdge.Start.Point, inEdge.End.Point), new LineSegment(outEdge.Start.Point,
+    //        outEdge.End.Point), new LineSegment(this.q, v.Point));
     // else if (inEdge != null)
-    //     SugiyamaLayoutSettings.Show(new LineSegment(inEdge.Start.Point, inEdge.End.Point), new LineSegment(this.q, v.Point));
+    //    SugiyamaLayoutSettings.Show(new LineSegment(inEdge.Start.Point, inEdge.End.Point), new LineSegment(this.q, v.Point));
     // else if (outEdge != null)
-    //     SugiyamaLayoutSettings.Show(new LineSegment(outEdge.Start.Point, outEdge.End.Point), new LineSegment(this.q, v.Point));
+    //    SugiyamaLayoutSettings.Show(new LineSegment(outEdge.Start.Point, outEdge.End.Point), new LineSegment(this.q, v.Point));
     this.activeEdgeComparer.IntersectionOfTheRayAndInsertedEdge = v.point
     let node: RBNode<PolylinePoint>
     if ((node = this.sideNodes.get(inSide))) {
@@ -247,10 +247,10 @@ export class PointVisibilityCalculator {
     return Point.signedDoubledTriangleArea(a, v, prev) * Point.signedDoubledTriangleArea(a, v, next) >= 0
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   /*
         DrawActiveEdgesAndVisibleGraph() {
-            //  ReSharper restore UnusedMember.Local
+            // ReSharper restore UnusedMember.Local
             let l = new Array<ICurve>();
             for (let pe: VisibilityEdge in this.visibilityGraph.Edges) {
                 l.Add(new LineSegment(pe.SourcePoint, pe.TargetPoint));

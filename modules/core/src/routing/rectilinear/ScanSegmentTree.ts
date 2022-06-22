@@ -25,12 +25,12 @@ export class ScanSegmentTree {
     return this.segmentTree.allNodes()
   }
 
-  //  If the seg is already in the tree it returns that instance, else it inserts the new
-  //  seg and returns that.
+  // If the seg is already in the tree it returns that instance, else it inserts the new
+  // seg and returns that.
   InsertUnique(seg: ScanSegment): RBNode<ScanSegment> {
-    //  RBTree's internal operations on insert/remove etc. mean the node can't cache the
-    //  RBNode returned by insert(); instead we must do find() on each call.  But we can
-    //  use the returned node to get predecessor/successor.
+    // RBTree's internal operations on insert/remove etc. mean the node can't cache the
+    // RBNode returned by insert(); instead we must do find() on each call.  But we can
+    // use the returned node to get predecessor/successor.
     this.AssertValidSegmentForInsertion(seg)
     const node = this.segmentTree.find(seg)
     if (node != null) {
@@ -87,12 +87,12 @@ export class ScanSegmentTree {
       this.ScanDirection.IsPerpendicularPP(start, end),
       'non-perpendicular segment passed',
     )*/
-    //  Find the last segment that starts at or before 'start'.
+    // Find the last segment that starts at or before 'start'.
     this.lookupSegment.Update(start, start)
     let node: RBNode<ScanSegment> = this.segmentTree.findLast(this.findIntersectorPred)
-    //  We have a segment that intersects start/end, or one that ends before 'start' and thus we
-    //  must iterate to find the lowest bisector.  TODOperf: see how much that iteration costs us
-    //  (here and Highest); consider a BSP tree or interval tree (maybe 2-d RBTree for updatability).
+    // We have a segment that intersects start/end, or one that ends before 'start' and thus we
+    // must iterate to find the lowest bisector.  TODOperf: see how much that iteration costs us
+    // (here and Highest); consider a BSP tree or interval tree (maybe 2-d RBTree for updatability).
     if (PointComparer.EqualPP(start, end)) {
       if (null != node && this.ScanDirection.Compare(node.item.End, start) < 0) {
         node = null
@@ -100,7 +100,7 @@ export class ScanSegmentTree {
     } else {
       this.lookupSegment.Update(start, end)
       while (null != node && !node.item.IntersectsSegment(this.lookupSegment)) {
-        //  If the node segment starts after 'end', no intersection was found.
+        // If the node segment starts after 'end', no intersection was found.
         if (this.ScanDirection.Compare(node.item.Start, end) > 0) {
           return null
         }
@@ -112,17 +112,17 @@ export class ScanSegmentTree {
     return node
   }
 
-  //  Find the highest perpendicular scanseg that intersects the segment endpoints.
+  // Find the highest perpendicular scanseg that intersects the segment endpoints.
   FindHighestIntersector(start: Point, end: Point): ScanSegment {
     /*Assert.assert(
       this.ScanDirection.IsPerpendicularPP(start, end),
       'non-perpendicular segment passed',
     )*/
-    //  Find the last segment that starts at or before 'end'.
+    // Find the last segment that starts at or before 'end'.
     this.lookupSegment.Update(end, end)
     let node: RBNode<ScanSegment> = this.segmentTree.findLast(this.findIntersectorPred)
-    //  Now we either have a segment that intersects start/end, or one that ends before
-    //  'end' and need to iterate to find the highest bisector.
+    // Now we either have a segment that intersects start/end, or one that ends before
+    // 'end' and need to iterate to find the highest bisector.
     if (PointComparer.EqualPP(start, end)) {
       if (null != node && this.ScanDirection.Compare(node.item.End, start) < 0) {
         node = null
@@ -130,7 +130,7 @@ export class ScanSegmentTree {
     } else {
       this.lookupSegment.Update(start, end)
       while (null != node && !node.item.IntersectsSegment(this.lookupSegment)) {
-        //  If the node segment ends before 'start', no intersection was found.
+        // If the node segment ends before 'start', no intersection was found.
         if (this.ScanDirection.Compare(node.item.End, start) < 0) {
           return null
         }
@@ -141,7 +141,7 @@ export class ScanSegmentTree {
     return null != node ? node.item : null
   }
   CompareIntersector(seg: ScanSegment): boolean {
-    //  We're looking for the last segment that starts before LookupSegment.Start.
+    // We're looking for the last segment that starts before LookupSegment.Start.
     return this.ScanDirection.Compare(seg.Start, this.lookupSegment.Start) <= 0
   }
 
@@ -152,10 +152,10 @@ export class ScanSegmentTree {
   FindSegmentOverlappingPoints(start: Point, end: Point, allowUnfound: boolean): ScanSegment {
     this.lookupSegment.Update(start, end)
     const node: RBNode<ScanSegment> = this.segmentTree.findFirst(this.findPointPred)
-    //  If we had any segments in the tree that end after 'start', node has the first one.
-    //  Now we need to that it starts before 'end'.  ScanSegment.CompareToPointPositionFullLength
-    //  asserts the point is on the segment which we don't want to require here, so
-    //  compare the endpoints directly.
+    // If we had any segments in the tree that end after 'start', node has the first one.
+    // Now we need to that it starts before 'end'.  ScanSegment.CompareToPointPositionFullLength
+    // asserts the point is on the segment which we don't want to require here, so
+    // compare the endpoints directly.
     if (node != null) {
       const seg: ScanSegment = node.item
       if (this.ScanDirection.Compare(seg.Start, end) <= 0) {
@@ -163,7 +163,7 @@ export class ScanSegmentTree {
       }
     }
 
-    //  Not found.
+    // Not found.
     if (!allowUnfound) {
       /*Assert.assert(false, 'Could not find expected segment')*/
     }
@@ -172,19 +172,19 @@ export class ScanSegmentTree {
   }
 
   CompareToPoint(treeSeg: ScanSegment): boolean {
-    //  Test if treeSeg overlaps the LookupSegment.Start point.  We're using FindFirst,
-    //  so we'll just return false for everything that ends before the point and true for anything
-    //  that ends at or after it, then the caller will verify overlap.
+    // Test if treeSeg overlaps the LookupSegment.Start point.  We're using FindFirst,
+    // so we'll just return false for everything that ends before the point and true for anything
+    // that ends at or after it, then the caller will verify overlap.
     return this.ScanDirection.Compare(treeSeg.End, this.lookupSegment.Start) >= 0
   }
 
   MergeAndRemoveNextNode(currentSegment: ScanSegment, nextSegNode: RBNode<ScanSegment>): RBNode<ScanSegment> {
-    //  Merge at the ends only - if we're here, start will be the same or greater.
+    // Merge at the ends only - if we're here, start will be the same or greater.
     if (-1 == this.ScanDirection.Compare(currentSegment.End, nextSegNode.item.End)) {
       currentSegment.Update(currentSegment.Start, nextSegNode.item.End)
     }
 
-    //  Removing the node can revise the tree's RBNodes internally so re-get the current segment.
+    // Removing the node can revise the tree's RBNodes internally so re-get the current segment.
     currentSegment.MergeGroupBoundaryCrossingList(nextSegNode.item.GroupBoundaryPointAndCrossingsList)
     this.segmentTree.deleteNodeInternal(nextSegNode)
     return this.segmentTree.find(currentSegment)
@@ -201,16 +201,16 @@ export class ScanSegmentTree {
       const cmp: number = this.ScanDirection.Compare(nextSegNode.item.Start, currentSegNode.item.End)
       switch (cmp) {
         case 1:
-          //  Next segment starts after the current one.
+          // Next segment starts after the current one.
           currentSegNode = nextSegNode
           break
         case 0:
           if (nextSegNode.item.IsOverlapped == currentSegNode.item.IsOverlapped) {
-            //  Overlapping is the same, so merge.  Because the ordering in the tree is that
-            //  same-Start nodes are ordered by longest-End first, this will retain the tree ordering.
+            // Overlapping is the same, so merge.  Because the ordering in the tree is that
+            // same-Start nodes are ordered by longest-End first, this will retain the tree ordering.
             currentSegNode = this.MergeAndRemoveNextNode(currentSegNode.item, nextSegNode)
           } else {
-            //  Touching start/end with differing IsOverlapped so they need a connecting vertex.
+            // Touching start/end with differing IsOverlapped so they need a connecting vertex.
             currentSegNode.item.NeedEndOverlapVertex = true
             nextSegNode.item.NeedStartOverlapVertex = true
             currentSegNode = nextSegNode
@@ -223,11 +223,11 @@ export class ScanSegmentTree {
               nextSegNode.item.End < currentSegNode.item.End,
             'Identical segments are not allowed, and longer ones must come first',
           )*/
-          //  Because longer segments are ordered before shorter ones at the same start position,
-          //  nextSegNode.Item must be a duplicate segment or is partially or totally overlapped.
-          //  In the case of reflection lookahead segments, the side-intersection calculated from
-          //  horizontal vs. vertical directions may be slightly different along the parallel
-          //  coordinate from an overlapped segment, so let non-overlapped win that disagreement.
+          // Because longer segments are ordered before shorter ones at the same start position,
+          // nextSegNode.Item must be a duplicate segment or is partially or totally overlapped.
+          // In the case of reflection lookahead segments, the side-intersection calculated from
+          // horizontal vs. vertical directions may be slightly different along the parallel
+          // coordinate from an overlapped segment, so let non-overlapped win that disagreement.
           if (currentSegNode.item.IsOverlapped != nextSegNode.item.IsOverlapped) {
             /*Assert.assert(
               Point.closeIntersections(
@@ -237,30 +237,30 @@ export class ScanSegmentTree {
               'Segments share a span with different IsOverlapped',
             )*/
             if (currentSegNode.item.IsOverlapped) {
-              //  If the Starts are different, then currentSegNode is the only item at its
-              //  start, so we don't need to re-insert.  Otherwise, we need to remove it and
-              //  re-find nextSegNode's side.
+              // If the Starts are different, then currentSegNode is the only item at its
+              // start, so we don't need to re-insert.  Otherwise, we need to remove it and
+              // re-find nextSegNode's side.
               if (currentSegNode.item.Start == nextSegNode.item.Start) {
-                //  currentSegNode is a tiny overlapped segment between two non-overlapped segments (so
-                //  we'll have another merge later, when we hit the other non-overlapped segment).
-                //  Notice reversed params.  TestNote: No longer have repro with the change to convex hulls;
-                //  this may no longer happen since overlapped edges will now always be inside rectangular
-                //  obstacles so there are no angled-side calculations.
+                // currentSegNode is a tiny overlapped segment between two non-overlapped segments (so
+                // we'll have another merge later, when we hit the other non-overlapped segment).
+                // Notice reversed params.  TestNote: No longer have repro with the change to convex hulls;
+                // this may no longer happen since overlapped edges will now always be inside rectangular
+                // obstacles so there are no angled-side calculations.
                 currentSegNode = this.MergeAndRemoveNextNode(nextSegNode.item, currentSegNode)
               } else {
                 currentSegNode.item.Update(currentSegNode.item.Start, nextSegNode.item.Start)
                 currentSegNode = nextSegNode
               }
             } else if (currentSegNode.item.End == nextSegNode.item.End) {
-              //  nextSegNode is a tiny non-overlapped segment between two overlapped segments (so
-              //  we'll have another merge later, when we hit the other non-overlapped segment).
-              //  TestNote: No longer have repro with the change to convex hulls;
-              //  this may no longer happen since overlapped edges will now always be inside rectangular
-              //  obstacles so there are no angled-side calculations.
+              // nextSegNode is a tiny non-overlapped segment between two overlapped segments (so
+              // we'll have another merge later, when we hit the other non-overlapped segment).
+              // TestNote: No longer have repro with the change to convex hulls;
+              // this may no longer happen since overlapped edges will now always be inside rectangular
+              // obstacles so there are no angled-side calculations.
               currentSegNode = this.MergeAndRemoveNextNode(currentSegNode.item, nextSegNode)
             } else {
-              //  Remove nextSegNode, increment its start to be after currentSegment, re-insert nextSegNode, and
-              //  re-find currentSegNode (there may be more segments between nextSegment.Start and currentSegment.End).
+              // Remove nextSegNode, increment its start to be after currentSegment, re-insert nextSegNode, and
+              // re-find currentSegNode (there may be more segments between nextSegment.Start and currentSegment.End).
               const nextSegment: ScanSegment = nextSegNode.item
               const currentSegment: ScanSegment = currentSegNode.item
               this.segmentTree.deleteNodeInternal(nextSegNode)
@@ -274,17 +274,17 @@ export class ScanSegmentTree {
             break
           }
 
-          //  Overlaps match so do a normal merge operation.
+          // Overlaps match so do a normal merge operation.
           currentSegNode = this.MergeAndRemoveNextNode(currentSegNode.item, nextSegNode)
           break
       }
 
-      //  endswitch
+      // endswitch
     }
   }
 
-  //  For ordering the line segments inserted by the ScanLine. Assuming vertical sweep (sweeping up from
-  //  bottom, scanning horizontally) then order ScanSegments first by lowest Y coord, then by lowest X coord.
+  // For ordering the line segments inserted by the ScanLine. Assuming vertical sweep (sweeping up from
+  // bottom, scanning horizontally) then order ScanSegments first by lowest Y coord, then by lowest X coord.
 
   public Compare(first: ScanSegment, second: ScanSegment): number {
     if (first == second) {
@@ -299,10 +299,10 @@ export class ScanSegmentTree {
       return 1
     }
 
-    //  This orders on both axes.
+    // This orders on both axes.
     let cmp: number = this.ScanDirection.Compare(first.Start, second.Start)
     if (0 == cmp) {
-      //  Longer segments come first, to make overlap removal easier.
+      // Longer segments come first, to make overlap removal easier.
       cmp = this.ScanDirection.Compare(first.End, second.End) * -1
     }
 

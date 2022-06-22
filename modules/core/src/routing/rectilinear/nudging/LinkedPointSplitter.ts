@@ -1,4 +1,4 @@
-//  intersects a set of horizontal LinkedPoints with a set of vertical LinkedPoints
+// intersects a set of horizontal LinkedPoints with a set of vertical LinkedPoints
 
 import {Point} from '../../../math/geometry/point'
 import {GeomConstants} from '../../../math/geometry/geomConstants'
@@ -134,7 +134,7 @@ export class LinkedPointSplitter {
     }
 
     // a horizontal point will appear of the queue after a vertical point
-    //  with the same coordinate low coorinate
+    // with the same coordinate low coorinate
     for (const horizPoint of this.HorizontalPoints) {
       this.Queue.Enqueue(horizPoint, horizPoint.Point.y)
     }

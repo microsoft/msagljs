@@ -1,7 +1,7 @@
-//  BasicObstacleSide is base class for an obstacle side that is to the low or high end of the
-//  scanline-parallel coordinate, and knows which direction to traverse to find the endVertex.
-//  This is different from RightObstacleSide or LeftObstacleSide, where the class itself is the
-//  determinant of traversal direction being with or opposite to the clockwise polyline direction;
+// BasicObstacleSide is base class for an obstacle side that is to the low or high end of the
+// scanline-parallel coordinate, and knows which direction to traverse to find the endVertex.
+// This is different from RightObstacleSide or LeftObstacleSide, where the class itself is the
+// determinant of traversal direction being with or opposite to the clockwise polyline direction;
 
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {ObstacleSide} from '../spline/coneSpanner/ObstacleSide'
@@ -9,7 +9,7 @@ import {Obstacle} from './obstacle'
 import {ScanDirection} from './ScanDirection'
 import {StaticGraphUtility} from './StaticGraphUtility'
 
-//  BasicObstacleSide uses the ctor arg traverseClockwise to manage that.
+// BasicObstacleSide uses the ctor arg traverseClockwise to manage that.
 export abstract class BasicObstacleSide extends ObstacleSide {
   obstacle: Obstacle
   get Obstacle(): Obstacle {

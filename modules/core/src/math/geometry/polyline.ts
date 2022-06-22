@@ -63,7 +63,7 @@ export class Polyline implements ICurve {
   /**  adds a point to the polyline */
   addPoint(p: Point) {
     // Assert.assert(
-    //   this.endPoint == null || !Point.closeDistEps(p, this.endPoint.point),
+    //  this.endPoint == null || !Point.closeDistEps(p, this.endPoint.point),
     // )
     const pp = new PolylinePoint()
     pp.polyline = this

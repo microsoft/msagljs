@@ -5,12 +5,12 @@ import {CdtEdge} from './CdtEdge'
 import {CdtSite} from './CdtSite'
 import {ThreeArray} from './ThreeArray'
 
-//  a trianlge oriented counterclockwise
+// a trianlge oriented counterclockwise
 export class CdtTriangle {
-  //  the edges
+  // the edges
   public TriEdges: ThreeArray<CdtEdge> = new ThreeArray<CdtEdge>()
 
-  //  the sites
+  // the sites
   public Sites: ThreeArray<CdtSite> = new ThreeArray<CdtSite>()
 
   static mkSSSD(a: CdtSite, b: CdtSite, c: CdtSite, createEdgeDelegate: (a: CdtSite, b: CdtSite) => CdtEdge) {
@@ -76,7 +76,7 @@ export class CdtTriangle {
     return tri
   }
 
-  //  in the trianlge, which is always oriented counterclockwise, the edge starts at site
+  // in the trianlge, which is always oriented counterclockwise, the edge starts at site
   BindEdgeToTriangle(site: CdtSite, edge: CdtEdge) {
     if (site == edge.upperSite) {
       edge.CcwTriangle = this
@@ -85,7 +85,7 @@ export class CdtTriangle {
     }
   }
 
-  //  here a,b,c comprise a ccw triangle
+  // here a,b,c comprise a ccw triangle
   FillCcwTriangle(a: CdtSite, b: CdtSite, c: CdtSite, createEdgeDelegate: (a: CdtSite, b: CdtSite) => CdtEdge) {
     this.Sites.setItem(0, a)
     this.Sites.setItem(1, b)
@@ -113,14 +113,14 @@ export class CdtTriangle {
     return this.TriEdges.getItem(index + 1)
   }
 
-  //  #if TEST_MSAGL&&TEST_MSAGL
-  //          // Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
-  //          // A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
-  //          // <filterpriority>2</filterpriority>
-  //          public override string ToString() {
-  //              return String.Format("({0},{1},{2}", Sites[0], Sites[1], Sites[2]);
-  //          }
-  //  #endif
+  // #if TEST_MSAGL&&TEST_MSAGL
+  //         // Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+  //         // A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+  //         // <filterpriority>2</filterpriority>
+  //         public override string ToString() {
+  //             return String.Format("({0},{1},{2}", Sites[0], Sites[1], Sites[2]);
+  //         }
+  // #endif
   OppositeSite(cdtEdge: CdtEdge): CdtSite {
     const i = this.TriEdges.index(cdtEdge)
     return this.Sites.getItem(i + 2)

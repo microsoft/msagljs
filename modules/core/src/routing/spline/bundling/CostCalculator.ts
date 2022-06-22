@@ -5,7 +5,7 @@ import {HubRadiiCalculator} from './HubRadiiCalculator'
 import {GreaterOrEqual, MetroGraphData} from './MetroGraphData'
 import {Station} from './Station'
 
-//  Calculates the cost of the routing
+// Calculates the cost of the routing
 export class CostCalculator {
   static Inf = 1000000000
 
@@ -18,17 +18,17 @@ export class CostCalculator {
     this.bundlingSettings = bundlingSettings
   }
 
-  //  Error of ink
+  // Error of ink
   static InkError(oldInk: number, newInk: number, bundlingSettings: BundlingSettings): number {
     return (oldInk - newInk) * bundlingSettings.InkImportance
   }
 
-  //  Error of path lengths
+  // Error of path lengths
   static PathLengthsError(oldLength: number, newLength: number, idealLength: number, bundlingSettings: BundlingSettings): number {
     return (oldLength - newLength) * (bundlingSettings.PathLengthImportance / idealLength)
   }
 
-  //  Error of hubs
+  // Error of hubs
   static RError(idealR: number, nowR: number, bundlingSettings: BundlingSettings): number {
     if (idealR <= nowR) {
       return 0
@@ -38,7 +38,7 @@ export class CostCalculator {
     return res
   }
 
-  //  Error of bundles
+  // Error of bundles
   static BundleError(idealWidth: number, nowWidth: number, bundlingSettings: BundlingSettings): number {
     if (idealWidth <= nowWidth) {
       return 0
@@ -48,7 +48,7 @@ export class CostCalculator {
     return res
   }
 
-  //  Cost of the whole graph
+  // Cost of the whole graph
   static Cost(metroGraphData: MetroGraphData, bundlingSettings: BundlingSettings): number {
     let cost = bundlingSettings.InkImportance * metroGraphData.Ink
     //path lengths
@@ -61,7 +61,7 @@ export class CostCalculator {
     return cost
   }
 
-  //  Cost of the whole graph (hubs and bundles)
+  // Cost of the whole graph (hubs and bundles)
   static CostOfForces(metroGraphData: MetroGraphData): number {
     let cost = 0
     // hubs
@@ -77,7 +77,7 @@ export class CostCalculator {
     return cost
   }
 
-  //  Gain of ink
+  // Gain of ink
   InkGain(node: Station, newPosition: Point): number {
     // ink
     const oldInk: number = this.metroGraphData.Ink
@@ -90,7 +90,7 @@ export class CostCalculator {
     return CostCalculator.InkError(oldInk, newInk, this.bundlingSettings)
   }
 
-  //  Gain of path lengths
+  // Gain of path lengths
   PathLengthsGain(node: Station, newPosition: Point): number {
     let gain = 0
     //edge lengths
@@ -113,7 +113,7 @@ export class CostCalculator {
     return gain
   }
 
-  //  Gain of radii
+  // Gain of radii
   RadiusGain(node: Station, newPosition: Point): number {
     let gain = 0
     gain = gain + node.cachedRadiusCost
@@ -143,8 +143,8 @@ export class CostCalculator {
     return cost
   }
 
-  //  Gain of bundles
-  //  if a newPosition is not valid (e.g. intersect obstacles) the result is -inf
+  // Gain of bundles
+  // if a newPosition is not valid (e.g. intersect obstacles) the result is -inf
   BundleGain(node: Station, newPosition: Point): number {
     let gain = node.cachedBundleCost
     for (const adj of node.Neighbors) {

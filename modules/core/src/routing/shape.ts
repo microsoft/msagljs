@@ -24,14 +24,14 @@ export class Shape {
 
   private boundaryCurve: ICurve
 
-  //  The bounding box of the shape.
+  // The bounding box of the shape.
 
   public get BoundingBox(): Rectangle {
     return this.BoundaryCurve.boundingBox
   }
 
-  //  The set of Ports for this obstacle, usually RelativePorts.  In the event of overlapping
-  //  obstacles, this identifies the obstacle to which the port applies.
+  // The set of Ports for this obstacle, usually RelativePorts.  In the event of overlapping
+  // obstacles, this identifies the obstacle to which the port applies.
 
   public get Ports(): Set<Port> {
     return this.ports
@@ -39,23 +39,23 @@ export class Shape {
 
   private ports: Set<Port> = new Set<Port>()
 
-  //  A location for storing user data associated with the Shape.
+  // A location for storing user data associated with the Shape.
 
   UserData: any
 
-  //  Default constructor.
+  // Default constructor.
 
   static mkShape(): Shape {
     return new Shape(null)
   }
 
-  //  Constructor taking the ID and the curve of the shape.
+  // Constructor taking the ID and the curve of the shape.
 
   public constructor(boundaryCurve: ICurve = null) {
     this.BoundaryCurve = boundaryCurve
   }
 
-  //  A group is a shape that has children.
+  // A group is a shape that has children.
 
   public get IsGroup(): boolean {
     return this.children.size > 0
@@ -93,7 +93,7 @@ export class Shape {
     }
   }
 
-  //  Adds a parent. A shape can have several parents
+  // Adds a parent. A shape can have several parents
 
   public AddParent(shape: Shape) {
     this.parents.add(shape)

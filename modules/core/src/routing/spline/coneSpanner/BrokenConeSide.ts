@@ -2,16 +2,16 @@ import {Point} from '../../..'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {ConeSide} from './ConeSide'
 
-//  represents a cone side that is broken by the obstacle
+// represents a cone side that is broken by the obstacle
 export class BrokenConeSide extends ConeSide {
-  //  point where it starts
+  // point where it starts
   start: Point
 
   get Start(): Point {
     return this.start
   }
 
-  //  it is the side of the cone that intersects the obstacle side
+  // it is the side of the cone that intersects the obstacle side
   ConeSide: ConeSide
   EndVertex: PolylinePoint
 

@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SolverAlgorithm.cs" company="Microsoft">
-//   (c) Microsoft Corporation.  All rights reserved.
+//  (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 
 // MSAGL class for algorithm enumeration for Projection Solver.

@@ -1,5 +1,5 @@
-//  The class is responsible for general edge bundling with ordered bundles.
-//  Currently the router will fail if there are node overlaps.
+// The class is responsible for general edge bundling with ordered bundles.
+// Currently the router will fail if there are node overlaps.
 
 import {Point, Rectangle, GeomEdge} from '../../..'
 import {HookUpAnywhereFromInsidePort} from '../../../layout/core/hookUpAnywhereFromInsidePort'
@@ -80,10 +80,10 @@ export class BundleRouter extends Algorithm {
     return FindIntersectionWithProperty(hierarchy, hierarchy, Curve.CurvesIntersect)
   }
 
-  //  edge routing with Ordered Bundles:
-  //  1. route edges with bundling
-  //  2. nudge bundles and hubs
-  //  3. order paths
+  // edge routing with Ordered Bundles:
+  // 1. route edges with bundling
+  // 2. nudge bundles and hubs
+  // 3. order paths
 
   run() {
     if (this.ThereAreOverlaps(this.TightHierarchy)) {
@@ -118,8 +118,8 @@ export class BundleRouter extends Algorithm {
     new EdgeNudger(metroGraphData, this.bundlingSettings).run()
   }
 
-  //  set endpoint of the edge from child to parent (cluster) to the boundary of the parent
-  //  TODO: is there a better solution?
+  // set endpoint of the edge from child to parent (cluster) to the boundary of the parent
+  // TODO: is there a better solution?
 
   FixChildParentEdges() {
     for (const edge of this.regularEdges) {
@@ -154,19 +154,19 @@ export class BundleRouter extends Algorithm {
     return constrainedDelaunayTriangulation
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   // @SuppressMessage('Microsoft.Performance', 'CA1811:AvoidUncalledPrivateCode')
   // ShowGraphLocal() {
-  //   //  ReSharper restore UnusedMember.Local
-  //   const l = new List<ICurve>()
-  //   l.Clear()
-  //   for (const e in this.geometryGraph.edges) {
-  //     l.Add(new Ellipse(2, 2, e.Curve.Start))
-  //     l.Add(CurveFactory.CreateDiamond(5, 5, e.Curve.End))
-  //     l.Add(e.Curve)
-  //   }
+  //  //  ReSharper restore UnusedMember.Local
+  //  const l = new List<ICurve>()
+  //  l.Clear()
+  //  for (const e in this.geometryGraph.edges) {
+  //    l.Add(new Ellipse(2, 2, e.Curve.Start))
+  //    l.Add(CurveFactory.CreateDiamond(5, 5, e.Curve.End))
+  //    l.Add(e.Curve)
+  //  }
 
-  //   SplineRouter.ShowVisGraph(this.VisibilityGraph, this.LooseHierarchy.GetAllLeaves(), null, l)
+  //  SplineRouter.ShowVisGraph(this.VisibilityGraph, this.LooseHierarchy.GetAllLeaves(), null, l)
   // }
 
   FixLocationsForHookAnywherePorts(edges: GeomEdge[]) {
@@ -198,7 +198,7 @@ export class BundleRouter extends Algorithm {
   FigureOutHookLocationForClusterOtherPort(poly: Polyline, otherEdgeEndPort: ClusterBoundaryPort, edgeGeom: GeomEdge): Point {
     const shapes = this.shortestPathRouter.MakeTransparentShapesOfEdgeGeometry(edgeGeom)
     // SplineRouter.ShowVisGraph(this.VisibilityGraph, this.LooseHierarchy.GetAllLeaves(),
-    //     shapes.Select(sh => sh.BoundaryCurve), new[] { new LineSegment(edgeGeom.SourcePort.Location, edgeGeom.TargetPort.Location) });
+    //    shapes.Select(sh => sh.BoundaryCurve), new[] { new LineSegment(edgeGeom.SourcePort.Location, edgeGeom.TargetPort.Location) });
     const s = new MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph(
       Array.from(otherEdgeEndPort.LoosePolyline).map(this.VisibilityGraph.FindVertex.bind),
       Array.from(poly).map(this.VisibilityGraph.FindVertex.bind),
@@ -216,7 +216,7 @@ export class BundleRouter extends Algorithm {
     const otherEdgeEnd: Point = otherEdgeEndPort.Location
     const shapes = this.shortestPathRouter.MakeTransparentShapesOfEdgeGeometry(edgeGeom)
     // SplineRouter.ShowVisGraph(this.VisibilityGraph, this.LooseHierarchy.GetAllLeaves(),
-    //     shapes.Select(sh => sh.BoundaryCurve), new[] { new LineSegment(edgeGeom.SourcePort.Location, edgeGeom.TargetPort.Location) });
+    //    shapes.Select(sh => sh.BoundaryCurve), new[] { new LineSegment(edgeGeom.SourcePort.Location, edgeGeom.TargetPort.Location) });
     const s = new SingleSourceMultipleTargetsShortestPathOnVisibilityGraph(
       this.VisibilityGraph.FindVertex(otherEdgeEnd),
       Array.from(poly).map((p) => this.VisibilityGraph.FindVertex(p)),
@@ -245,12 +245,12 @@ export class BundleRouter extends Algorithm {
     }
   }
 
-  //  calculates maximum possible edge separation for the computed routing
-  //    if it is greater than bundlingSettings.EdgeSeparation, then proceed
-  //    if it is smaller, then either
-  //      stop edge bundling, or
-  //      reduce edge separation, or
-  //      move obstacles to get more free space
+  // calculates maximum possible edge separation for the computed routing
+  //   if it is greater than bundlingSettings.EdgeSeparation, then proceed
+  //   if it is smaller, then either
+  //     stop edge bundling, or
+  //     reduce edge separation, or
+  //     move obstacles to get more free space
 
   AdjustEdgeSeparation() {
     const crossedCdtEdges: Map<GeomEdge, Set<CdtEdge>> = new Map<GeomEdge, Set<CdtEdge>>()
@@ -259,11 +259,11 @@ export class BundleRouter extends Algorithm {
     this.bundlingSettings.edgeWidthShrinkCoeff = this.CalculateEdgeWidthShrinkCoeff(pathsOnCdtEdge)
   }
 
-  //   //  reducing edge separation
-  //   //  TimeMeasurer.DebugOutput("reducing edge separation to " + es);
-  //   this.bundlingSettings.EdgeSeparation = es
-  //   this.shortestPathRouter.RouteEdges()
-  //   return true
+  //  //  reducing edge separation
+  //  //  TimeMeasurer.DebugOutput("reducing edge separation to " + es);
+  //  this.bundlingSettings.EdgeSeparation = es
+  //  this.shortestPathRouter.RouteEdges()
+  //  return true
   // }
 
   GetPathsOnCdtEdge(crossedEdges: Map<GeomEdge, Set<CdtEdge>>): Map<CdtEdge, Set<GeomEdge>> {

@@ -1,4 +1,4 @@
-//  Settings for Overlap Removal process. Usage of the properties depends on the algorithm.
+// Settings for Overlap Removal process. Usage of the properties depends on the algorithm.
 export class OverlapRemovalSettings {
   epsilon = 0.01
 
@@ -14,7 +14,7 @@ export class OverlapRemovalSettings {
 
   randomizeAllPointsOnStart = false
 
-  //  If true, the overlap iteration process stops after maxIterat iterations.
+  // If true, the overlap iteration process stops after maxIterat iterations.
   public get StopOnMaxIterat(): boolean {
     return this.stopOnMaxIterat
   }
@@ -22,7 +22,7 @@ export class OverlapRemovalSettings {
     this.stopOnMaxIterat = value
   }
 
-  //  Epsilon
+  // Epsilon
   public get Epsilon(): number {
     return this.epsilon
   }
@@ -30,7 +30,7 @@ export class OverlapRemovalSettings {
     this.epsilon = value
   }
 
-  //  Number of maxIterat to be made. In each iteration overlap is partly removed.
+  // Number of maxIterat to be made. In each iteration overlap is partly removed.
   public get IterationsMax(): number {
     return this.iterationsMax
   }
@@ -38,7 +38,7 @@ export class OverlapRemovalSettings {
     this.iterationsMax = value
   }
 
-  //  Minimal distance between nodes.
+  // Minimal distance between nodes.
   public get NodeSeparation(): number {
     return this.nodeSeparation
   }
@@ -62,7 +62,7 @@ export class OverlapRemovalSettings {
     this.randomizeAllPointsOnStart = value
   }
 
-  //  Clones the settings together with the stressmajorization settings
+  // Clones the settings together with the stressmajorization settings
   public Clone(): OverlapRemovalSettings {
     const settings: OverlapRemovalSettings = new OverlapRemovalSettings()
     settings.Epsilon = this.Epsilon

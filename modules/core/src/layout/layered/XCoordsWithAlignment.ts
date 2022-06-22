@@ -1,6 +1,6 @@
-//  The implementation follows
+// The implementation follows
 // "Fast and Simple Horizontal Coordinate Assignment" of Ulrik Brandes and Boris K�opf
-//  The paper has two serious bugs that this code resolves.
+// The paper has two serious bugs that this code resolves.
 
 import {TopologicalSort} from '../../math/graphAlgorithms/topologicalSort'
 import {BasicGraphOnEdges, mkGraphOnEdgesN} from '../../structs/basicGraphOnEdges'
@@ -44,17 +44,17 @@ export class XCoordsWithAlignment {
 
   // We pretend, when calculating the alignment, that we traverse layers from left to right and from bottom to top.
   // The actual directions are defined by variables "LR" and "BT".
-  //  from left to right
+  // from left to right
   LR: boolean
 
-  //  from bottom to top
+  // from bottom to top
   BT: boolean
 
   get CurrentEnumRightUp(): number {
     return (this.LR ? 0 : 1) + 2 * (this.BT ? 0 : 1)
   }
 
-  //  Returns true if v is a virtual vertex
+  // Returns true if v is a virtual vertex
 
   IsVirtual(v: number): boolean {
     return v >= this.nOfOriginalVertices
@@ -98,7 +98,7 @@ export class XCoordsWithAlignment {
   }
 
   // We need to find a median of a vertex neighbors from a specific layer. That is, if we have a vertex v and edges (v,coeff), (v,side1), (v,cornerC)
-  //  going down, and X[coeff]<X[side1]<X[cornerC], then side1 is the median.
+  // going down, and X[coeff]<X[side1]<X[cornerC], then side1 is the median.
   // There is an algorithm that finds the median with expected linear number of steps,
   // see for example http://www.ics.uci.edu/~eppstein/161/960125.html. However, I think we are better off
   // with sorting, since we are taking median at least twice.
@@ -214,7 +214,7 @@ export class XCoordsWithAlignment {
       this.anchors[v].x = (arr[1] + arr[2]) / 2
     }
 
-    //     Layout.ShowDataBase(dataBase);
+    //    Layout.ShowDataBase(dataBase);
   }
 
   static IsLeftMostAssignment(i: number): boolean {
@@ -264,17 +264,17 @@ export class XCoordsWithAlignment {
     this.BT = true
   }
 
-  //  The code is written as if we go left up, but in fact the settings define the directions.
+  // The code is written as if we go left up, but in fact the settings define the directions.
   //
-  //  We need to create a subgraph for alignment:
-  //  where no edge segments intersect, and every vertex has
-  //  at most one incoming and at most one outcoming edge.
-  //  This function marks edges to resolve conflicts with only one inner segment.
-  //  An inner segment is a segment between two dummy nodes.
-  //  We mark edges that later will not participate in the alignment.
-  //  Inner segments are preferred to other ones. So, in a conflict with one inner and one
-  //  non-inner edges we leave the inner edge to participate in the alignment.
-  //  At the moment we mark as not participating both of the two intersecting inner segments
+  // We need to create a subgraph for alignment:
+  // where no edge segments intersect, and every vertex has
+  // at most one incoming and at most one outcoming edge.
+  // This function marks edges to resolve conflicts with only one inner segment.
+  // An inner segment is a segment between two dummy nodes.
+  // We mark edges that later will not participate in the alignment.
+  // Inner segments are preferred to other ones. So, in a conflict with one inner and one
+  // non-inner edges we leave the inner edge to participate in the alignment.
+  // At the moment we mark as not participating both of the two intersecting inner segments
   ConflictElimination() {
     this.RemoveMarksFromEdges()
     this.MarkConflictingEdges()
@@ -301,7 +301,7 @@ export class XCoordsWithAlignment {
     }
   }
 
-  //  here we eliminate all constraints
+  // here we eliminate all constraints
 
   MarkConflictingEdges() {
     let i: number = this.LowerOf(0, this.h - 1)
@@ -317,59 +317,59 @@ export class XCoordsWithAlignment {
     }
   }
 
-  //  parameterized next upper
+  // parameterized next upper
   NextUpper(i: number): number {
     return this.BT ? i + 1 : i - 1
   }
 
-  //  parameterized next lower
+  // parameterized next lower
   NextLower(i: number): number {
     return this.BT ? i - 1 : i + 1
   }
 
-  //  parameterize highest of two numbers
+  // parameterize highest of two numbers
   UpperOf(i: number, j: number): number {
     return this.BT ? Math.max(i, j) : Math.min(i, j)
   }
 
-  //  parameterized lowest of a pair
+  // parameterized lowest of a pair
   LowerOf(i: number, j: number): number {
     return this.BT ? Math.min(i, j) : Math.max(i, j)
   }
 
-  //  returns parameterized below
+  // returns parameterized below
   IsBelow(i: number, j: number): boolean {
     return this.BT ? i < j : j < i
   }
 
-  //  returns the "parameterized" left of the two positions
+  // returns the "parameterized" left of the two positions
   LeftMost(pos0: number, pos1: number): number {
     return this.LR ? Math.min(pos0, pos1) : Math.max(pos0, pos1)
   }
 
-  //  returns the "parameterized" right of the two positions
+  // returns the "parameterized" right of the two positions
   RightMost(pos0: number, pos1: number): number {
     return this.LR ? Math.max(pos0, pos1) : Math.min(pos0, pos1)
   }
 
-  //  Return true if i is to the left or equal to pos in a "parameterized" fasion
+  // Return true if i is to the left or equal to pos in a "parameterized" fasion
 
   IsNotRightFrom(i: number, pos: number): boolean {
     return this.LR ? i <= pos : pos <= i
   }
 
-  //  Parameterized left relation
+  // Parameterized left relation
 
   IsLeftFrom(i: number, j: number): boolean {
     return this.LR ? i < j : j < i
   }
 
-  //  parameterized next right
+  // parameterized next right
   NextRight(i: number): number {
     return this.LR ? i + 1 : i - 1
   }
 
-  //  parameterized next left
+  // parameterized next left
   NextLeft(i: number): number {
     return this.LR ? i - 1 : i + 1
   }
@@ -529,8 +529,8 @@ export class XCoordsWithAlignment {
     this.h = this.la.Layers.length
     this.root = new Array(this.nOfVertices)
     this.align = new Array(this.nOfVertices)
-    //  this.sink = new int[nOfVertices];
-    //  this.shift = new double[nOfVertices];
+    // this.sink = new int[nOfVertices];
+    // this.shift = new double[nOfVertices];
     this.anchors = anchorsP
     this.nodeSep = ns
   }
@@ -613,7 +613,7 @@ export class XCoordsWithAlignment {
     }
   }
 
-  //  returns true is u has a right neighbor on its layer
+  // returns true is u has a right neighbor on its layer
   TryToGetRightNeighbor(u: number, t: {neighbor: number}): boolean {
     const neighborPos: number = this.NextRight(this.Pos(u))
     const layer: number[] = this.la.Layers[this.la.y[u]]
@@ -625,7 +625,7 @@ export class XCoordsWithAlignment {
     }
   }
 
-  //  returns true is u has a right neighbor on its layer
+  // returns true is u has a right neighbor on its layer
   TryToGetLeftNeighbor(u: number, t: {neighbor: number}): boolean {
     const neighborPos: number = this.NextLeft(this.Pos(u))
     const layer: number[] = this.la.Layers[this.la.y[u]]
@@ -637,10 +637,10 @@ export class XCoordsWithAlignment {
     }
   }
 
-  //  Organizes the vertices into blocks. A block is a maximal path in the alignment subgraph.
-  //  The alignment is defined by array align. Every vertex is connected to the top vertex of
-  //  the block by using root array. The alignment is cyclic. If we start from a root vertex v and
-  //  apply align then we return to v at some point.
+  // Organizes the vertices into blocks. A block is a maximal path in the alignment subgraph.
+  // The alignment is defined by array align. Every vertex is connected to the top vertex of
+  // the block by using root array. The alignment is cyclic. If we start from a root vertex v and
+  // apply align then we return to v at some point.
 
   CreateBlocks() {
     for (let v = 0; v < this.nOfVertices; v++) {
@@ -664,7 +664,7 @@ export class XCoordsWithAlignment {
               this.align[vk] = this.root[upperNeighborOfVk]
               r = this.Pos(upperNeighborOfVk)
               break
-              //  done with the alignement for vk
+              // done with the alignement for vk
             }
           }
         }
@@ -684,11 +684,11 @@ export class XCoordsWithAlignment {
     this.markedEdges.addNN(ie.Source, ie.Target)
   }
 
-  //  Assigning xcoords starting from roots
+  // Assigning xcoords starting from roots
   static infinity = 10000000
 
-  //  Calculates the minimum separation between two neighboring vertices: if u is to the left of v on the same layer return positive
-  //  number, otherwise negative.
+  // Calculates the minimum separation between two neighboring vertices: if u is to the left of v on the same layer return positive
+  // number, otherwise negative.
 
   DeltaBetweenVertices(u: number, v: number): number {
     let sign: number

@@ -1,4 +1,4 @@
-//  left here means an intersection of a left cone side with an obstacle edge
+// left here means an intersection of a left cone side with an obstacle edge
 
 import {Point} from '../../..'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'

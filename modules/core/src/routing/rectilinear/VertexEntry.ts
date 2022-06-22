@@ -3,7 +3,7 @@ import {Direction} from '../../math/geometry/direction'
 import {VisibilityVertexRectilinear} from './VisibilityVertexRectiline'
 
 export class VertexEntry {
-  //  A class that records an entry from a specific direction for a vertex.
+  // A class that records an entry from a specific direction for a vertex.
 
   // Vertex that this VertexEntry enters
   // The previous VertexEntry along this path; null for a path source
@@ -17,54 +17,54 @@ export class VertexEntry {
   }
 
   ResetEntry(prevEntry: VertexEntry, length: number, numberOfBends: number, cost: number) {
-    //  A new prevEntry using the same previous vertex but a different entry to that vertex is valid here;
-    //  e.g. we could have prevEntry from S, which in turn had a prevEntry from E, replaced by prevEntry from
-    //  S which has a prevEntry from S.
+    // A new prevEntry using the same previous vertex but a different entry to that vertex is valid here;
+    // e.g. we could have prevEntry from S, which in turn had a prevEntry from E, replaced by prevEntry from
+    // S which has a prevEntry from S.
     // #if (TEST_MSAGL)
     // if ((this.PreviousEntry != null)) {
-    //     Assert.assert((this.PreviousEntry.Vertex == prevEntry.Vertex), "Inconsistent prevEntry vertex");
-    //     Assert.assert((this.PreviousEntry.Direction != prevEntry.Direction), "Duplicate prevEntry direction");
-    //     Assert.assert((this.Direction == CompassVector.PureDirectionFromPointToPoint(this.PreviousEntry.Vertex.point, this.Vertex.point)), "Inconsistent entryDir");
+    //    Assert.assert((this.PreviousEntry.Vertex == prevEntry.Vertex), "Inconsistent prevEntry vertex");
+    //    Assert.assert((this.PreviousEntry.Direction != prevEntry.Direction), "Duplicate prevEntry direction");
+    //    Assert.assert((this.Direction == CompassVector.PureDirectionFromPointToPoint(this.PreviousEntry.Vertex.point, this.Vertex.point)), "Inconsistent entryDir");
     // }
 
     // #endif
-    // //  TEST_MSAGL
+    // // TEST_MSAGL
     this.PreviousEntry = prevEntry
     this.Length = length
     this.NumberOfBends = numberOfBends
     this.Cost = cost
   }
 
-  //  Cost of the path up to this vertex
+  // Cost of the path up to this vertex
 
   Cost: number
 
-  //  The vertex that this VertexEntry enters
+  // The vertex that this VertexEntry enters
 
   Vertex: VisibilityVertexRectilinear
 
-  //  The vertex that this VertexEntry is entered from
+  // The vertex that this VertexEntry is entered from
 
   get PreviousVertex(): VisibilityVertexRectilinear {
     return this.PreviousEntry == null ? null : this.PreviousEntry.Vertex
   }
 
-  //  The direction of entry to the vertex for this path (i.e. the direction from PreviousVertex to this.Vertex).
+  // The direction of entry to the vertex for this path (i.e. the direction from PreviousVertex to this.Vertex).
 
   Direction: Direction
-  //  The length of the path up to this vertex
+  // The length of the path up to this vertex
 
   Length: number
 
-  //  The number of bends in the path up to this vertex
+  // The number of bends in the path up to this vertex
 
   NumberOfBends: number
 
-  //  The previous VertexEntry along this path; null for a path source.
+  // The previous VertexEntry along this path; null for a path source.
 
   PreviousEntry: VertexEntry
 
-  //  Indicates whether we are allowing further entries into this vertex from this direction.
+  // Indicates whether we are allowing further entries into this vertex from this direction.
 
   IsClosed = false
 

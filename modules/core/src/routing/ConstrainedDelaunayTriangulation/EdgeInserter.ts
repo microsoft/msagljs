@@ -60,8 +60,8 @@ export class EdgeInserter {
   }
 
   TriangulatePolygon1(start: number, end: number, polygon: Array<CdtSite>, a: CdtSite, b: CdtSite, reverseTrangleWhenCompare: boolean) {
-    //             if(CdtSweeper.db)
-    //                CdtSweeper.ShowFront(triangles,front, Enumerable.Range(start, end-start+1).Select(i=> new Ellipse(10,10,polygon[i].point)).ToArray(), new[]{new LineSegment(a.point,b.point)});
+    //            if(CdtSweeper.db)
+    //               CdtSweeper.ShowFront(triangles,front, Enumerable.Range(start, end-start+1).Select(i=> new Ellipse(10,10,polygon[i].point)).ToArray(), new[]{new LineSegment(a.point,b.point)});
     let c = polygon[start]
     let cIndex: number = start
     for (let i: number = start + 1; i <= end; i++) {

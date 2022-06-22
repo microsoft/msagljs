@@ -1,5 +1,5 @@
-//  This is a point on a path that is not associated with an obstacle, such as
-//  a port for the end of a dragged path, or a waypoint.
+// This is a point on a path that is not associated with an obstacle, such as
+// a port for the end of a dragged path, or a waypoint.
 
 import {Point, Rectangle, CompassVector, Direction, LineSegment} from '../../math/geometry'
 
@@ -13,7 +13,7 @@ import {TransientGraphUtility} from './TransientGraphUtility'
 type SegmentAndCrossings = [LineSegment, PointAndCrossingsList]
 
 export class FreePoint {
-  //  The VisibilityVertex for this path point; created if it does not already exist.
+  // The VisibilityVertex for this path point; created if it does not already exist.
   Vertex: VisibilityVertex
 
   get Point(): Point {
@@ -34,7 +34,7 @@ export class FreePoint {
 
   private maxVisibilitySegmentsAndCrossings: SegmentAndCrossings[] = new Array(4)
 
-  //  Called if we must create the vertex.
+  // Called if we must create the vertex.
   constructor(transUtil: TransientGraphUtility, point: Point) {
     this.OutOfBoundsDirectionFromGraph = Direction.None
     this.GetVertex(transUtil, point)
@@ -44,9 +44,9 @@ export class FreePoint {
     this.Vertex = transUtil.FindOrAddVertex(point)
   }
 
-  //  Adds an edge from this.Vertex to a (possibly new) vertex at an intersection with an
-  //  existing Edge that adjoins the point.  We take 'dir' as an input parameter for edge
-  //  extension because we may be on the edge so can't calculate the direction.
+  // Adds an edge from this.Vertex to a (possibly new) vertex at an intersection with an
+  // existing Edge that adjoins the point.  We take 'dir' as an input parameter for edge
+  // extension because we may be on the edge so can't calculate the direction.
   AddEdgeToAdjacentEdge(
     transUtil: TransientGraphUtility,
     targetEdge: VisibilityEdge,
@@ -74,18 +74,18 @@ export class FreePoint {
   }
 
   ExtendEdgeChain(transUtil: TransientGraphUtility, targetVertex: VisibilityVertex, dirToExtend: Direction, limitRect: Rectangle) {
-    //  Extend the edge chain to the opposite side of the limit rectangle.
+    // Extend the edge chain to the opposite side of the limit rectangle.
     // StaticGraphUtility.Assert((PointComparer.Equal(this.Point, targetVertex.point)
-    //                 || (PointComparer.GetPureDirectionVV(this.Point, targetVertex.point) == dirToExtend)), "input dir does not match with to-targetVertex direction", transUtil.ObstacleTree, transUtil.VisGraph);
+    //                || (PointComparer.GetPureDirectionVV(this.Point, targetVertex.point) == dirToExtend)), "input dir does not match with to-targetVertex direction", transUtil.ObstacleTree, transUtil.VisGraph);
     let extendOverlapped = this.IsOverlapped
     if (extendOverlapped) {
-      //  The initial vertex we connected to may be on the border of the enclosing obstacle,
-      //  or of another also-overlapped obstacle.  If the former, we turn off overlap now.
+      // The initial vertex we connected to may be on the border of the enclosing obstacle,
+      // or of another also-overlapped obstacle.  If the former, we turn off overlap now.
       extendOverlapped = transUtil.ObstacleTree.PointIsInsideAnObstaclePD(targetVertex.point, dirToExtend)
     }
 
-    //  If we're inside an obstacle's boundaries we'll never extend past the end of the obstacle
-    //  due to encountering the boundary from the inside.  So start the extension at targetVertex.
+    // If we're inside an obstacle's boundaries we'll never extend past the end of the obstacle
+    // due to encountering the boundary from the inside.  So start the extension at targetVertex.
     const segmentAndCrossings: SegmentAndCrossings = this.GetSegmentAndCrossings(
       this.IsOverlapped ? targetVertex : this.Vertex,
       dirToExtend,
@@ -108,8 +108,8 @@ export class FreePoint {
       segmentAndCrossings = [maxVisibilitySegment, t.pacList]
       this.maxVisibilitySegmentsAndCrossings[dirIndex] = segmentAndCrossings
     } else {
-      //  For a waypoint this will be a target and then a source, so there may be a different lateral edge to
-      //  connect to. In that case make sure we are consistent in directions - back up the start point if needed.
+      // For a waypoint this will be a target and then a source, so there may be a different lateral edge to
+      // connect to. In that case make sure we are consistent in directions - back up the start point if needed.
       if (PointComparer.GetDirections(startVertex.point, segmentAndCrossings[0].start) == dirToExtend) {
         segmentAndCrossings[0].start = startVertex.point
       }
@@ -130,13 +130,13 @@ export class FreePoint {
   AddOobEdgesFromGraphCorner(transUtil: TransientGraphUtility, cornerPoint: Point) {
     const dirs: Direction = PointComparer.GetDirections(cornerPoint, this.Vertex.point)
     const cornerVertex: VisibilityVertex = transUtil.VisGraph.FindVertex(cornerPoint)
-    //  For waypoints we want to be able to enter in both directions.
+    // For waypoints we want to be able to enter in both directions.
     transUtil.ConnectVertexToTargetVertex(cornerVertex, this.Vertex, dirs & (Direction.North | Direction.South), ScanSegment.NormalWeight)
     transUtil.ConnectVertexToTargetVertex(cornerVertex, this.Vertex, dirs & (Direction.East | Direction.West), ScanSegment.NormalWeight)
   }
 
   RemoveFromGraph() {
-    //  Currently all transient removals and edge restorations are done by TransientGraphUtility itself.
+    // Currently all transient removals and edge restorations are done by TransientGraphUtility itself.
     this.Vertex = null
   }
 

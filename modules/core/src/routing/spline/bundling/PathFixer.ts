@@ -190,11 +190,11 @@ export class PathFixer {
   }
 
   // bool CollapseCycles() {
-  //     var cycleCollapser = new FlipCollapser(metroGraphData, bundlingSettings, cdt);
-  //     cycleCollapser.Run();
-  //     crossingsThatShouldBecomeHubs.InsertRange(cycleCollapser.GetChangedCrossing());
-  //     //TimeMeasurer.DebugOutput("#crossingsThatShouldBecomeHubs = " + crossingsThatShouldBecomeHubs.Count);
-  //     return false;
+  //    var cycleCollapser = new FlipCollapser(metroGraphData, bundlingSettings, cdt);
+  //    cycleCollapser.Run();
+  //    crossingsThatShouldBecomeHubs.InsertRange(cycleCollapser.GetChangedCrossing());
+  //    //TimeMeasurer.DebugOutput("#crossingsThatShouldBecomeHubs = " + crossingsThatShouldBecomeHubs.Count);
+  //    return false;
   // }
   ReduceEdgeCrossings(): boolean {
     const cycleCollapser = new FlipSwitcher(this.metroGraphData)

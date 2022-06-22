@@ -23,20 +23,20 @@ export class AdjacentSwapsWithConstraints {
 
   outCrossingCount: Map<number, number>[]
 
-  //  for each vertex v let P[v] be the array of predeccessors of v
+  // for each vertex v let P[v] be the array of predeccessors of v
   P: number[][]
 
-  //  The array contains a dictionary per vertex
-  //  The value POrder[v][u] gives the offset of u in the array P[v]
+  // The array contains a dictionary per vertex
+  // The value POrder[v][u] gives the offset of u in the array P[v]
 
   POrder: Map<number, number>[]
 
-  //  for each vertex v let S[v] be the array of successors of v
+  // for each vertex v let S[v] be the array of successors of v
 
   S: number[][]
 
-  //  The array contains a dictionary per vertex
-  //  The value SOrder[v][u] gives the offset of u in the array S[v]
+  // The array contains a dictionary per vertex
+  // The value SOrder[v][u] gives the offset of u in the array S[v]
 
   SOrder: Map<number, number>[]
 
@@ -49,9 +49,9 @@ export class AdjacentSwapsWithConstraints {
     this.layerInfos = layerInfos
   }
 
-  //  Gets or sets the number of of passes over all layers to run
-  //  adjacent exchanges, where every pass goes
-  //  all way up to the top layer and down to the lowest layer
+  // Gets or sets the number of of passes over all layers to run
+  // adjacent exchanges, where every pass goes
+  // all way up to the top layer and down to the lowest layer
   static get MaxNumberOfAdjacentExchanges(): number {
     return AdjacentSwapsWithConstraints.maxNumberOfAdjacentExchanges
   }
@@ -120,7 +120,7 @@ export class AdjacentSwapsWithConstraints {
     return t.cuv - t.cvu
   }
 
-  //  calculates the number of intersections between edges adjacent to u and v
+  // calculates the number of intersections between edges adjacent to u and v
 
   CalcPair(u: number, v: number, t: {cuv: number; cvu: number}) {
     const pv = this.P[v]
@@ -158,7 +158,7 @@ export class AdjacentSwapsWithConstraints {
     return ret
   }
 
-  //  every inversion between unbs and vnbs gives an intersecton
+  // every inversion between unbs and vnbs gives an intersecton
 
   CountOnArrays_(
     unbs: Array<number>,
@@ -200,7 +200,7 @@ export class AdjacentSwapsWithConstraints {
     this.X[v] = left
     // update sorted arrays POrders and SOrders
     // an array should be updated only in case it contains both u and v.
-    //  More than that, v has to follow u in an the array.
+    // More than that, v has to follow u in an the array.
     this.UpdateSsContainingUV(u, v)
     this.UpdatePsContainingUV(u, v)
   }
@@ -277,7 +277,7 @@ export class AdjacentSwapsWithConstraints {
     return true
   }
 
-  //  Is called just after median layer swap is done
+  // Is called just after median layer swap is done
 
   InitArrays() {
     if (this.S == null) {
@@ -391,7 +391,7 @@ export class AdjacentSwapsWithConstraints {
     }
   }
 
-  //  swaps i-th element with i+1
+  // swaps i-th element with i+1
 
   AdjacentSwapToTheRight(layer: number[], i: number) {
     const v: number = layer[i + 1]
@@ -403,9 +403,9 @@ export class AdjacentSwapsWithConstraints {
     }
   }
 
-  //  Sweep layer from left to right and fill S,P arrays as we go.
-  //  The arrays P and S will be sorted according to X. Note that we will not keep them sorted
-  //  as we doing adjacent swaps. Initial sorting only needed to calculate initial clr,crl values.
+  // Sweep layer from left to right and fill S,P arrays as we go.
+  // The arrays P and S will be sorted according to X. Note that we will not keep them sorted
+  // as we doing adjacent swaps. Initial sorting only needed to calculate initial clr,crl values.
 
   InitPSArraysForLayer(layer: number[]) {
     for (const l of layer) {

@@ -58,7 +58,7 @@ import {DebugCurve} from '../math/geometry/debugCurve'
 
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
-  //  setting this to true forces the calculation to go on even when node overlaps are present
+  // setting this to true forces the calculation to go on even when node overlaps are present
   //
   continueOnOverlaps = true
 
@@ -121,10 +121,10 @@ export class SplineRouter extends Algorithm {
 
   UseEdgeLengthMultiplier: boolean
 
-  //  if set to true the algorithm will try to shortcut a shortest polyline inner points
+  // if set to true the algorithm will try to shortcut a shortest polyline inner points
   UsePolylineEndShortcutting = true
 
-  //  if set to true the algorithm will try to shortcut a shortest polyline start and end
+  // if set to true the algorithm will try to shortcut a shortest polyline start and end
   UseInnerPolylingShortcutting = true
 
   AllowedShootingStraightLines = true
@@ -150,12 +150,12 @@ export class SplineRouter extends Algorithm {
     return new SplineRouter(graph, Array.from(graph.edges()), tightTightPadding, loosePadding, coneAngle, null)
   }
 
-  //  Creates a spline group router for the given graph
+  // Creates a spline group router for the given graph
   static mk5(graph: GeomGraph, tightTightPadding: number, loosePadding: number, coneAngle: number, bundlingSettings: BundlingSettings) {
     return new SplineRouter(graph, Array.from(graph.edges()), tightTightPadding, loosePadding, coneAngle, bundlingSettings)
   }
 
-  //  Creates a spline group router for a given GeomGraph.
+  // Creates a spline group router for a given GeomGraph.
   constructor(
     graph: GeomGraph,
     edges: Array<GeomEdge>,
@@ -196,7 +196,7 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
   run() {
     if (this.geomGraph.isEmpty()) {
       return
@@ -569,7 +569,7 @@ export class SplineRouter extends Algorithm {
     this.CalculateEdgeEnterablePolylines()
     const looseHierarchy = this.GetLooseHierarchy()
     const cdt = BundleRouter.CreateConstrainedDelaunayTriangulation(looseHierarchy)
-    //  CdtSweeper.ShowFront(cdt.GetTriangles(), null, null,this.visGraph.Edges.Select(e=>new LineSegment(e.SourcePoint,e.TargetPoint)));
+    // CdtSweeper.ShowFront(cdt.GetTriangles(), null, null,this.visGraph.Edges.Select(e=>new LineSegment(e.SourcePoint,e.TargetPoint)));
     const shortestPath = new SdShortestPath((a) => this.MakeTransparentShapesOfEdgeGeometryAndGetTheShapes(a), cdt, this.FindCdtGates(cdt))
     const bundleRouter = new BundleRouter(
       this._edges,
@@ -623,7 +623,7 @@ export class SplineRouter extends Algorithm {
     }
 
     // CdtSweeper.ShowFront(cdt.GetTriangles(), null,
-    //                     gates.Select(g => new LineSegment(g.upperSite.Point, g.lowerSite.Point)), null);
+    //                    gates.Select(g => new LineSegment(g.upperSite.Point, g.lowerSite.Point)), null);
     return gates
   }
 
@@ -769,7 +769,7 @@ export class SplineRouter extends Algorithm {
     }
 
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
-    //   SetTransparency(transparentShapes, false);
+    //  SetTransparency(transparentShapes, false);
   }
   /** returns ToAncestorEnum.None if the source and the target are just siblings
    *          ToAncestorEnum. if the source is a descendant of the target
@@ -841,23 +841,23 @@ export class SplineRouter extends Algorithm {
     return this.shapesToTightLooseCouples.get(s).TightPolyline
   }
 
-  //     static GetEdgeColor(e: VisibilityEdge, sourcePort: Port, targetPort: Port): string {
-  //   if (((sourcePort == null)
-  //     || (targetPort == null))) {
-  //     return "green";
-  //   }
+  //    static GetEdgeColor(e: VisibilityEdge, sourcePort: Port, targetPort: Port): string {
+  //  if (((sourcePort == null)
+  //    || (targetPort == null))) {
+  //    return "green";
+  //  }
 
-  //   if ((closeDistEps(e.SourcePoint, sourcePort.Location)
-  //     || (closeDistEps(e.SourcePoint, targetPort.Location)
-  //       || (closeDistEps(e.TargetPoint, sourcePort.Location) || closeDistEps(e.TargetPoint, targetPort.Location))))) {
-  //     return "lightgreen";
-  //   }
+  //  if ((closeDistEps(e.SourcePoint, sourcePort.Location)
+  //    || (closeDistEps(e.SourcePoint, targetPort.Location)
+  //      || (closeDistEps(e.TargetPoint, sourcePort.Location) || closeDistEps(e.TargetPoint, targetPort.Location))))) {
+  //    return "lightgreen";
+  //  }
 
-  //   return "green";
-  //   // TODO: Warning!!!, inline IF is not supported ?
-  //   ((e.IsPassable == null)
-  //     || e.IsPassable());
-  //   "red";
+  //  return "green";
+  //  // TODO: Warning!!!, inline IF is not supported ?
+  //  ((e.IsPassable == null)
+  //    || e.IsPassable());
+  //  "red";
   // }
 
   *GetTransparentShapes(sourcePort: Port, targetPort: Port, sourceShape: Shape, targetShape: Shape): IterableIterator<Shape> {
@@ -910,15 +910,15 @@ export class SplineRouter extends Algorithm {
   }
 
   // dumpSvg() {
-  //   SplineRouter.ShowVisGraph(
-  //     '/tmp/vg.svg',
-  //     this.visGraph,
-  //     Array.from(new Set<Polyline>(Array.from(this.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve))),
-  //     Array.from(this.geomGraph.shallowNodes())
-  //       .map((n) => n.boundaryCurve)
-  //       .concat(Array.from(this.root.Descendants()).map((d) => d.BoundaryCurve)),
-  //     null,
-  //   )
+  //  SplineRouter.ShowVisGraph(
+  //    '/tmp/vg.svg',
+  //    this.visGraph,
+  //    Array.from(new Set<Polyline>(Array.from(this.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve))),
+  //    Array.from(this.geomGraph.shallowNodes())
+  //      .map((n) => n.boundaryCurve)
+  //      .concat(Array.from(this.root.Descendants()).map((d) => d.BoundaryCurve)),
+  //    null,
+  //  )
   // }
 
   static ShowVisGraph(
@@ -969,7 +969,7 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //  this function might change the shape's loose polylines by inserting new points
+  // this function might change the shape's loose polylines by inserting new points
   FillVisibilityGraphUnderShape(shape: Shape) {
     // going depth first
     const children = shape.Children
@@ -999,14 +999,14 @@ export class SplineRouter extends Algorithm {
     }
 
     this.AddBoundaryEdgesToVisGraph(looseBoundary)
-    //             if (obstacles.Count > 0)
-    //                 SplineRouter.ShowVisGraph(tmpVisGraph, obstacles, null, null);
+    //            if (obstacles.Count > 0)
+    //                SplineRouter.ShowVisGraph(tmpVisGraph, obstacles, null, null);
   }
 
   bidirectional = false
-  //  If set to true then a smaller visibility graph is created.
-  //  An edge is added to the visibility graph only if it is found at least twice:
-  //  once sweeping with a direction d and the second time with -d
+  // If set to true then a smaller visibility graph is created.
+  // An edge is added to the visibility graph only if it is found at least twice:
+  // once sweeping with a direction d and the second time with -d
   get Bidirectional(): boolean {
     return this.bidirectional
   }
@@ -1014,21 +1014,21 @@ export class SplineRouter extends Algorithm {
     this.bidirectional = value
   }
 
-  //  #if TEST_MSAGL
-  //      [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //      static internal void ShowVisGraph(VisibilityGraph tmpVisGraph, Iterable<Polyline> obstacles, Iterable<ICurve> greenCurves, Iterable<ICurve> redCurves) {
-  //        var l = new Array<DebugCurve>(tmpVisGraph.Edges.Select(e => new DebugCurve(100, 1,
-  //            e.IsPassable != null && e.IsPassable() ? "green" : "black"
-  //            , new LineSegment(e.SourcePoint, e.TargetPoint))));
-  //        if (obstacles != null)
-  //          l.AddRange(obstacles.Select(p => new DebugCurve(100, 1, "brown", p)));
-  //        if (greenCurves != null)
-  //          l.AddRange(greenCurves.Select(p => new DebugCurve(100, 10, "navy", p)));
-  //        if (redCurves != null)
-  //          l.AddRange(redCurves.Select(p => new DebugCurve(100, 10, "red", p)));
-  //        LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //      }
-  //  #endif
+  // #if TEST_MSAGL
+  //     [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //     static internal void ShowVisGraph(VisibilityGraph tmpVisGraph, Iterable<Polyline> obstacles, Iterable<ICurve> greenCurves, Iterable<ICurve> redCurves) {
+  //       var l = new Array<DebugCurve>(tmpVisGraph.Edges.Select(e => new DebugCurve(100, 1,
+  //           e.IsPassable != null && e.IsPassable() ? "green" : "black"
+  //           , new LineSegment(e.SourcePoint, e.TargetPoint))));
+  //       if (obstacles != null)
+  //         l.AddRange(obstacles.Select(p => new DebugCurve(100, 1, "brown", p)));
+  //       if (greenCurves != null)
+  //         l.AddRange(greenCurves.Select(p => new DebugCurve(100, 10, "navy", p)));
+  //       if (redCurves != null)
+  //         l.AddRange(redCurves.Select(p => new DebugCurve(100, 10, "red", p)));
+  //       LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //     }
+  // #endif
   TryToCreateNewEdgeAndSetIsPassable(edge: VisibilityEdge, looseShape: Shape) {
     let e = this.visGraph.FindEdgePP(edge.SourcePoint, edge.TargetPoint)
     if (e != null) {
@@ -1112,7 +1112,7 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //  creates a root; a shape with BoundaryCurve set to null
+  // creates a root; a shape with BoundaryCurve set to null
   GetOrCreateRoot() {
     if (this.rootShapes.length == 1) {
       const r: Shape = this.rootShapes[0]
@@ -1137,19 +1137,19 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //  #if TEST_MSAGL
-  //      // ReSharper disable UnusedMember.Local
-  //      [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-  //      static void Show(
-  //          Iterable<GeomEdge> edgeGeometries, Iterable<Shape> listOfShapes) {
-  //        // ReSharper restore UnusedMember.Local
-  //        var r = new Random(1);
-  //        LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(
-  //            listOfShapes.Select(s => s.BoundaryCurve).Select(
-  //                c => new DebugCurve(50, 1, DebugCurve.Colors[r.Next(DebugCurve.Colors.Length - 1)], c)).Concat(
-  //                    edgeGeometries.Select(e => new DebugCurve(100, 1, "red", e.Curve))));
-  //      }
-  //  #endif
+  // #if TEST_MSAGL
+  //     // ReSharper disable UnusedMember.Local
+  //     [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+  //     static void Show(
+  //         Iterable<GeomEdge> edgeGeometries, Iterable<Shape> listOfShapes) {
+  //       // ReSharper restore UnusedMember.Local
+  //       var r = new Random(1);
+  //       LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(
+  //           listOfShapes.Select(s => s.BoundaryCurve).Select(
+  //               c => new DebugCurve(50, 1, DebugCurve.Colors[r.Next(DebugCurve.Colors.Length - 1)], c)).Concat(
+  //                   edgeGeometries.Select(e => new DebugCurve(100, 1, "red", e.Curve))));
+  //     }
+  // #endif
   static GetAncestorSetsMap(shapes: Array<Shape>): Map<Shape, Set<Shape>> {
     const ancSets = new Map<Shape, Set<Shape>>()
     for (const child of shapes.filter((child) => !ancSets.has(child))) {
@@ -1192,12 +1192,12 @@ export class SplineRouter extends Algorithm {
     }
   }
 
-  //   computes loosePadding for spline routing obstacles from node separation and EdgePadding.
+  //  computes loosePadding for spline routing obstacles from node separation and EdgePadding.
   static ComputeLooseSplinePadding(nodeSeparation: number, edgePadding: number): number {
     //Assert.assert(edgePadding > 0, 'require EdgePadding > 0')
     const twicePadding: number = 2 * edgePadding
     //Assert.assert(nodeSeparation > twicePadding, 'require OverlapSeparation > 2*EdgePadding')
-    //  the 8 divisor is just to guarantee the final postcondition
+    // the 8 divisor is just to guarantee the final postcondition
     const loosePadding: number = (nodeSeparation - twicePadding) / 8
     //Assert.assert(loosePadding > 0, 'require LoosePadding > 0')
     //Assert.assert(twicePadding + 2 * loosePadding < nodeSeparation, 'EdgePadding too big!')

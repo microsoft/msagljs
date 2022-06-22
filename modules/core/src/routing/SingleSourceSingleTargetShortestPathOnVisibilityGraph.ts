@@ -37,7 +37,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
     this._source.Distance = 0
   }
 
-  //  Returns  a  path
+  // Returns  a  path
   GetPath(shrinkEdgeLength: boolean): Array<VisibilityVertex> {
     const pq = new GenericBinaryHeapPriorityQueue<VisibilityVertex>(compareNumbers)
     this._source.Distance = 0
@@ -68,7 +68,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   }
 
   // private AssertEdgesPassable(path: Array<VisibilityEdge>) {
-  //   for (const edge of path) Assert.assert(this.PassableOutEdge(edge) || this.PassableInEdge(edge))
+  //  for (const edge of path) Assert.assert(this.PassableOutEdge(edge) || this.PassableInEdge(edge))
   // }
 
   private PassableOutEdge(e: VisibilityEdge): boolean {

@@ -1,4 +1,4 @@
-//  Wrap the tree of events.
+// Wrap the tree of events.
 
 import {BinaryHeapWithComparer} from '../../structs/BinaryHeapWithComparer'
 
@@ -46,17 +46,17 @@ export class EventQueue {
       return 1
     }
 
-    //  First see if it's at the same scanline level (perpendicular coordinate).
+    // First see if it's at the same scanline level (perpendicular coordinate).
     let cmp = this.scanDirection.ComparePerpCoord(lhs.Site, rhs.Site)
     if (cmp) return cmp
-    //  Event sites are at the same scanline level. Make sure that any reflection events are lowest (come before
-    //  any side events, which could remove the side the reflection event was queued for).  We may have two
-    //  reflection events at same coordinate, because we enqueue in two situations: when a side is opened,
-    //  and when a side that is within that side's scanline-parallel span is closed.
+    // Event sites are at the same scanline level. Make sure that any reflection events are lowest (come before
+    // any side events, which could remove the side the reflection event was queued for).  We may have two
+    // reflection events at same coordinate, because we enqueue in two situations: when a side is opened,
+    // and when a side that is within that side's scanline-parallel span is closed.
     const lhsIsNotReflection = !(lhs instanceof BasicReflectionEvent) ? 1 : 0
     const rhsIsNotReflection = !(rhs instanceof BasicReflectionEvent) ? 1 : 0
     cmp = lhsIsNotReflection - rhsIsNotReflection
-    //  If the scanline-parallel coordinate is the same these events are at the same point.
+    // If the scanline-parallel coordinate is the same these events are at the same point.
     if (cmp) return cmp
     return this.scanDirection.CompareScanCoord(lhs.Site, rhs.Site)
   }

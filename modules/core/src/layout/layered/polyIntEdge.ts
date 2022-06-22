@@ -42,7 +42,7 @@ class Routing {
     const w = e.lineWidth / 2
     const shift = curveClosestPoint.sub(labelSideClosest)
     const shiftLength = shift.length
-    //   SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
+    //  SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
     if (shiftLength > w) e.label.center = e.label.center.add(shift.div(shiftLength * (shiftLength - w)))
   }
 

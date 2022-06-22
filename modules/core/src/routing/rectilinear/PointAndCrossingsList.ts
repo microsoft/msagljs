@@ -1,5 +1,5 @@
-//  A Group is a Shape that has children.
-//  This class maps between intersection points on Group boundaries and the groups and crossing
+// A Group is a Shape that has children.
+// This class maps between intersection points on Group boundaries and the groups and crossing
 import {String} from 'typescript-string-operations'
 import {Direction} from '../../math/geometry/direction'
 import {Point} from '../../math/geometry/point'
@@ -8,9 +8,9 @@ import {GroupBoundaryCrossing} from './GroupBoundaryCrossing'
 import {PointAndCrossings} from './PointAndCrossings'
 import {PointComparer} from './PointComparer'
 
-//  directions at those intersection points.
+// directions at those intersection points.
 export class PointAndCrossingsList {
-  //  Internal to allow testing.
+  // Internal to allow testing.
   ListOfPointsAndCrossings: Array<PointAndCrossings> = []
 
   index = 0
@@ -28,7 +28,7 @@ export class PointAndCrossingsList {
   }
 
   Pop(): PointAndCrossings {
-    //  Next should only be called after CurrentIsBeforeOrAt returns true.
+    // Next should only be called after CurrentIsBeforeOrAt returns true.
     /*Assert.assert(
       this.index < this.ListOfPointsAndCrossings.length,
       'Unexpected call to Next()',
@@ -62,7 +62,7 @@ export class PointAndCrossingsList {
       return
     }
 
-    //  Do the usual sorted-list merge.
+    // Do the usual sorted-list merge.
     const thisMax: number = this.ListOfPointsAndCrossings.length
     let thisIndex = 0
     const otherMax: number = other.ListOfPointsAndCrossings.length
@@ -108,14 +108,14 @@ export class PointAndCrossingsList {
     )
   }
 
-  //  For a single vertex point, split its Array of crossings in both directions into an array in each (opposite)
-  //  direction.  CLR Array iteration is much faster than Array.
+  // For a single vertex point, split its Array of crossings in both directions into an array in each (opposite)
+  // direction.  CLR Array iteration is much faster than Array.
   static ToCrossingArray(crossings: Array<GroupBoundaryCrossing>, dirToInside: Direction): GroupBoundaryCrossing[] {
-    //  First find the number in each (opposite) direction, then create the arrays.
-    //  We expect a very small number of groups to share a boundary point so this is not optimized.
+    // First find the number in each (opposite) direction, then create the arrays.
+    // We expect a very small number of groups to share a boundary point so this is not optimized.
     let numInDir = 0
     const crossingsCount = crossings.length
-    //  cache for perf
+    // cache for perf
     for (let ii = 0; ii < crossingsCount; ii++) {
       if (crossings[ii].DirectionToInside == dirToInside) {
         numInDir++

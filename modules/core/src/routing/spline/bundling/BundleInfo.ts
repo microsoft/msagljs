@@ -63,7 +63,7 @@ export class BundleInfo {
     const mdir = dir.mul(this.longEnoughSideLength)
     const a = middle.add(mdir)
     const b = middle.sub(mdir)
-    //  [a,b] is a long enough segment
+    // [a,b] is a long enough segment
     // we are already fine
 
     if (this.SetRLParamsIfWidthIsFeasible(perp.mul(this.TotalRequiredWidth / 2), a, b)) {
@@ -147,13 +147,13 @@ export class BundleInfo {
       this.TargetBase.ParStart = targetRParam.par
       this.TargetBase.ParEnd = targetLParam.par
     }
-    //   SvgDebugWriter.dumpDebugCurves(this.mkNameFromLRST(), [
-    //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Red', this.SourceBase.Curve),
-    //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', this.TargetBase.Curve),
-    //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Green', LineSegment.mkPP(this.TargetBase.LeftPoint, this.SourceBase.LeftPoint)),
-    //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Yellow', LineSegment.mkPP(this.TargetBase.RightPoint, this.SourceBase.RightPoint)),
-    //     DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Black', LineSegment.mkPP(a, b)),
-    //   ])
+    //  SvgDebugWriter.dumpDebugCurves(this.mkNameFromLRST(), [
+    //    DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Red', this.SourceBase.Curve),
+    //    DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', this.TargetBase.Curve),
+    //    DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Green', LineSegment.mkPP(this.TargetBase.LeftPoint, this.SourceBase.LeftPoint)),
+    //    DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Yellow', LineSegment.mkPP(this.TargetBase.RightPoint, this.SourceBase.RightPoint)),
+    //    DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Black', LineSegment.mkPP(a, b)),
+    //  ])
     // }
     // //Assert.assert(this.SourceBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) > 0)
     // //Assert.assert(this.TargetBase.LeftPoint.sub(this.SourceBase.Position).dot(perpL) < 0)
@@ -174,20 +174,20 @@ export class BundleInfo {
       this.TargetBase.InitialMidParameter = this.TargetBase.AdjustParam(this.TargetBase.ParStart + this.TargetBase.Span / 2)
     }
     // SvgDebugWriter.dumpDebugCurves(this.mkNameFromST(), [
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', this.TargetBase.Curve),
-    //   DebugCurve.mkDebugCurveTWCI(
-    //     100,
-    //     0.2,
-    //     'Red',
-    //     CurveFactory.mkCircle(2, this.SourceBase.Curve.value(this.SourceBase.InitialMidParameter)),
-    //   ),
-    //   DebugCurve.mkDebugCurveTWCI(
-    //     100,
-    //     0.2,
-    //     'Blue',
-    //     CurveFactory.mkCircle(2, this.TargetBase.Curve.value(this.TargetBase.InitialMidParameter)),
-    //   ),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', this.TargetBase.Curve),
+    //  DebugCurve.mkDebugCurveTWCI(
+    //    100,
+    //    0.2,
+    //    'Red',
+    //    CurveFactory.mkCircle(2, this.SourceBase.Curve.value(this.SourceBase.InitialMidParameter)),
+    //  ),
+    //  DebugCurve.mkDebugCurveTWCI(
+    //    100,
+    //    0.2,
+    //    'Blue',
+    //    CurveFactory.mkCircle(2, this.TargetBase.Curve.value(this.TargetBase.InitialMidParameter)),
+    //  ),
     // ])
   }
   mkNameFromST(): string {
@@ -226,14 +226,14 @@ export class BundleInfo {
 
     s.par = sourceX.par1
     t.par = targetX.par1
-    //    //Assert.assert(Point.closeDistEps(sourceX.x, this.SourceBase.Curve.value(sourceX.par1)))
-    //  //Assert.assert(Point.closeDistEps(targetX.x, this.TargetBase.Curve.value(targetX.par1)))
+    //   //Assert.assert(Point.closeDistEps(sourceX.x, this.SourceBase.Curve.value(sourceX.par1)))
+    // //Assert.assert(Point.closeDistEps(targetX.x, this.TargetBase.Curve.value(targetX.par1)))
 
     // SvgDebugWriter.dumpDebugCurves('/tmp/trim_result' + ls.start.toString() + ls.end.toString() + '.svg', [
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', this.TargetBase.Curve),
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Black', ls),
-    //   DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Brown', LineSegment.mkPP(sourceX.x, targetX.x)),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', this.TargetBase.Curve),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Black', ls),
+    //  DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Brown', LineSegment.mkPP(sourceX.x, targetX.x)),
     // ])
     return LineSegment.mkPP(sourceX.x, targetX.x)
   }

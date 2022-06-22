@@ -1,5 +1,5 @@
 ﻿export class Transform {
-  //  Rotates a 2D configuration clockwise by a given angle
+  // Rotates a 2D configuration clockwise by a given angle
   // The angle is given in degrees
   static Rotate(x: number[], y: number[], angle: number) {
     const sin: number = Math.sin(angle * (Math.PI / 180))

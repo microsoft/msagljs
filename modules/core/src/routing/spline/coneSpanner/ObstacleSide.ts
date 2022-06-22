@@ -31,14 +31,14 @@ export abstract class ObstacleSide extends SegmentBase {
   //
 
   // public  ToString(): string {
-  //     let typeString: string = this.GetType().ToString();
-  //     let lastDotLoc: number = typeString.LastIndexOf('.');
-  //     if ((lastDotLoc >= 0)) {
-  //         typeString = typeString.Substring((lastDotLoc + 1));
-  //     }
+  //    let typeString: string = this.GetType().ToString();
+  //    let lastDotLoc: number = typeString.LastIndexOf('.');
+  //    if ((lastDotLoc >= 0)) {
+  //        typeString = typeString.Substring((lastDotLoc + 1));
+  //    }
 
-  //     return (typeString + (" ["
-  //         + (this.start.ToString() + (" -> "
-  //             + (this.End.ToString() + "]")))));
+  //    return (typeString + (" ["
+  //        + (this.start.ToString() + (" -> "
+  //            + (this.End.ToString() + "]")))));
   // }
 }

@@ -3,7 +3,7 @@ import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/GeomGraph'
 import {GeomNode} from '../core/geomNode'
-//  Provides functionality for computing distances in a graph.
+// Provides functionality for computing distances in a graph.
 export class SingleSourceDistances extends Algorithm {
   private graph: GeomGraph
 
@@ -12,23 +12,23 @@ export class SingleSourceDistances extends Algorithm {
   private length: (e: GeomEdge) => number
   private result: number[]
 
-  //  Dijkstra algorithm. Computes graph-theoretic distances from a node to
-  //  all other nodes in a graph with nonnegative edge lengths.
-  //  The distance between a node and itself is 0; the distance between a pair of
-  //  nodes for which no connecting path exists is Number.POSITIVE_INFINITY.
+  // Dijkstra algorithm. Computes graph-theoretic distances from a node to
+  // all other nodes in a graph with nonnegative edge lengths.
+  // The distance between a node and itself is 0; the distance between a pair of
+  // nodes for which no connecting path exists is Number.POSITIVE_INFINITY.
   constructor(graph: GeomGraph, source: GeomNode, length: (e: GeomEdge) => number) {
     super(null) // todo: pass the canceltoken
     this.graph = graph
     this.source = source
     this.length = length
   }
-  //  An array of distances from the source node to all shallow nodes.
-  //  Nodes are indexed when iterating over them.
+  // An array of distances from the source node to all shallow nodes.
+  // Nodes are indexed when iterating over them.
   public get Result(): number[] {
     return this.result
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
   run() {
     const q = new GenericBinaryHeapPriorityQueue<GeomNode>((a, b) => a - b)
     const d: Map<GeomNode, number> = new Map<GeomNode, number>()
@@ -46,7 +46,7 @@ export class SingleSourceDistances extends Algorithm {
       for (const vu of u.inEdges()) {
         const v = vu.source
 
-        //  relaxation step
+        // relaxation step
         const nl = distU + this.length(vu)
         if (d.get(v) > nl) {
           d.set(v, nl)
@@ -55,7 +55,7 @@ export class SingleSourceDistances extends Algorithm {
       }
       for (const uv of u.outEdges()) {
         const v = uv.target
-        //  relaxation step
+        // relaxation step
         const nl = distU + this.length(uv)
         if (d.get(v) > nl) {
           d.set(v, nl)

@@ -356,7 +356,7 @@ return xx;
       parab: parab_,
       parcd: parcd_,
       // get the difference of the two closest points
-      //            const dP = w + (parab * u) - (parcd * v),
+      //           const dP = w + (parab * u) - (parcd * v),
 
       dist: w.add(u.mul(parab_).sub(v.mul(parcd_))).length, // return the closest distance
     }

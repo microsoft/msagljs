@@ -1,4 +1,4 @@
-//  Sweeps a given direction of cones and adds discovered edges to the graph.
+// Sweeps a given direction of cones and adds discovered edges to the graph.
 
 import {Point, ICurve} from '../../..'
 import {Polyline, GeomConstants, LineSegment} from '../../../math/geometry'
@@ -30,7 +30,7 @@ import {RightVertexEvent} from './RightVertexEvent'
 import {SweepEvent} from './SweepEvent'
 import {VertexEvent} from './VertexEvent'
 
-//  The cones can only start at ports here.
+// The cones can only start at ports here.
 export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper */ {
   ConeRightSideDirection: Point
 
@@ -91,7 +91,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   ProcessEvent(p: SweepEvent) {
-    //  ShowTrees(CurveFactory.CreateDiamond(3, 3, p.Site));
+    // ShowTrees(CurveFactory.CreateDiamond(3, 3, p.Site));
     if (p instanceof VertexEvent) {
       this.ProcessVertexEvent(p)
     } else {
@@ -119,7 +119,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
       }
     }
 
-    //      ShowTrees(CurveFactory.CreateEllipse(3,3,p.Site));
+    //     ShowTrees(CurveFactory.CreateEllipse(3,3,p.Site));
   }
 
   ProcessPointObstacleEvent(portObstacleEvent: PortObstacleEvent) {
@@ -180,7 +180,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
 
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
     // restore this.Z for the time being
-    //  this.Z = PreviousZ;
+    // this.Z = PreviousZ;
     if (rightIntersectionEvent.coneRightSide.Removed == false) {
       // it can happen that the cone side participating in the intersection is gone;
       // obstracted by another obstacle or because of a vertex found inside of the cone
@@ -245,54 +245,54 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     this.AddConeAndEnqueueEvents(vertexEvent)
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   static EllipseOnVert(vertexEvent: SweepEvent): Ellipse {
-    //  ReSharper restore UnusedMember.Local
+    // ReSharper restore UnusedMember.Local
     return Ellipse.mkFullEllipseNNP(2, 2, vertexEvent.Site)
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   static EllipseOnPolylinePoint(pp: PolylinePoint): Ellipse {
-    //  ReSharper restore UnusedMember.Local
+    // ReSharper restore UnusedMember.Local
     return Ellipse.mkFullEllipseNNP(2, 2, pp.point)
   }
 
   // ShowTrees(params curves: ICurve[]) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let l = Obstacles.Select(() => {  }, new DebugCurve(100, 1, "blue", c));
-  //     l = l.Concat(this.rightConeSides.Select(() => {  }, new DebugCurve(200, 1, "brown", this.ExtendSegmentToZ(s))));
-  //     l = l.Concat(this.leftConeSides.Select(() => {  }, new DebugCurve(200, 1, "gree", this.ExtendSegmentToZ(s))));
-  //     l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
-  //     l = l.Concat(this.visibilityGraph.Edges.Select(() => {  }, new LineSegment(e.SourcePoint, e.TargetPoint)).Select(() => {  }, new DebugCurve("marine", c)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //    //  ReSharper restore UnusedMember.Local
+  //    let l = Obstacles.Select(() => {  }, new DebugCurve(100, 1, "blue", c));
+  //    l = l.Concat(this.rightConeSides.Select(() => {  }, new DebugCurve(200, 1, "brown", this.ExtendSegmentToZ(s))));
+  //    l = l.Concat(this.leftConeSides.Select(() => {  }, new DebugCurve(200, 1, "gree", this.ExtendSegmentToZ(s))));
+  //    l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
+  //    l = l.Concat(this.visibilityGraph.Edges.Select(() => {  }, new LineSegment(e.SourcePoint, e.TargetPoint)).Select(() => {  }, new DebugCurve("marine", c)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   // }
 
   // ShowLeftTree(params curves: ICurve[]) {
-  //     let l = Obstacles.Select(() => {  }, new DebugCurve(c));
-  //     l = l.Concat(this.leftConeSides.Select(() => {  }, new DebugCurve("brown", this.ExtendSegmentToZ(s))));
-  //     l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //    let l = Obstacles.Select(() => {  }, new DebugCurve(c));
+  //    l = l.Concat(this.leftConeSides.Select(() => {  }, new DebugCurve("brown", this.ExtendSegmentToZ(s))));
+  //    l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   // }
 
   // ShowRightTree(params curves: ICurve[]) {
-  //     let l = Obstacles.Select(() => {  }, new DebugCurve(c));
-  //     l = l.Concat(this.rightConeSides.Select(() => {  }, new DebugCurve("brown", this.ExtendSegmentToZ(s))));
-  //     l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //    let l = Obstacles.Select(() => {  }, new DebugCurve(c));
+  //    l = l.Concat(this.rightConeSides.Select(() => {  }, new DebugCurve("brown", this.ExtendSegmentToZ(s))));
+  //    l = l.Concat(curves.Select(() => {  }, new DebugCurve("red", c)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   // }
 
-  //  Show(params curves: ICurve[]) {
-  //     //  ReSharper restore UnusedMember.Global
-  //     let l = Obstacles.Select(() => {  }, new DebugCurve(100, 1, "black", c));
-  //     l = l.Concat(curves.Select(() => {  }, new DebugCurve(200, 1, "red", c)));
-  //     //             foreach (var s of rightConeSides){
-  //     //                 l.Add(ExtendSegmentToZ(s));
-  //     //                 if (s is BrokenConeSide)
-  //     //                     l.Add(Diamond(s.start));
-  //     //                 l.Add(ExtendSegmentToZ(s.Cone.LeftSide));
-  //     //             }
-  //     l = l.Concat(this.visibilityGraph.Edges.Select(() => {  }, new LineSegment(edge.SourcePoint, edge.TargetPoint)).Select(() => {  }, new DebugCurve(100, 1, "blue", c)));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  // Show(params curves: ICurve[]) {
+  //    //  ReSharper restore UnusedMember.Global
+  //    let l = Obstacles.Select(() => {  }, new DebugCurve(100, 1, "black", c));
+  //    l = l.Concat(curves.Select(() => {  }, new DebugCurve(200, 1, "red", c)));
+  //    //             foreach (var s of rightConeSides){
+  //    //                 l.Add(ExtendSegmentToZ(s));
+  //    //                 if (s is BrokenConeSide)
+  //    //                     l.Add(Diamond(s.start));
+  //    //                 l.Add(ExtendSegmentToZ(s.Cone.LeftSide));
+  //    //             }
+  //    l = l.Concat(this.visibilityGraph.Edges.Select(() => {  }, new LineSegment(edge.SourcePoint, edge.TargetPoint)).Select(() => {  }, new DebugCurve(100, 1, "blue", c)));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   // }
 
   ExtendSegmentToZ(segment: ConeSide): ICurve {
@@ -340,10 +340,10 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     if (this.GetZP(nextSite) + GeomConstants.distanceEpsilon < this.GetZS(rightVertexEvent)) return
     if (!Point.PointToTheRightOfLineOrOnLine(nextSite, site, coneLp)) {
       //if (angle <= -coneAngle / 2) {
-      //   CreateConeOnVertex(rightVertexEvent);
+      //  CreateConeOnVertex(rightVertexEvent);
       if (Point.PointToTheLeftOfLineOrOnLine(nextSite.add(this.DirectionPerp), nextSite, site))
         this.EnqueueEventLocal(new RightVertexEvent(nextVertex))
-      //  TryEnqueueRighVertexEvent(nextVertex);
+      // TryEnqueueRighVertexEvent(nextVertex);
     } else if (Point.PointToTheLeftOfLineOrOnLine(nextSite, site, coneRp)) {
       //if (angle < coneAngle / 2) {
       this.CaseToTheLeftOfLineOrOnLineConeRp(rightVertexEvent, nextVertex)
@@ -360,12 +360,12 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     this.EnqueueEventLocal(new RightVertexEvent(nextVertex))
     // the obstacle side is inside of the cone
     // we need to create an obstacle left side segment instead of the left cone side
-    //                 var cone = new Cone(rightVertexEvent.Vertex.point, this);
-    //                 var obstacleSideSeg = new BrokenConeSide(cone.Apex, nextVertex, new ConeLeftSide(cone));
-    //                 cone.LeftSide = obstacleSideSeg;
-    //                 cone.RightSide = new ConeRightSide(cone);
-    //                 var rnode = InsertToTree(rightConeSides, cone.RightSide);
-    //                 LookForIntersectionWithConeRightSide(rnode);
+    //                var cone = new Cone(rightVertexEvent.Vertex.point, this);
+    //                var obstacleSideSeg = new BrokenConeSide(cone.Apex, nextVertex, new ConeLeftSide(cone));
+    //                cone.LeftSide = obstacleSideSeg;
+    //                cone.RightSide = new ConeRightSide(cone);
+    //                var rnode = InsertToTree(rightConeSides, cone.RightSide);
+    //                LookForIntersectionWithConeRightSide(rnode);
     const lnode: RBNode<ConeSide> = this.leftConeSides.findFirst((side) =>
       LineSweeperForPortLocations.PointIsToTheLeftOfSegment(rightVertexEvent.Site, side),
     )
@@ -400,8 +400,8 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     obstacleSideVertex: PolylinePoint,
   ): RightIntersectionEvent {
     // Assert.assert(
-    //   Math.abs(this.GetZP(obstacleSideVertex.point.sub(intersection))) >
-    //     GeomConstants.distanceEpsilon,
+    //  Math.abs(this.GetZP(obstacleSideVertex.point.sub(intersection))) >
+    //    GeomConstants.distanceEpsilon,
     // )
     return new RightIntersectionEvent(coneRightSide, intersection, obstacleSideVertex)
   }
@@ -412,7 +412,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
 
   LookForIntersectionOfObstacleSideAndLeftConeSide(obstacleSideStart: Point, obstacleSideVertex: PolylinePoint) {
     const node: RBNode<ConeSide> = this.GetFirstNodeToTheRightOfPoint(obstacleSideStart)
-    //           ShowLeftTree(Box(obstacleSideStart));
+    //          ShowLeftTree(Box(obstacleSideStart));
     if (node == null) {
       return
     }
@@ -459,7 +459,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
 
   InsertToTree(tree: RBTree<ConeSide>, coneSide: ConeSide): RBNode<ConeSide> {
     // Assert.assert(
-    //   this.GetZP(coneSide.Direction) > GeomConstants.distanceEpsilon,
+    //  this.GetZP(coneSide.Direction) > GeomConstants.distanceEpsilon,
     // )
     this.coneSideComparer.SetOperand(coneSide)
     return tree.insert(coneSide)
@@ -471,8 +471,8 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     const prevZ: number = prevSite.dot(this.SweepDirection)
     if (prevZ <= this.Z && this.Z - prevZ < GeomConstants.distanceEpsilon) {
       // Show(
-      //     new Ellipse(1, 1, prevSite),
-      //     CurveFactory.CreateBox(2, 2, leftVertexEvent.Vertex.point));
+      //    new Ellipse(1, 1, prevSite),
+      //    CurveFactory.CreateBox(2, 2, leftVertexEvent.Vertex.point));
       this.RemoveConesClosedBySegment(leftVertexEvent.Vertex.point, prevSite)
     }
 
@@ -480,17 +480,17 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     const coneLp: Point = site.add(this.ConeLeftSideDirection)
     const coneRp: Point = site.add(this.ConeRightSideDirection)
     const nextSite: Point = nextVertex.point
-    //  SugiyamaLayoutSettings.Show(new LineSegment(site, coneLP), new LineSegment(site, coneRP), new LineSegment(site, nextSite));
+    // SugiyamaLayoutSettings.Show(new LineSegment(site, coneLP), new LineSegment(site, coneRP), new LineSegment(site, nextSite));
     if (this.GetZP(site.sub(prevSite)) > GeomConstants.distanceEpsilon) {
       this.RemoveLeftSide(new LeftObstacleSide(leftVertexEvent.Vertex.prevOnPolyline))
     }
 
     if (Point.PointToTheRightOfLineOrOnLine(nextSite, site, site.add(this.DirectionPerp))) {
       // if (angle > Math.PI / 2)
-      //    CreateConeOnVertex(leftVertexEvent); //it is the last left vertex on this obstacle
+      //   CreateConeOnVertex(leftVertexEvent); //it is the last left vertex on this obstacle
     } else if (!Point.PointToTheLeftOfLineOrOnLine(nextSite, site, coneRp)) {
       // if (angle >= coneAngle / 2) {
-      //  CreateConeOnVertex(leftVertexEvent);
+      // CreateConeOnVertex(leftVertexEvent);
       this.EnqueueEvent(new LeftVertexEvent(nextVertex))
       // we schedule LeftVertexEvent for a vertex with horizontal segment to the left on the top of the obstace
     } else if (!Point.PointToTheLeftOfLineOrOnLine(nextSite, site, coneLp)) {
@@ -499,12 +499,12 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
       this.EnqueueEvent(new LeftVertexEvent(nextVertex))
       // the obstacle side is inside of the cone
       // we need to create an obstacle right side segment instead of the cone side
-      //                 var cone = new Cone(leftVertexEvent.Vertex.point, this);
-      //                 var rightSide = new BrokenConeSide(leftVertexEvent.Vertex.point, nextVertex,
-      //                                                         new ConeRightSide(cone));
-      //                 cone.RightSide = rightSide;
-      //                 cone.LeftSide = new ConeLeftSide(cone);
-      //                 LookForIntersectionWithConeLeftSide(InsertToTree(leftConeSides, cone.LeftSide));
+      //                var cone = new Cone(leftVertexEvent.Vertex.point, this);
+      //                var rightSide = new BrokenConeSide(leftVertexEvent.Vertex.point, nextVertex,
+      //                                                        new ConeRightSide(cone));
+      //                cone.RightSide = rightSide;
+      //                cone.LeftSide = new ConeLeftSide(cone);
+      //                LookForIntersectionWithConeLeftSide(InsertToTree(leftConeSides, cone.LeftSide));
       const rbNode: RBNode<ConeSide> = this.rightConeSides.findLast((s) => LineSweeperForPortLocations.PointIsToTheRightOfSegment(site, s))
       this.FixConeRightSideIntersections(leftVertexEvent.Vertex, nextVertex, rbNode)
       if (this.GetZP(nextVertex.point.sub(leftVertexEvent.Site)) > GeomConstants.distanceEpsilon) {
@@ -514,7 +514,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
       this.EnqueueEvent(new LeftVertexEvent(nextVertex))
       if (this.GetZP(nextVertex.point.sub(leftVertexEvent.Site)) > GeomConstants.distanceEpsilon) {
         // if( angle >- Pi/2
-        //  Assert.assert(angle > -Math.PI / 2);
+        // Assert.assert(angle > -Math.PI / 2);
         this.LookForIntersectionOfObstacleSideAndRightConeSide(leftVertexEvent.Site, nextVertex)
         this.InsertLeftSide(new LeftObstacleSide(leftVertexEvent.Vertex))
       }
@@ -529,7 +529,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   RemoveSegFromRightTree(coneSide: ConeSide) {
-    //    ShowRightTree();
+    //   ShowRightTree();
     //Assert.assert(coneSide.Removed == false)
     this.coneSideComparer.SetOperand(coneSide)
     let b: RBNode<ConeSide> = this.rightConeSides.remove(coneSide)
@@ -581,9 +581,9 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     if (coneLeftSide) {
       // leftNode = leftSegmentTree.TreePredecessor(leftNode);
       // if (leftNode != null) {
-      //     var seg = leftNode.item as ObstacleSideSegment;
-      //     if (seg != null)
-      //         TryIntersectionOfConeLeftSideAndObstacleConeSide(coneLeftSide, seg);
+      //    var seg = leftNode.item as ObstacleSideSegment;
+      //    if (seg != null)
+      //        TryIntersectionOfConeLeftSideAndObstacleConeSide(coneLeftSide, seg);
       // }
       const rightObstacleSide: RightObstacleSide = this.FindFirstObstacleSideToTheLeftOfPoint(leftNode.item.Start)
       if (rightObstacleSide != null) {
@@ -605,9 +605,9 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     if (rightNode.item instanceof ConeRightSide) {
       // rightNode = rightSegmentTree.TreeSuccessor(rightNode);
       // if (rightNode != null) {
-      //     var seg = rightNode.item as ObstacleSideSegment;
-      //     if (seg != null)
-      //         TryIntersectionOfConeRightSideAndObstacleConeSide(coneRightSide, seg);
+      //    var seg = rightNode.item as ObstacleSideSegment;
+      //    if (seg != null)
+      //        TryIntersectionOfConeRightSideAndObstacleConeSide(coneRightSide, seg);
       // }
       const leftObstacleSide: LeftObstacleSide = this.FindFirstObstacleSideToToTheRightOfPoint(rightNode.item.Start)
       if (leftObstacleSide != null) {
@@ -652,11 +652,11 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     const x: Point = Point.IntervalIntersectsRay(side.Start, side.End, coneLeftSide.Start, coneLeftSide.Direction)
     if (x) {
       super.EnqueueEvent(new LeftIntersectionEvent(coneLeftSide, x, side.EndVertex))
-      //     Show(CurveFactory.CreateDiamond(3, 3, x));
+      //    Show(CurveFactory.CreateDiamond(3, 3, x));
     }
   }
 
-  //         static int count;
+  //        static int count;
   GoOverConesSeeingVertexEvent(vertexEvent: SweepEvent) {
     let rbNode: RBNode<ConeSide> = this.FindFirstSegmentInTheRightTreeNotToTheLeftOfVertex(vertexEvent)
     if (rbNode == null) {

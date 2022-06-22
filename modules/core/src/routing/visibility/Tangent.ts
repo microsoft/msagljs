@@ -38,7 +38,7 @@ export class Tangent {
 
   diagonal: Diagonal
 
-  //  the diagonal will be not a null only when it is active
+  // the diagonal will be not a null only when it is active
 
   get Diagonal(): Diagonal {
     return this.diagonal

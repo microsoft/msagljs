@@ -1,10 +1,10 @@
 import {IRectangle} from '../IRectangle'
 import {RectangleNode, mkRectangleNode, CreateRectNodeOnArrayOfRectNodes as CreateRectNodeOnArrayOfRectNodes} from './RectangleNode'
 
-//  A search tree for rapid lookup of T objects keyed by rectangles inside a given rectangular region
-//  It is very similar to "R-TREES. A DYNAMIC INDEX STRUCTURE FOR SPATIAL SEARCHING" by Antonin Guttman
+// A search tree for rapid lookup of T objects keyed by rectangles inside a given rectangular region
+// It is very similar to "R-TREES. A DYNAMIC INDEX STRUCTURE FOR SPATIAL SEARCHING" by Antonin Guttman
 
-//  Create the query tree for a given enumerable of T keyed by Rectangles
+// Create the query tree for a given enumerable of T keyed by Rectangles
 export function mkRTree<T, P>(rectsAndData: Array<[IRectangle<P>, T]>): RTree<T, P> {
   return new RTree<T, P>(CreateRectNodeOnArrayOfRectNodes(rectsAndData.map(([k, v]) => mkRectangleNode<T, P>(v, k))))
 }
@@ -89,7 +89,7 @@ export class RTree<T, P> {
     this._rootNode = value
   }
 
-  //  Create a query tree for a given root node
+  // Create a query tree for a given root node
   constructor(rootNode: RectangleNode<T, P>) {
     this._rootNode = rootNode
   }
@@ -100,7 +100,7 @@ export class RTree<T, P> {
     }
   }
 
-  //  The number of data elements of the tree (number of leaf nodes)
+  // The number of data elements of the tree (number of leaf nodes)
   get Count(): number {
     return this._rootNode == null ? 0 : this._rootNode.Count
   }
@@ -180,12 +180,12 @@ export class RTree<T, P> {
     return {intersectedLeaf: ret.UserData}
   }
 
-  //  Get all leaf nodes with rectangles intersecting the specified rectangular region
+  // Get all leaf nodes with rectangles intersecting the specified rectangular region
   GetAllLeavesIntersectingRectangle(queryRegion: IRectangle<P>): Iterable<RectangleNode<T, P>> {
     return this._rootNode == null || this.Count == 0 ? [] : this._rootNode.GetLeafRectangleNodesIntersectingRectangle(queryRegion)
   }
 
-  //  Does minimal work to determine if any objects of the tree intersect with the query region
+  // Does minimal work to determine if any objects of the tree intersect with the query region
   public IsIntersecting(queryRegion: IRectangle<P>): boolean {
     if (this._rootNode == null || this.Count == 0) return false
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -195,7 +195,7 @@ export class RTree<T, P> {
     return false
   }
 
-  //  return true iff there is a node with the rectangle and UserData that equals to the parameter "userData"
+  // return true iff there is a node with the rectangle and UserData that equals to the parameter "userData"
   public Contains(rectangle: IRectangle<P>, userData: T): boolean {
     if (this._rootNode == null) {
       return false
@@ -247,7 +247,7 @@ export class RTree<T, P> {
         UpdateParent(parent)
       }
     }
-    //   Assert.assert(TreeIsCorrect(RootNode));
+    //  Assert.assert(TreeIsCorrect(RootNode));
   }
 
   UnbalancedNode(node: RectangleNode<T, P>): RectangleNode<T, P> {

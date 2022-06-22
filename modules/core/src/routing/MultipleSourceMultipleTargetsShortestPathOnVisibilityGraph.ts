@@ -27,7 +27,7 @@ export class MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph {
     this.targets = new Set<VisibilityVertex>(targetVisVertices)
   }
 
-  //  Returns  a  path
+  // Returns  a  path
   GetPath(): Array<VisibilityVertex> {
     const pq = new GenericBinaryHeapPriorityQueue<VisibilityVertex>()
     for (const v of this.sources) {

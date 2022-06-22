@@ -7,7 +7,7 @@ export class FloatingPort extends Port {
 
   // a curve associated with the port
 
-  //  constructor
+  // constructor
 
   public constructor(curve: ICurve, location: Point) {
     super()
@@ -17,7 +17,7 @@ export class FloatingPort extends Port {
 
   location: Point
 
-  //  the location of the port
+  // the location of the port
 
   get Location(): Point {
     return this.location
@@ -26,13 +26,13 @@ export class FloatingPort extends Port {
     this.location = value
   }
 
-  //  translate the port location by delta
+  // translate the port location by delta
 
   public /* virtual */ Translate(delta: Point) {
     this.location = this.location.add(delta)
   }
 
-  //  the port's curve
+  // the port's curve
 
   public get /* override */ Curve(): ICurve {
     return this.curve

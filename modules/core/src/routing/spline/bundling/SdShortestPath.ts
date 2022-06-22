@@ -94,7 +94,7 @@ export class SdShortestPath {
     this.CreateGraphElements()
   }
 
-  //  routing of the edges minimizing (ink+path length+capacity penalty)
+  // routing of the edges minimizing (ink+path length+capacity penalty)
   RouteEdges() {
     this.Initialize()
     this.RestoreCapacities()
@@ -153,7 +153,7 @@ export class SdShortestPath {
     }
   }
 
-  //  Reroute edge
+  // Reroute edge
   RerouteEdge(geomEdge: GeomEdge): Array<SdBoneEdge> {
     const route = this.EdgesToRoutes.get(geomEdge)
 
@@ -196,7 +196,7 @@ export class SdShortestPath {
     }
 
     // SplineRouter.ShowVisGraph('/tmp/badVis.svg', this.VisibilityGraph, Array.from(this.ObstacleHierarchy.GetAllLeaves()), null, [
-    //   LineSegment.mkPP(this.CurrentEdgeGeometry.sourcePort.Location, this.CurrentEdgeGeometry.targetPort.Location),
+    //  LineSegment.mkPP(this.CurrentEdgeGeometry.sourcePort.Location, this.CurrentEdgeGeometry.targetPort.Location),
     // ])
     throw new Error()
   }
@@ -539,7 +539,7 @@ export class SdShortestPath {
     return bundlingSettings.CapacityOverflowCoefficient * (bundlingSettings.PathLengthImportance + bundlingSettings.InkImportance)
   }
 
-  //  compute cdt edges crossed by paths
+  // compute cdt edges crossed by paths
   FillCrossedCdtEdges(crossedCdtEdges: Map<GeomEdge, Set<CdtEdge>>) {
     for (const geometryEdge of this.geomEdges) {
       this.sourceLoosePoly = this.SetPortVerticesAndObstacles(geometryEdge.sourcePort, true)

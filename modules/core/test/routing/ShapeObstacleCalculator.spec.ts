@@ -50,8 +50,8 @@ test('overlap: two children', () => {
   expect(tightPolylines.length == 1).toBe(true)
   // const dc = []
   // for (const p of shObstCalc.coupleHierarchy.GetAllLeaves()) {
-  //   dc.push(DebugCurve.mkDebugCurveCI('Red', p.TightPolyline))
-  //   dc.push(DebugCurve.mkDebugCurveCI('Blue', p.LooseShape.BoundaryCurve))
+  //  dc.push(DebugCurve.mkDebugCurveCI('Red', p.TightPolyline))
+  //  dc.push(DebugCurve.mkDebugCurveCI('Blue', p.LooseShape.BoundaryCurve))
   // }
 
   // SvgDebugWriter.dumpDebugCurves('/tmp/overlapSO.svg', dc)

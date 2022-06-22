@@ -100,7 +100,7 @@ test('TriangleCreationTest', () => {
 
 test('SmallTriangulation', () => {
   // #if TEST_MSAGL&& TEST_MSAGL
-  //             GraphViewerGdi.DisplayGeometryGraph.SetShowFunctions();
+  //            GraphViewerGdi.DisplayGeometryGraph.SetShowFunctions();
   // #endif
   const isolatedObstacles = [
     new SymmetricTuple<Point>(new Point(109, 202), new Point(506, 135)),
@@ -161,11 +161,11 @@ test('two holes and one isolated segment', () => {
     const cdt = new Cdt(corners, holes, cut)
     cdt.run()
     // CdtSweeper.ShowCdt(
-    //   [...cdt.GetTriangles()],
-    //   null,
-    //   from(holes),
-    //   from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
-    //   '/tmp/twoHoles' + i + '.svg',
+    //  [...cdt.GetTriangles()],
+    //  null,
+    //  from(holes),
+    //  from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
+    //  '/tmp/twoHoles' + i + '.svg',
     // )
   }
 })
@@ -199,12 +199,12 @@ test('three holes and two isolated segments', () => {
     const cdt = new Cdt(Array.from(corners), holes, cut)
     cdt.run()
     // CdtSweeper.ShowCdt(
-    //   [...cdt.GetTriangles()],
-    //   null,
-    //   from(holes),
-    //   from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
-    //   '/tmp/threeHoles.svg',
-    //  )
+    //  [...cdt.GetTriangles()],
+    //  null,
+    //  from(holes),
+    //  from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
+    //  '/tmp/threeHoles.svg',
+    // )
   }
 })
 test('flat line', () => {

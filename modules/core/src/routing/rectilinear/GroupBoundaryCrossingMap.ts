@@ -8,11 +8,11 @@ import {Obstacle} from './obstacle'
 import {PointAndCrossingsList} from './PointAndCrossingsList'
 import {PointComparer} from './PointComparer'
 
-//  A Group is a Shape that has children.
-//  This class maps between intersection points on Group boundaries and the groups and crossing
-//  directions at those intersection points.
+// A Group is a Shape that has children.
+// This class maps between intersection points on Group boundaries and the groups and crossing
+// directions at those intersection points.
 export class GroupBoundaryCrossingMap {
-  //  Note:  Like VisibilityGraph, this does not use PointComparer but assumes already-rounded key values.
+  // Note:  Like VisibilityGraph, this does not use PointComparer but assumes already-rounded key values.
   pointCrossingMap: PointMap<Array<GroupBoundaryCrossing>> = new PointMap<Array<GroupBoundaryCrossing>>()
 
   AddIntersection(intersection: Point, group: Obstacle, dirToInside: Direction): GroupBoundaryCrossing {
@@ -22,14 +22,14 @@ export class GroupBoundaryCrossingMap {
       this.pointCrossingMap.set(intersection, crossings)
     }
 
-    //  We may hit the same point on neighbor traversal in multiple directions.  We will have more than one item
-    //  in this list only if there are multiple group boundaries at this point, which should be unusual.
+    // We may hit the same point on neighbor traversal in multiple directions.  We will have more than one item
+    // in this list only if there are multiple group boundaries at this point, which should be unusual.
     const crossingsCount = crossings.length
-    //  cache for perf
+    // cache for perf
     for (let ii = 0; ii < crossingsCount; ii++) {
       const crossing = crossings[ii]
       if (crossing.Group == group) {
-        //  At a given location for a given group, there is only one valid dirToInside.
+        // At a given location for a given group, there is only one valid dirToInside.
         /*Assert.assert(
           dirToInside == crossing.DirectionToInside,
           'Mismatched dirToInside',
@@ -60,7 +60,7 @@ export class GroupBoundaryCrossingMap {
       end = temp
     }
 
-    //  Start and end are inclusive.
+    // Start and end are inclusive.
     this.pointList = []
     for (const intersection of this.pointCrossingMap.keys()) {
       if (PointComparer.ComparePP(intersection, start) >= 0 && PointComparer.ComparePP(intersection, end) <= 0) {

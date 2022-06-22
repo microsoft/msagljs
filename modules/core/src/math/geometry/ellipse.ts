@@ -72,7 +72,7 @@ export class Ellipse implements ICurve {
     return new Ellipse(0, Math.PI * 2, a, b, center)
   }
   constructor(parStart: number, parEnd: number, axis0: Point, axis1: Point, center: Point) {
-    //    assert(parStart <= parEnd);
+    //   assert(parStart <= parEnd);
     this.parStart = parStart
     this.parEnd = parEnd
     this.aAxis = axis0

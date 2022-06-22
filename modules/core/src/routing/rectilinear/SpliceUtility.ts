@@ -4,7 +4,7 @@ import {Point} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
 
 export class SpliceUtility {
-  //  Most of the original contents of this file have been subsumed into ObstacleTree and TransientGraphUtility.
+  // Most of the original contents of this file have been subsumed into ObstacleTree and TransientGraphUtility.
   static MungeClosestIntersectionInfo(rayOrigin: Point, closestIntersection: IntersectionInfo, isHorizontal: boolean): Point {
     const bbox: Rectangle = closestIntersection.seg1.boundingBox
     const closest: Point = GeomConstants.RoundPoint(closestIntersection.x).clone()
@@ -13,7 +13,7 @@ export class SpliceUtility {
       : new Point(closest.x, SpliceUtility.MungeIntersect(rayOrigin.y, closest.y, bbox.bottom, bbox.top))
   }
 
-  //  Make sure that we intersect the object space.
+  // Make sure that we intersect the object space.
   static MungeIntersect(site: number, intersect: number, start: number, end: number): number {
     if (site < intersect) {
       const min: number = Math.min(start, end)

@@ -1,4 +1,4 @@
-//  single source single target rectilinear path
+// single source single target rectilinear path
 
 import {Point} from '../../math/geometry/point'
 import {CompassVector} from '../../math/geometry/compassVector'
@@ -37,7 +37,7 @@ export class SsstRectilinearPath {
 
   BendsImportance: number
 
-  //  Only bends importance needs to be public.
+  // Only bends importance needs to be public.
   static DefaultBendPenaltyAsAPercentageOfDistance = 4
 
   Target: VisibilityVertexRectilinear
@@ -52,7 +52,7 @@ export class SsstRectilinearPath {
 
   private targetCostAdjustment: number
 
-  //  The cost of the path calculation
+  // The cost of the path calculation
 
   private CombinedCost(length: number, numberOfBends: number): number {
     return this.LengthImportance * length + this.BendsImportance * numberOfBends
@@ -62,20 +62,20 @@ export class SsstRectilinearPath {
     return this.CombinedCost(length, numberOfBends) + this.sourceCostAdjustment
   }
 
-  //  The priority queue for path extensions.
+  // The priority queue for path extensions.
 
   private queue: GenericBinaryHeapPriorityQueue<VertexEntry>
 
-  //  The list of vertices we've visited for all paths.
+  // The list of vertices we've visited for all paths.
 
   private visitedVertices: Array<VisibilityVertexRectilinear>
 
-  //  For consistency and speed, path extensions impose an ordering as in the paper:  straight, right, left.  We
-  //  enqueue entries in the reverse order of preference so the latest timestamp will be the preferred direction.
-  //  Thus straight-ahead neighbors are in slot 2, right in slot 1, left in slot 0.  (If the target happens
-  //  to be to the Left, then the heuristic lookahead score will override the Right preference).
+  // For consistency and speed, path extensions impose an ordering as in the paper:  straight, right, left.  We
+  // enqueue entries in the reverse order of preference so the latest timestamp will be the preferred direction.
+  // Thus straight-ahead neighbors are in slot 2, right in slot 1, left in slot 0.  (If the target happens
+  // to be to the Left, then the heuristic lookahead score will override the Right preference).
 
-  //  The next neighbors to extend the path to from the current vertex.
+  // The next neighbors to extend the path to from the current vertex.
 
   private readonly nextNeighbors = [new NextNeighbor(), new NextNeighbor(), new NextNeighbor()]
 
@@ -96,7 +96,7 @@ export class SsstRectilinearPath {
       return false
     }
 
-    //  This path starts lower than upperBoundOnCost, so create our structures and process it.
+    // This path starts lower than upperBoundOnCost, so create our structures and process it.
     this.queue = new GenericBinaryHeapPriorityQueue<VertexEntry>(compareNumbers)
     this.visitedVertices = [source]
     if (sourceVertexEntries == null) {
@@ -110,7 +110,7 @@ export class SsstRectilinearPath {
 
   private InitEntryDirectionsAtTarget(vert: VisibilityVertex): boolean {
     this.EntryDirectionsToTarget = Direction.None
-    //  This routine is only called once so don't worry about optimizing foreach.
+    // This routine is only called once so don't worry about optimizing foreach.
     for (const edge of vert.OutEdges) {
       this.EntryDirectionsToTarget = this.EntryDirectionsToTarget | CompassVector.DirectionFromPointToPoint(edge.TargetPoint, vert.point)
     }
@@ -119,7 +119,7 @@ export class SsstRectilinearPath {
       this.EntryDirectionsToTarget = this.EntryDirectionsToTarget | CompassVector.DirectionFromPointToPoint(edge.SourcePoint, vert.point)
     }
 
-    //  If this returns false then the target is isolated.
+    // If this returns false then the target is isolated.
     return this.EntryDirectionsToTarget != Direction.None
   }
 
@@ -128,17 +128,17 @@ export class SsstRectilinearPath {
   }
 
   MultistageAdjustedCostBound(bestCost: number): number {
-    //  Allow an additional bend's cost for intermediate stages so we don't jump out early.
+    // Allow an additional bend's cost for intermediate stages so we don't jump out early.
     return Number.isFinite(bestCost) ? bestCost + this.BendsImportance : bestCost
   }
 
-  //  estimation from below for the distance
+  // estimation from below for the distance
 
-  //  <returns></returns>
+  // <returns></returns>
   private HeuristicDistanceFromVertexToTarget(point: Point, entryDirToVertex: Direction): number {
     const vectorToTarget: Point = this.Target.point.sub(point)
     if (closeDistEps(vectorToTarget.x, 0) && closeDistEps(vectorToTarget.y, 0)) {
-      //  We are at the target.
+      // We are at the target.
       return this.targetCostAdjustment
     }
 
@@ -287,7 +287,7 @@ export class SsstRectilinearPath {
     let skippedCollinearEntry = false
     let lastEntryDir: Direction = Direction.None
     while (true) {
-      //  Reduce unnecessary AxisEdge creations in Nudger by including only bend points, not points in the middle of a segment.
+      // Reduce unnecessary AxisEdge creations in Nudger by including only bend points, not points in the middle of a segment.
       if (lastEntryDir == t.entry.Direction) {
         skippedCollinearEntry = true
       } else {
@@ -313,9 +313,9 @@ export class SsstRectilinearPath {
   }
 
   private QueueReversedEntryToNeighborVertexIfNeeded(bestEntry: VertexEntry, entryFromNeighbor: VertexEntry, weight: number) {
-    //  If we have a lower-cost path from bestEntry to entryFromNeighbor.PreviousVertex than the cost of entryFromNeighbor,
-    //  or bestEntry has degree 1 (it is a dead-end), enqueue a path in the opposite direction (entryFromNeighbor will probably
-    //  never be extended from this point).
+    // If we have a lower-cost path from bestEntry to entryFromNeighbor.PreviousVertex than the cost of entryFromNeighbor,
+    // or bestEntry has degree 1 (it is a dead-end), enqueue a path in the opposite direction (entryFromNeighbor will probably
+    // never be extended from this point).
     const t = {numberOfBends: 0, length: 0}
     const neigVer = entryFromNeighbor.PreviousVertex
     const dirToNeighbor = SsstRectilinearPath.GetLengthAndNumberOfBendsToNeighborVertex(bestEntry, neigVer, weight, t)
@@ -409,9 +409,9 @@ export class SsstRectilinearPath {
           return bestEntry
         }
 
-        //  We'll never get a duplicate entry direction here; we either relaxed the cost via UpdateEntryToNeighborIfNeeded
-        //  before we dequeued it, or it was closed.  So, we simply remove the direction from the valid target entry directions
-        //  and if we get to none, we're done.  We return a null path until the final stage.
+        // We'll never get a duplicate entry direction here; we either relaxed the cost via UpdateEntryToNeighborIfNeeded
+        // before we dequeued it, or it was closed.  So, we simply remove the direction from the valid target entry directions
+        // and if we get to none, we're done.  We return a null path until the final stage.
         bestEntry.Direction
         if (this.EntryDirectionsToTarget == Direction.None) {
           let i = 0
@@ -426,11 +426,11 @@ export class SsstRectilinearPath {
         continue
       }
 
-      //  It's safe to close this after removing it from the queue.  Any updateEntryIfNeeded that changes it must come
-      //  while it is still on the queue; it is removed from the queue only if it has the lowest cost path, and we have
-      //  no negative path weights, so any other path that might try to extend to it after this cannot have a lower cost.
+      // It's safe to close this after removing it from the queue.  Any updateEntryIfNeeded that changes it must come
+      // while it is still on the queue; it is removed from the queue only if it has the lowest cost path, and we have
+      // no negative path weights, so any other path that might try to extend to it after this cannot have a lower cost.
       bestEntry.IsClosed = true
-      //  PerfNote: Array.ForEach is optimized, but don't use .Where.
+      // PerfNote: Array.ForEach is optimized, but don't use .Where.
       for (const bendNeighbor of this.nextNeighbors) {
         bendNeighbor.Clear()
       }
@@ -445,7 +445,7 @@ export class SsstRectilinearPath {
       }
     }
 
-    //  Either there is no path to the target, or we have abandoned the path due to exceeding priorBestCost.
+    // Either there is no path to the target, or we have abandoned the path due to exceeding priorBestCost.
     if (targetVertexEntries != null && this.Target.VertexEntries != null) {
       for (let i = 0; i < this.Target.VertexEntries.length; i++) {
         targetVertexEntries[i] = this.Target.VertexEntries[i]
@@ -456,14 +456,14 @@ export class SsstRectilinearPath {
   }
 
   private ExtendPathAlongInEdges(bestEntry: VertexEntry, edges: Iterable<VisibilityEdge>, preferredBendDir: Direction) {
-    //  Iteration is faster than foreach and much faster than .Where.
+    // Iteration is faster than foreach and much faster than .Where.
     for (const edge of edges) {
       this.ExtendPathAlongEdge(bestEntry, edge, true, preferredBendDir)
     }
   }
 
   private ExtendPathAlongOutEdges(bestEntry: VertexEntry, edges: RBTree<VisibilityEdge>, preferredBendDir: Direction) {
-    //  Avoid GetEnumerator overhead.
+    // Avoid GetEnumerator overhead.
     let outEdgeNode = edges.isEmpty() ? null : edges.treeMinimum()
     for (; outEdgeNode != null; outEdgeNode = edges.next(outEdgeNode)) {
       this.ExtendPathAlongEdge(bestEntry, outEdgeNode.item, false, preferredBendDir)
@@ -475,12 +475,12 @@ export class SsstRectilinearPath {
       return
     }
 
-    //  This is after the initial source vertex so PreviousEntry won't be null.
+    // This is after the initial source vertex so PreviousEntry won't be null.
     const neigVer = isInEdges ? <VisibilityVertexRectilinear>edge.Source : edge.Target
     if (neigVer == bestEntry.PreviousVertex) {
-      //  For multistage paths, the source may be a waypoint outside the graph boundaries that is collinear
-      //  with both the previous and next points in the path; in that case it may have only one degree.
-      //  For other cases, we just ignore it and the path will be abandoned.
+      // For multistage paths, the source may be a waypoint outside the graph boundaries that is collinear
+      // with both the previous and next points in the path; in that case it may have only one degree.
+      // For other cases, we just ignore it and the path will be abandoned.
       if (bestEntry.Vertex.Degree > 1 || bestEntry.Vertex != this.Source) {
         return
       }
@@ -489,7 +489,7 @@ export class SsstRectilinearPath {
       return
     }
 
-    //  Enqueue in reverse order of preference per comments on NextNeighbor class.
+    // Enqueue in reverse order of preference per comments on NextNeighbor class.
     const neigDir = CompassVector.DirectionFromPointToPoint(bestEntry.Vertex.point, neigVer.point)
     let nextNeighbor = this.nextNeighbors[2]
     if (neigDir != bestEntry.Direction) {
@@ -502,7 +502,7 @@ export class SsstRectilinearPath {
 
   private EnqueueInitialVerticesFromSource(cost: number) {
     const bestEntry = new VertexEntry(this.Source, null, 0, 0, cost)
-    //  This routine is only called once so don't worry about optimizing foreach.where
+    // This routine is only called once so don't worry about optimizing foreach.where
     for (const edge of this.Source.OutEdges) {
       if (!SsstRectilinearPath.IsPassable(edge)) continue
 
@@ -540,13 +540,13 @@ export class SsstRectilinearPath {
     neigVer: VisibilityVertexRectilinear,
     weight: number,
   ): boolean {
-    //  VertexEntries is null for the initial source. Otherwise, if there is already a path into bestEntry's vertex
-    //  from neigVer, we're turning back on the path; therefore we have already enqueued the neighbors of neigVer.
-    //  However, the path cost includes both path length to the current point and the lookahead; this means that we
-    //  may now be coming into the neigVer from the opposite side with an equal score to the previous entry, but
-    //  the new path may be going toward the target while the old one (from neigVer to bestEntry) went away from
-    //  the target.  So, if we score better going in the opposite direction, enqueue bestEntry->neigVer; ignore
-    //  neigVer->bestEntry as it probably won't be extended again.
+    // VertexEntries is null for the initial source. Otherwise, if there is already a path into bestEntry's vertex
+    // from neigVer, we're turning back on the path; therefore we have already enqueued the neighbors of neigVer.
+    // However, the path cost includes both path length to the current point and the lookahead; this means that we
+    // may now be coming into the neigVer from the opposite side with an equal score to the previous entry, but
+    // the new path may be going toward the target while the old one (from neigVer to bestEntry) went away from
+    // the target.  So, if we score better going in the opposite direction, enqueue bestEntry->neigVer; ignore
+    // neigVer->bestEntry as it probably won't be extended again.
     if (bestEntry.Vertex.VertexEntries != null) {
       const dirFromNeighbor = CompassVector.DirectionFromPointToPoint(neigVer.point, bestEntry.Vertex.point)
       const entryFromNeighbor = bestEntry.Vertex.VertexEntries[CompassVector.ToIndex(dirFromNeighbor)]
@@ -578,6 +578,6 @@ export class SsstRectilinearPath {
 
     this.visitedVertices = []
     this.queue = null
-    //  this.TestClearIterations()
+    // this.TestClearIterations()
   }
 }

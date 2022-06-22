@@ -92,8 +92,8 @@ export class CompassVector {
 
   static VectorDirectionPP(a: Point, b: Point): Direction {
     let r: Direction = Direction.None
-    //  This method is called a lot as part of rectilinear layout.
-    //  Try to keep it quick.
+    // This method is called a lot as part of rectilinear layout.
+    // Try to keep it quick.
     const horizontalDiff: number = b.x - a.x
     const verticalDiff: number = b.y - a.y
     if (horizontalDiff > PointComparer.DifferenceEpsilon) {
@@ -162,7 +162,7 @@ export class CompassVector {
   static DirectionsAreParallel(a: Direction, b: Direction): boolean {
     return a == b || a == CompassVector.OppositeDir(b)
   }
-  //  Translates the CompassVector's direction into a new Point.
+  // Translates the CompassVector's direction into a new Point.
 
   public ToPoint(): Point {
     let x = 0,
@@ -186,13 +186,13 @@ export class CompassVector {
     return new Point(x, y)
   }
 
-  //  Translates a direction into a Point.
+  // Translates a direction into a Point.
 
   public static toPoint(dir: Direction): Point {
     return new CompassVector(dir).ToPoint()
   }
 
-  //   the negation operator
+  //  the negation operator
 
   public static negate(directionVector: CompassVector): CompassVector {
     return new CompassVector(CompassVector.OppositeDir(directionVector.Dir))

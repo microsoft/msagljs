@@ -1,8 +1,8 @@
-//  Wrapper for geometry graph with coinciding edges:
-//   'real' nodes stand for edge ends (source,target)
-//   'virtual' nodes stand for polyline control points
+// Wrapper for geometry graph with coinciding edges:
+//  'real' nodes stand for edge ends (source,target)
+//  'virtual' nodes stand for polyline control points
 //
-//   'real' edges are original graph edges
+//  'real' edges are original graph edges
 
 import {Port} from '../../../../src/layout/core/port'
 import {Stack} from 'stack-typescript'
@@ -27,30 +27,30 @@ import {closeDistEps, compareNumbersDistEps} from '../../../utils/compare'
 import {IntersectionCache} from './IntersectionCache'
 import {TupleMap} from './tupleMap'
 
-//   'virtual' edges are polyline segments
+//  'virtual' edges are polyline segments
 export class MetroGraphData {
   Stations: Array<Station>
 
-  //  info on the edges passing through a couple
+  // info on the edges passing through a couple
   edgeInfoDictionary: TupleMap<Station, Station, StationEdgeInfo>
 
-  //  current ink
+  // current ink
   ink: number
 
-  //  Edges
+  // Edges
   metrolines: Array<Metroline>
 
-  //   position -> (node)
+  //  position -> (node)
   PointToStations: PointMap<Station>
 
   regularEdges: GeomEdge[]
 
-  //   objects to check crossings and calculate distances
+  //  objects to check crossings and calculate distances
   looseIntersections: Intersections
 
   tightIntersections: Intersections
 
-  //   objects to check crossings and calculate distances
+  //  objects to check crossings and calculate distances
   cdtIntersections: CdtIntersections
 
   EdgeLooseEnterable: Map<GeomEdge, Set<Polyline>>
@@ -58,7 +58,7 @@ export class MetroGraphData {
   EdgeTightEnterable: Map<GeomEdge, Set<Polyline>>
   LoosePolylineOfPort: (p: Port) => Polyline
 
-  //  triangulation
+  // triangulation
   Cdt: Cdt
   bundlingSettings: BundlingSettings
   constructor(
@@ -117,7 +117,7 @@ export class MetroGraphData {
     for (const k of this.edgeInfoDictionary.keys()) yield k
   }
 
-  //  number of real edges passing the edge uv
+  // number of real edges passing the edge uv
   RealEdgeCount(u: Station, v: Station): number {
     const couple: [Station, Station] = u.SerialNumber < v.SerialNumber ? [u, v] : [v, u]
     const cw = this.edgeInfoDictionary.get(couple[0], couple[1])
@@ -125,18 +125,18 @@ export class MetroGraphData {
     return 0
   }
 
-  //  real edges passing the node
+  // real edges passing the node
   MetroNodeInfosOfNode(node: Station): Array<MetroNodeInfo> {
     return node.MetroNodeInfos
   }
 
-  //  real edges passing the edge uv
+  // real edges passing the edge uv
   GetIjInfo(u: Station, v: Station): StationEdgeInfo {
     const couple: [Station, Station] = u.SerialNumber < v.SerialNumber ? [u, v] : [v, u]
     return this.edgeInfoDictionary.get(couple[0], couple[1])
   }
 
-  //  Move node to the specified position
+  // Move node to the specified position
   MoveNode(node: Station, newPosition: Point) {
     const oldPosition: Point = node.Position
     this.PointToStations.deleteP(oldPosition)
@@ -178,7 +178,7 @@ export class MetroGraphData {
     return width
   }
 
-  //  Initialize data
+  // Initialize data
   Initialize(initTightTree: boolean) {
     // TimeMeasurer.DebugOutput("bundle graph data initializing...");
     this.SimplifyRegularEdges()
@@ -187,18 +187,18 @@ export class MetroGraphData {
     this.InitializeVirtualGraph()
     this.InitializeEdgeNodeInfo(initTightTree)
     this.InitializeCdtInfo()
-    //             Assert.assert(looseIntersections.HubPositionsAreOK());
-    //           Assert.assert(tightIntersections.HubPositionsAreOK());
+    //            Assert.assert(looseIntersections.HubPositionsAreOK());
+    //          Assert.assert(tightIntersections.HubPositionsAreOK());
   }
 
-  //  remove self-cycles
+  // remove self-cycles
   SimplifyRegularEdges() {
     for (const edge of this.regularEdges) {
       this.SimplifyRegularEdge(edge)
     }
   }
 
-  //  change the polyline by removing cycles
+  // change the polyline by removing cycles
   SimplifyRegularEdge(edge: GeomEdge) {
     const polyline: Polyline = <Polyline>edge.curve
     const stack = new Stack<Point>()
@@ -251,10 +251,10 @@ export class MetroGraphData {
       this.PointToStations.set(pp.point, station)
       this.Stations.push(station)
     } else {
-      //   #if(TEST_MSAGL && TEST_MSAGL)
-      //   const s = this.PointToStations[pp.point]
-      //   Assert.assert(s.IsRealNode == isRealNode)
-      //   #endif
+      //  #if(TEST_MSAGL && TEST_MSAGL)
+      //  const s = this.PointToStations[pp.point]
+      //  Assert.assert(s.IsRealNode == isRealNode)
+      //  #endif
     }
   }
 
@@ -314,7 +314,7 @@ export class MetroGraphData {
       return cw
     }
     // if (MetroGraphData.closedeb(i, j) || MetroGraphData.closedeb(j, i)) {
-    //   console.log(this)
+    //  console.log(this)
     // }
     cw = new StationEdgeInfo()
     this.edgeInfoDictionary.set(i, j, cw)
@@ -473,7 +473,7 @@ export function getOrientationOf3Vectors(v0: Point, v1: Point, v2: Point): numbe
   const dotp2: number = v0.dot(v2)
   const xp1: number = Point.crossProduct(v0, v1)
   const dotp1: number = v0.dot(v1)
-  //  v1 is collinear with v0
+  // v1 is collinear with v0
   if (closeDistEps(xp1, 0) && GreaterOrEqual(dotp1, 0)) {
     if (closeDistEps(xp2, 0) && GreaterOrEqual(dotp2, 0)) {
       return 0
@@ -482,17 +482,17 @@ export function getOrientationOf3Vectors(v0: Point, v1: Point, v2: Point): numbe
     return 1
   }
 
-  //  v2 is collinear with v0
+  // v2 is collinear with v0
   if (closeDistEps(xp2, 0) && GreaterOrEqual(dotp2, 0)) {
     return -1
   }
 
   if (closeDistEps(xp1, 0) || closeDistEps(xp2, 0) || xp1 * xp2 > 0) {
-    //  both on same side of v0, compare to each other
+    // both on same side of v0, compare to each other
     return compareNumbersDistEps(Point.crossProduct(v2, v1), 0)
   }
 
-  //  vectors "less than" zero degrees are actually large, near 2 pi
+  // vectors "less than" zero degrees are actually large, near 2 pi
   return -compareNumbersDistEps(Math.sign(xp1), 0)
 }
 

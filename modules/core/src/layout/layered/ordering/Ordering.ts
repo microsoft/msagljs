@@ -182,10 +182,10 @@ export class Ordering extends Algorithm {
   run() {
     // #if DEBUGORDERING
     // if (graph.NumberOfVertices != layering.length)
-    //   throw new System.Exception("the layering does not correspond to the graph");
+    //  throw new System.Exception("the layering does not correspond to the graph");
     // for (IntEdge e of graph.Edges)
     // if (layering[e.Source] - layering[e.Target] != 1)
-    //   throw new System.Exception("the edge in the graph does not span exactly one layer:" + e);
+    //  throw new System.Exception("the edge in the graph does not span exactly one layer:" + e);
     // #endif
 
     this.Calculate()

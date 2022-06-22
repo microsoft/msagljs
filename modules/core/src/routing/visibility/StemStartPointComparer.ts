@@ -1,10 +1,10 @@
-//  compares couples only by looking at the couple first point
+// compares couples only by looking at the couple first point
 
 import {Point} from '../..'
 import {GeomConstants} from '../../math/geometry'
 import {Stem} from './Stem'
 
-//  we need the couple to hold the stem
+// we need the couple to hold the stem
 export class StemStartPointComparer {
   pivot: Point
 

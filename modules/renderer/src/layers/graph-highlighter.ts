@@ -222,11 +222,11 @@ export default class GraphHighlighter {
     /* Debug result*/
     // const result = readPixelsToArray(targetTexture)
     // for (let i = 0; i < this._nodeCount; i++) {
-    //   const valid = result[i * 4 + 3] === 0;
-    //   if (valid) {
-    //     const depth = result[i * 4];
-    //     console.log(this._nodeList[i], depth)
-    //   }
+    //  const valid = result[i * 4 + 3] === 0;
+    //  if (valid) {
+    //    const depth = result[i * 4];
+    //    console.log(this._nodeList[i], depth)
+    //  }
     // }
     /* End of debug */
   }

@@ -445,7 +445,7 @@ test('TestConvexHull6', () => {
     new Point(92.802856, 9.150555),
     new Point(92.802856, 5.910432),
     new Point(90.511346, 3.618921),
-    //  This duplication causes the point to be outside the hull and not close to it.
+    // This duplication causes the point to be outside the hull and not close to it.
     new Point(55.161691, -3.780041),
   ]
 
@@ -454,7 +454,7 @@ test('TestConvexHull6', () => {
 
 test('TestConvexHull7', () => {
   const points = [
-    //  not found: (60.907705 41.938473)
+    // not found: (60.907705 41.938473)
     new Point(48.430423, 62.349176),
     new Point(44.031409, 74.624165),
     new Point(50.427754, 81.58763),
@@ -481,7 +481,7 @@ test('TestConvexHull7', () => {
 
 test('TestConvexHull8', () => {
   const points = [
-    //  not found: (50.814572 4.710486)
+    // not found: (50.814572 4.710486)
     new Point(50.814572, 4.710486),
     new Point(31.188044, 22.839098),
     new Point(30.409868, 28.323784),
@@ -518,13 +518,13 @@ function VerifyAndDisplayConvexHull(points: Point[], filename: string) {
 
   const poly = Polyline.mkClosedFromPoints(points)
   // SvgDebugWriter.dumpDebugCurves('/tmp/' + filename + '.svg', [
-  //   DebugCurve.mkDebugCurveTWCI(200, 1.0, 'magenta', hull),
-  //   DebugCurve.mkDebugCurveTWCI(150, 0.1, 'green', poly),
+  //  DebugCurve.mkDebugCurveTWCI(200, 1.0, 'magenta', hull),
+  //  DebugCurve.mkDebugCurveTWCI(150, 0.1, 'green', poly),
   // ])
 }
 
 function VerifyPointsAreInOrOnHull(points: Array<Point>, hull: Polyline) {
-  //  A convex hull may not pick up points that are just barely outside the hull
+  // A convex hull may not pick up points that are just barely outside the hull
   for (const point of points) {
     if (Curve.PointRelativeToCurveLocation(point, hull) == PointLocation.Outside) {
       const hullPoint = hull.value(hull.closestParameter(point))

@@ -1,4 +1,4 @@
-//  The class is looking for the free space around AxisEdges
+// The class is looking for the free space around AxisEdges
 
 import {Point} from '../../../math/geometry/point'
 import {CompassVector} from '../../../math/geometry/compassVector'
@@ -60,15 +60,15 @@ export class FreeSpaceFinder extends LineSweeperBase {
 
   SweepPole: Direction
 
-  //    Array<Path> EdgePaths { get; set; }
+  //   Array<Path> EdgePaths { get; set; }
   // VisibilityGraph PathVisibilityGraph { get; set; }
 
-  //  calculates the right offsets
+  // calculates the right offsets
 
   FindFreeSpace() {
     this.InitTheQueueOfEvents()
     this.ProcessEvents()
-    //     ShowAxisEdges();
+    //    ShowAxisEdges();
   }
 
   ProcessEvents() {
@@ -141,20 +141,20 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   // DebShowEdge(edge: AxisEdge, point: Point) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     //  if (InterestingEdge(edge))
-  //     this.ShowEdge(edge, point);
+  //    //  ReSharper restore UnusedMember.Local
+  //    //  if (InterestingEdge(edge))
+  //    this.ShowEdge(edge, point);
   // }
 
-  // //  ReSharper disable SuggestBaseTypeForParameter
+  // // ReSharper disable SuggestBaseTypeForParameter
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowEdge(edge: AxisEdge, point: Point) {
-  //     //  ReSharper restore SuggestBaseTypeForParameter
-  //     let dd = this.GetObstacleBoundaries("black");
-  //     let seg = new DebugCurve(1, "red", new LineSegment(edge.Source.point, edge.Target.point));
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.Concat(new, [));
-  //     seg;
-  //     new DebugCurve("blue", CurveFactory.CreateEllipse(3, 3, point));
+  //    //  ReSharper restore SuggestBaseTypeForParameter
+  //    let dd = this.GetObstacleBoundaries("black");
+  //    let seg = new DebugCurve(1, "red", new LineSegment(edge.Source.point, edge.Target.point));
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd.Concat(new, [));
+  //    seg;
+  //    new DebugCurve("blue", CurveFactory.CreateEllipse(3, 3, point));
   // }
 
   GetObstacleBoundaries(color: string): Array<DebugCurve> {
@@ -189,7 +189,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   ConstraintEdgeWithObstaclesAtZFromLeft(edge: AxisEdge, point: Point) {
-    //     ShowNudgedSegAndPoint(point, nudgedSegment);
+    //    ShowNudgedSegAndPoint(point, nudgedSegment);
     const node = this.GetActiveSideFromLeft(point)
     if (node == null) {
       return
@@ -215,66 +215,66 @@ export class FreeSpaceFinder extends LineSweeperBase {
     return this.RightObstacleSideTree.findLast((side) => FreeSpaceFinder.PointToTheRightOfLineOrOnLineLocal(point, side.Start, side.End))
   }
 
-  //  ReSharper disable UnusedMember.Local
+  // ReSharper disable UnusedMember.Local
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowPointAndEdge(point: Point, edge: AxisEdge) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let curves: Array<ICurve> = this.GetCurves(point, edge);
-  //     LayoutAlgorithmSettings.Show(curves.ToArray());
+  //    //  ReSharper restore UnusedMember.Local
+  //    let curves: Array<ICurve> = this.GetCurves(point, edge);
+  //    LayoutAlgorithmSettings.Show(curves.ToArray());
   // }
 
-  // //  ReSharper disable UnusedMember.Local
+  // // ReSharper disable UnusedMember.Local
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowPointAndEdgeWithSweepline(point: Point, edge: AxisEdge) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let curves: Array<ICurve> = this.GetCurves(point, edge);
-  //     curves.Add(new LineSegment(((this.SweepDirection * this.Z) + (10 * this.DirectionPerp)), ((this.SweepDirection * this.Z) - (10 * this.DirectionPerp))));
-  //     LayoutAlgorithmSettings.Show(curves.ToArray());
+  //    //  ReSharper restore UnusedMember.Local
+  //    let curves: Array<ICurve> = this.GetCurves(point, edge);
+  //    curves.Add(new LineSegment(((this.SweepDirection * this.Z) + (10 * this.DirectionPerp)), ((this.SweepDirection * this.Z) - (10 * this.DirectionPerp))));
+  //    LayoutAlgorithmSettings.Show(curves.ToArray());
   // }
 
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // GetCurves(point: Point, edge: AxisEdge): Array<ICurve> {
-  //     let ellipse = CurveFactory.CreateEllipse(3, 3, point);
-  //     let curves = new Array<ICurve>(this.Obstacles.select(() => {  }, (<ICurve>(o))));
-  //     if ((edge.RightBound < Number.POSITIVE_INFINITY)) {
-  //         let rightOffset: number = edge.RightBound;
-  //         let del = (this.DirectionPerp * rightOffset);
-  //         curves.Add(new LineSegment((edge.Source.point + del), (edge.Target.point + del)));
-  //     }
+  //    let ellipse = CurveFactory.CreateEllipse(3, 3, point);
+  //    let curves = new Array<ICurve>(this.Obstacles.select(() => {  }, (<ICurve>(o))));
+  //    if ((edge.RightBound < Number.POSITIVE_INFINITY)) {
+  //        let rightOffset: number = edge.RightBound;
+  //        let del = (this.DirectionPerp * rightOffset);
+  //        curves.Add(new LineSegment((edge.Source.point + del), (edge.Target.point + del)));
+  //    }
 
-  //     if ((edge.LeftBound > Number.NEGATIVE_INFINITY)) {
-  //         let leftOffset: number = edge.LeftBound;
-  //         let del = (this.DirectionPerp * leftOffset);
-  //         curves.Add(new LineSegment((edge.Source.point + del), (edge.Target.point + del)));
-  //     }
+  //    if ((edge.LeftBound > Number.NEGATIVE_INFINITY)) {
+  //        let leftOffset: number = edge.LeftBound;
+  //        let del = (this.DirectionPerp * leftOffset);
+  //        curves.Add(new LineSegment((edge.Source.point + del), (edge.Target.point + del)));
+  //    }
 
-  //     curves.AddRange(from, e, in, this.PathOrders.keys, let, a=e.SourcePoint, let, b=e.TargetPoint, select, new CubicBezierSegment(a, ((a * 0.8)
-  //                         + (b * 0.2)), ((a * 0.2)
-  //                         + (b * 0.8)), b)).Cast();
-  //     return curves;
+  //    curves.AddRange(from, e, in, this.PathOrders.keys, let, a=e.SourcePoint, let, b=e.TargetPoint, select, new CubicBezierSegment(a, ((a * 0.8)
+  //                        + (b * 0.2)), ((a * 0.2)
+  //                        + (b * 0.8)), b)).Cast();
+  //    return curves;
   // }
 
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // GetCurvesTest(point: Point): Array<DebugCurve> {
-  //     let ellipse = CurveFactory.CreateEllipse(3, 3, point);
-  //     let curves = new Array<DebugCurve>(this.Obstacles.select(() => {  }, new DebugCurve(100, 1, "black", o)));
-  //     curves.AddRange(from, e, in, this.edgeContainersTree, from, axisEdge, in, e, let, a=axisEdge.Source.Point, let, b=axisEdge.Target.Point, select, new DebugCurve(100, 1, "green", new LineSegment(a, b)));
-  //     curves.AddRange(FreeSpaceFinder.RightNeighborsCurvesTest(this.edgeContainersTree));
-  //     return curves;
+  //    let ellipse = CurveFactory.CreateEllipse(3, 3, point);
+  //    let curves = new Array<DebugCurve>(this.Obstacles.select(() => {  }, new DebugCurve(100, 1, "black", o)));
+  //    curves.AddRange(from, e, in, this.edgeContainersTree, from, axisEdge, in, e, let, a=axisEdge.Source.Point, let, b=axisEdge.Target.Point, select, new DebugCurve(100, 1, "green", new LineSegment(a, b)));
+  //    curves.AddRange(FreeSpaceFinder.RightNeighborsCurvesTest(this.edgeContainersTree));
+  //    return curves;
   // }
 
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // static RightNeighborsCurvesTest(rbTree: Array<AxisEdgesContainer>): Array<DebugCurve> {
-  //     for (let container of rbTree) {
-  //         for (let edge of container) {
-  //             for (let rn of edge.RightNeighbors) {
-  //                 yield;
-  //                 return new DebugCurve(100, 1, "brown", new LineSegment(FreeSpaceFinder.EdgeMidPoint(edge), FreeSpaceFinder.EdgeMidPoint(rn)));
-  //             }
+  //    for (let container of rbTree) {
+  //        for (let edge of container) {
+  //            for (let rn of edge.RightNeighbors) {
+  //                yield;
+  //                return new DebugCurve(100, 1, "brown", new LineSegment(FreeSpaceFinder.EdgeMidPoint(edge), FreeSpaceFinder.EdgeMidPoint(rn)));
+  //            }
 
-  //         }
+  //        }
 
-  //     }
+  //    }
 
   // }
 
@@ -284,42 +284,42 @@ export class FreeSpaceFinder extends LineSweeperBase {
 
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowAxisEdges() {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let dd = new Array<DebugCurve>(this.GetObstacleBoundaries("black"));
-  //     let i: number = 0;
-  //     for (let axisEdge of this.AxisEdges) {
-  //         let color = DebugCurve.colors[i];
-  //         dd.Add(new DebugCurve(200, 1, color, new LineSegment(axisEdge.Source.point, axisEdge.Target.point)));
-  //         let perp: Point = new Point(0, 1);
-  //         // TODO: Warning!!!, inline IF is not supported ?
-  //         (axisEdge.Direction == Direction.East);
-  //         new Point(-1, 0);
-  //         if ((axisEdge.LeftBound != Number.NEGATIVE_INFINITY)) {
-  //             dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
-  //                                     + (axisEdge.LeftBound * perp)), (axisEdge.Target.point
-  //                                     + (axisEdge.LeftBound * perp)))));
-  //         }
+  //    //  ReSharper restore UnusedMember.Local
+  //    let dd = new Array<DebugCurve>(this.GetObstacleBoundaries("black"));
+  //    let i: number = 0;
+  //    for (let axisEdge of this.AxisEdges) {
+  //        let color = DebugCurve.colors[i];
+  //        dd.Add(new DebugCurve(200, 1, color, new LineSegment(axisEdge.Source.point, axisEdge.Target.point)));
+  //        let perp: Point = new Point(0, 1);
+  //        // TODO: Warning!!!, inline IF is not supported ?
+  //        (axisEdge.Direction == Direction.East);
+  //        new Point(-1, 0);
+  //        if ((axisEdge.LeftBound != Number.NEGATIVE_INFINITY)) {
+  //            dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
+  //                                    + (axisEdge.LeftBound * perp)), (axisEdge.Target.point
+  //                                    + (axisEdge.LeftBound * perp)))));
+  //        }
 
-  //         if ((axisEdge.RightBound != Number.POSITIVE_INFINITY)) {
-  //             dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
-  //                                     - (axisEdge.RightBound * perp)), (axisEdge.Target.point
-  //                                     - (axisEdge.RightBound * perp)))));
-  //         }
+  //        if ((axisEdge.RightBound != Number.POSITIVE_INFINITY)) {
+  //            dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
+  //                                    - (axisEdge.RightBound * perp)), (axisEdge.Target.point
+  //                                    - (axisEdge.RightBound * perp)))));
+  //        }
 
-  //         i = ((i + 1)
-  //                     % DebugCurve.colors.length);
-  //     }
+  //        i = ((i + 1)
+  //                    % DebugCurve.colors.length);
+  //    }
 
-  //     DebugCurveCollection.WriteToFile(dd, "c:/tmp/ae");
-  //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
+  //    DebugCurveCollection.WriteToFile(dd, "c:/tmp/ae");
+  //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(dd);
   // }
 
-  // //  ReSharper disable UnusedMember.Local
+  // // ReSharper disable UnusedMember.Local
   // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowAtPoint(point: Point) {
-  //     //  ReSharper restore UnusedMember.Local
-  //     let curves = this.GetCurvesTest(point);
-  //     LayoutAlgorithmSettings.ShowDebugCurves(curves.ToArray());
+  //    //  ReSharper restore UnusedMember.Local
+  //    let curves = this.GetCurvesTest(point);
+  //    LayoutAlgorithmSettings.ShowDebugCurves(curves.ToArray());
   // }
 
   GetOrCreateAxisEdgesContainer(edge: AxisEdge): RBNode<AxisEdgesContainer> {
@@ -335,7 +335,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //
 
   // the point has to be on the same line as the container
-  //  <returns></returns>
+  // <returns></returns>
   GetAxisEdgesContainerNode(point: Point): RBNode<AxisEdgesContainer> {
     const prj = this.xProjection(point)
     const ret = this.edgeContainersTree.findFirst((cont) => this.xProjection(cont.Source) >= prj - GeomConstants.distanceEpsilon / 2)
@@ -455,8 +455,8 @@ export class FreeSpaceFinder extends LineSweeperBase {
   GetContainerNodeToTheLeftOfEvent(site: Point): RBNode<AxisEdgesContainer> {
     const siteX: number = this.xProjection(site)
     return this.edgeContainersTree.findLast((container) => this.xProjection(container.Source) <= siteX)
-    //                 Point.PointToTheRightOfLineOrOnLine(site, container.Source,
-    //                                                                                                 container.UpPoint));
+    //                Point.PointToTheRightOfLineOrOnLine(site, container.Source,
+    //                                                                                                container.UpPoint));
   }
 
   private ProcessPrevSegmentForLeftVertex(leftVertexEvent: VertexEvent, site: Point) {

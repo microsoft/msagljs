@@ -65,7 +65,7 @@ export class MultiEdgeRouter {
     return curve
   }
 
-  //  creates a set of pregraphs suitable for bundle routing
+  // creates a set of pregraphs suitable for bundle routing
 
   GetIndependantPreGraphs(): Array<PreGraph> {
     const preGraphs = this.CreateInitialPregraphs()

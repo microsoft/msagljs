@@ -8,15 +8,15 @@ import {Metroline} from './MetroLine'
 import {PointPairOrder} from './PointPairOrder'
 import {Station} from './Station'
 
-//  greedy bundle map ordering based on path comparison
+// greedy bundle map ordering based on path comparison
 export class GeneralMetroMapOrdering {
-  //  bundle lines
+  // bundle lines
 
   Metrolines: Array<Metroline>
 
   bundles: PointPairMap<PointPairOrder>
 
-  //  Initialize bundle graph and build the ordering
+  // Initialize bundle graph and build the ordering
 
   constructor(Metrolines: Array<Metroline>) {
     this.Metrolines = Metrolines

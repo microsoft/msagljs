@@ -2,20 +2,20 @@
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/GeomGraph'
 import {SingleSourceDistances} from './SingleSourceDistances'
-//  An algorithm for computing the distances between a selected set of nodes and all nodes.
+// An algorithm for computing the distances between a selected set of nodes and all nodes.
 export class PivotDistances extends Algorithm {
   private graph: GeomGraph
   private length: (e: GeomEdge) => number
   private pivotArray: number[]
   private result: number[][]
-  //  A square matrix with shortest path distances.
+  // A square matrix with shortest path distances.
   get Result(): number[][] {
     return this.result
   }
 
-  //  Computes distances between a selected set of nodes and all nodes.
-  //  Pivot nodes are selected with maxmin strategy (first at random, later
-  //  ones to maximize distances to all previously selected ones).
+  // Computes distances between a selected set of nodes and all nodes.
+  // Pivot nodes are selected with maxmin strategy (first at random, later
+  // ones to maximize distances to all previously selected ones).
   constructor(graph: GeomGraph, pivotArray: number[], length: (e: GeomEdge) => number) {
     super(null) // todo: pass the canceltoken
     this.graph = graph
@@ -23,7 +23,7 @@ export class PivotDistances extends Algorithm {
     this.length = length
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
   run() {
     this.result = new Array(this.pivotArray.length)
     const nodes = Array.from(this.graph.shallowNodes())

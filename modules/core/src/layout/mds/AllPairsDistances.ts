@@ -3,13 +3,13 @@ import {Algorithm} from '../../utils/algorithm'
 import {SingleSourceDistances} from './SingleSourceDistances'
 
 import {GeomEdge} from '../core/geomEdge'
-//  Algorithm for computing the distance between every pair of nodes in a graph.
+// Algorithm for computing the distance between every pair of nodes in a graph.
 export class AllPairsDistances extends Algorithm {
   private graph: GeomGraph
   length: (e: GeomEdge) => number
 
   result: Array<number[]>
-  //  The resulting distances between every pair of nodes in the graph.
+  // The resulting distances between every pair of nodes in the graph.
   get Result(): Array<number[]> {
     return this.result
   }
@@ -17,15 +17,15 @@ export class AllPairsDistances extends Algorithm {
     this.result = value
   }
 
-  //  Computes distances between every pair of nodes in a graph.
-  //  Distances are symmetric if the graph is undirected.
+  // Computes distances between every pair of nodes in a graph.
+  // Distances are symmetric if the graph is undirected.
   constructor(graph: GeomGraph, length: (e: GeomEdge) => number) {
     super(null)
     this.graph = graph
     this.length = length
   }
 
-  //  Executes the algorithm.
+  // Executes the algorithm.
   run() {
     this.result = new Array<number[]>(this.graph.shallowNodeCount)
     let i = 0
@@ -36,19 +36,19 @@ export class AllPairsDistances extends Algorithm {
     }
   }
 
-  //  Computes the "stress" of the current layout of the given graph:
+  // Computes the "stress" of the current layout of the given graph:
   //
-  //    stress = sum_{(u,v) in V}  (d(u,v) - D(u,v))^2/(D(u,v)^2)
+  //   stress = sum_{(u,v) in V}  (d(u,v) - D(u,v))^2/(D(u,v)^2)
   //
-  //  where:
-  //    V is the set of nodes
-  //    d(u,v) is the euclidean distance between the centers of nodes u and v
-  //    D(u,v) is the graph-theoretic path length between u and v - scaled by average edge length.
+  // where:
+  //   V is the set of nodes
+  //   d(u,v) is the euclidean distance between the centers of nodes u and v
+  //   D(u,v) is the graph-theoretic path length between u and v - scaled by average edge length.
   //
-  //  Small stress in graph layout correlated with immediate neighbors to be closer
-  //  together than nodes that are a few hops apart (i.e. that have path length>1).  More generally
-  //  the distance between nodes in the drawing should be proportional to the path length between them.
-  //  The lower the stress of a particular graph layout the better it conforms to this ideal.
+  // Small stress in graph layout correlated with immediate neighbors to be closer
+  // together than nodes that are a few hops apart (i.e. that have path length>1).  More generally
+  // the distance between nodes in the drawing should be proportional to the path length between them.
+  // The lower the stress of a particular graph layout the better it conforms to this ideal.
   //
   static Stress(graph: GeomGraph, length: (e: GeomEdge) => number): number {
     let stress = 0

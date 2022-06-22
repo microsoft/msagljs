@@ -51,7 +51,7 @@ export class BezierSeg implements ICurve {
   value(t: number) {
     const t2 = t * t
     const t3 = t2 * t
-    //    return l * t3 + e * t2 + c * t + b[0];
+    //   return l * t3 + e * t2 + c * t + b[0];
     return this.l.mul(t3).add(this.e.mul(t2).add(this.c.mul(t)).add(this.b[0]))
   }
 
@@ -187,7 +187,7 @@ export class BezierSeg implements ICurve {
       const mmb0 = Point.middle(mb0, mb1)
       const mmb1 = Point.middle(mb2, mb1)
       const mmmb0 = Point.middle(mmb0, mmb1)
-      //                LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(100, 2, "blue", new BezierSeg(b0, b1, b2, b3)), new DebugCurve(100, 1, "red", new BezierSeg(b0, mb0, mmb0, mmmb0)), new DebugCurve(100, 1, "green", new BezierSeg(mmmb0, mmb1, mb2, b3)));
+      //               LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(100, 2, "blue", new BezierSeg(b0, b1, b2, b3)), new DebugCurve(100, 1, "red", new BezierSeg(b0, mb0, mmb0, mmmb0)), new DebugCurve(100, 1, "green", new BezierSeg(mmmb0, mmb1, mb2, b3)));
       return BezierSeg.lengthOnControlPolygon(b0, mb0, mmb0, mmmb0) + BezierSeg.lengthOnControlPolygon(mmmb0, mmb1, mb2, b3)
     }
 

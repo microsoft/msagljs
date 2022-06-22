@@ -79,17 +79,17 @@ export class HorizontalConstraintsForSugiyama {
   }
 
   //see UpDownMonotone.png
-  //        void MakeUpDownRelationsMonotone(number[] yLayers) {
-  //            BasicGraph<IntPair> upDownGraph = new BasicGraph<IntPair>(from c in this.verticalInts select new IntPair(c.First,c.Second));
-  //            Array<Tuple<number, number>> upDownToRemove = new Array<Tuple<number, number>>();
-  //            foreach (Array<number> componentNodes of ConnectedComponentCalculator<IntPair>.GetComponents(GraphOfLeftRightRelations())) {
-  //                ResolveConflictsUboveComponent(upDownGraph, componentNodes, upDownToRemove, yLayers);
-  //                ResolveConflictsBelowComponent(upDownGraph, componentNodes, upDownToRemove, yLayers);
-  //            }
+  //       void MakeUpDownRelationsMonotone(number[] yLayers) {
+  //           BasicGraph<IntPair> upDownGraph = new BasicGraph<IntPair>(from c in this.verticalInts select new IntPair(c.First,c.Second));
+  //           Array<Tuple<number, number>> upDownToRemove = new Array<Tuple<number, number>>();
+  //           foreach (Array<number> componentNodes of ConnectedComponentCalculator<IntPair>.GetComponents(GraphOfLeftRightRelations())) {
+  //               ResolveConflictsUboveComponent(upDownGraph, componentNodes, upDownToRemove, yLayers);
+  //               ResolveConflictsBelowComponent(upDownGraph, componentNodes, upDownToRemove, yLayers);
+  //           }
   //
-  //            foreach (var v of upDownToRemove)
-  //                this.verticalInts.Remove(v);
-  //        }
+  //           foreach (var v of upDownToRemove)
+  //               this.verticalInts.Remove(v);
+  //       }
   //makes left-right relations to be between neighb blocks and removes cycles in these relations
 
   LiftLeftRightRelationsToNeibBlocks() {

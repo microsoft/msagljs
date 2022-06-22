@@ -3,9 +3,9 @@ import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings extends LayoutSettings {
-  //  the setting of Multi-Dimensional Scaling layout
+  // the setting of Multi-Dimensional Scaling layout
 
-  //  private double epsilon = Math.Pow(10,-8);
+  // private double epsilon = Math.Pow(10,-8);
   private pivotNumber = 50
 
   private iterationsWithMajorization = 30
@@ -23,7 +23,7 @@ export class MdsLayoutSettings extends LayoutSettings {
   //
   _callIterationsWithMajorizationThreshold = 3000
 
-  //  remove overlaps between node boundaries
+  // remove overlaps between node boundaries
   get RemoveOverlaps(): boolean {
     return this.removeOverlaps
   }
@@ -31,7 +31,7 @@ export class MdsLayoutSettings extends LayoutSettings {
     this.removeOverlaps = value
   }
 
-  //  Number of pivots in Landmark Scaling (between 3 and number of objects).
+  // Number of pivots in Landmark Scaling (between 3 and number of objects).
   get PivotNumber(): number {
     return this.pivotNumber
   }
@@ -47,7 +47,7 @@ export class MdsLayoutSettings extends LayoutSettings {
     this.iterationsWithMajorization = value
   }
 
-  //  X Scaling Factor.
+  // X Scaling Factor.
   get ScaleX(): number {
     return this.scaleX
   }
@@ -55,7 +55,7 @@ export class MdsLayoutSettings extends LayoutSettings {
     this.scaleX = value
   }
 
-  //  Y Scaling Factor.
+  // Y Scaling Factor.
   get ScaleY(): number {
     return this.scaleY
   }
@@ -64,7 +64,7 @@ export class MdsLayoutSettings extends LayoutSettings {
     this.scaleY = value
   }
 
-  //  Weight matrix exponent.
+  // Weight matrix exponent.
   get Exponent(): number {
     return this.exponent
   }
@@ -72,7 +72,7 @@ export class MdsLayoutSettings extends LayoutSettings {
     this.exponent = value
   }
 
-  //  rotation angle
+  // rotation angle
   get RotationAngle(): number {
     return this.rotationAngle
   }
@@ -81,7 +81,7 @@ export class MdsLayoutSettings extends LayoutSettings {
   }
 
   edgeConstraints: EdgeConstraints
-  //  Settings for calculation of ideal edge length
+  // Settings for calculation of ideal edge length
   get IdealEdgeLength(): EdgeConstraints {
     return this.edgeConstraints
   }
@@ -90,7 +90,7 @@ export class MdsLayoutSettings extends LayoutSettings {
   }
 
   adjustScale = false
-  //  Adjust the scale of the graph if there is not enough whitespace between nodes
+  // Adjust the scale of the graph if there is not enough whitespace between nodes
   get AdjustScale(): boolean {
     return this.adjustScale
   }

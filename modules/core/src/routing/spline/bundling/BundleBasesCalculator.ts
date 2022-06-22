@@ -61,7 +61,7 @@ export class BundleBasesCalculator {
     }
 
     // TimeMeasurer.DebugOutput("Optimized cost of bundle bases: " + Cost());
-    //             EdgeNudger.ShowHubs(metroGraphData, metroOrdering, null);
+    //            EdgeNudger.ShowHubs(metroGraphData, metroOrdering, null);
   }
 
   AllocateBundleBases() {
@@ -220,8 +220,8 @@ export class BundleBasesCalculator {
       }
     }
     // SvgDebugWriter.dumpDebugCurves('/tmp/baseMiddle.svg', [
-    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', curve),
-    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(sPos, neighbPos)),
+    //  DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', curve),
+    //  DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(sPos, neighbPos)),
     // ])
     throw new Error()
   }
@@ -273,7 +273,7 @@ export class BundleBasesCalculator {
     // Assert.assert(intersectBases(rBase, lBase) == null)
   }
 
-  //  find a cut point for 2 segments
+  // find a cut point for 2 segments
 
   RegularCut(l1: number, r1: number, l2: number, r2: number, span1: number, span2: number): number {
     let cutParam: number = (span1 * r2 + span2 * l1) / (span1 + span2)
@@ -298,7 +298,7 @@ export class BundleBasesCalculator {
     // [0, 1],
     //[-1, 1],
     // [1, 0],
-    //  [-1, 0],
+    // [-1, 0],
     //[1, -1],
     // [0, -1],
     [1, -1], //rotating the left point cw, the right ccw
@@ -613,7 +613,7 @@ export class BundleBasesCalculator {
     return Math.exp(len / (mn * 10)) - 1
   }
 
-  //  returns the length of the overlapped interval of parameter space
+  // returns the length of the overlapped interval of parameter space
 
   IntervalsOverlapLength(a: number, b: number, c: number, d: number, curve: ICurve): number {
     const s = curve.parStart

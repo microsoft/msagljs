@@ -139,7 +139,7 @@ test('GoldenSectionTest', () => {
   expect(Math.abs(xopt) < Precision).toBe(true)
 })
 
-//  fool-proof overlap test
+// fool-proof overlap test
 function AreOverlapping(rects: Rectangle[]): boolean {
   const rs = rects.map((r) => r.clone())
   for (let i = 0; i < rs.length; i++) {

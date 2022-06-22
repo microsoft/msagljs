@@ -6,15 +6,15 @@ enum Behavior {
   Extremum,
 }
 
-//  A real valued function f defined on
-//  the integers 0, 1, . . . , n-1 is said to be unimodal if there exists an integer m such that
+// A real valued function f defined on
+// the integers 0, 1, . . . , n-1 is said to be unimodal if there exists an integer m such that
 // f is strictly increasing (respectively, decreasing) on [ 0, m] and
-//  decreasing (respectively, increasing) on [m + 1, n-1]
-//  No three sequential elements have the same value
+// decreasing (respectively, increasing) on [m + 1, n-1]
+// No three sequential elements have the same value
 export class UnimodalSequence {
   f: (m: number) => number // int -> double
 
-  //  the sequence values
+  // the sequence values
   get Sequence() {
     return this.f
   }
@@ -24,7 +24,7 @@ export class UnimodalSequence {
 
   length: number
 
-  //  the length of the sequence: the sequence starts from 0
+  // the length of the sequence: the sequence starts from 0
   get Length(): number {
     return this.length
   }

@@ -17,10 +17,10 @@ export class BundlingSettings {
     this.capacityOverflowCoefficient = value
   }
 
-  //  the upper bound of the virtual node radius
+  // the upper bound of the virtual node radius
   MaxHubRadius = 50
 
-  //  the lower bound of the virtual node radius
+  // the lower bound of the virtual node radius
   MinHubRadius = 0.1
 
   CreateUnderlyingPolyline = false
@@ -30,7 +30,7 @@ export class BundlingSettings {
 
   pathLengthImportance: number = BundlingSettings.DefaultPathLengthImportance
 
-  //  the importance of path lengths coefficient
+  // the importance of path lengths coefficient
   public get PathLengthImportance(): number {
     return this.pathLengthImportance
   }
@@ -101,7 +101,7 @@ export class BundlingSettings {
 
   hubRepulsionImportance = 100
 
-  //  the importance of hub repulsion coefficient
+  // the importance of hub repulsion coefficient
   public get HubRepulsionImportance(): number {
     return this.hubRepulsionImportance
   }
@@ -111,7 +111,7 @@ export class BundlingSettings {
 
   bundleRepulsionImportance = 100
 
-  //  the importance of bundle repulsion coefficient
+  // the importance of bundle repulsion coefficient
   public get BundleRepulsionImportance(): number {
     return this.bundleRepulsionImportance
   }
@@ -121,8 +121,8 @@ export class BundlingSettings {
 
   minimalRatioOfGoodCdtEdges = 0.9
 
-  //  minimal ration of cdt edges with satisfied capacity needed to perform bundling
-  //  (otherwise bundling will not be executed)
+  // minimal ration of cdt edges with satisfied capacity needed to perform bundling
+  // (otherwise bundling will not be executed)
   public get MinimalRatioOfGoodCdtEdges(): number {
     return this.minimalRatioOfGoodCdtEdges
   }
@@ -132,7 +132,7 @@ export class BundlingSettings {
 
   highestQuality = true
 
-  //  speed vs quality of the drawing
+  // speed vs quality of the drawing
   public get HighestQuality(): boolean {
     return this.highestQuality
   }
@@ -140,12 +140,12 @@ export class BundlingSettings {
     this.highestQuality = value
   }
 
-  //  if is set to true the original spline before the trimming should be kept under the corresponding GeomEdge
+  // if is set to true the original spline before the trimming should be kept under the corresponding GeomEdge
   KeepOriginalSpline = false
 
-  //  if set to true then the edges will be routed one on top of each other with no gap inside of a bundle
+  // if set to true then the edges will be routed one on top of each other with no gap inside of a bundle
   KeepOverlaps = false
 
-  //  calculates the routes that just follow the visibility graph
+  // calculates the routes that just follow the visibility graph
   StopAfterShortestPaths = false
 }

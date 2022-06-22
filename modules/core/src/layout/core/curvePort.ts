@@ -10,7 +10,7 @@ export class CurvePort extends Port {
   }
   parameter: number
 
-  //  constructor
+  // constructor
 
   static mk(curve: ICurve, parameter: number): CurvePort {
     const ret = new CurvePort()

@@ -5,7 +5,7 @@ export class Interval implements IRectangle<number> {
   start: number
   end: number
 
-  //  constructor
+  // constructor
   constructor(start: number, end: number) {
     this.start = start
     this.end = end
@@ -53,7 +53,7 @@ export class Interval implements IRectangle<number> {
     return i
   }
 
-  //  expanding the range to hold v
+  // expanding the range to hold v
   add_d(v: number) {
     if (this.start > v) {
       this.start = v
@@ -71,22 +71,22 @@ export class Interval implements IRectangle<number> {
     this.start = value
   }
 
-  //  the length
+  // the length
   get Length(): number {
     return this.end - this.start
   }
 
-  //  return true if the value is inside the range
+  // return true if the value is inside the range
   contains_d(v: number): boolean {
     return this.start <= v && v <= this.end
   }
 
-  //  bringe v into the range
+  // bringe v into the range
   GetInRange(v: number): number {
     return v < this.start ? this.start : v > this.end ? this.end : v
   }
 
-  //  returns true if and only if two intervals are intersecting
+  // returns true if and only if two intervals are intersecting
   intersects(other: Interval): boolean {
     if (other.start > this.end + GeomConstants.distanceEpsilon) {
       return false

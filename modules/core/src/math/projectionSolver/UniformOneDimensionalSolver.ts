@@ -10,7 +10,7 @@ export class UniformOneDimensionalSolver {
 
   varSepartion: number
 
-  //  desired variable separation
+  // desired variable separation
 
   public constructor(variableSeparation: number) {
     this.varSepartion = variableSeparation
@@ -22,15 +22,15 @@ export class UniformOneDimensionalSolver {
 
   graph: BasicGraphOnEdges<IntPair>
 
-  //         delegate Array<NudgerConstraint> Edges(int i);
+  //        delegate Array<NudgerConstraint> Edges(int i);
   //
-  //         delegate int End(NudgerConstraint constraint);
-  //         Edges outEdgesDel;
-  //         Edges inEdgesDel;
-  //         End sourceDelegate;
-  //         End targetDelegate;
-  //         Supremum minDel;
-  //         Supremum maxDel;
+  //        delegate int End(NudgerConstraint constraint);
+  //        Edges outEdgesDel;
+  //        Edges inEdgesDel;
+  //        End sourceDelegate;
+  //        End targetDelegate;
+  //        Supremum minDel;
+  //        Supremum maxDel;
   SetLowBound(bound: number, id: number) {
     const v = this.Var(id)
     v.LowBound = Math.max(bound, v.LowBound)

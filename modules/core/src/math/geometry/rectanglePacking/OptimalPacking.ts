@@ -4,7 +4,7 @@ import {Algorithm} from '../../../utils/algorithm'
 
 import {PackingConstants} from './PackingConstants'
 
-//  Pack rectangles (without rotation) into a given aspect ratio
+// Pack rectangles (without rotation) into a given aspect ratio
 export abstract class OptimalPacking extends Algorithm {
   desiredAspectRatio = 1.2
 
@@ -23,7 +23,7 @@ export abstract class OptimalPacking extends Algorithm {
     this.desiredAspectRatio = aspectRatio
   }
 
-  //  The width of the widest row in the packed solution
+  // The width of the widest row in the packed solution
   public get PackedWidth(): number {
     if (this.bestPacking != null) {
       return this.bestPacking.PackedWidth
@@ -32,7 +32,7 @@ export abstract class OptimalPacking extends Algorithm {
     return 0
   }
 
-  //  The height of the bounding box of the packed solution
+  // The height of the bounding box of the packed solution
   public get PackedHeight(): number {
     if (this.bestPacking != null) {
       return this.bestPacking.PackedHeight
@@ -41,25 +41,25 @@ export abstract class OptimalPacking extends Algorithm {
     return 0
   }
 
-  //  controls the maximum number of steps we are allowed to take in our golden section search
-  //  (actually worst case is O (n log n) for n=MaxSteps)
+  // controls the maximum number of steps we are allowed to take in our golden section search
+  // (actually worst case is O (n log n) for n=MaxSteps)
   static MaxSteps = 1000
 
   Pack(lowerBound: number, upperBound: number, minGranularity: number) {
     const c0: number = OptimalPacking.GetGoldenSectionStep(lowerBound, upperBound)
-    //  the worst case time complexity is O(n log(n)) where we have to do a full traversal of the
-    //  golden section search tree because it each stage the two candidate split points we chose had
-    //  the same cost.
-    //  the following calculation for precision limits the worst case time by making max(n) = MaxSteps.
+    // the worst case time complexity is O(n log(n)) where we have to do a full traversal of the
+    // golden section search tree because it each stage the two candidate split points we chose had
+    // the same cost.
+    // the following calculation for precision limits the worst case time by making max(n) = MaxSteps.
     const precision: number = Math.max(minGranularity / 10, (upperBound - lowerBound) / OptimalPacking.MaxSteps)
-    //  need to overshoot upperbound when it is optimal
+    // need to overshoot upperbound when it is optimal
     upperBound += precision
     this.bestPackingCost = Number.MAX_VALUE
     if (this.rectangles.length == 1) {
-      //  the trivial solution for just one rectangle is widthLowerBound
+      // the trivial solution for just one rectangle is widthLowerBound
       this.PackLimit(lowerBound)
     } else if (this.rectangles.length == 2) {
-      //  if we have 2 rectangles just try the two possibilities
+      // if we have 2 rectangles just try the two possibilities
       this.PackLimit(lowerBound)
       this.PackLimit(upperBound)
     } else if (this.rectangles.length > 2) {
@@ -84,26 +84,26 @@ export abstract class OptimalPacking extends Algorithm {
     return cost
   }
 
-  //  recursively searches a weakly unimodal function f(x) between x1 and x3 for the minimum.  It is assumed x2 \le x1 and x2 \le x3
-  //  and x2-x1=a \lt b=x3-x2.  The recursion generates a fourth point x4-x1=b \gt a=x3-x4 where x4-x2=c and b=a+c and:
-  //  if f(x4) \lt f(x2) we search in the range [x2, x3]
-  //  else if f(x2) \lt f(x4) we search in the range [x1, x4]
-  //  else
-  //  f(x2)==f(x4) and we know that f is only weakly unimodal (not strongly unimodal) and we must search both branches.
+  // recursively searches a weakly unimodal function f(x) between x1 and x3 for the minimum.  It is assumed x2 \le x1 and x2 \le x3
+  // and x2-x1=a \lt b=x3-x2.  The recursion generates a fourth point x4-x1=b \gt a=x3-x4 where x4-x2=c and b=a+c and:
+  // if f(x4) \lt f(x2) we search in the range [x2, x3]
+  // else if f(x2) \lt f(x4) we search in the range [x1, x4]
+  // else
+  // f(x2)==f(x4) and we know that f is only weakly unimodal (not strongly unimodal) and we must search both branches.
   static GoldenSectionSearch(f: (x: number) => number, x1: number, x2: number, x3: number, precision: number): number {
-    //  check termination
+    // check termination
     if (Math.abs(x1 - x3) < precision) {
       return f(x1) < f(x3) ? x1 : x3
     }
 
-    //  x2 must be between x1 and x3
+    // x2 must be between x1 and x3
     /*Assert.assert(
       (x1 < x2 && x2 < x3) || (x3 < x2 && x2 < x1),
       'x2 not bounded by x1 and x3',
     )*/
-    //  x4 will be our new midpoint candidate
+    // x4 will be our new midpoint candidate
     const x4: number = OptimalPacking.GetGoldenSectionStep(x2, x3)
-    //  now we have two candidates (x2,x4) both between x1 and x3: choose the bracket that most reduces f
+    // now we have two candidates (x2,x4) both between x1 and x3: choose the bracket that most reduces f
     const fx2: number = f(x2)
     const fx4: number = f(x4)
     const leftSearch = () => OptimalPacking.GoldenSectionSearch(f, x4, x2, x1, precision)
@@ -124,7 +124,7 @@ export abstract class OptimalPacking extends Algorithm {
       return leftSearch()
     }
 
-    //  Doh! f(x2) == f(x4)!  Have to search both branches.
+    // Doh! f(x2) == f(x4)!  Have to search both branches.
     const right: number = rightSearch()
     const left: number = leftSearch()
     return f(left) < f(right) ? left : right

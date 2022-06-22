@@ -68,7 +68,7 @@ export class ConeSideComparer {
     }
 
     // we have the case where x belongs to the cone side
-    //       lineSweeper.Show(CurveFactory.CreateDiamond(5,5, brokenConeSide.EndVertex.point));
+    //      lineSweeper.Show(CurveFactory.CreateDiamond(5,5, brokenConeSide.EndVertex.point));
     return coneSide instanceof ConeLeftSide ? 1 : -1
   }
 

@@ -7,9 +7,9 @@ import {PointComparer} from './PointComparer'
 import {StaticGraphUtility} from './StaticGraphUtility'
 
 export class ScanDirection {
-  //  The direction of primary interest, either the direction of the sweep (the
-  //  coordinate the scanline sweeps "up" in) or along the scan line ("sideways"
-  //  to the sweep direction, scanning for obstacles).
+  // The direction of primary interest, either the direction of the sweep (the
+  // coordinate the scanline sweeps "up" in) or along the scan line ("sideways"
+  // to the sweep direction, scanning for obstacles).
   dir: Direction
   get Dir(): Direction {
     return this.dir
@@ -20,15 +20,15 @@ export class ScanDirection {
 
   DirectionAsPoint: Point
 
-  //  The perpendicular direction - opposite of comments for Direction.
+  // The perpendicular direction - opposite of comments for Direction.
   PerpDirection: Direction
 
   PerpDirectionAsPoint: Point
 
-  //  The oppposite direction of the primary direction.
+  // The oppposite direction of the primary direction.
   OppositeDirection: Direction
 
-  //  Use the internal static xxxInstance properties to get an instance.
+  // Use the internal static xxxInstance properties to get an instance.
   constructor(directionAlongScanLine: Direction) {
     /*Assert.assert(
       StaticGraphUtility.IsAscending(directionAlongScanLine),
@@ -49,7 +49,7 @@ export class ScanDirection {
     return Direction.North == this.Dir
   }
 
-  //  Compare in perpendicular direction first, then parallel direction.
+  // Compare in perpendicular direction first, then parallel direction.
   Compare(lhs: Point, rhs: Point): number {
     const cmp = this.ComparePerpCoord(lhs, rhs)
     return 0 != cmp ? cmp : this.CompareScanCoord(lhs, rhs)
@@ -68,7 +68,7 @@ export class ScanDirection {
   }
 
   IsFlatPP(start: Point, end: Point): boolean {
-    //  Return true if there is no change in the perpendicular direction.
+    // Return true if there is no change in the perpendicular direction.
     return PointComparer.Equal(end.sub(start).dot(this.PerpDirectionAsPoint), 0)
   }
 
@@ -77,7 +77,7 @@ export class ScanDirection {
   }
 
   IsPerpendicularPP(start: Point, end: Point): boolean {
-    //  Return true if there is no change in the primary direction.
+    // Return true if there is no change in the primary direction.
     return PointComparer.Equal(end.sub(start).dot(this.DirectionAsPoint), 0)
   }
 

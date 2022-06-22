@@ -44,7 +44,7 @@ export class Cdt extends Algorithm {
     this.isolatedSegments = isolatedSegments
   }
 
-  //  constructor
+  // constructor
   static constructor_(isolatedSitesWithObj: Array<[Point, unknown]>) {
     const r = new Cdt(null, null, null)
     r.isolatedSitesWithObject = isolatedSitesWithObj
@@ -162,7 +162,7 @@ export class Cdt extends Algorithm {
     return this.sweeper.triangles
   }
 
-  //  Executes the actual algorithm.
+  // Executes the actual algorithm.
   run() {
     this.Initialization()
     this.SweepAndFinalize()
@@ -182,7 +182,7 @@ export class Cdt extends Algorithm {
     return Cdt.AboveCC(a, b)
   }
 
-  //  compare first y then -x coordinates
+  // compare first y then -x coordinates
   public static AbovePP(a: Point, b: Point): number {
     let del = a.y - b.y
     if (del > 0) {
@@ -198,7 +198,7 @@ export class Cdt extends Algorithm {
     return del > 0 ? -1 : del < 0 ? 1 : 0
   }
 
-  //  compare first y then -x coordinates
+  // compare first y then -x coordinates
   static AboveCC(a: CdtSite, b: CdtSite): number {
     return Cdt.AbovePP(a.point, b.point)
   }

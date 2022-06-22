@@ -533,7 +533,7 @@ test('data_social', () => {
   const sr = new SplineRouter(
     gg,
     Array.from(gg.edges()),
-    //  edgesToRoute.map((e) => <GeomEdge>GeomObject.getGeom(e)),
+    // edgesToRoute.map((e) => <GeomEdge>GeomObject.getGeom(e)),
   )
   sr.run()
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/social_bug.svg')

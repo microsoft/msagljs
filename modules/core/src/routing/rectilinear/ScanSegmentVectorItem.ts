@@ -6,16 +6,16 @@ import {PointComparer} from './PointComparer'
 import {ScanSegment} from './ScanSegment'
 
 export class ScanSegmentVectorItem {
-  //  The head of the linked list.
+  // The head of the linked list.
 
   FirstSegment: ScanSegment
 
-  //  The current segment of the linked list, used when appending or intersecting.
+  // The current segment of the linked list, used when appending or intersecting.
 
   CurrentSegment: ScanSegment
 
-  //  Perpendicular coordinates that are not in a ScanSegment, due to either not having the ScanSegments created
-  //  yet or because it will be faster to do a single pass after accumulating them (e.g. for GroupBoundaryCrossings).
+  // Perpendicular coordinates that are not in a ScanSegment, due to either not having the ScanSegments created
+  // yet or because it will be faster to do a single pass after accumulating them (e.g. for GroupBoundaryCrossings).
 
   private pendingPerpCoords: Array<number>
 
@@ -27,36 +27,36 @@ export class ScanSegmentVectorItem {
     this.pendingPerpCoords.push(coord)
   }
 
-  //  Restores state between intersection passes.
+  // Restores state between intersection passes.
 
   ResetForIntersections() {
     /*Assert.assert(null != this.FirstSegment, 'Empty ScanSegmentVectorItem')*/
     this.CurrentSegment = this.FirstSegment
   }
 
-  //  Indicates whether ScanSegments in this item are horizontally or vertically oriented.
+  // Indicates whether ScanSegments in this item are horizontally or vertically oriented.
 
   get IsHorizontal(): boolean {
     return !this.FirstSegment.IsVertical
   }
 
-  //  Returns the constant coordinate of the ScanSegments in this item, i.e. the coordinate
-  //  that intersects the perpendicular axis.
+  // Returns the constant coordinate of the ScanSegments in this item, i.e. the coordinate
+  // that intersects the perpendicular axis.
 
   Coord: number
 
-  //  Ctor, taking the parallel (constant) coordinate.
+  // Ctor, taking the parallel (constant) coordinate.
 
   // the parallel (constant) coordinate
   constructor(coord: number) {
     this.Coord = coord
   }
-  //  Move along the linked list until we hit the ScanSegment that contains the point.
+  // Move along the linked list until we hit the ScanSegment that contains the point.
 
   TraverseToSegmentContainingPoint(point: Point): boolean {
-    //  This is not a simple Next() because scan segments are extended "through" obstacles
-    //  (intermixing overlapped and non-overlapped) and thus a ScanSegment's Start and End
-    //  may not be in the vertexPoints collection and the ScanSegment must be skipped.
+    // This is not a simple Next() because scan segments are extended "through" obstacles
+    // (intermixing overlapped and non-overlapped) and thus a ScanSegment's Start and End
+    // may not be in the vertexPoints collection and the ScanSegment must be skipped.
     if (this.CurrentSegment.ContainsPoint(point)) {
       return true
     }
@@ -68,18 +68,18 @@ export class ScanSegmentVectorItem {
         'point is before current Coord',
       )*/
       while (this.MoveNext()) {
-        //  Skip to the end of the linked list if this point is not on the same coordinate.
+        // Skip to the end of the linked list if this point is not on the same coordinate.
       }
 
       return false
     }
 
     for (;;) {
-      //  In the event of mismatched rounding on horizontal versus vertical intersections
-      //  with a sloped obstacle side, we may have a point that is just before or just
-      //  after the current segment.  If the point is in some space that doesn't have a
-      //  scansegment, and if we are "close enough" to one end or the other of a scansegment,
-      //  then grow the scansegment enough to include the new point.
+      // In the event of mismatched rounding on horizontal versus vertical intersections
+      // with a sloped obstacle side, we may have a point that is just before or just
+      // after the current segment.  If the point is in some space that doesn't have a
+      // scansegment, and if we are "close enough" to one end or the other of a scansegment,
+      // then grow the scansegment enough to include the new point.
       if (
         this.CurrentSegment.NextSegment == null ||
         PointComparer.GetDirections(this.CurrentSegment.End, point) ==
@@ -99,8 +99,8 @@ export class ScanSegmentVectorItem {
         return true
       }
 
-      //  This is likely the reverse of the above; the point rounding mismatched to just before
-      //  rather than just after the current segment.
+      // This is likely the reverse of the above; the point rounding mismatched to just before
+      // rather than just after the current segment.
       if (PointComparer.IsPureLower(point, this.CurrentSegment.Start)) {
         /*Assert.assert(
           Point.closeIntersections(this.CurrentSegment.Start, point),
@@ -121,7 +121,7 @@ export class ScanSegmentVectorItem {
     return null != this.CurrentSegment
   }
 
-  //  Returns true if the point is the end of the current segment and there is an adjoining NextSegment.
+  // Returns true if the point is the end of the current segment and there is an adjoining NextSegment.
 
   PointIsCurrentEndAndNextStart(point: Point): boolean {
     return (
@@ -129,8 +129,8 @@ export class ScanSegmentVectorItem {
     )
   }
 
-  //  Set Current to the ScanSegment containing the perpendicular coordinate, then add that coordinate to its
-  //  sparse-vector coordinate list.
+  // Set Current to the ScanSegment containing the perpendicular coordinate, then add that coordinate to its
+  // sparse-vector coordinate list.
 
   AddPerpendicularCoord(perpCoord: number) {
     const point = this.IsHorizontal ? new Point(perpCoord, this.Coord) : new Point(this.Coord, perpCoord)
@@ -150,7 +150,7 @@ export class ScanSegmentVectorItem {
     if (this.FirstSegment == null) {
       this.FirstSegment = segment
     } else {
-      //  Note: segment.Start may != Current.End due to skipping internal ScanSegment creation for non-overlapped obstacles.
+      // Note: segment.Start may != Current.End due to skipping internal ScanSegment creation for non-overlapped obstacles.
       this.CurrentSegment.NextSegment = segment
     }
 

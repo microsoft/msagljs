@@ -29,7 +29,7 @@ export class SingleSourceMultipleTargetsShortestPathOnVisibilityGraph {
     this.source.Distance = 0
   }
 
-  //  Returns  a  path
+  // Returns  a  path
   GetPath(): Array<VisibilityVertex> {
     const pq = new GenericBinaryHeapPriorityQueue<VisibilityVertex>(compareNumbers)
     this.source.Distance = 0

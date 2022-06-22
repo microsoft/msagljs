@@ -15,7 +15,7 @@ export class CdtEdge {
   cwTriangle: CdtTriangle
 
   // in this triangle the edge goes clockwise, against the triangle orientation
-  //  is an obstacle side, or a given segment
+  // is an obstacle side, or a given segment
   public Constrained = false
 
   public constructor(a: CdtSite, b: CdtSite) {
@@ -32,10 +32,10 @@ export class CdtEdge {
     this.upperSite.AddEdgeToSite(this)
   }
 
-  //  the amount of free space around the edge
+  // the amount of free space around the edge
   Capacity = 1000000
 
-  //  the amount of residual free space around the edge
+  // the amount of residual free space around the edge
   ResidualCapacity: number
   public get CcwTriangle(): CdtTriangle {
     return this.ccwTriangle
@@ -61,7 +61,7 @@ export class CdtEdge {
     this.cwTriangle = value
   }
 
-  //  returns the trianlge on the edge opposite to the site
+  // returns the trianlge on the edge opposite to the site
   public GetOtherTriangle_c(p: CdtSite): CdtTriangle {
     return this.cwTriangle.Contains(p) ? this.ccwTriangle : this.cwTriangle
   }
@@ -74,7 +74,7 @@ export class CdtEdge {
     return this.ccwTriangle == triangle ? this.cwTriangle : this.ccwTriangle
   }
 
-  //  A string that represents the current object.
+  // A string that represents the current object.
   public toString(): string {
     return String.Format('({0},{1})', this.upperSite, this.lowerSite)
   }

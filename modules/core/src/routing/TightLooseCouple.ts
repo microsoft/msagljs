@@ -1,4 +1,4 @@
-//  an utility class to keep different polylines created around a shape
+// an utility class to keep different polylines created around a shape
 
 import {Polyline} from '../math/geometry'
 import {Shape} from './shape'
@@ -22,7 +22,7 @@ export class TightLooseCouple {
     return ret
   }
 
-  //  the loose polyline has been created with this distance
+  // the loose polyline has been created with this distance
   Distance: number
   toString(): string {
     return (

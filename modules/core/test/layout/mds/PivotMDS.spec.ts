@@ -164,18 +164,18 @@ xtest('layout from 250 and up  gv files with MDS', () => {
   // const path = 'graphvis/'
   // let i = 0
   // for (const f of sortedList) {
-  //   if (f.match('big(.*).gv')) continue // the parser bug
-  //   if (i++ < 250) continueP
-  //   let dg: DrawingGraph
-  //   try {
-  //     dg = runMDSLayout(join(path, f))
-  //   } catch (Error) {
-  //     console.log(f + ' error:' + Error.message)
-  //     expect(1).toBe(0)
-  //   }
-  //   if (dg != null) {
-  //     const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + '_pivot.svg')
-  //     t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
-  //   }
+  //  if (f.match('big(.*).gv')) continue // the parser bug
+  //  if (i++ < 250) continueP
+  //  let dg: DrawingGraph
+  //  try {
+  //    dg = runMDSLayout(join(path, f))
+  //  } catch (Error) {
+  //    console.log(f + ' error:' + Error.message)
+  //    expect(1).toBe(0)
+  //  }
+  //  if (dg != null) {
+  //    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + '_pivot.svg')
+  //    t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  //  }
   // }
 })

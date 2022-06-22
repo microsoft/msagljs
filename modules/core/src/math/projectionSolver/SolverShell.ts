@@ -1,4 +1,4 @@
-//  just a convenient interface to the real solver
+// just a convenient interface to the real solver
 
 import {RealNumberSpan} from '../../utils/RealNumberSpan'
 import {Solution} from './Solution'
@@ -16,36 +16,36 @@ export class SolverShell {
 
   fixedVars: Map<number, number> = new Map<number, number>()
 
-  //  Constructor.
+  // Constructor.
 
   public constructor() {
     this.InitSolver()
   }
 
-  //  Add a node that we would like as close to position i as possible, with the requested weight.
+  // Add a node that we would like as close to position i as possible, with the requested weight.
 
   // Caller's unique identifier for this node
   // Desired position
   // The weight of the corresponding term in the goal function
   public AddVariableWithIdealPositionNNN(id: number, position: number, weight: number) {
-    //  This throws an ArgumentException if a variable with id is already there.
+    // This throws an ArgumentException if a variable with id is already there.
     this.variables.set(id, this.solver.AddVariableANN(id, position, weight))
   }
 
-  //  Add a node that we would like as close to position i as possible, with the requested weight.
+  // Add a node that we would like as close to position i as possible, with the requested weight.
 
   public AddVariableWithIdealPositionNN(id: number, position: number) {
     this.AddVariableWithIdealPositionNNN(id, position, 1)
   }
 
-  //  Add a constraint that leftNode+gap eq|leq RightNode.
+  // Add a constraint that leftNode+gap eq|leq RightNode.
 
   // Caller's unique identifier for the left node
   // Caller's unique identifier for the right node
   // Required gap
   // Gap is exact rather than minimum
   public AddLeftRightSeparationConstraintNNNB(idLeft: number, idRight: number, gap: number, isEquality: boolean) {
-    //  The variables must already have been added by AddNodeWithDesiredPosition.
+    // The variables must already have been added by AddNodeWithDesiredPosition.
     const varLeft = this.GetVariable(idLeft)
     if (varLeft == null) {
       return
@@ -59,7 +59,7 @@ export class SolverShell {
     this.solver.AddConstraintVVNB(varLeft, varRight, gap, isEquality)
   }
 
-  //  Add a constraint that leftNode+gap leq RightNode.
+  // Add a constraint that leftNode+gap leq RightNode.
 
   // Caller's unique identifier for the left node
   // Caller's unique identifier for the right node
@@ -68,7 +68,7 @@ export class SolverShell {
     this.AddLeftRightSeparationConstraintNNNB(idLeft, idRight, gap, false)
   }
 
-  //  Add a goal that minimizes the distance between two nodes, i.e. weight*((id1-id2)^2).
+  // Add a goal that minimizes the distance between two nodes, i.e. weight*((id1-id2)^2).
 
   // Caller's unique identifier for the first node.
   // Caller's unique identifier for the second node.
@@ -97,32 +97,32 @@ export class SolverShell {
     return this.variables.get(i)
   }
 
-  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  // Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
   public Solve() {
     this.SolveP(null)
   }
 
-  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  // Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
   // Parameter object class specific to the underlying solver
-  //  <returns>Pass or fail</returns>
+  // <returns>Pass or fail</returns>
   public SolveP(parameters: any) {
     const t = {executionLimitExceeded: false}
     this.SolvePNS(parameters, t)
   }
 
-  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  // Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
   // Parameter object class specific to the underlying solver
-  //  <param name="executionLimitExceeded">if true, one or more limits such as iteration count
-  //          or timeout were exceeded</param>
-  //  <returns>Pass or fail</returns>
+  // <param name="executionLimitExceeded">if true, one or more limits such as iteration count
+  //         or timeout were exceeded</param>
+  // <returns>Pass or fail</returns>
   public SolvePNS(parameters: any, t: {executionLimitExceeded: boolean}): boolean {
     let fixedVarsMoved: boolean
     do {
       this.solution = null
-      //  Remove any stale solution in case parameters validation or Solve() throws.
+      // Remove any stale solution in case parameters validation or Solve() throws.
       let solverParameters: Parameters = null
       if (null != parameters) {
         solverParameters = <Parameters>parameters
@@ -139,22 +139,22 @@ export class SolverShell {
     return this.solution.ExecutionLimitExceeded == false
   }
 
-  //         void DumpToFile(string fileName) {
-  //             var file = new StreamWriter(fileName);
-  //             file.WriteLine("digraph {");
-  //             foreach (var v in solver.Variables) {
-  //                 var s = v.Weight > 100 ? "color=\"red\"" : "";
-  //                 file.WriteLine(v.UserData + " [ label=" + "\"" + v.UserData +"\\n" +
-  //                                v.DesiredPos + "\" " +s+ "]");
+  //        void DumpToFile(string fileName) {
+  //            var file = new StreamWriter(fileName);
+  //            file.WriteLine("digraph {");
+  //            foreach (var v in solver.Variables) {
+  //                var s = v.Weight > 100 ? "color=\"red\"" : "";
+  //                file.WriteLine(v.UserData + " [ label=" + "\"" + v.UserData +"\\n" +
+  //                               v.DesiredPos + "\" " +s+ "]");
   //
-  //             }
+  //            }
   //
-  //             foreach (var cs in solver.Constraints) {
-  //                 file.WriteLine(cs.Left.UserData + " -> " + cs.Right.UserData + " [ label=\"" + cs.Gap + "\"]");
-  //             }
-  //             file.WriteLine("}");
-  //             file.Close();
-  //         }
+  //            foreach (var cs in solver.Constraints) {
+  //                file.WriteLine(cs.Left.UserData + " -> " + cs.Right.UserData + " [ label=\"" + cs.Gap + "\"]");
+  //            }
+  //            file.WriteLine("}");
+  //            file.Close();
+  //        }
   AdjustConstraintsForMovedFixedVars(): boolean {
     const movedFixedVars = new Set<number>()
 
@@ -208,9 +208,9 @@ export class SolverShell {
     return true
   }
 
-  //  returns the block of the fixed variable
+  // returns the block of the fixed variable
 
-  //  <returns></returns>
+  // <returns></returns>
   AdjustConstraintsOfNeighborsOfFixedVariable(fixedVar: number, t: {successInAdjusting: boolean}): Array<number> {
     const nbs = this.variables.get(fixedVar).Block.Variables
     const currentSpan = new RealNumberSpan()
@@ -237,7 +237,7 @@ export class SolverShell {
     return nbs.map((u) => <number>u.UserData)
   }
 
-  //  if all active constraint gaps are less than this epsilon we should stop trying adjusting
+  // if all active constraint gaps are less than this epsilon we should stop trying adjusting
 
   readonly FailToAdjustEpsilon = 0.001
 
@@ -255,10 +255,10 @@ export class SolverShell {
     return ret
   }
 
-  //  Obtain the solved position for a node.
+  // Obtain the solved position for a node.
 
   // Caller's unique identifier for the node.
-  //  <returns>The node's solved position.</returns>
+  // <returns>The node's solved position.</returns>
   public GetVariableResolvedPosition(id: number): number {
     const v = this.GetVariable(id)
     return v == null ? 0 : v.ActualPos
@@ -271,7 +271,7 @@ export class SolverShell {
     this.variables.clear()
   }
 
-  //  Add a variable with a known and unchanging position.
+  // Add a variable with a known and unchanging position.
 
   // Caller's unique identifier for the node
   // Desired position.
@@ -282,20 +282,20 @@ export class SolverShell {
 
   //
 
-  //  <returns></returns>
+  // <returns></returns>
   public ContainsVariable(v: number): boolean {
     return this.variables.has(v)
   }
 
-  //  returns the ideal position of the node that had been set at the variable construction
+  // returns the ideal position of the node that had been set at the variable construction
 
-  //  <returns></returns>
+  // <returns></returns>
   public GetVariableIdealPosition(v: number): number {
     return this.variables.get(v).DesiredPos
   }
 
-  //  Returns the solution object class specific to the underlying solver, or null if there has
-  //  been no call to Solve() or it threw an exception.
+  // Returns the solution object class specific to the underlying solver, or null if there has
+  // been no call to Solve() or it threw an exception.
 
   public get Solution(): Solution {
     return this.solution

@@ -1,5 +1,5 @@
-﻿//  The class calculates obstacles under the shape.
-//  We assume that the boundaries are not set for the shape children yet
+﻿// The class calculates obstacles under the shape.
+// We assume that the boundaries are not set for the shape children yet
 
 import {Point} from '..'
 // import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
@@ -54,7 +54,7 @@ export class ShapeObstacleCalculator {
     }
   }
 
-  //  this test is valid in our situation where the tight polylines are disjoint and the shape can cross only one of them
+  // this test is valid in our situation where the tight polylines are disjoint and the shape can cross only one of them
   static ShapeIsInsideOfPoly(shape: Shape, tightPolyline: Polyline): boolean {
     return Curve.PointRelativeToCurveLocation(shape.BoundaryCurve.start, tightPolyline) == PointLocation.Inside
   }

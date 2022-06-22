@@ -117,7 +117,7 @@ export class RefinerBetweenTwoLayers {
     }
   }
 
-  //  circimvating from the side
+  // circimvating from the side
 
   CalculateNewBottomSite(): boolean {
     const mainSeg = this.currentBottomSite.point.sub(this.currentTopSite.point)
@@ -188,38 +188,38 @@ export class RefinerBetweenTwoLayers {
   }
 
   // private CornerSite AvoidBottomLayer() {
-  //     Point corner;
-  //     if (StickingCornerFromTheBottomLayer(out corner)) {
-  //         corner = FixCorner(this.currentTopSite.v, corner, this.currentBottomSite.v);
-  //         return new CornerSite(this.currentTopSite, corner, this.currentBottomSite);
-  //     } else
-  //         return null;
+  //    Point corner;
+  //    if (StickingCornerFromTheBottomLayer(out corner)) {
+  //        corner = FixCorner(this.currentTopSite.v, corner, this.currentBottomSite.v);
+  //        return new CornerSite(this.currentTopSite, corner, this.currentBottomSite);
+  //    } else
+  //        return null;
   // }
   // private CornerSite AvoidTopLayer() {
-  //     Point corner;
-  //     if (StickingCornerFromTheTopLayer(out corner)) {
-  //         corner = FixCorner(this.currentTopSite.v, corner, this.currentBottomSite.v);
-  //         return new CornerSite(this.currentTopSite, corner, this.currentBottomSite);
-  //     } else
-  //         return null;
+  //    Point corner;
+  //    if (StickingCornerFromTheTopLayer(out corner)) {
+  //        corner = FixCorner(this.currentTopSite.v, corner, this.currentBottomSite.v);
+  //        return new CornerSite(this.currentTopSite, corner, this.currentBottomSite);
+  //    } else
+  //        return null;
   // }
   // private bool StickingCornerFromTheTopLayer(out Point corner) {
-  //     corner = this.currentBottomSite.v;
-  //     foreach (Point l of this.topCorners()) {
-  //         Point p = l;
-  //         if (this.counterClockwise(ref currentTopSite.v, ref p, ref corner))
-  //             corner = p;
-  //     }
-  //     return corner != this.currentBottomSite.v;
+  //    corner = this.currentBottomSite.v;
+  //    foreach (Point l of this.topCorners()) {
+  //        Point p = l;
+  //        if (this.counterClockwise(ref currentTopSite.v, ref p, ref corner))
+  //            corner = p;
+  //    }
+  //    return corner != this.currentBottomSite.v;
   // }
   // private bool StickingCornerFromTheBottomLayer(out Point corner) {
-  //     corner = this.currentTopSite.v;
-  //     foreach (Point l of this.bottomCorners()) {
-  //         Point p = l;
-  //         if (this.counterClockwise(ref currentBottomSite.v, ref p, ref corner))
-  //             corner = p;
-  //     }
-  //     return corner != this.currentTopSite.v;
+  //    corner = this.currentTopSite.v;
+  //    foreach (Point l of this.bottomCorners()) {
+  //        Point p = l;
+  //        if (this.counterClockwise(ref currentBottomSite.v, ref p, ref corner))
+  //            corner = p;
+  //    }
+  //    return corner != this.currentTopSite.v;
   // }
   private Init() {
     if (this.IsTopToTheLeftOfBottom()) {

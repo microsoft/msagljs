@@ -161,7 +161,7 @@ test('disconnected comps', () => {
     strB.AppendLine(edgeString(e, true)) // true to get an array of poins
   }
 
-  //  console.log(strB.ToString())
+  // console.log(strB.ToString())
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/disconnected.svg')
   t.writeGeomGraph(g)
 })
@@ -389,21 +389,21 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
 }
 
 // function runLayout(
-//   fname: string,
-//   ss: SugiyamaLayoutSettings = new SugiyamaLayoutSettings(),
+//  fname: string,
+//  ss: SugiyamaLayoutSettings = new SugiyamaLayoutSettings(),
 // ) {
-//   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
-//   if (dg == null) return null
-//   createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
-//   const ll = new LayeredLayout(
-//     GeomObject.getGeom(dg.graph) as GeomGraph,
-//     ss,
-//     new CancelToken(),
-//   )
+//  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
+//  if (dg == null) return null
+//  createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
+//  const ll = new LayeredLayout(
+//    GeomObject.getGeom(dg.graph) as GeomGraph,
+//    ss,
+//    new CancelToken(),
+//  )
 
-//   ll.run()
+//  ll.run()
 
-//   return dg
+//  return dg
 // }
 
 test('root', () => {

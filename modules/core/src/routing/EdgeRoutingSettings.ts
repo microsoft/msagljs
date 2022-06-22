@@ -7,7 +7,7 @@ export class EdgeRoutingSettings {
   }
   private edgeRoutingMode: EdgeRoutingMode // = EdgeRoutingMode.SugiyamaSplines
 
-  //  defines the way edges are routed
+  // defines the way edges are routed
   public get EdgeRoutingMode(): EdgeRoutingMode {
     return this.edgeRoutingMode
   }
@@ -22,7 +22,7 @@ export class EdgeRoutingSettings {
 
   coneAngle = 30 * (Math.PI / 180)
 
-  //  the angle in degrees of the cones in the routing with the spanner
+  // the angle in degrees of the cones in the routing with the spanner
   public get ConeAngle(): number {
     return this.coneAngle
   }
@@ -30,10 +30,10 @@ export class EdgeRoutingSettings {
     this.coneAngle = value
   }
 
-  //  Amount of space to leave around nodes
+  // Amount of space to leave around nodes
   padding = 3
 
-  //  Amount of space to leave around nodes
+  // Amount of space to leave around nodes
   public get Padding(): number {
     return this.padding
   }
@@ -43,7 +43,7 @@ export class EdgeRoutingSettings {
 
   polylinePadding = 1.5
 
-  //  Additional amount of padding to leave around nodes when routing with polylines
+  // Additional amount of padding to leave around nodes when routing with polylines
   public get PolylinePadding(): number {
     return this.polylinePadding
   }
@@ -56,7 +56,7 @@ export class EdgeRoutingSettings {
 
   routingToParentConeAngle: number = Math.PI / 6
 
-  //  this is a cone angle to find a relatively close point on the parent boundary
+  // this is a cone angle to find a relatively close point on the parent boundary
   public get RoutingToParentConeAngle(): number {
     return this.routingToParentConeAngle
   }
@@ -66,8 +66,8 @@ export class EdgeRoutingSettings {
 
   simpleSelfLoopsForParentEdgesThreshold = 200
 
-  //  if the number of the nodes participating in the routing of the parent edges is less than the threshold
-  //  then the parent edges are routed avoiding the nodes
+  // if the number of the nodes participating in the routing of the parent edges is less than the threshold
+  // then the parent edges are routed avoiding the nodes
   public get SimpleSelfLoopsForParentEdgesThreshold(): number {
     return this.simpleSelfLoopsForParentEdgesThreshold
   }
@@ -80,7 +80,7 @@ export class EdgeRoutingSettings {
   // debugging
   routeMultiEdgesAsBundles = true
 
-  //  defines the size of the changed graph that could be routed fast with the standard spline routing when dragging
+  // defines the size of the changed graph that could be routed fast with the standard spline routing when dragging
   public get IncrementalRoutingThreshold(): number {
     return this.incrementalRoutingThreshold
   }
@@ -88,11 +88,11 @@ export class EdgeRoutingSettings {
     this.incrementalRoutingThreshold = value
   }
 
-  //  if set to true the original spline is kept under the corresponding GeomEdge
+  // if set to true the original spline is kept under the corresponding GeomEdge
   KeepOriginalSpline = false
 
-  //  if set to true routes multi edges as ordered bundles, when routing in a spline mode
-  //  <exception cref="NotImplementedException"></exception>
+  // if set to true routes multi edges as ordered bundles, when routing in a spline mode
+  // <exception cref="NotImplementedException"></exception>
   public get RouteMultiEdgesAsBundles(): boolean {
     return this.routeMultiEdgesAsBundles
   }

@@ -14,9 +14,9 @@ export type MstEdge = {
   weight: number
 }
 
-//  Computes the minimum spanning tree on a triangulation or on a set of edges given by a list of tuples
+// Computes the minimum spanning tree on a triangulation or on a set of edges given by a list of tuples
 export class MstOnDelaunayTriangulation {
-  //  Computes the minimum spanning tree on a set of edges
+  // Computes the minimum spanning tree on a set of edges
   static GetMst(proximityEdges: Array<MstEdge>, size: number): Array<MstEdge> {
     if (proximityEdges.length == 0) {
       return null
@@ -40,7 +40,7 @@ export class MstOnDelaunayTriangulation {
     return mstOnBasicGraph.GetTreeEdges().map((e) => weighting.get(e.source, e.target))
   }
 
-  //  Computes the minimum spanning tree on a DT with given weights.
+  // Computes the minimum spanning tree on a DT with given weights.
   static GetMstOnCdt(cdt: Cdt, weights: (e: CdtEdge) => number): CdtEdge[] {
     const siteArray = Array.from(cdt.PointsToSites.values())
     const siteIndex = new Map<CdtSite, number>()

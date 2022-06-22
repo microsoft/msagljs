@@ -1,5 +1,5 @@
-//  This port is for an edge connecting a node inside of the curve going out of the curve and creating a hook to
-//  connect to the curve
+// This port is for an edge connecting a node inside of the curve going out of the curve and creating a hook to
+// connect to the curve
 
 import {ICurve, Point} from '../..'
 import {Polyline} from '../../math/geometry'
@@ -24,13 +24,13 @@ export class HookUpAnywhereFromInsidePort extends Port {
 
   location: Point
 
-  //  returns a point on the boundary curve
+  // returns a point on the boundary curve
 
   get Location(): Point {
     return this.location
   }
 
-  //  Gets the boundary curve of the port.
+  // Gets the boundary curve of the port.
 
   get Curve(): ICurve {
     return this.curve()
@@ -41,7 +41,7 @@ export class HookUpAnywhereFromInsidePort extends Port {
   }
 
   LoosePolyline: Polyline
-  //  We are trying to correct the last segment of the polyline by make it perpendicular to the Port.Curve.
+  // We are trying to correct the last segment of the polyline by make it perpendicular to the Port.Curve.
   // For this purpose we trim the curve by the cone of the angle 2*adjustment angle and project the point before the last of the polyline to this curve.
 
   get AdjustmentAngle(): number {
@@ -53,7 +53,7 @@ export class HookUpAnywhereFromInsidePort extends Port {
 
   hookSize = 9
 
-  //  the size of the self-loop
+  // the size of the self-loop
   get HookSize(): number {
     return this.hookSize
   }

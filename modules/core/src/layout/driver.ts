@@ -17,28 +17,28 @@ import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
 
 // function routeEdges(
-//   geomG: GeomGraph,
-//   edgeRoutingSettings: EdgeRoutingSettings,
-//   cornerFitRadius = 3,
+//  geomG: GeomGraph,
+//  edgeRoutingSettings: EdgeRoutingSettings,
+//  cornerFitRadius = 3,
 // ) {
-//   if (edgeRoutingSettings.edgeRoutingMode != EdgeRoutingMode.Rectilinear) {
-//     // TODO: enable other modes
-//     routeStraightEdges(geomG)
-//   } else {
-//     if (edgeRoutingSettings.EdgeRoutingMode == EdgeRoutingMode.Rectilinear)
-//       routeRectilinearEdges(geomG, edgeRoutingSettings.padding, cornerFitRadius)
-//   }
+//  if (edgeRoutingSettings.edgeRoutingMode != EdgeRoutingMode.Rectilinear) {
+//    // TODO: enable other modes
+//    routeStraightEdges(geomG)
+//  } else {
+//    if (edgeRoutingSettings.EdgeRoutingMode == EdgeRoutingMode.Rectilinear)
+//      routeRectilinearEdges(geomG, edgeRoutingSettings.padding, cornerFitRadius)
+//  }
 // }
 
 // function routeStraightEdges(geomG: GeomGraph) {
-//   for (const u of geomG.deepNodes) {
-//     for (const e of u.outEdges()) {
-//       if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
-//     }
-//     for (const e of u.selfEdges()) {
-//       if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
-//     }
-//   }
+//  for (const u of geomG.deepNodes) {
+//    for (const e of u.outEdges()) {
+//      if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
+//    }
+//    for (const e of u.selfEdges()) {
+//      if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
+//    }
+//  }
 // }
 
 export function enforceLayoutSettings(geomGraph: GeomGraph, ss: LayoutSettings) {

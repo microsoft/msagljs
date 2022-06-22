@@ -15,7 +15,7 @@ import {ScanSegmentTree} from './ScanSegmentTree'
 import {StaticGraphUtility} from './StaticGraphUtility'
 
 export class ScanSegment extends SegmentBase {
-  //  This is a single segment added by the ScanLine.
+  // This is a single segment added by the ScanLine.
   GroupBoundaryPointAndCrossingsList: PointAndCrossingsList
 
   private endPoint: Point
@@ -30,7 +30,7 @@ export class ScanSegment extends SegmentBase {
 
   Weight: number
 
-  //  For sparse visibility graph.
+  // For sparse visibility graph.
   NextSegment: ScanSegment
 
   static mk(start: Point, end: Point): ScanSegment {
@@ -60,13 +60,13 @@ export class ScanSegment extends SegmentBase {
     return this.IsVertical ? ScanDirection.VerticalInstance : ScanDirection.HorizontalInstance
   }
 
-  //  For fast intersection calculation and ScanSegment splicing.
+  // For fast intersection calculation and ScanSegment splicing.
   LowestVisibilityVertex: VisibilityVertex
 
   HighestVisibilityVertex: VisibilityVertex
 
-  //  For overlaps, we will need to create a VisibilityVertex at the junction of overlapped/nonoverlapped
-  //  segments, but we don't want to create this for non-overlapped situations.
+  // For overlaps, we will need to create a VisibilityVertex at the junction of overlapped/nonoverlapped
+  // segments, but we don't want to create this for non-overlapped situations.
   get IsOverlapped(): boolean {
     return ScanSegment.OverlappedWeight == this.Weight
   }
@@ -99,7 +99,7 @@ export class ScanSegment extends SegmentBase {
     }
   }
 
-  //  ctor
+  // ctor
   Update(start: Point, end: Point) {
     /*Assert.assert(
       PointComparer.EqualPP(start, end) ||
@@ -130,9 +130,9 @@ export class ScanSegment extends SegmentBase {
         this.SetInitialVisibilityVertex(newVertex)
       }
     } else {
-      //  In the event of overlaps where ScanSegments share a Start/End at a border, SegmentIntersector
-      //  may be appending the same Vertex twice.  If that point is on the border of a group,
-      //  then we may have just added the border-crossing edge as well.
+      // In the event of overlaps where ScanSegments share a Start/End at a border, SegmentIntersector
+      // may be appending the same Vertex twice.  If that point is on the border of a group,
+      // then we may have just added the border-crossing edge as well.
       if (PointComparer.IsPureLower(newVertex.point, this.HighestVisibilityVertex.point)) {
         /*Assert.assert(
           null !=
@@ -142,7 +142,7 @@ export class ScanSegment extends SegmentBase {
         return
       }
 
-      //  Add the new edge.  This will always be in the ascending direction.
+      // Add the new edge.  This will always be in the ascending direction.
       if (!this.AddGroupCrossingsBeforeHighestVisibilityVertex(vg, newVertex)) {
         this.AppendHighestVisibilityVertex(newVertex)
       }
@@ -154,7 +154,7 @@ export class ScanSegment extends SegmentBase {
       PointComparer.IsPureLower(source.point, target.point),
       'Impure or reversed direction encountered',
     )*/
-    //  Make sure we aren't adding two edges in the same direction to the same vertex.
+    // Make sure we aren't adding two edges in the same direction to the same vertex.
     /*Assert.assert(
       StaticGraphUtility.FindAdjacentVertex(
         source,
@@ -181,9 +181,9 @@ export class ScanSegment extends SegmentBase {
     }
   }
   private LoadStartOverlapVertexIfNeeded(vg: VisibilityGraph) {
-    //  For adjacent segments with different IsOverlapped, we need a vertex that
-    //  joins the two so a path may be run.  This is paired with the other segment's
-    //  LoadEndOverlapVertexIfNeeded.
+    // For adjacent segments with different IsOverlapped, we need a vertex that
+    // joins the two so a path may be run.  This is paired with the other segment's
+    // LoadEndOverlapVertexIfNeeded.
     if (this.NeedStartOverlapVertex) {
       const vertex: VisibilityVertex = vg.FindVertex(this.Start)
       this.AppendVisibilityVertex(vg, vertex ?? vg.AddVertexP(this.Start))
@@ -191,14 +191,14 @@ export class ScanSegment extends SegmentBase {
   }
 
   private LoadEndOverlapVertexIfNeeded(vg: VisibilityGraph) {
-    //  See comments in LoadStartOverlapVertexIfNeeded.
+    // See comments in LoadStartOverlapVertexIfNeeded.
     if (this.NeedEndOverlapVertex) {
       const vertex: VisibilityVertex = vg.FindVertex(this.End)
       this.AppendVisibilityVertex(vg, vertex ?? vg.AddVertexP(this.End))
     }
   }
   OnSegmentIntersectorBegin(vg: VisibilityGraph) {
-    //  If we process any group crossings, they'll have created the first point.
+    // If we process any group crossings, they'll have created the first point.
     if (!this.AppendGroupCrossingsThroughPoint(vg, this.Start)) {
       this.LoadStartOverlapVertexIfNeeded(vg)
     }
@@ -213,17 +213,17 @@ export class ScanSegment extends SegmentBase {
   }
   // If we have collinear segments, then we may be able to just update the previous one
   // instead of growing the ScanSegmentTree.
-  //  - For multiple collinear OpenVertexEvents, neighbors to the high side have not yet
-  //    been seen, so a segment is created that spans the lowest and highest neighbors.
-  //    A subsequent collinear OpenVertexEvent will be to the high side and will add a
-  //    subsegment of that segment, so we subsume it into LastAddedSegment.
-  //  - For multiple collinear CloseVertexEvents, closing neighbors to the high side are
-  //    still open, so a segment is created from the lowest neighbor to the next-highest
-  //    collinear obstacle to be closed.  When that next-highest CloseVertexEvent is
-  //    encountered, it will extend LastAddedSegment.
-  //  - For multiple collinear mixed Open and Close events, we'll do all Opens first,
-  //    followed by all closes (per EventQueue opening), so we may add multiple discrete
-  //    segments, which ScanSegmentTree will merge.
+  // - For multiple collinear OpenVertexEvents, neighbors to the high side have not yet
+  //   been seen, so a segment is created that spans the lowest and highest neighbors.
+  //   A subsequent collinear OpenVertexEvent will be to the high side and will add a
+  //   subsegment of that segment, so we subsume it into LastAddedSegment.
+  // - For multiple collinear CloseVertexEvents, closing neighbors to the high side are
+  //   still open, so a segment is created from the lowest neighbor to the next-highest
+  //   collinear obstacle to be closed.  When that next-highest CloseVertexEvent is
+  //   encountered, it will extend LastAddedSegment.
+  // - For multiple collinear mixed Open and Close events, we'll do all Opens first,
+  //   followed by all closes (per EventQueue opening), so we may add multiple discrete
+  //   segments, which ScanSegmentTree will merge.
   static Subsume(
     t: {seg: ScanSegment},
     newStart: Point,
@@ -298,7 +298,7 @@ export class ScanSegment extends SegmentBase {
   }
 
   ContainsPoint(test: Point): boolean {
-    //  This may be off the line so do not use GetPureDirections.
+    // This may be off the line so do not use GetPureDirections.
     return (
       PointComparer.EqualPP(this.Start, test) ||
       PointComparer.EqualPP(this.End, test) ||
@@ -329,7 +329,7 @@ export class ScanSegment extends SegmentBase {
   }
 
   AddSparseEndpoint(coord: number): boolean {
-    //  This is called after AddSparseVertexCoord so this.sparsePerpendicularCoords is already instantiated.
+    // This is called after AddSparseVertexCoord so this.sparsePerpendicularCoords is already instantiated.
     if (!this.sparsePerpendicularCoords.has(coord)) {
       this.sparsePerpendicularCoords.add(coord)
       return true
@@ -360,13 +360,13 @@ export class ScanSegment extends SegmentBase {
   }
 
   HasVisibility(): boolean {
-    //  Skip this only if it has no visibility vertex.
+    // Skip this only if it has no visibility vertex.
     return null != this.LowestVisibilityVertex
   }
 
   private AddGroupCrossingsBeforeHighestVisibilityVertex(vg: VisibilityGraph, newVertex: VisibilityVertex): boolean {
     if (this.AppendGroupCrossingsThroughPoint(vg, newVertex.point)) {
-      //  We may have added an interior vertex that is just higher than newVertex.
+      // We may have added an interior vertex that is just higher than newVertex.
       if (PointComparer.IsPureLower(this.HighestVisibilityVertex.point, newVertex.point)) {
         this.AddVisibilityEdge(this.HighestVisibilityVertex, newVertex)
         this.HighestVisibilityVertex = newVertex
@@ -385,8 +385,8 @@ export class ScanSegment extends SegmentBase {
 
     let found = false
     while (this.GroupBoundaryPointAndCrossingsList.CurrentIsBeforeOrAt(lastPoint)) {
-      //  We will only create crossing Edges that the segment actually crosses, not those it ends before crossing.
-      //  For those terminal crossings, the adjacent segment creates the interior vertex and crossing edge.
+      // We will only create crossing Edges that the segment actually crosses, not those it ends before crossing.
+      // For those terminal crossings, the adjacent segment creates the interior vertex and crossing edge.
       const pac: PointAndCrossings = this.GroupBoundaryPointAndCrossingsList.Pop()
       let lowDirCrossings: GroupBoundaryCrossing[] = null
       let highDirCrossings: GroupBoundaryCrossing[] = null
@@ -405,9 +405,9 @@ export class ScanSegment extends SegmentBase {
         this.AddLowCrossings(vg, crossingVertex, lowDirCrossings)
         this.AddHighCrossings(vg, crossingVertex, highDirCrossings)
       } else {
-        //  This is at this.Start with only lower-direction toward group interior(s), or at this.End with only
-        //  higher-direction toward group interior(s).  Therefore an adjacent ScanSegment will create the crossing
-        //  edge, so create the crossing vertex here and we'll link to it.
+        // This is at this.Start with only lower-direction toward group interior(s), or at this.End with only
+        // higher-direction toward group interior(s).  Therefore an adjacent ScanSegment will create the crossing
+        // edge, so create the crossing vertex here and we'll link to it.
         if (this.LowestVisibilityVertex == null) {
           this.SetInitialVisibilityVertex(crossingVertex)
         } else {
@@ -440,9 +440,9 @@ export class ScanSegment extends SegmentBase {
   ) {
     let edge: VisibilityEdge = null
     if (null != this.HighestVisibilityVertex) {
-      //  We may have a case where point xx.xxxxx8 has added an ascending-direction crossing, and now we're on
-      //  xx.xxxxx9 adding a descending-direction crossing.  In that case there should already be a VisibilityEdge
-      //  in the direction we want.
+      // We may have a case where point xx.xxxxx8 has added an ascending-direction crossing, and now we're on
+      // xx.xxxxx9 adding a descending-direction crossing.  In that case there should already be a VisibilityEdge
+      // in the direction we want.
       if (PointComparer.EqualPP(this.HighestVisibilityVertex.point, highVertex.point)) {
         edge = vg.FindEdgePP(lowVertex.point, highVertex.point)
         /*Assert.assert(
@@ -466,8 +466,8 @@ export class ScanSegment extends SegmentBase {
         return false
       }
     } else {
-      //  Because we don't have access to the previous delegate's internals, we have to chain.  Fortunately this
-      //  will never be more than two deep.  File Test: Groups_Forward_Backward_Between_Same_Vertices.
+      // Because we don't have access to the previous delegate's internals, we have to chain.  Fortunately this
+      // will never be more than two deep.  File Test: Groups_Forward_Backward_Between_Same_Vertices.
       edge.IsPassable = () => {
         for (const s of crossingsArray) if (s.IsTransparent || prevIsPassable()) return true
         return false
@@ -485,7 +485,7 @@ export class ScanSegment extends SegmentBase {
     if (crossings != null) {
       const interiorVertex: VisibilityVertex = ScanSegment.GetCrossingInteriorVertex(vg, crossingVertex, crossings[0])
       this.AddCrossingEdge(vg, interiorVertex, crossingVertex, crossings)
-      //  low-to-high
+      // low-to-high
     }
   }
 
@@ -493,7 +493,7 @@ export class ScanSegment extends SegmentBase {
     if (crossings != null) {
       const interiorVertex: VisibilityVertex = ScanSegment.GetCrossingInteriorVertex(vg, crossingVertex, crossings[0])
       this.AddCrossingEdge(vg, crossingVertex, interiorVertex, crossings)
-      //  low-to-high
+      // low-to-high
     }
   }
 }

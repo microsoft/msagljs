@@ -2,8 +2,8 @@ import {String} from 'typescript-string-operations'
 import {Constraint} from './Constraint'
 import {Variable} from './Variable'
 
-//  variableDoneEval is NULL if we are starting an evaluation; if recursive, it's the variable
-//  on that side from the parent call, which was already processed.
+// variableDoneEval is NULL if we are starting an evaluation; if recursive, it's the variable
+// on that side from the parent call, which was already processed.
 
 export class DfDvNode {
   Parent: DfDvNode
@@ -13,7 +13,7 @@ export class DfDvNode {
 
   VariableDoneEval: Variable
 
-  //  For Solution.MaxConstraintTreeDepth
+  // For Solution.MaxConstraintTreeDepth
   Depth: number
 
   ChildrenHaveBeenPushed: boolean
@@ -24,11 +24,11 @@ export class DfDvNode {
     return ret
   }
 
-  //  For DummyParentNode only.
+  // For DummyParentNode only.
   constructor(dummyConstraint: Constraint) {
     this.ConstraintToEval = dummyConstraint
     this.Depth = -1
-    //  The first real node adds 1, so it starts at 0.
+    // The first real node adds 1, so it starts at 0.
   }
 
   Set(parent: DfDvNode, constraintToEval: Constraint, variableToEval: Variable, variableDoneEval: Variable): DfDvNode {

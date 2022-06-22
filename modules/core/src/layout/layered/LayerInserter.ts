@@ -96,8 +96,8 @@ export class LayerInserter {
     const y = this.la.y[prevNode]
     const layer = this.la.Layers[y]
     layer[x] = replacingNode
-    //   this.la.x[replacingNode] = x;
-    //  this.la.y[replacingNode] = y;
+    //  this.la.x[replacingNode] = x;
+    // this.la.y[replacingNode] = y;
   }
 
   // Original layers are represented by even layers of the new layering.

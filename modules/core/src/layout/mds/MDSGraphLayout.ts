@@ -14,13 +14,13 @@ import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 
-//  Class for graph layout with multidimensional scaling.
+// Class for graph layout with multidimensional scaling.
 export class MdsGraphLayout extends Algorithm {
   graph: GeomGraph
   length: (e: GeomEdge) => number
   settings: MdsLayoutSettings
 
-  //  Constructs the multidimensional scaling algorithm.
+  // Constructs the multidimensional scaling algorithm.
   public constructor(settings: MdsLayoutSettings, geometryGraph: GeomGraph, cancelToken: CancelToken, length: (e: GeomEdge) => number) {
     super(cancelToken)
     this.settings = settings
@@ -28,7 +28,7 @@ export class MdsGraphLayout extends Algorithm {
     this.length = length
   }
 
-  //  Executes the algorithm
+  // Executes the algorithm
   run() {
     this.LayoutConnectedGraphWithMds()
     this.SetGraphBoundingBox()
@@ -38,8 +38,8 @@ export class MdsGraphLayout extends Algorithm {
     this.graph.pumpTheBoxToTheGraphWithMargins(this.settings.NodeSeparation / 2)
   }
 
-  //  Scales a configuration such that the average edge length in the drawing
-  //  equals the average of the given edge lengths.
+  // Scales a configuration such that the average edge length in the drawing
+  // equals the average of the given edge lengths.
   static ScaleToAverageEdgeLength(g: GeomGraph, x: number[], y: number[], length: (e: GeomEdge) => number) {
     const index = new Map<GeomNode, number>()
     let c = 0
@@ -69,8 +69,8 @@ export class MdsGraphLayout extends Algorithm {
     }
   }
 
-  //  Layouts a connected graph with Multidimensional Scaling, using
-  //  shortest-path distances as Euclidean target distances.
+  // Layouts a connected graph with Multidimensional Scaling, using
+  // shortest-path distances as Euclidean target distances.
   static LayoutGraphWithMds(
     geometryGraph: GeomGraph,
     settings: MdsLayoutSettings,
@@ -102,7 +102,7 @@ export class MdsGraphLayout extends Algorithm {
       apd.run()
       const d = apd.Result
       const w = MultidimensionalScaling.ExponentialWeightMatrix(d, exponent)
-      //  MultidimensionalScaling.DistanceScaling(d, x, y, w, iter);
+      // MultidimensionalScaling.DistanceScaling(d, x, y, w, iter);
       MultidimensionalScaling.DistanceScalingSubset(d, arrays.x, arrays.y, w, iter)
     }
   }
@@ -135,60 +135,60 @@ export class MdsGraphLayout extends Algorithm {
     }
   }
 
-  //   static UpdateTree(tree: RectangleNode<Node, Point>) {
-  //     if (tree.IsLeaf) {
-  //       tree.irect = tree.UserData.BoundingBox
-  //     } else {
-  //       MdsGraphLayout.UpdateTree(tree.Left)
-  //       MdsGraphLayout.UpdateTree(tree.Right)
-  //       tree.rectangle = tree.Left.rectangle
-  //       tree.rectangle.Add(tree.Right.rectangle)
-  //     }
-  //   }
+  //  static UpdateTree(tree: RectangleNode<Node, Point>) {
+  //    if (tree.IsLeaf) {
+  //      tree.irect = tree.UserData.BoundingBox
+  //    } else {
+  //      MdsGraphLayout.UpdateTree(tree.Left)
+  //      MdsGraphLayout.UpdateTree(tree.Right)
+  //      tree.rectangle = tree.Left.rectangle
+  //      tree.rectangle.Add(tree.Right.rectangle)
+  //    }
+  //  }
 
-  //   static NumberOfHits(
-  //     numberOfChecks: number,
-  //     random: Random,
-  //     tree: RectangleNode<Node, Point>,
-  //     maxNumberOfHits: number,
-  //   ): number {
-  //     //  var l = new Array<Point>();
-  //     let numberOfHits = 0
-  //     for (let i = 0; i < numberOfChecks; i++) {
-  //       const point: Point = MdsGraphLayout.RandomPointFromBox(
-  //         random,
-  //         <Rectangle>tree.rectangle,
-  //       )
-  //       //    l.Add(point);
-  //       HitTestBehavior.Stop
-  //       null
-  //       numberOfHits++
-  //       if (numberOfHits == maxNumberOfHits) {
-  //         return maxNumberOfHits
-  //       }
-  //     }
+  //  static NumberOfHits(
+  //    numberOfChecks: number,
+  //    random: Random,
+  //    tree: RectangleNode<Node, Point>,
+  //    maxNumberOfHits: number,
+  //  ): number {
+  //    //  var l = new Array<Point>();
+  //    let numberOfHits = 0
+  //    for (let i = 0; i < numberOfChecks; i++) {
+  //      const point: Point = MdsGraphLayout.RandomPointFromBox(
+  //        random,
+  //        <Rectangle>tree.rectangle,
+  //      )
+  //      //    l.Add(point);
+  //      HitTestBehavior.Stop
+  //      null
+  //      numberOfHits++
+  //      if (numberOfHits == maxNumberOfHits) {
+  //        return maxNumberOfHits
+  //      }
+  //    }
 
-  //     // LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(Getdc(tree, l));
-  //     return numberOfHits
-  //   }
+  //    // LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(Getdc(tree, l));
+  //    return numberOfHits
+  //  }
 
-  //   static BuildNodeTree(nodes: IList<Node>): RectangleNode<Node, Point> {
-  //     return RectangleNode.CreateRectangleNodeOnListOfNodes(
-  //       nodes.Select(() => {}, new RectangleNode<Node, Point>(n, n.BoundingBox)),
-  //     )
-  //   }
+  //  static BuildNodeTree(nodes: IList<Node>): RectangleNode<Node, Point> {
+  //    return RectangleNode.CreateRectangleNodeOnListOfNodes(
+  //      nodes.Select(() => {}, new RectangleNode<Node, Point>(n, n.BoundingBox)),
+  //    )
+  //  }
 
-  //   static RandomPointFromBox(random: Random, boundingBox: Rectangle): Point {
-  //     const x = random.NextDouble()
-  //     const y = random.NextDouble()
-  //     const p = new Point(
-  //       boundingBox.left + boundingBox.width * x,
-  //       boundingBox.bottom + boundingBox.height * y,
-  //     )
-  //     return p
-  //   }
+  //  static RandomPointFromBox(random: Random, boundingBox: Rectangle): Point {
+  //    const x = random.NextDouble()
+  //    const y = random.NextDouble()
+  //    const p = new Point(
+  //      boundingBox.left + boundingBox.width * x,
+  //      boundingBox.bottom + boundingBox.height * y,
+  //    )
+  //    return p
+  //  }
 
-  //  Pack the given graph components to the specified aspect ratio
+  // Pack the given graph components to the specified aspect ratio
   public static PackGraphs(graphs: GeomGraph[], settings: LayoutSettings): Rectangle {
     if (graphs.length == 0) {
       return Rectangle.mkEmpty()

@@ -8,7 +8,7 @@ export class SymmetricTuple<T> {
     throw new Error('not implemented')
     //return (this.A.GetHashCode() | this.B.GetHashCode());
     // The operator should be an XOR ^ instead of an OR, but not available in CodeDOM
-    //  we need a symmetric hash code
+    // we need a symmetric hash code
   }
 
   constructor(a: T, b: T) {

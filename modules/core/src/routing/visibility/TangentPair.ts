@@ -200,11 +200,11 @@ export class TangentPair {
     this.FindClosestFeatures(m)
     t.bisectorPivot = Point.middle(m.pClosest, m.qClosest)
     t.bisectorRay = m.pClosest.add(m.qClosest).rotate(Math.PI / 2)
-    //  number p=P.FindTheFurthestVertexFromBisector(
-    //  #if TEST_MSAGL
-    //              //if (!Point.closeDistEps(pClosest, qClosest))
-    //              //    SugiyamaLayoutSettings.Show(this.P.Polyline, this.Q.Polyline, new LineSegment(pClosest, qClosest));
-    //  #endif
+    // number p=P.FindTheFurthestVertexFromBisector(
+    // #if TEST_MSAGL
+    //             //if (!Point.closeDistEps(pClosest, qClosest))
+    //             //    SugiyamaLayoutSettings.Show(this.P.Polyline, this.Q.Polyline, new LineSegment(pClosest, qClosest));
+    // #endif
   }
 
   FindClosestPoints() {
@@ -234,7 +234,7 @@ export class TangentPair {
     }
 
     this.P.GetTangentPoints(r, this.Q.pp(0).point)
-    //  LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(P.Polyline), new DebugCurve(Q.Polyline), new DebugCurve("red",Ls(p2, 0)), new DebugCurve("blue",Ls(p1, 0)));
+    // LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(P.Polyline), new DebugCurve(Q.Polyline), new DebugCurve("red",Ls(p2, 0)), new DebugCurve("blue",Ls(p1, 0)));
     m.p2 = r.leftTangentPoint
     m.p1 = r.rightTangentPoint
     if (m.p2 == m.p1) m.p2 += this.P.count
@@ -258,7 +258,7 @@ export class TangentPair {
       t.pClosest = this.P.pp(t.p2).point
       if (t.q1 == t.q2) t.qClosest = this.Q.pp(t.q1).point
       else {
-        //                    if(debug) LayoutAlgorithmSettings.Show(new LineSegment(P.Pnt(p2), Q.Pnt(q2)), new LineSegment(P.Pnt(p1), Q.Pnt(q1)), P.Polyline, Q.Polyline);
+        //                   if(debug) LayoutAlgorithmSettings.Show(new LineSegment(P.Pnt(p2), Q.Pnt(q2)), new LineSegment(P.Pnt(p1), Q.Pnt(q1)), P.Polyline, Q.Polyline);
         t.qClosest = Point.ClosestPointAtLineSegment(t.pClosest, this.Q.pp(t.q1).point, this.Q.pp(t.q2).point)
         if (Point.closeDistEps(t.qClosest, this.Q.pnt(t.q1))) t.q2 = t.q1
         else if (Point.closeDistEps(t.qClosest, this.Q.pnt(t.q2))) t.q1 = t.q2
@@ -308,14 +308,14 @@ export class TangentPair {
       b2: undefined,
     }
     this.GetAnglesAtTheMedian(mp, mq, mP, mQ, angles)
-    //            Core.Layout.LayoutAlgorithmSettings.Show(new LineSegment(P.Pnt(t.p2), Q.Pnt(t.t.q2)), new LineSegment(P.Pnt(t.p1), Q.Pnt(t.q1)), new LineSegment(P.Pnt(mp),Q.Pnt( mq)), P.Polyline, Q.Polyline);
+    //           Core.Layout.LayoutAlgorithmSettings.Show(new LineSegment(P.Pnt(t.p2), Q.Pnt(t.t.q2)), new LineSegment(P.Pnt(t.p1), Q.Pnt(t.q1)), new LineSegment(P.Pnt(mp),Q.Pnt( mq)), P.Polyline, Q.Polyline);
     //if (MovingAlongHiddenSide(ref t.p1, ref t.p2, ref t.q1, ref t.q2, mp, mq, a1, a2, b1, b2)) {
-    //  //  SugiyamaLayoutSettings.Show(ls(t.p2, t.q2), ls(t.p1, t.q1), ls(mp, mq), P.Polyline, Q.Polyline);
-    //    return;
+    // //  SugiyamaLayoutSettings.Show(ls(t.p2, t.q2), ls(t.p1, t.q1), ls(mp, mq), P.Polyline, Q.Polyline);
+    //   return;
     //}
 
     if (this.InternalCut(t, mp, mq, angles.a1, angles.a2, angles.b1, angles.b2)) {
-      //               if(debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(t.p1, q1), Ls(t.p2,q2));
+      //              if(debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(t.p1, q1), Ls(t.p2,q2));
       return
     }
 
@@ -339,11 +339,11 @@ export class TangentPair {
       //let t.p1,t.p2 be the low base of the trapes
       //where is the closest vertex , on the left side or on the rigth side?
       //if (Point.angle(P.Pnt(t.p2), P.Pnt(t.p1), Q.Pnt(q1)) + Point.angle(P.Pnt(t.p1), Q.Pnt(q1), Q.Pnt(q2)) >= Math.PI)
-      //    ProcessLeftSideOfTrapez(ref t.p1, ref t.p2, ref q2, ref q1);
+      //   ProcessLeftSideOfTrapez(ref t.p1, ref t.p2, ref q2, ref q1);
       //else {
-      //    SwapPQ();
-      //    ProcessLeftSideOfTrapez(ref q2, ref q1, ref t.p1, ref t.p2);
-      //    SwapPQ();
+      //   SwapPQ();
+      //   ProcessLeftSideOfTrapez(ref q2, ref q1, ref t.p1, ref t.p2);
+      //   SwapPQ();
       //}
       //return;
     }
@@ -390,7 +390,7 @@ export class TangentPair {
       //Find out who is on the same side from [mq,mp] as Q[0], the next or the prev. Remember that we found the first chunk from Q[0]
 
       //System.Diagnostics.Debug.WriteLine("cutting P");
-      //                if(debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(p1, q1), Ls(p2, q2), Ls(mp, mq));
+      //               if(debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(p1, q1), Ls(p2, q2), Ls(mp, mq));
       const mpp = this.P.pp(mp).point
       const mqp = this.Q.pp(mq).point
       const mpnp = this.P.pp(this.P.Next(mp)).point
@@ -404,7 +404,7 @@ export class TangentPair {
     if (b1 >= Math.PI && b2 >= Math.PI) {
       //Find out who is on the same side from [mq,mp] as P[0], the next or the prev. Remember that we found the first chunk from P[0]
       //System.Diagnostics.Debug.WriteLine("cutting Q");
-      //                if (debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(p1, q1), Ls(p2, q2), Ls(mp, mq));
+      //               if (debug) LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(p1, q1), Ls(p2, q2), Ls(mp, mq));
       const mpp = this.P.pp(mp).point
       const mqp = this.Q.pp(mq).point
       const mqnp = this.Q.pp(this.Q.Next(mq)).point
@@ -418,27 +418,27 @@ export class TangentPair {
   }
 
   // void ProcessLeftSideOfTrapez(ref number p1, ref number p2, ref number q2, ref number q1) {
-  //    //the closest vertex is on the left side
-  //    Point pn1 = P.Pnt(p1); Point pn2 = P.Pnt(p2);
-  //    Point qn1 = Q.Pnt(q1); Point qn2 = Q.Pnt(q2);
+  //   //the closest vertex is on the left side
+  //   Point pn1 = P.Pnt(p1); Point pn2 = P.Pnt(p2);
+  //   Point qn1 = Q.Pnt(q1); Point qn2 = Q.Pnt(q2);
 
-  //   //SugiyamaLayoutSettings.Show(new LineSegment(pn1, pn2), new LineSegment(pn2, qn2), new LineSegment(qn2, qn1), new LineSegment(qn1, pn1));
-  //    number ap1 = Point.angle(pn2, pn1, qn1);
-  //    number aq1 = Point.angle(pn1, qn1, qn2);
-  //    Assert.assert(ap1 + aq1 >= Math.PI);
-  //    //the point is on the left side
-  //    if (ap1 >= Math.PI / 2 && aq1 >= Math.PI / 2) {
-  //        q2 = q1; //the vertices of the left side gives the solution
-  //        p2 = p1;
-  //    } else if (ap1 < Math.PI / 2) {
-  //        q2 = q1;
-  //        if (!Point.CanProject(qn1, pn1, pn2))
-  //            p1 = p2;
-  //    } else { //aq1<Pi/2
-  //        p2 = p1;
-  //        if (!Point.CanProject(pn1, qn1, qn2))
-  //            q1 = q2;
-  //    }
+  //  //SugiyamaLayoutSettings.Show(new LineSegment(pn1, pn2), new LineSegment(pn2, qn2), new LineSegment(qn2, qn1), new LineSegment(qn1, pn1));
+  //   number ap1 = Point.angle(pn2, pn1, qn1);
+  //   number aq1 = Point.angle(pn1, qn1, qn2);
+  //   Assert.assert(ap1 + aq1 >= Math.PI);
+  //   //the point is on the left side
+  //   if (ap1 >= Math.PI / 2 && aq1 >= Math.PI / 2) {
+  //       q2 = q1; //the vertices of the left side gives the solution
+  //       p2 = p1;
+  //   } else if (ap1 < Math.PI / 2) {
+  //       q2 = q1;
+  //       if (!Point.CanProject(qn1, pn1, pn2))
+  //           p1 = p2;
+  //   } else { //aq1<Pi/2
+  //       p2 = p1;
+  //       if (!Point.CanProject(pn1, qn1, qn2))
+  //           q1 = q2;
+  //   }
   //}
 
   GetAnglesAtTheMedian(
@@ -610,19 +610,19 @@ export class TangentPair {
   }
 
   // bool QContains(number x ,number y) {
-  //    foreach (Point p of Q.Polyline) {
-  //        if (p.x == x && p.y == y)
-  //            return true;
-  //    }
-  //    return false;
+  //   foreach (Point p of Q.Polyline) {
+  //       if (p.x == x && p.y == y)
+  //           return true;
+  //   }
+  //   return false;
   //}
 
   //bool PContains(number x, number y) {
-  //    foreach (Point p of P.Polyline) {
-  //        if (p.x == x && p.y == y)
-  //            return true;
-  //    }
-  //    return false;
+  //   foreach (Point p of P.Polyline) {
+  //       if (p.x == x && p.y == y)
+  //           return true;
+  //   }
+  //   return false;
   //}
 
   CalculateRightTangents() {

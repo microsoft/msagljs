@@ -55,7 +55,7 @@ test('gtree on CDT', () => {
   }
 
   SvgDebugWriter.dumpDebugCurves('/tmp/mst.svg', l)
-  //          LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+  //         LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
 })
 function runOnPoints(ps: Point[]) {
   const nodes = ps.map((p) => creatGeomNode(p))

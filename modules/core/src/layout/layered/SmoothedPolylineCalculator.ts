@@ -26,7 +26,7 @@ import {closeDistEps} from '../../utils/compare'
 export class SmoothedPolylineCalculator {
   headSite: CornerSite
 
-  //  corresponds to the bottom point
+  // corresponds to the bottom point
   edgePath: PolyIntEdge
 
   anchors: Anchor[]
@@ -53,7 +53,7 @@ export class SmoothedPolylineCalculator {
 
   settings: SugiyamaLayoutSettings
 
-  //  Creates a smoothed polyline
+  // Creates a smoothed polyline
 
   constructor(
     edgePathPar: PolyIntEdge,
@@ -119,15 +119,15 @@ export class SmoothedPolylineCalculator {
     }
 
     // if (Routing.db) {
-    //     var l = new Array<DebugCurve>();
-    //        l.AddRange(db.Anchors.Select(a=>new DebugCurve(100,1,"red", a.PolygonalBoundary)));
-    //     l.AddRange(thinRightNodes.Select(n=>n.parallelogram).Select(p=>new Polyline(p.Vertex(VertexId.Corner), p.Vertex(VertexId.VertexA),
-    //         p.Vertex(VertexId.OtherCorner), p.Vertex(VertexId.VertexB))).Select(c=>new DebugCurve(100,3,"brown", c)));
-    //     foreach (var le of this.edgePath.LayerEdges)
-    //         l. push(new DebugCurve(100, 1, "blue", LineSegment.mkPP(db.anchors[le.Source].Origin, db.anchors[le.Target].Origin)));
-    //    LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-    //     // Database(db, thinRightNodes.Select(p=>new Polyline(p.parallelogram.Vertex(VertexId.Corner), p.parallelogram.Vertex(VertexId.VertexA),
-    //         //p.parallelogram.Vertex(VertexId.OtherCorner), p.parallelogram.Vertex(VertexId.VertexB)){Closed=true}).ToArray());
+    //    var l = new Array<DebugCurve>();
+    //       l.AddRange(db.Anchors.Select(a=>new DebugCurve(100,1,"red", a.PolygonalBoundary)));
+    //    l.AddRange(thinRightNodes.Select(n=>n.parallelogram).Select(p=>new Polyline(p.Vertex(VertexId.Corner), p.Vertex(VertexId.VertexA),
+    //        p.Vertex(VertexId.OtherCorner), p.Vertex(VertexId.VertexB))).Select(c=>new DebugCurve(100,3,"brown", c)));
+    //    foreach (var le of this.edgePath.LayerEdges)
+    //        l. push(new DebugCurve(100, 1, "blue", LineSegment.mkPP(db.anchors[le.Source].Origin, db.anchors[le.Target].Origin)));
+    //   LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
+    //    // Database(db, thinRightNodes.Select(p=>new Polyline(p.parallelogram.Vertex(VertexId.Corner), p.parallelogram.Vertex(VertexId.VertexA),
+    //        //p.parallelogram.Vertex(VertexId.OtherCorner), p.parallelogram.Vertex(VertexId.VertexB)){Closed=true}).ToArray());
     // }
     return ret
   }
@@ -336,14 +336,14 @@ export class SmoothedPolylineCalculator {
   }
 
   // Poly(): Curve {
-  //   const c: Curve = new Curve()
-  //   for (let s = this.headSite; s.next != null; s = s.next) {
-  //     c.addSegment(
-  //       new BezierSeg(s.point, Point.convSum(1 / 3, s.point, s.next.point), Point.convSum(2 / 3, s.point, s.next.point), s.next.point),
-  //     )
-  //   }
+  //  const c: Curve = new Curve()
+  //  for (let s = this.headSite; s.next != null; s = s.next) {
+  //    c.addSegment(
+  //      new BezierSeg(s.point, Point.convSum(1 / 3, s.point, s.next.point), Point.convSum(2 / 3, s.point, s.next.point), s.next.point),
+  //    )
+  //  }
 
-  //   return c
+  //  return c
   // }
 
   get GetPolyline(): SmoothedPolyline {
@@ -745,7 +745,7 @@ export class SmoothedPolylineCalculator {
       const nc = n.boundaryCurve
 
       if (Curve.CurvesIntersect(nc, curve)) {
-        //   SvgDebugWriter.dumpICurves('/tmp/cross.svg', [nc, curve])
+        //  SvgDebugWriter.dumpICurves('/tmp/cross.svg', [nc, curve])
         return false
       }
     }
@@ -812,8 +812,8 @@ export class SmoothedPolylineCalculator {
     do {
       seg = Curve.createBezierSeg(k, k, a, b, c)
       // SvgDebugWriter.dumpDebugCurves(
-      //   '/tmp/' + ++SmoothedPolylineCalculator.count + 'sm.svg',
-      //   this.getDebugCurvesForCorner(a, b, c),
+      //  '/tmp/' + ++SmoothedPolylineCalculator.count + 'sm.svg',
+      //  this.getDebugCurvesForCorner(a, b, c),
       // )
       b.previouisBezierCoefficient = k
       k /= 2
@@ -840,42 +840,42 @@ export class SmoothedPolylineCalculator {
   }
 
   // getDebugCurvesForCorner(
-  //   a: CornerSite,
-  //   b: CornerSite,
-  //   c: CornerSite,
+  //  a: CornerSite,
+  //  b: CornerSite,
+  //  c: CornerSite,
   // ): //import{('../../math/geometry/debugCurve').}DebugCurve[] {
-  //   let r = []
-  //   r = r.concat(getHierDC(this.thinWestHierarchy, 'Red'))
-  //   r = r.concat(getHierDC(this.westHierarchy, 'Orange'))
-  //   r = r.concat(getHierDC(this.eastHierarchy, 'Blue'))
-  //   r = r.concat(getHierDC(this.thinEastHierarchy, 'Green'))
+  //  let r = []
+  //  r = r.concat(getHierDC(this.thinWestHierarchy, 'Red'))
+  //  r = r.concat(getHierDC(this.westHierarchy, 'Orange'))
+  //  r = r.concat(getHierDC(this.eastHierarchy, 'Blue'))
+  //  r = r.concat(getHierDC(this.thinEastHierarchy, 'Green'))
 
-  //   for (const a of this.anchors) {
-  //     r.push(DebugCurve.mkDebugCurveTWCI(100, 0.3, 'Gray', a.polygonalBoundary))
-  //   }
-  //   r.push(
-  //     DebugCurve.mkDebugCurveTWCI(
-  //       100,
-  //       2,
-  //       'Blue',
-  //       LineSegment.mkPP(a.point, b.point),
-  //     ),
-  //   )
-  //   r.push(
-  //     DebugCurve.mkDebugCurveTWCI(
-  //       100,
-  //       2,
-  //       'Blue',
-  //       LineSegment.mkPP(b.point, c.point),
-  //     ),
-  //   )
-  //   const p = new Polyline()
-  //   for (let i = 0; i <= this.edgePath.count; i++) {
-  //     p.addPoint(this.EdgePathPoint(i))
-  //   }
-  //   r.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Yellow', p))
+  //  for (const a of this.anchors) {
+  //    r.push(DebugCurve.mkDebugCurveTWCI(100, 0.3, 'Gray', a.polygonalBoundary))
+  //  }
+  //  r.push(
+  //    DebugCurve.mkDebugCurveTWCI(
+  //      100,
+  //      2,
+  //      'Blue',
+  //      LineSegment.mkPP(a.point, b.point),
+  //    ),
+  //  )
+  //  r.push(
+  //    DebugCurve.mkDebugCurveTWCI(
+  //      100,
+  //      2,
+  //      'Blue',
+  //      LineSegment.mkPP(b.point, c.point),
+  //    ),
+  //  )
+  //  const p = new Polyline()
+  //  for (let i = 0; i <= this.edgePath.count; i++) {
+  //    p.addPoint(this.EdgePathPoint(i))
+  //  }
+  //  r.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Yellow', p))
 
-  //   return r
+  //  return r
   // }
 
   private BezierSegIntersectsBoundary(seg: BezierSeg): boolean {
@@ -918,12 +918,12 @@ export class SmoothedPolylineCalculator {
   }
 }
 // function getHierDC(hierarchy: PN, color: string): DebugCurve[] {
-//   if (hierarchy == null || hierarchy.node == null) return []
-//   if (hierarchy.node.hasOwnProperty('children')) {
-//     const n = hierarchy.node as PNInternal
-//     return getHierDC(n.children[0], color).concat(
-//       getHierDC(n.children[1], color),
-//     )
-//   }
-//   return [DebugCurve.mkDebugCurveTWCI(100, 0.5, color, hierarchy.seg)]
+//  if (hierarchy == null || hierarchy.node == null) return []
+//  if (hierarchy.node.hasOwnProperty('children')) {
+//    const n = hierarchy.node as PNInternal
+//    return getHierDC(n.children[0], color).concat(
+//      getHierDC(n.children[1], color),
+//    )
+//  }
+//  return [DebugCurve.mkDebugCurveTWCI(100, 0.5, color, hierarchy.seg)]
 // }

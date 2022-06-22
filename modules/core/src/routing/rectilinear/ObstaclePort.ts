@@ -11,12 +11,12 @@ export class ObstaclePort {
   Obstacle: Obstacle
   CenterVertex: VisibilityVertex
 
-  //  These are derived from PortEntry spans if present, else from Port.Location.
+  // These are derived from PortEntry spans if present, else from Port.Location.
   PortEntrances: Array<ObstaclePortEntrance>
 
   HasCollinearEntrances = false
 
-  //  Hang onto this separately to detect port movement.
+  // Hang onto this separately to detect port movement.
   Location: Point
 
   VisibilityRectangle: Rectangle = Rectangle.mkEmpty()
@@ -36,12 +36,12 @@ export class ObstaclePort {
   }
 
   ClearVisibility() {
-    //  Most of the retained PortEntrance stuff is about precalculated visibility.
+    // Most of the retained PortEntrance stuff is about precalculated visibility.
     this.PortEntrances = []
   }
 
   AddToGraph(transUtil: TransientGraphUtility, routeToCenter: boolean) {
-    //  We use only border vertices if !routeToCenter.
+    // We use only border vertices if !routeToCenter.
     if (routeToCenter) {
       this.CenterVertex = transUtil.FindOrAddVertex(this.Location)
     }
@@ -51,24 +51,24 @@ export class ObstaclePort {
     this.CenterVertex = null
   }
 
-  //  PortManager will recreate the Port if it detects this (this.Location has already been rounded).
+  // PortManager will recreate the Port if it detects this (this.Location has already been rounded).
   get LocationHasChanged(): boolean {
     return !Point.closeDistEps(this.Location, GeomConstants.RoundPoint(this.Port.Location))
   }
 
-  //  The curve associated with the port.
+  // The curve associated with the port.
 
   public get PortCurve(): ICurve {
     return this.Port.Curve
   }
 
-  //  The (unrounded) location of the port.
+  // The (unrounded) location of the port.
 
   public get PortLocation(): Point {
     return this.Port.Location
   }
 
-  //  <returns></returns>
+  // <returns></returns>
   toString(): string {
     return this.Port + this.Obstacle.toString()
   }

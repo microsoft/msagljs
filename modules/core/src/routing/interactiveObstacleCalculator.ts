@@ -79,8 +79,8 @@ export class InteractiveObstacleCalculator {
 
     this.RootOfLooseHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(this.LooseObstacles)
     // Assert.assert(
-    //   InteractiveObstacleCalculator.GetOverlappedPairSet(this.RootOfLooseHierarchy).size == 0,
-    //   'Overlaps are found in LooseObstacles',
+    //  InteractiveObstacleCalculator.GetOverlappedPairSet(this.RootOfLooseHierarchy).size == 0,
+    //  'Overlaps are found in LooseObstacles',
     // )
   }
 
@@ -353,7 +353,7 @@ export class InteractiveObstacleCalculator {
       .rotate(Math.PI / 4)
       .add(v)
     return Point.getTriangleOrientation(v, a, w) == TriangleOrientation.Counterclockwise
-    //    return Point.Angle(u, v, w) > Math.PI / 4;
+    //   return Point.Angle(u, v, w) > Math.PI / 4;
   }
   static CreatePaddedPolyline(poly: Polyline, padding: number): Polyline {
     /*Assert.assert(

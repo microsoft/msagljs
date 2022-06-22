@@ -77,8 +77,8 @@ test(' PolygonPolygonDistance', () => {
 
   b = new Polygon(Polyline.mkFromPoints([new Point(159, 60), new Point(140, 50), new Point(91, 118)]))
   di = Polygon.Distance(b, a)
-  //  LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(new LineSegment(p0, p1)),
-  //    new DebugCurve("blue", a.Polyline), new DebugCurve("red", b.Polyline));
+  // LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(new LineSegment(p0, p1)),
+  //   new DebugCurve("blue", a.Polyline), new DebugCurve("red", b.Polyline));
 
   TestDist(a, b, di.dist)
 })

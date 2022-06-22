@@ -230,7 +230,7 @@ export class RBTree<T> {
       compareRes = this.comparer(z, x.item)
       x = compareRes < 0 ? x.left : x.right
       // #else
-      //     x = (compareRes = Comparer.Compare(z, x.Item)) < 0 ? x.left : x.right;
+      //    x = (compareRes = Comparer.Compare(z, x.Item)) < 0 ? x.left : x.right;
       // #endif
     }
 

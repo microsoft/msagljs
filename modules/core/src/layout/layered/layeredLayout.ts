@@ -183,14 +183,14 @@ export class LayeredLayout extends Algorithm {
       return
     }
 
-    //  we are free to shift at least gridSize horizontally
-    //  find the minimal shift
+    // we are free to shift at least gridSize horizontally
+    // find the minimal shift
     if (Math.abs(delta) <= gridSize / 2) {
       node.center = node.center.add(new Point(-delta, 0))
-      //  shifting to the left
+      // shifting to the left
     } else {
       node.center = node.center.add(new Point(gridSize - delta, 0))
-      //  shifting to the right
+      // shifting to the right
     }
 
     anchor.x = node.center.x
@@ -324,12 +324,12 @@ export class LayeredLayout extends Algorithm {
 
     throw new Error('not implemented')
     // this.constrainedOrdering = new ConstrainedOrdering(
-    //   this.originalGraph,
-    //   this.IntGraph,
-    //   layerArrays.y,
-    //   this.nodeIdToIndex,
-    //   this.database,
-    //   this.sugiyamaSettings,
+    //  this.originalGraph,
+    //  this.IntGraph,
+    //  layerArrays.y,
+    //  this.nodeIdToIndex,
+    //  this.database,
+    //  this.sugiyamaSettings,
     // )
     // this.constrainedOrdering.Calculate()
     // this.properLayeredGraph = this.constrainedOrdering.ProperLayeredGraph
@@ -449,7 +449,7 @@ export class LayeredLayout extends Algorithm {
       return
 
     // If there are an even number of multi-edges between two nodes then
-    //  add a virtual edge in the multi-edge dict to improve the placement, but only in case when the edge goes down only one layer.
+    // add a virtual edge in the multi-edge dict to improve the placement, but only in case when the edge goes down only one layer.
     for (const [k, v] of this.database.Multiedges.keyValues())
       if (v.length % 2 == 0 && layerArrays.y[k.x] - 1 == layerArrays.y[k.y]) {
         const e = new GeomEdge(null)
@@ -641,9 +641,9 @@ export class LayeredLayout extends Algorithm {
         ret = this.ShiftVertexWithNeighbors(e.LayerEdges[0].Source, e.LayerEdges[0].Target, e.LayerEdges[1].Target) || ret
     return ret
     //foreach (LayerEdge[][] edgeStrings of this.dataBase.RefinedEdges.Values)
-    //    if (edgeStrings[0].length == 2)
-    //        foreach (LayerEdge[] edgePath of edgeStrings)
-    //            ret = ShiftVertexWithNeighbors(edgePath[0].Source, edgePath[0].Target, edgePath[1].Target) || ret;
+    //   if (edgeStrings[0].length == 2)
+    //       foreach (LayerEdge[] edgePath of edgeStrings)
+    //           ret = ShiftVertexWithNeighbors(edgePath[0].Source, edgePath[0].Target, edgePath[1].Target) || ret;
     //return ret;
   }
   ShiftVertexWithNeighbors(u: number, i: number, v: number): boolean {
@@ -651,7 +651,7 @@ export class LayeredLayout extends Algorithm {
     const lower: Anchor = this.database.Anchors[v]
     const iAnchor: Anchor = this.database.Anchors[i]
     // calculate the ideal x position for i
-    //  (x- upper.x)/(iAnchor.y-upper.y)=(lower.x-upper.x)/(lower.y-upper.y)
+    // (x- upper.x)/(iAnchor.y-upper.y)=(lower.x-upper.x)/(lower.y-upper.y)
     const x: number = (iAnchor.y - upper.y) * ((lower.x - upper.x) / (lower.y - upper.y)) + upper.x
     const eps = 0.0001
     if (x > iAnchor.x + eps) {

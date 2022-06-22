@@ -42,7 +42,7 @@ test('two in a cone', () => {
   const ports = new PointSet()
   ports.add(new Point(0, 0))
   ports.add(new Point(0.1, 10))
-  ports.add(new Point(-0.1, 10)) //  in the same cone but further from the apex
+  ports.add(new Point(-0.1, 10)) // in the same cone but further from the apex
   const border: Polyline = null
   LineSweeper.Sweep(obstacles, direction, Math.PI / 6, vg, ports, border)
 
@@ -89,18 +89,18 @@ function RunOnRandom(i: number) {
   CheckVG(vg, ps, dir)
   // SvgDebugWriter.dumpDebugCurves('/tmp/vg' + i + '.svg', getEdges())
   // function getEdges(): DebugCurve[] {
-  //   const ret = []
-  //   for (const e of vg.Edges) {
-  //     ret.push(
-  //       DebugCurve.mkDebugCurveTWCI(
-  //         200,
-  //         1,
-  //         'green',
-  //         LineSegment.mkPP(e.SourcePoint, e.TargetPoint),
-  //       ),
-  //     )
-  //   }
-  //   return ret
+  //  const ret = []
+  //  for (const e of vg.Edges) {
+  //    ret.push(
+  //      DebugCurve.mkDebugCurveTWCI(
+  //        200,
+  //        1,
+  //        'green',
+  //        LineSegment.mkPP(e.SourcePoint, e.TargetPoint),
+  //      ),
+  //    )
+  //  }
+  //  return ret
   // }
 }
 
@@ -124,8 +124,8 @@ function InCone(apex: Point, q: Point, dir: Point, ang: number): boolean {
 
 function InConePPP(pi: Point, a: Point, b: Point, c: Point): boolean {
   // Assert.assert(
-  //   Point.getTriangleOrientation(a, b, c) ==
-  //     TriangleOrientation.Counterclockwise,
+  //  Point.getTriangleOrientation(a, b, c) ==
+  //    TriangleOrientation.Counterclockwise,
   // )
   return (
     Point.getTriangleOrientation(a, pi, b) == TriangleOrientation.Clockwise &&

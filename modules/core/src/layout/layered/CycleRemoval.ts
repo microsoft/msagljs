@@ -40,7 +40,7 @@ export class CycleRemoval {
       /*Assert.assert(status[vertex] != VertStatus.InStack)*/
 
       const stack = new Stack<StackStruct>() //avoiding the recursion
-      let i = 0 //  the index in the outEnum
+      let i = 0 // the index in the outEnum
       CycleRemoval.push(stack, status, vertex, i)
       while (stack.size > 0) {
         const s = stack.pop()

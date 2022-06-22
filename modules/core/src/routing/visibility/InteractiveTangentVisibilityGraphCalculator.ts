@@ -15,11 +15,11 @@ import {VisibilityVertex} from './VisibilityVertex'
 import {StemStartPointComparer} from './StemStartPointComparer'
 
 export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
-  //  the list of obstacles
+  // the list of obstacles
 
   polygons: Array<Polygon>
 
-  //  From these polygons we calculate visibility edges to all other polygons
+  // From these polygons we calculate visibility edges to all other polygons
 
   addedPolygons: Array<Polygon>
 
@@ -37,7 +37,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
 
   useLeftPTangents: boolean
 
-  //  we calculate tangents between activePolygons and between activePolygons and existingObsacles
+  // we calculate tangents between activePolygons and between activePolygons and existingObsacles
 
   run() {
     this.useLeftPTangents = true
@@ -98,7 +98,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
     VisibilityGraph.AddEdgeVV(getVertex(this.visibilityGraph, t.start), getVertex(this.visibilityGraph, t.End))
   }
 
-  //  this function will also add the first tangent to the visible edges if needed
+  // this function will also add the first tangent to the visible edges if needed
 
   private InitActiveDiagonals() {
     if (this.tangents.length == 0) {
@@ -162,7 +162,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
     )
   }
 
-  //  compare tangents by measuring the counterclockwise angle between the tangent and the edge
+  // compare tangents by measuring the counterclockwise angle between the tangent and the edge
 
   static TangentComparison(e0: Tangent, e1: Tangent): number {
     return StemStartPointComparer.CompareVectorsByAngleToXAxis(e0.End.point.sub(e0.start.point), e1.End.point.sub(e1.start.point))
