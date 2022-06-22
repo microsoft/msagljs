@@ -2,7 +2,7 @@
 import {Port} from '../layout/core/port'
 import {Curve, Point, PointLocation} from '../math/geometry'
 import {HitTestBehavior} from '../math/geometry/RTree/HitTestBehavior'
-import {CreateRectangleNodeOnData, RectangleNode} from '../math/geometry/RTree/RectangleNode'
+import {createRectangleNodeOnData, RectangleNode} from '../math/geometry/RTree/RectangleNode'
 import {CrossRectangleNodesSameType} from '../math/geometry/RTree/RectangleNodeUtils'
 import {GetConnectedComponents} from '../math/graphAlgorithms/ConnectedComponentCalculator'
 import {BasicGraphOnEdges, mkGraphOnEdgesN} from '../structs/basicGraphOnEdges'
@@ -37,7 +37,7 @@ export class MultiEdgeRouter {
     this.bundlingSettings = bundlingSettings
     this.bundlingSettings.edgeWidthShrinkCoeff = 1
     this.transparentShapeSetter = transparentShapeSetter
-    this.nodeTree = CreateRectangleNodeOnData(nodeBoundaryCurves, (c) => c.boundingBox)
+    this.nodeTree = createRectangleNodeOnData(nodeBoundaryCurves, (c) => c.boundingBox)
   }
 
   run() {
@@ -117,7 +117,7 @@ export class MultiEdgeRouter {
 
   static EnumeratePairsOfIntersectedPreGraphs(preGraphs: Array<PreGraph>): Array<IntPair> {
     const arr = Array.from(Array(preGraphs.length).keys())
-    const rn = CreateRectangleNodeOnData(arr, (i) => preGraphs[i].boundingBox)
+    const rn = createRectangleNodeOnData(arr, (i) => preGraphs[i].boundingBox)
     const list = new Array<IntPair>()
     CrossRectangleNodesSameType(rn, rn, (i, j) => list.push(new IntPair(i, j)))
     return list

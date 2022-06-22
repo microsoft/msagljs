@@ -114,7 +114,7 @@ function ChooseSeeds<T, P>(nodes: RectangleNode<T, P>[], t: {b0: IRectangle<P>; 
 }
 
 //calculates a tree based on the given nodes
-export function CreateRectangleNodeOnData<T, P>(
+export function createRectangleNodeOnData<T, P>(
   dataEnumeration: Iterable<T>,
   rectangleDelegate: (t: T) => IRectangle<P>,
 ): RectangleNode<T, P> {

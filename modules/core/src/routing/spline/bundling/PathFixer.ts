@@ -3,7 +3,7 @@ import {Polyline, LineSegment, GeomConstants, Curve} from '../../../math/geometr
 import {distPP, TriangleOrientation} from '../../../math/geometry/point'
 import {PointPair} from '../../../math/geometry/pointPair'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-import {CreateRectangleNodeOnData} from '../../../math/geometry/RTree/RectangleNode'
+import {createRectangleNodeOnData} from '../../../math/geometry/RTree/RectangleNode'
 import {CrossRectangleNodesSameType} from '../../../math/geometry/RTree/RectangleNodeUtils'
 import {RTree} from '../../../math/geometry/RTree/rTree'
 import {compareNumbers} from '../../../utils/compare'
@@ -64,7 +64,7 @@ export class PathFixer {
       r.pad(GeomConstants.intersectionEpsilon)
       treeOfVertices.Add(r, vertex.point)
     }
-    const treeOfEdges = CreateRectangleNodeOnData(this.Edges(), (e) => Rectangle.mkPP(e.First, e.Second))
+    const treeOfEdges = createRectangleNodeOnData(this.Edges(), (e) => Rectangle.mkPP(e.First, e.Second))
 
     CrossRectangleNodesSameType<PointPair, Point>(treeOfEdges, treeOfEdges, (a, b) =>
       this.IntersectTwoEdges.bind(a, b, splittingPoints, treeOfVertices),
