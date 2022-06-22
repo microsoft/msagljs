@@ -350,7 +350,7 @@ export class SimulatedAnnealing {
       throw new Error()
     }
     // throw new Error()
-    ////Assert.assert(res) // problem here
+    ///Assert.assert(res) // problem here
     for (const d of t.touchedObstacles) {
       const dist: number = d[1].sub(node.Position).length
       //Assert.assert(dist <= idealR)
@@ -383,7 +383,7 @@ export class SimulatedAnnealing {
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(3, adjStation.Position)),
         ])
       }
-      ////Assert.assert(res) //todo : still unsolved
+      ///Assert.assert(res) //todo : still unsolved
 
       for (const d of t.closestDist) {
         const dist = d[0].sub(d[1]).length

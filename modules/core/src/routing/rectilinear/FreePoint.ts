@@ -1,5 +1,5 @@
-///  This is a point on a path that is not associated with an obstacle, such as
-///  a port for the end of a dragged path, or a waypoint.
+//  This is a point on a path that is not associated with an obstacle, such as
+//  a port for the end of a dragged path, or a waypoint.
 
 import {Point, Rectangle, CompassVector, Direction, LineSegment} from '../../math/geometry'
 

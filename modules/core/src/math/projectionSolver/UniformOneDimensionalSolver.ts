@@ -12,7 +12,6 @@ export class UniformOneDimensionalSolver {
 
   //  desired variable separation
 
-  //  <param name="variableSeparation"></param>
   public constructor(variableSeparation: number) {
     this.varSepartion = variableSeparation
   }

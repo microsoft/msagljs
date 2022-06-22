@@ -1,4 +1,4 @@
-///  single source single target rectilinear path
+//  single source single target rectilinear path
 
 import {Point} from '../../math/geometry/point'
 import {CompassVector} from '../../math/geometry/compassVector'
@@ -52,7 +52,7 @@ export class SsstRectilinearPath {
 
   private targetCostAdjustment: number
 
-  ///  The cost of the path calculation
+  //  The cost of the path calculation
 
   private CombinedCost(length: number, numberOfBends: number): number {
     return this.LengthImportance * length + this.BendsImportance * numberOfBends
@@ -62,11 +62,11 @@ export class SsstRectilinearPath {
     return this.CombinedCost(length, numberOfBends) + this.sourceCostAdjustment
   }
 
-  ///  The priority queue for path extensions.
+  //  The priority queue for path extensions.
 
   private queue: GenericBinaryHeapPriorityQueue<VertexEntry>
 
-  ///  The list of vertices we've visited for all paths.
+  //  The list of vertices we've visited for all paths.
 
   private visitedVertices: Array<VisibilityVertexRectilinear>
 
@@ -75,7 +75,7 @@ export class SsstRectilinearPath {
   //  Thus straight-ahead neighbors are in slot 2, right in slot 1, left in slot 0.  (If the target happens
   //  to be to the Left, then the heuristic lookahead score will override the Right preference).
 
-  ///  The next neighbors to extend the path to from the current vertex.
+  //  The next neighbors to extend the path to from the current vertex.
 
   private readonly nextNeighbors = [new NextNeighbor(), new NextNeighbor(), new NextNeighbor()]
 
@@ -132,11 +132,9 @@ export class SsstRectilinearPath {
     return Number.isFinite(bestCost) ? bestCost + this.BendsImportance : bestCost
   }
 
-  ///  estimation from below for the distance
+  //  estimation from below for the distance
 
-  ///  <param name="point"></param>
-  ///  <param name="entryDirToVertex"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   private HeuristicDistanceFromVertexToTarget(point: Point, entryDirToVertex: Direction): number {
     const vectorToTarget: Point = this.Target.point.sub(point)
     if (closeDistEps(vectorToTarget.x, 0) && closeDistEps(vectorToTarget.y, 0)) {

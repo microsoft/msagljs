@@ -1,4 +1,4 @@
-﻿///  Class for creating Shape elements from a Graph.
+﻿//  Class for creating Shape elements from a Graph.
 
 import {GeomGraph, GeomNode, GeomEdge} from '../layout/core'
 import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
@@ -11,11 +11,11 @@ import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
 
 export class ShapeCreator {
-  ///  For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
-  ///  according to the cluster hierarchy
+  //  For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
+  //  according to the cluster hierarchy
 
-  ///  <param name="graph">graph with edges to route and nodes/clusters to route around</param>
-  ///  <returns>the set of obstacles with correct cluster hierarchy and ports</returns>
+  // graph with edges to route and nodes/clusters to route around
+  //  <returns>the set of obstacles with correct cluster hierarchy and ports</returns>
   public static GetShapes(graph: GeomGraph, edges: GeomEdge[] = Array.from(graph.edges())): Array<Shape> {
     const nodesToShapes = new Map<GeomNode, Shape>()
     getShapesUnderGraph(graph, nodesToShapes)

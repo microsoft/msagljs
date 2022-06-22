@@ -1,4 +1,4 @@
-///  sets the order of connector paths on the edges
+//  sets the order of connector paths on the edges
 
 //
 import {Queue} from 'queue-typescript'
@@ -141,13 +141,11 @@ export class CombinatorialNudger {
       : -CombinatorialNudger.CompareInDirectionStartingFromAxisEdge(x, y, x.AxisEdge, CompassVector.OppositeDir(x.AxisEdge.Direction))
   }
 
-  ///
+  //
 
-  ///  <param name="x"></param>
-  ///  <param name="y"></param>
-  ///  <param name="axisEdge">axisEdge together with the axisEdgeIsReversed parameter define direction of the movement over the paths</param>
-  ///  <param name="direction"></param>
-  ///  <returns></returns>
+  // axisEdge together with the axisEdgeIsReversed parameter define direction of the movement over the paths
+
+  //  <returns></returns>
   static CompareInDirectionStartingFromAxisEdge(x: PathEdge, y: PathEdge, axisEdge: AxisEdge, direction: Direction): number {
     while (true) {
       x = CombinatorialNudger.GetNextPathEdgeInDirection(x, axisEdge, direction)

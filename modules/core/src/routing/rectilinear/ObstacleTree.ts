@@ -40,7 +40,7 @@ export class ObstacleTree {
 
   AncestorSets: Map<Shape, Set<Shape>>
 
-  /// Indicates whether we adjusted spatial ancestors due to blocked paths.
+  // Indicates whether we adjusted spatial ancestors due to blocked paths.
 
   SpatialAncestorsAdjusted: boolean
 

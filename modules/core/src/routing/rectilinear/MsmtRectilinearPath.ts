@@ -16,22 +16,22 @@ export class MsmtRectilinearPath {
     this.bendPenaltyAsAPercentageOfDistance = bendPenalty
   }
 
-  ///  Get the lowest-cost path from one of one or more sources to one of one or more targets, without waypoints.
+  //  Get the lowest-cost path from one of one or more sources to one of one or more targets, without waypoints.
 
-  ///  <param name="sources">One or more source vertices</param>
-  ///  <param name="targets">One or more target vertices</param>
-  ///  <returns>A single enumeration of path points.</returns>
+  // One or more source vertices
+  // One or more target vertices
+  //  <returns>A single enumeration of path points.</returns>
   GetPath(sources: Array<VisibilityVertex>, targets: Array<VisibilityVertex>): Array<Point> {
     const t = {entry: this.GetPathStage(null, sources, null, targets)}
     return SsstRectilinearPath.RestorePathV(t)
   }
 
-  ///  Route a single stage of a possibly multi-stage (due to waypoints) path.
+  //  Route a single stage of a possibly multi-stage (due to waypoints) path.
 
-  ///  <param name="sourceVertexEntries">The VertexEntry array that was in the source vertex if it was the target of a prior stage.</param>
-  ///  <param name="sources">The enumeration of source vertices; must be only one if sourceVertexEntries is non-null.</param>
-  ///  <param name="targets">The enumeration of target vertex entries; must be only one if targetVertexEntries is non-null.</param>
-  ///  <param name="targetVertexEntries">The VertexEntry array that is in the target at the end of the stage.</param>
+  // The VertexEntry array that was in the source vertex if it was the target of a prior stage.
+  // The enumeration of source vertices; must be only one if sourceVertexEntries is non-null.
+  // The enumeration of target vertex entries; must be only one if targetVertexEntries is non-null.
+  // The VertexEntry array that is in the target at the end of the stage.
   private GetPathStage(
     sourceVertexEntries: VertexEntry[],
     sources: Array<VisibilityVertex>,

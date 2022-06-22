@@ -3,8 +3,8 @@
 //  MSAGL class for Port management for Rectilinear Edge Routing.
 //
 
-///  This stores information mapping the App-level Ports (e.g. FloatingPort, RelativeFloatingPort,
-///  and MultiLocationFloatingPort) to the router's BasicScanPort subclasses (ObstaclePort and FreePoint).
+//  This stores information mapping the App-level Ports (e.g. FloatingPort, RelativeFloatingPort,
+//  and MultiLocationFloatingPort) to the router's BasicScanPort subclasses (ObstaclePort and FreePoint).
 import {uniteSets, substractSets} from '../../utils/setOperations'
 
 import {Point, Rectangle, ICurve} from '../../math/geometry'

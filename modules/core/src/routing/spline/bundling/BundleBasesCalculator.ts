@@ -608,8 +608,8 @@ export class BundleBasesCalculator {
     const boundaryCurve: ICurve = base0.Curve
     const len: number = this.IntervalsOverlapLength(base0.ParStart, base0.ParEnd, base1.ParStart, base1.ParEnd, boundaryCurve)
     const mn: number = Math.min(base0.Span, base1.Span)
-    ////Assert.assert(ApproximateComparer.LessOrEqual(len, mn));
-    ////Assert.assert((mn > 0));
+    ///Assert.assert(ApproximateComparer.LessOrEqual(len, mn));
+    ///Assert.assert((mn > 0));
     return Math.exp(len / (mn * 10)) - 1
   }
 
@@ -651,7 +651,7 @@ export class BundleBasesCalculator {
       const c3: number = BundleBasesCalculator.SqueezeCoeff * this.SqueezeCost(bundleInfo)
       const c4: number = BundleBasesCalculator.CenterCoeff * this.CenterCostBi(bundleInfo)
       cost += (c1 + c2) / 2 + c3 + c4
-      ////Assert.assert(cost < Number.POSITIVE_INFINITY)
+      ///Assert.assert(cost < Number.POSITIVE_INFINITY)
     }
     return cost
   }

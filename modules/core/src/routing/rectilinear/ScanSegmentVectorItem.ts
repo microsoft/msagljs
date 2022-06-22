@@ -47,7 +47,7 @@ export class ScanSegmentVectorItem {
 
   //  Ctor, taking the parallel (constant) coordinate.
 
-  //  <param name="coord">the parallel (constant) coordinate</param>
+  // the parallel (constant) coordinate
   constructor(coord: number) {
     this.Coord = coord
   }
@@ -132,7 +132,6 @@ export class ScanSegmentVectorItem {
   //  Set Current to the ScanSegment containing the perpendicular coordinate, then add that coordinate to its
   //  sparse-vector coordinate list.
 
-  //  <param name="perpCoord"></param>
   AddPerpendicularCoord(perpCoord: number) {
     const point = this.IsHorizontal ? new Point(perpCoord, this.Coord) : new Point(this.Coord, perpCoord)
     this.TraverseToSegmentContainingPoint(point)

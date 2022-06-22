@@ -1,4 +1,4 @@
-///  intersects a set of horizontal LinkedPoints with a set of vertical LinkedPoints
+//  intersects a set of horizontal LinkedPoints with a set of vertical LinkedPoints
 
 import {Point} from '../../../math/geometry/point'
 import {GeomConstants} from '../../../math/geometry/geomConstants'
@@ -9,10 +9,10 @@ import {closeDistEps, compareNumbers} from '../../../utils/compare'
 import {LinkedPoint} from './LinkedPoint'
 
 export class LinkedPointSplitter {
-  ///
+  //
 
-  ///  <param name="horizontalPoints">no two horizontal segs overlap, but they can share an end point</param>
-  ///  <param name="verticalPoints">no two vertical segs overlap, but they can share an end point</param>
+  // no two horizontal segs overlap, but they can share an end point
+  // no two vertical segs overlap, but they can share an end point
   constructor(horizontalPoints: Array<LinkedPoint>, verticalPoints: Array<LinkedPoint>) {
     this.VerticalPoints = verticalPoints
     this.HorizontalPoints = horizontalPoints

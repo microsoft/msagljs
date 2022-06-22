@@ -38,56 +38,56 @@ import {VisibilityGraphGenerator} from './VisibilityGraphGenerator'
 
 //  implementation) and groups.
 export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
-  ///  The points of obstacle vertices encountered on horizontal scan.
+  //  The points of obstacle vertices encountered on horizontal scan.
 
   private horizontalVertexPoints = new PointSet()
 
-  ///  The points of obstacle vertices encountered on vertical scan.
+  //  The points of obstacle vertices encountered on vertical scan.
 
   private verticalVertexPoints: PointSet = new PointSet()
 
-  ///  The Steiner points generated at the bounding box of obstacles.
-  ///  These help ensure that we can "go around" the obstacle, as with the non-orthogonal edges in the paper.
+  //  The Steiner points generated at the bounding box of obstacles.
+  //  These help ensure that we can "go around" the obstacle, as with the non-orthogonal edges in the paper.
 
   private boundingBoxSteinerPoints: PointSet = new PointSet()
 
-  ///  Accumulates distinct vertex projections to the X axis during sweep.
+  //  Accumulates distinct vertex projections to the X axis during sweep.
 
   private xCoordAccumulator: Set<number> = new Set<number>()
 
-  ///  Accumulates distinct vertex projections to the Y axis during sweep.
+  //  Accumulates distinct vertex projections to the Y axis during sweep.
 
   private yCoordAccumulator: Set<number> = new Set<number>()
 
-  ///  ScanSegment vector locations on the Y axis; final array after sweep.
+  //  ScanSegment vector locations on the Y axis; final array after sweep.
 
   private horizontalScanSegmentVector: ScanSegmentVector
 
-  ///  ScanSegment vector locations on the X axis; final array after sweep.
+  //  ScanSegment vector locations on the X axis; final array after sweep.
 
   private verticalScanSegmentVector: ScanSegmentVector
 
-  ///  The index from a coordinate to a horizontal vector slot.
+  //  The index from a coordinate to a horizontal vector slot.
 
   private horizontalCoordMap: Map<number, number> = new Map<number, number>()
 
-  ///  The index from a point to a vertical vector slot.
+  //  The index from a point to a vertical vector slot.
 
   private verticalCoordMap: Map<number, number> = new Map<number, number>()
 
-  ///  The index from a coordinate to a vector slot on the axis we are intersecting to.
+  //  The index from a coordinate to a vector slot on the axis we are intersecting to.
 
   private perpendicularCoordMap: Map<number, number>
 
-  ///  The segment vector we are intersecting along.
+  //  The segment vector we are intersecting along.
 
   private parallelSegmentVector: ScanSegmentVector
 
-  ///  The segment vector we are intersecting to.
+  //  The segment vector we are intersecting to.
 
   private perpendicularSegmentVector: ScanSegmentVector
 
-  ///  The comparer for points along the horizontal or vertical axis.
+  //  The comparer for points along the horizontal or vertical axis.
 
   currentAxisPointComparer: (a: Point, b: Point) => number
   constructor() {
@@ -109,9 +109,9 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
     this.verticalCoordMap.clear()
   }
 
-  ///  Generate the visibility graph along which edges will be routed.
+  //  Generate the visibility graph along which edges will be routed.
 
-  ///  <returns></returns>
+  //  <returns></returns>
   GenerateVisibilityGraph() {
     this.AccumulateVertexCoords()
     this.CreateSegmentVectorsAndPopulateCoordinateMaps()

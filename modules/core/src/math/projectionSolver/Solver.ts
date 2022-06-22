@@ -1,5 +1,5 @@
-///  A Solver is the driving class that collects Variables and Constraints and then generates a
-///  solution that minimally satisfies the constraints.
+//  A Solver is the driving class that collects Variables and Constraints and then generates a
+//  solution that minimally satisfies the constraints.
 
 import {greaterDistEps} from '../../utils/compare'
 import {flatMap} from '../../utils/setOperations'
@@ -83,32 +83,32 @@ export class Solver {
     return this.hasNeighbourPairs || this.solverParams.Advanced.ForceQpsc
   }
 
-  ///  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
+  //  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
 
-  ///  <param name="userData">a tag or other user data - can be null</param>
-  ///  <param name="desiredPos">The position of the variable, such as the coordinate of a node along one axis.</param>
-  ///  <returns>The created variable</returns>
+  // a tag or other user data - can be null
+  // The position of the variable, such as the coordinate of a node along one axis.
+  //  <returns>The created variable</returns>
   public AddVariableAN(userData: any, desiredPos: number): Variable {
     return this.AddVariableANNN(userData, desiredPos, 1, 1)
   }
 
-  ///  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
+  //  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
 
-  ///  <param name="userData">a tag or other user data - can be null</param>
-  ///  <param name="desiredPos">The position of the variable, such as the coordinate of a node along one axis.</param>
-  ///  <param name="weight">The weight of the variable (makes it less likely to move if the weight is high).</param>
-  ///  <returns></returns>
+  // a tag or other user data - can be null
+  // The position of the variable, such as the coordinate of a node along one axis.
+  // The weight of the variable (makes it less likely to move if the weight is high).
+  //  <returns></returns>
   public AddVariableANN(userData: any, desiredPos: number, weight: number): Variable {
     return this.AddVariableANNN(userData, desiredPos, weight, 1)
   }
 
-  ///  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
+  //  Add a Variable (for example, wrapping a node on one axis of the graph) to the Solver.
 
-  ///  <param name="userData">a tag or other user data - can be null</param>
-  ///  <param name="desiredPos">The position of the variable, such as the coordinate of a node along one axis.</param>
-  ///  <param name="weight">The weight of the variable (makes it less likely to move if the weight is high).</param>
-  ///  <param name="scale">The scale of the variable, for improving convergence.</param>
-  ///  <returns>The created variable</returns>
+  // a tag or other user data - can be null
+  // The position of the variable, such as the coordinate of a node along one axis.
+  // The weight of the variable (makes it less likely to move if the weight is high).
+  // The scale of the variable, for improving convergence.
+  //  <returns>The created variable</returns>
   public AddVariableANNN(userData: any, desiredPos: number, weight: number, scale: number): Variable {
     //  @@DCR "Incremental Solving": For now we disallow this; if we support it, we'll need to
     //  retain loadedVariablesAndConstraintLists, store up the added Variables (TryGetValue and if that fails add
@@ -130,8 +130,8 @@ export class Solver {
 
   //  end AddVariable()
 
-  ///  Must be called before Solve() if the caller has updated variable Initial positions; this
-  ///  reconciles internals such as Block.ReferencePos.
+  //  Must be called before Solve() if the caller has updated variable Initial positions; this
+  //  reconciles internals such as Block.ReferencePos.
 
   public UpdateVariables() {
     //  Although the name is "UpdateVariables", that's just for the caller to not need to know
@@ -145,20 +145,20 @@ export class Solver {
 
   //  end UpdateVariables()
 
-  ///  This enumerates all Variables created by AddVariable.
+  //  This enumerates all Variables created by AddVariable.
 
   public get Variables(): Array<Variable> {
     return flatMap(this.allBlocks.Vector, (block) => block.Variables)
   }
 
-  ///  The number of variables added to the Solver.
+  //  The number of variables added to the Solver.
 
   public get VariableCount(): number {
     return this.numberOfVariables
   }
 
-  ///  This enumerates all Constraints created by AddConstraint (which in turn may have
-  ///  been called from OverlapRemoval.ConstraintGenerator.Generate()).
+  //  This enumerates all Constraints created by AddConstraint (which in turn may have
+  //  been called from OverlapRemoval.ConstraintGenerator.Generate()).
 
   *Constraints(): IterableIterator<Constraint> {
     if (!this.allConstraints.IsEmpty) {
@@ -190,29 +190,24 @@ export class Solver {
 
   //  end Constraints property
 
-  ///  The number of constraints added to the Solver.
+  //  The number of constraints added to the Solver.
 
   public get ConstraintCount(): number {
     return this.numberOfConstraints
   }
 
-  ///  Add a constraint 'left + gap' is equal to right
+  //  Add a constraint 'left + gap' is equal to right
 
-  ///  <param name="left"></param>
-  ///  <param name="right"></param>
-  ///  <param name="gap"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   public AddEqualityConstraint(left: Variable, right: Variable, gap: number): Constraint {
     return this.AddConstraintVVNB(left, right, gap, true)
   }
 
-  ///  Add a constraint 'left + gap' is less than or equal to 'right'
+  //  Add a constraint 'left + gap' is less than or equal to 'right'
 
-  ///  <param name="left"></param>
-  ///  <param name="right"></param>
-  ///  <param name="gap">The gap required between the variables.</param>
-  ///  <param name="isEquality"></param>
-  ///  <returns>The new constraint.</returns>
+  // The gap required between the variables.
+
+  //  <returns>The new constraint.</returns>
   public AddConstraintVVNB(left: Variable, right: Variable, gap: number, isEquality: boolean): Constraint {
     //  @@DCR "Incremental Solving": See notes in AddVariable; for now, this is disallowed.
     if (!this.allConstraints.IsEmpty) {
@@ -250,20 +245,18 @@ export class Solver {
     return constraint
   }
 
-  ///  Add a constraint 'left + gap' is less than or equal to 'right'
+  //  Add a constraint 'left + gap' is less than or equal to 'right'
 
-  ///  <param name="left"></param>
-  ///  <param name="right"></param>
-  ///  <param name="gap">The gap required between the variables.</param>
-  ///  <returns>The new constraint.</returns>
+  // The gap required between the variables.
+  //  <returns>The new constraint.</returns>
   public AddConstraint(left: Variable, right: Variable, gap: number): Constraint {
     return this.AddConstraintVVNB(left, right, gap, false)
   }
 
-  ///  Register an update to a constraint's gap; this defers the actual update until Solve() is called.
+  //  Register an update to a constraint's gap; this defers the actual update until Solve() is called.
 
-  ///  <param name="constraint">The constraint to update</param>
-  ///  <param name="gap">The new gap</param>
+  // The constraint to update
+  // The new gap
   public SetConstraintUpdate(constraint: Constraint, gap: number) {
     //  Defer this to the Solve() call, so the variables' positions are not altered by doing a
     //  Block.Split here (which updates Block.ReferencePos, upon which Variable.(Scaled)ActualPos relies).
@@ -272,13 +265,13 @@ export class Solver {
     }
   }
 
-  ///  Add a pair of connected variables for goal functions of the form (x1-x2)^2.  These are
-  ///  minimally satisfied, along with the default (x-i)^2 goal function, while also satisfying
-  ///  all constraints.
+  //  Add a pair of connected variables for goal functions of the form (x1-x2)^2.  These are
+  //  minimally satisfied, along with the default (x-i)^2 goal function, while also satisfying
+  //  all constraints.
 
-  ///  <param name="variable1">The first variable</param>
-  ///  <param name="variable2">The second variable</param>
-  ///  <param name="relationshipWeight">The weight of the relationship</param>
+  // The first variable
+  // The second variable
+  // The weight of the relationship
   public AddNeighborPair(variable1: Variable, variable2: Variable, relationshipWeight: number) {
     if (relationshipWeight <= 0 || Number.isNaN(relationshipWeight) || !Number.isFinite(relationshipWeight)) {
       throw new Error('relationshipWeight')
@@ -295,22 +288,22 @@ export class Solver {
 
   //  end AddNeighborPair()
 
-  ///  Sets Variable.ActualPos to the positions of the Variables that minimally satisfy the constraints
-  ///  along this axis.  This overload uses default solution parameter values.
+  //  Sets Variable.ActualPos to the positions of the Variables that minimally satisfy the constraints
+  //  along this axis.  This overload uses default solution parameter values.
 
-  ///  <returns>A Solution object.</returns>
+  //  <returns>A Solution object.</returns>
   public Solve(): Solution {
     return this.SolvePar(null)
   }
 
-  ///  Sets Variable.ActualPos to the positions of the Variables that minimally satisfy the constraints
-  ///  along this axis.  This overload takes a parameter specification.
+  //  Sets Variable.ActualPos to the positions of the Variables that minimally satisfy the constraints
+  //  along this axis.  This overload takes a parameter specification.
 
-  ///  <param name="solverParameters">Solution-generation options.</param>
-  ///  <returns>The only failure condition is if there are one or more unsatisfiable constraints, such as cycles
-  ///          or mutually exclusive equality constraints; if these are encountered, a list of lists of these
-  ///          constraints is returned, where each list contains a single cycle, which may be of length one for
-  ///          unsatisfiable equality constraints.  Otherwise, the return value is null.</returns>
+  // Solution-generation options.
+  //  <returns>The only failure condition is if there are one or more unsatisfiable constraints, such as cycles
+  //          or mutually exclusive equality constraints; if these are encountered, a list of lists of these
+  //          constraints is returned, where each list contains a single cycle, which may be of length one for
+  //          unsatisfiable equality constraints.  Otherwise, the return value is null.</returns>
   public SolvePar(solverParameters: Parameters): Solution {
     if (solverParameters) {
       this.solverParams = <Parameters>solverParameters.Clone()

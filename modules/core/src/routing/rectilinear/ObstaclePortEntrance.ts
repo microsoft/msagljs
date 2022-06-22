@@ -215,7 +215,7 @@ export class ObstaclePortEntrance {
     }
   }
 
-  ///  <returns></returns>
+  //  <returns></returns>
   public toString(): string {
     return String.Format(
       '{0} {1}~{2} {3}',

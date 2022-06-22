@@ -2,8 +2,8 @@ import {String} from 'typescript-string-operations'
 import {Constraint} from './Constraint'
 import {Variable} from './Variable'
 
-///  variableDoneEval is NULL if we are starting an evaluation; if recursive, it's the variable
-///  on that side from the parent call, which was already processed.
+//  variableDoneEval is NULL if we are starting an evaluation; if recursive, it's the variable
+//  on that side from the parent call, which was already processed.
 
 export class DfDvNode {
   Parent: DfDvNode

@@ -158,7 +158,7 @@ export class Variable {
 
   //  Compare the Variables by their ordinals, in ascending order (this == lhs, other == rhs).
 
-  //  <param name="other">The object being compared to.</param>
+  // The object being compared to.
   //  <returns>-1 if this.Ordinal is "less"; +1 if this.Ordinal is "greater"; 0 if this.Ordinal
   //          and rhs are equal.</returns>
   public CompareTo(other: Variable): number {

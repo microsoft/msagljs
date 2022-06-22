@@ -107,15 +107,15 @@ export class ConstraintVector {
   //  same block; therefore the cycle can't be created by MergeBlocks.  If there is a forward non-equality
   //  constraint in the path, then that constraint will be deactivated and its variables moved, so there is
   //  no cycle.  So the only condition for a cycle is that Expand finds no forward non-equality constraint.
-  /// /
+  // /
   //  Equality constraints (forward or backward) returned in the path between the .left and .right variables
   //  of the constraint passed to Expand() do not change this; if you have an unsatisfied inequality constraint
   //  between the two variables of an equality constraint, then the inequality is unsatisfiable; and by extension
   //  then if it is between two variables between which there exists a path consisting solely of equality
   //  constraints and backward-inequality constraints, it is unsatisfiable.
-  /// /
+  // /
   //  Negative gaps mean "left can be up to <+gap> greater than right", so again this does not affect it.
-  /// /
+  // /
   //  Therefore the only reason multi-constraint cycles would exist is if a block was expanded to accommodate
   //  the constraint (incrementing the offsets to the right) despite not having found a forward minLagrangian.
   //  This also means that ComputeDfDv should never encounter cycles.

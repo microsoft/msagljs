@@ -93,22 +93,16 @@ export class StaircaseRemover {
     return horiz ? new Point(pts[offset + 4].x, pts[offset].y) : new Point(pts[offset].x, pts[offset + 4].y)
   }
 
-  ///  ignoring crossing at a
+  //  ignoring crossing at a
 
-  ///  <param name="a"></param>
-  ///  <param name="b"></param>
-  ///  <param name="segsToIgnore"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   Crossing(a: Point, b: Point, segsToIgnore: SegWithIndex[]): boolean {
     return StaircaseRemover.IsCrossing(LineSegment.mkPP(a, b), this.segTree, segsToIgnore)
   }
 
-  ///  ignoring crossing at ls.Start
+  //  ignoring crossing at ls.Start
 
-  ///  <param name="ls"></param>
-  ///  <param name="rTree"></param>
-  ///  <param name="segsToIgnore"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   static IsCrossing(ls: LineSegment, rTree: RTree<SegWithIndex, Point>, segsToIgnore: SegWithIndex[]): boolean {
     for (const seg of rTree.GetAllIntersecting(ls.boundingBox)) if (segsToIgnore.findIndex((p) => p == seg) == -1) return true
 

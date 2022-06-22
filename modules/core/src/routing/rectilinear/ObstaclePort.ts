@@ -56,19 +56,19 @@ export class ObstaclePort {
     return !Point.closeDistEps(this.Location, GeomConstants.RoundPoint(this.Port.Location))
   }
 
-  ///  The curve associated with the port.
+  //  The curve associated with the port.
 
   public get PortCurve(): ICurve {
     return this.Port.Curve
   }
 
-  ///  The (unrounded) location of the port.
+  //  The (unrounded) location of the port.
 
   public get PortLocation(): Point {
     return this.Port.Location
   }
 
-  ///  <returns></returns>
+  //  <returns></returns>
   toString(): string {
     return this.Port + this.Obstacle.toString()
   }

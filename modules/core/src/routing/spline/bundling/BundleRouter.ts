@@ -1,5 +1,5 @@
-///  The class is responsible for general edge bundling with ordered bundles.
-///  Currently the router will fail if there are node overlaps.
+//  The class is responsible for general edge bundling with ordered bundles.
+//  Currently the router will fail if there are node overlaps.
 
 import {Point, Rectangle, GeomEdge} from '../../..'
 import {HookUpAnywhereFromInsidePort} from '../../../layout/core/hookUpAnywhereFromInsidePort'
@@ -80,10 +80,10 @@ export class BundleRouter extends Algorithm {
     return FindIntersectionWithProperty(hierarchy, hierarchy, Curve.CurvesIntersect)
   }
 
-  ///  edge routing with Ordered Bundles:
-  ///  1. route edges with bundling
-  ///  2. nudge bundles and hubs
-  ///  3. order paths
+  //  edge routing with Ordered Bundles:
+  //  1. route edges with bundling
+  //  2. nudge bundles and hubs
+  //  3. order paths
 
   run() {
     if (this.ThereAreOverlaps(this.TightHierarchy)) {
@@ -118,8 +118,8 @@ export class BundleRouter extends Algorithm {
     new EdgeNudger(metroGraphData, this.bundlingSettings).run()
   }
 
-  ///  set endpoint of the edge from child to parent (cluster) to the boundary of the parent
-  ///  TODO: is there a better solution?
+  //  set endpoint of the edge from child to parent (cluster) to the boundary of the parent
+  //  TODO: is there a better solution?
 
   FixChildParentEdges() {
     for (const edge of this.regularEdges) {
@@ -245,12 +245,12 @@ export class BundleRouter extends Algorithm {
     }
   }
 
-  ///  calculates maximum possible edge separation for the computed routing
-  ///    if it is greater than bundlingSettings.EdgeSeparation, then proceed
-  ///    if it is smaller, then either
-  ///      stop edge bundling, or
-  ///      reduce edge separation, or
-  ///      move obstacles to get more free space
+  //  calculates maximum possible edge separation for the computed routing
+  //    if it is greater than bundlingSettings.EdgeSeparation, then proceed
+  //    if it is smaller, then either
+  //      stop edge bundling, or
+  //      reduce edge separation, or
+  //      move obstacles to get more free space
 
   AdjustEdgeSeparation() {
     const crossedCdtEdges: Map<GeomEdge, Set<CdtEdge>> = new Map<GeomEdge, Set<CdtEdge>>()

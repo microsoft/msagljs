@@ -3,20 +3,20 @@ import {String} from 'typescript-string-operations'
 import {compareNumbers} from '../../utils/compare'
 
 export class Constraint {
-  ///  The Left (if horizontal; Top, if vertical) variable of the constraint.
+  //  The Left (if horizontal; Top, if vertical) variable of the constraint.
 
   Left: Variable
 
-  ///  The Right (if horizontal; Bottom, if vertical) variable of the constraint.
+  //  The Right (if horizontal; Bottom, if vertical) variable of the constraint.
 
   Right: Variable
 
-  ///  The required separation of the points of the two Variables along the current axis.
+  //  The required separation of the points of the two Variables along the current axis.
 
   Gap: number
 
-  ///  Indicates if the distance between the two variables must be equal to the gap
-  ///  (rather than greater or equal to).
+  //  Indicates if the distance between the two variables must be equal to the gap
+  //  (rather than greater or equal to).
 
   IsEquality: boolean
 
@@ -87,9 +87,9 @@ export class Constraint {
     this.Left = variable
   }
 
-  ///  Generates a string representation of the Constraint.
+  //  Generates a string representation of the Constraint.
 
-  ///  <returns>A string representation of the Constraint.</returns>
+  //  <returns>A string representation of the Constraint.</returns>
   ToString(): string {
     return String.Format(
       '  Cst: [{0}] [{1}] {2} {3:F5} vio {4:F5} Lm {5:F5}/{6:F5} {7}actv',
@@ -112,11 +112,11 @@ export class Constraint {
     this.Lagrangian = 0
   }
 
-  ///  Compare this Constraint to rhs by their Variables in ascending order (this == lhs, other == rhs).
+  //  Compare this Constraint to rhs by their Variables in ascending order (this == lhs, other == rhs).
 
-  ///  <param name="other">The object being compared to.</param>
-  ///  <returns>-1 if this.Left/Right are "less"; +1 if this.Left/Right are "greater"; 0 if this.Left/Right
-  ///          and rhs.Left/Right are equal.</returns>
+  // The object being compared to.
+  //  <returns>-1 if this.Left/Right are "less"; +1 if this.Left/Right are "greater"; 0 if this.Left/Right
+  //          and rhs.Left/Right are equal.</returns>
   public CompareTo(other: Constraint): number {
     let cmp: number = this.Left.CompareTo(other.Left)
     if (0 == cmp) {

@@ -383,7 +383,6 @@ export class EdgeLabelPlacement extends Algorithm {
     return GeomEdge.getGeom(geomLabel.label.parent) as GeomEdge
   }
 
-  //  <param name="label"></param>
   //  <returns></returns>
   public PlaceEdgeLabelHorizontally(label: GeomLabel): boolean {
     //  approximate label with a rectangle
@@ -446,10 +445,10 @@ export class EdgeLabelPlacement extends Algorithm {
 
   //      Gets the label placement bounds for the given location, side, and label size.
 
-  //  <param name="point">The point along a curve that the label should be placed near.</param>
-  //  <param name="derivative">The derivative of the curve at the point position.</param>
-  //  <param name="widthHeight">The width and height of the label.</param>
-  //  <param name="side">The side (1 or -1) of the line to place the label on.</param>
+  // The point along a curve that the label should be placed near.
+  // The derivative of the curve at the point position.
+  // The width and height of the label.
+  // The side (1 or -1) of the line to place the label on.
   //  <returns>The label's desired position.</returns>
   static GetLabelBounds(point: Point, derivative: Point, size: Size, side: number): Rectangle {
     const o: Point = derivative.rotate(Math.PI / 2).mul(side)
@@ -695,10 +694,9 @@ export class EdgeLabelPlacement extends Algorithm {
     return this.ConflictIndex(labelPos, radius, wh) != Number.MAX_VALUE
   }
 
-  // <summary>
   //     Determines the index of the first obstacle map that the rectangle intersects.
   //     Clusters that are parents/grandparents of the label's source/target nodes are not considered intersection.
-  // </summary>
+
   // <returns>The index of the first obstacle map that the rectangle intersects. int.MaxValue if there is no intersection.</returns>
   ConflictIndexRL(queryRect: Rectangle, label: GeomLabel): number {
     const edge = <GeomEdge>GeomEdge.getGeom(label.label.parent)

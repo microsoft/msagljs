@@ -8,15 +8,15 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 export enum SolverAlgorithm {
-  /// Iterative Project/Split only.
+  // Iterative Project/Split only.
 
   ProjectOnly,
 
-  /// Diagonally-scaled gradient projection/Qpsc (Quadratic Programming for Separation Constraints).
+  // Diagonally-scaled gradient projection/Qpsc (Quadratic Programming for Separation Constraints).
 
   QpscWithScaling,
 
-  /// Gradient projection/Qpsc (Quadratic Programming for Separation Constraints) without diagonal scaling.
+  // Gradient projection/Qpsc (Quadratic Programming for Separation Constraints) without diagonal scaling.
 
   QpscWithoutScaling,
 }

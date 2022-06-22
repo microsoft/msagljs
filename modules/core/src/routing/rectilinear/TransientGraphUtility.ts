@@ -734,7 +734,7 @@ export class TransientGraphUtility {
     return PointComparer.GetDirections(maxSegment.start, maxSegment.end) == PointComparer.GetDirections(maxSegment.end, point)
   }
 
-  ///  <returns></returns>
+  //  <returns></returns>
   toString(): string {
     return String.Format('{0} {1}', this.AddedVertices.length, this.edgesToRestore.length)
   }

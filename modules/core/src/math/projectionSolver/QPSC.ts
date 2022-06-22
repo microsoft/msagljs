@@ -275,7 +275,7 @@ export class Qpsc {
     //       for all jj
     //          if ii == jj, scaledQ[ii][jj] = 1
     //          else         scaledQ[ii][jj] = Q[ii][jj] * var[ii].scale * var[jj].scale
-    /// /
+    // /
     for (let rowNum = 0; rowNum < this.matrixQ.length; rowNum++) {
       const row = this.matrixQ[rowNum]
       for (let sparseCol = 0; sparseCol < row.length; sparseCol++) {

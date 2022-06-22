@@ -1,4 +1,4 @@
-///  a wrapper arownd VisibilityEdge representing the same edge
+//  a wrapper arownd VisibilityEdge representing the same edge
 
 import {CompassVector} from '../../../math/geometry/compassVector'
 import {Direction} from '../../../math/geometry/direction'
@@ -7,7 +7,7 @@ import {VisibilityEdge} from '../../visibility/VisibilityEdge'
 import {VisibilityVertex} from '../../visibility/VisibilityVertex'
 import {LongestNudgedSegment} from './LongestNudgedSegment'
 
-///  but oriented along the X or the Y axis
+//  but oriented along the X or the Y axis
 export class AxisEdge extends VisibilityEdge {
   Direction: Direction
 

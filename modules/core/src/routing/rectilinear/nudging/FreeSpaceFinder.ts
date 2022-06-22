@@ -1,4 +1,4 @@
-///  The class is looking for the free space around AxisEdges
+//  The class is looking for the free space around AxisEdges
 
 import {Point} from '../../../math/geometry/point'
 import {CompassVector} from '../../../math/geometry/compassVector'
@@ -35,13 +35,9 @@ export class FreeSpaceFinder extends LineSweeperBase {
 
   PathOrders: Map<AxisEdge, Array<PathEdge>>
 
-  ///
+  //
 
-  ///  <param name="direction"></param>
-  ///  <param name="obstacles"></param>
-  ///  <param name="axisEdgesToObstaclesTheyOriginatedFrom"></param>
-  ///  <param name="pathOrders"></param>
-  ///  <param name="axisEdges">edges to find the empty space around</param>
+  // edges to find the empty space around
   constructor(
     direction: Direction,
     obstacles: Array<Polyline>,
@@ -67,7 +63,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //    Array<Path> EdgePaths { get; set; }
   // VisibilityGraph PathVisibilityGraph { get; set; }
 
-  ///  calculates the right offsets
+  //  calculates the right offsets
 
   FindFreeSpace() {
     this.InitTheQueueOfEvents()
@@ -165,10 +161,9 @@ export class FreeSpaceFinder extends LineSweeperBase {
     return this.Obstacles.map((p) => DebugCurve.mkDebugCurveWCI(1, color, p))
   }
 
-  ///
+  //
 
-  ///  <param name="edge"></param>
-  ///  <param name="point">a point on the edge on Z level</param>
+  // a point on the edge on Z level
   ConstraintEdgeWithObstaclesAtZ(edge: AxisEdge, point: Point) {
     /*Assert.assert(point == edge.Source.point || point == edge.Target.point)*/
     this.ConstraintEdgeWithObstaclesAtZFromLeft(edge, point)
@@ -337,10 +332,10 @@ export class FreeSpaceFinder extends LineSweeperBase {
     return this.edgeContainersTree.insert(new AxisEdgesContainer(source))
   }
 
-  ///
+  //
 
-  ///  <param name="point">the point has to be on the same line as the container</param>
-  ///  <returns></returns>
+  // the point has to be on the same line as the container
+  //  <returns></returns>
   GetAxisEdgesContainerNode(point: Point): RBNode<AxisEdgesContainer> {
     const prj = this.xProjection(point)
     const ret = this.edgeContainersTree.findFirst((cont) => this.xProjection(cont.Source) >= prj - GeomConstants.distanceEpsilon / 2)

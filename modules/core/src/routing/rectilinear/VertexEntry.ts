@@ -5,11 +5,11 @@ import {VisibilityVertexRectilinear} from './VisibilityVertexRectiline'
 export class VertexEntry {
   //  A class that records an entry from a specific direction for a vertex.
 
-  //  <param name="vertex">Vertex that this VertexEntry enters</param>
-  //  <param name="prevEntry">The previous VertexEntry along this path; null for a path source</param>
-  //  <param name="length">Length of the path up to this vertex</param>
-  //  <param name="numberOfBends">Number of bends in the path up to this vertex</param>
-  //  <param name="cost">Cost of the path up to this vertex</param>
+  // Vertex that this VertexEntry enters
+  // The previous VertexEntry along this path; null for a path source
+  // Length of the path up to this vertex
+  // Number of bends in the path up to this vertex
+  // Cost of the path up to this vertex
   constructor(vertex: VisibilityVertexRectilinear, prevEntry: VertexEntry, length: number, numberOfBends: number, cost: number) {
     this.Vertex = vertex
     this.Direction = prevEntry != null ? CompassVector.DirectionFromPointToPoint(prevEntry.Vertex.point, vertex.point) : Direction.None

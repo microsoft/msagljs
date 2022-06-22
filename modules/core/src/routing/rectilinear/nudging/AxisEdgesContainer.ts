@@ -9,7 +9,7 @@ export class AxisEdgesContainer {
     return this.edges
   }
 
-  ///  it is not necessarely the upper point but some point above the source
+  //  it is not necessarely the upper point but some point above the source
 
   UpPoint: Point
 

@@ -5,13 +5,13 @@ import {Point} from '../../../math/geometry/point'
 import {LinkedPoint} from './LinkedPoint'
 import {PathEdge} from './PathEdge'
 
-///  represents the path for an GeomEdge
+//  represents the path for an GeomEdge
 export class Path {
-  ///  the corresponding edge geometry
+  //  the corresponding edge geometry
 
   GeomEdge: GeomEdge
 
-  ///  the path points
+  //  the path points
 
   private _pathPoints: Array<Point> | LinkedPoint
   public get PathPoints(): Array<Point> | LinkedPoint {
@@ -24,9 +24,8 @@ export class Path {
     return this.GeomEdge.lineWidth
   }
 
-  ///  constructor
+  //  constructor
 
-  ///  <param name="edgeGeometry"></param>
   constructor(edgeGeometry: GeomEdge) {
     this.GeomEdge = edgeGeometry
   }
@@ -70,9 +69,9 @@ export class Path {
     edge.Path = this
   }
 
-  ///
+  //
 
-  ///  <returns></returns>
+  //  <returns></returns>
   toString(): string {
     const sb: StringBuilder = new StringBuilder()
     if (this.PathPoints instanceof LinkedPoint) sb.Append('L')

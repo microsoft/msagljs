@@ -1,5 +1,5 @@
-/// Avoid a situation where two paths cross each other more than once. Remove self loops.
-///
+// Avoid a situation where two paths cross each other more than once. Remove self loops.
+//
 
 import {Point} from '../../../math/geometry/point'
 
@@ -15,7 +15,7 @@ export class PathMerger {
   Paths: Iterable<Path>
   verticesToPathOffsets = new PointMap<Map<Path, LinkedPoint>>()
 
-  ///  Avoid a situation where two paths cross each other more than once. Remove self loops.
+  //  Avoid a situation where two paths cross each other more than once. Remove self loops.
 
   MergePaths() {
     this.InitVerticesToPathOffsetsAndRemoveSelfCycles()
@@ -115,11 +115,9 @@ export class PathMerger {
     }
   }
 
-  ///  checks that a is before b of the path
+  //  checks that a is before b of the path
 
-  ///  <param name="a"></param>
-  ///  <param name="b"></param>
-  ///  <returns>true is a is before b of the path</returns>
+  //  <returns>true is a is before b of the path</returns>
   static Before(a: LinkedPoint, b: LinkedPoint): boolean {
     for (a = a.Next; a != null; a = a.Next) {
       if (a == b) {

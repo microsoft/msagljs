@@ -131,7 +131,7 @@ export class StationPositionsAdjuster {
       //TODO: which one?
       let r = this.metroGraphData.looseIntersections.GetMinimalDistanceToObstacles(node, node.Position, idealR)
       //const r = idealR;
-      ////Assert.assert(r <= idealR)
+      ///Assert.assert(r <= idealR)
       for (const adj of node.Neighbors) r = Math.min(r, node.Position.sub(adj.Position).length)
       return r
     }

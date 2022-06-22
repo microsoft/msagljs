@@ -298,8 +298,8 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   //  <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
   //  as well as any intervening obstacles.</param>
-  //  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline.</param>
-  //  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
+  // The minimum padding from an obstacle's curve to its enclosing polyline.
+  // The radius of the arc inscribed into path corners
   //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
   //  but may select suboptimal paths</param>
   static constructorINNB(
@@ -315,11 +315,11 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   //  <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
   //  as well as any intervening obstacles.</param>
-  //  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline.</param>
-  //  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
+  // The minimum padding from an obstacle's curve to its enclosing polyline.
+  // The radius of the arc inscribed into path corners
   //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
   //  but may select suboptimal paths</param>
-  //  <param name="useObstacleRectangles">Use obstacle bounding boxes in visibility graph</param>
+  // Use obstacle bounding boxes in visibility graph
   public constructor(
     obstacles: Iterable<Shape>,
     padding: number,
@@ -340,9 +340,9 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   //  Constructor specifying graph information.
 
-  //  <param name="graph">The graph whose edges are being routed.</param>
-  //  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline.</param>
-  //  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
+  // The graph whose edges are being routed.
+  // The minimum padding from an obstacle's curve to its enclosing polyline.
+  // The radius of the arc inscribed into path corners
   //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
   //  but may select suboptimal paths</param>
   static constructorGNANB(
@@ -357,12 +357,12 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   //  Constructor specifying graph information.
 
-  //  <param name="graph">The graph whose edges are being routed.</param>
-  //  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline.</param>
-  //  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
+  // The graph whose edges are being routed.
+  // The minimum padding from an obstacle's curve to its enclosing polyline.
+  // The radius of the arc inscribed into path corners
   //  <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
   //  but may select suboptimal paths</param>
-  //  <param name="useObstacleRectangles">If true, use obstacle bounding boxes in visibility graph</param>
+  // If true, use obstacle bounding boxes in visibility graph
   static constructorGNANBB(
     graph: GeomGraph,
     geomEdges: GeomEdge[],

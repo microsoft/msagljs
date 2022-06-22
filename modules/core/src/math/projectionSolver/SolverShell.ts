@@ -1,4 +1,4 @@
-///  just a convenient interface to the real solver
+//  just a convenient interface to the real solver
 
 import {RealNumberSpan} from '../../utils/RealNumberSpan'
 import {Solution} from './Solution'
@@ -16,36 +16,34 @@ export class SolverShell {
 
   fixedVars: Map<number, number> = new Map<number, number>()
 
-  ///  Constructor.
+  //  Constructor.
 
   public constructor() {
     this.InitSolver()
   }
 
-  ///  Add a node that we would like as close to position i as possible, with the requested weight.
+  //  Add a node that we would like as close to position i as possible, with the requested weight.
 
-  ///  <param name="id">Caller's unique identifier for this node</param>
-  ///  <param name="position">Desired position</param>
-  ///  <param name="weight">The weight of the corresponding term in the goal function</param>
+  // Caller's unique identifier for this node
+  // Desired position
+  // The weight of the corresponding term in the goal function
   public AddVariableWithIdealPositionNNN(id: number, position: number, weight: number) {
     //  This throws an ArgumentException if a variable with id is already there.
     this.variables.set(id, this.solver.AddVariableANN(id, position, weight))
   }
 
-  ///  Add a node that we would like as close to position i as possible, with the requested weight.
+  //  Add a node that we would like as close to position i as possible, with the requested weight.
 
-  ///  <param name="id"></param>
-  ///  <param name="position"></param>
   public AddVariableWithIdealPositionNN(id: number, position: number) {
     this.AddVariableWithIdealPositionNNN(id, position, 1)
   }
 
-  ///  Add a constraint that leftNode+gap eq|leq RightNode.
+  //  Add a constraint that leftNode+gap eq|leq RightNode.
 
-  ///  <param name="idLeft">Caller's unique identifier for the left node</param>
-  ///  <param name="idRight">Caller's unique identifier for the right node</param>
-  ///  <param name="gap">Required gap</param>
-  ///  <param name="isEquality">Gap is exact rather than minimum</param>
+  // Caller's unique identifier for the left node
+  // Caller's unique identifier for the right node
+  // Required gap
+  // Gap is exact rather than minimum
   public AddLeftRightSeparationConstraintNNNB(idLeft: number, idRight: number, gap: number, isEquality: boolean) {
     //  The variables must already have been added by AddNodeWithDesiredPosition.
     const varLeft = this.GetVariable(idLeft)
@@ -61,20 +59,20 @@ export class SolverShell {
     this.solver.AddConstraintVVNB(varLeft, varRight, gap, isEquality)
   }
 
-  ///  Add a constraint that leftNode+gap leq RightNode.
+  //  Add a constraint that leftNode+gap leq RightNode.
 
-  ///  <param name="idLeft">Caller's unique identifier for the left node</param>
-  ///  <param name="idRight">Caller's unique identifier for the right node</param>
-  ///  <param name="gap">Required minimal gap</param>
+  // Caller's unique identifier for the left node
+  // Caller's unique identifier for the right node
+  // Required minimal gap
   public AddLeftRightSeparationConstraintNNN(idLeft: number, idRight: number, gap: number) {
     this.AddLeftRightSeparationConstraintNNNB(idLeft, idRight, gap, false)
   }
 
-  ///  Add a goal that minimizes the distance between two nodes, i.e. weight*((id1-id2)^2).
+  //  Add a goal that minimizes the distance between two nodes, i.e. weight*((id1-id2)^2).
 
-  ///  <param name="id1">Caller's unique identifier for the first node.</param>
-  ///  <param name="id2">Caller's unique identifier for the second node.</param>
-  ///  <param name="weight">The weight of the corresponding term in the goal function</param>
+  // Caller's unique identifier for the first node.
+  // Caller's unique identifier for the second node.
+  // The weight of the corresponding term in the goal function
   public AddGoalTwoVariablesAreCloseNNN(id1: number, id2: number, weight: number) {
     const var1 = this.GetVariable(id1)
     if (var1 == null) {
@@ -89,10 +87,8 @@ export class SolverShell {
     this.solver.AddNeighborPair(var1, var2, weight)
   }
 
-  ///
+  //
 
-  ///  <param name="id1"></param>
-  ///  <param name="id2"></param>
   public AddGoalTwoVariablesAreClose(id1: number, id2: number) {
     this.AddGoalTwoVariablesAreCloseNNN(id1, id2, 1)
   }
@@ -101,27 +97,27 @@ export class SolverShell {
     return this.variables.get(i)
   }
 
-  ///  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
   public Solve() {
     this.SolveP(null)
   }
 
-  ///  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
-  ///  <param name="parameters">Parameter object class specific to the underlying solver</param>
-  ///  <returns>Pass or fail</returns>
+  // Parameter object class specific to the underlying solver
+  //  <returns>Pass or fail</returns>
   public SolveP(parameters: any) {
     const t = {executionLimitExceeded: false}
     this.SolvePNS(parameters, t)
   }
 
-  ///  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
+  //  Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
-  ///  <param name="parameters">Parameter object class specific to the underlying solver</param>
-  ///  <param name="executionLimitExceeded">if true, one or more limits such as iteration count
-  ///          or timeout were exceeded</param>
-  ///  <returns>Pass or fail</returns>
+  // Parameter object class specific to the underlying solver
+  //  <param name="executionLimitExceeded">if true, one or more limits such as iteration count
+  //          or timeout were exceeded</param>
+  //  <returns>Pass or fail</returns>
   public SolvePNS(parameters: any, t: {executionLimitExceeded: boolean}): boolean {
     let fixedVarsMoved: boolean
     do {
@@ -212,11 +208,9 @@ export class SolverShell {
     return true
   }
 
-  ///  returns the block of the fixed variable
+  //  returns the block of the fixed variable
 
-  ///  <param name="fixedVar"></param>
-  ///  <param name="successInAdjusing"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   AdjustConstraintsOfNeighborsOfFixedVariable(fixedVar: number, t: {successInAdjusting: boolean}): Array<number> {
     const nbs = this.variables.get(fixedVar).Block.Variables
     const currentSpan = new RealNumberSpan()
@@ -243,7 +237,7 @@ export class SolverShell {
     return nbs.map((u) => <number>u.UserData)
   }
 
-  ///  if all active constraint gaps are less than this epsilon we should stop trying adjusting
+  //  if all active constraint gaps are less than this epsilon we should stop trying adjusting
 
   readonly FailToAdjustEpsilon = 0.001
 
@@ -261,49 +255,47 @@ export class SolverShell {
     return ret
   }
 
-  ///  Obtain the solved position for a node.
+  //  Obtain the solved position for a node.
 
-  ///  <param name="id">Caller's unique identifier for the node.</param>
-  ///  <returns>The node's solved position.</returns>
+  // Caller's unique identifier for the node.
+  //  <returns>The node's solved position.</returns>
   public GetVariableResolvedPosition(id: number): number {
     const v = this.GetVariable(id)
     return v == null ? 0 : v.ActualPos
   }
 
-  ///
+  //
 
   public InitSolver() {
     this.solver = new Solver()
     this.variables.clear()
   }
 
-  ///  Add a variable with a known and unchanging position.
+  //  Add a variable with a known and unchanging position.
 
-  ///  <param name="id">Caller's unique identifier for the node</param>
-  ///  <param name="position">Desired position.</param>
+  // Caller's unique identifier for the node
+  // Desired position.
   public AddFixedVariable(id: number, position: number) {
     this.AddVariableWithIdealPositionNNN(id, position, SolverShell.FixedVarWeight)
     this.fixedVars.set(id, position)
   }
 
-  ///
+  //
 
-  ///  <param name="v"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   public ContainsVariable(v: number): boolean {
     return this.variables.has(v)
   }
 
-  ///  returns the ideal position of the node that had been set at the variable construction
+  //  returns the ideal position of the node that had been set at the variable construction
 
-  ///  <param name="v"></param>
-  ///  <returns></returns>
+  //  <returns></returns>
   public GetVariableIdealPosition(v: number): number {
     return this.variables.get(v).DesiredPos
   }
 
-  ///  Returns the solution object class specific to the underlying solver, or null if there has
-  ///  been no call to Solve() or it threw an exception.
+  //  Returns the solution object class specific to the underlying solver, or null if there has
+  //  been no call to Solve() or it threw an exception.
 
   public get Solution(): Solution {
     return this.solution

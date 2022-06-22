@@ -71,9 +71,9 @@ export class Block {
     this.allConstraints = allConstraints
   }
 
-  ///  Generate a string representation of the Block.
+  //  Generate a string representation of the Block.
 
-  ///  <returns>A string representation of the Block.</returns>
+  //  <returns>A string representation of the Block.</returns>
   toString(): string {
     return String.Format('[Block: nvars = {0} refpos = {1:F5} scale = {2:F5}]', this.Variables.length, this.ReferencePos, this.Scale)
   }
