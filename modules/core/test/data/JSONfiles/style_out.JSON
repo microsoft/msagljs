@@ -1,0 +1,206 @@
+{
+  "type": "graph",
+  "id": "G",
+  "children": [
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "b"}
+      ],
+      "attr_list": [
+        {"type": "attr", "id": "style", "eq": "bold"},
+        {"type": "attr", "id": "color", "eq": "Red"}
+      ]
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "c"}
+      ],
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dashed"}]
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "d"}
+      ],
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dotted"}]
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "e"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "f"}
+      ],
+      "attr_list": [{"type": "attr", "id": "style", "eq": "invis"}]
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "a"},
+        {"type": "node_id", "id": "g"}
+      ],
+      "attr_list": [{"type": "attr", "id": "style", "eq": "solid"}]
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "B"},
+        {"type": "node_id", "id": "BD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "C"},
+        {"type": "node_id", "id": "CD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "D"},
+        {"type": "node_id", "id": "DD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "E"},
+        {"type": "node_id", "id": "ED"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "BD"},
+        {"type": "node_id", "id": "BFD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "CD"},
+        {"type": "node_id", "id": "CFD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "DD"},
+        {"type": "node_id", "id": "DFD"}
+      ],
+      "attr_list": []
+    },
+    {
+      "type": "edge_stmt",
+      "edge_list": [
+        {"type": "node_id", "id": "ED"},
+        {"type": "node_id", "id": "EFD"}
+      ],
+      "attr_list": []
+    },
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "b"}, "attr_list": [{"type": "attr", "id": "style", "eq": "bold"}]},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "c"}, "attr_list": [{"type": "attr", "id": "style", "eq": "dashed"}]},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "d"}, "attr_list": [{"type": "attr", "id": "style", "eq": "dotted"}]},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "e"}, "attr_list": []},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "f"}, "attr_list": [{"type": "attr", "id": "style", "eq": "invis"}]},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "g"}, "attr_list": [{"type": "attr", "id": "style", "eq": "solid"}]},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "a"}, "attr_list": []},
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "B"}, "attr_list": [{"type": "attr", "id": "style", "eq": "bold,rounded"}]},
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "C"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dashed,rounded"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "D"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dotted,rounded"}]
+    },
+    {"type": "node_stmt", "node_id": {"type": "node_id", "id": "E"}, "attr_list": [{"type": "attr", "id": "style", "eq": "rounded"}]},
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "BD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "bold,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "CD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dashed,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "DD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "dotted,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "ED"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "BFD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "filled,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "CFD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "filled,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "DFD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "filled,rounded,diagonals"}]
+    },
+    {
+      "type": "node_stmt",
+      "node_id": {"type": "node_id", "id": "EFD"},
+      "attr_list": [{"type": "attr", "id": "style", "eq": "filled,rounded,diagonals"}]
+    },
+    {
+      "type": "subgraph",
+      "children": [
+        {"type": "attr_stmt", "target": "graph", "attr_list": [{"type": "attr", "id": "style", "eq": "rounded"}]},
+        {"type": "node_stmt", "node_id": {"type": "node_id", "id": "1"}, "attr_list": []},
+        {"type": "node_stmt", "node_id": {"type": "node_id", "id": "2"}, "attr_list": []},
+        {"type": "node_stmt", "node_id": {"type": "node_id", "id": "3"}, "attr_list": []},
+        {
+          "type": "edge_stmt",
+          "edge_list": [
+            {"type": "node_id", "id": "1"},
+            {"type": "node_id", "id": "2"}
+          ],
+          "attr_list": []
+        },
+        {
+          "type": "edge_stmt",
+          "edge_list": [
+            {"type": "node_id", "id": "1"},
+            {"type": "node_id", "id": "3"}
+          ],
+          "attr_list": []
+        }
+      ],
+      "id": "clusterA"
+    }
+  ]
+}
