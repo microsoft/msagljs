@@ -41,6 +41,9 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  calculateBoundsFromChildren() {
+      throw new Error("Method not implemented.")
+  }
   isCollapsed = false
 
   _rtree: RTree<GeomObject, Point>
@@ -96,11 +99,7 @@ export class GeomGraph extends GeomNode {
   public set layoutSettings(value: LayoutSettings) {
     this._layoutSettings = value
   }
-  translate(delta: Point) {
-    if (delta.x == 0 && delta.y == 0) return
-    const m = new PlaneTransformation(1, 0, delta.x, 0, 1, delta.y)
-    this.transform(m)
-  }
+  
   private _boundingBox_: Rectangle
   private _labelSize: Size
 

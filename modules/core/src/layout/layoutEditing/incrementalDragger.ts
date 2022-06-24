@@ -1,240 +1,200 @@
-import { Point, Rectangle, Polyline, Curve } from "../../math/geometry";
-import { SplineRouter } from "../../routing/splineRouter";
-import { Edge } from "../../structs/edge";
-import { GeomEdge } from "../core/geomEdge";
-import { GeomGraph } from "../core/GeomGraph";
-import { GeomNode } from "../core/geomNode";
-import { LayoutSettings } from "../layered/SugiyamaLayoutSettings";
-import { BumperPusher } from "./bumperPusher";
-import { LabelFixture } from "./labelFixture";
+import {Point, Rectangle, Polyline, Curve, ICurve} from '../../math/geometry'
+import {SplineRouter} from '../../routing/splineRouter'
+import {Edge} from '../../structs/edge'
+import {Graph} from '../../structs/graph'
+import {GeomEdge} from '../core/geomEdge'
+import {GeomGraph} from '../core/GeomGraph'
+import {GeomNode} from '../core/geomNode'
+import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {BumperPusher} from './bumperPusher'
+import {LabelFixture} from './labelFixture'
 
+export class IncrementalDragger {
+  geomGraph_: GeomGraph
+  get geomGraph(): GeomGraph {
+    return this.geomGraph_
+  }
 
- export class IncrementalDragger {
-        geomGraph:GeomGraph
-        get graph(): GeomGraph {
-            return this.geomGraph
-        }
-        set graph(value: GeomGraph)  {
-        }
-        
-        nodeSeparation: number;
-        
-        layoutSettings: LayoutSettings;
-        
-        listOfPushers = new Array<BumperPusher>();
-        
-        pushingNodesArray: GeomNode[];
-        
+  set geomGraph(value: GeomGraph) {
+    this.geomGraph_ = value
+  }
 
-        ///  it is smaller graph that needs to be refreshed by the viewer
+  nodeSeparation: number
 
-        public ChangedGraph: GeomGraph;
-        
-        labelFixtures: Map<GeomEdge, LabelFixture> = new Map<GeomEdge, LabelFixture>();
-        
+  layoutSettings: LayoutSettings
 
-        ///  
+  listOfPushers = new Array<BumperPusher>()
 
-        ///  <param name="pushingNodes">the nodes are already at the correct positions</param>
-        ///  <param name="graph"></param>
-        ///  <param name="layoutSettings"></param>
-        public constructor (pushingNodes: IEnumerable<GeomNode>, graph: GeomGraph, layoutSettings: LayoutAlgorithmSettings) {
-            this.graph = this.graph;
-            this.nodeSeparation = this.layoutSettings.NodeSeparation;
-            this.layoutSettings = this.layoutSettings;
-            pushingNodes.ToArray();
-            Debug.Assert((this.pushingNodesArray.All(() => {  }, (IncrementalDragger.DefaultClusterParent(n) == null)) 
-                            || (new Set<GeomNode>(this.pushingNodesArray.Select(() => {  }, n.ClusterParent)).Count == 1)), "dragged nodes have to belong to the same cluster");
-            this.InitBumperPushers();
-        }
-        
-        InitBumperPushers() {
-            if ((this.pushingNodesArray.Length == 0)) {
-                return;
-            }
-            
-            let cluster = IncrementalDragger.DefaultClusterParent(this.pushingNodesArray[0]);
-            if ((cluster == null)) {
-                this.listOfPushers.Add(new BumperPusher(this.graph.Nodes, this.nodeSeparation, this.pushingNodesArray));
-            }
-            else {
-                this.listOfPushers.Add(new BumperPusher(cluster.Nodes.Concat(cluster.Clusters), this.nodeSeparation, this.pushingNodesArray));
-                for (
-                ; true; 
-                ) {
-                    let pushingCluster = cluster;
-                    cluster = IncrementalDragger.DefaultClusterParent(cluster);
-                    if ((cluster == null)) {
-                        // TODO: Warning!!! break;If
-                    }
-                    
-                    this.listOfPushers.Add(new BumperPusher(cluster.Nodes.Concat(cluster.Clusters), this.nodeSeparation, new, [));
-                    pushingCluster;
-                }
-                
-            }
-            
-        }
-        
-        static DefaultClusterParent(n: GeomNode): Cluster {
-            return n.ClusterParent;
-        }
-        
-        RunPushers() {
-            for (let i: number = 0; (i < this.listOfPushers.Count); i++) {
-                let bumperPusher = this.listOfPushers[i];
-                bumperPusher.PushNodes();
-                let cluster = IncrementalDragger.DefaultClusterParent(bumperPusher.FirstPushingNode());
-                if (((cluster == null) 
-                            || (cluster == this.graph.RootCluster))) {
-                    break;
-                }
-                
-                let box = cluster.BoundaryCurve.BoundingBox;
-                cluster.CalculateBoundsFromChildren(this.layoutSettings.ClusterMargin);
-                Debug.Assert(cluster.Nodes.All(() => {  }, cluster.BoundingBox.Contains(n.BoundingBox)));
-                let newBox = cluster.BoundaryCurve.BoundingBox;
-                if ((newBox == box)) {
-                    break;
-                }
-                
-                this.listOfPushers[(i + 1)].UpdateRTreeByChangedNodeBox(cluster, box);
-            }
-            
-        }
-        
+  pushingNodesArray: GeomNode[]
 
-        ///  
+  /**   it is an edge subset that needs to be refreshed by the viewer*/
+  public changedEdges: GeomEdge[]
 
-        ///  <param name="delta"></param>
-        public Drag(delta: Point) {
-            if ((delta.Length > 0)) {
-                for (let n in this.pushingNodesArray) {
-                    n.Center = (n.Center + delta);
-                    let cl = (<Cluster>(n));
-                    if ((cl != null)) {
-                        cl.DeepContentsTranslation(delta, true);
-                    }
-                    
-                }
-                
-            }
-            
-            this.RunPushers();
-            this.RouteChangedEdges();
-        }
-        
-        RouteChangedEdges() {
-            this.ChangedGraph = this.GetChangedFlatGraph();
-            let changedClusteredGraph = LgInteractor.CreateClusteredSubgraphFromFlatGraph(this.ChangedGraph, this.graph);
-            this.InitLabelFixtures(changedClusteredGraph);
-            let router = new SplineRouter(changedClusteredGraph, this.layoutSettings.EdgeRoutingSettings.Padding, this.layoutSettings.EdgeRoutingSettings.PolylinePadding, this.layoutSettings.EdgeRoutingSettings.ConeAngle, this.layoutSettings.EdgeRoutingSettings.BundlingSettings);
-            router.Run();
-            this.PositionLabels(changedClusteredGraph);
-        }
-        
-        PositionLabels(changedClusteredGraph: GeomGraph) {
-            for (let edge in changedClusteredGraph.Edges) {
-                this.PositionEdge(edge);
-            }
-            
-        }
-        
-        PositionEdge(edge: Edge) {
-            let lf: LabelFixture;
-            if (!this.labelFixtures.TryGetValue(edge.GeomEdge, /* out */lf)) {
-                return;
-            }
-            
-            let curve = edge.Curve;
-            let lenAtLabelAttachment = (curve.Length * lf.RelativeLengthOnCurve);
-            let par = curve.GetParameterAtLength(lenAtLabelAttachment);
-            let tang = curve.Derivative(par);
-            let norm = (tang.Rotate90Cw().Normalize() * lf.NormalLength);
-            // TODO: Warning!!!, inline IF is not supported ?
-            lf.RightSide;
-            tang.Rotate90Ccw();
-            edge.Label.Center = (curve[par] + norm);
-        }
-        
-        InitLabelFixtures(changedClusteredGraph: GeomGraph) {
-            for (let edge in changedClusteredGraph.Edges) {
-                this.InitLabelFixture(edge);
-            }
-            
-        }
-        
-        InitLabelFixture(edge: Edge) {
-            if ((edge.Label == null)) {
-                return;
-            }
-            
-            if (this.labelFixtures.ContainsKey(edge.GeomEdge)) {
-                return;
-            }
-            
-            let attachmentPar = edge.Curve.ClosestParameter(edge.Label.Center);
-            let curve = edge.Curve;
-            let tang = curve.Derivative(attachmentPar);
-            let normal = tang.Rotate90Cw();
-            let fromCurveToLabel = (edge.Label.Center - curve[attachmentPar]);
-            let fixture = new LabelFixture();
-            this.labelFixtures[edge.GeomEdge] = fixture;
-        }
-        
-        GetChangedFlatGraph(): GeomGraph {
-            let changedNodes = this.GetChangedNodes();
-            let changedEdges = this.GetChangedEdges(changedNodes);
-            for (let e in changedEdges) {
-                changedNodes.Insert(e.Source);
-                changedNodes.Insert(e.Target);
-            }
-            
-            let changedGraph = [][
-                    Nodes=newSimpleNodeCollection(changedNodesUnknown,
-                    Edges=newSimpleEdgeCollection(changedEdgesUnknown];
-            return changedGraph;
-        }
-        
-        GetChangedEdges(changedNodes: Set<Node>): List<Edge> {
-            let list = new List<Edge>();
-            let box = Rectangle.CreateAnEmptyBox();
-            for (let node in changedNodes) {
-                box.Add(node.BoundaryCurve.BoundingBox);
-            }
-            
-            let boxPoly = box.Perimeter();
-            for (let e in this.graph.Edges) {
-                if (this.EdgeNeedsRouting(/* ref */box, e, boxPoly, changedNodes)) {
-                    list.Add(e);
-                }
-                
-            }
-            
-            return list;
-        }
-        
-        EdgeNeedsRouting(/* ref */box: Rectangle, edge: Edge, boxPolyline: Polyline, changedNodes: Set<Node>): boolean {
-            if ((edge.Curve == null)) {
-                return true;
-            }
-            
-            if ((changedNodes.Contains(edge.Source) || changedNodes.Contains(edge.Target))) {
-                return true;
-            }
-            
-            if ((edge.Source.BoundaryCurve.BoundingBox.Intersects(box) || edge.Target.BoundaryCurve.BoundingBox.Intersects(box))) {
-                return true;
-            }
-            
-            if (!edge.BoundingBox.Intersects(box)) {
-                return false;
-            }
-            
-            return (Curve.CurveCurveIntersectionOne(boxPolyline, edge.Curve, false) != null);
-        }
-        
-        GetChangedNodes(): Set<Node> {
-            return new Set<Node>(this.listOfPushers.SelectMany(() => {  }, p.FixedNodes));
-        }
+  labelFixtures: Map<GeomEdge, LabelFixture> = new Map<GeomEdge, LabelFixture>()
+
+  ///
+
+  ///  <param name="pushingNodes">the nodes are already at the correct positions</param>
+  ///  <param name="graph"></param>
+  ///  <param name="layoutSettings"></param>
+  public constructor(pushingNodes: Array<GeomNode>, graph: GeomGraph, layoutSettings: LayoutSettings) {
+    this.geomGraph = graph
+    this.nodeSeparation = layoutSettings.NodeSeparation
+    this.layoutSettings = layoutSettings
+    this.pushingNodesArray = pushingNodes
+    // Debug.Assert((this.pushingNodesArray.All(() => {  }, (IncrementalDragger.DefaultClusterParent(n) == null))
+    //                 || (new Set<GeomNode>(this.pushingNodesArray.Select(() => {  }, n.ClusterParent)).Count == 1)), "dragged nodes have to belong to the same cluster");
+    this.InitBumperPushers()
+  }
+
+  InitBumperPushers() {
+    if (this.pushingNodesArray.length == 0) {
+      return
     }
+    let gg = GeomGraph.getGeom(this.pushingNodesArray[0].node.parent as Graph)
+    let pushingArray = this.pushingNodesArray
+    do {
+      this.listOfPushers.push(new BumperPusher(gg.shallowNodes(), this.nodeSeparation, pushingArray))
+      if (gg.graph.parent) {
+        gg = GeomGraph.getGeom(gg.graph.parent as Graph)
+        pushingArray = [gg]
+      } else {
+        break
+      }
+    } while (true)
+  }
+
+  RunPushers() {
+    for (let i = 0; i < this.listOfPushers.length; i++) {
+      const bumperPusher = this.listOfPushers[i]
+      bumperPusher.PushNodes()
+      const cluster = bumperPusher.FirstPushingNode().node.parent
+      if (cluster == this.geomGraph_.graph) {
+        break
+      }
+      const sg = GeomGraph.getGeom(cluster as Graph)
+      const bbox = sg.boundingBox
+      sg.calculateBoundsFromChildren()
+      const newBox = sg.boundingBox
+      if (newBox.egualEps(bbox)) {
+        break
+      }
+
+      this.listOfPushers[i + 1].UpdateRTreeByChangedNodeBox(sg, bbox)
+    }
+  }
+
+  ///  <param name="delta"></param>
+  public Drag(delta: Point) {
+    if (delta.x == null && delta.y == null) return
+
+    for (const n of this.pushingNodesArray) {
+      n.translate(delta)
+    }
+
+    this.RunPushers()
+    this.RouteChangedEdges()
+  }
+
+  RouteChangedEdges() {
+    this.changedEdges = this.GetChangedEdges(this.GetChangedNodes())
+    this.InitLabelFixtures(this.changedEdges)
+    const router = new SplineRouter(
+      this.geomGraph_,
+      this.changedEdges,
+      this.layoutSettings.edgeRoutingSettings.Padding,
+      this.layoutSettings.edgeRoutingSettings.PolylinePadding,
+      this.layoutSettings.edgeRoutingSettings.ConeAngle,
+      this.layoutSettings.edgeRoutingSettings.BundlingSettings,
+    )
+    router.run()
+    this.PositionLabels(this.changedEdges)
+  }
+
+  PositionLabels(changedEdges: GeomEdge[]) {
+    for (const edge of changedEdges) {
+      this.PositionEdgeLabel(edge)
+    }
+  }
+
+  PositionEdgeLabel(edge: GeomEdge) {
+    const lf = this.labelFixtures.get(edge)
+    if (lf == null) return
+    const curve = edge.curve
+    const lenAtLabelAttachment = curve.length * lf.RelativeLengthOnCurve
+    const par = curve.getParameterAtLength(lenAtLabelAttachment)
+    const tang = curve.derivative(par)
+    const norm = (lf.RightSide ? tang.rotate90Cw() : tang.rotate90Ccw()).normalize().mul(lf.NormalLength)
+    edge.label.center = curve.value(par).add(norm)
+  }
+
+  InitLabelFixtures(edges: Iterable<GeomEdge>) {
+    for (const edge of edges) {
+      this.InitLabelFixture(edge)
+    }
+  }
+
+  InitLabelFixture(edge: GeomEdge) {
+    if (edge.label == null) {
+      return
+    }
+
+    if (this.labelFixtures.has(edge)) {
+      return
+    }
+
+    const attachmentPar = edge.curve.closestParameter(edge.label.center)
+    const curve = edge.curve
+    const tang = curve.derivative(attachmentPar)
+    const normal = tang.rotate90Cw()
+    const fromCurveToLabel = edge.label.center.sub(curve.value(attachmentPar))
+    const fixture = new LabelFixture(
+      curve.lengthPartial(0, attachmentPar) / curve.length,
+      fromCurveToLabel.dot(normal) > 0,
+      fromCurveToLabel.length,
+    )
+    this.labelFixtures.set(edge, fixture)
+  }
+
+  GetChangedEdges(changedNodes: Set<GeomNode>): Array<GeomEdge> {
+    const list = []
+    const box = Rectangle.mkOnRectangles(Array.from(changedNodes).map((n) => n.boundingBox))
+    const t = {box: box}
+    const boxPoly = box.perimeter()
+    for (const e of this.geomGraph.edges()) {
+      if (this.EdgeNeedsRouting(t, e, boxPoly, changedNodes)) {
+        list.push(e)
+      }
+    }
+
+    return list
+  }
+
+  EdgeNeedsRouting(t: {box: Rectangle}, edge: GeomEdge, boxPolyline: Polyline, changedNodes: Set<GeomNode>): boolean {
+    if (edge.curve == null) {
+      return true
+    }
+
+    if (changedNodes.has(edge.source) || changedNodes.has(edge.target)) {
+      return true
+    }
+
+    if (edge.source.boundingBox.intersects(t.box) || edge.target.boundaryCurve.boundingBox.intersects(t.box)) {
+      return true
+    }
+
+    if (!edge.boundingBox.intersects(t.box)) {
+      return false
+    }
+
+    return Curve.intersectionOne(boxPolyline, edge.curve, false) != null
+  }
+
+  GetChangedNodes(): Set<GeomNode> {
+    const ret = new Set<GeomNode>()
+    for (const p of this.listOfPushers) {
+      for (const n of p.FixedNodes) ret.add(n)
+    }
+    return ret
+  }
+}

@@ -28,8 +28,8 @@ export function uniteSets<T>(a: Set<T>, b: Set<T>): Set<T> {
   return ret
 }
 
-export function addRange<T>(array: Array<T>, addedArray: Iterable<T>) {
-  for (const t of addedArray) array.push(t)
+export function addRange<T>(array: Array<T>, addedIterable: Iterable<T>) {
+  for (const t of addedIterable) array.push(t)
 }
 
 export function setIntersection<T>(a: Set<T>, b: Set<T>): Set<T> {
