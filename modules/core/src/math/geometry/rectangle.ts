@@ -17,7 +17,7 @@ export class Size {
 }
 
 export class Rectangle implements IRectangle<Point> {
-  /** return true iff the rectangles are distEpsilon close */
+  /** Returns true iff the rectangles are distEpsilon close */
   egualEps(bbox: Rectangle): boolean {
     return (
       closeDistEps(this.left_, bbox.left) &&

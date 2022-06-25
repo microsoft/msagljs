@@ -6,7 +6,7 @@ import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
 import {LayoutSettings, SugiyamaLayoutSettings} from './layered/SugiyamaLayoutSettings'
-import {LayeredLayout, MdsLayoutSettings} from '..'
+import {GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
 import {PivotMDS} from './mds/PivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
 import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
@@ -291,4 +291,37 @@ function requireLabelPositioning(geomG: GeomGraph) {
   for (const e of geomG.deepEdges()) {
     if (e.label) e.label.requirePositioning()
   }
+}
+
+export function geometryIsCreated(graph: Graph): boolean {
+  if (GeomGraph.getGeom(graph) == null) return false
+  for (const n of graph.shallowNodes) {
+    const gn = GeomObject.getGeom(n) as GeomNode
+    if (gn == null || gn.boundaryCurve == null) return false
+    if (n instanceof Graph) {
+      if (layoutIsCalculated(n) == false) return false
+    }
+  }
+  for (const e of graph.edges) {
+    const ge = GeomEdge.getGeom(e) as GeomEdge
+    if (ge == null) return false
+  }
+  return true
+}
+
+export function layoutIsCalculated(graph: Graph): boolean {
+  if (GeomGraph.getGeom(graph) == null) return false
+  for (const n of graph.shallowNodes) {
+    const gn = GeomObject.getGeom(n) as GeomNode
+    if (gn == null || gn.boundaryCurve == null) return false
+    if (n instanceof Graph) {
+      if (layoutIsCalculated(n) == false) return false
+    }
+  }
+  for (const e of graph.edges) {
+    const ge = GeomEdge.getGeom(e) as GeomEdge
+    if (ge == null || ge.curve == null) return false
+  }
+  // todo: consider adding more checks. For example, check that the bounding boxes of subgraphs make sense, and the edge curves are attached to the nodes
+  return true
 }

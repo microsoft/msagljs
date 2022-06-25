@@ -65,6 +65,26 @@ export class Graph extends Node {
   constructor(id = '__graph__') {
     super(id)
   }
+  /**
+   * Finds the node with the givin id belonging to a graph or one of its subgraphs.
+   */
+  findNodeRecursive(id: string): Node {
+    const n = this.nodeCollection.find(id)
+    if (n) {
+      return n
+    }
+    for (const g of this.shallowNodes) {
+      if (g instanceof Graph) {
+        const nn = g.findNodeRecursive(id)
+        if (nn) return nn
+      }
+    }
+    return null
+  }
+  /** Returns a node belonging to this graph having the same id.
+   * If a node with the given id belongs to a subgraph than it would no be returned.
+   * To find such a deeper nested node use findNodeRecursive
+   */
   findNode(id: string): Node {
     return this.nodeCollection.find(id)
   }

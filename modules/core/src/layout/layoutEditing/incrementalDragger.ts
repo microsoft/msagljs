@@ -1,6 +1,5 @@
-import {Point, Rectangle, Polyline, Curve, ICurve} from '../../math/geometry'
+import {Point, Rectangle, Polyline, Curve} from '../../math/geometry'
 import {SplineRouter} from '../../routing/splineRouter'
-import {Edge} from '../../structs/edge'
 import {Graph} from '../../structs/graph'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/GeomGraph'

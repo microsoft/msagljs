@@ -41,8 +41,18 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  /** Calculate bounding box from children, not updating the bounding boxes recursively. */
   calculateBoundsFromChildren() {
-      throw new Error("Method not implemented.")
+    const bb = Rectangle.mkEmpty()
+    let padding = 0
+    for (const n of this.shallowNodes()) {
+      const nbb = n.boundingBox
+      bb.add(nbb.leftBottom)
+      bb.add(nbb.rightTop)
+      padding = Math.max(padding, n.padding)
+    }
+    bb.pad(Math.max(padding, this.Margins))
+    return bb
   }
   isCollapsed = false
 
@@ -99,7 +109,7 @@ export class GeomGraph extends GeomNode {
   public set layoutSettings(value: LayoutSettings) {
     this._layoutSettings = value
   }
-  
+
   private _boundingBox_: Rectangle
   private _labelSize: Size
 

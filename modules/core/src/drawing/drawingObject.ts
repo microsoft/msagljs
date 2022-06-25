@@ -19,8 +19,8 @@ export abstract class DrawingObject {
     if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
     }
-    if (this.labelText && this.labelText != this.id) {
-      yield {type: 'attr', id: 'labelText', eq: this.labelText}
+    if ((this.labelText != null || this.labelText == '') && this.labelText != this.id) {
+      yield {type: 'attr', id: 'label', eq: this.labelText}
     }
     if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}

@@ -147,28 +147,37 @@ export class DrawingGraph extends DrawingNode {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
       const geomGraph = new GeomGraph(n)
       if (subDg.labelText) {
-        geomGraph.labelSize = subDg.measuredTextSize = this.textMeasure(subDg.labelText, {
-          fontSize: subDg.fontsize,
-          fontFamily: subDg.fontname,
-          fontStyle: 'normal',
-        })
+        geomGraph.labelSize = subDg.measuredTextSize = measureTextSize(subDg, this.textMeasure)
       }
     } else {
       const drawingNode = <DrawingNode>DrawingNode.getDrawingObj(n)
       let textSize = new Size(1, 1)
       if (drawingNode.labelText) {
-        textSize = this.textMeasure(drawingNode.labelText, {
-          fontSize: drawingNode.fontsize,
-          fontFamily: drawingNode.fontname,
-          fontStyle: 'normal',
-        })
+        textSize = measureTextSize(drawingNode, this.textMeasure)
       }
-      const width = textSize.width + drawingNode.LabelMargin * 2
-      const height = textSize.height + drawingNode.LabelMargin * 2
       drawingNode.measuredTextSize = textSize
       const center = new Point(0, 0)
       const geomNode = new GeomNode(n)
+      const width = textSize.width + drawingNode.LabelMargin * 2
+      const height = textSize.height + drawingNode.LabelMargin * 2
       geomNode.boundaryCurve = this.curveByShape(width, height, center, drawingNode.shape, drawingNode)
     }
   }
+  measureLabelSizes(textMeasure: (text: string, opts: Partial<TextMeasurerOptions>) => Size) {
+    for (const n of this.graph.deepNodes) {
+      const dn = DrawingNode.getDrawingObj(n) as DrawingNode
+      dn.measuredTextSize = measureTextSize(dn, textMeasure) ?? new Size(1, 1)
+    }
+  }
+}
+
+function measureTextSize(drawingNode: DrawingNode, textMeasure: (text: string, opts: Partial<TextMeasurerOptions>) => Size): Size {
+  if (drawingNode.labelText) {
+    return textMeasure(drawingNode.labelText, {
+      fontSize: drawingNode.fontsize,
+      fontFamily: drawingNode.fontname,
+      fontStyle: 'normal', // TODO: find in styles?
+    })
+  }
+  return null
 }
