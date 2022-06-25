@@ -1,12 +1,33 @@
-import {CompositeLayer, UpdateParameters, Position, LayersList} from '@deck.gl/core/typed'
+import {CompositeLayer, Unit, Accessor, Color, UpdateParameters, Position, LayersList, LayerProps, DefaultProps} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
-import {PathLayer, PathLayerProps, IconLayer} from '@deck.gl/layers/typed'
+import {IconLayer} from '@deck.gl/layers/typed'
 import {iconAtlas, iconMapping} from './arrows'
-import {interpolateICurve, GeomEdge, Point} from 'msagl-js'
+import {ICurve, GeomEdge, Point, LineSegment, BezierSeg, Ellipse, Curve} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
-type EdgeLayerProps = PathLayerProps<GeomEdge> & {
+import CurveLayer from './curve-layer'
+import {CurveLayerProps, CURVE} from './curve-layer'
+
+type EdgeLayerProps = {
   getDepth?: Buffer
+
+  widthUnits?: Unit
+  widthScale?: number
+  widthMinPixels?: number
+  widthMaxPixels?: number
+
+  getWidth?: Accessor<GeomEdge, number>
+  getColor?: Accessor<GeomEdge, Color>
+} & LayerProps<GeomEdge>
+
+const defaultProps: DefaultProps<EdgeLayerProps> = {
+  widthUnits: 'common',
+  widthScale: {type: 'number', min: 0, value: 1},
+  widthMinPixels: {type: 'number', min: 0, value: 0},
+  widthMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
+
+  getWidth: {type: 'accessor', value: 1},
+  getColor: {type: 'accessor', value: [0, 0, 0, 255]},
 }
 
 type Arrow = {
@@ -17,12 +38,11 @@ type Arrow = {
 }
 
 export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
-  static defaultProps = {
-    ...PathLayer.defaultProps,
-  }
+  static defaultProps = defaultProps
 
   state!: {
     arrows: Arrow[]
+    curves: ICurve[]
   }
 
   updateState(params: UpdateParameters<this>) {
@@ -30,12 +50,12 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
 
     if (params.changeFlags.dataChanged) {
       const arrows: Arrow[] = []
+      const curves = Array.from(getCurves(params.props.data as Iterable<GeomEdge>))
 
-      for (const e of params.props.data as GeomEdge[]) {
-        const eg = e
+      for (const eg of params.props.data as Iterable<GeomEdge>) {
         if (eg.sourceArrowhead) {
           arrows.push({
-            edge: e,
+            edge: eg,
             type: 'triangle-n',
             tip: eg.sourceArrowhead.tipPosition,
             end: eg.curve.start,
@@ -43,34 +63,49 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
         }
         if (eg.targetArrowhead) {
           arrows.push({
-            edge: e,
+            edge: eg,
             type: 'triangle-n',
             tip: eg.targetArrowhead.tipPosition,
             end: eg.curve.end,
           })
         }
       }
-      this.setState({arrows})
+      this.setState({arrows, curves})
     }
   }
 
   renderLayers(): LayersList {
-    const props = this.props
+    const {getWidth, getColor} = this.props
 
     return [
-      new PathLayer<GeomEdge>(
-        props,
+      new CurveLayer<ICurve>(
+        {
+          getWidth:
+            typeof getWidth === 'function'
+              ? // @ts-ignore
+                (d: ICurve) => getWidth(d.__source)
+              : getWidth,
+          getColor:
+            typeof getColor === 'function'
+              ? // @ts-ignore
+                (d: ICurve) => getColor(d.__source)
+              : getColor,
+        },
         this.getSubLayerProps({
           id: 'path',
         }),
         {
-          // todo: use exact geometry to render e.curve
-          getPath: (e: GeomEdge) =>
-            Array.from(interpolateICurve(e.curve, 0.01 /* this is a sensitive parameter: diminishing it creates more segments */)).map(
-              (p: Point) => [p.x, p.y] as Position,
-            ),
-          getColor: getEdgeColor,
+          data: this.state.curves,
+          getCurveType: (d: ICurve) => (d instanceof Ellipse ? CURVE.Arc : d instanceof BezierSeg ? CURVE.Bezier : CURVE.Line),
+          getControlPoints: (d: ICurve) =>
+            d instanceof Ellipse
+              ? [d.center, d.aAxis, d.bAxis].flatMap(pointToArray).concat(d.parStart, d.parEnd)
+              : d instanceof BezierSeg
+              ? d.b.flatMap(pointToArray)
+              : [d.start, d.end].flatMap(pointToArray),
           widthUnits: 'pixels',
+          // one vertex per 4 pixels
+          getResolution: (d: ICurve) => d.length / 4,
         },
       ),
 
@@ -93,6 +128,26 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
       ),
     ]
   }
+}
+
+function* getCurves(data: Iterable<GeomEdge>): Generator<ICurve> {
+  for (const eg of data) {
+    if (eg.curve instanceof Curve) {
+      for (const curve of eg.curve.segs) {
+        // @ts-ignore
+        curve.__source = eg
+        yield curve
+      }
+    } else {
+      // @ts-ignore
+      eg.curve.__source = eg
+      yield eg.curve
+    }
+  }
+}
+
+function pointToArray(p: Point): [number, number] {
+  return [p.x, p.y]
 }
 
 function getEdgeColor(e: GeomEdge): [number, number, number] {

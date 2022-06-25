@@ -233,7 +233,7 @@ export class Ellipse implements ICurve {
   }
 
   get length(): number {
-    return Curve.lengthWithInterpolation(this)
+    return ((this.aAxis.length + this.bAxis.length) * Math.abs(this.parEnd - this.parStart)) / 2
   }
 
   /** clones the ellipse . */
