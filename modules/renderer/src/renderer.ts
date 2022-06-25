@@ -1,4 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
+import {PathLayer} from '@deck.gl/layers/typed'
+import {TileLayer} from '@deck.gl/geo-layers/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
@@ -6,7 +8,7 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutDrawingGraph} from './layout'
-import {Graph, GeomGraph, Rectangle, EdgeRoutingMode} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, GeomEdge} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer from './text-measurer'
@@ -201,32 +203,75 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
-    const edgeLayer = new EdgeLayer({
-      id: 'edges',
-      data: Array.from(geomGraph.deepEdges),
-      getWidth: 1,
-      getDepth: this._graphHighlighter.edgeDepthBuffer,
-    })
-
-    const nodeLayer = new NodeLayer({
-      id: 'nodeBoundaries',
-      data: Array.from(geomGraph.deepNodesIt()),
-      getDepth: this._graphHighlighter.nodeDepthBuffer,
-      fontFamily: fontSettings.fontFamily,
-      fontWeight: fontSettings.fontWeight,
-      lineHeight: fontSettings.lineHeight,
-      getLineWidth: 1,
-      getTextSize: fontSettings.fontSize,
-      pickable: true,
-      onHover: ({object}) => {
-        if (!this._highlightedNodeId) {
-          this._highlight(object?.id)
+    const boundingBox = geomGraph.boundingBox
+    const layer = new TileLayer<{nodes: GeomNode[]; edges: GeomEdge[]}>({
+      extent: [boundingBox.left, boundingBox.bottom, boundingBox.right, boundingBox.top],
+      refinementStrategy: 'no-overlap',
+      getTileData: ({bbox}) => {
+        // @ts-ignore
+        const rect = new Rectangle({left: bbox.left, right: bbox.right, bottom: bbox.top, top: bbox.bottom})
+        const nodes: GeomNode[] = []
+        const edges: GeomEdge[] = []
+        for (const obj of geomGraph.intersectedObjects(rect, false)) {
+          if (obj instanceof GeomNode) {
+            nodes.push(obj)
+          } else if (obj instanceof GeomEdge) {
+            edges.push(obj)
+          }
         }
+        return {nodes, edges}
+      },
+      renderSubLayers: ({data, id, tile}) => {
+        // @ts-ignore
+        const {left, right, top, bottom} = tile.bbox
+        const rect = new Rectangle({left: left, right: right, bottom: top, top: bottom})
+        return [
+          new EdgeLayer({
+            id: id + 'edges',
+            data: data.edges,
+            clipBounds: rect,
+            getWidth: 1,
+            getDepth: this._graphHighlighter.edgeDepthBuffer,
+            resolution: 2 ** (tile.index.z - 2),
+          }),
+
+          new NodeLayer({
+            id: id + 'nodes',
+            data: data.nodes,
+            getDepth: this._graphHighlighter.nodeDepthBuffer,
+            fontFamily: fontSettings.fontFamily,
+            fontWeight: fontSettings.fontWeight,
+            lineHeight: fontSettings.lineHeight,
+            getLineWidth: 1,
+            getTextSize: fontSettings.fontSize,
+            pickable: true,
+            onHover: ({object}) => {
+              if (!this._highlightedNodeId) {
+                this._highlight(object?.id)
+              }
+            },
+          }),
+
+          new PathLayer({
+            id: id + 'bounds',
+            data: [0],
+            getPath: (_) => [
+              [left, bottom],
+              [right, bottom],
+              [right, top],
+              [left, top],
+              [left, bottom],
+            ],
+            getColor: [255, 0, 0],
+            getWidth: 2,
+            widthUnits: 'pixels',
+          }),
+        ]
       },
     })
 
     this._deck.setProps({
-      layers: [nodeLayer, edgeLayer],
+      layers: [layer],
     })
 
     this.emit({

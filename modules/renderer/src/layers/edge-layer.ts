@@ -2,14 +2,17 @@ import {CompositeLayer, Unit, Accessor, Color, UpdateParameters, Position, Layer
 import {Buffer} from '@luma.gl/webgl'
 import {IconLayer} from '@deck.gl/layers/typed'
 import {iconAtlas, iconMapping} from './arrows'
-import {ICurve, GeomEdge, Point, LineSegment, BezierSeg, Ellipse, Curve} from 'msagl-js'
+import {ICurve, GeomEdge, Point, LineSegment, clipWithRectangle, BezierSeg, Ellipse, Curve, Rectangle} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
 import CurveLayer from './curve-layer'
-import {CurveLayerProps, CURVE} from './curve-layer'
+import {CURVE} from './curve-layer'
 
 type EdgeLayerProps = {
   getDepth?: Buffer
+
+  clipBounds?: Rectangle
+  resolution?: number
 
   widthUnits?: Unit
   widthScale?: number
@@ -21,6 +24,8 @@ type EdgeLayerProps = {
 } & LayerProps<GeomEdge>
 
 const defaultProps: DefaultProps<EdgeLayerProps> = {
+  resolution: {type: 'number', value: 1},
+
   widthUnits: 'common',
   widthScale: {type: 'number', min: 0, value: 1},
   widthMinPixels: {type: 'number', min: 0, value: 0},
@@ -49,25 +54,30 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
     super.updateState(params)
 
     if (params.changeFlags.dataChanged) {
+      const {data, clipBounds} = params.props
       const arrows: Arrow[] = []
-      const curves = Array.from(getCurves(params.props.data as Iterable<GeomEdge>))
+      const curves = Array.from(getCurves(data as Iterable<GeomEdge>, clipBounds))
 
       for (const eg of params.props.data as Iterable<GeomEdge>) {
         if (eg.sourceArrowhead) {
-          arrows.push({
-            edge: eg,
-            type: 'triangle-n',
-            tip: eg.sourceArrowhead.tipPosition,
-            end: eg.curve.start,
-          })
+          if (!clipBounds || clipBounds.contains(eg.sourceArrowhead.tipPosition)) {
+            arrows.push({
+              edge: eg,
+              type: 'triangle-n',
+              tip: eg.sourceArrowhead.tipPosition,
+              end: eg.curve.start,
+            })
+          }
         }
         if (eg.targetArrowhead) {
-          arrows.push({
-            edge: eg,
-            type: 'triangle-n',
-            tip: eg.targetArrowhead.tipPosition,
-            end: eg.curve.end,
-          })
+          if (!clipBounds || clipBounds.contains(eg.targetArrowhead.tipPosition)) {
+            arrows.push({
+              edge: eg,
+              type: 'triangle-n',
+              tip: eg.targetArrowhead.tipPosition,
+              end: eg.curve.end,
+            })
+          }
         }
       }
       this.setState({arrows, curves})
@@ -75,7 +85,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
   }
 
   renderLayers(): LayersList {
-    const {getWidth, getColor} = this.props
+    const {getWidth, getColor, resolution} = this.props
 
     return [
       new CurveLayer<ICurve>(
@@ -105,7 +115,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
               : [d.start, d.end].flatMap(pointToArray),
           widthUnits: 'pixels',
           // one vertex per 4 pixels
-          getResolution: (d: ICurve) => d.length / 4,
+          getResolution: (d: ICurve) => d.length * resolution,
         },
       ),
 
@@ -130,7 +140,26 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
   }
 }
 
-function* getCurves(data: Iterable<GeomEdge>): Generator<ICurve> {
+function* getCurves(data: Iterable<GeomEdge>, clipBounds?: Rectangle): Generator<ICurve> {
+  if (clipBounds) {
+    for (const eg of data) {
+      for (const clipedCurve of clipWithRectangle(eg.curve, clipBounds)) {
+        if (clipedCurve instanceof Curve) {
+          for (const curve of clipedCurve.segs) {
+            // @ts-ignore
+            curve.__source = eg
+            yield curve
+          }
+        } else {
+          // @ts-ignore
+          clipedCurve.__source = eg
+          yield clipedCurve
+        }
+      }
+    }
+    return
+  }
+
   for (const eg of data) {
     if (eg.curve instanceof Curve) {
       for (const curve of eg.curve.segs) {
