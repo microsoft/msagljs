@@ -2,7 +2,7 @@ import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 import {parseDot, parseSimpleJSON} from '@msagl/parser'
 
-import {EdgeRoutingMode, Graph} from 'msagl-js'
+import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Graph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
@@ -66,6 +66,12 @@ function download(filename, text) {
 dropZone('drop-target', async (f: File) => {
   loadGraphFromFile(f)
     .then((graph) => {
+      if (geometryIsCreated(graph)) {
+        svgRenderer.needCreateGeometry = false
+        if (layoutIsCalculated(graph)) {
+          svgRenderer.needCalculateLayout = false
+        }
+      }
       svgRenderer.setGraph(graph, getLayoutOptions())
       return graph.id
     })

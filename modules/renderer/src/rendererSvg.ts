@@ -1,4 +1,4 @@
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph, DrawingNode} from 'msagl-js/drawing'
 
 import {layoutDrawingGraph} from './layout'
 import {Graph} from 'msagl-js'
@@ -14,6 +14,10 @@ import {graphToJSON} from '@msagl/parser'
  * Renders an MSAGL graph with SVG
  */
 export class RendererSvg {
+  /** The default is true and the value is reset to true after each call to setGraph */
+  needCreateGeometry = true
+  /** The default is true and the value is reset to true after each call to setGraph */
+  needCalculateLayout = true
   getSvgString(): string {
     return this._svgCreator.getSvgString()
   }
@@ -46,11 +50,21 @@ export class RendererSvg {
       this._textMeasurer.setOptions(options.label || {})
 
       const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
-      drawingGraph.createGeometry(this._textMeasurer.measure)
-      layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
+
+      if (this.needCreateGeometry) {
+        drawingGraph.createGeometry(this._textMeasurer.measure)
+      } else {
+        // still need to measure the text sizes
+        drawingGraph.measureLabelSizes(this._textMeasurer.measure)
+      }
+
+      if (this.needCalculateLayout) {
+        layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
+      }
 
       this._update()
     }
+    this.needCalculateLayout = this.needCreateGeometry = true
   }
 
   setOptions(options: LayoutOptions) {

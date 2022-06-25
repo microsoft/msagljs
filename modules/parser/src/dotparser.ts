@@ -792,7 +792,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
-  if (geomEdge && geomEdge.curve == null) {
+  if (geomEdge && geomEdge.curve) {
     yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
 
     if (geomEdge.sourceArrowhead) {

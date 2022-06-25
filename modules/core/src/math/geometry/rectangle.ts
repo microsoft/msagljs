@@ -2,6 +2,7 @@ import {Point} from './point'
 import {Polyline} from './polyline'
 import {GeomConstants} from './geomConstants'
 import {IRectangle} from './IRectangle'
+import {closeDistEps} from '../../utils/compare'
 
 export class Size {
   pad(padW: number): any {
@@ -16,6 +17,16 @@ export class Size {
 }
 
 export class Rectangle implements IRectangle<Point> {
+  /** Returns true iff the rectangles are distEpsilon close */
+  egualEps(bbox: Rectangle): boolean {
+    return (
+      closeDistEps(this.left_, bbox.left) &&
+      closeDistEps(this.right_, bbox.right) &&
+      closeDistEps(this.top_, bbox.top) &&
+      closeDistEps(this.bottom_, bbox.bottom)
+    )
+  }
+  /** make a rectangle with the given size and center */
   static mkSizeCenter(size: Size, center: Point): Rectangle {
     const w = size.width / 2
     const h = size.height / 2
@@ -208,7 +219,7 @@ export class Rectangle implements IRectangle<Point> {
   }
 
   // Create rectangle that is the bounding box of the given Rectangles
-  static rectangleOnRectangles(rectangles: Rectangle[]) {
+  static mkOnRectangles(rectangles: Iterable<Rectangle>) {
     const r = Rectangle.mkEmpty()
     for (const p of rectangles) {
       r.addRecSelf(p)
