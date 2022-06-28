@@ -140,7 +140,6 @@ export function layoutGeomGraphDetailed(
   layoutShallowSubgraphs(geomG)
   const liftedEdges = createLiftedEdges(geomG.graph)
   const connectedGraphs: GeomGraph[] = getConnectedComponents(geomG)
-  // TODO: possible optimization for a connected graph
   layoutComps()
 
   liftedEdges.forEach((e) => {
@@ -214,6 +213,7 @@ export function layoutGeomGraphDetailed(
     } else {
       for (const cg of connectedGraphs) {
         layoutEngine(cg, cancelToken)
+        cg.boundingBox = cg.pumpTheBoxToTheGraphWithMargins()
       }
       packing(geomG, connectedGraphs)
     }

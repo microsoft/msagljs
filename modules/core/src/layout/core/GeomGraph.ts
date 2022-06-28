@@ -80,18 +80,16 @@ class RRect extends Rectangle {
 }
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
-  const subgraphsRects = new Array<{g: GeomGraph; rect: Rectangle}>()
-  for (const g of subGraphs) {
-    subgraphsRects.push({g: g, rect: g.boundingBox}) // g.boundingBox is a clone of the graph rectangle
-  }
-  const rectangles = subgraphsRects.map((t) => t.rect)
+  const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
+
+  const rectangles = subgraphsRects.map((t) => t[1]) as Array<Rectangle>
   const packing = new OptimalRectanglePacking(
     rectangles,
     1.5, // TODO - pass as a parameter: PackingAspectRatio,
   )
   packing.run()
-  for (const {g, rect} of subgraphsRects) {
-    const delta = g.boundingBox.leftBottom.sub(rect.leftBottom)
+  for (const [g, rect] of subgraphsRects) {
+    const delta = rect.leftBottom.sub(g.boundingBox.leftBottom)
     g.translate(delta)
   }
   geomGraph.boundingBox = new Rectangle({
@@ -255,7 +253,7 @@ export class GeomGraph extends GeomNode {
     this.transform(t)
   }
 
-  pumpTheBoxToTheGraph(t: {b: Rectangle}) {
+  private pumpTheBoxToTheGraph(t: {b: Rectangle}) {
     //Assert.assert(this.graph.isEmpty() == false)
     for (const e of this.edges()) {
       if (e.underCollapsedGraph()) continue
