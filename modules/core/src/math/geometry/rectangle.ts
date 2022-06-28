@@ -3,6 +3,7 @@ import {Polyline} from './polyline'
 import {GeomConstants} from './geomConstants'
 import {IRectangle} from './IRectangle'
 import {closeDistEps} from '../../utils/compare'
+import {PlaneTransformation} from './planeTransformation'
 
 export class Size {
   pad(padW: number): any {
@@ -17,8 +18,12 @@ export class Size {
 }
 
 export class Rectangle implements IRectangle<Point> {
+  transform(m: PlaneTransformation): Rectangle {
+    const newCenter = m.multiplyPoint(this.center)
+    return Rectangle.mkSizeCenter(this.size, newCenter)
+  }
   /** Returns true iff the rectangles are distEpsilon close */
-  egualEps(bbox: Rectangle): boolean {
+  equalEps(bbox: Rectangle): boolean {
     return (
       closeDistEps(this.left_, bbox.left) &&
       closeDistEps(this.right_, bbox.right) &&
@@ -93,7 +98,8 @@ export class Rectangle implements IRectangle<Point> {
     return this.leftTop.add(this.rightBottom).mul(0.5)
   }
   set center(value: Point) {
-    const shift = value.sub(this.center)
+    const cen = this.leftTop.add(this.rightBottom).mul(0.5)
+    const shift = value.sub(cen)
     this.leftTop = this.leftTop.add(shift)
     this.rightBottom = this.rightBottom.add(shift)
   }
@@ -240,7 +246,7 @@ export class Rectangle implements IRectangle<Point> {
 
   // returns true if the rectangle has negative width
   isEmpty(): boolean {
-    return this.width < 0
+    return this.right < this.left
   }
 
   // makes the rectangle empty

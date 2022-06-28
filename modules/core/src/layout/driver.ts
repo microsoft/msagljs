@@ -1,7 +1,6 @@
 import {RectilinearEdgeRouter} from '../routing/rectilinear/RectilinearEdgeRouter'
 import {GeomGraph, optimalPackingRunner} from './core/GeomGraph'
 import {CancelToken} from '../utils/cancelToken'
-import {CurveFactory} from '../math/geometry/curveFactory'
 import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
@@ -154,12 +153,14 @@ export function layoutGeomGraphDetailed(
   })
 
   removedEdges.forEach((e) => e.add())
-
+  geomG.boundingBox = geomG.pumpTheBoxToTheGraphWithMargins()
   //the final touches
   if (geomG.graph.parent == null) {
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG)
+    geomG.boundingBox = geomG.pumpTheBoxToTheGraphWithMargins()
+
     if (flipToScreenCoords) {
       geomG.FlipYAndMoveLeftTopToOrigin()
     }
@@ -181,19 +182,6 @@ export function layoutGeomGraphDetailed(
       if (n instanceof GeomGraph) {
         const g = <GeomGraph>n
         layoutGeomGraphDetailed(g, cancelToken, layoutEngine, edgeRouter, packing)
-        if (!g.graph.isEmpty()) {
-          const bb = g.boundingBox
-
-          if (bb && !bb.isEmpty()) {
-            n.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(
-              bb.width,
-              bb.height,
-              Math.min(10, bb.width / 10),
-              Math.min(10, bb.height / 10),
-              bb.center,
-            )
-          }
-        }
       }
     }
   }
@@ -221,11 +209,14 @@ export function layoutGeomGraphDetailed(
   }
 
   function layoutComps() {
-    if (connectedGraphs.length == 0) return
-    for (const cg of connectedGraphs) {
-      layoutEngine(cg, cancelToken)
+    if (connectedGraphs.length == 1) {
+      layoutEngine(geomG, cancelToken)
+    } else {
+      for (const cg of connectedGraphs) {
+        layoutEngine(cg, cancelToken)
+      }
+      packing(geomG, connectedGraphs)
     }
-    packing(geomG, connectedGraphs)
   }
 } // end of layoutGeomGraphDetailed
 

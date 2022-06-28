@@ -115,15 +115,6 @@ export class LayeredLayout extends Algorithm {
       this.runPostLayering()
     }
     postRunTransform(this.originalGraph, this.sugiyamaSettings.transform)
-    this.originalGraph.updateBoundingBox()
-    this.SetMargins()
-  }
-
-  private SetMargins() {
-    this.originalGraph.boundingBox.right += this.sugiyamaSettings.margins.right
-    this.originalGraph.boundingBox.top += this.sugiyamaSettings.margins.bottom
-    this.originalGraph.boundingBox.left -= this.sugiyamaSettings.margins.left
-    this.originalGraph.boundingBox.bottom -= this.sugiyamaSettings.margins.bottom
   }
 
   runPostLayering() {
@@ -623,10 +614,12 @@ export class LayeredLayout extends Algorithm {
     }
 
     const delta: number = box.leftTop.sub(box.rightBottom).length / 2
-    const del = new Point(delta * -1, delta)
+    const del = new Point(-delta, delta)
     box.add(box.leftTop.add(del))
     box.add(box.rightBottom.sub(del))
+    this.originalGraph.ignoreBBoxCheck = true
     this.originalGraph.boundingBox = box
+    this.originalGraph.ignoreBBoxCheck = false
   }
 
   StraightensShortEdges() {
@@ -965,7 +958,7 @@ function CalcInitialYAnchorLocations(
   layersAreDoubled: boolean,
 ) {
   const anchors = database.Anchors
-  let ymax = originalGraph.Margins + spaceBeforeMargins //setting up y coord - going up by y-layers
+  let ymax = originalGraph.margins.top + spaceBeforeMargins //setting up y coord - going up by y-layers
   let i = 0
   for (const yLayer of layerArrays.Layers) {
     let bottomAnchorMax = 0
@@ -1183,6 +1176,9 @@ function postRunTransform(geometryGraph: GeomGraph, transform: PlaneTransformati
     }
   }
   TransformCurves(geometryGraph, transform)
+  if (geometryGraph.graph.parent == null) {
+    geometryGraph.boundingBox = null
+  }
 }
 
 function TransformCurves(geometryGraph: GeomGraph, m: PlaneTransformation) {

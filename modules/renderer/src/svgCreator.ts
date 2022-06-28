@@ -75,7 +75,7 @@ export class SvgCreator {
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
     if (!this.geomGraph) return null
-    this.geomGraph.updateBoundingBox()
+    this.geomGraph.boundingBox = null
     this.open()
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)

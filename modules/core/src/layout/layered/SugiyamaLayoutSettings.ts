@@ -47,8 +47,6 @@ export class LayoutSettings {
 }
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
 export class SugiyamaLayoutSettings extends LayoutSettings {
-  margins = {left: 0, top: 0, bottom: 0, right: 0}
-
   sameRanks = new Array<string[]>()
 
   verticalConstraints = new VerticalConstraintsForSugiyama()

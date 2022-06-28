@@ -2,7 +2,11 @@ import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {PivotDistances} from '../../../src/layout/mds/PivotDistances'
 import {layoutGraphWithMds} from '../../../src/layout/mds/PivotMDS'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
-import {nodeBoundaryFunc, labelRectFunc, parseDotGraph, createGeometry} from '../../utils/testUtils'
+import {nodeBoundaryFunc, parseDotGraph, createGeometry, measureTextSize} from '../../utils/testUtils'
+
+function labelRectFunc(s: string) {
+  return measureTextSize(s, {})
+}
 
 test('pivot distances', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))

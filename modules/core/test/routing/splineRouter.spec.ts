@@ -19,7 +19,7 @@ import {GeomObject} from '../../src/layout/core/geomObject'
 import {SplineRouter} from '../../src/routing/splineRouter'
 import {sortedList} from '../layout/sortedBySizeListOfgvFiles'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
-import {generateRandomGeomGraph, labelRectFunc, runMDSLayout, setNode} from '../utils/testUtils'
+import {generateRandomGeomGraph, measureTextSize, runMDSLayout, setNode} from '../utils/testUtils'
 import {join} from 'path'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
 import {ArrowTypeEnum} from '../../src/drawing/arrowTypeEnum'
@@ -520,7 +520,7 @@ test('data_social', () => {
     const de = new DrawingEdge(e)
     de.directed = false
   }
-  dg.createGeometry(labelRectFunc)
+  dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
   for (const n of gg.shallowNodes()) {
     n.boundaryCurve = CurveFactory.mkCircle(n.boundingBox.diagonal / 2, new Point(0, 0))
@@ -764,7 +764,7 @@ test('edge to a parent', () => {
 
   const gg = new GeomGraph(g)
   const ag = new GeomGraph(a)
-  ag.boundaryCurve = CurveFactory.mkCircle(100, new Point(0, 0))
+  ag.boundingBox = CurveFactory.mkCircle(100, new Point(0, 0)).boundingBox
 
   const bg = new GeomNode(b)
   // create a smaller circle for bg

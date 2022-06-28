@@ -1051,6 +1051,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     this.coneSideComparer.SetOperand(leftConeSide)
     rbNode = this.leftConeSides.find(leftConeSide)
     if (rbNode == null) {
+      //this.Show([CurveFactory.CreateDiamond(10, 10, vertexEvent.Site)], '/tmp/bug.svg')
       const tmpZ = this.Z
       this.Z = Math.max(this.GetZP(leftConeSide.Start), this.PreviousZ)
       // we need to return to the past a little bit when the order was still correct
@@ -1074,7 +1075,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     // Assert.assert(rbNode!=null);
     if (rbNode == null) {
       // it is an emergency measure and should not happen
-      rbNode = this.GetRbNodeEmergency(rbNode, leftConeSide)
+      rbNode = this.GetRbNodeEmergency(leftConeSide)
       if (rbNode == null) {
         return // the cone is not there! and it is a bug
       }
@@ -1089,15 +1090,15 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     for (const visCone of visibleCones) this.AddEdgeAndRemoveCone(visCone, vertexEvent.Site)
   }
 
-  GetRbNodeEmergency(rbNode: RBNode<ConeSide>, leftConeSide: ConeSide): RBNode<ConeSide> {
+  GetRbNodeEmergency(leftConeSide: ConeSide): RBNode<ConeSide> {
+    if (this.leftConeSides.count == 0) return null
     for (let node = this.leftConeSides.treeMinimum(); node != null; node = this.leftConeSides.next(node)) {
       if (node.item == leftConeSide) {
-        rbNode = node
-        break
+        return node
       }
     }
 
-    return rbNode
+    return null
   }
 
   // #if TEST_MSAGL

@@ -8,26 +8,90 @@ import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
-import {Curve, PointLocation} from '../../math/geometry'
+import {Curve, CurveFactory, ICurve, PointLocation} from '../../math/geometry'
 
 // import {Curve} from '../../math/geometry/curve'
 // import {Ellipse} from '../../math/geometry/ellipse'
 // import {Entity} from '../../structs/entity'
+class RRect extends Rectangle {
+  isOk(): boolean {
+    if (this.isEmpty()) {
+      return true
+    }
+    return this.roundedRect_.boundingBox.equalEps(this)
+  }
+  setRect(value: Rectangle) {
+    super.left_ = value.left
+    super.right_ = value.right
+    super.top_ = value.top
+    super.bottom_ = value.bottom
+    if (!this.isEmpty()) {
+      this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(value.width, value.height, this.radX, this.radY, super.center)
+    }
+  }
+  radX: number
+  radY: number
+  roundedRect_: Curve
+  boundingBox_: Rectangle
+  constructor(t: {left: number; right: number; top: number; bottom: number; radX: number; radY: number}) {
+    super(t)
+    this.radX = t.radX
+    this.radY = t.radY
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, t.radX, t.radY, super.center)
+  }
+  get center() {
+    return super.center
+  }
+  set center(value: Point) {
+    super.center = value
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center)
+    // Assert.assert(this.isOk())
+  }
+  get left() {
+    return super.left
+  }
+  set left(value: number) {
+    super.left = value
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center)
+  }
+  get right(): number {
+    return super.right
+  }
+  set right(value: number) {
+    super.right = value
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center)
+  }
+  get top() {
+    return super.top
+  }
 
+  set top(value: number) {
+    super.top = value
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center) // todo: optimize
+  }
+  get bottom() {
+    return super.bottom
+  }
+
+  set bottom(value: number) {
+    super.bottom = value
+    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center) // todo: optimize
+  }
+}
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
-  const originalLeftBottoms = new Array<{g: GeomGraph; lb: Point}>()
+  const subgraphsRects = new Array<{g: GeomGraph; rect: Rectangle}>()
   for (const g of subGraphs) {
-    originalLeftBottoms.push({g: g, lb: g.boundingBox.leftBottom.clone()})
+    subgraphsRects.push({g: g, rect: g.boundingBox}) // g.boundingBox is a clone of the graph rectangle
   }
-  const rectangles = subGraphs.map((g) => g.boundingBox)
+  const rectangles = subgraphsRects.map((t) => t.rect)
   const packing = new OptimalRectanglePacking(
     rectangles,
     1.5, // TODO - pass as a parameter: PackingAspectRatio,
   )
   packing.run()
-  for (const {g, lb} of originalLeftBottoms) {
-    const delta = g.boundingBox.leftBottom.sub(lb)
+  for (const {g, rect} of subgraphsRects) {
+    const delta = g.boundingBox.leftBottom.sub(rect.leftBottom)
     g.translate(delta)
   }
   geomGraph.boundingBox = new Rectangle({
@@ -36,22 +100,32 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
     right: packing.PackedWidth,
     top: packing.PackedHeight,
   })
-  geomGraph.addLabelToGraphBB(geomGraph.boundingBox)
 }
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  ignoreBBoxCheck = false
+  bbIsCorrect(): boolean {
+    return true
+    if (this.ignoreBBoxCheck) {
+      return true
+    }
+    const b = this.pumpTheBoxToTheGraphWithMargins()
+    if (!Point.closeDistEps(b.center, new Point(0, 0)) && b.equalEps(this.boundingBox) == false) {
+      return false
+    }
+
+    return true
+  }
+  /** The empty space between the graph inner entities and its boundary */
+  margins = {left: 10, top: 10, bottom: 10, right: 10}
   /** Calculate bounding box from children, not updating the bounding boxes recursively. */
   calculateBoundsFromChildren() {
     const bb = Rectangle.mkEmpty()
-    let padding = 0
     for (const n of this.shallowNodes()) {
-      const nbb = n.boundingBox
-      bb.add(nbb.leftBottom)
-      bb.add(nbb.rightTop)
-      padding = Math.max(padding, n.padding)
+      bb.addRecSelf(n.boundingBoxWithPadding)
     }
-    bb.pad(Math.max(padding, this.Margins))
+    bb.padEverywhere(this.margins)
     return bb
   }
   isCollapsed = false
@@ -61,7 +135,7 @@ export class GeomGraph extends GeomNode {
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
   }
-
+  private rrect: RRect;
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
   *intersectedObjects(rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
     if (this._rtree == null) {
@@ -101,42 +175,37 @@ export class GeomGraph extends GeomNode {
     }
   }
   private _layoutSettings: LayoutSettings
-  public get layoutSettings(): LayoutSettings {
+  get layoutSettings(): LayoutSettings {
     return this._layoutSettings
   }
 
   // recursively sets the same settings for subgraphs
-  public set layoutSettings(value: LayoutSettings) {
+  set layoutSettings(value: LayoutSettings) {
     this._layoutSettings = value
   }
 
-  private _boundingBox_: Rectangle
   private _labelSize: Size
 
-  public get labelSize() {
+  get labelSize() {
     return this._labelSize
   }
-  public set labelSize(value: Size) {
+  set labelSize(value: Size) {
     this._labelSize = value
   }
-  public get boundingBox(): Rectangle {
-    if (this._boundingBox_ == null) {
-      this.updateBoundingBox()
-    }
-
-    return this._boundingBox_
+  get boundingBox(): Rectangle {
+    return this.rrect.clone()
   }
-  public set boundingBox(value: Rectangle) {
-    this._boundingBox_ = value
+
+  set boundingBox(value: Rectangle) {
+    if (value) {
+      this.rrect.setRect(value)
+    } else {
+      this.rrect.roundedRect_ = null
+    }
+    // Assert.assert(this.bbIsCorrect())
   }
   transform(matrix: PlaneTransformation) {
     if (matrix.isIdentity()) return
-    if (this.boundaryCurve != null) {
-      this.boundaryCurve = this.boundaryCurve.transform(matrix)
-      this.boundingBox = this.boundaryCurve.boundingBox
-    } else {
-      this.boundingBox = null
-    }
 
     for (const n of this.shallowNodes()) {
       n.transform(matrix)
@@ -144,6 +213,9 @@ export class GeomGraph extends GeomNode {
     for (const e of this.edges()) {
       e.transform(matrix)
     }
+
+    this.boundingBox =
+      this.rrect == null || this.rrect.isEmpty() ? this.pumpTheBoxToTheGraphWithMargins() : this.boundingBox.transform(matrix)
   }
   get deepNodes(): IterableIterator<GeomNode> {
     return this.deepNodesIt()
@@ -160,14 +232,12 @@ export class GeomGraph extends GeomNode {
 
   MinimalWidth = 0
   MinimalHeight = 0
-  pumpTheBoxToTheGraphWithMargins(minSeparation: number): Rectangle {
+  pumpTheBoxToTheGraphWithMargins(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
     this.pumpTheBoxToTheGraph(t)
-    t.b.pad(Math.max(this.Margins, minSeparation))
+    t.b.padEverywhere(this.margins)
     if (this.MinimalWidth > 0) t.b.width = Math.max(t.b.width, this.MinimalWidth)
     if (this.MinimalHeight > 0) t.b.height = Math.max(t.b.height, this.MinimalHeight)
-
-    this._boundingBox_ = t.b
 
     return t.b
   }
@@ -179,6 +249,7 @@ export class GeomGraph extends GeomNode {
   }
 
   set center(value: Point) {
+    // Assert.assert(this.bbIsCorrect())
     const del = value.sub(this.center)
     const t = new PlaneTransformation(1, 0, del.x, 0, 1, del.y)
     this.transform(t)
@@ -188,18 +259,25 @@ export class GeomGraph extends GeomNode {
     //Assert.assert(this.graph.isEmpty() == false)
     for (const e of this.edges()) {
       if (e.underCollapsedGraph()) continue
+      if (!(e.source.node.isDescendantOf(this.graph) && e.target.node.isDescendantOf(this.graph))) {
+        continue
+      }
       if (e.curve != null) {
         const cb = e.curve.boundingBox
-        cb.pad(e.lineWidth)
+        // cb.pad(e.lineWidth)
         t.b.addRecSelf(cb)
       }
-      if (e.label != null) t.b.addRecSelf(e.label.boundingBox)
+      if (e.label != null) {
+        t.b.addRecSelf(e.label.boundingBox)
+      }
     }
 
     for (const n of this.shallowNodes()) {
       if (n.underCollapsedGraph() || !n.boundingBox) continue
       t.b.addRecSelf(n.boundingBox)
     }
+
+    this.addLabelToGraphBB(t.b)
   }
 
   get left() {
@@ -217,9 +295,21 @@ export class GeomGraph extends GeomNode {
   CheckClusterConsistency(): boolean {
     throw new Error('Method not implemented.')
   }
-  Margins = 10
+  /** The X radius of the rounded rectangle border */
+  radX = 10
+  /** The Y radius of the rounded rectangle border */
+  radY = 10
   get edgeCount() {
     return this.graph.edgeCount
+  }
+
+  get boundaryCurve(): ICurve {
+    // Assert.assert(this.rrect.isOk())
+    return this.rrect.roundedRect_
+  }
+
+  set boundaryCurve(value: ICurve) {
+    throw new Error()
   }
 
   *shallowNodes(): IterableIterator<GeomNode> {
@@ -255,6 +345,7 @@ export class GeomGraph extends GeomNode {
 
   constructor(graph: Graph) {
     super(graph)
+    this.rrect = new RRect({left: 0, right: -1, top: 20, bottom: 0, radX: this.radX, radY: this.radY})
   }
 
   get height() {
@@ -289,33 +380,6 @@ export class GeomGraph extends GeomNode {
     return gn
   }
 
-  updateBoundingBox(): void {
-    if (this.graph.isEmpty()) {
-      return
-    }
-    const rect = Rectangle.mkEmpty()
-    let padding = 0
-    for (const e of this.graph.edges) {
-      const ge = GeomObject.getGeom(e) as GeomEdge
-      if (ge.curve == null) continue
-      rect.addRecSelf(ge.boundingBox)
-      padding = Math.max(padding, ge.lineWidth)
-    }
-    for (const gn of this.shallowNodes()) {
-      if (gn instanceof GeomGraph) {
-        gn.updateBoundingBox()
-      }
-      if (gn.boundingBox) {
-        rect.addRecSelf(gn.boundingBox)
-        padding = Math.max(padding, gn.padding)
-      }
-    }
-    this.addLabelToGraphBB(rect)
-
-    rect.pad(Math.max(padding, this.Margins))
-    this.boundingBox = rect
-  }
-
   addLabelToGraphBB(rect: Rectangle) {
     if (this.labelSize) {
       rect.top += this.labelSize.height + 2 // 2 for label margin
@@ -326,18 +390,8 @@ export class GeomGraph extends GeomNode {
   }
 
   FlipYAndMoveLeftTopToOrigin() {
-    const m = new PlaneTransformation(1, 0, -this.left, 0, -1, this.top)
-    this.transform(m)
-    for (const v of this.deepNodes) {
-      if (v instanceof GeomGraph) {
-        const g = <GeomGraph>v
-        if (!g.graph.isEmpty()) {
-          const bb = v.boundingBox
-          v.boundingBox = Rectangle.mkSizeCenter(new Size(bb.width, bb.height), m.multiplyPoint(bb.center))
-        }
-      }
-    }
     const bb = this.boundingBox
-    this.boundingBox = Rectangle.mkSizeCenter(new Size(bb.width, bb.height), m.multiplyPoint(bb.center))
+    const m = new PlaneTransformation(1, 0, -bb.left, 0, -1, bb.top)
+    this.transform(m)
   }
 }

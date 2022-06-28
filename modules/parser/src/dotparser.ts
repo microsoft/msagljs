@@ -54,7 +54,12 @@ function parseAttrs(o: any, entity: Entity) {
           {
             const geom = getOrCreateGeomObj(entity) as GeomNode
             const json = JSON.parse(str) as ICurveJSONTyped
-            geom.boundaryCurve = JSONToICurve(json)
+            const curve = JSONToICurve(json)
+            if (geom instanceof GeomGraph) {
+              geom.boundingBox = curve.boundingBox
+            } else {
+              geom.boundaryCurve = curve
+            }
           }
 
           break

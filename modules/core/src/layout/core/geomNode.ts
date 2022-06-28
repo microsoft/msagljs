@@ -110,6 +110,12 @@ export class GeomNode extends GeomObject {
     }
   }
 
+  /** creates a new rectangle equal to the padded  */
+  get boundingBoxWithPadding() {
+    const ret = this.boundingBox.clone()
+    ret.pad(this.padding)
+    return ret
+  }
   // the bounding box of the node
   get boundingBox() {
     return this.boundaryCurve ? this.boundaryCurve.boundingBox : null
@@ -134,9 +140,11 @@ export class GeomNode extends GeomObject {
   get height() {
     return this.boundaryCurve.boundingBox.height
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   transform(t: PlaneTransformation) {
-    if (this.boundaryCurve != null) this.boundaryCurve = this.boundaryCurve.transform(t)
+    if (this.boundaryCurve != null) {
+      this.boundaryCurve = this.boundaryCurve.transform(t)
+    }
   }
 
   underCollapsedGraph(): boolean {

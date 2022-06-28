@@ -21,7 +21,7 @@ import {EdgeRoutingSettings} from '../../../../src/routing/EdgeRoutingSettings'
 import {SplineRouter} from '../../../../src/routing/splineRouter'
 import {SvgDebugWriter} from '../../../utils/svgDebugWriter'
 //import {SvgDebugWriter} from '../../../utils/svgDebugWriter'
-import {generateRandomGeomGraph, generateRandomGeomGraphWithSubgraphs, labelRectFunc, parseDotGraph} from '../../../utils/testUtils'
+import {generateRandomGeomGraph, generateRandomGeomGraphWithSubgraphs, measureTextSize, parseDotGraph} from '../../../utils/testUtils'
 
 test('two edges', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
@@ -43,7 +43,7 @@ test('two edges', () => {
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
-  dg.createGeometry(labelRectFunc)
+  dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
   const ss: SugiyamaLayoutSettings = (gg.layoutSettings = settings ?? new SugiyamaLayoutSettings())
   if (!ss.edgeRoutingSettings) ss.edgeRoutingSettings = new EdgeRoutingSettings()

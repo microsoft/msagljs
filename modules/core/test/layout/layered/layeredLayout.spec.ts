@@ -7,7 +7,7 @@ import * as fs from 'fs'
 
 import {sortedList} from '../sortedBySizeListOfgvFiles'
 
-import {labelRectFunc, outputGraph, edgeString, parseDotGraph, setNode} from '../../utils/testUtils'
+import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize} from '../../utils/testUtils'
 import {
   Node,
   GeomGraph,
@@ -32,6 +32,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {LineSegment} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
+import {TextMeasurerOptions} from '../../../src/drawing/color'
 type P = [number, number]
 
 test('map test', () => {
@@ -70,7 +71,7 @@ test('layered layout glued graph', () => {
   const graphString = 'digraph G {\n' + 'a -> b\n' + 'a -> b}'
   const graph = parseDot(graphString)
   const dg = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
   const ll = new LayeredLayout(GeomObject.getGeom(graph) as GeomGraph, new SugiyamaLayoutSettings(), new CancelToken())
   ll.CreateGluedDagSkeletonForLayering()
   for (const e of ll.gluedDagSkeletonForLayering.edges) {
@@ -168,18 +169,19 @@ test('disconnected comps', () => {
 
 test('margins', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
   const ss = new SugiyamaLayoutSettings()
-  ss.margins = {left: 100, right: 10, top: 170, bottom: 50}
+  const gg = GeomGraph.getGeom(dg.graph)
+  gg.margins = {left: 100, right: 10, top: 170, bottom: 50}
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/abstract_margins_' + ss.margins.left + '_' + ss.margins.top + '.svg')
+  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg')
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('undirected pach', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/pack.gv'))
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
@@ -208,7 +210,7 @@ xtest('austin', () => {
     de.arrowtail = ArrowTypeEnum.none
   }
 
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
   const gg = GeomGraph.getGeom(dg.graph)
   const ss = new MdsLayoutSettings()
   gg.layoutSettings = ss
@@ -259,7 +261,7 @@ test('b51.gv', () => {
 test('arrowhead size default', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   Arrowhead.defaultArrowheadLength *= 2
-  const geomGraph = createGeometry(dg, labelRectFunc)
+  const geomGraph = createGeometry(dg, measureTextSize)
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
@@ -269,7 +271,7 @@ test('arrowhead size default', () => {
 
 test('arrowhead size per edge', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
-  const geomGraph = createGeometry(dg, labelRectFunc)
+  const geomGraph = createGeometry(dg, measureTextSize)
   for (const e of geomGraph.edges()) {
     if (e.sourceArrowhead) {
       e.sourceArrowhead.length /= 2
@@ -288,7 +290,7 @@ test('arrowhead size per edge', () => {
 test('graphvis/ER.gv', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/ER.gv'))
   if (dg == null) return
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
 })
 
 test('b.gv', () => {
@@ -374,7 +376,7 @@ test('layered layout nodes only', () => {
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
-  const gg = createGeometry(dg, labelRectFunc)
+  const gg = createGeometry(dg, measureTextSize)
   if (settings) {
     gg.layoutSettings = settings
   } else {
@@ -394,7 +396,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
 // ) {
 //  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
 //  if (dg == null) return null
-//  createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
+//  createGeometry(dg.graph, nodeBoundaryFunc, measureTextSize)
 //  const ll = new LayeredLayout(
 //    GeomObject.getGeom(dg.graph) as GeomGraph,
 //    ss,
@@ -470,7 +472,7 @@ test('layout first 150 gv files from list', () => {
 })
 test('shapes', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/pgram.gv'))
-  createGeometry(dg, labelRectFunc)
+  createGeometry(dg, measureTextSize)
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
@@ -515,7 +517,7 @@ function crossed(u: GeomEdge, v: GeomEdge): boolean {
   return false
 }
 
-function createGeometry(dg: DrawingGraph, labelRectFunc: (text: string) => Size): GeomGraph {
-  dg.createGeometry(labelRectFunc)
+function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
+  dg.createGeometry(measureTextSize)
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }

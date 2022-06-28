@@ -18,7 +18,7 @@ import {
 import {SvgDebugWriter} from './svgDebugWriter'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
 import {parseDot, parseJSON} from '@msagl/parser'
-import {DrawingGraph} from '../../src/drawing'
+import {DrawingGraph, TextMeasurerOptions} from '../../src/drawing'
 import {layoutGraphWithMds} from '../../src/layout/mds/PivotMDS'
 import {DrawingObject} from '../../src/drawing/drawingObject'
 import {GeomObject} from '../../src/layout/core/geomObject'
@@ -28,13 +28,13 @@ import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
 
 /** this measure function is tailored for SVG */
-export function measureTextSize(str: string): Size {
+export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
   if (!str) {
     return new Size(0, 0)
   }
   const lines = str.split('\n')
   const w = lines.map((s) => s.length * 15).reduce((a: number, b: number) => Math.max(a, b), 0)
-  return new Size(w, 15 * lines.length)
+  return new Size(w, (opts.fontSize ?? 15) * lines.length)
 }
 export function setNode(g: GeomGraph, id: string, xRad: number, yRad: number, center = new Point(0, 0)): GeomNode {
   let node = g.graph.findNode(id)
@@ -42,7 +42,7 @@ export function setNode(g: GeomGraph, id: string, xRad: number, yRad: number, ce
     g.graph.addNode((node = new Node(id)))
   }
   const geomNode = new GeomNode(node)
-  const size = measureTextSize(id)
+  const size = measureTextSize(id, {})
   geomNode.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(size.width, size.height, xRad, yRad, center)
   return geomNode
 }
@@ -81,7 +81,7 @@ export function runMDSLayout(fname: string, edgeRoutingMode = EdgeRoutingMode.St
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
 
   if (dg == null) return null
-  dg.createGeometry(labelRectFunc)
+  dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
   const settings = new MdsLayoutSettings()
   gg.layoutSettings = settings
@@ -96,7 +96,7 @@ export function runMDSLayoutNoSubgraphs(fname: string, edgeRoutingMode: EdgeRout
   if (dg == null) return null
   if (dg.graph.hasSubgraphs()) return null
 
-  dg.createGeometry(labelRectFunc)
+  dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
   const settings = new MdsLayoutSettings()
   settings.edgeRoutingSettings.EdgeRoutingMode = edgeRoutingMode
@@ -112,7 +112,7 @@ export function outputGraph(g: GeomGraph, name: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function nodeBoundaryFunc(label: string): ICurve {
-  const size = measureTextSize(label)
+  const size = measureTextSize(label, {})
   return CurveFactory.mkRectangleWithRoundedCorners(size.width, size.height, size.width / 10, size.height / 10, new Point(0, 0))
 }
 
@@ -138,17 +138,13 @@ export function parseJSONFile(fileName: string, absolutePath = false): Graph {
   }
 }
 export const fontHeight = 10.5
-export function labelRectFunc(text: string): Size {
-  const len = text ? text.length : 0.1
-  return new Size(len * 10, fontHeight)
-}
 
 function measureTextSizeOfNode(n: Node): Size {
   const drawingObject = DrawingObject.getDrawingObj(n)
 
   const labelText = drawingObject ? drawingObject.labelText ?? n.id : n.id
 
-  return measureTextSize(labelText)
+  return measureTextSize(labelText, {})
 }
 
 export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve, labelRect: (s: string) => Size): GeomGraph {
@@ -311,10 +307,10 @@ function mkGeomForGraph(g: Graph, curveDelegate: (w: number, h: number, xy: Poin
   const gg = new GeomGraph(g)
   for (const n of g.deepNodes) {
     if (n instanceof Graph) {
-      new GeomGraph(<Graph>n).labelSize = measureTextSize(n.id)
+      new GeomGraph(<Graph>n).labelSize = measureTextSize(n.id, {})
     } else {
       const gn = new GeomNode(n)
-      const size = measureTextSize(n.id)
+      const size = measureTextSize(n.id, {})
       gn.boundaryCurve = curveDelegate(size.width, size.height, new Point(0, 0))
     }
   }

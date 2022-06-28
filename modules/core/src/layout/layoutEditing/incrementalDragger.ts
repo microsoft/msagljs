@@ -75,7 +75,7 @@ export class IncrementalDragger {
       const bbox = sg.boundingBox
       sg.calculateBoundsFromChildren()
       const newBox = sg.boundingBox
-      if (newBox.egualEps(bbox)) {
+      if (newBox.equalEps(bbox)) {
         break
       }
 

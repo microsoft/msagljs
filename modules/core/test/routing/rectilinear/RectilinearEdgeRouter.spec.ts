@@ -18,7 +18,7 @@ test('empty graph', () => {
 test('two nodes', () => {
   const gg = new GeomGraph(new Graph('graph'))
 
-  const size = measureTextSize('a')
+  const size = measureTextSize('a', {})
 
   const a = addNode(gg, 'a', CurveFactory.mkRectangleWithRoundedCorners(size.width + 2, size.height + 2, 1, 1, new Point(150, 100)))
 

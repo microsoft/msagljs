@@ -35,7 +35,7 @@ export class MdsGraphLayout extends Algorithm {
   }
 
   SetGraphBoundingBox() {
-    this.graph.pumpTheBoxToTheGraphWithMargins(this.settings.NodeSeparation / 2)
+    this.graph.boundingBox = this.graph.pumpTheBoxToTheGraphWithMargins()
   }
 
   // Scales a configuration such that the average edge length in the drawing
@@ -126,7 +126,7 @@ export class MdsGraphLayout extends Algorithm {
       GTreeOverlapRemoval.RemoveOverlaps(Array.from(this.graph.shallowNodes()), this.settings.NodeSeparation)
     }
 
-    this.graph.pumpTheBoxToTheGraphWithMargins(this.settings.NodeSeparation / 2)
+    this.graph.boundingBox = this.graph.pumpTheBoxToTheGraphWithMargins()
   }
 
   ScaleNodes(nodes: GeomNode[], scale: number) {
