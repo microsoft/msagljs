@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,9 +23,9 @@
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },
   "dependencies": {
+    "@msagl/parser": "^0.0.69",
     "deck.gl": "^8.8.0-beta.2",
-    "msagl-js": "^0.0.67",
-    "@msagl/parser": "^0.0.68",
+    "msagl-js": "^0.0.68",
     "panzoom": "^9.4.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
