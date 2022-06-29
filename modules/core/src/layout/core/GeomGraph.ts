@@ -191,7 +191,8 @@ export class GeomGraph extends GeomNode {
     this._labelSize = value
   }
   get boundingBox(): Rectangle {
-    return this.rrect.clone()
+    if (this.rrect) return this.rrect.clone()
+    else return null
   }
 
   set boundingBox(value: Rectangle) {

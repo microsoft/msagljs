@@ -290,7 +290,7 @@ export function geometryIsCreated(graph: Graph): boolean {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false
     if (n instanceof Graph) {
-      if (layoutIsCalculated(n) == false) return false
+      if (geometryIsCreated(n) == false) return false
     }
   }
   for (const e of graph.edges) {
@@ -301,7 +301,10 @@ export function geometryIsCreated(graph: Graph): boolean {
 }
 
 export function layoutIsCalculated(graph: Graph): boolean {
-  if (GeomGraph.getGeom(graph) == null) return false
+  const geomGraph = GeomGraph.getGeom(graph)
+  if (geomGraph == null) return false
+  if (geomGraph.boundingBox == null || geomGraph.boundingBox.isEmpty()) return false
+
   for (const n of graph.shallowNodes) {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false

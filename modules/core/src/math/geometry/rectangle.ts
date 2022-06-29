@@ -414,7 +414,7 @@ export class Rectangle implements IRectangle<Point> {
   }
 
   clone(): Rectangle {
-    return Rectangle.mkPP(this.leftTop, this.rightBottom)
+    return new Rectangle({left: this.left, right: this.right, top: this.top, bottom: this.bottom})
   }
 
   // gets or sets the Size
