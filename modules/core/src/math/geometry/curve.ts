@@ -1693,3 +1693,31 @@ function interpolate(a: number, ap: Point, b: number, bp: Point, s: ICurve, eps:
 export function interpolateICurve(s: ICurve, eps: number): Point[] {
   return interpolate(s.parStart, s.start, s.parEnd, s.end, s, eps)
 }
+/** iterate over all icurve subsegments that intersect the given rectangle */
+export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
+  const perimeter = rect.perimeter()
+
+  const x = Curve.getAllIntersections(curve, perimeter, false)
+  if (x == [] || x == null) {
+    if (rect.contains(curve.start)) yield curve
+    return
+  }
+  x.sort((x: IntersectionInfo, y: IntersectionInfo) => x.par0 - y.par0)
+  const xs = [curve.parStart]
+  let i = 0
+  for (; i < x.length; i++) {
+    const ii = x[i]
+    if (ii.par0 > xs[i] + GeomConstants.distanceEpsilon) {
+      xs.push(ii.par0)
+    }
+  }
+  if (curve.parEnd > xs[i]) {
+    xs.push(curve.parEnd)
+  }
+
+  for (i = 0; i < xs.length - 1; i++) {
+    if (rect.contains(curve.value((xs[i] + xs[i + 1]) / 2))) {
+      yield curve.trim(xs[i], xs[i + 1])
+    }
+  }
+}

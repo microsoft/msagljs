@@ -1,6 +1,8 @@
 import {CurveFactory, Point, interpolateICurve, ICurve, Rectangle} from '../../../src'
-import {Curve, LineSegment} from '../../../src/math/geometry'
+import {Curve, LineSegment, Size} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
+import {clipWithRectangle} from '../../../src/math/geometry/curve'
+import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
 import {closeDistEps} from '../../../src/utils/compare'
@@ -190,4 +192,26 @@ test('bezier bezier rect intersections', () => {
     expect(xx.length > 0).toBe(true)
   }
   // exp(false);
+})
+
+test('clipWithRect', () => {
+  const rect = Rectangle.mkSizeCenter(new Size(20, 20), new Point(0, 0))
+  const circle = CurveFactory.mkCircle(rect.width / 2 + 2, new Point(0, 0))
+  let clip = Array.from(clipWithRectangle(circle, rect))
+  expect(clip.length).toBe(4)
+  clip = Array.from(clipWithRectangle(LineSegment.mkPP(new Point(0, 0), new Point(100, 10)), rect))
+  expect(clip.length).toBe(1)
+  expect(closeDistEps(clip[0].end.x, rect.right)).toBe(true)
+  circle.translate(new Point(2, 0))
+  clip = Array.from(clipWithRectangle(circle, rect))
+  expect(clip.length).toBe(4)
+  circle.translate(new Point(2, 0))
+  clip = Array.from(clipWithRectangle(circle, rect))
+  SvgDebugWriter.dumpDebugCurves(
+    '/tmp/clip.svg',
+    [DebugCurve.mkDebugCurveTWCI(100, 1, 'black', rect.perimeter()), DebugCurve.mkDebugCurveTWCI(100, 1, 'red', circle)].concat(
+      clip.map((c) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Green', c)),
+    ),
+  )
+  expect(clip.length).toBe(1)
 })
