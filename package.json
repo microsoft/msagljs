@@ -20,6 +20,9 @@
     "eslint": "eslint modules/core/src",
     "prettier": "prettier --write modules/core/src"
   },
+  "resolutions": {
+    "apache-arrow": "8.0.0"
+  },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
     "@types/collections": "^5.1.2",
