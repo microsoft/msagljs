@@ -3,7 +3,24 @@ import {Color} from './color'
 import {ShapeEnum} from './shapeEnum'
 import {DrawingLabel} from './drawingLabel'
 import {Node} from '../structs/node'
+import {Attr} from 'dotparser'
 export class DrawingNode extends DrawingObject {
+  *attrIter(): IterableIterator<Attr> {
+    yield* super.attrIter()
+    if (this.shape && this.shape != ShapeEnum.box) {
+      yield {type: 'attr', id: 'shape', eq: this.shape.toString()}
+    }
+    if (this.xRad && this.xRad != 3) {
+      yield {type: 'attr', id: 'xRad', eq: this.xRad.toString()}
+    }
+    if (this.yRad && this.yRad != 3) {
+      yield {type: 'attr', id: 'yRad', eq: this.yRad.toString()}
+    }
+    if (this.padding && this.padding != 2) {
+      yield {type: 'attr', id: 'padding', eq: this.padding.toString()}
+    }
+  }
+
   shape: ShapeEnum = ShapeEnum.box
   label: DrawingLabel
   padding = 2

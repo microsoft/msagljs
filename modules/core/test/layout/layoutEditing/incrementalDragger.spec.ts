@@ -21,7 +21,7 @@ test('incremental drag', () => {
     id.Drag(new Point(20, 20))
     const jsonfOfG = graphToJSON(g)
     const ws = fs.openSync('/tmp/drag' + i + '.JSON', 'w', 0o666)
-    fs.writeFileSync(ws, JSON.stringify(jsonfOfG))
+    fs.writeFileSync(ws, JSON.stringify(jsonfOfG, null, 2))
     //console.log(gNode.center)
     fs.close(ws)
   }

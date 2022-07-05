@@ -9,6 +9,81 @@ import {Entity} from '../structs/entity'
 import {Attr} from 'dotparser'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject {
+  static copyValidFields(source: DrawingObject, target: DrawingObject) {
+    if (source == null || target == null) return
+    if (source.color && source.color.keyword && source.color.keyword.toLowerCase() != 'black') {
+      target.color = source.color
+    }
+    if (source.fillColor) {
+      target.fillColor = source.fillColor
+    }
+    if (source.labelfontcolor && source.labelfontcolor.keyword.toLowerCase() != 'black') {
+      target.labelfontcolor = source.labelfontcolor
+    }
+    if ((source.labelText != null || source.labelText == '') && source.labelText != source.id) {
+      target.labelText = source.labelText
+    }
+    if (source.fontColor && source.fontColor.keyword.toLowerCase() != 'black') {
+      target.fontColor = source.fontColor
+    }
+    if (source.styles && source.styles.length) {
+      target.styles = source.styles.map((a) => a)
+    }
+    if (source.pencolor && source.pencolor.keyword != 'black') {
+      target.pencolor = source.pencolor
+    }
+    if (source.penwidth && source.penwidth != 1) {
+      target.penwidth = source.penwidth
+    }
+    if (source.rankdir) {
+      target.rankdir = source.rankdir
+    }
+    if (source.fontname && source.fontname != DrawingObject.defaultLabelFontName) {
+      target.fontname = source.fontname
+    }
+    if (source.margin) {
+      target.margin = source.margin
+    }
+    if (source.fontsize && source.fontsize != DrawingObject.defaultLabelFontSize) {
+      target.fontsize = source.fontsize
+    }
+    if (source.orientation) {
+      target.orientation = source.orientation
+    }
+    if (source.ranksep) {
+      target.ranksep = source.ranksep
+    }
+    if (source.arrowtail) {
+      target.arrowtail = source.arrowtail
+    }
+    if (source.arrowhead) {
+      target.arrowhead = source.arrowhead
+    }
+    if (source.ordering) {
+      target.ordering = source.ordering
+    }
+    if (source.bgcolor) {
+      target.bgcolor = source.bgcolor
+    }
+    if (source.pos) {
+      target.pos = source.pos
+    }
+    if (source.nodesep) {
+      target.nodesep = source.nodesep
+    }
+    if (source.arrowsize) {
+      target.arrowsize = source.arrowsize
+    }
+    if (source.samehead) {
+      target.samehead = source.samehead
+    }
+    if (source.layersep) {
+      target.layersep = source.layersep
+    }
+    if (source.clusterRank) {
+      target.clusterRank = source.clusterRank
+    }
+  }
   *attrIter(): IterableIterator<Attr> {
     if (this.color && this.color.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'color', eq: this.color.toString()}
@@ -25,6 +100,7 @@ export abstract class DrawingObject {
     if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}
     }
+
     if (this.styles && this.styles.length) {
       const styleString = this.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
       yield {type: 'attr', id: 'style', eq: styleString}
@@ -79,6 +155,9 @@ export abstract class DrawingObject {
     }
     if (this.layersep) {
       yield {type: 'attr', id: 'layersep', eq: this.layersep.toString()}
+    }
+    if (this.clusterRank) {
+      yield {type: 'attr', id: 'clusterrank', eq: this.clusterRank.toString()}
     }
   }
   measuredTextSize: Size

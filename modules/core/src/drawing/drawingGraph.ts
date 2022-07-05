@@ -19,6 +19,14 @@ type GraphVisData = {
  *  It facilitates the geometry creation, mostly for the bounding curves of the nodes, from drawing attributes and labels
  * */
 export class DrawingGraph extends DrawingNode {
+  private _defaultNodeObject: DrawingObject
+  public get defaultNodeObject(): DrawingObject {
+    return this._defaultNodeObject
+  }
+  public set defaultNodeObject(value: DrawingObject) {
+    this._defaultNodeObject = value
+  }
+  defaultEdgeObject: DrawingObject
   static getDrawingGraph(g: Graph): DrawingGraph {
     return DrawingObject.getDrawingObj(g) as DrawingGraph
   }

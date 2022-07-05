@@ -24,7 +24,7 @@ export class RendererSvg {
 
   getJSONString(): string {
     if (this.graph == null) return 'no graph'
-    return JSON.stringify(graphToJSON(this.graph))
+    return JSON.stringify(graphToJSON(this.graph), null, 2)
   }
   private _graph?: Graph
   private _layoutOptions: LayoutOptions = {}

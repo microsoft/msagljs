@@ -34,9 +34,7 @@ import {
 import {parseColor} from './utils'
 // import {Assert} from '../../core/src/utils/assert'
 
-function parseAttrs(o: any, entity: Entity) {
-  const drawingObj = DrawingObject.getDrawingObj(entity)
-  if (o.attr_list == null) return
+function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
   for (const attr of o.attr_list) {
     if (attr.type == 'attr') {
       const str = attr.eq
@@ -375,14 +373,17 @@ function parseAttrs(o: any, entity: Entity) {
   }
 }
 
+function parseAttrs(o: any, entity: Entity) {
+  const drawingObj = DrawingObject.getDrawingObj(entity)
+  if (o.attr_list == null) return
+  parseAttrOnDrawingObj(entity, drawingObj, o)
+}
+
 class DotParser {
   ast: JSONGraph[]
   graph: Graph
   drawingGraph: DrawingGraph
-  arrayOfDefaultAttrs: any[] = []
-  get defaultNodeAttr(): any {
-    return this.arrayOfDefaultAttrs[this.arrayOfDefaultAttrs.length - 1]
-  }
+  graphAttr: any
   nodeMap = new Map<string, Node>()
   constructor(ast: JSONGraph[]) {
     this.ast = ast
@@ -460,9 +461,8 @@ class DotParser {
       g.addNode(n)
       const dn = new DrawingNode(n)
       dn.labelText = id
-      if (this.defaultNodeAttr) {
-        parseAttrs(this.defaultNodeAttr, n)
-      }
+      const drGr = DrawingGraph.getDrawingObj(g) as DrawingGraph
+      DrawingObject.copyValidFields(drGr.defaultNodeObject, dn)
     } else if (underSubgraph) {
       // if the node is under a subgraph - change its parent to the subgraph
       setNewParent(g, n)
@@ -491,7 +491,12 @@ class DotParser {
   }
   parseGraphAttr(o: AttrStmt, graph: Graph) {
     if (o.target == 'node') {
-      this.arrayOfDefaultAttrs.push(o) // will parse it for each node
+      const dg = DrawingGraph.getDrawingObj(graph) as DrawingGraph
+      if (dg.defaultNodeObject == null) {
+        dg.defaultNodeObject = new DrawingNode(null)
+      }
+      // but also parse it for the default node attribute
+      parseAttrOnDrawingObj(null, dg.defaultNodeObject, o)
     } else if (o.target == 'graph') {
       parseAttrs(o, graph)
     }
@@ -538,7 +543,6 @@ class DotParser {
           break
         case 'subgraph':
           {
-            const lengthOfAttr = this.arrayOfDefaultAttrs.length
             // is it really a subgraph?
             if (this.process_same_rank(o, DrawingGraph.getDrawingGraph(graph))) {
             } else if (o.id == null) {
@@ -549,9 +553,6 @@ class DotParser {
               new DrawingGraph(subg)
               this.parseUnderGraph(o.children, subg, directed, true)
               if (!subg.isEmpty()) graph.addNode(subg)
-            }
-            while (this.arrayOfDefaultAttrs.length > lengthOfAttr) {
-              this.arrayOfDefaultAttrs.pop()
             }
           }
           break
@@ -605,7 +606,10 @@ class DotParser {
             sameRank.push(c.node_id.id.toString())
           } else if (c.type == 'attr_stmt') {
             if (c.target == 'node') {
-              this.arrayOfDefaultAttrs.push(c)
+              if (dg.defaultNodeObject == null) {
+                dg.defaultNodeObject = new DrawingNode(null)
+              }
+              parseAttrOnDrawingObj(null, dg.defaultNodeObject, c)
             }
           }
         }
@@ -765,7 +769,8 @@ function edgeStmt(edge: Edge): EdgeStmt {
 }
 function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<Stmt> {
   const idToStmt = new Map<string, Stmt>()
-  const children = []
+  const children: Stmt[] = [getNodeStatement(graph)]
+  addDefaultNodeStmt(children, graph)
   // fill the map of idToStmh
   for (const n of graph.deepNodes) {
     idToStmt.set(n.id, getNodeStatement(n))
@@ -798,17 +803,17 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
   if (geomEdge && geomEdge.curve) {
-    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
+    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve), null, 2)}
 
     if (geomEdge.sourceArrowhead) {
-      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON(), null, 2)}
     }
 
     if (geomEdge.targetArrowhead) {
-      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON(), null, 2)}
     }
   }
-  yield* drawingObjAttrIter(edge)
+  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(edge))
 }
 
 function getNodeStatement(node: Node): NodeStmt | Subgraph {
@@ -830,7 +835,7 @@ function getNodeStatement(node: Node): NodeStmt | Subgraph {
 
 function getNodeBoundaryCurve(node: Node): Attr {
   const bc = (<GeomNode>GeomNode.getGeom(node)).boundaryCurve
-  return {type: 'attr', id: 'boundaryCurve', eq: JSON.stringify(iCurveToJSON(bc))}
+  return {type: 'attr', id: 'boundaryCurve', eq: JSON.stringify(iCurveToJSON(bc), null, 2)}
 }
 
 function* getNodeAttrList(node: Node): IterableIterator<Attr> {
@@ -838,11 +843,10 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   if (geomNode && geomNode.boundaryCurve) {
     yield getNodeBoundaryCurve(node)
   }
-  yield* drawingObjAttrIter(node)
+  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(node))
 }
 
-function* drawingObjAttrIter(node: Entity) {
-  const drawingObj = DrawingObject.getDrawingObj(node)
+function* drawingObjAttrIter(drawingObj: DrawingObject) {
   if (drawingObj) {
     for (const attr of drawingObj.attrIter()) {
       yield attr
@@ -917,4 +921,15 @@ function createNewGeomObj(entity: Entity): GeomObject {
     return new GeomEdge(entity)
   }
   throw new Error('unsupported type ' + entity)
+}
+function* graphAttrList(graph: Graph): IterableIterator<Attr> {
+  throw new Error('Function not implemented.')
+}
+function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
+  const dg = DrawingGraph.getDrawingObj(graph) as DrawingGraph
+  if (dg == null) return
+  const defaultDrawingNode = dg.defaultNodeObject
+  if (defaultDrawingNode) {
+    children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(drawingObjAttrIter(defaultDrawingNode))})
+  }
 }
