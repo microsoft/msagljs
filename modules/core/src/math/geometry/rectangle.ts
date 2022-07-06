@@ -16,6 +16,7 @@ export class Size {
     this.height = height
   }
 }
+export type RectJSON = {left: number; right: number; top: number; bottom: number}
 
 export class Rectangle implements IRectangle<Point> {
   transform(m: PlaneTransformation): Rectangle {
@@ -47,7 +48,7 @@ export class Rectangle implements IRectangle<Point> {
   right_: number
   top_: number
 
-  constructor(t: {left: number; right: number; top: number; bottom: number}) {
+  constructor(t: RectJSON) {
     this.left_ = t.left
     this.right_ = t.right
     this.top_ = t.top

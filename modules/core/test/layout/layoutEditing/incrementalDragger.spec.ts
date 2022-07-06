@@ -16,12 +16,17 @@ test('incremental drag', () => {
   const ls = new SugiyamaLayoutSettings()
   const pushingNodes = []
   pushingNodes.push(gNode)
-  const id = new IncrementalDragger(pushingNodes, gg, ls)
+  const dragger = new IncrementalDragger(pushingNodes, gg, ls)
+  let gNodeCenter = gNode.center
+  const delta = new Point(20, 20)
   for (let i = 0; i < 5; i++) {
-    id.Drag(new Point(20, 20))
+    dragger.Drag(delta)
     const jsonfOfG = graphToJSON(g)
     const ws = fs.openSync('/tmp/drag' + i + '.JSON', 'w', 0o666)
     fs.writeFileSync(ws, JSON.stringify(jsonfOfG, null, 2))
+    const shouldBeDelta = gNode.center.sub(gNodeCenter)
+    gNodeCenter = gNode.center
+    expect(Point.closeDistEps(shouldBeDelta, delta)).toBe(true)
     //console.log(gNode.center)
     fs.close(ws)
   }

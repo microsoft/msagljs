@@ -103,18 +103,6 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
   ignoreBBoxCheck = false
-  bbIsCorrect(): boolean {
-    return true
-    if (this.ignoreBBoxCheck) {
-      return true
-    }
-    const b = this.pumpTheBoxToTheGraphWithMargins()
-    if (!Point.closeDistEps(b.center, new Point(0, 0)) && b.equalEps(this.boundingBox) == false) {
-      return false
-    }
-
-    return true
-  }
   /** The empty space between the graph inner entities and its boundary */
   margins = {left: 10, top: 10, bottom: 10, right: 10}
   /** Calculate bounding box from children, not updating the bounding boxes recursively. */

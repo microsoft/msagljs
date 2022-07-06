@@ -15,6 +15,8 @@ import {
   ICurveJSONTyped,
   iCurveToJSON,
   JSONToICurve,
+  Rectangle,
+  RectJSON,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -46,7 +48,13 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
             const json = JSON.parse(str) as ICurveJSONTyped
             geom.curve = JSONToICurve(json)
           }
-
+          break
+        case 'graphBoundingBox':
+          {
+            const geom = getOrCreateGeomObj(entity) as GeomGraph
+            const json = JSON.parse(str) as RectJSON
+            geom.boundingBox = new Rectangle(json)
+          }
           break
         case 'boundaryCurve':
           {
@@ -769,7 +777,12 @@ function edgeStmt(edge: Edge): EdgeStmt {
 }
 function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<Stmt> {
   const idToStmt = new Map<string, Stmt>()
-  const children: Stmt[] = [getNodeStatement(graph)]
+  const children: Stmt[] = []
+  const geomGraph = GeomGraph.getGeom(graph)
+  if (geomGraph) {
+    const attrs = Array.from(getGeomGraphAttrList(geomGraph))
+    children.push({type: 'attr_stmt', target: 'graph', attr_list: attrs})
+  }
   addDefaultNodeStmt(children, graph)
   // fill the map of idToStmh
   for (const n of graph.deepNodes) {
@@ -803,14 +816,14 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
   if (geomEdge && geomEdge.curve) {
-    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve), null, 2)}
+    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
 
     if (geomEdge.sourceArrowhead) {
-      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON(), null, 2)}
+      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
     }
 
     if (geomEdge.targetArrowhead) {
-      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON(), null, 2)}
+      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
     }
   }
   yield* drawingObjAttrIter(DrawingObject.getDrawingObj(edge))
@@ -825,7 +838,7 @@ function getNodeStatement(node: Node): NodeStmt | Subgraph {
       attr_list: Array.from(getNodeAttrList(node)),
     }
   } else {
-    const attr_list = Array.from(getNodeAttrList(node))
+    const attr_list = Array.from(getGeomGraphAttrList(GeomGraph.getGeom(node) as GeomGraph))
     const children = []
     const attr_stmt: AttrStmt = {type: 'attr_stmt', target: 'graph', attr_list: attr_list}
     children.push(attr_stmt)
@@ -835,14 +848,15 @@ function getNodeStatement(node: Node): NodeStmt | Subgraph {
 
 function getNodeBoundaryCurve(node: Node): Attr {
   const bc = (<GeomNode>GeomNode.getGeom(node)).boundaryCurve
-  return {type: 'attr', id: 'boundaryCurve', eq: JSON.stringify(iCurveToJSON(bc), null, 2)}
+  return {type: 'attr', id: 'boundaryCurve', eq: JSON.stringify(iCurveToJSON(bc))}
 }
 
 function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   const geomNode = GeomObject.getGeom(node) as GeomNode
-  if (geomNode && geomNode.boundaryCurve) {
+  if (geomNode) {
     yield getNodeBoundaryCurve(node)
   }
+
   yield* drawingObjAttrIter(DrawingObject.getDrawingObj(node))
 }
 
@@ -931,5 +945,20 @@ function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
   const defaultDrawingNode = dg.defaultNodeObject
   if (defaultDrawingNode) {
     children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(drawingObjAttrIter(defaultDrawingNode))})
+  }
+}
+
+function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
+  if (geomGraph == null) return
+  const bb = geomGraph.boundingBox
+  if (bb && bb.isEmpty() == false) {
+    const rJSON = {left: bb.left, right: bb.right, top: bb.top, bottom: bb.bottom}
+    yield {type: 'attr', id: 'graphBoundingBox', eq: JSON.stringify(rJSON)}
+  }
+  if (geomGraph.radX != 10) {
+    yield {type: 'attr', id: 'radX', eq: geomGraph.radX.toString()}
+  }
+  if (geomGraph.radY != 10) {
+    yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }

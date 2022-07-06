@@ -10,7 +10,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {layoutGeomGraph} from '../../../src/layout/driver'
+import {layoutGeomGraph, layoutIsCalculated} from '../../../src/layout/driver'
 import * as fs from 'fs'
 import {DrawingObject} from '../../../src/drawing/drawingObject'
 test('point', () => {
@@ -137,4 +137,20 @@ test('graph style', () => {
   dg.createGeometry()
   layoutGeomGraph(GeomGraph.getGeom(newG))
   new SvgDebugWriter('/tmp/style.svg').writeGeomGraph(GeomGraph.getGeom(newG))
+})
+
+test('layout is loaded', () => {
+  const g = parseDotGraph('graphvis/ldbxtried.gv')
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  dg.createGeometry()
+  const gg = GeomGraph.getGeom(g) as GeomGraph
+  gg.radX = 5
+  gg.radY = 7
+  layoutGeomGraph(GeomGraph.getGeom(g))
+  const jsonfOfG = graphToJSON(g)
+  const fn = '/tmp/graphWithGeom.JSON'
+  const ws = fs.openSync(fn, 'w', 0o666)
+  fs.writeFileSync(ws, JSON.stringify(jsonfOfG, null, 2))
+  const newG = parseJSONFile(fn)
+  expect(layoutIsCalculated(newG)).toBe(true)
 })
