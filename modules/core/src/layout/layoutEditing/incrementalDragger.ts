@@ -158,10 +158,9 @@ export class IncrementalDragger {
   GetChangedEdges(changedNodes: Set<GeomNode>): Array<GeomEdge> {
     const list = []
     const box = Rectangle.mkOnRectangles(Array.from(changedNodes).map((n) => n.boundingBox))
-    const t = {box: box}
     const boxPoly = box.perimeter()
-    for (const e of this.geomGraph.edges()) {
-      if (this.EdgeNeedsRouting(t, e, boxPoly, changedNodes)) {
+    for (const e of this.geomGraph.deepEdges()) {
+      if (this.EdgeNeedsRouting(box, e, boxPoly, changedNodes)) {
         list.push(e)
       }
     }
@@ -169,7 +168,7 @@ export class IncrementalDragger {
     return list
   }
 
-  EdgeNeedsRouting(t: {box: Rectangle}, edge: GeomEdge, boxPolyline: Polyline, changedNodes: Set<GeomNode>): boolean {
+  EdgeNeedsRouting(box: Rectangle, edge: GeomEdge, boxPolyline: Polyline, changedNodes: Set<GeomNode>): boolean {
     if (edge.curve == null) {
       return true
     }
@@ -178,11 +177,11 @@ export class IncrementalDragger {
       return true
     }
 
-    if (edge.source.boundingBox.intersects(t.box) || edge.target.boundaryCurve.boundingBox.intersects(t.box)) {
+    if (edge.source.boundingBox.intersects(box) || edge.target.boundaryCurve.boundingBox.intersects(box)) {
       return true
     }
 
-    if (!edge.boundingBox.intersects(t.box)) {
+    if (!edge.boundingBox.intersects(box)) {
       return false
     }
 

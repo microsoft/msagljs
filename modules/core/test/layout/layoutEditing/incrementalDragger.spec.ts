@@ -13,6 +13,8 @@ test('incremental drag', () => {
   const gg = GeomGraph.getGeom(g)
   const node = g.findNodeRecursive('n464')
   const gNode = GeomObject.getGeom(node) as GeomNode
+  expect(edgesAreAttachedToNode(gNode)).toBe(true)
+
   const ls = new SugiyamaLayoutSettings()
   const pushingNodes = []
   pushingNodes.push(gNode)
@@ -27,7 +29,46 @@ test('incremental drag', () => {
     const shouldBeDelta = gNode.center.sub(gNodeCenter)
     gNodeCenter = gNode.center
     expect(Point.closeDistEps(shouldBeDelta, delta)).toBe(true)
+    expect(edgesAreAttachedToNode(gNode)).toBe(true)
     //console.log(gNode.center)
     fs.close(ws)
   }
 })
+function edgesAreAttachedToNode(gNode: GeomNode): boolean {
+  for (const ge of gNode.outEdges()) {
+    const p = ge.sourceArrowhead ? ge.sourceArrowhead.tipPosition : ge.curve.start
+    const close = pointCloseToNodeBoundary(p, gNode)
+    if (close == false) {
+      return false
+    }
+  }
+  for (const ge of gNode.inEdges()) {
+    const p = ge.targetArrowhead ? ge.targetArrowhead.tipPosition : ge.curve.end
+    const close = pointCloseToNodeBoundary(p, gNode)
+    if (close == false) {
+      return false
+    }
+  }
+  for (const ge of gNode.selfEdges()) {
+    {
+      const p = ge.sourceArrowhead ? ge.sourceArrowhead.tipPosition : ge.curve.start
+      const close = pointCloseToNodeBoundary(p, gNode)
+      if (close == false) {
+        return false
+      }
+    }
+    {
+      const p = ge.targetArrowhead ? ge.targetArrowhead.tipPosition : ge.curve.end
+      const close = pointCloseToNodeBoundary(p, gNode)
+      if (close == false) {
+        return false
+      }
+    }
+  }
+  return true
+}
+function pointCloseToNodeBoundary(p: Point, gNode: GeomNode): boolean {
+  const t = gNode.boundaryCurve.closestParameter(p)
+  const dist = p.sub(gNode.boundaryCurve.value(t)).length
+  return dist < 0.1
+}
