@@ -11,7 +11,7 @@ export class Graph extends Node {
     for (const n of this.deepNodes) {
       if (n.getAttr(index)) return true
     }
-    for (const n of this.deepEdges()) {
+    for (const n of this.deepEdges) {
       if (n.getAttr(index)) return true
     }
     return false
@@ -54,10 +54,11 @@ export class Graph extends Node {
     return e
   }
 
+  /** iterates over the node of the current graph but not entering the subgraphs */
   get shallowNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesShallow
   }
-
+  /** iterates over all the nodes of including the subgraphs */
   get deepNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesDeep()
   }
@@ -88,11 +89,19 @@ export class Graph extends Node {
   findNode(id: string): Node {
     return this.nodeCollection.find(id)
   }
+  /** iterates over the edges of the graph which adjacent to the nodes of the graph:
+   * not iterating over the subgraphs
+   */
   get edges() {
     return this.nodeCollection.edges
   }
 
-  *deepEdges() {
+  /** iterates over the edges of the graph including subgraphs */
+  get deepEdges(): IterableIterator<Edge> {
+    return this.deepEdgesIt()
+  }
+
+  private *deepEdgesIt() {
     for (const node of this.deepNodes) {
       for (const e of node.outEdges) {
         yield e

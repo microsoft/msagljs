@@ -37,7 +37,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, for
 
   // Clear cached curves
   if (needsLayout || needsReroute) {
-    for (const e of geomGraph.deepEdges()) {
+    for (const e of geomGraph.deepEdges) {
       e.requireRouting()
     }
   }
@@ -45,7 +45,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, for
   if (needsLayout) {
     layoutGeomGraph(geomGraph, null)
   } else if (needsReroute) {
-    routeEdges(geomGraph, Array.from(geomGraph.deepEdges()), null)
+    routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
   }
   return geomGraph
 }

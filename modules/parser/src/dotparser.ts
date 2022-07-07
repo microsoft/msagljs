@@ -797,7 +797,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
     subGraph.children.push(idToStmt.get(n.id))
   }
   // attach edge statements to their parents
-  for (const e of graph.deepEdges()) {
+  for (const e of graph.deepEdges) {
     const es = edgeStmt(e)
     const parent: Node = edgeParent(e, nodeLevels)
     if (parent == graph) {
@@ -869,7 +869,7 @@ function* drawingObjAttrIter(drawingObj: DrawingObject) {
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {
-  for (const e of graph.deepEdges()) {
+  for (const e of graph.deepEdges) {
     const de = DrawingEdge.getDrawingObj(e)
     if (de == null) return 'digraph'
     if ((de.arrowhead && de.arrowhead != ArrowTypeEnum.none) || (de.arrowtail && de.arrowtail != ArrowTypeEnum.none)) return 'digraph'

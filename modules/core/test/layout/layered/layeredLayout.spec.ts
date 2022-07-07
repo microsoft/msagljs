@@ -216,7 +216,7 @@ xtest('austin', () => {
   gg.layoutSettings = ss
   ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
   layoutGraphWithMds(gg)
-  for (const e of gg.deepEdges()) {
+  for (const e of gg.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/gameOfThrones.svg')

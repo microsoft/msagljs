@@ -114,7 +114,7 @@ export default class GraphHighlighter {
     const edgeTarget = new Uint8Array(edgeCount * 3)
     const edgeDirection = new Uint8Array(edgeCount)
     const scratchArr = [0, 0, 0]
-    for (const edge of graph.deepEdges()) {
+    for (const edge of graph.deepEdges) {
       const sourceIdx = this._nodeMap.get(edge.source.id)
       encodePickingColor(sourceIdx, scratchArr)
       edgeSource.set(scratchArr, edgeIndex * 3)
@@ -178,7 +178,9 @@ export default class GraphHighlighter {
       for (let i = 0; i < maxDepth; i++) {
         // Swap
         {
+          /* eslint-disable */
           ;[sourceTexture, targetTexture] = [targetTexture, sourceTexture]
+          /* eslint-enable */
         }
         this._nodeDepthFB.attach({
           [GL.COLOR_ATTACHMENT0]: targetTexture,

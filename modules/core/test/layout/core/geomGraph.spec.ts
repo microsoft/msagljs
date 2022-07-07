@@ -26,7 +26,7 @@ test('intersectedEnities', () => {
 
   const intersectedNodesAndEdges = Array.from(geomGraph.intersectedObjects(rect, false)).filter((e) => e instanceof GeomEdge)
 
-  expect(intersectedNodesAndEdges.length).toBe(Array.from(geomGraph.deepEdges()).length)
+  expect(intersectedNodesAndEdges.length).toBe(Array.from(geomGraph.deepEdges).length)
   for (const e of geomGraph.edges()) {
     const r = e.boundingBox
     const intersected_e = Array.from(geomGraph.intersectedObjects(r, false))

@@ -74,7 +74,7 @@ test('graph ldbxtried.gv', () => {
   gg.FlipYAndMoveLeftTopToOrigin()
 
   const edges = []
-  for (const e of g.deepEdges()) {
+  for (const e of g.deepEdges) {
     if (e.source.parent != e.target.parent) {
       const geomEdge = GeomObject.getGeom(e) as GeomEdge
       geomEdge.curve = null

@@ -4,6 +4,11 @@ import {Label} from '../../structs/label'
 import {Point} from '../..'
 
 export class GeomLabel extends GeomObject {
+  /** this field is needed for interactive editing */
+  AttachmentSegmentEnd: Point
+  /** this field is needed for interactive editing */
+  AttachmentSegmentStart: Point
+
   constructor(size: Size, label: Label) {
     super(label)
     /*Assert.assert(label instanceof Label)*/

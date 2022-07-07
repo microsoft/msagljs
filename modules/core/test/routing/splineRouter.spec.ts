@@ -756,7 +756,7 @@ test('edge to a parent', () => {
   const e = a.addNode(new Node('e'))
   const ab = new Edge(a, b)
   const ba = new Edge(b, a)
-  expect(Array.from(g.deepEdges()).length).toBe(2)
+  expect(Array.from(g.deepEdges).length).toBe(2)
   // create geometry
 
   new GeomEdge(ab)
@@ -779,13 +779,13 @@ test('edge to a parent', () => {
   const eg = new GeomNode(e)
   eg.boundaryCurve = CurveFactory.mkCircle(10, new Point(60, 0))
   {
-    const sr = new SplineRouter(gg, Array.from(gg.deepEdges()))
+    const sr = new SplineRouter(gg, Array.from(gg.deepEdges))
     sr.run()
     const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent.svg')
     t.writeGeomGraph(gg)
   }
   {
-    const sr = new SplineRouter(gg, Array.from(gg.deepEdges()))
+    const sr = new SplineRouter(gg, Array.from(gg.deepEdges))
     sr.BundlingSettings = new BundlingSettings()
     sr.run()
     const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent_bundl.svg')

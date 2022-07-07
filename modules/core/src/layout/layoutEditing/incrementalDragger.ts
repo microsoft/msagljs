@@ -159,7 +159,7 @@ export class IncrementalDragger {
     const list = []
     const box = Rectangle.mkOnRectangles(Array.from(changedNodes).map((n) => n.boundingBox))
     const boxPoly = box.perimeter()
-    for (const e of this.geomGraph.deepEdges()) {
+    for (const e of this.geomGraph.deepEdges) {
       if (this.EdgeNeedsRouting(box, e, boxPoly, changedNodes)) {
         list.push(e)
       }

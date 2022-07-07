@@ -271,7 +271,7 @@ export function routeRectilinearEdges(
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph) {
-  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges()).filter((edge) => edge.label && edge.label.isPositioned == false)
+  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges).filter((edge) => edge.label && edge.label.isPositioned == false)
 
   if (edgesWithNonPositionedLabels.length == 0) return
   const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
@@ -279,7 +279,7 @@ function positionLabelsIfNeeded(geomG: GeomGraph) {
 }
 /** mark labels as required positoning */
 function requireLabelPositioning(geomG: GeomGraph) {
-  for (const e of geomG.deepEdges()) {
+  for (const e of geomG.deepEdges) {
     if (e.label) e.label.requirePositioning()
   }
 }

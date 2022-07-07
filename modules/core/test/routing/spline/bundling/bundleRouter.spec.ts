@@ -79,7 +79,7 @@ test('random graphs', () => {
           2 * nodeCount,
         )
         try {
-          const sr = new SplineRouter(gg, Array.from(gg.deepEdges()), 2, 4, Math.PI / 6, new BundlingSettings())
+          const sr = new SplineRouter(gg, Array.from(gg.deepEdges), 2, 4, Math.PI / 6, new BundlingSettings())
           sr.run()
         } catch {
           console.log('nodeCount=' + nodeCount + ' , seed=' + seed)
@@ -104,12 +104,12 @@ xtest('brandom subgraphs 10_20', () => {
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
           }
-          for (const e of g.deepEdges()) {
+          for (const e of g.deepEdges) {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
-          const edges = Array.from(g.deepEdges())
+          const edges = Array.from(g.deepEdges)
           if (edges.length == 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
@@ -138,12 +138,12 @@ xtest('brandom subgraphs 40_50', () => {
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
           }
-          for (const e of g.deepEdges()) {
+          for (const e of g.deepEdges) {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
-          const edges = Array.from(g.deepEdges())
+          const edges = Array.from(g.deepEdges)
           if (edges.length == 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
@@ -171,12 +171,12 @@ xtest('brandom subgraphs 50_60', () => {
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
           }
-          for (const e of g.deepEdges()) {
+          for (const e of g.deepEdges) {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
-          const edges = Array.from(g.deepEdges())
+          const edges = Array.from(g.deepEdges)
           if (edges.length == 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
@@ -250,12 +250,12 @@ test('brandom subgraphs 60_70', () => {
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
           }
-          for (const e of g.deepEdges()) {
+          for (const e of g.deepEdges) {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
-          const edges = Array.from(g.deepEdges())
+          const edges = Array.from(g.deepEdges)
           if (edges.length == 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
@@ -299,7 +299,7 @@ test('cut random graphs', () => {
   }
   const bs = new BundlingSettings()
   bs.StopAfterShortestPaths = false
-  const sr = new SplineRouter(g, Array.from(g.deepEdges()), 2, 4, Math.PI / 6, bs)
+  const sr = new SplineRouter(g, Array.from(g.deepEdges), 2, 4, Math.PI / 6, bs)
   sr.run()
   //const svgDebugWriter = new SvgDebugWriter('/tmp/cut.svg')
   //svgDebugWriter.writeGeomGraph(g)

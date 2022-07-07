@@ -314,7 +314,7 @@ function mkGeomForGraph(g: Graph, curveDelegate: (w: number, h: number, xy: Poin
       gn.boundaryCurve = curveDelegate(size.width, size.height, new Point(0, 0))
     }
   }
-  for (const e of g.deepEdges()) {
+  for (const e of g.deepEdges) {
     new GeomEdge(e)
   }
 

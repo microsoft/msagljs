@@ -74,7 +74,7 @@ export class DrawingGraph extends DrawingNode {
     for (const n of this.graph.deepNodes) {
       this.createNodeGeometry(n)
     }
-    for (const e of this.graph.deepEdges()) {
+    for (const e of this.graph.deepEdges) {
       this.createEdgeGeometry(e)
     }
     return geomGraph

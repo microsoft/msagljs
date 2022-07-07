@@ -80,7 +80,7 @@ export class SvgCreator {
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
     }
-    for (const edge of this.graph.deepEdges()) {
+    for (const edge of this.graph.deepEdges) {
       this.drawEdge(edge)
     }
     this.close()

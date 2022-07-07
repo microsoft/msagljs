@@ -124,7 +124,7 @@ export class LayeredLayout extends Algorithm {
     if (mode == EdgeRoutingMode.SugiyamaSplines) {
       this.calculateEdgeSplines()
     } else {
-      routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges()), this.cancelToken)
+      routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges), this.cancelToken)
     }
   }
 

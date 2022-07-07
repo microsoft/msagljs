@@ -145,7 +145,7 @@ export class GeomGraph extends GeomNode {
 
   buildRTree(): RTree<GeomObject, Point> {
     const data: Array<[Rectangle, GeomObject]> = (Array.from(this.deepNodes) as GeomObject[])
-      .concat(Array.from(this.deepEdges()) as GeomObject[])
+      .concat(Array.from(this.deepEdges) as GeomObject[])
       .map((o) => [o.boundingBox, o])
     return mkRTree(data)
   }
@@ -303,12 +303,18 @@ export class GeomGraph extends GeomNode {
     for (const n of this.graph.shallowNodes) yield GeomObject.getGeom(n) as GeomNode
   }
 
+  /** iterates over the edges of the graph which adjacent to the nodes of the graph:
+   * not iterating over the subgraphs
+   */
   *edges(): IterableIterator<GeomEdge> {
     for (const n of this.graph.edges) yield GeomObject.getGeom(n) as GeomEdge
   }
-
-  *deepEdges(): IterableIterator<GeomEdge> {
-    for (const e of this.graph.deepEdges()) {
+  /** iterates over the edges of the graph including subgraphs */
+  get deepEdges() {
+    return this.deepEdgesIt()
+  }
+  private *deepEdgesIt(): IterableIterator<GeomEdge> {
+    for (const e of this.graph.deepEdges) {
       yield <GeomEdge>GeomObject.getGeom(e)
     }
   }
