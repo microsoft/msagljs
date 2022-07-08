@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@msagl/parser": "^0.0.69",
-    "deck.gl": "^8.8.0-beta.2",
+    "deck.gl": "^8.8.3",
     "msagl-js": "^0.0.68",
     "panzoom": "^9.4.2"
   },
