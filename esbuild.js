@@ -13,6 +13,7 @@ esbuild.build({
   plugins: [
     externalGlobalPlugin({
       'msagl-js': 'globalThis.msagl',
+      'msagl-js/drawing': 'globalThis.msagl',
     }),
   ],
 })
