@@ -268,6 +268,9 @@ export default class Renderer extends EventSource {
           }),
         ]
       },
+      updateTriggers: {
+        getTileData: Date.now(),
+      },
     })
 
     this._deck.setProps({
