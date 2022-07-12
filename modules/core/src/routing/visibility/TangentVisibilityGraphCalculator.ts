@@ -5,7 +5,7 @@
 // using Microsoft.Msagl.Core.Geometry.Curves;
 
 // namespace Microsoft.Msagl.Routing.Visibility {
-//    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
+
 //    internal class TangentVisibilityGraphCalculator {
 
 //        // the list of obstacles
@@ -116,7 +116,7 @@
 //        }
 //    }
 // #if TEST_MSAGL && TEST_MSAGL
-//    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
 //        private void AddPolylinesForShow(Array < ICurve > curves) {
 //        foreach(Polygon p of this.polygons)
 //        curves.Add(p.Polyline);
@@ -159,7 +159,6 @@
 //        return StemStartPointComparer.CompareVectorsByAngleToXAxis(e0.End.point - e0.start.point, e1.End.point - e1.start.point);
 //    }
 
-//    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "cc")]
 //        private void OrganizeTangents() {
 //        foreach(Polygon q of polygons)
 //        if (q != this.currentPolygon)

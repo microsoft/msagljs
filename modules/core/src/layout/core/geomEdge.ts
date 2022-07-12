@@ -11,6 +11,9 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 
 export class GeomEdge extends GeomObject {
+  RaiseLayoutChangeEvent(delta: Point) {
+    this.edge.raiseEvents(delta)
+  }
   requireRouting() {
     this.curve = null
     this.underlyingPolyline = null
@@ -38,7 +41,7 @@ export class GeomEdge extends GeomObject {
 
   lineWidth = 1
 
-  Translate(delta: Point) {
+  translate(delta: Point) {
     if (delta.x == 0 && delta.y == 0) return
     // RaiseLayoutChangeEvent(delta);
     if (this.curve != null) this.curve.translate(delta)

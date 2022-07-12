@@ -71,7 +71,6 @@ export class Path {
 
   //
 
-  // <returns></returns>
   toString(): string {
     const sb: StringBuilder = new StringBuilder()
     if (this.PathPoints instanceof LinkedPoint) sb.Append('L')

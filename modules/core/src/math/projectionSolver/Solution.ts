@@ -59,7 +59,6 @@ export class Solution {
 
   // Shallow-copy everything, including the contained list.
 
-  // <returns></returns>
   public Clone(): Solution {
     const r = new Solution()
     r.GoalFunctionValue = this.GoalFunctionValue

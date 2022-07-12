@@ -17,4 +17,8 @@ export abstract class GeomObject {
   static getGeom(attrCont: Entity): GeomObject {
     return attrCont.getAttr(GeomObject.attachIndex)
   }
+  get parent(): GeomObject {
+    const p = this.entity.parent
+    return p ? GeomObject.getGeom(p) : null
+  }
 }

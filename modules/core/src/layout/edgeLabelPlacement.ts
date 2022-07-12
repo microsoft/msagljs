@@ -383,7 +383,6 @@ export class EdgeLabelPlacement extends Algorithm {
     return GeomEdge.getGeom(geomLabel.label.parent) as GeomEdge
   }
 
-  // <returns></returns>
   public PlaceEdgeLabelHorizontally(label: GeomLabel): boolean {
     // approximate label with a rectangle
     // process candidate points for label ordered by priority

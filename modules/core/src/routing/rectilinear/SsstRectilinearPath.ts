@@ -134,7 +134,6 @@ export class SsstRectilinearPath {
 
   // estimation from below for the distance
 
-  // <returns></returns>
   private HeuristicDistanceFromVertexToTarget(point: Point, entryDirToVertex: Direction): number {
     const vectorToTarget: Point = this.Target.point.sub(point)
     if (closeDistEps(vectorToTarget.x, 0) && closeDistEps(vectorToTarget.y, 0)) {

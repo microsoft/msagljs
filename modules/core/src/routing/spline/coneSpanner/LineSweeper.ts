@@ -225,12 +225,12 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   // #if TEST_MSAGL
   //         // ReSharper disable UnusedMember.Local
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         static ICurve Box(Point p) {
   //             // ReSharper restore UnusedMember.Local
   //             return CurveFactory.CreateRectangle(2, 2, p);
   //         }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+
   //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
   //         )]
   //         void PrintOutRightSegTree() {
@@ -251,7 +251,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   // #if TEST_MSAGL && TEST_MSAGL
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         void Showside(PolylinePoint p, Point a, Point b, PolylinePoint pn) {
   //             ShowBothTrees(new DebugCurve(100, 1, "brown", BorderPolyline), new DebugCurve(100, 2, "blue",
   //                 new LineSegment(a, b)),
@@ -273,11 +273,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //            } while (p != BorderPolyline.startPoint);
   //        }
   // #if TEST_MSAGL
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         void ShowBoundaryPolyline() {
   //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(CreateBoundaryPolyDebugCurves());
   //         }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         Array < DebugCurve > CreateBoundaryPolyDebugCurves() {
   //             int i = 0;
   //             for (var p = BorderPolyline.startPoint; p != null; p = p.next) {
@@ -508,19 +508,19 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   // #if TEST_MSAGL
   //         // ReSharper disable UnusedMember.Local
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         static Ellipse EllipseOnVert(SweepEvent vertexEvent) {
   //             // ReSharper restore UnusedMember.Local
   //             return new Ellipse(5, 5, vertexEvent.Site);
   //         }
   //         // ReSharper disable UnusedMember.Local
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         static Ellipse EllipseOnPolylinePoint(PolylinePoint pp) {
   //             // ReSharper restore UnusedMember.Local
   //             return EllipseOnPolylinePoint(pp, 5);
   //         }
   //         // ReSharper disable UnusedMember.Local
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         static Ellipse EllipseOnPolylinePoint(PolylinePoint pp, double i)
   //         // ReSharper restore UnusedMember.Local
   //         {
@@ -530,10 +530,10 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     return CurveFactory.CreateDiamond(2, 2, p)
   }
   //         // ReSharper disable UnusedMember.Local
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+
   //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
   //         ),
-  //         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         void CheckConsistency() {
   //             // ReSharper restore UnusedMember.Local
   //             foreach(var s of rightConeSides) {
@@ -549,7 +549,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //                 }
   //             }
   //         }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         void ShowRightTree(params ICurve[] curves) {
   //             var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
   //             l.AddRange(rightConeSides.Select(s => new DebugCurve(100, 5, "blue", ExtendSegmentToZ(s))));
@@ -558,7 +558,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //             l.AddRange(curves.Select(c => new DebugCurve(100, 5, "brown", c)));
   //             LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
   //         }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "curves"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         void ShowBothTrees(params DebugCurve[] curves) {
   //             var l = Obstacles.Select(p => new DebugCurve(100, 5, "green", p)).ToList();
   //             l.AddRange(leftConeSides.Select(s => new DebugCurve(ExtendSegmentToZ(s))));
@@ -1016,7 +1016,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     l = l.concat(curves.map((c) => DebugCurve.mkDebugCurveCI('Red', c)))
     //SvgDebugWriter.dumpDebugCurves(fn, l)
   }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //         static BezierSeg BezierOnEdge(VisibilityEdge edge) {
   //             return new BezierSeg(edge.SourcePoint, 2.0 / 3.0 * edge.SourcePoint + 1.0 / 3.0 * edge.TargetPoint,
   //                 1.0 / 3.0 * edge.SourcePoint + 2.0 / 3.0 * edge.TargetPoint, edge.TargetPoint);
@@ -1102,7 +1102,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   // #if TEST_MSAGL
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
+
   //             MessageId = "System.Int32.ToString")]
   //         internal static GeometryGraph CreateGraphFromObstacles(Array < Polyline > obstacles) {
   //             var gg = new GeometryGraph();
@@ -1111,7 +1111,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //             }
   //             return gg;
   //         }
-  //         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String,System.Object,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+
   //             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.WriteLine(System.String)"
   //         )]
   //         void PrintOutLeftSegTree() {

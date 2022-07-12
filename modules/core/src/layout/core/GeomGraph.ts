@@ -102,6 +102,11 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
+    for (const n of this.graph.allSuccessorsWidthFirst()) {
+      yield GeomNode.getGeom(n) as GeomNode
+    }
+  }
   ignoreBBoxCheck = false
   /** The empty space between the graph inner entities and its boundary */
   margins = {left: 10, top: 10, bottom: 10, right: 10}

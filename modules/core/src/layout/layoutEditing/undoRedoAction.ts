@@ -82,7 +82,8 @@ export class UndoRedoAction {
   protected restoreDataDictionary: Map<GeomObject, RestoreData> = new Map<GeomObject, RestoreData>()
 
   AddRestoreData(msaglObject: GeomObject, restoreData: RestoreData) {
-    this.restoreDataDictionary.set(msaglObject, restoreData)
+    // do nothing at the moment
+    // this.restoreDataDictionary.set(msaglObject, restoreData)
   }
 
   private static GetParentGraph(geomObj: GeomObject): GeomGraph {

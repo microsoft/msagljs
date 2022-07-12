@@ -155,7 +155,7 @@ export class BundleRouter extends Algorithm {
   }
 
   // ReSharper disable UnusedMember.Local
-  // @SuppressMessage('Microsoft.Performance', 'CA1811:AvoidUncalledPrivateCode')
+
   // ShowGraphLocal() {
   //  //  ReSharper restore UnusedMember.Local
   //  const l = new List<ICurve>()

@@ -31,11 +31,8 @@ export class IncrementalDragger {
 
   labelFixtures: Map<GeomEdge, LabelFixture> = new Map<GeomEdge, LabelFixture>()
 
-  ///
+  //
 
-  ///  <param name="pushingNodes">the nodes are already at the correct positions</param>
-  ///  <param name="graph"></param>
-  ///  <param name="layoutSettings"></param>
   public constructor(pushingNodes: Array<GeomNode>, graph: GeomGraph, layoutSettings: LayoutSettings) {
     this.geomGraph = graph
     this.nodeSeparation = layoutSettings.NodeSeparation
@@ -83,7 +80,6 @@ export class IncrementalDragger {
     }
   }
 
-  ///  <param name="delta"></param>
   public Drag(delta: Point) {
     if (delta.x == null && delta.y == null) return
 

@@ -111,7 +111,6 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
 
   // Generate the visibility graph along which edges will be routed.
 
-  // <returns></returns>
   GenerateVisibilityGraph() {
     this.AccumulateVertexCoords()
     this.CreateSegmentVectorsAndPopulateCoordinateMaps()

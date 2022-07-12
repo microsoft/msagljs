@@ -110,7 +110,6 @@ export class VisibilityGraph {
 
   //  }
 
-  //  @SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes")
   //  static CheckThatPolylineIsConvex(polyline: Polyline) {
   //      Assert.assert(polyline.closed, "Polyline is not closed");
   //      let a: PolylinePoint = polyline.startPoint;

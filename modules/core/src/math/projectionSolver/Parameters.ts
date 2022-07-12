@@ -62,7 +62,6 @@ export class Parameters {
 
   // Deep-copy the AdvancedParameters.
 
-  // <returns></returns>
   public Clone(): Parameters {
     const newParams = <Parameters>this.MemberwiseClone()
     newParams.Advanced = <AdvancedParameters>this.Advanced.Clone()
@@ -130,7 +129,6 @@ export class AdvancedParameters {
 
   // Shallow-copy the object (there is nothing requiring deep-copy).
 
-  // <returns></returns>
   public Clone(): AdvancedParameters {
     const ret = new AdvancedParameters()
     ret.ForceQpsc = this.ForceQpsc

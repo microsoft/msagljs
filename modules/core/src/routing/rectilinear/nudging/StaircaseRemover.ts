@@ -95,14 +95,12 @@ export class StaircaseRemover {
 
   // ignoring crossing at a
 
-  // <returns></returns>
   Crossing(a: Point, b: Point, segsToIgnore: SegWithIndex[]): boolean {
     return StaircaseRemover.IsCrossing(LineSegment.mkPP(a, b), this.segTree, segsToIgnore)
   }
 
   // ignoring crossing at ls.Start
 
-  // <returns></returns>
   static IsCrossing(ls: LineSegment, rTree: RTree<SegWithIndex, Point>, segsToIgnore: SegWithIndex[]): boolean {
     for (const seg of rTree.GetAllIntersecting(ls.boundingBox)) if (segsToIgnore.findIndex((p) => p == seg) == -1) return true
 

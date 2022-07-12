@@ -386,13 +386,10 @@ export class ConstrainedOrdering {
   //  this.LayerArrays.UpdateLayers(this.yetBestLayers);
   // }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledCode")
   // Show() {
   //  SugiyamaLayoutSettings.ShowDatabase(this.database);
   // }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Diagnostics.Debug.Write(System.String)")
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledCode")
   // static PrintPositions(positions: number[]) {
   //  for (let j= 0; (j < positions.length); j++) {
   //    System.Diagnostics.Debug.Write((" " + positions[j]));

@@ -145,7 +145,6 @@ export class CombinatorialNudger {
 
   // axisEdge together with the axisEdgeIsReversed parameter define direction of the movement over the paths
 
-  // <returns></returns>
   static CompareInDirectionStartingFromAxisEdge(x: PathEdge, y: PathEdge, axisEdge: AxisEdge, direction: Direction): number {
     while (true) {
       x = CombinatorialNudger.GetNextPathEdgeInDirection(x, axisEdge, direction)

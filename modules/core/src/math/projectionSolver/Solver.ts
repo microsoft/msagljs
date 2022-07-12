@@ -97,7 +97,7 @@ export class Solver {
   // a tag or other user data - can be null
   // The position of the variable, such as the coordinate of a node along one axis.
   // The weight of the variable (makes it less likely to move if the weight is high).
-  // <returns></returns>
+
   public AddVariableANN(userData: any, desiredPos: number, weight: number): Variable {
     return this.AddVariableANNN(userData, desiredPos, weight, 1)
   }
@@ -198,7 +198,6 @@ export class Solver {
 
   // Add a constraint 'left + gap' is equal to right
 
-  // <returns></returns>
   public AddEqualityConstraint(left: Variable, right: Variable, gap: number): Constraint {
     return this.AddConstraintVVNB(left, right, gap, true)
   }

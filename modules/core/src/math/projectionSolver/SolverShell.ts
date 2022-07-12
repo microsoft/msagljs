@@ -115,7 +115,7 @@ export class SolverShell {
   // Execute the solver, filling in the Solution object and the values to be returned by GetVariableResolvedPosition.
 
   // Parameter object class specific to the underlying solver
-  // <param name="executionLimitExceeded">if true, one or more limits such as iteration count
+
   //         or timeout were exceeded</param>
   // <returns>Pass or fail</returns>
   public SolvePNS(parameters: any, t: {executionLimitExceeded: boolean}): boolean {
@@ -210,7 +210,6 @@ export class SolverShell {
 
   // returns the block of the fixed variable
 
-  // <returns></returns>
   AdjustConstraintsOfNeighborsOfFixedVariable(fixedVar: number, t: {successInAdjusting: boolean}): Array<number> {
     const nbs = this.variables.get(fixedVar).Block.Variables
     const currentSpan = new RealNumberSpan()
@@ -282,14 +281,12 @@ export class SolverShell {
 
   //
 
-  // <returns></returns>
   public ContainsVariable(v: number): boolean {
     return this.variables.has(v)
   }
 
   // returns the ideal position of the node that had been set at the variable construction
 
-  // <returns></returns>
   public GetVariableIdealPosition(v: number): number {
     return this.variables.get(v).DesiredPos
   }

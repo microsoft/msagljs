@@ -267,7 +267,7 @@ export function routeRectilinearEdges(
   nodePadding = 1,
   cornerFitRadius = 3,
 ) {
-  const rr = RectilinearEdgeRouter.constructorGNANB(geomG, edgesToRoute, nodePadding, cornerFitRadius, true)
+  const rr = RectilinearEdgeRouter.constructorGNAN(geomG, edgesToRoute, nodePadding, cornerFitRadius)
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph) {

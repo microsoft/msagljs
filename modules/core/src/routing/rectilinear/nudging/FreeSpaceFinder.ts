@@ -147,7 +147,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   // }
 
   // // ReSharper disable SuggestBaseTypeForParameter
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowEdge(edge: AxisEdge, point: Point) {
   //    //  ReSharper restore SuggestBaseTypeForParameter
   //    let dd = this.GetObstacleBoundaries("black");
@@ -216,7 +216,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   // ReSharper disable UnusedMember.Local
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowPointAndEdge(point: Point, edge: AxisEdge) {
   //    //  ReSharper restore UnusedMember.Local
   //    let curves: Array<ICurve> = this.GetCurves(point, edge);
@@ -224,7 +224,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   // }
 
   // // ReSharper disable UnusedMember.Local
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowPointAndEdgeWithSweepline(point: Point, edge: AxisEdge) {
   //    //  ReSharper restore UnusedMember.Local
   //    let curves: Array<ICurve> = this.GetCurves(point, edge);
@@ -232,7 +232,6 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //    LayoutAlgorithmSettings.Show(curves.ToArray());
   // }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // GetCurves(point: Point, edge: AxisEdge): Array<ICurve> {
   //    let ellipse = CurveFactory.CreateEllipse(3, 3, point);
   //    let curves = new Array<ICurve>(this.Obstacles.select(() => {  }, (<ICurve>(o))));
@@ -254,7 +253,6 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //    return curves;
   // }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // GetCurvesTest(point: Point): Array<DebugCurve> {
   //    let ellipse = CurveFactory.CreateEllipse(3, 3, point);
   //    let curves = new Array<DebugCurve>(this.Obstacles.select(() => {  }, new DebugCurve(100, 1, "black", o)));
@@ -263,7 +261,6 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //    return curves;
   // }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // static RightNeighborsCurvesTest(rbTree: Array<AxisEdgesContainer>): Array<DebugCurve> {
   //    for (let container of rbTree) {
   //        for (let edge of container) {
@@ -282,7 +279,6 @@ export class FreeSpaceFinder extends LineSweeperBase {
     return Point.middle(edge.SourcePoint, edge.TargetPoint)
   }
 
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // ShowAxisEdges() {
   //    //  ReSharper restore UnusedMember.Local
   //    let dd = new Array<DebugCurve>(this.GetObstacleBoundaries("black"));
@@ -315,7 +311,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   // }
 
   // // ReSharper disable UnusedMember.Local
-  // @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowAtPoint(point: Point) {
   //    //  ReSharper restore UnusedMember.Local
   //    let curves = this.GetCurvesTest(point);
@@ -335,7 +331,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //
 
   // the point has to be on the same line as the container
-  // <returns></returns>
+
   GetAxisEdgesContainerNode(point: Point): RBNode<AxisEdgesContainer> {
     const prj = this.xProjection(point)
     const ret = this.edgeContainersTree.findFirst((cont) => this.xProjection(cont.Source) >= prj - GeomConstants.distanceEpsilon / 2)

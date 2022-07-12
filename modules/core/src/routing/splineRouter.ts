@@ -1015,7 +1015,7 @@ export class SplineRouter extends Algorithm {
   }
 
   // #if TEST_MSAGL
-  //     [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //     static internal void ShowVisGraph(VisibilityGraph tmpVisGraph, Iterable<Polyline> obstacles, Iterable<ICurve> greenCurves, Iterable<ICurve> redCurves) {
   //       var l = new Array<DebugCurve>(tmpVisGraph.Edges.Select(e => new DebugCurve(100, 1,
   //           e.IsPassable != null && e.IsPassable() ? "green" : "black"
@@ -1139,7 +1139,7 @@ export class SplineRouter extends Algorithm {
 
   // #if TEST_MSAGL
   //     // ReSharper disable UnusedMember.Local
-  //     [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+
   //     static void Show(
   //         Iterable<GeomEdge> edgeGeometries, Iterable<Shape> listOfShapes) {
   //       // ReSharper restore UnusedMember.Local

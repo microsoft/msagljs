@@ -106,11 +106,6 @@ export class RectilinearEdgeRouter extends Algorithm {
     return this.GraphGenerator instanceof SparseVisibilityGraphGenerator
   }
 
-  // If true, this router uses obstacle bounding box rectangles in the visibility graph.
-  // Set on constructor.
-
-  UseObstacleRectangles = false
-
   public get Obstacles(): Array<Shape> {
     return Array.from(this.ShapeToObstacleMap.values()).map((obs) => obs.InputShape)
   }
@@ -197,7 +192,7 @@ export class RectilinearEdgeRouter extends Algorithm {
   }
 
   private CreatePaddedObstacle(shape: Shape) {
-    const obstacle = new Obstacle(shape, this.UseObstacleRectangles, this.Padding)
+    const obstacle = new Obstacle(shape, this.Padding)
     this.ShapeToObstacleMap.set(shape, obstacle)
     this.PortManager.CreateObstaclePorts(obstacle)
   }
@@ -263,13 +258,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     // pass-through default arguments to parameterized ctor
   }
   static constructorC(cancelToket: CancelToken): RectilinearEdgeRouter {
-    return new RectilinearEdgeRouter(
-      [],
-      RectilinearEdgeRouter.DefaultPadding,
-      RectilinearEdgeRouter.DefaultCornerFitRadius,
-      /* useSparseVisibilityGraph:*/ false,
-      /* useObstacleRectangles:*/ false,
-    )
+    return new RectilinearEdgeRouter([], RectilinearEdgeRouter.DefaultPadding, RectilinearEdgeRouter.DefaultCornerFitRadius)
   }
 
   // The padding from an obstacle's curve to its enclosing polyline.
@@ -282,102 +271,49 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   // Constructor that takes the obstacles but uses defaults for other arguments.
 
-  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
   // as well as any intervening obstacles.</param>
   static constructorI(Obstacle: Iterable<Shape>): RectilinearEdgeRouter {
-    return new RectilinearEdgeRouter(
-      Obstacle,
-      RectilinearEdgeRouter.DefaultPadding,
-      RectilinearEdgeRouter.DefaultCornerFitRadius,
-      /* useSparseVisibilityGraph:*/ false,
-      /* useObstacleRectangles:*/ false,
-    )
+    return new RectilinearEdgeRouter(Obstacle, RectilinearEdgeRouter.DefaultPadding, RectilinearEdgeRouter.DefaultCornerFitRadius)
   }
 
   // Constructor for a router that does not use obstacle rectangles in the visibility graph.
 
-  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
   // as well as any intervening obstacles.</param>
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+
   // but may select suboptimal paths</param>
-  static constructorINNB(
-    obstacles: Iterable<Shape>,
-    padding: number,
-    cornerFitRadius: number,
-    useSparseVisibilityGraph: boolean,
-  ): RectilinearEdgeRouter {
-    return new RectilinearEdgeRouter(obstacles, padding, cornerFitRadius, useSparseVisibilityGraph, /* useObstacleRectangles:*/ false)
+  static constructorINN(obstacles: Iterable<Shape>, padding: number, cornerFitRadius: number): RectilinearEdgeRouter {
+    return new RectilinearEdgeRouter(obstacles, padding, cornerFitRadius)
   }
 
   // Constructor specifying graph and shape information.
 
-  // <param name="obstacles">The collection of shapes to route around. Contains all source and target shapes
   // as well as any intervening obstacles.</param>
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
+
   // but may select suboptimal paths</param>
   // Use obstacle bounding boxes in visibility graph
-  public constructor(
-    obstacles: Iterable<Shape>,
-    padding: number,
-    cornerFitRadius: number,
-    useSparseVisibilityGraph: boolean,
-    useObstacleRectangles: boolean,
-  ) {
+  public constructor(obstacles: Iterable<Shape>, padding: number, cornerFitRadius: number) {
     super(null)
     this.Padding = padding
     this.CornerFitRadius = cornerFitRadius
     this.BendPenaltyAsAPercentageOfDistance = SsstRectilinearPath.DefaultBendPenaltyAsAPercentageOfDistance
     this.GraphGenerator = new SparseVisibilityGraphGenerator()
 
-    this.UseObstacleRectangles = useObstacleRectangles
     this.PortManager = new PortManager(this.GraphGenerator)
     this.AddShapes(obstacles)
   }
 
-  // Constructor specifying graph information.
-
   // The graph whose edges are being routed.
   // The minimum padding from an obstacle's curve to its enclosing polyline.
   // The radius of the arc inscribed into path corners
-  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
-  // but may select suboptimal paths</param>
-  static constructorGNANB(
-    graph: GeomGraph,
-    geomEdges: GeomEdge[],
-    padding: number,
-    cornerFitRadius: number,
-    useSparseVisibilityGraph: boolean,
-  ): RectilinearEdgeRouter {
-    return this.constructorGNANBB(graph, geomEdges, padding, cornerFitRadius, useSparseVisibilityGraph, /* useObstacleRectangles:*/ false)
-  }
 
-  // Constructor specifying graph information.
-
-  // The graph whose edges are being routed.
-  // The minimum padding from an obstacle's curve to its enclosing polyline.
-  // The radius of the arc inscribed into path corners
-  // <param name="useSparseVisibilityGraph">If true, use a sparse visibility graph, which saves memory for large graphs
   // but may select suboptimal paths</param>
   // If true, use obstacle bounding boxes in visibility graph
-  static constructorGNANBB(
-    graph: GeomGraph,
-    geomEdges: GeomEdge[],
-    padding: number,
-    cornerFitRadius: number,
-    useSparseVisibilityGraph: boolean,
-    useObstacleRectangles: boolean,
-  ): RectilinearEdgeRouter {
-    const ret = new RectilinearEdgeRouter(
-      ShapeCreator.GetShapes(graph),
-      padding,
-      cornerFitRadius,
-      useSparseVisibilityGraph,
-      useObstacleRectangles,
-    )
+  static constructorGNAN(graph: GeomGraph, geomEdges: GeomEdge[], padding: number, cornerFitRadius: number): RectilinearEdgeRouter {
+    const ret = new RectilinearEdgeRouter(ShapeCreator.GetShapes(graph), padding, cornerFitRadius)
     if (geomEdges == null)
       for (const edge of graph.edges()) {
         ret.AddEdgeGeometryToRoute(edge)

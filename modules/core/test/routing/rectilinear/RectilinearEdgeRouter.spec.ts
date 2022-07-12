@@ -26,7 +26,7 @@ test('two nodes', () => {
 
   new GeomEdge(new Edge(a, b))
 
-  const rr = RectilinearEdgeRouter.constructorGNANB(gg, null, 1, 3, true)
+  const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/tworectr.svg')
@@ -44,7 +44,7 @@ test('three nodes', () => {
 
   new GeomEdge(new Edge(a, b))
 
-  const rr = RectilinearEdgeRouter.constructorGNANB(gg, null, 1, 3, true)
+  const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/threerectr.svg')
@@ -279,7 +279,7 @@ test('four nodes', () => {
   new GeomEdge(new Edge(c, b))
   new GeomEdge(new Edge(b, d))
 
-  const rr = RectilinearEdgeRouter.constructorGNANB(gg, null, 1, 3, true)
+  const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/fourrectr.svg')
@@ -315,7 +315,7 @@ test('6 nodes', () => {
   new GeomEdge(new Edge(e, f))
   new GeomEdge(new Edge(e, b))
 
-  const rr = RectilinearEdgeRouter.constructorGNANB(gg, null, 1, 3, true)
+  const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/sixrectr.svg')
@@ -364,7 +364,7 @@ test('random rect', () => {
   for (let nodeCount = 3; nodeCount < 7; nodeCount++)
     for (let seed = 0; seed < 7; seed++) {
       const gg: GeomGraph = generateRandomGeomGraph(seed, nodeCount)
-      const rr = RectilinearEdgeRouter.constructorGNANB(gg, null, 1, 3, true)
+      const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
       rr.run()
       const svgDebugWriter = new SvgDebugWriter('/tmp/rand' + nodeCount + 'seed' + seed + '.svg')
       svgDebugWriter.writeGeomGraph(gg)

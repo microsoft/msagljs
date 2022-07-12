@@ -178,6 +178,16 @@ export class Graph extends Node {
     }
     return true
   }
+  *allSuccessorsWidthFirst(): IterableIterator<Node> {
+    for (const n of this.shallowNodes) {
+      yield n
+    }
+    for (const n of this.shallowNodes) {
+      if (n instanceof Graph) {
+        yield* n.allSuccessorsWidthFirst()
+      }
+    }
+  }
 }
 
 export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node[]> {

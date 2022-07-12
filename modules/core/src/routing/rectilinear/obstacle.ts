@@ -79,17 +79,11 @@ export class Obstacle {
       this.ActiveHighSide = new HighObstacleSide(this, this.ActiveHighSide.EndVertex, scanDir)
     }
   }
-  constructor(shape: Shape, makeRect: boolean, padding: number) {
+  constructor(shape: Shape, padding: number) {
     if (shape == null) {
       return
     }
-    if (makeRect) {
-      const paddedBox = shape.BoundingBox.clone()
-      paddedBox.pad(padding)
-      this.PaddedPolyline = Curve.polyFromBox(paddedBox)
-    } else {
-      this.PaddedPolyline = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, padding)
-    }
+    this.PaddedPolyline = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, padding)
 
     Obstacle.RoundVerticesAndSimplify(this.PaddedPolyline)
     this.IsRectangle = this.IsPolylineRectangle()
@@ -99,7 +93,7 @@ export class Obstacle {
   }
 
   static mk(a: Point, b: Point, scanlineOrdinal: number) {
-    const obs = new Obstacle(null, false, 0)
+    const obs = new Obstacle(null, 0)
     obs.PaddedPolyline = Polyline.mkClosedFromPoints([GeomConstants.RoundPoint(a), GeomConstants.RoundPoint(b)])
     obs.Ordinal = scanlineOrdinal
     return obs

@@ -157,4 +157,9 @@ export class GeomNode extends GeomObject {
     }
     return gGraph.underCollapsedGraph()
   }
+  *getAncestors(): IterableIterator<GeomGraph> {
+    for (const g of this.node.getAncestors()) {
+      yield GeomObject.getGeom(g) as GeomGraph
+    }
+  }
 }

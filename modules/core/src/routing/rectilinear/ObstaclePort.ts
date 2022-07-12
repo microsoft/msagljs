@@ -68,7 +68,6 @@ export class ObstaclePort {
     return this.Port.Location
   }
 
-  // <returns></returns>
   toString(): string {
     return this.Port + this.Obstacle.toString()
   }

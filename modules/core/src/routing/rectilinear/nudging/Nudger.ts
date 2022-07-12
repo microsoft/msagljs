@@ -45,7 +45,7 @@ export class Nudger {
   // two parallel paths should be separated by this distance if it is feasible
   // polygonal convex obstacles organized  of a tree; the obstacles here are padded original obstacles
   //
-  // <returns></returns>
+
   constructor(paths: Array<Path>, cornerFitRad: number, obstacles: Array<Polyline>, ancestorsSets: Map<Shape, Set<Shape>>) {
     this.AncestorsSets = ancestorsSets
     this.HierarchyOfGroups = CreateRectNodeOnArrayOfRectNodes(
@@ -268,7 +268,7 @@ export class Nudger {
   }
 
   // sometimes we have very small mistakes  of the positions that have to be fixed
-  // <returns></returns>
+
   static Rectilinearise(a: Point, b: Point): Point {
     if (a.x == b.x || a.y == b.y) return b
     const dx = Math.abs(a.x - b.x)
@@ -418,7 +418,6 @@ export class Nudger {
   //                    + (deltaW * i)), color, new LineSegment(points[i], points[(i + 1)]));
   // }
 
-  // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // static GetEdgePathFromPathEdgesAsDebugCurves(startWidth: number, endWidth: number, color: string, path: Path): Array<DebugCurve> {
   //    let points = path.PathPoints.toArray();
   //    let count: number = points.length;
@@ -466,7 +465,7 @@ export class Nudger {
   // }
 
   // // ReSharper disable UnusedMember.Local
-  // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowLongSegsWithIdealPositions(dir: Direction) {
   //    //  ReSharper restore UnusedMember.Local
   //    let debCurves = Nudger.GetObstacleBoundaries(this.Obstacles, "black");
@@ -521,7 +520,6 @@ export class Nudger {
   //    return d.Concat(Nudger.MarkPathVerts(path));
   // }
 
-  // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
   // private static MarkPathVerts(path: Path): Array<DebugCurve> {
   //    let first: boolean = true;
   //    let p = new Point();
@@ -694,7 +692,7 @@ export class Nudger {
   // }
 
   // // ReSharper disable UnusedMember.Local
-  // @SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")
+
   // ShowSegment(segment: LongestNudgedSegment) {
   //    //  ReSharper restore UnusedMember.Local
   //    let dd = Nudger.GetObstacleBoundaries(this.Obstacles, "black");

@@ -1,4 +1,4 @@
-///  pushes the nodes it got bumped to: pushes horizontally or vertically
+//  pushes the nodes it got bumped to: pushes horizontally or vertically
 
 import {Queue} from 'queue-typescript'
 import {Point, Rectangle} from '../../math/geometry'
@@ -18,11 +18,8 @@ export class BumperPusher {
 
   pushingNodes: GeomNode[]
 
-  ///
+  //
 
-  ///  <param name="pushedNodes">nodes that are being pushed</param>
-  ///  <param name="separation"></param>
-  ///  <param name="pushingNodes"></param>
   public constructor(pushedNodes: Iterable<GeomNode>, separation: number, pushingNodes: GeomNode[]) {
     this.separation = separation
     this.rtree = new RTree<GeomNode, Point>(createRectangleNodeOnData(pushedNodes, (n) => this.GetPaddedBoxOfNode(n)))
@@ -40,9 +37,8 @@ export class BumperPusher {
     return ret
   }
 
-  ///
+  //
 
-  ///  <returns></returns>
   public PushNodes(): Array<GeomNode> {
     this.fixedNodes.clear()
     insertRange(this.fixedNodes, this.pushingNodes)
@@ -118,10 +114,8 @@ export class BumperPusher {
     }
   }
 
-  ///
+  //
 
-  ///  <param name="cluster"></param>
-  ///  <param name="previousBox"></param>
   public UpdateRTreeByChangedNodeBox(cluster: GeomNode, previousBox: Rectangle) {
     const rectNode: RectangleNode<GeomNode, Point> = this.FindClusterNode(cluster, previousBox)
     this.UpdateBoundingBoxesOfPushedAndUpParents(rectNode)

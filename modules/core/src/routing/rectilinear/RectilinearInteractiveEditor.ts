@@ -4,7 +4,7 @@ import {RelativeFloatingPort} from '../../layout/core/relativeFloatingPort'
 import {Point} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
-import {Assert} from '../../utils/assert'
+// import {Assert} from '../../utils/assert'
 import {CancelToken} from '../../utils/cancelToken'
 import {EdgeRoutingMode} from '../EdgeRoutingMode'
 import {RelativeShape} from '../RelativeShape'
@@ -19,21 +19,10 @@ export class RectilinearInteractiveEditor {
     obstacleNodes: Iterable<GeomNode>,
     geometryEdges: Iterable<GeomEdge>,
     edgeRoutingMode: EdgeRoutingMode,
-    useSparseVisibilityGraph: boolean,
-    useObstacleRectangles: boolean,
-    bendPenaltyAsAPercentageOfDistance: number,
+
     ct: CancelToken = null,
   ) {
-    const r = RectilinearInteractiveEditor.FillRouter(
-      cornerFitRadius,
-      padding,
-      obstacleNodes,
-      geometryEdges,
-      edgeRoutingMode,
-      useSparseVisibilityGraph,
-      useObstacleRectangles,
-      bendPenaltyAsAPercentageOfDistance,
-    )
+    const r = RectilinearInteractiveEditor.FillRouter(cornerFitRadius, padding, obstacleNodes, geometryEdges, edgeRoutingMode)
     r.run()
     RectilinearInteractiveEditor.CreateSelfEdges(
       Array.from(geometryEdges).filter((e) => e.sourcePort.Location == e.targetPort.Location),
@@ -41,17 +30,9 @@ export class RectilinearInteractiveEditor {
     )
   }
 
-  ///  <summary>
-  ///  Create a RectilinearEdgeRouter from the passed obstacleNodes, with one port at the center of each obstacle,
-  ///  and route between the obstacles, with default bend penalty.
-  ///  </summary>
-  ///  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
-  ///  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline</param>
-  ///  <param name="obstacleNodes">The nodes of the graph</param>
-  ///  <param name="geometryEdges">Edges defining the nodes to route between, and receiving the resultant paths</param>
-  ///  <param name="edgeRoutingMode">Mode of the edges (Rectilinear or RectilinearToCenter).</param>
-  ///  <param name="useObstacleRectangles">Use obstacle bounding box rectangles of visibility graph</param>
-  ///  <param name="useSparseVisibilityGraph">Use a more memory-efficient but possibly path-suboptimal visibility graph</param>
+  //  Create a RectilinearEdgeRouter from the passed obstacleNodes, with one port at the center of each obstacle,
+  //  and route between the obstacles, with default bend penalty.
+
   static CreatePortsAndRouteEdges_(
     cornerFitRadius: number,
     padding: number,
@@ -61,28 +42,12 @@ export class RectilinearInteractiveEditor {
     useSparseVisibilityGraph: boolean,
     useObstacleRectangles: boolean,
   ) {
-    RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
-      cornerFitRadius,
-      padding,
-      obstacleNodes,
-      geometryEdges,
-      edgeRoutingMode,
-      useSparseVisibilityGraph,
-      useObstacleRectangles,
-      SsstRectilinearPath.DefaultBendPenaltyAsAPercentageOfDistance,
-    )
+    RectilinearInteractiveEditor.CreatePortsAndRouteEdges(cornerFitRadius, padding, obstacleNodes, geometryEdges, edgeRoutingMode)
   }
 
-  ///  <summary>
-  ///  Create a RectilinearEdgeRouter from the passed obstacleNodes, with one port at the center of each obstacle,
-  ///  and route between the obstacles, with default bend penalty.
-  ///  </summary>
-  ///  <param name="cornerFitRadius">The radius of the arc inscribed into path corners</param>
-  ///  <param name="padding">The minimum padding from an obstacle's curve to its enclosing polyline</param>
-  ///  <param name="obstacleNodes">The nodes of the graph</param>
-  ///  <param name="geometryEdges">Edges defining the nodes to route between, and receiving the resultant paths</param>
-  ///  <param name="edgeRoutingMode">Mode of the edges (Rectilinear or RectilinearToCenter).</param>
-  ///  <param name="useSparseVisibilityGraph">Use a more memory-efficient but possibly path-suboptimal visibility graph</param>
+  //  Create a RectilinearEdgeRouter from the passed obstacleNodes, with one port at the center of each obstacle,
+  //  and route between the obstacles, with default bend penalty.
+
   public static CreatePortsAndRouteEdges__(
     cornerFitRadius: number,
     padding: number,
@@ -91,45 +56,26 @@ export class RectilinearInteractiveEditor {
     edgeRoutingMode: EdgeRoutingMode,
     useSparseVisibilityGraph: boolean,
   ) {
-    RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
-      cornerFitRadius,
-      padding,
-      obstacleNodes,
-      geometryEdges,
-      edgeRoutingMode,
-      useSparseVisibilityGraph,
-      false,
-      SsstRectilinearPath.DefaultBendPenaltyAsAPercentageOfDistance,
-    )
+    RectilinearInteractiveEditor.CreatePortsAndRouteEdges(cornerFitRadius, padding, obstacleNodes, geometryEdges, edgeRoutingMode)
   }
 
-  ///  <summary>
-  ///  Create a RectilinearEdgeRouter populated with the passed obstacles.
-  ///  </summary>
-  ///  <returns>The populated RectilinearEdgeRouter</returns>
+  //  Create a RectilinearEdgeRouter populated with the passed obstacles.
+
+  //  <returns>The populated RectilinearEdgeRouter</returns>
   static FillRouter(
     cornerFitRadius: number,
     padding: number,
     obstacleNodes: Iterable<GeomNode>,
     geomEdges: Iterable<GeomEdge>,
     edgeRoutingMode: EdgeRoutingMode,
-    useSparseVisibilityGraph: boolean,
-    useObstacleRectangles: boolean,
-    bendPenaltyAsAPercentageOfDistance: number,
   ): RectilinearEdgeRouter {
-    Assert.assert(
-      EdgeRoutingMode.Rectilinear == edgeRoutingMode || EdgeRoutingMode.RectilinearToCenter == edgeRoutingMode,
-      'Non-rectilinear edgeRoutingMode',
-    )
+    // Assert.assert(
+    //   EdgeRoutingMode.Rectilinear == edgeRoutingMode || EdgeRoutingMode.RectilinearToCenter == edgeRoutingMode,
+    //   'Non-rectilinear edgeRoutingMode',
+    // )
     const nodeShapesMap = new Map<GeomNode, Shape>()
     RectilinearInteractiveEditor.FillNodeShapesMap(obstacleNodes, geomEdges, nodeShapesMap)
-    const router = new RectilinearEdgeRouter(
-      nodeShapesMap.values(),
-      padding,
-      cornerFitRadius,
-      useSparseVisibilityGraph,
-      useObstacleRectangles,
-    )
+    const router = new RectilinearEdgeRouter(nodeShapesMap.values(), padding, cornerFitRadius)
     for (const geomEdge of geomEdges) {
       geomEdge.sourcePort = first(nodeShapesMap.get(geomEdge.source).Ports)
       geomEdge.targetPort = first(nodeShapesMap.get(geomEdge.target).Ports)
@@ -164,11 +110,8 @@ export class RectilinearInteractiveEditor {
     }
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
-  ///  <param name="edge"></param>
-  ///  <param name="cornerFitRadius"></param>
+  //
+
   public static CreateSimpleEdgeCurveWithGivenFitRadius(edge: GeomEdge, cornerFitRadius: number) {
     const a = edge.source.center
     const b = edge.target.center
@@ -191,10 +134,8 @@ export class RectilinearInteractiveEditor {
     }
   }
 
-  ///  <summary>
-  ///  creates an edge curve based only on the source and target geometry
-  ///  </summary>
-  ///  <param name="edge"></param>
+  //  creates an edge curve based only on the source and target geometry
+
   public static CreateSimpleEdgeCurve(edge: GeomEdge) {
     const a = edge.source.center
     const b = edge.target.center
@@ -228,11 +169,8 @@ export class RectilinearInteractiveEditor {
     return polyline
   }
 
-  ///  <summary>
-  ///  Create a Shape with a single relative port at its center.
-  ///  </summary>
-  ///  <param name="node">The node from which the shape is derived</param>
-  ///  <returns></returns>
+  //  Create a Shape with a single relative port at its center.
+
   public static CreateShapeWithRelativeNodeAtCenter(node: GeomNode): Shape {
     const shape = new RelativeShape(() => node.boundaryCurve)
     shape.Ports.add(

@@ -1,15 +1,39 @@
 import {Graph} from './graph'
 
-/** Entity is an attribute container with a parent*/
+/** Entity is an attribute container with a parent.
+ * It also keeps an array of event functions.
+ */
 export abstract class Entity {
+  /** keeps entity attributes: for example, drawing attributes, geometry attributes, etc */
   private attrs: any[] = []
+  /** the mechanism to propagate changes in the layout */
+  private events: ((data: any) => void)[]
 
+  /** adds an event function */
+  addEvent(event: (data: any) => void) {
+    this.events.push(event)
+  }
+  /** trying to remove an event function */
+  removeEvent(event: (data: any) => void) {
+    const index = this.events.indexOf(event)
+    if (index >= 0) {
+      this.events = this.events.splice(index, 1)
+    }
+  }
+
+  /** raises all available events on the given data */
+  raiseEvents(data: any) {
+    this.events.forEach((event) => event(data))
+  }
+  /** removes all the attributes form the entity */
   clearAttr() {
     this.attrs = []
   }
+  /** sets the attribute at the given position */
   setAttr(position: number, val: any) {
     this.attrs[position] = val
   }
+  /** gets the attribute at the given position */
   getAttr(position: number): any {
     return this.attrs[position]
   }
@@ -32,7 +56,7 @@ export abstract class Entity {
     }
   }
 
-  // Determines if this node is a descendant of the given graph.
+  /**  Determines if this node is a descendant of the given graph.*/
   isDescendantOf(graph: Graph): boolean {
     for (const p of this.getAncestors()) {
       if (p == graph) return true

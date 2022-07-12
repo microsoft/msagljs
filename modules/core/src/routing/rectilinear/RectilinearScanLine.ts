@@ -88,7 +88,6 @@ export class RectilinearScanLine {
   }
   // For ordering lines along the scanline at segment starts/ends.
 
-  // <returns></returns>
   public Compare(first: BasicObstacleSide, second: BasicObstacleSide): number {
     // If these are two sides of the same obstacle then the ordering is obvious.
     if (first.Obstacle == second.Obstacle) {

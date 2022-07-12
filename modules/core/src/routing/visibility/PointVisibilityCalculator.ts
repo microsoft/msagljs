@@ -110,8 +110,6 @@ export class PointVisibilityCalculator {
   // from the visible part start
   // In the general case we have two stems from one polyline
 
-  // <returns></returns>
-
   *GetInitialVisibleBoundaryStemsAndInsertActiveSides(): IterableIterator<Stem> {
     for (const [hole, stem] of this.visibleBoundaries) {
       let crosses = false
