@@ -1704,14 +1704,15 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
   }
   x.sort((x: IntersectionInfo, y: IntersectionInfo) => x.par0 - y.par0)
   const xs = [curve.parStart]
+
   let i = 0
   for (; i < x.length; i++) {
     const ii = x[i]
-    if (ii.par0 > xs[i] + GeomConstants.distanceEpsilon) {
+    if (ii.par0 > xs[xs.length - 1] + GeomConstants.distanceEpsilon) {
       xs.push(ii.par0)
     }
   }
-  if (curve.parEnd > xs[i]) {
+  if (curve.parEnd > xs[xs.length - 1] + GeomConstants.distanceEpsilon) {
     xs.push(curve.parEnd)
   }
 

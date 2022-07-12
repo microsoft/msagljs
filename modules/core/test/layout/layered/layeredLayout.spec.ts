@@ -24,15 +24,18 @@ import {
   MdsLayoutSettings,
   EdgeRoutingMode,
   layoutGraphWithMds,
+  clipWithRectangle,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {LineSegment} from '../../../src/math/geometry'
+import {CurveFactory, ICurve, LineSegment, Point} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
+import {DebugCurve} from '../../../src/math/geometry/debugCurve'
+import {closeDistEps} from '../../../src/utils/compare'
 type P = [number, number]
 
 test('map test', () => {
@@ -521,4 +524,71 @@ function crossed(u: GeomEdge, v: GeomEdge): boolean {
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)
   return <GeomGraph>GeomObject.getGeom(dg.graph)
+}
+
+test('clipWithRect', () => {
+  const dg = runLayout('graphvis/awilliams.gv', new SugiyamaLayoutSettings())
+
+  for (const e of dg.graph.deepEdges) {
+    testEdgeCurve((GeomEdge.getGeom(e) as GeomEdge).curve, GeomGraph.getGeom(dg.graph).boundingBox)
+  }
+})
+
+function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
+  const c = tile.center
+  const leftTop = new Rectangle({left: tile.left, bottom: c.y, right: c.x, top: tile.top})
+  yield leftTop
+  const righTop = new Rectangle({left: c.x, bottom: c.y, right: tile.right, top: tile.top})
+  yield righTop
+  const leftBottom = new Rectangle({left: tile.left, bottom: tile.bottom, right: c.x, top: c.y})
+  yield leftBottom
+  const rightBottom = new Rectangle({left: c.x, bottom: tile.bottom, right: tile.right, top: c.y})
+  yield rightBottom
+}
+
+function testEdgeCurve(curve: ICurve, rect: Rectangle) {
+  const tiles = Array.from(subtiles(rect))
+  const upperLeverSegs = Array.from(clipWithRectangle(curve, rect))
+  const db = false
+  for (const upperLeverSeg of upperLeverSegs) {
+    expect(rect.containsRect(upperLeverSeg.boundingBox))
+    const subSegs = []
+    for (let i = 0; i < tiles.length; i++) {
+      const tile = tiles[i]
+      for (const seg of clipWithRectangle(upperLeverSeg, tile)) {
+        subSegs.push(seg)
+      }
+    }
+    const canAssemble = canAssembleBack(upperLeverSeg, subSegs)
+
+    if (!canAssemble || db) {
+      SvgDebugWriter.dumpDebugCurves(
+        '/tmp/clipfail.svg',
+        [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', upperLeverSeg)]
+          .concat(tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())))
+          .concat(subSegs.map((s) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Green', s))),
+      )
+    }
+    expect(canAssemble).toBe(true)
+  }
+  if (rect.width > 100) {
+    for (const tile of tiles) {
+      testEdgeCurve(curve, tile)
+    }
+  }
+}
+function canAssembleBack(upperLeverSeg: ICurve, subSegs: ICurve[]): boolean {
+  let p = upperLeverSeg.start
+  do {
+    let found = false
+    for (const s of subSegs) {
+      if (Point.closeDistEps(s.start, p)) {
+        p = s.end
+        found = true
+        break
+      }
+    }
+    if (!found) return false
+  } while (Point.closeDistEps(p, upperLeverSeg.end) == false)
+  return true
 }
