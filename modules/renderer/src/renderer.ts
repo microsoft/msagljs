@@ -203,7 +203,7 @@ export default class Renderer extends EventSource {
 
     const edgeLayer = new EdgeLayer({
       id: 'edges',
-      data: geomGraph.deepEdges,
+      data: Array.from(geomGraph.deepEdges),
       getWidth: 1,
       getDepth: this._graphHighlighter.edgeDepthBuffer,
     })
