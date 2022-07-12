@@ -526,7 +526,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-test('clipWithRect', () => {
+xtest('clipWithRect', () => {
   const dg = runLayout('graphvis/awilliams.gv', new SugiyamaLayoutSettings())
 
   for (const e of dg.graph.deepEdges) {
