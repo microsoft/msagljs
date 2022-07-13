@@ -526,7 +526,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-xtest('clipWithRect', () => {
+test('clipWithRect', () => {
   const dg = runLayout('graphvis/awilliams.gv', new SugiyamaLayoutSettings())
 
   for (const e of dg.graph.deepEdges) {
@@ -546,12 +546,26 @@ function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
   yield rightBottom
 }
 
+let calls = 0
+
 function testEdgeCurve(curve: ICurve, rect: Rectangle) {
+  calls++
+  if (calls == 3927) {
+    console.log(calls)
+  }
   const tiles = Array.from(subtiles(rect))
   const upperLeverSegs = Array.from(clipWithRectangle(curve, rect))
-  const db = false
   for (const upperLeverSeg of upperLeverSegs) {
-    expect(rect.containsRect(upperLeverSeg.boundingBox))
+    const contains = rect.containsRect(upperLeverSeg.boundingBox)
+    if (!contains) {
+      SvgDebugWriter.dumpDebugCurves(
+        '/tmp/clipfailCont.svg',
+        [DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', curve), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', upperLeverSeg)].concat(
+          tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())),
+        ),
+      )
+    }
+    expect(contains).toBe(true)
     const subSegs = []
     for (let i = 0; i < tiles.length; i++) {
       const tile = tiles[i]
@@ -559,9 +573,10 @@ function testEdgeCurve(curve: ICurve, rect: Rectangle) {
         subSegs.push(seg)
       }
     }
+
     const canAssemble = canAssembleBack(upperLeverSeg, subSegs)
 
-    if (!canAssemble || db) {
+    if (!canAssemble) {
       SvgDebugWriter.dumpDebugCurves(
         '/tmp/clipfail.svg',
         [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', upperLeverSeg)]
@@ -588,7 +603,9 @@ function canAssembleBack(upperLeverSeg: ICurve, subSegs: ICurve[]): boolean {
         break
       }
     }
-    if (!found) return false
+    if (!found) {
+      return false
+    }
   } while (Point.closeDistEps(p, upperLeverSeg.end) == false)
   return true
 }

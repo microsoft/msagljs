@@ -317,7 +317,11 @@ export class Curve implements ICurve {
     return ret
   }
 
-  // calculates all intersections between curve0 and curve1
+  /**
+   *   Calculates all intersections between curve0 and curve1.
+   *  If liftIntersections is true then the intersections parameters
+   *  recalculated, lifted, to the curve parameter domain. Otherwise they * stay in the segment domains
+   */
   static getAllIntersections(curve0: ICurve, curve1: ICurve, liftIntersections: boolean): IntersectionInfo[] {
     //           var c0S = curve0.parStart;
     //           var c1S = curve1.parStart;
@@ -1697,7 +1701,7 @@ export function interpolateICurve(s: ICurve, eps: number): Point[] {
 export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
   const perimeter = rect.perimeter()
 
-  const x = Curve.getAllIntersections(curve, perimeter, false)
+  const x = Curve.getAllIntersections(curve, perimeter, true)
   if (x == [] || x == null) {
     if (rect.contains(curve.start)) yield curve
     return
