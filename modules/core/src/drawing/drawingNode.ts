@@ -73,8 +73,6 @@ export class DrawingNode extends DrawingObject {
     DrawingNode.defaultFillColor = value
   }
 
-  // Node shape.
-
   get ShapeEnum(): ShapeEnum {
     return this.shape
   }
@@ -113,7 +111,7 @@ export class DrawingNode extends DrawingObject {
     this.labelWidthToHeightRatio = value
   }
   get node(): Node {
-    return this.attrCont as Node
+    return this.entity as Node
   }
 
   get id(): string {

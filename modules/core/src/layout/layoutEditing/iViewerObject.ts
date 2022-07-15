@@ -1,3 +1,4 @@
+import {DrawingObject} from '../../drawing/drawingObject'
 import {Entity} from '../../structs/entity'
 
 export interface IViewerObject {
@@ -12,4 +13,7 @@ export interface IViewerObject {
 
   /**  raised when the entity is unmarked for dragging*/
   UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
+}
+export function getDrawingObject(ivo: IViewerObject): DrawingObject {
+  return DrawingObject.getDrawingObj(ivo.entity)
 }

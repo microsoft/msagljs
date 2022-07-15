@@ -7,8 +7,9 @@ import {OrderingEnum} from './orderingEnum'
 import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
 import {Attr} from 'dotparser'
+import {Attribute} from '../structs/attribute'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
-export abstract class DrawingObject {
+export abstract class DrawingObject extends Attribute {
   static copyValidFields(source: DrawingObject, target: DrawingObject) {
     if (source == null || target == null) return
     if (source.color && source.color.keyword && source.color.keyword.toLowerCase() != 'black') {
@@ -164,7 +165,6 @@ export abstract class DrawingObject {
   /** the index of the DrawingObject in the list of attributes of Entity */
   static attachIndex = 1
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
-  attrCont: Entity
 
   // not all attributes can be used in derived classes
   static defaultLabelFontName = 'Times-Roman'
@@ -270,15 +270,8 @@ export abstract class DrawingObject {
   sametail: string
   clusterRank: any
 
-  bind() {
-    if (this.attrCont != null) {
-      this.attrCont.setAttr(DrawingObject.attachIndex, this) // the attribute at 0 is for geometry, at 1 is for drawing
-    }
-  }
-
-  constructor(attrCont: Entity) {
-    this.attrCont = attrCont
-    this.bind()
+  constructor(entity: Entity) {
+    super(entity, DrawingObject.attachIndex)
     this.fontname = DrawingObject.defaultLabelFontName
     this.fontsize = DrawingObject.defaultLabelFontSize
   }

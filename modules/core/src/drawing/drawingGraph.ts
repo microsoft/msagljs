@@ -40,7 +40,7 @@ export class DrawingGraph extends DrawingNode {
     sinkRanks: new Array<string>(),
   }
   get graph(): Graph {
-    return this.attrCont as Graph
+    return this.entity as Graph
   }
 
   findNode(id: string): DrawingNode {

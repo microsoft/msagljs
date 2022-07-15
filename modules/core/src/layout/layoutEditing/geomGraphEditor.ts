@@ -16,6 +16,7 @@ import {GeomObject} from '../core/geomObject'
 import {EdgeLabelPlacement} from '../edgeLabelPlacement'
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
+import {EventHandler} from './eventHandler'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerObject} from './iViewerObject'
 import {ObjectDragUndoRedoAction} from './objectDragUndoRedoAction'
@@ -44,7 +45,7 @@ export class GeometryGraphEditor {
   undoMode = true
 
   incrementalDragger: IncrementalDragger
-  ChangeInUndoRedoList: Array<(a: any, b: any) => void>
+  ChangeInUndoRedoList: EventHandler
 
   get UndoRedoActionsList(): UndoRedoActionsList {
     return this.undoRedoActionsList

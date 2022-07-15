@@ -546,13 +546,7 @@ function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
   yield rightBottom
 }
 
-let calls = 0
-
 function testEdgeCurve(curve: ICurve, rect: Rectangle) {
-  calls++
-  if (calls == 3927) {
-    console.log(calls)
-  }
   const tiles = Array.from(subtiles(rect))
   const upperLeverSegs = Array.from(clipWithRectangle(curve, rect))
   for (const upperLeverSeg of upperLeverSegs) {

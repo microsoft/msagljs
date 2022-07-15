@@ -218,7 +218,7 @@ export class SvgCreator {
 
   private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.attrCont, 'text'))
+    const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.entity, 'text'))
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))

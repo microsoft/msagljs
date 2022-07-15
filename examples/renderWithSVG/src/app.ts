@@ -50,7 +50,7 @@ jsonSaveDiv.onclick = () => {
   download(svgRenderer.graph.id + '.JSON', jsonString)
 }
 
-function download(filename, text) {
+function download(filename: string, text: string) {
   const element = document.createElement('a')
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
   element.setAttribute('download', filename)

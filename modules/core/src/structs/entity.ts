@@ -1,8 +1,9 @@
 import {Graph} from './graph'
-
-/** Entity is an attribute container with a parent.
+/**
+ * Entity is an attribute container with a parent.
  * It also keeps an array of event functions.
  */
+
 export abstract class Entity {
   /** keeps entity attributes: for example, drawing attributes, geometry attributes, etc */
   private attrs: any[] = []
