@@ -1,34 +1,36 @@
 ///  <summary>
-///  Wrapper for the MSAGL node to add force and velocity vectors
+///  Wrapper for GeomNode node to add force and velocity vectors
 
 import {Point} from '../../math/geometry'
+import {OverlapRemovalNode} from '../../math/geometry/overlapRemoval/overlapRemovalNode'
+import {GeomNode} from '../core'
 
 ///  </summary>
-class FiNode {
-  private /* internal */ desiredPosition: Point
+export class FiNode {
+  desiredPosition: Point
 
-  private /* internal */ force: Point
+  force: Point
 
-  private /* internal */ index: number
+  index: number
 
-  private /* internal */ mNode: Node
+  mNode: GeomNode
 
-  private /* internal */ mOlapNodeX: OverlapRemovalNode
+  mOlapNodeX: OverlapRemovalNode
 
-  private /* internal */ mOlapNodeY: OverlapRemovalNode
+  mOlapNodeY: OverlapRemovalNode
 
-  private /* internal */ previousCenter: Point
+  previousCenter: Point
 
   private center: Point
 
   ///  <summary>
   ///  local cache of node center (which in the MSAGL node has to be computed from the bounding box)
   ///  </summary>
-  private get /* internal */ Center(): Point {
+  get Center(): Point {
     return this.center
   }
-  private set /* internal */ Center(value: Point) {
-    this.mNode.Center = value
+  set Center(value: Point) {
+    this.mNode.center = value
     this.center = value
   }
 
@@ -37,37 +39,34 @@ class FiNode {
   ///  previous and current center to MSAGL node center
   ///  and update width and height
   ///  </summary>
-  private /* internal */ ResetBounds() {
-    this.previousCenter = this.mNode.Center
-    this.center = this.mNode.Center
-    Width = this.mNode.Width
-    Height = this.mNode.Height
+  ResetBounds() {
+    this.previousCenter = this.mNode.center
+    this.center = this.mNode.center
+    this.Width = this.mNode.width
+    this.Height = this.mNode.height
   }
 
-  private /* internal */ stayWeight = 1
+  stayWeight = 1
 
   ///  <summary>
   ///  We also keep a local copy of Width and Height since it doesn't change and we don't want to keep going back to
   ///  mNode.BoundingBox
   ///  </summary>
-  private /* internal */ Width: number
+  Width: number
 
-  private /* internal */ Height: number
+  Height: number
 
-  public constructor(index: number, mNode: Node) {
-    this.index = this.index
-    this.mNode = this.mNode
+  public constructor(index: number, mNode: GeomNode) {
+    this.index = index
+    this.mNode = mNode
     this.ResetBounds()
   }
 
-  private /* internal */ getOlapNode(horizontal: boolean): OverlapRemovalNode {
-    return this.mOlapNodeX
-    // TODO: Warning!!!, inline IF is not supported ?
-    horizontal
-    this.mOlapNodeY
+  getOlapNode(horizontal: boolean): OverlapRemovalNode {
+    return horizontal ? this.mOlapNodeX : this.mOlapNodeY
   }
 
-  private /* internal */ SetOlapNode(horizontal: boolean, olapNode: OverlapRemovalNode) {
+  SetOlapNode(horizontal: boolean, olapNode: OverlapRemovalNode) {
     if (horizontal) {
       this.mOlapNodeX = olapNode
     } else {
@@ -75,11 +74,11 @@ class FiNode {
     }
   }
 
-  private /* internal */ SetVariableDesiredPos(horizontal: boolean) {
+  SetVariableDesiredPos(horizontal: boolean) {
     if (horizontal) {
-      this.mOlapNodeX.Variable.DesiredPos = this.desiredPosition.X
+      this.mOlapNodeX.Variable.DesiredPos = this.desiredPosition.x
     } else {
-      this.mOlapNodeY.Variable.DesiredPos = this.desiredPosition.Y
+      this.mOlapNodeY.Variable.DesiredPos = this.desiredPosition.y
     }
   }
 
@@ -87,15 +86,15 @@ class FiNode {
   ///  Update the current X or Y coordinate of the node center from the result of a solve
   ///  </summary>
   ///  <param name="horizontal"></param>
-  private /* internal */ UpdatePos(horizontal: boolean) {
+  UpdatePos(horizontal: boolean) {
     if (horizontal) {
-      this.Center = new Point(this.getOlapNode(true).Position, this.previousCenter.Y)
+      this.Center = new Point(this.getOlapNode(true).Position, this.previousCenter.y)
     } else {
-      this.Center = new Point(this.Center.X, this.getOlapNode(false).Position)
+      this.Center = new Point(this.Center.x, this.getOlapNode(false).Position)
     }
   }
 
-  public /* override */ ToString(): string {
+  public ToString(): string {
     return 'FINode(' + (this.index + ('):' + this.mNode))
   }
 }

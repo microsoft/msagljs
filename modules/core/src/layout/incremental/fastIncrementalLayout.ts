@@ -1,6 +1,14 @@
 import { Algorithm } from "../../utils/algorithm";    
 
 import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
+import { FiEdge } from "./fiEdge";
+import { FiNode } from "./fiNode";
+import { IConstraint } from "./iConstraint";
+import { Point } from "../../math/geometry";
+import { Edge } from "../../structs/edge";
+import { GeomGraph } from "../core";
+import { FloatingPort } from "../core/floatingPort";
+import { FastIncrementalLayoutSettings } from "./fastIncrementalLayoutSettings";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -11,20 +19,20 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         
         basicGraph: BasicGraphOnEdges<FiEdge>;
         
-        components: List<FiNode[]>;
+        components: Array<FiNode[]>;
         
-        private /* internal */ constraints: Dictionary<number, List<IConstraint>> = new Dictionary<number, List<IConstraint>>();
+         constraints: Map<number, Array<IConstraint>> = new Map<number, Array<IConstraint>>();
         
-        edges: List<FiEdge> = new List<FiEdge>();
+        edges: Array<FiEdge> = new Array<FiEdge>();
         
         ///  <summary>
         ///  Returns the derivative of the cost function calculated in the most recent iteration.
         ///  It's a volatile float so that we can potentially access it from other threads safely,
         ///  for example during test.
         ///  </summary>
-        private /* internal */ energy: number;
+         energy: number;
         
-        graph: GeometryGraph;
+        graph: GeomGraph;
         
         horizontalSolver: AxisSolver;
         
@@ -43,7 +51,7 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         
         clusterSettings: Func<Cluster, LayoutAlgorithmSettings>;
         
-        clusterEdges: List<Edge> = new List<Edge>();
+        clusterEdges: Array<Edge> = new Array<Edge>();
         
         ///  <summary>
         ///  Create the graph data structures.
@@ -52,7 +60,7 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         ///  <param name="settings">The settings for the algorithm.</param>
         ///  <param name="initialConstraintLevel">initialize at this constraint level</param>
         ///  <param name="clusterSettings">settings by cluster</param>
-        private /* internal */ constructor (geometryGraph: GeometryGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: Func<Cluster, LayoutAlgorithmSettings>) {
+         constructor (geometryGraph: GeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: Func<Cluster, LayoutAlgorithmSettings>) {
             this.graph = geometryGraph;
             this.settings = this.settings;
             this.clusterSettings = this.clusterSettings;
@@ -83,7 +91,7 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
             }
             
             this.SetLockNodeWeights();
-            this.components = new List<FiNode[]>();
+            this.components = new Array<FiNode[]>();
             if (!this.settings.InterComponentForces) {
                 this.basicGraph = new BasicGraphOnEdges<FiEdge>(this.edges, this.nodes.Length);
                 for (let componentNodes in ConnectedComponentCalculator.GetComponents(this.basicGraph)) {
@@ -152,10 +160,10 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         ///  <summary>
         ///  Controls which constraints are applied in CalculateLayout.  Setter enforces feasibility at that level.
         ///  </summary>
-        private /* internal */ get CurrentConstraintLevel(): number {
+         get CurrentConstraintLevel(): number {
             return this.currentConstraintLevel;
         }
-        private /* internal */ set CurrentConstraintLevel(value: number)  {
+         set CurrentConstraintLevel(value: number)  {
             this.currentConstraintLevel = value;
             this.horizontalSolver.ConstraintLevel = value;
             this.verticalSolver.ConstraintLevel = value;
@@ -172,7 +180,7 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         ///  <param name="c"></param>
         AddConstraint(c: IConstraint) {
             if (!this.constraints.ContainsKey(c.Level)) {
-                this.constraints[c.Level] = new List<IConstraint>();
+                this.constraints[c.Level] = new Array<IConstraint>();
             }
             
             this.constraints[c.Level].Add(c);
@@ -184,19 +192,19 @@ import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
         ///  <param name="level"></param>
         AddConstraintLevel(level: number) {
             if (!this.constraints.ContainsKey(level)) {
-                this.constraints[level] = new List<IConstraint>();
+                this.constraints[level] = new Array<IConstraint>();
             }
             
         }
         
-        private /* internal */ SetLockNodeWeights() {
+         SetLockNodeWeights() {
             for (let l: LockPosition in this.settings.locks) {
                 l.SetLockNodeWeight();
             }
             
         }
         
-        private /* internal */ ResetNodePositions() {
+         ResetNodePositions() {
             for (let v: FiNode in this.nodes) {
                 v.ResetBounds();
             }
