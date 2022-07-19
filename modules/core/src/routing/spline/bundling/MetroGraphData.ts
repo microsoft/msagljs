@@ -22,7 +22,7 @@ import {Metroline} from './MetroLine'
 import {MetroNodeInfo} from './MetroNodeInfo'
 import {Station} from './Station'
 import {StationEdgeInfo} from './StationEdgeInfo'
-import {addToMap, setIntersection} from '../../../utils/setOperations'
+import {addToMapOfSets, setIntersection} from '../../../utils/setOperations'
 import {closeDistEps, compareNumbersDistEps} from '../../../utils/compare'
 import {IntersectionCache} from './IntersectionCache'
 import {TupleMap} from './tupleMap'
@@ -290,8 +290,8 @@ export class MetroGraphData {
       let v: Station
       for (let p = metroline.Polyline.startPoint; p.next != null; p = p.next, u = v) {
         v = this.PointToStations.get(p.next.point)
-        addToMap(neighbors, u, v)
-        addToMap(neighbors, v, u)
+        addToMapOfSets(neighbors, u, v)
+        addToMapOfSets(neighbors, v, u)
       }
     }
 

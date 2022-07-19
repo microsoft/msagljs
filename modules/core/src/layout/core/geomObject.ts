@@ -1,10 +1,12 @@
 import {Attribute} from '../../structs/attribute'
 import {Entity} from '../../structs/entity'
+import {EventHandler} from '../layoutEditing/eventHandler'
 import {Rectangle} from './../../math/geometry/rectangle'
 import {GeomLabel} from './geomLabel'
 export abstract class GeomObject extends Attribute {
   static attachIndex = 0
   abstract boundingBox: Rectangle
+  BeforeLayoutChangeEvent: EventHandler
   constructor(entity: Entity) {
     super(entity, GeomObject.attachIndex)
   }

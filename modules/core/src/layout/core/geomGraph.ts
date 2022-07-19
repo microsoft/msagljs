@@ -120,7 +120,13 @@ export class GeomGraph extends GeomNode {
     bb.padEverywhere(this.margins)
     return bb
   }
-  isCollapsed = false
+  private _isCollapsed = false
+  public get isCollapsed() {
+    return this._isCollapsed
+  }
+  public set isCollapsed(value) {
+    this._isCollapsed = value
+  }
 
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)

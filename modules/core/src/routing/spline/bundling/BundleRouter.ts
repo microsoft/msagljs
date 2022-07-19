@@ -22,7 +22,7 @@ import {Port} from '../../../layout/core/port'
 import {StationPositionsAdjuster} from './StationPositionsAdjuster'
 import {EdgeNudger} from './EdgeNudger'
 import {MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph} from '../../MultipleSourceMultipleTargetsShortestPathOnVisibilityGraph'
-import {addToMap} from '../../../utils/setOperations'
+import {addToMapOfSets} from '../../../utils/setOperations'
 import {Arrowhead} from '../../../layout/core/arrowhead'
 import {initRandom} from '../../../utils/random'
 
@@ -270,7 +270,7 @@ export class BundleRouter extends Algorithm {
     const res: Map<CdtEdge, Set<GeomEdge>> = new Map<CdtEdge, Set<GeomEdge>>()
     for (const edge of crossedEdges.keys()) {
       for (const cdtEdge of crossedEdges.get(edge)) {
-        addToMap(res, cdtEdge, edge)
+        addToMapOfSets(res, cdtEdge, edge)
       }
     }
 
