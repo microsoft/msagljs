@@ -9,6 +9,7 @@ import { Edge } from "../../structs/edge";
 import { GeomGraph } from "../core";
 import { FloatingPort } from "../core/floatingPort";
 import { FastIncrementalLayoutSettings } from "./fastIncrementalLayoutSettings";
+import { AxisSolver } from "./axisSolver";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
