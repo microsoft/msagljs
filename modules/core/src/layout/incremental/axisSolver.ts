@@ -3,6 +3,15 @@
     ///  Solver for structural separation constraints or non-overlap constraints in a single axis.
     ///  Wrapper round all the ProjectionSolver stuff.
 
+import { Rectangle } from "../../math/geometry";
+import { BorderInfo } from "../../math/geometry/overlapRemoval/borderInfo";
+import { OverlapRemovalParameters } from "../../math/geometry/overlapRemoval/overlapRemovalParameters";
+import { Solution } from "../../math/projectionSolver/Solution";
+import { Solver } from "../../math/projectionSolver/Solver";
+import { constructor } from "../../routing/ConstrainedDelaunayTriangulation/ThreeArray";
+import { GeomGraph } from "../core";
+import { LayoutSettings } from "../layered/SugiyamaLayoutSettings";
+import { FiNode } from "./fiNode";
 import { IConstraint } from "./iConstraint";
 
     ///  </summary>
@@ -17,21 +26,16 @@ export    class AxisSolver {
         ///  </summary>
          IsHorizontal: boolean
         
-         OverlapRemovalParameters: OverlapRemovalParameters = null;
+         OverlapRemovalParameters: OverlapRemovalParameters ;
         
         private avoidOverlaps: boolean;
         
-        private nodes: IEnumerable<FiNode>;
+        private nodes: Iterable<FiNode>;
         
-        private clusterHierarchies: IEnumerable<Cluster>;
+        private clusterHierarchies: Iterable<GeomGraph>;
         
-        private clusterSettings: Func<Cluster, LayoutAlgorithmSettings>;
+        private clusterSettings: (gg:GeomGraph)=> LayoutSettings
         
-        /// <summary>
-        ///  a delegate that tells us how to get the center of a node used in initialization and constraint generation
-        /// </summary>
-        export class InitialCenterDelegateType extends System.Delegate {
-        }
         
         ///  <summary>
         ///  Do we even need to do a solve?
@@ -39,7 +43,7 @@ export    class AxisSolver {
          get NeedSolve(): boolean {
             return ((this.avoidOverlaps 
                         && (this.ConstraintLevel >= 2)) 
-                        || ((this.structuralConstraints.Count > 0) 
+                        || ((this.structuralConstraints.length > 0) 
                         && (this.ConstraintLevel >= 1)));
         }
         
@@ -52,13 +56,13 @@ export    class AxisSolver {
         ///  <param name="avoidOverlaps"></param>
         ///  <param name="constraintLevel"></param>
         ///  <param name="clusterSettings"></param>
-         constructor (isHorizontal: boolean, nodes: IEnumerable<FiNode>, clusterHierarchies: IEnumerable<Cluster>, avoidOverlaps: boolean, constraintLevel: number, clusterSettings: Func<Cluster, LayoutAlgorithmSettings>) {
+         constructor (isHorizontal: boolean, nodes: Iterable<FiNode>, clusterHierarchies: Iterable<GeomGraph>, avoidOverlaps: boolean, constraintLevel: number, clusterSettings: (gg:GeomGraph)=> LayoutSettings) {
             this.IsHorizontal = isHorizontal;
-            this.nodes = this.nodes;
-            this.clusterHierarchies = this.clusterHierarchies;
-            this.avoidOverlaps = this.avoidOverlaps;
+            this.nodes = nodes;
+            this.clusterHierarchies = clusterHierarchies;
+            this.avoidOverlaps = avoidOverlaps;
             this.ConstraintLevel = constraintLevel;
-            this.clusterSettings = this.clusterSettings;
+            this.clusterSettings = clusterSettings;
         }
         
         ///  <summary>
@@ -66,7 +70,7 @@ export    class AxisSolver {
         ///  </summary>
         ///  <param name="c"></param>
          AddStructuralConstraint(c: IConstraint) {
-            this.structuralConstraints.Add(c);
+            this.structuralConstraints.push(c);
         }
         
         solver: Solver;
@@ -182,13 +186,13 @@ export    class AxisSolver {
             
         }
         
-        private AddOlapClusters(generator: ConstraintGenerator, olapParentCluster: OverlapRemovalCluster, incClus: Cluster, nodeCenter: InitialCenterDelegateType) {
-            let settings: LayoutAlgorithmSettings = clusterSettings(incClus);
+        private AddOlapClusters(generator: ConstraintGenerator, olapParentCluster: OverlapRemovalCluster, incClus: GeomGraph, nodeCenter: InitialCenterDelegateType) {
+            let settings: LayoutSettings = clusterSettings(incClus);
             let nodeSeparationH: number = settings.NodeSeparation;
             let nodeSeparationV: number = (settings.NodeSeparation + 0.0001);
             let innerPaddingH: number = settings.ClusterMargin;
             let innerPaddingV: number = (settings.ClusterMargin + 0.0001);
-            //  Creates the OverlapRemoval (Olap) Cluster/Node objects for our FastIncrementalLayout (FIL) objects.
+            //  Creates the OverlapRemoval (Olap) GeomGraph/Node objects for our FastIncrementalLayout (FIL) objects.
             //  If !isHorizontal this overwrites the Olap members of the Incremental.Clusters and Msagl.Nodes.
             //  First create the olapCluster for the current incCluster.  If olapParentCluster is null, then
             //  incCluster is the root of a new hierarchy.
@@ -211,7 +215,7 @@ export    class AxisSolver {
             }
             
             rb.olapCluster.TranslateChildren = rb.GenerateFixedConstraints;
-            //  Note: Incremental.Cluster always creates child Array<Cluster|Node> so we don't have to check for null here.
+            //  Note: Incremental.GeomGraph always creates child Array<GeomGraph|Node> so we don't have to check for null here.
             //  Add our child nodes.
             for (let filNode in incClus.Nodes) {
                 this.AddOlapNode(generator, rb.olapCluster, (<FiNode>(filNode.AlgorithmData)), nodeCenter);
@@ -245,7 +249,7 @@ export    class AxisSolver {
             
         }
         
-        private UpdateOlapClusters(incClusters: IEnumerable<Cluster>) {
+        private UpdateOlapClusters(incClusters: Iterable<GeomGraph>) {
             for (let incClus in incClusters) {
                 let rb: RectangularClusterBoundary = incClus.RectangularBoundary;
                 //  Because two heavily-weighted nodes can force each other to move, we have to update
@@ -307,7 +311,7 @@ export    class AxisSolver {
         @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="jjClusRect")
         @System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId="incClusComp")
         @Conditional("VERIFY")
-        private DebugVerifyClusters(generator: ConstraintGenerator, incCluster: Cluster, root: Cluster) {
+        private DebugVerifyClusters(generator: ConstraintGenerator, incCluster: GeomGraph, root: GeomGraph) {
             let dblEpsilon: number = 0.0001;
             //  First verify that all nodes are within the cluster.
             let clusRect: Rectangle = incCluster.RectangularBoundary.rectangle;
@@ -327,7 +331,7 @@ export    class AxisSolver {
                         Debug.Assert(((dblLboundSpace 
                                         >= (dblEpsilon * -1)) 
                                         && (dblRboundSpace 
-                                        >= (dblEpsilon * -1))), "Node is not within parent Cluster");
+                                        >= (dblEpsilon * -1))), "Node is not within parent GeomGraph");
                     }
                     
                 }
@@ -346,11 +350,11 @@ export    class AxisSolver {
                         
                         let jjFilNode: FiNode = (<FiNode>(u.AlgorithmData));
                         let jjNodeRect: Rectangle = jjFilNode.mNode.BoundaryCurve.BoundingBox;
-                        //  We've already added the padding for the node so don't add it for the jjNode/Cluster.
+                        //  We've already added the padding for the node so don't add it for the jjNode/GeomGraph.
                         AxisSolver.DebugVerifyRectsDisjoint(iiNodeRect, jjNodeRect, generator.PaddingP, generator.Padding, dblEpsilon);
                     }
                     
-                    for (let incClusComp: Cluster in incCluster.Clusters) {
+                    for (let incClusComp: GeomGraph in incCluster.Clusters) {
                         AxisSolver.DebugVerifyRectsDisjoint(iiNodeRect, incClusComp.RectangularBoundary.rectangle, generator.PaddingP, generator.Padding, dblEpsilon);
                     }
                     
@@ -376,7 +380,7 @@ export    class AxisSolver {
                         Debug.Assert(((dblLboundSpace 
                                         >= (dblEpsilon * -1)) 
                                         && (dblRboundSpace 
-                                        >= (dblEpsilon * -1))), "Cluster is not within parent Cluster");
+                                        >= (dblEpsilon * -1))), "GeomGraph is not within parent GeomGraph");
                     }
                     
                 }
@@ -413,7 +417,7 @@ export    class AxisSolver {
                             - dblEpsilon));
             rectInner.PadHeight(((dblPaddingY / 2) 
                             - dblEpsilon));
-            Debug.Assert(rectOuter.Contains(rectInner), "Inner Node/Cluster rectangle is not contained within outer Cluster");
+            Debug.Assert(rectOuter.Contains(rectInner), "Inner Node/GeomGraph rectangle is not contained within outer GeomGraph");
         }
         
         @Conditional("VERIFY")
