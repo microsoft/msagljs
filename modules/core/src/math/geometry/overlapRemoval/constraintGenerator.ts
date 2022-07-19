@@ -1,16 +1,3 @@
-//  --------------------------------------------------------------------------------------------------------------------
-//  <copyright file="ConstraintGenerator.cs" company="Microsoft">
-//    (c) Microsoft Corporation.  All rights reserved.
-//  </copyright>
-//  <summary>
-//  MSAGL main class for Overlap removal constraint generation for Projection solutions.
-//  </summary>
-//  --------------------------------------------------------------------------------------------------------------------
-import System;
-import System.Collections.Generic;
-import System.Diagnostics;
-
-module Microsoft.Msagl.Core.Geometry {
     
     ///  <summary>
     ///  ConstraintGenerator is the driving class for overlap removal.  The caller
@@ -35,7 +22,7 @@ module Microsoft.Msagl.Core.Geometry {
         ///  Read-only enumeration of the ClusterHierarchies; new cluster hierarchies are created
         ///  by calling AddCluster 
         ///  </summary>
-        public get ClusterHierarchies(): IEnumerable<OverlapRemovalCluster> {
+        public get ClusterHierarchies(): Iterable<OverlapRemovalCluster> {
             return this.clusterHierarchies;
         }
         
