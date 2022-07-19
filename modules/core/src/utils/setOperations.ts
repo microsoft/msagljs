@@ -73,7 +73,7 @@ export function flatMap<U, T>(arr: ReadonlyArray<T>, callback: (elem: T) => Read
   return ret
 }
 
-export function addToMap<K, V>(map: Map<K, Set<V>>, key: K, val: V) {
+export function addToMapOfSets<K, V>(map: Map<K, Set<V>>, key: K, val: V) {
   let s = map.get(key)
   if (!s) {
     s = new Set<V>()

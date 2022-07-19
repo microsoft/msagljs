@@ -6,7 +6,7 @@ import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '
 import {CrossRectangleNodes} from '../../../math/geometry/RTree/RectangleNodeUtils'
 import {GenericBinaryHeapPriorityQueue} from '../../../structs/genericBinaryHeapPriorityQueue'
 
-import {addToMap} from '../../../utils/setOperations'
+import {addToMapOfSets} from '../../../utils/setOperations'
 import {BundlingSettings} from '../../BundlingSettings'
 import {ClusterBoundaryPort} from '../../ClusterBoundaryPort'
 import {Cdt} from '../../ConstrainedDelaunayTriangulation/Cdt'
@@ -549,7 +549,7 @@ export class SdShortestPath {
       for (const boneEdge of this.EdgesToRoutes.get(geometryEdge)) {
         for (const cdtEdge of this.CrossedCdtEdgesOfBoneEdge(boneEdge)) {
           if (this.AdjacentToSourceOrTarget(cdtEdge)) continue
-          addToMap(crossedCdtEdges, geometryEdge, cdtEdge)
+          addToMapOfSets(crossedCdtEdges, geometryEdge, cdtEdge)
         }
       }
     }

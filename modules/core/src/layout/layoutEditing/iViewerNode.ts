@@ -1,7 +1,7 @@
 import {IViewerObject} from './iViewerObject'
 import {Node} from '../../structs/node'
+import {EventHandler} from './eventHandler'
 export interface IViewerNode extends IViewerObject {
-  Node: Node
-
-  /*event*/ IsCollapsedChanged: (node: IViewerNode) => void
+  node: Node
+  IsCollapsedChanged: EventHandler
 }
