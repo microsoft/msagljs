@@ -32,9 +32,10 @@ test('polyline test intersection one', () => {
   for (const p of ps) {
     poly.addPoint(p)
   }
-  const ls = LineSegment.mkPP(new Point(10, 0), new Point(10, 40))
+  const ls = LineSegment.mkPP(new Point(10, 0), new Point(20, 40))
   const x = Curve.intersectionOne(ls, poly, true)
   expect(x != undefined).toBe(true)
+  expect(x.par1 > 1).toBe(true)
 })
 
 test('polyline test all intersection', () => {

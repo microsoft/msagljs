@@ -534,6 +534,16 @@ test('clipWithRect', () => {
   }
 })
 
+test('arcsClipWithRect', () => {
+  const ss = new SugiyamaLayoutSettings()
+  ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
+  const dg = runLayout('graphvis/awilliams.gv', ss)
+
+  for (const e of dg.graph.deepEdges) {
+    testEdgeCurve((GeomEdge.getGeom(e) as GeomEdge).curve, GeomGraph.getGeom(dg.graph).boundingBox)
+  }
+})
+
 function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
   const c = tile.center
   const leftTop = new Rectangle({left: tile.left, bottom: c.y, right: c.x, top: tile.top})
@@ -545,7 +555,6 @@ function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
   const rightBottom = new Rectangle({left: c.x, bottom: tile.bottom, right: tile.right, top: c.y})
   yield rightBottom
 }
-
 function testEdgeCurve(curve: ICurve, rect: Rectangle) {
   const tiles = Array.from(subtiles(rect))
   const upperLeverSegs = Array.from(clipWithRectangle(curve, rect))

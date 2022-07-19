@@ -695,8 +695,8 @@ export class Curve implements ICurve {
   }
 
   static liftIntersectionToCurves_(c0: ICurve, c1: ICurve, aSol: number, bSol: number, x: Point, seg0: ICurve, seg1: ICurve) {
-    const a = this.liftParameterToCurve(c0, aSol - seg0.parStart, seg0)
-    const b = this.liftParameterToCurve(c1, bSol - seg1.parStart, seg1)
+    const a = c0 instanceof Curve ? Curve.liftParameterToCurve(c0, aSol - seg0.parStart, seg0) : aSol
+    const b = c1 instanceof Curve ? Curve.liftParameterToCurve(c1, bSol - seg1.parStart, seg1) : bSol
     return new IntersectionInfo(a, b, x, c0, c1)
   }
 
