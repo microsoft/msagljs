@@ -15,9 +15,11 @@ import {GeomGraph} from '../core/geomGraph'
 import {GeomObject} from '../core/geomObject'
 import {EdgeLabelPlacement} from '../edgeLabelPlacement'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
+import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
 import {EventHandler} from './eventHandler'
 import {IncrementalDragger} from './incrementalDragger'
+import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {ObjectDragUndoRedoAction} from './objectDragUndoRedoAction'
 import {SiteInsertUndoAction} from './siteInsertUndoAction'
@@ -360,6 +362,12 @@ export class GeometryGraphEditor {
     this.InsertToListAndSetTheBoxBefore(new ObjectDragUndoRedoAction(this.graph))
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
+    }
+  }
+  PrepareForClusterCollapseChange(changedClusters: Iterable<IViewerNode>) {
+    this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph))
+    for (const iCluster of changedClusters) {
+      this.CurrentUndoAction.AddAffectedObject(iCluster)
     }
   }
 
@@ -754,6 +762,4 @@ export class GeometryGraphEditor {
   ForgetDragging() {
     this.incrementalDragger = null
   }
-
-  //
 }
