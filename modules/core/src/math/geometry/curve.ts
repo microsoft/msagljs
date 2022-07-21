@@ -478,7 +478,7 @@ export class Curve implements ICurve {
 
     for (; polyPoint != null && polyPoint.getNext() != null; polyPoint = polyPoint.getNext()) {
       const sol = Curve.crossTwoLineSegs(lineSeg.start, lineSeg.end, polyPoint.point, polyPoint.getNext().point, 0, 1, 0, 1)
-      if (sol != undefined) {
+      if (sol) {
         Curve.adjustSolution(lineSeg.start, lineSeg.end, polyPoint.point, polyPoint.getNext().point, sol)
         if (!Curve.oldIntersection(ret, sol.x)) ret.push(new IntersectionInfo(sol.aSol, offset + sol.bSol, sol.x, lineSeg, poly))
       }
@@ -486,7 +486,7 @@ export class Curve implements ICurve {
     }
     if (poly.closed) {
       const sol = Curve.crossTwoLineSegs(lineSeg.start, lineSeg.end, polyPoint.point, poly.start, 0, 1, 0, 1)
-      if (sol != undefined) {
+      if (sol) {
         Curve.adjustSolution(lineSeg.start, lineSeg.end, polyPoint.point, poly.start, sol)
         if (!Curve.oldIntersection(ret, sol.x)) ret.push(new IntersectionInfo(sol.aSol, offset + sol.bSol, sol.x, lineSeg, poly))
       }
@@ -574,19 +574,19 @@ export class Curve implements ICurve {
           sol = Curve.crossWithinIntervalsWithGuess(l0.chord, n1.seg, 0, 1, l1.low, l1.high, 0.5 * i, p1)
         } else if (l0.chord == null) {
           sol = Curve.crossWithinIntervalsWithGuess(n0.seg, l1.chord, l0.low, l0.high, 0, 1, p0, 0.5 * j)
-          if (sol != undefined) {
+          if (sol) {
             sol.bSol = l1.low + sol.bSol * (l1.high - l1.low)
           }
         } //if (l0.chord != null && l1.chord != null)
         else {
           sol = Curve.crossWithinIntervalsWithGuess(l0.chord, l1.chord, 0, 1, 0, 1, 0.5 * i, 0.5 * j)
-          if (sol != undefined) {
+          if (sol) {
             sol.aSol = l0.low + sol.aSol * (l0.high - l0.low)
             sol.bSol = l1.low + sol.bSol * (l1.high - l1.low)
           }
         }
 
-        if (sol != undefined) {
+        if (sol) {
           return Curve.createIntersectionOne(n0, n1, sol.aSol, sol.bSol, sol.x)
         }
       }
@@ -608,21 +608,21 @@ export class Curve implements ICurve {
       sol = Curve.crossWithinIntervalsWithGuess(n0.seg, n1.seg, l0.low, l0.high, l1.low, l1.high, p0, p1)
     else if (l0.chord != null && l1.chord == null) {
       sol = Curve.crossWithinIntervalsWithGuess(l0.chord, n1.seg, 0, 1, l1.low, l1.high, 0.5, p1)
-      if (sol != undefined) sol.aSol = l0.low + sol.aSol * (l0.high - l0.low)
+      if (sol) sol.aSol = l0.low + sol.aSol * (l0.high - l0.low)
     } else if (l0.chord == null) {
       //&& l1.chord != null)
       sol = Curve.crossWithinIntervalsWithGuess(n0.seg, l1.chord, l0.low, l0.high, 0, 1, p0, 0.5)
-      if (sol != undefined) sol.bSol = l1.low + sol.bSol * (l1.high - l1.low)
+      if (sol) sol.bSol = l1.low + sol.bSol * (l1.high - l1.low)
     } //if (l0.chord != null && l1.chord != null)
     else {
       sol = Curve.crossWithinIntervalsWithGuess(l0.chord, l1.chord, 0, 1, 0, 1, 0.5, 0.5)
-      if (sol != undefined) {
+      if (sol) {
         sol.bSol = l1.low + sol.bSol * (l1.high - l1.low)
         sol.aSol = l0.low + sol.aSol * (l0.high - l0.low)
       }
     }
 
-    if (sol != undefined) {
+    if (sol) {
       Curve.addIntersection(n0, n1, intersections, sol)
       found = true
     }
@@ -781,7 +781,7 @@ export class Curve implements ICurve {
         const ls1 = nl1.seg instanceof LineSegment ? (nl1.seg as LineSegment) : LineSegment.mkPP(l1Low, l1High)
 
         const sol = Curve.crossWithinIntervalsWithGuess(ls0, ls1, 0, 1, 0, 1, 0.5, 0.5)
-        if (sol != undefined) {
+        if (sol) {
           Curve.adjustParameters(nl0, ls0, nl1, ls1, sol)
           return Curve.createIntersectionOne(nl0, nl1, sol.aSol, sol.bSol, sol.x)
         }
@@ -794,21 +794,23 @@ export class Curve implements ICurve {
     const l0 = nl0.node as PNLeaf
     const l1 = nl1.node as PNLeaf
     // did not find an intersection
-    if (nl0.leafBoxesOffset > GeomConstants.distanceEpsilon && nl1.leafBoxesOffset > GeomConstants.distanceEpsilon) {
+    const n0Large = nl0.leafBoxesOffset > GeomConstants.distanceEpsilon
+    const n1Large = nl1.leafBoxesOffset > GeomConstants.distanceEpsilon
+    if (n0Large && n1Large) {
       // going deeper on both with offset l0.leafBoxesOffset / 2, l1.leafBoxesOffset / 2
       const nn0 = ParallelogramNode.createParallelogramNodeForCurveSeg(l0.low, l0.high, nl0.seg, nl0.leafBoxesOffset / 2)
       const nn1 = ParallelogramNode.createParallelogramNodeForCurveSeg(l1.low, l1.high, nl1.seg, nl1.leafBoxesOffset / 2)
       Curve.curveCurveXWithParallelogramNodes(nn0, nn1, intersections)
-    } else if (nl0.leafBoxesOffset > GeomConstants.distanceEpsilon) {
+    } else if (n0Large) {
       // go deeper on the left
       const nn0 = ParallelogramNode.createParallelogramNodeForCurveSeg(l0.low, l0.high, nl0.seg, nl0.leafBoxesOffset / 2)
       Curve.curveCurveXWithParallelogramNodes(nn0, nl1, intersections)
-    } else if (nl1.leafBoxesOffset > GeomConstants.distanceEpsilon) {
+    } else if (n1Large) {
       // go deeper on the right
       const nn1 = ParallelogramNode.createParallelogramNodeForCurveSeg(l1.low, l1.high, nl1.seg, nl1.leafBoxesOffset / 2)
       Curve.curveCurveXWithParallelogramNodes(nl0, nn1, intersections)
     } else {
-      //just cross LineSegs since the polylogramms are so thin
+      //just cross LineSegs since the parallelograms are so thin
       const l0Low = nl0.seg.value(l0.low)
       const l0High = nl0.seg.value(l0.high)
       if (!Point.closeDistEps(l0Low, l0High)) {
@@ -819,7 +821,7 @@ export class Curve implements ICurve {
           const ls1 = nl1.seg instanceof LineSegment ? (nl1.seg as LineSegment) : LineSegment.mkPP(l1Low, l1High)
 
           const sol = Curve.crossWithinIntervalsWithGuess(ls0, ls1, 0, 1, 0, 1, 0.5, 0.5)
-          if (sol != undefined) {
+          if (sol) {
             Curve.adjustParameters(nl0, ls0, nl1, ls1, sol)
             Curve.addIntersection(nl0, nl1, intersections, sol)
           }
@@ -1697,10 +1699,18 @@ function interpolate(a: number, ap: Point, b: number, bp: Point, s: ICurve, eps:
 export function interpolateICurve(s: ICurve, eps: number): Point[] {
   return interpolate(s.parStart, s.start, s.parEnd, s.end, s, eps)
 }
-/** iterate over all icurve subsegments that intersect the given rectangle */
-export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
-  const perimeter = rect.perimeter()
 
+/** Iterate over all icurve subsegments that intersect the given rectangle.
+ * The function might return subsegments that are running outside of the rectangle
+ *  but still close to its border.
+ */
+
+export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
+  if (rect.containsRectWithPadding(curve.boundingBox, 1)) {
+    yield curve
+    return
+  }
+  const perimeter = rect.perimeter()
   const x = Curve.getAllIntersections(curve, perimeter, true)
   if (x == [] || x == null) {
     if (rect.contains(curve.start)) yield curve
@@ -1721,8 +1731,13 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
   }
 
   for (i = 0; i < xs.length - 1; i++) {
-    if (rect.contains(curve.value((xs[i] + xs[i + 1]) / 2))) {
-      yield curve.trim(xs[i], xs[i + 1])
+    if (segmentShouldBeIncluded(xs[i], xs[i + 1])) {
+      const seg = curve.trim(xs[i], xs[i + 1])
+      yield seg
     }
+  }
+
+  function segmentShouldBeIncluded(start: number, end: number): boolean {
+    return rect.containsWithPadding(curve.value((start + end) / 2), rect.diagonal / 4)
   }
 }

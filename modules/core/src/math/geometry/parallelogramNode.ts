@@ -68,7 +68,7 @@ export class ParallelogramNode {
 
     const numeratorTiny = Math.abs(numerator) < GeomConstants.distanceEpsilon
     if (!numeratorTiny && Math.abs(denumerator) < GeomConstants.distanceEpsilon) {
-      //it is degenerated; the adjacent sides would parallel, but
+      //it is degenerated; the adjacent sides would be parallel, but
       //since p * tan2Perp is big the parallelogram would not contain e
       return
     }

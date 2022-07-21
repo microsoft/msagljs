@@ -7,7 +7,7 @@ import * as fs from 'fs'
 
 import {sortedList} from '../sortedBySizeListOfgvFiles'
 
-import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize} from '../../utils/testUtils'
+import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize, parseJSONFile} from '../../utils/testUtils'
 import {
   Node,
   GeomGraph,
@@ -30,12 +30,11 @@ import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../sr
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {CurveFactory, ICurve, LineSegment, Point} from '../../../src/math/geometry'
+import {CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
-import {closeDistEps} from '../../../src/utils/compare'
 type P = [number, number]
 
 test('map test', () => {
@@ -526,6 +525,16 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
+test('large clipWithRect', () => {
+  const graph = parseJSONFile('JSONfiles/gameofthrones_with_geometry.JSON')
+  const geomEdges = Array.from(graph.deepEdges).map((e) => <GeomEdge>GeomEdge.getGeom(e))
+  //  testEdgeCurve(geomEdges[359].curve, GeomGraph.getGeom(graph).boundingBox)
+  for (let i = 0; i < geomEdges.length; i++) {
+    console.log(i)
+    testEdgeCurve(geomEdges[i].curve, GeomGraph.getGeom(graph).boundingBox)
+  }
+})
+
 test('clipWithRect', () => {
   const dg = runLayout('graphvis/awilliams.gv', new SugiyamaLayoutSettings())
 
@@ -555,34 +564,39 @@ function* subtiles(tile: Rectangle): IterableIterator<Rectangle> {
   const rightBottom = new Rectangle({left: c.x, bottom: tile.bottom, right: tile.right, top: c.y})
   yield rightBottom
 }
+
 function testEdgeCurve(curve: ICurve, rect: Rectangle) {
   const tiles = Array.from(subtiles(rect))
   const upperLeverSegs = Array.from(clipWithRectangle(curve, rect))
-  for (const upperLeverSeg of upperLeverSegs) {
-    const contains = rect.containsRect(upperLeverSeg.boundingBox)
-    if (!contains) {
-      SvgDebugWriter.dumpDebugCurves(
-        '/tmp/clipfailCont.svg',
-        [DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', curve), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', upperLeverSeg)].concat(
-          tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())),
-        ),
-      )
-    }
-    expect(contains).toBe(true)
+  for (let i = 0; i < upperLeverSegs.length; i++) {
+    const seg = upperLeverSegs[i]
+    // const contains = rect.containsRectWithPadding(seg.boundingBox, rect.diagonal / 3)
+    // if (!contains) {
+    //   SvgDebugWriter.dumpDebugCurves(
+    //     '/tmp/clipfailCont.svg',
+    //     [DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', curve), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', seg)].concat(
+    //       tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())),
+    //     ),
+    //   )
+    // }
+    // if (calls == 478311) {
+    //   setDump(true)
+    // }
+    // expect(contains).toBe(true)
     const subSegs = []
-    for (let i = 0; i < tiles.length; i++) {
-      const tile = tiles[i]
-      for (const seg of clipWithRectangle(upperLeverSeg, tile)) {
-        subSegs.push(seg)
+    for (let ii = 0; ii < tiles.length; ii++) {
+      const tile = tiles[ii]
+      for (const ss of clipWithRectangle(seg, tile)) {
+        subSegs.push(ss)
       }
     }
 
-    const canAssemble = canAssembleBack(upperLeverSeg, subSegs)
+    const canAssemble = canAssembleBack(rect, seg, subSegs)
 
     if (!canAssemble) {
       SvgDebugWriter.dumpDebugCurves(
         '/tmp/clipfail.svg',
-        [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', upperLeverSeg)]
+        [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', seg)]
           .concat(tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())))
           .concat(subSegs.map((s) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Green', s))),
       )
@@ -595,20 +609,39 @@ function testEdgeCurve(curve: ICurve, rect: Rectangle) {
     }
   }
 }
-function canAssembleBack(upperLeverSeg: ICurve, subSegs: ICurve[]): boolean {
-  let p = upperLeverSeg.start
-  do {
-    let found = false
-    for (const s of subSegs) {
-      if (Point.closeDistEps(s.start, p)) {
-        p = s.end
-        found = true
-        break
+function subsegsCoverPoint(p: Point, subSegs: ICurve[], eps: number): boolean {
+  for (const seg of subSegs) {
+    if (segCoverPoint(seg, p, eps)) {
+      return true
+    }
+  }
+  SvgDebugWriter.dumpDebugCurves(
+    '/tmp/subsecCoverFail.svg',
+    [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', CurveFactory.mkCircle(eps, p))].concat(
+      subSegs.map((s) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Green', s)),
+    ),
+  )
+  return false
+}
+function canAssembleBack(rect: Rectangle, upperLeverSeg: ICurve, subSegs: ICurve[]): boolean {
+  const n = 100
+  const eps = rect.diagonal / 20
+  const del = parameterSpan(upperLeverSeg) / n
+  for (let i = 0; i <= 100; i++) {
+    const p = upperLeverSeg.value(upperLeverSeg.parStart + del * i)
+    if (rect.containsWithPadding(p, -1)) {
+      if (!subsegsCoverPoint(p, subSegs, eps)) {
+        return false
       }
     }
-    if (!found) {
-      return false
-    }
-  } while (Point.closeDistEps(p, upperLeverSeg.end) == false)
+  }
   return true
+}
+function segCoverPoint(seg: ICurve, p: Point, eps: number): boolean {
+  const n = 1000
+  const del = parameterSpan(seg) / 1000
+  for (let i = 0; i <= n; i++) {
+    if (seg.value(seg.parStart + i * del).sub(p).length < eps) return true
+  }
+  return false
 }

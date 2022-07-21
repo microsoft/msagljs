@@ -356,6 +356,11 @@ export class Rectangle implements IRectangle<Point> {
     return this.contains(rect.leftTop) && this.contains(rect.rightBottom)
   }
 
+  // returns true if this rectangle compconstely contains the specified rectangle
+  containsRectWithPadding(rect: Rectangle, padding: number): boolean {
+    return this.containsWithPadding(rect.leftTop, padding) && this.containsWithPadding(rect.rightBottom, padding)
+  }
+
   // return the length of the diagonal
   get diagonal() {
     return Math.sqrt(this.width * this.width + this.height * this.height)
