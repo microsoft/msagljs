@@ -1,5 +1,5 @@
-import {CompositeLayer, LayersList, Accessor} from '@deck.gl/core/typed'
-import {Buffer} from '@luma.gl/webgl'
+import {CompositeLayer, LayersList, Accessor, GetPickingInfoParams} from '@deck.gl/core/typed'
+import {Texture2D} from '@luma.gl/webgl'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {GeomNode, GeomGraph, Node} from 'msagl-js'
 import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
@@ -9,7 +9,7 @@ import {getLabelPosition} from '../utils'
 
 type NodeLayerProps = GeometryLayerProps<GeomNode> &
   TextLayerProps<GeomNode> & {
-    getDepth?: Buffer
+    fromIndex: (index: number) => GeomNode
     getTextSize: Accessor<GeomNode, number>
   }
 
@@ -17,7 +17,15 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
   static defaultProps = {
     ...TextLayer.defaultProps,
     ...GeometryLayer.defaultProps,
+    fromIndex: {type: 'function', compare: false},
     getTextSize: {type: 'accessor', value: 16},
+  }
+
+  getPickingInfo({sourceLayer, info}: GetPickingInfoParams) {
+    if (sourceLayer.id.endsWith('boundary') && info.picked) {
+      info.object = this.props.fromIndex(info.index)
+    }
+    return info
   }
 
   renderLayers(): LayersList {
