@@ -2,10 +2,10 @@ import GL from '@luma.gl/constants'
 import {Buffer, Framebuffer, Texture2D, readPixelsToArray, readPixelsToBuffer} from '@luma.gl/webgl'
 import {withParameters} from '@luma.gl/gltools'
 import {Model, Transform} from '@luma.gl/engine'
-import {Graph, GeomGraph} from 'msagl-js'
+import {Graph, GeomGraph, GeomNode} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
-const nodeDepthModuleVs = `
+export const nodeDepthModuleVs = `
 uniform sampler2D nodeDepth;
 uniform vec2 textureDim;
 
@@ -36,12 +36,12 @@ export default class GraphHighlighter {
   private _nodeCount: number
   private _hasBidirectionalEdge: boolean
   private _nodeMap: Map<string, number>
-  private _nodeList: string[]
+  private _nodeList: GeomNode[]
 
   private _model: Model
   private _transform: Transform
-  private _nodeDepthBuffer: Buffer
   private _nodeDepthTextures: Texture2D[]
+  private _nodeDepth: Texture2D
   private _nodeDepthFB: Framebuffer
   private _edgeSourceBuffer: Buffer
   private _edgeTargetBuffer: Buffer
@@ -52,6 +52,7 @@ export default class GraphHighlighter {
     this._gl = gl
 
     this._nodeDepthTextures = [getTexture(gl), getTexture(gl)]
+    this._nodeDepth = this._nodeDepthTextures[0]
 
     this._nodeDepthFB = new Framebuffer(gl, {
       id: 'graph-highlighter-framebuffer',
@@ -73,17 +74,23 @@ export default class GraphHighlighter {
     this._edgeDepthBuffer?.delete()
     this._nodeDepthTextures.forEach((t) => t.delete())
     this._nodeDepthFB.delete()
-    this._nodeDepthBuffer.delete()
     this._model.delete()
     this._transform.delete()
   }
 
-  get nodeDepthBuffer(): Buffer {
-    return this._nodeDepthBuffer
+  get nodeDepth(): Texture2D {
+    return this._nodeDepth
   }
 
-  get edgeDepthBuffer(): Buffer {
+  get edgeDepth(): Buffer {
     return this._edgeDepthBuffer
+  }
+
+  encodeNodeIndex(node: GeomNode, out: number[]): number[] {
+    return encodePickingColor(this._nodeMap.get(node.id), out)
+  }
+  getNode(index: number): GeomNode {
+    return this._nodeList[index]
   }
 
   setGraph(graph: GeomGraph) {
@@ -106,8 +113,8 @@ export default class GraphHighlighter {
     let nodeIndex = 0
     let edgeIndex = 0
     for (const node of graph.deepNodesIt()) {
-      this._nodeList[nodeIndex] = node.id
-      this._nodeMap.set(node.id, nodeIndex)
+      this._nodeList[nodeIndex] = node
+      this._nodeMap.set(node.id, nodeIndex + 1)
       nodeIndex++
     }
     const edgeSource = new Uint8Array(edgeCount * 3)
@@ -136,9 +143,8 @@ export default class GraphHighlighter {
     this._nodeCount = this._nodeMap.size
 
     const textureWidth = this._nodeDepthTextures[0].width
-    const textureHeight = Math.ceil(this._nodeCount / textureWidth)
+    const textureHeight = Math.ceil((this._nodeCount + 1) / textureWidth)
 
-    this._nodeDepthBuffer = getBuffer(gl, this._nodeDepthBuffer, {size: 4, type: GL.UNSIGNED_BYTE}, textureWidth * textureHeight)
     this._nodeDepthFB.resize({width: textureWidth, height: textureHeight})
 
     this._transform.update({
@@ -204,7 +210,7 @@ export default class GraphHighlighter {
       })
     }
 
-    readPixelsToBuffer(this._nodeDepthFB, {target: this._nodeDepthBuffer})
+    this._nodeDepth = targetTexture
 
     if (edgeDepth) {
       this._nodeDepthFB.attach({

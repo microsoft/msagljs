@@ -1,8 +1,10 @@
 import {Layer, project32, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
 import GL from '@luma.gl/constants'
 import {Model, Geometry} from '@luma.gl/engine'
-import {Buffer} from '@luma.gl/webgl'
+import {Texture2D} from '@luma.gl/webgl'
 import {picking} from '@luma.gl/shadertools'
+
+import {nodeDepthModuleVs} from './graph-highlighter'
 
 // TODO - Use ShapeEnum from msagl-js
 export enum SHAPE {
@@ -23,9 +25,10 @@ export type GeometryLayerProps<DataT = any> = {
   /** Only applies to SHAPE.Rectangle */
   cornerRadius?: number
 
-  getDepth?: Buffer
+  nodeDepth?: Texture2D
   highlightColors?: number[][]
 
+  getPickingColor?: Accessor<DataT, number[]>
   getPosition?: Accessor<DataT, number[]>
   getSize?: Accessor<DataT, [number, number]>
   getFillColor?: Accessor<DataT, number[]>
@@ -54,6 +57,7 @@ const defaultProps: DefaultProps<GeometryLayerProps> = {
     ],
   },
 
+  getPickingColor: {type: 'accessor', value: [0, 0, 0]},
   getPosition: {type: 'accessor', value: (x: any) => x.position},
   getSize: {type: 'accessor', value: (x: any) => x.size},
   getFillColor: {type: 'accessor', value: [255, 255, 255, 255]},
@@ -73,7 +77,6 @@ attribute float instanceLineWidths;
 attribute vec4 instanceFillColors;
 attribute vec4 instanceLineColors;
 attribute vec3 instancePickingColors;
-attribute vec4 instanceDepths;
 
 uniform mat4 depthHighlightColors;
 uniform float opacity;
@@ -88,6 +91,8 @@ varying vec4 vFillColor;
 varying vec4 vLineColor;
 varying vec2 vPosition;
 varying vec4 shape; // [width, height, lineWidth, SHAPE]
+
+${nodeDepthModuleVs}
 
 void applyHighlight(int i) {
   if (i >= 3) return;
@@ -123,7 +128,10 @@ void main(void) {
 
   picking_setPickingColor(instancePickingColors);
 
-  applyHighlight(int(instanceDepths.r));
+  float depth;
+  if (getDepth(instancePickingColors, depth)) {
+    applyHighlight(int(depth));
+  }
 }
 `
 
@@ -282,6 +290,11 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         type: GL.UNSIGNED_BYTE,
         accessor: 'getShape',
       },
+      instancePickingColors: {
+        size: 3,
+        type: GL.UNSIGNED_BYTE,
+        accessor: 'getPickingColor',
+      },
     })
   }
 
@@ -299,13 +312,6 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
       modelChanged = true
     }
 
-    if (modelChanged || props.getDepth !== oldProps.getDepth) {
-      if (props.getDepth) {
-        this.state.model.setAttributes({
-          instanceDepths: props.getDepth,
-        })
-      }
-    }
     if (modelChanged || props.highlightColors !== oldProps.highlightColors) {
       const depthHighlightColors = new Float32Array(16)
       for (let i = 0; i < 4; i++) {
@@ -322,7 +328,7 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
   }
 
   draw({uniforms}: any) {
-    const {stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels} = this.props
+    const {stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} = this.props
 
     this.state.model
       .setUniforms(uniforms)
@@ -334,6 +340,8 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         lineWidthScale,
         lineWidthMinPixels,
         lineWidthMaxPixels,
+        nodeDepth,
+        textureDim: [nodeDepth.width, nodeDepth.height],
       })
       .draw()
   }

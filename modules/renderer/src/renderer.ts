@@ -1,5 +1,5 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
-import {PathLayer} from '@deck.gl/layers/typed'
+import {PolygonLayer} from '@deck.gl/layers/typed'
 import {TileLayer} from '@deck.gl/geo-layers/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
@@ -221,50 +221,66 @@ export default class Renderer extends EventSource {
         }
         return {nodes, edges}
       },
+      // For debugging
+      onClick: ({sourceLayer}) => {
+        // @ts-ignore
+        console.log(sourceLayer.props.tile.id, sourceLayer.props.tile.data)
+      },
+      autoHighlight: true,
+      onHover: ({object, sourceLayer}) => {
+        if (!this._highlightedNodeId) {
+          if (sourceLayer.id.endsWith('nodes')) {
+            this._highlight(object?.id)
+          } else {
+            this._highlight(null)
+          }
+        }
+      },
       renderSubLayers: ({data, id, tile}) => {
         // @ts-ignore
         const {left, right, top, bottom} = tile.bbox
         const rect = new Rectangle({left: left, right: right, bottom: top, top: bottom})
         return [
+          // For debugging
+          new PolygonLayer({
+            id: id + 'bounds',
+            data: [0],
+            getPolygon: (_) => [
+              [left, bottom],
+              [right, bottom],
+              [right, top],
+              [left, top],
+            ],
+            pickable: true,
+            autoHighlight: true,
+            highlightColor: [0, 0, 0, 32],
+            getFillColor: [0, 0, 0, 0],
+            getLineColor: [255, 0, 0],
+            getLineWidth: 2,
+            lineWidthUnits: 'pixels',
+          }),
+
           new EdgeLayer({
             id: id + 'edges',
             data: data.edges,
             clipBounds: rect,
             getWidth: 1,
-            getDepth: this._graphHighlighter.edgeDepthBuffer,
+            getDepth: this._graphHighlighter.edgeDepth,
             resolution: 2 ** (tile.index.z - 2),
           }),
 
           new NodeLayer({
             id: id + 'nodes',
             data: data.nodes,
-            getDepth: this._graphHighlighter.nodeDepthBuffer,
+            getPickingColor: (n, {target}) => this._graphHighlighter.encodeNodeIndex(n, target),
+            fromIndex: (i) => this._graphHighlighter.getNode(i),
+            nodeDepth: this._graphHighlighter.nodeDepth,
             fontFamily: fontSettings.fontFamily,
             fontWeight: fontSettings.fontWeight,
             lineHeight: fontSettings.lineHeight,
             getLineWidth: 1,
             getTextSize: fontSettings.fontSize,
             pickable: true,
-            onHover: ({object}) => {
-              if (!this._highlightedNodeId) {
-                this._highlight(object?.id)
-              }
-            },
-          }),
-
-          new PathLayer({
-            id: id + 'bounds',
-            data: [0],
-            getPath: (_) => [
-              [left, bottom],
-              [right, bottom],
-              [right, top],
-              [left, top],
-              [left, bottom],
-            ],
-            getColor: [255, 0, 0],
-            getWidth: 2,
-            widthUnits: 'pixels',
           }),
         ]
       },
