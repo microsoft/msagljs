@@ -604,7 +604,7 @@ test('clust_', () => {
   }
 })
 
-test('random circles', () => {
+xtest('random circles', () => {
   for (let nodeCount = 6; nodeCount < 10; nodeCount++)
     for (let seed = 0; seed < 40; seed++) {
       const g: GeomGraph = generateRandomGeomGraph(seed, nodeCount, (w, _, xy) => CurveFactory.mkCircle(w * 0.9, xy))

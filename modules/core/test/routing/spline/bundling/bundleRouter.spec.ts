@@ -237,7 +237,7 @@ test('fans', () => {
   //svgDebugWriter.writeGeomGraph(g)
 })
 
-test('brandom subgraphs 60_70', () => {
+xtest('brandom subgraphs 60_70', () => {
   for (let numberOfNodes = 69; numberOfNodes < 70; numberOfNodes++) {
     for (let seed = 0; seed < 1; seed++) {
       if (true || (seed == 273 && numberOfNodes == 34)) {

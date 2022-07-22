@@ -17,6 +17,7 @@ import {
   JSONToICurve,
   Rectangle,
   RectJSON,
+  Arrowhead,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -72,11 +73,17 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
 
         case 'sourceArrowhead': {
           const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.sourceArrowhead == null) {
+            geomEdge.sourceArrowhead = new Arrowhead()
+          }
           geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
         }
         case 'targetArrowhead': {
           const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.targetArrowhead == null) {
+            geomEdge.targetArrowhead = new Arrowhead()
+          }
           geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
         }
