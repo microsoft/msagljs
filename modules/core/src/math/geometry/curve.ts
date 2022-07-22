@@ -1677,7 +1677,6 @@ function isCloseToLineSeg(a: number, ap: Point, b: number, bp: Point, s: ICurve,
 
   return true
 }
-
 // interpolates the curve between parameters 'a' and 'b' by a sequence of line segments
 function interpolate(a: number, ap: Point, b: number, bp: Point, s: ICurve, eps: number): Point[] {
   /*Assert.assert(Point.closeDistEps(s.value(a), ap))*/
@@ -1710,6 +1709,7 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
     yield curve
     return
   }
+  const eps = Math.max(Math.min(rect.width, rect.height) / 20, 1)
   const perimeter = rect.perimeter()
   const x = Curve.getAllIntersections(curve, perimeter, true)
   if (x == [] || x == null) {
@@ -1737,7 +1737,23 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
     }
   }
 
-  function segmentShouldBeIncluded(start: number, end: number): boolean {
-    return rect.containsWithPadding(curve.value((start + end) / 2), rect.diagonal / 4)
+  function segmentShouldBeIncluded(a: number, b: number): boolean {
+    const ap = curve.value(a)
+    const bp = curve.value(b)
+
+    const e = Math.min(eps, ap.sub(bp).length / 10)
+    const ps = interpolate(a, ap, b, bp, curve, e)
+    if (ps.length == 2) return true
+
+    for (let i = 1; i < ps.length - 1; i++) {
+      const p = ps[i]
+      if (rect.containsWithPadding(p, -GeomConstants.distanceEpsilon)) {
+        return true
+      }
+      if (!rect.containsWithPadding(p, rect.diagonal / 10)) {
+        return false
+      }
+    }
+    return true
   }
 }

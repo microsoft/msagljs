@@ -30,7 +30,7 @@ import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../sr
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
+import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
@@ -525,7 +525,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-test('large clipWithRect', () => {
+xtest('large clipWithRect', () => {
   const graph = parseJSONFile('JSONfiles/gameofthrones_with_geometry.JSON')
   const geomEdges = Array.from(graph.deepEdges).map((e) => <GeomEdge>GeomEdge.getGeom(e))
   //  testEdgeCurve(geomEdges[359].curve, GeomGraph.getGeom(graph).boundingBox)
@@ -547,8 +547,9 @@ test('arcsClipWithRect', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
   const dg = runLayout('graphvis/awilliams.gv', ss)
-
-  for (const e of dg.graph.deepEdges) {
+  const es = Array.from(dg.graph.deepEdges)
+  for (let i = 0; i < es.length; i++) {
+    const e = es[i]
     testEdgeCurve((GeomEdge.getGeom(e) as GeomEdge).curve, GeomGraph.getGeom(dg.graph).boundingBox)
   }
 })
@@ -625,7 +626,7 @@ function subsegsCoverPoint(p: Point, subSegs: ICurve[], eps: number): boolean {
 }
 function canAssembleBack(rect: Rectangle, upperLeverSeg: ICurve, subSegs: ICurve[]): boolean {
   const n = 100
-  const eps = rect.diagonal / 20
+  const eps = rect.diagonal / 100
   const del = parameterSpan(upperLeverSeg) / n
   for (let i = 0; i <= 100; i++) {
     const p = upperLeverSeg.value(upperLeverSeg.parStart + del * i)
@@ -637,11 +638,21 @@ function canAssembleBack(rect: Rectangle, upperLeverSeg: ICurve, subSegs: ICurve
   }
   return true
 }
-function segCoverPoint(seg: ICurve, p: Point, eps: number): boolean {
-  const n = 1000
-  const del = parameterSpan(seg) / 1000
-  for (let i = 0; i <= n; i++) {
-    if (seg.value(seg.parStart + i * del).sub(p).length < eps) return true
+function segCoverPoint(c: ICurve, p: Point, eps: number): boolean {
+  const n = 100
+  if (c instanceof Curve) {
+    for (const s of c.segs) {
+      const del = parameterSpan(s) / n
+      for (let i = 0; i <= n; i++) {
+        if (s.value(s.parStart + i * del).sub(p).length < eps) return true
+      }
+    }
+  } else {
+    const del = parameterSpan(c) / n
+
+    for (let i = 0; i <= n; i++) {
+      if (c.value(c.parStart + i * del).sub(p).length < eps) return true
+    }
   }
   return false
 }
