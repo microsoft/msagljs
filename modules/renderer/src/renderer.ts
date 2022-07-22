@@ -222,10 +222,10 @@ export default class Renderer extends EventSource {
         return {nodes, edges}
       },
       // For debugging
-      onClick: ({sourceLayer}) => {
-        // @ts-ignore
-        console.log(sourceLayer.props.tile.id, sourceLayer.props.tile.data)
-      },
+      // onClick: ({sourceLayer}) => {
+      //   // @ts-ignore
+      //   console.log(sourceLayer.props.tile.id, sourceLayer.props.tile.data)
+      // },
       autoHighlight: true,
       onHover: ({object, sourceLayer}) => {
         if (!this._highlightedNodeId) {
@@ -242,23 +242,23 @@ export default class Renderer extends EventSource {
         const rect = new Rectangle({left: left, right: right, bottom: top, top: bottom})
         return [
           // For debugging
-          new PolygonLayer({
-            id: id + 'bounds',
-            data: [0],
-            getPolygon: (_) => [
-              [left, bottom],
-              [right, bottom],
-              [right, top],
-              [left, top],
-            ],
-            pickable: true,
-            autoHighlight: true,
-            highlightColor: [0, 0, 0, 32],
-            getFillColor: [0, 0, 0, 0],
-            getLineColor: [255, 0, 0],
-            getLineWidth: 2,
-            lineWidthUnits: 'pixels',
-          }),
+          // new PolygonLayer({
+          //   id: id + 'bounds',
+          //   data: [0],
+          //   getPolygon: (_) => [
+          //     [left, bottom],
+          //     [right, bottom],
+          //     [right, top],
+          //     [left, top],
+          //   ],
+          //   pickable: true,
+          //   autoHighlight: true,
+          //   highlightColor: [0, 0, 0, 32],
+          //   getFillColor: [0, 0, 0, 0],
+          //   getLineColor: [255, 0, 0],
+          //   getLineWidth: 2,
+          //   lineWidthUnits: 'pixels',
+          // }),
 
           new EdgeLayer({
             id: id + 'edges',
