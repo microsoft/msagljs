@@ -37,7 +37,7 @@ export class GeomEdge extends GeomObject {
 
   sourceArrowhead: Arrowhead
 
-  targetArrowhead = new Arrowhead()
+  targetArrowhead: Arrowhead
 
   lineWidth = 1
 
