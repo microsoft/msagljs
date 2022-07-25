@@ -203,6 +203,7 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
+    const rtree = geomGraph.buildRTree()
     const boundingBox = geomGraph.boundingBox
     const layer = new TileLayer<{nodes: GeomNode[]; edges: GeomEdge[]}>({
       extent: [boundingBox.left, boundingBox.bottom, boundingBox.right, boundingBox.top],
@@ -212,7 +213,7 @@ export default class Renderer extends EventSource {
         const rect = new Rectangle({left: bbox.left, right: bbox.right, bottom: bbox.top, top: bbox.bottom})
         const nodes: GeomNode[] = []
         const edges: GeomEdge[] = []
-        for (const obj of geomGraph.intersectedObjects(rect, false)) {
+        for (const obj of geomGraph.intersectedObjects(rtree, rect, false)) {
           if (obj instanceof GeomNode) {
             nodes.push(obj)
           } else if (obj instanceof GeomEdge) {

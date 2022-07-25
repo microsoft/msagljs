@@ -121,17 +121,13 @@ export class GeomGraph extends GeomNode {
   }
   isCollapsed = false
 
-  _rtree: RTree<GeomObject, Point>
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
   }
   private rrect: RRect;
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
-  *intersectedObjects(rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
-    if (this._rtree == null) {
-      this._rtree = this.buildRTree()
-    }
-    const result = this._rtree.GetAllIntersecting(rect)
+  *intersectedObjects(rtree: RTree<GeomObject, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
+    const result = rtree.GetAllIntersecting(rect)
     const perimeter = rect.perimeter()
     for (const r of result) {
       if (r instanceof GeomNode) yield r
