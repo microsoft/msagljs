@@ -10,7 +10,8 @@ test('intersectedEnities', () => {
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
   const rect = geomGraph.boundingBox
-  const intersectedNodes = Array.from(geomGraph.intersectedObjects(rect))
+  const rtree = geomGraph.buildRTree()
+  const intersectedNodes = Array.from(geomGraph.intersectedObjects(rtree, rect))
   let n = 0 // the number of nodes that intersected the bounding box
   let e = 0 // the number of edges that intersected the bounding box
   for (const o of intersectedNodes) {
@@ -24,12 +25,12 @@ test('intersectedEnities', () => {
   expect(n).toBe(Array.from(geomGraph.deepNodesIt()).length)
   expect(e).toBe(0)
 
-  const intersectedNodesAndEdges = Array.from(geomGraph.intersectedObjects(rect, false)).filter((e) => e instanceof GeomEdge)
+  const intersectedNodesAndEdges = Array.from(geomGraph.intersectedObjects(rtree, rect, false)).filter((e) => e instanceof GeomEdge)
 
   expect(intersectedNodesAndEdges.length).toBe(Array.from(geomGraph.deepEdges).length)
   for (const e of geomGraph.edges()) {
     const r = e.boundingBox
-    const intersected_e = Array.from(geomGraph.intersectedObjects(r, false))
+    const intersected_e = Array.from(geomGraph.intersectedObjects(rtree, r, false))
     expect(intersected_e.indexOf(e)).toBeGreaterThan(-1)
     expect(intersected_e.indexOf(e.source)).toBeGreaterThan(-1)
     expect(intersected_e.indexOf(e.target)).toBeGreaterThan(-1)

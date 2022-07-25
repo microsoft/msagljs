@@ -201,7 +201,6 @@ export class SplineRouter extends Algorithm {
     if (this.geomGraph.isEmpty()) {
       return
     }
-    this.geomGraph._rtree = null
     const obstacles = ShapeCreator.GetShapes(this.geomGraph, this._edges)
     if (
       this.BundlingSettings == null &&
