@@ -667,19 +667,19 @@ export function parseDot(graphStr: string): Graph {
   const dp = new DotParser(parse(graphStr))
   return dp.parse()
 }
-/** parses a string representing a Graph in JSON format, corresponding to JSONGraph type */
-export function parseJSON(graphStr: string): Graph {
-  try {
-    const ast: JSONGraph = JSON.parse(graphStr)
-    const dp = new DotParser([ast])
-    return dp.parse()
-  } catch (Error) {
-    console.log(Error.message)
-    return null
-  }
-}
+// /** parses a string representing a Graph in JSON format, corresponding to JSONGraph type */
+// export function parseJSON(graphStr: string): Graph {
+//   try {
+//     const ast: JSONGraph = JSON.parse(graphStr)
+//     const dp = new DotParser([ast])
+//     return dp.parse()
+//   } catch (Error) {
+//     console.log(Error.message)
+//     return null
+//   }
+// }
 /** parses JSONGraph type to a Graph */
-export function parseJSONGraph(jsonObj: JSONGraph): Graph {
+export function parseJSON(jsonObj: JSONGraph): Graph {
   const dp = new DotParser([jsonObj])
   return dp.parse()
 }

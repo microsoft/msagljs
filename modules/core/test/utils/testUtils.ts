@@ -17,7 +17,7 @@ import {
 } from '../../src'
 import {SvgDebugWriter} from './svgDebugWriter'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
-import {parseDot, parseJSON} from '@msagl/parser'
+import {parseDot} from '@msagl/parser'
 import {DrawingGraph, TextMeasurerOptions} from '../../src/drawing'
 import {layoutGraphWithMds} from '../../src/layout/mds/PivotMDS'
 import {DrawingObject} from '../../src/drawing/drawingObject'
@@ -26,6 +26,7 @@ import {IntPairSet} from '../../src/utils/IntPairSet'
 import {initRandom, randomInt} from '../../src/utils/random'
 import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
+import {parseJSON} from '../../../parser/src/dotparser'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
@@ -131,7 +132,7 @@ export function parseJSONFile(fileName: string, absolutePath = false): Graph {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
 
-    return parseJSON(graphStr)
+    return parseJSON(JSON.parse(graphStr))
   } catch (Error) {
     console.log('file = ' + fileName + ' error:' + Error.message)
     return null

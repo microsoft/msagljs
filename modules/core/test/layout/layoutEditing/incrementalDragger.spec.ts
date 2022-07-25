@@ -1,4 +1,4 @@
-import {graphToJSON, parseJSONGraph} from '../../../../parser/src/dotparser'
+import {graphToJSON} from '../../../../parser/src/dotparser'
 import {GeomGraph, GeomNode} from '../../../src/layout/core'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SugiyamaLayoutSettings} from '../../../src/layout/layered/SugiyamaLayoutSettings'

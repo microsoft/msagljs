@@ -1,4 +1,4 @@
-import {graphToJSON, parseJSONGraph} from '../../../../parser/src/dotparser'
+import {graphToJSON, parseJSON} from '../../../../parser/src/dotparser'
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
@@ -95,7 +95,7 @@ test('graph smlred', () => {
   const nodesWas = g.nodeCountDeep
   const parsedGraph: JSONGraph = graphToJSON(g)
 
-  const graph = parseJSONGraph(parsedGraph)
+  const graph = parseJSON(parsedGraph)
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(subgraphsWas)
   expect(graph.nodeCountDeep).toBe(nodesWas)
@@ -104,13 +104,13 @@ test('graph smlred', () => {
 test('graph a.gv', () => {
   const g = parseDotGraph('graphvis/a.gv')
   const jsonOfG: JSONGraph = graphToJSON(g)
-  const newG = parseJSONGraph(jsonOfG)
+  const newG = parseJSON(jsonOfG)
   expect(newG != null).toBe(true)
 })
 test('tree.gv', () => {
   const g = parseDotGraph('graphvis/tree.gv')
   const jsonOfG: JSONGraph = graphToJSON(g)
-  const newG = parseJSONGraph(jsonOfG)
+  const newG = parseJSON(jsonOfG)
 
   expect(newG != null).toBe(true)
   const dg = <DrawingGraph>DrawingObject.getDrawingObj(newG)
@@ -120,7 +120,7 @@ test('tree.gv', () => {
 test('graph arrowsize', () => {
   const g = parseDotGraph('graphvis/arrowsize.gv')
   const jsonOfG: JSONGraph = graphToJSON(g)
-  const newG = parseJSONGraph(jsonOfG)
+  const newG = parseJSON(jsonOfG)
   expect(newG != null).toBe(true)
 })
 
@@ -128,7 +128,7 @@ test('graph style', () => {
   const g = parseDotGraph('graphvis/style.gv')
   const jsonOfG: JSONGraph = graphToJSON(g)
   const content = JSON.stringify(jsonOfG, null, 2)
-  const newG = parseJSONGraph(jsonOfG)
+  const newG = parseJSON(jsonOfG)
   const ws = fs.openSync('/tmp/style_out.JSON', 'w', 0o666)
   fs.writeFileSync(ws, content)
   fs.close(ws)
