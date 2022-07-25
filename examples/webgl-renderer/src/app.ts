@@ -2,7 +2,7 @@ import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, LayerDirectionEnum, GeomGraph} from 'msagl-js'
+import {EdgeRoutingMode, geometryIsCreated, GeomGraph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
@@ -73,7 +73,7 @@ dropZone('drop-target', async (f: File) => {
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
-  const hasGeom = GeomGraph.getGeom(graph)
+  const hasGeom = geometryIsCreated(graph)
   renderer.setGraph(graph, hasGeom ? null : getSettings())
   document.getElementById('graph-name').innerText = graph.id
 })()

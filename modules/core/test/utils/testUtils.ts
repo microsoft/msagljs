@@ -26,7 +26,7 @@ import {IntPairSet} from '../../src/utils/IntPairSet'
 import {initRandom, randomInt} from '../../src/utils/random'
 import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
-import {parseJSON} from '../../../parser/src/dotparser'
+import {parseJSONGraph} from '../../../parser/src/dotparser'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
@@ -132,7 +132,7 @@ export function parseJSONFile(fileName: string, absolutePath = false): Graph {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
 
-    return parseJSON(JSON.parse(graphStr))
+    return parseJSONGraph(JSON.parse(graphStr))
   } catch (Error) {
     console.log('file = ' + fileName + ' error:' + Error.message)
     return null

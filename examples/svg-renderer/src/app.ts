@@ -1,12 +1,11 @@
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
-import {parseDot, parseSimpleJSON} from '@msagl/parser'
 
 import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Graph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
-import {parseJSON} from '@msagl/parser'
+import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 
 const viewer = document.getElementById('viewer')
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/smlred.gv'
@@ -178,33 +177,4 @@ function getLayoutOptions(): LayoutOptions {
     }
   }
   return opts
-}
-async function loadGraphFromUrl(url: string): Promise<Graph> {
-  const fileName = url.slice(url.lastIndexOf('/') + 1)
-  const resp = await fetch(url)
-  let graph: Graph
-
-  if (fileName.endsWith('.json')) {
-    const json = await resp.json()
-    graph = parseJSON(json)
-  } else {
-    const content = await resp.text()
-    graph = parseDot(content)
-  }
-
-  graph.id = fileName
-  return graph
-}
-async function loadGraphFromFile(file: File): Promise<Graph> {
-  const content: string = await file.text()
-  let graph: Graph
-
-  if (file.name.toLowerCase().endsWith('.json')) {
-    graph = parseJSON(content) ?? parseSimpleJSON(JSON.parse(content))
-  } else {
-    graph = parseDot(content)
-  }
-
-  graph.id = file.name
-  return graph
 }
