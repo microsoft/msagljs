@@ -28,7 +28,7 @@ export type LayoutOptions = {
   edgeRoutingMode?: EdgeRoutingMode
 }
 
-const MaxZoom = 2
+const MaxZoom = 4
 
 /**
  * Renders an MSAGL graph with WebGL
@@ -174,6 +174,7 @@ export default class Renderer extends EventSource {
         zoom: zoom,
         transitionInterpolator: new LinearInterpolator(['target', 'zoom']),
         transitionDuration: 1000,
+        maxZoom: MaxZoom,
       },
     })
   }
