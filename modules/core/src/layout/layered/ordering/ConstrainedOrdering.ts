@@ -1,6 +1,6 @@
 import {BasicGraph} from '../../../structs/BasicGraph'
 import {IntPairMap} from '../../../utils/IntPairMap'
-import {GeomGraph} from '../../core/GeomGraph'
+import {GeomGraph} from '../../core/geomGraph'
 import {GeomNode} from '../../core/geomNode'
 import {Database} from '../Database'
 import {HorizontalConstraintsForSugiyama} from '../HorizontalConstraintsForSugiyama'

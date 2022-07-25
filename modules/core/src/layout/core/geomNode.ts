@@ -8,7 +8,7 @@ import {PlaneTransformation} from './../../math/geometry/planeTransformation'
 import {Node} from './../../structs/node'
 import {GeomObject} from './geomObject'
 import {GeomEdge} from './geomEdge'
-import {GeomGraph} from './GeomGraph'
+import {GeomGraph} from './geomGraph'
 import {Graph} from '../../structs/graph'
 
 export type GeomNodeJSON = {

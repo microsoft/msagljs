@@ -1,5 +1,5 @@
 import {RectilinearEdgeRouter} from '../routing/rectilinear/RectilinearEdgeRouter'
-import {GeomGraph, optimalPackingRunner} from './core/GeomGraph'
+import {GeomGraph, optimalPackingRunner} from './core/geomGraph'
 import {CancelToken} from '../utils/cancelToken'
 import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'

@@ -1,6 +1,6 @@
 import {Point} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
-import {GeomGraph} from '../core/GeomGraph'
+import {GeomGraph} from '../core/geomGraph'
 import {AllPairsDistances} from './AllPairsDistances'
 import {MdsLayoutSettings} from './MDSLayoutSettings'
 import {PivotDistances} from './PivotDistances'

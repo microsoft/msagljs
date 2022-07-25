@@ -122,7 +122,6 @@ export class GeomGraph extends GeomNode {
   isCollapsed = false
 
   _rtree: RTree<GeomObject, Point>
-
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
   }

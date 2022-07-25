@@ -2,7 +2,7 @@ import {Algorithm} from '../../utils/algorithm'
 
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph, optimalPackingRunner} from '../core/GeomGraph'
+import {GeomGraph, optimalPackingRunner} from '../core/geomGraph'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
 import {MdsGraphLayout} from './MDSGraphLayout'
 import {MdsLayoutSettings} from './MDSLayoutSettings'

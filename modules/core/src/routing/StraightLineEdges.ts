@@ -1,6 +1,6 @@
 ﻿// Basic geomedge router for producing straight edges.
 
-import {GeomGraph} from '../layout/core/GeomGraph'
+import {GeomGraph} from '../layout/core/geomGraph'
 import {Arrowhead} from '../layout/core/arrowhead'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {CornerSite} from '../math/geometry/cornerSite'

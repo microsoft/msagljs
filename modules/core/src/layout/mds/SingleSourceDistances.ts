@@ -1,7 +1,7 @@
 import {GenericBinaryHeapPriorityQueue} from '../../structs/genericBinaryHeapPriorityQueue'
 import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph} from '../core/GeomGraph'
+import {GeomGraph} from '../core/geomGraph'
 import {GeomNode} from '../core/geomNode'
 // Provides functionality for computing distances in a graph.
 export class SingleSourceDistances extends Algorithm {

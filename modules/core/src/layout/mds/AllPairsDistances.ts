@@ -1,4 +1,4 @@
-﻿import {GeomGraph} from '../core/GeomGraph'
+﻿import {GeomGraph} from '../core/geomGraph'
 import {Algorithm} from '../../utils/algorithm'
 import {SingleSourceDistances} from './SingleSourceDistances'
 

@@ -1,6 +1,6 @@
 ﻿import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph} from '../core/GeomGraph'
+import {GeomGraph} from '../core/geomGraph'
 import {SingleSourceDistances} from './SingleSourceDistances'
 // An algorithm for computing the distances between a selected set of nodes and all nodes.
 export class PivotDistances extends Algorithm {
