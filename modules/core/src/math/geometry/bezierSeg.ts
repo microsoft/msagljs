@@ -12,6 +12,7 @@ export type BezierJSON = {
 }
 /** the standard implementation of a cubic bezier curve */
 export class BezierSeg implements ICurve {
+  bbox: Rectangle
   toJSON(): BezierJSON {
     return {b: this.b.map((p) => p.toJSON())}
   }
@@ -149,6 +150,7 @@ export class BezierSeg implements ICurve {
     this.c = this.b[1].sub(this.b[0]).mul(3)
     this.e = this.b[2].sub(this.b[1]).mul(3).sub(this.c)
     this.l = this.b[3].sub(this.b[0]).sub(this.c).sub(this.e)
+    if (this.bbox) this.bbox = Rectangle.translate(this.bbox, delta)
     this.pBoxNode = null
   }
 
@@ -196,10 +198,10 @@ export class BezierSeg implements ICurve {
 
   // the segment bounding box
   get boundingBox() {
-    const ret = Rectangle.mkPP(this.b[0], this.b[1])
-    ret.add(this.b[2])
-    ret.add(this.b[3])
-    return ret
+    if (this.bbox) {
+      return this.bbox
+    }
+    return (this.bbox = Rectangle.mkOnPoints(this.b))
   }
 
   // Return the transformed curve

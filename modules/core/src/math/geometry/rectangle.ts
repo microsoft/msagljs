@@ -217,7 +217,7 @@ export class Rectangle implements IRectangle<Point> {
   }
 
   // Create rectangle that is the bounding box of the given points
-  static mkOnPoints(points: [Point]): Rectangle {
+  static mkOnPoints(points: Iterable<Point>): Rectangle {
     const r = Rectangle.mkEmpty()
     for (const p of points) {
       r.add(p)
@@ -344,6 +344,11 @@ export class Rectangle implements IRectangle<Point> {
     const r = rectangle.clone()
     r.center = rectangle.center.add(delta)
     return r
+  }
+
+  /**  Returns a new Rectangle which is the transform the input rectangle */
+  static transform(rectangle: Rectangle, m: PlaneTransformation): Rectangle {
+    return Rectangle.mkPP(m.multiplyPoint(rectangle.leftTop), m.multiplyPoint(rectangle.rightBottom))
   }
 
   // returns true if the rectangle contains the point

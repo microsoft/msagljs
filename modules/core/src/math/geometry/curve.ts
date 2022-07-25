@@ -1301,8 +1301,12 @@ export class Curve implements ICurve {
   }
   transform(transformation: PlaneTransformation): ICurve {
     const c = new Curve()
-    for (const s of this.segs) c.addSegment(s.transform(transformation))
-
+    for (const s of this.segs) {
+      c.addSegment(s.transform(transformation))
+    }
+    if (this.boundingBox_) {
+      c.boundingBox_ = this.boundingBox_.transform(transformation)
+    }
     return c
   }
 
