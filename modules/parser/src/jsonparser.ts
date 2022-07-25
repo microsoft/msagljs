@@ -1,9 +1,11 @@
 import {Graph, Node} from 'msagl-js'
 import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum} from 'msagl-js/drawing'
+import {Graph as JSONGraph} from 'dotparser'
 
+import {parseJSONGraph} from './dotparser'
 import {parseColor} from './utils'
 
-export function parseSimpleJSON(json: {
+type SimpleJSONGraph = {
   /** List of nodes in the graph */
   nodes: {
     /** Id of the node */
@@ -35,7 +37,16 @@ export function parseSimpleJSON(json: {
     /** [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) of the edge */
     color?: string
   }[]
-}): Graph {
+}
+
+export function parseJSON(json: JSONGraph | SimpleJSONGraph): Graph {
+  if ('nodes' in json) {
+    return parseSimpleJSON(json)
+  }
+  return parseJSONGraph(json)
+}
+
+export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
   const g = new Graph()
 
   for (const node of json.nodes) {

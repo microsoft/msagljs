@@ -118,19 +118,26 @@ export default class Renderer extends EventSource {
     return this._graph
   }
 
-  /** when the graph is set : the geometry for it is created and the layout is done */
-  setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
+  /** when the graph is set : the geometry for it is created and the layout is done
+   * Set options to null to use existing geometry
+   */
+  setGraph(graph: Graph, options: LayoutOptions | null = this._layoutOptions) {
     if (this._graph === graph) {
-      this.setOptions(options)
+      if (options) {
+        this.setOptions(options)
+      }
     } else {
       this._graph = graph
-      this._layoutOptions = options
-      this._textMeasurer.setOptions(options.label || {})
-      this._highlightedNodeId = null
 
-      const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
-      drawingGraph.createGeometry(this._textMeasurer.measure)
-      layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
+      if (options) {
+        this._layoutOptions = options
+        this._textMeasurer.setOptions(options.label || {})
+        this._highlightedNodeId = null
+
+        const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
+        drawingGraph.createGeometry(this._textMeasurer.measure)
+        layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
+      }
 
       if (this._deck.layerManager) {
         // deck is ready
@@ -201,6 +208,11 @@ export default class Renderer extends EventSource {
     const fontSettings = this._textMeasurer.opts
 
     const geomGraph = <GeomGraph>GeomGraph.getGeom(this._graph)
+
+    if (!geomGraph) {
+      return
+    }
+
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 

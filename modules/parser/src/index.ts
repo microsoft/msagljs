@@ -1,2 +1,2 @@
-export {parseDot, parseJSON, graphToJSON} from './dotparser'
-export {parseSimpleJSON} from './jsonparser'
+export {parseDot, graphToJSON} from './dotparser'
+export {parseJSON} from './jsonparser'
