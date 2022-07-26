@@ -140,7 +140,7 @@ export class GeometryGraphEditor {
 
   static DragLabel(label: GeomLabel, delta: Point) {
     label.center = label.center.add(delta)
-    const edge = <GeomEdge>GeomObject.getGeom(label.entity.parent)
+    const edge = <GeomEdge>GeomObject.getGeom(label.parent.entity)
     if (edge != null) {
       GeometryGraphEditor.CalculateAttachedSegmentEnd(label, edge)
       if (!Point.closeDistEps(label.AttachmentSegmentEnd, label.center)) {
@@ -257,9 +257,9 @@ export class GeometryGraphEditor {
     if (edge) {
       geomObj.translate(delta)
     } else {
-      const label = geomObj instanceof GeomLabel
+      const label = geomObj.label
       if (label != null) {
-        GeometryGraphEditor.DragLabel(geomObj as GeomLabel, delta)
+        GeometryGraphEditor.DragLabel(label, delta)
       } else {
         throw new Error()
       }
