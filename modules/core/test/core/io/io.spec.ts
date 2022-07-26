@@ -154,6 +154,7 @@ test('measuredTextSize is preserved', () => {
   const graph = parseDot(dotString)
   const drawingGraph = DrawingGraph.getDrawingGraph(graph)
   drawingGraph.createGeometry()
+  layoutGeomGraph(GeomGraph.getGeom(graph))
   for (const n of graph.shallowNodes) {
     const dn = DrawingObject.getDrawingObj(n) as DrawingNode
     expect(dn.measuredTextSize == null).toBe(false)
@@ -163,13 +164,20 @@ test('measuredTextSize is preserved', () => {
     expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
   }
 
+  const boxWas = GeomGraph.getGeom(graph).boundingBox
+
   const json = graphToJSON(graph)
-  const newG = parseJSONGraph(json)
-  for (const n of newG.shallowNodes) {
+  const newGraph = parseJSONGraph(json)
+  const boxBecame = GeomGraph.getGeom(newGraph).boundingBox
+  expect(boxBecame.width == boxWas.width).toBe(true)
+  expect(boxBecame.right == boxWas.right).toBe(true)
+  expect(boxBecame.left == boxWas.left).toBe(true)
+  expect(boxBecame.bottom == boxWas.bottom).toBe(true)
+  for (const n of newGraph.shallowNodes) {
     const dn = DrawingObject.getDrawingObj(n) as DrawingNode
     expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
   }
-  for (const n of newG.deepEdges) {
+  for (const n of newGraph.deepEdges) {
     const dn = DrawingObject.getDrawingObj(n) as DrawingEdge
     expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
   }
