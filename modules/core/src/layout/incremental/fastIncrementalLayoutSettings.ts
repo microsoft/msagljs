@@ -586,35 +586,35 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  Shallow copy the settings
   ///  </summary>
   ///  <param name="previousSettings"></param>
-  public constructor(previousSettings: FastIncrementalLayoutSettings) {
-    ValidateArg.IsNotNull(previousSettings, 'previousSettings')
-    this.maxIterations = previousSettings.maxIterations
-    this.minorIterations = previousSettings.minorIterations
-    this.projectionIterations = previousSettings.projectionIterations
-    this.approximateRepulsion = previousSettings.approximateRepulsion
-    this.initialStepSize = previousSettings.initialStepSize
-    this.RungeKuttaIntegration = previousSettings.RungeKuttaIntegration
-    this.decay = previousSettings.decay
-    this.friction = previousSettings.friction
-    this.repulsiveForceConstant = previousSettings.repulsiveForceConstant
-    this.attractiveForceConstant = previousSettings.attractiveForceConstant
-    this.gravity = previousSettings.gravity
-    this.interComponentForces = previousSettings.interComponentForces
-    this.applyForces = previousSettings.applyForces
-    IdealEdgeLength = previousSettings.IdealEdgeLength
-    this.AvoidOverlaps = previousSettings.AvoidOverlaps
-    this.RespectEdgePorts = previousSettings.RespectEdgePorts
-    this.RouteEdges = previousSettings.RouteEdges
-    this.approximateRouting = previousSettings.approximateRouting
-    this.logScaleEdgeForces = previousSettings.logScaleEdgeForces
-    this.displacementThreshold = previousSettings.displacementThreshold
-    this.minConstraintLevel = previousSettings.minConstraintLevel
-    this.maxConstraintLevel = previousSettings.maxConstraintLevel
-    this.attractiveInterClusterForceConstant = previousSettings.attractiveInterClusterForceConstant
-    clusterGravity = previousSettings.clusterGravity
-    PackingAspectRatio = previousSettings.PackingAspectRatio
-    NodeSeparation = previousSettings.NodeSeparation
-    ClusterMargin = previousSettings.ClusterMargin
+  public static ctorClone(previousSettings: FastIncrementalLayoutSettings) {
+    const ret = new FastIncrementalLayoutSettings()
+    ret.maxIterations = previousSettings.maxIterations
+    ret.minorIterations = previousSettings.minorIterations
+    ret.projectionIterations = previousSettings.projectionIterations
+    ret.approximateRepulsion = previousSettings.approximateRepulsion
+    ret.initialStepSize = previousSettings.initialStepSize
+    ret.RungeKuttaIntegration = previousSettings.RungeKuttaIntegration
+    ret.decay = previousSettings.decay
+    ret.friction = previousSettings.friction
+    ret.repulsiveForceConstant = previousSettings.repulsiveForceConstant
+    ret.attractiveForceConstant = previousSettings.attractiveForceConstant
+    ret.gravity = previousSettings.gravity
+    ret.interComponentForces = previousSettings.interComponentForces
+    ret.applyForces = previousSettings.applyForces
+    ret.IdealEdgeLength = previousSettings.IdealEdgeLength
+    ret.AvoidOverlaps = previousSettings.AvoidOverlaps
+    ret.RespectEdgePorts = previousSettings.RespectEdgePorts
+    ret.RouteEdges = previousSettings.RouteEdges
+    ret.approximateRouting = previousSettings.approximateRouting
+    ret.logScaleEdgeForces = previousSettings.logScaleEdgeForces
+    ret.displacementThreshold = previousSettings.displacementThreshold
+    ret.minConstraintLevel = previousSettings.minConstraintLevel
+    ret.maxConstraintLevel = previousSettings.maxConstraintLevel
+    ret.attractiveInterClusterForceConstant = previousSettings.attractiveInterClusterForceConstant
+    ret.clusterGravity = previousSettings.clusterGravity
+    ret.PackingAspectRatio = previousSettings.PackingAspectRatio
+    ret.NodeSeparation = previousSettings.NodeSeparation
+    ret.ClusterMargin = previousSettings.ClusterMargin
   }
 
   clusterGravity = 1
@@ -632,9 +632,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///  Settings for calculation of ideal edge length
   ///  </summary>
-  public get IdealEdgeLength(): EdgeConstraints {}
-  public set IdealEdgeLength(value: EdgeConstraints) {}
-
+  IdealEdgeLength: EdgeConstraints
   updateClusterBoundaries = true
 
   ///  <summary>

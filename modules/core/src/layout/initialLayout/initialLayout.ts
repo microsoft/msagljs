@@ -1,4 +1,11 @@
+import { Direction } from '../../math/geometry';
+import { Edge } from '../../structs/edge';
 import {Algorithm} from '../../utils/algorithm'
+import { GeomGraph } from '../core';
+import { FastIncrementalLayout } from '../incremental/fastIncrementalLayout';
+import { FastIncrementalLayoutSettings } from '../incremental/fastIncrementalLayoutSettings';
+import { MdsGraphLayout } from '../mds/MDSGraphLayout';
+import { PivotMDS } from '../mds/PivotMDS';
     ///  <summary>
     ///  Methods for obtaining an initial layout of a graph using various means.
     ///  </summary>
