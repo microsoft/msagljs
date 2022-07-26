@@ -11,7 +11,7 @@ import {Ellipse} from '../../src/math/geometry/ellipse'
 import {allVerticesOfParall} from '../../src/math/geometry/parallelogram'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
 import {DrawingObject} from '../../src/drawing/drawingObject'
-import {DrawingNode} from '../../src/drawing'
+import {DrawingEdge, DrawingNode} from '../../src/drawing'
 import {fontHeight} from './testUtils'
 // @ts-check
 export class SvgDebugWriter {
@@ -321,8 +321,12 @@ export class SvgDebugWriter {
     this.xw.endElement()
     if (edge != null && edge.sourceArrowhead != null) this.addArrow(icurve.start, edge.sourceArrowhead.tipPosition)
     if (edge != null && edge.targetArrowhead != null) this.addArrow(icurve.end, edge.targetArrowhead.tipPosition)
+
     if (edge.label != null) {
-      this.writeLabelTextWithMargin(edge.label.boundingBox, 1, edge.label.label.text)
+      const de = DrawingEdge.getDrawingObj(edge.edge) as DrawingEdge
+      if (de) {
+        this.writeLabelTextWithMargin(edge.label.boundingBox, 1, de.labelText)
+      }
     }
   }
 

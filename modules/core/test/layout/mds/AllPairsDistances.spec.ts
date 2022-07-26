@@ -1,7 +1,7 @@
 import {Graph, Edge, CurveFactory, Point, GeomEdge, GeomNode, Node} from '../../../src'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {AllPairsDistances} from '../../../src/layout/mds/AllPairsDistances'
-import {createGeometry} from '../../utils/testUtils'
+import {createGeometry} from './SingleSourceDistances.spec'
 
 test('all pairs distances', () => {
   const graph = new Graph()

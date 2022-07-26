@@ -2,7 +2,7 @@ import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {PivotDistances} from '../../../src/layout/mds/PivotDistances'
 import {layoutGraphWithMds} from '../../../src/layout/mds/PivotMDS'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
-import {nodeBoundaryFunc, parseDotGraph, createGeometry, measureTextSize} from '../../utils/testUtils'
+import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
 
 function labelRectFunc(s: string) {
   return measureTextSize(s, {})
@@ -10,7 +10,7 @@ function labelRectFunc(s: string) {
 
 test('pivot distances', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
-  const gg = createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
+  const gg = dg.createGeometry(labelRectFunc)
   const pivotArray = new Array<number>(7)
   const pivotDistances = new PivotDistances(gg, pivotArray, () => 1)
   pivotDistances.run()
@@ -33,7 +33,7 @@ test('pivot distances', () => {
 })
 test('MDSGraphLayout - lay out a flat graph, no subgraphs', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
-  const gg = createGeometry(dg.graph, nodeBoundaryFunc, labelRectFunc)
+  const gg = dg.createGeometry(labelRectFunc)
   layoutGraphWithMds(gg, null)
   new SvgDebugWriter('/tmp/abstractMDS.svg').writeGeomGraph(gg)
 })

@@ -4,7 +4,6 @@ import {
   Graph,
   LayerDirectionEnum,
   Node,
-  Label,
   setNewParent,
   GeomObject,
   GeomNode,
@@ -24,7 +23,6 @@ import {
   ArrowTypeEnum,
   DrawingEdge,
   DrawingGraph,
-  DrawingLabel,
   DrawingNode,
   DrawingObject,
   RankEnum,
@@ -378,6 +376,9 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
         case 'clusterrank':
           drawingObj.clusterRank = str
           break
+        case 'measuredTextSize':
+          drawingObj.measuredTextSize = JSON.parse(str)
+          break
         default:
           break // remove the comment below to catch unsupported attributes
         // throw new Error('not implemented for ' + attr.id)
@@ -460,10 +461,7 @@ class DotParser {
     nc.addEdge(edge)
     const drawingEdge = new DrawingEdge(edge)
     parseAttrs(o, edge)
-    if (drawingEdge.labelText) {
-      edge.label = new Label(drawingEdge.labelText, edge)
-      drawingEdge.label = new DrawingLabel(drawingEdge.labelText)
-    }
+
     drawingEdge.directed = directed
     return [edge]
   }

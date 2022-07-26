@@ -8,7 +8,6 @@ export {Color} from './color'
 export {DrawingGraph} from './drawingGraph'
 export {DrawingEdge} from './drawingEdge'
 export {DrawingNode} from './drawingNode'
-export {DrawingLabel} from './drawingLabel'
 export {DrawingObject} from './drawingObject'
 export type TextMeasurerOptions = {
   fontFamily: string

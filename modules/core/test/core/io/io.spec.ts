@@ -16,6 +16,8 @@ import {DrawingObject} from '../../../src/drawing/drawingObject'
 import {Graph} from '../../../src/structs/graph'
 import {Edge} from '../../../src/structs/edge'
 import {Node} from '../../../src/structs/node'
+import {DrawingNode} from '../../../src/drawing/drawingNode'
+import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)
@@ -128,14 +130,49 @@ test('graph arrowsize', () => {
 })
 
 test('directed is preserved', () => {
-  const dotString = 'digraph G {\n' + 'a -> b\n' + '}'
+  let dotString = 'digraph G {\n' + 'a -> b\n' + '}'
+  let graph = parseDot(dotString)
+  let drawingGraph = DrawingGraph.getDrawingGraph(graph)
+  expect(drawingGraph.hasDirectedEdge()).toBe(true)
+  let json = graphToJSON(graph)
+  let newG = parseJSONGraph(json)
+  let nDrGr = DrawingGraph.getDrawingGraph(newG)
+  expect(nDrGr.hasDirectedEdge()).toBe(true)
+
+  dotString = 'graph G {\n' + 'a -- b\n' + '}'
+  graph = parseDot(dotString)
+  drawingGraph = DrawingGraph.getDrawingGraph(graph)
+  expect(drawingGraph.hasDirectedEdge()).toBe(false)
+  json = graphToJSON(graph)
+  newG = parseJSONGraph(json)
+  nDrGr = DrawingGraph.getDrawingGraph(newG)
+  expect(nDrGr.hasDirectedEdge()).toBe(false)
+})
+
+test('measuredTextSize is preserved', () => {
+  const dotString = 'digraph G {\n' + 'a -> b[label = foo]\n' + '}'
   const graph = parseDot(dotString)
   const drawingGraph = DrawingGraph.getDrawingGraph(graph)
-  expect(drawingGraph.hasDirectedEdge()).toBe(true)
+  drawingGraph.createGeometry()
+  for (const n of graph.shallowNodes) {
+    const dn = DrawingObject.getDrawingObj(n) as DrawingNode
+    expect(dn.measuredTextSize == null).toBe(false)
+  }
+  for (const n of graph.deepEdges) {
+    const dn = DrawingObject.getDrawingObj(n) as DrawingEdge
+    expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
+  }
+
   const json = graphToJSON(graph)
   const newG = parseJSONGraph(json)
-  const nDrGr = DrawingGraph.getDrawingGraph(newG)
-  expect(nDrGr.hasDirectedEdge()).toBe(true)
+  for (const n of newG.shallowNodes) {
+    const dn = DrawingObject.getDrawingObj(n) as DrawingNode
+    expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
+  }
+  for (const n of newG.deepEdges) {
+    const dn = DrawingObject.getDrawingObj(n) as DrawingEdge
+    expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)
+  }
 })
 
 test('graph style', () => {

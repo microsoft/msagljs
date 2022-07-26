@@ -75,7 +75,8 @@ class RRect extends Rectangle {
 
   set bottom(value: number) {
     super.bottom = value
-    this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center) // todo: optimize
+    if (!this.isEmpty)
+      this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center) // todo: optimize
   }
 }
 // packs the subgraphs and set the bounding box of the parent graph

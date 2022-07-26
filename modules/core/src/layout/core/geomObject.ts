@@ -1,6 +1,7 @@
 import {Attribute} from '../../structs/attribute'
 import {Entity} from '../../structs/entity'
 import {Rectangle} from './../../math/geometry/rectangle'
+import {GeomLabel} from './geomLabel'
 export abstract class GeomObject extends Attribute {
   static attachIndex = 0
   abstract boundingBox: Rectangle
@@ -14,4 +15,5 @@ export abstract class GeomObject extends Attribute {
     const p = this.entity.parent
     return p ? GeomObject.getGeom(p) : null
   }
+  label: GeomLabel
 }

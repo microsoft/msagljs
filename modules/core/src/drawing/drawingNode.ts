@@ -1,7 +1,6 @@
 import {DrawingObject} from './drawingObject'
 import {Color} from './color'
 import {ShapeEnum} from './shapeEnum'
-import {DrawingLabel} from './drawingLabel'
 import {Node} from '../structs/node'
 import {Attr} from 'dotparser'
 export class DrawingNode extends DrawingObject {
@@ -22,15 +21,7 @@ export class DrawingNode extends DrawingObject {
   }
 
   shape: ShapeEnum = ShapeEnum.box
-  label: DrawingLabel
   padding = 2
-
-  public get labelText(): string {
-    return this.label ? this.label.text : null
-  }
-  public set labelText(value) {
-    if (this.label != null) this.label.text = value
-  }
 
   get Padding(): number {
     return this.padding
@@ -95,7 +86,7 @@ export class DrawingNode extends DrawingObject {
   constructor(n: Node) {
     super(n)
     if (n != null) {
-      this.label = new DrawingLabel(n.id)
+      this.labelText = n.id
     }
   }
   // the non adgjacent edges should avoid being closer to the node than Padding

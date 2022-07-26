@@ -103,7 +103,7 @@ export class GeomEdge extends GeomObject {
 
     if (this.sourceArrowhead != null) rect.add(this.sourceArrowhead.tipPosition)
     if (this.targetArrowhead != null) rect.add(this.targetArrowhead.tipPosition)
-    if (this.edge.label) {
+    if (this.label) {
       rect.addRecSelf(this.label.boundingBox)
     }
 

@@ -1,9 +1,6 @@
 import {Rectangle} from '../../src'
-import {CurveFactory, Point, Polyline} from '../../src/math/geometry'
+import {Point, Polyline} from '../../src/math/geometry'
 import {InteractiveObstacleCalculator} from '../../src/routing/interactiveObstacleCalculator'
-import {Shape} from '../../src/routing/shape'
-import {ShapeObstacleCalculator} from '../../src/routing/ShapeObstacleCalculator'
-import {TightLooseCouple} from '../../src/routing/TightLooseCouple'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
 
 test('padded rectangle', () => {

@@ -1,6 +1,5 @@
 import {Entity} from './entity'
 import {Graph} from './graph'
-import {Label} from './label'
 import {Node} from './node'
 
 /** characterize edge if it connects an node and its ancestor */
@@ -50,7 +49,6 @@ export class Edge extends Entity {
   isInterGraphEdge(): boolean {
     return this.source.parent != this.target.parent
   }
-  label: Label
 
   EdgeToAncestor(): ToAncestorEnum {
     if (this.source instanceof Graph) {

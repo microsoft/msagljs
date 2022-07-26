@@ -148,30 +148,6 @@ function measureTextSizeOfNode(n: Node): Size {
   return measureTextSize(labelText, {})
 }
 
-export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve, labelRect: (s: string) => Size): GeomGraph {
-  for (const n of g.shallowNodes) {
-    if (n instanceof Graph) {
-      const subG = n as unknown as Graph
-      GeomGraph.mkWithGraphAndLabel(subG, measureTextSizeOfNode(subG))
-      createGeometry(subG, nodeBoundaryFunc, labelRect)
-    } else {
-      const gn = new GeomNode(n)
-      //const tsize = getTextSize(drawingNode.label.text, drawingNode.fontname)
-      const drawingObject = DrawingObject.getDrawingObj(n)
-      const text = drawingObject ? drawingObject.labelText ?? n.id : n.id
-      gn.boundaryCurve = nodeBoundaryFunc(text)
-    }
-  }
-  for (const e of g.edges) {
-    const ge = new GeomEdge(e)
-    if (e.label) {
-      /*Assert.assert(e.label != null)*/
-      ge.label = new GeomLabel(labelRect(e.label.text), e.label)
-    }
-  }
-  return GeomGraph.mkWithGraphAndLabel(g, measureTextSizeOfNode(g))
-}
-
 export function generateRandomGeomGraph(
   seed: number,
   nodeCount: number,

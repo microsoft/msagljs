@@ -1,7 +1,6 @@
 import {GeomNode, CurveFactory, Point, Edge, GeomEdge, GeomLabel, Rectangle, Graph, GeomGraph, Node} from '../../../src'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {LineSegment} from '../../../src/math/geometry'
-import {Label} from '../../../src/structs/label'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 test('trim edge no arrowheads', () => {
@@ -28,9 +27,7 @@ test('trim edge with arrowheads', () => {
 
   const ab = new Edge(a, b)
   const gab = new GeomEdge(ab)
-  const label = new Label('ab', ab)
-  label.parent = ab
-  gab.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(10, 5)), label)
+  gab.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(10, 5)), gab)
   const m = Point.middle(ga.center, gb.center)
 
   gab.label.boundingBox = Rectangle.mkPP(m, m.add(new Point(10, 10)))

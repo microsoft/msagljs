@@ -24,7 +24,7 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
     }
   }
 
-  static RestoreOnKevValue(kv: [GeomObject, RestoreData]) {
+  static RestoreOnKevValue(kv: [GeomObject | GeomLabel, RestoreData]) {
     if (kv[1].Action != null) {
       kv[1].Action()
       return

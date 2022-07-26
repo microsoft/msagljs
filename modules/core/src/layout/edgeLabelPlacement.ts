@@ -312,7 +312,7 @@ export class EdgeLabelPlacement extends Algorithm {
           placed = this.PlaceEdgeLabelOnCurve(edge.label)
           break
         case PlacementStrategy.Horizontal:
-          placed = this.PlaceEdgeLabelHorizontally(edge.label)
+          placed = this.PlaceEdgeLabelHorizontally(edge)
           break
         default:
           throw new Error('unexpected case')
@@ -330,14 +330,14 @@ export class EdgeLabelPlacement extends Algorithm {
   }
 
   getLabelInfo(label: GeomLabel): LabelInfo {
-    const ge = GeomEdge.getGeom(label.label.parent) as GeomEdge
+    const ge = label.parent as GeomEdge
     return this.edgeInfos.get(ge)
   }
 
   //     Places the label at the first position requested.  Ignores all overlaps.
 
   PlaceLabelAtFirstPosition(label: GeomLabel) {
-    const edge = GeomEdge.getGeom(label.label.parent) as GeomEdge
+    const edge = label.parent as GeomEdge
     const curve: ICurve = edge.curve
     const points = this.edgeInfos.get(edge).edgePoints
     const index: number = this.StartIndex(
@@ -379,11 +379,8 @@ export class EdgeLabelPlacement extends Algorithm {
     label.center = cen.div(labelInfo.innerPoints.length + labelInfo.outerPoints.length)
   }
 
-  static geomEdge(geomLabel: GeomLabel): GeomEdge {
-    return GeomEdge.getGeom(geomLabel.label.parent) as GeomEdge
-  }
-
-  public PlaceEdgeLabelHorizontally(label: GeomLabel): boolean {
+  public PlaceEdgeLabelHorizontally(edge: GeomEdge): boolean {
+    const label = edge.label
     // approximate label with a rectangle
     // process candidate points for label ordered by priority
     // check candidate point for conflicts - if none then stop and keep placement
@@ -392,7 +389,7 @@ export class EdgeLabelPlacement extends Algorithm {
     const wh = new Size(label.width, label.height)
     let bestConflictIndex = -1
     let bestRectangle = Rectangle.mkEmpty()
-    const curve = EdgeLabelPlacement.geomEdge(label).curve
+    const curve = edge.curve
     for (const index of EdgeLabelPlacement.ExpandingSearch(
       this.StartIndex(
         label,
@@ -566,7 +563,7 @@ export class EdgeLabelPlacement extends Algorithm {
     // approximate label with a set of circles
     // generate list of candidate points for label ordered by priority
     // check candidate point for conflicts - if none then stop and keep placement
-    const edge = GeomEdge.getGeom(label.label.parent) as GeomEdge
+    const edge = label.parent as GeomEdge
     const labelInfo = this.getLabelInfo(label)
     labelInfo.innerPoints = null
     const curvePoints = labelInfo.edgePoints
@@ -698,7 +695,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   // <returns>The index of the first obstacle map that the rectangle intersects. int.MaxValue if there is no intersection.</returns>
   ConflictIndexRL(queryRect: Rectangle, label: GeomLabel): number {
-    const edge = <GeomEdge>GeomEdge.getGeom(label.label.parent)
+    const edge = <GeomEdge>label.parent
     const source: GeomNode = edge.source
     const target: GeomNode = edge.target
     for (let i = 0; i < this.obstacleMaps.length; i++) {

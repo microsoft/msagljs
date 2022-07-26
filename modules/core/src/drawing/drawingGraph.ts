@@ -85,10 +85,10 @@ export class DrawingGraph extends DrawingNode {
     if (de.directed == false) {
       ge.targetArrowhead = null
     }
-    if (e.label) {
-      const size = this.textMeasure(e.label.text, {fontSize: de.fontsize, fontFamily: de.fontname, fontStyle: 'normal'})
-      ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), e.label)
-      de.label.measuredTextSize = size
+    if (de.labelText) {
+      const size = this.textMeasure(de.labelText, {fontSize: de.fontsize, fontFamily: de.fontname, fontStyle: 'normal'})
+      ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), ge)
+      de.measuredTextSize = size
     }
     if (de.penwidth) {
       ge.lineWidth = de.penwidth

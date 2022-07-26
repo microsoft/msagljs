@@ -1,4 +1,4 @@
-import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, Graph, ICurve, Node, Point, Rectangle} from '../../../src'
+import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomNode, Graph, ICurve, Node, Point, Rectangle} from '../../../src'
 import {DrawingObject} from '../../../src/drawing/drawingObject'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SingleSourceDistances} from '../../../src/layout/mds/SingleSourceDistances'
@@ -19,11 +19,7 @@ export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve
     }
   }
   for (const e of g.edges) {
-    const ge = new GeomEdge(e)
-    if (e.label) {
-      /*Assert.assert(e.label != null)*/
-      ge.label = new GeomLabel(labelRect(e.label.text), e.label)
-    }
+    new GeomEdge(e)
   }
   return GeomGraph.mkWithGraphAndLabel(g, null)
 }

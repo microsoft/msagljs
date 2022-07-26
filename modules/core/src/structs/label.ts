@@ -1,4 +1,4 @@
-import {Entity} from './entity'
+/*import {Entity} from './entity'
 
 export class Label extends Entity {
   text: string
@@ -10,4 +10,4 @@ export class Label extends Entity {
   toString() {
     return this.text
   }
-}
+}*/

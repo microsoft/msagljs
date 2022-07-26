@@ -21,7 +21,7 @@ export abstract class DrawingObject extends Attribute {
     if (source.labelfontcolor && source.labelfontcolor.keyword.toLowerCase() != 'black') {
       target.labelfontcolor = source.labelfontcolor
     }
-    if ((source.labelText != null || source.labelText == '') && source.labelText != source.id) {
+    if (source.labelText != null && source.labelText != '' && source.labelText != source.id) {
       target.labelText = source.labelText
     }
     if (source.fontColor && source.fontColor.keyword.toLowerCase() != 'black') {
@@ -95,7 +95,7 @@ export abstract class DrawingObject extends Attribute {
     if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() != 'black') {
       yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
     }
-    if ((this.labelText != null || this.labelText == '') && this.labelText != this.id) {
+    if ((this.labelText == null || this.labelText == '') && this.entity && this.labelText != this.id) {
       yield {type: 'attr', id: 'label', eq: this.labelText}
     }
     if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
@@ -159,6 +159,9 @@ export abstract class DrawingObject extends Attribute {
     }
     if (this.clusterRank) {
       yield {type: 'attr', id: 'clusterrank', eq: this.clusterRank.toString()}
+    }
+    if (this.measuredTextSize) {
+      yield {type: 'attr', id: 'measuredTextSize', eq: JSON.stringify(this.measuredTextSize)}
     }
   }
   measuredTextSize: Size

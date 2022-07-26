@@ -1,21 +1,16 @@
-import {GeomObject} from './geomObject'
 import {Rectangle, Size} from './../../math/geometry/rectangle'
-import {Label} from '../../structs/label'
-import {Point} from '../..'
+import {GeomObject, Point} from '../..'
 
-export class GeomLabel extends GeomObject {
+export class GeomLabel {
   /** this field is needed for interactive editing */
   AttachmentSegmentEnd: Point
   /** this field is needed for interactive editing */
   AttachmentSegmentStart: Point
-
-  constructor(size: Size, label: Label) {
-    super(label)
+  parent: GeomObject
+  constructor(size: Size, parent: GeomObject) {
     /*Assert.assert(label instanceof Label)*/
     this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
-  }
-  get label() {
-    return <Label>this.entity
+    this.parent = parent
   }
   boundingBox: Rectangle
   get width() {
