@@ -1,4 +1,4 @@
-import {graphToJSON, parseJSONGraph} from '../../../../parser/src/dotparser'
+import {graphToJSON, parseDot, parseJSONGraph} from '../../../../parser/src/dotparser'
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
@@ -13,6 +13,9 @@ import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph, layoutIsCalculated} from '../../../src/layout/driver'
 import * as fs from 'fs'
 import {DrawingObject} from '../../../src/drawing/drawingObject'
+import {Graph} from '../../../src/structs/graph'
+import {Edge} from '../../../src/structs/edge'
+import {Node} from '../../../src/structs/node'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)
@@ -122,6 +125,17 @@ test('graph arrowsize', () => {
   const jsonOfG: JSONGraph = graphToJSON(g)
   const newG = parseJSONGraph(jsonOfG)
   expect(newG != null).toBe(true)
+})
+
+test('directed is preserved', () => {
+  const dotString = 'digraph G {\n' + 'a -> b\n' + '}'
+  const graph = parseDot(dotString)
+  const drawingGraph = DrawingGraph.getDrawingGraph(graph)
+  expect(drawingGraph.hasDirectedEdge()).toBe(true)
+  const json = graphToJSON(graph)
+  const newG = parseJSONGraph(json)
+  const nDrGr = DrawingGraph.getDrawingGraph(newG)
+  expect(nDrGr.hasDirectedEdge()).toBe(true)
 })
 
 test('graph style', () => {

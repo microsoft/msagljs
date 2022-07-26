@@ -883,12 +883,8 @@ function* drawingObjAttrIter(drawingObj: DrawingObject) {
 }
 
 function getGraphType(graph: Graph): 'digraph' | 'graph' {
-  for (const e of graph.deepEdges) {
-    const de = DrawingEdge.getDrawingObj(e)
-    if (de == null) return 'digraph'
-    if ((de.arrowhead && de.arrowhead != ArrowTypeEnum.none) || (de.arrowtail && de.arrowtail != ArrowTypeEnum.none)) return 'digraph'
-  }
-  return 'graph' // it seems that edges do not have direction
+  const drGr = DrawingGraph.getDrawingGraph(graph)
+  return drGr.hasDirectedEdge() ? 'digraph' : 'graph'
 }
 function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {
   // make the levels equal
