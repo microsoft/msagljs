@@ -49,9 +49,8 @@ import { PivotMDS } from '../mds/PivotMDS';
                 this.LayoutComponent(this.graph);
             }
             else {
-                for (let c in this.graph.RootCluster.AllClustersDepthFirst()) {
-                    if (((c == this.graph.RootCluster) 
-                                || (c.RectangularBoundary == null))) {
+                for (let c of this.graph.subgraphs()) {
+                    if (((c .RectangularBoundary == null) {
                         // TODO: Warning!!! continue If
                     }
                     

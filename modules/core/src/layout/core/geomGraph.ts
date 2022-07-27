@@ -10,9 +10,6 @@ import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, CurveFactory, ICurve, PointLocation} from '../../math/geometry'
 
-// import {Curve} from '../../math/geometry/curve'
-// import {Ellipse} from '../../math/geometry/ellipse'
-// import {Entity} from '../../structs/entity'
 class RRect extends Rectangle {
   isOk(): boolean {
     if (this.isEmpty()) {
@@ -79,6 +76,7 @@ class RRect extends Rectangle {
       this.roundedRect_ = CurveFactory.mkRectangleWithRoundedCorners(super.width, super.height, this.radX, this.radY, super.center) // todo: optimize
   }
 }
+
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
   const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
