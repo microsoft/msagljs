@@ -135,7 +135,7 @@ export class OverlapRemovalNode {
   //  This is the constructor for the "fake nodes" of a Cluster and its Borders.
   //  We default to free border weight so the cluster borders can move freely during Solve().
   //  The weight is overridden for the Cluster border nodes during Cluster.Generate.
-  constructorNA(id: number, userData: any): OverlapRemovalNode {
+  static constructorNA(id: number, userData: any): OverlapRemovalNode {
     return new OverlapRemovalNode(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
   }
 
