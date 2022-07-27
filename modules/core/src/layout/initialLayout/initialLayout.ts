@@ -20,10 +20,7 @@ import { PivotMDS } from '../mds/PivotMDS';
         ///  <summary>
         ///  Set to true if the graph specified is a single connected component with no clusters
         ///  </summary>
-        public get SingleComponent(): boolean {
-        }
-        public set SingleComponent(value: boolean)  {
-        }
+        SingleComponent: boolean 
         
         ///  <summary>
         ///  Static layout of graph by gradually adding constraints.
@@ -34,10 +31,9 @@ import { PivotMDS } from '../mds/PivotMDS';
         ///  ratio as close as possible to the PackingAspectRatio property (not currently used).
         ///  </summary>
         public constructor (graph: GeomGraph, settings: FastIncrementalLayoutSettings) {
-            ValidateArg.IsNotNull(this.graph, "graph");
-            ValidateArg.IsNotNull(this.settings, "settings");
-            this.graph = this.graph;
-            this.settings = new FastIncrementalLayoutSettings(this.settings);
+            super(null)
+            this.graph = graph;
+            this.settings = FastIncrementalLayoutSettings.ctorClone(settings);
             this.settings.ApplyForces = true;
             this.settings.InterComponentForces = true;
             this.settings.RungeKuttaIntegration = false;

@@ -1,14 +1,19 @@
 import {LinkedList} from '@esfx/collections'
 import {Rectangle} from '../../math/geometry'
 import {CancelToken} from '../../utils/cancelToken'
+import {GeomGraph, GeomNode} from '../core'
 import {EdgeConstraints} from '../edgeConstraints'
 import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {FastIncrementalLayout} from './fastIncrementalLayout'
+import {IConstraint} from './iConstraint'
+import {LockPosition} from './lockPosition'
 
 export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///  Stop after maxIterations completed
   ///  </summary>
   maxIterations = 100
+  clusterMargin = 10
 
   ///  <summary>
   ///  Stop after maxIterations completed
@@ -189,75 +194,40 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
     this.applyForces = value
   }
 
-  private /* internal */ algorithm: FastIncrementalLayout
+  algorithm: FastIncrementalLayout
 
-  private /* internal */ locks: LinkedList<LockPosition> = new LinkedList<LockPosition>()
+  locks: LinkedList<LockPosition> = new LinkedList<LockPosition>()
 
   ///  <summary>
   ///  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
   ///  for example, do interactive mouse
   ///   dragging.
-  ///  We return the LinkedListNode which you can store together with your local Node object so that a RemoveLock operation can be performed in
+  ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
   ///  constant time.
   ///  </summary>
   ///  <param name="node"></param>
   ///  <param name="bounds"></param>
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
-  public CreateLock(node: Node, bounds: Rectangle): LockPosition {
+  public CreateLockNR(node: GeomNode, bounds: Rectangle): LockPosition {
     const lp: LockPosition = new LockPosition(node, bounds)
-    lp.listNode = this.locks.AddLast(lp)
+    lp.listNode = this.locks.push(lp)
     return lp
   }
 
   ///  <summary>
   ///  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
   ///  for example, do interactive mouse dragging.
-  ///  We return the LinkedListNode which you can store together with your local Node object so that a RemoveLock operation can be performed in
+  ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
   ///  constant time.
   ///  </summary>
   ///  <param name="node"></param>
   ///  <param name="bounds"></param>
   ///  <param name="weight">stay weight of lock</param>
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
-  public CreateLock(node: Node, bounds: Rectangle, weight: number): LockPosition {
-    const lp: LockPosition = new LockPosition(node, bounds, weight)
-    lp.listNode = this.locks.AddLast(lp)
+  public CreateLock(node: GeomNode, bounds: Rectangle, weight: number): LockPosition {
+    const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight)
+    lp.listNode = this.locks.push(lp)
     return lp
-  }
-
-  ///  <summary>
-  ///  Remove all locks on node positions
-  ///  </summary>
-  public ClearLocks() {
-    //             foreach (var l in locks) {
-    //                 l.listNode = null;
-    //             }
-    this.locks.Clear()
-  }
-
-  ///  <summary>
-  ///  Remove a specific lock on node position.  Once you remove it, you'll have to call AddLock again to create a new one if you want to lock it again.
-  ///  </summary>
-  ///  <param name="lockPosition">the LinkedListNode returned by the AddLock method above</param>
-  @SuppressMessage(
-    'Microsoft.Globalization',
-    'CA1303:Do not pass literals as localized parameters',
-    (MessageId = 'System.Diagnostics.Debug.WriteLine(System.String)'),
-  )
-  @SuppressMessage('Microsoft.Naming', 'CA2204:Literals should be spelled correctly', (MessageId = 'FastIncrementalLayoutSettings'))
-  @SuppressMessage('Microsoft.Naming', 'CA2204:Literals should be spelled correctly', (MessageId = 'RemoveLock'))
-  public RemoveLock(lockPosition: LockPosition) {
-    ValidateArg.IsNotNull(lockPosition, 'lockPosition')
-    if (lockPosition.listNode != null) {
-      lockPosition.RestoreNodeWeight()
-      try {
-        this.locks.Remove(lockPosition.listNode)
-      } catch (e /*:InvalidOperationException*/) {
-        System.Diagnostics.Debug.WriteLine('Problem in FastIncrementalLayoutSettings.RemoveLock ' + e.Message)
-      }
-
-      lockPosition.listNode = null
-    }
   }
 
   ///  <summary>
@@ -274,17 +244,17 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///  reset iterations and convergence status
   ///  </summary>
-  private /* internal */ Unconverge() {
+  Unconverge() {
     this.iterations = 0
     // EdgeRoutesUpToDate = false;
-    converged = false
+    this.converged = false
   }
 
   ///  <summary>
   ///
   ///  </summary>
-  public InitializeLayout(graph: GeometryGraph, initialConstraintLevel: number) {
-    this.InitializeLayout(graph, initialConstraintLevel, () => {}, this)
+  public InitializeLayoutGN(graph: GeomGraph, initialConstraintLevel: number) {
+    this.InitializeLayout(graph, initialConstraintLevel, () => this)
   }
 
   ///  <summary>
@@ -293,8 +263,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <param name="graph">The graph upon which layout is performed</param>
   ///  <param name="initialConstraintLevel"></param>
   ///  <param name="clusterSettings"></param>
-  public InitializeLayout(graph: GeometryGraph, initialConstraintLevel: number, clusterSettings: Func<Cluster, LayoutSettings>) {
-    ValidateArg.IsNotNull(graph, 'graph')
+  public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => LayoutSettings) {
     this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel, clusterSettings)
     this.ResetLayout()
   }
@@ -316,15 +285,14 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///
   ///  </summary>
-  public IncrementalRun(graph: GeometryGraph) {
-    this.IncrementalRun(graph, () => {}, this)
+  public IncrementalRunG(graph: GeomGraph) {
+    this.IncrementalRunGF(graph, () => this)
   }
 
-  private SetupIncrementalRun(graph: GeometryGraph, clusterSettings: Func<Cluster, LayoutSettings>) {
-    ValidateArg.IsNotNull(graph, 'graph')
+  private SetupIncrementalRun(graph: GeomGraph, clusterSettings: (g: GeomGraph) => LayoutSettings) {
     if (!this.IsInitialized) {
-      this.InitializeLayout(graph, MaxConstraintLevel, clusterSettings)
-    } else if (IsDone) {
+      this.InitializeLayout(graph, this.MaxConstraintLevel, clusterSettings)
+    } else if (this.IsDone) {
       //  If we were already done from last time but we are doing more work then something has changed.
       this.ResetLayout()
     }
@@ -333,55 +301,56 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///  Run the FastIncrementalLayout instance incrementally
   ///  </summary>
-  public IncrementalRun(graph: GeometryGraph, clusterSettings: Func<Cluster, LayoutSettings>) {
+  public IncrementalRunGF(graph: GeomGraph, clusterSettings: (a: GeomGraph) => LayoutSettings) {
     this.SetupIncrementalRun(graph, clusterSettings)
-    this.algorithm.Run()
-    graph.UpdateBoundingBox()
+    this.algorithm.run()
+    // graph.UpdateBoundingBox()
   }
 
   ///  <summary>
   ///
   ///  </summary>
-  public IncrementalRun(cancelToken: CancelToken, graph: GeometryGraph, clusterSettings: Func<Cluster, LayoutSettings>) {
+  public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph, clusterSettings: (a: GeomGraph) => LayoutSettings) {
     if (cancelToken != null) {
-      cancelToken.ThrowIfCanceled()
+      cancelToken.throwIfCanceled()
     }
 
     this.SetupIncrementalRun(graph, clusterSettings)
-    this.algorithm.Run(cancelToken)
-    graph.UpdateBoundingBox()
+    this.algorithm.cancelToken = cancelToken
+    this.algorithm.run()
+    // graph.UpdateBoundingBox()
   }
 
   ///  <summary>
   ///  Clones the object
   ///  </summary>
   ///  <returns></returns>
-  public /* override */ Clone(): LayoutSettings {
-    return <LayoutSettings>MemberwiseClone()
+  Clone(): LayoutSettings {
+    return FastIncrementalLayoutSettings.ctorClone(this)
   }
 
   ///  <summary>
   ///
   ///  </summary>
-  public get StructuralConstraints(): IEnumerable<IConstraint> {
-    return structuralConstraints
+  public get StructuralConstraints(): Iterable<IConstraint> {
+    return this.structuralConstraints
   }
 
   ///  <summary>
   ///
   ///  </summary>
   public AddStructuralConstraint(cc: IConstraint) {
-    structuralConstraints.Add(cc)
+    this.structuralConstraints.push(cc)
   }
 
-  private /* internal */ structuralConstraints: List<IConstraint> = new List<IConstraint>()
+  structuralConstraints: Array<IConstraint> = new Array<IConstraint>()
 
   ///  <summary>
   ///  Clear all constraints over the graph
   ///  </summary>
   public ClearConstraints() {
-    this.locks.Clear()
-    this.structuralConstraints.Clear()
+    this.locks.clear()
+    this.structuralConstraints = []
     //  clusterHierarchies.Clear();
   }
 
@@ -389,7 +358,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///
   ///  </summary>
   public ClearStructuralConstraints() {
-    this.structuralConstraints.Clear()
+    this.structuralConstraints = []
   }
 
   ///  <summary>
@@ -397,21 +366,17 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  clusters, then between each cluster boundary and nodes that are not
   ///  part of that cluster.
   ///  </summary>
-  public get AvoidOverlaps(): boolean {}
-  public set AvoidOverlaps(value: boolean) {}
-
+  AvoidOverlaps: boolean
   ///  <summary>
   ///  If edges have FloatingPorts then the layout will optimize edge lengths based on the port locations.
   ///  If MultiLocationFloatingPorts are specified then the layout will choose the nearest pair of locations for each such edge.
   ///  </summary>
-  public get RespectEdgePorts(): boolean {}
-  public set RespectEdgePorts(value: boolean) {}
+  RespectEdgePorts: boolean
 
   ///  <summary>
   ///  Apply nice but expensive routing of edges once layout converges
   ///  </summary>
-  public get RouteEdges(): boolean {}
-  public set RouteEdges(value: boolean) {}
+  RouteEdges: boolean
 
   approximateRouting = true
 
@@ -512,8 +477,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  When layout is in progress the following is false.
   ///  When layout has converged, routes are populated and this is set to true to tell the UI that the routes can be drawn.
   ///  </summary>
-  public get EdgeRoutesUpToDate(): boolean {}
-  public set EdgeRoutesUpToDate(value: boolean) {}
+  EdgeRoutesUpToDate: boolean
 
   maxConstraintLevel = 2
 
@@ -578,15 +542,10 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   }
 
   ///  <summary>
-  ///
-  ///  </summary>
-  public constructor() {}
-
-  ///  <summary>
   ///  Shallow copy the settings
   ///  </summary>
   ///  <param name="previousSettings"></param>
-  public static ctorClone(previousSettings: FastIncrementalLayoutSettings) {
+  public static ctorClone(previousSettings: FastIncrementalLayoutSettings): FastIncrementalLayoutSettings {
     const ret = new FastIncrementalLayoutSettings()
     ret.maxIterations = previousSettings.maxIterations
     ret.minorIterations = previousSettings.minorIterations
@@ -614,7 +573,8 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
     ret.clusterGravity = previousSettings.clusterGravity
     ret.PackingAspectRatio = previousSettings.PackingAspectRatio
     ret.NodeSeparation = previousSettings.NodeSeparation
-    ret.ClusterMargin = previousSettings.ClusterMargin
+    ret.clusterMargin = previousSettings.clusterMargin
+    return ret
   }
 
   clusterGravity = 1
