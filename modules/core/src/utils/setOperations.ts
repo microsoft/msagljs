@@ -111,3 +111,9 @@ export function removeFromPointPairMap<V>(map: PointPairMap<Set<V>>, key: PointP
 export function removeFromPointPairMapTuple<V>(map: PointPairMap<Set<V>>, key: [Point, Point], val: V) {
   removeFromPointPairMap(map, new PointPair(key[0], key[1]), val)
 }
+export function removeFromArray<T>(arr: T[], OverlapRemovalNode: T) {
+  const i = arr.findIndex((a: T) => a === OverlapRemovalNode)
+  if (i >= 0) {
+    arr.splice(i, 1)
+  }
+}
