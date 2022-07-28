@@ -201,7 +201,7 @@ export class OverlapRemovalNode {
     )
   }
 
-  public CompareToO(other: OverlapRemovalNode): number {
+  public compareTo(other: OverlapRemovalNode): number {
     let cmp: number = this.Position - other.Position
     if (cmp == 0) {
       cmp = this.Id - other.Id
@@ -210,12 +210,8 @@ export class OverlapRemovalNode {
     return cmp
   }
 
-  public CompareTo(rhs: OverlapRemovalNode): number {
-    return this.CompareTo(rhs)
-  }
-
   //  Omitting any of the following violates rule: OverrideMethodsOnComparableTypes.
   public /* override */ Equals(obj: OverlapRemovalNode): boolean {
-    return this.CompareTo(obj) == 0
+    return this.compareTo(obj) == 0
   }
 }

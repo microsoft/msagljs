@@ -44,7 +44,6 @@
 //
 
 import {Stack} from 'stack-typescript'
-import {constructor} from '../../../routing/ConstrainedDelaunayTriangulation/ThreeArray'
 import {Constraint} from '../../projectionSolver/Constraint'
 import {Solver} from '../../projectionSolver/Solver'
 import {Rectangle} from '../rectangle'
@@ -55,6 +54,7 @@ import {OverlapRemovalParameters} from './overlapRemovalParameters'
 import {String} from 'typescript-string-operations'
 import {GeomGraph} from '../../../layout/core'
 import {Assert} from '../../../utils/assert'
+import {ScanLine} from './scanLine'
 
 //  For iterative recursion (though we do not expect deeply nested clusters).
 class ClusterItem {
@@ -204,10 +204,10 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
-  static constructorNOONN(
+  static constructorNOANN(
     id: number,
     parentCluster: OverlapRemovalCluster,
-    userData: Object,
+    userData: any,
     padding: number,
     paddingP: number,
   ): OverlapRemovalCluster {
@@ -709,7 +709,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     // this.#endif
     // //  VERBOSE
     const scanLine = new ScanLine()
-    for (const evt: Event in events) {
+    for (const evt of events) {
       const currentNode: OverlapRemovalNode = evt.Node
       if (evt.IsForOpen) {
         //  Insert the current node into the scan line.
