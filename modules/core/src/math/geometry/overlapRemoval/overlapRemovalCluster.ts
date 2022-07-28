@@ -5,7 +5,7 @@
 //  Cluster as a normal Node (which it inherits from), adding a pair of fake variables
 //  (corresponding to its borders along the primary axis) to the Solver for it. This
 //  allows us to generate Constraints between Nodes and Clusters at the same level
-//  (i.e. within the same Cluster).  Clusters may contain Nodes which are other Clusters;
+//  (i.OverlapRemovalNode. within the same Cluster).  Clusters may contain Nodes which are other Clusters;
 //  these form a tree starting at the root of a ClusterHierarchy.  Multiple Cluster
 //  Hierarchies may exist; each has its constraints evaluated separately from all other
 //  ClusterHierarchies, thereby allowing intersecting clusters; a common example of this
@@ -52,7 +52,6 @@ import {OverlapRemovalGlobalConfiguration} from './overlapRemovalGlobalConfigura
 import {OverlapRemovalNode} from './overlapRemovalNode'
 import {OverlapRemovalParameters} from './overlapRemovalParameters'
 import {String} from 'typescript-string-operations'
-import {GeomGraph} from '../../../layout/core'
 import {Assert} from '../../../utils/assert'
 import {ScanLine} from './scanLine'
 
@@ -231,7 +230,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   constructor(
     id: number,
     parentCluster: OverlapRemovalCluster,
-    userData: Object,
+    userData: any,
     minSize: number,
     minSizeP: number,
     nodePadding: number,
@@ -401,7 +400,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     const boundaryRect = new Rectangle({left: Number.MAX_VALUE, right: Number.MIN_VALUE, bottom: Number.MAX_VALUE, top: Number.MIN_VALUE})
 
     //  The list of open/close events, which will be sorted on the perpendicular coordinate of the event
-    //  (e.g. for horizontal constraint generation, order on vertical position).
+    //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
     const events = this.CreateEvents(solver, /* ref */ boundaryRect)
     //  If we added no events, we're either Fixed (so continue) or empty (so return).
     if (events.length == 0 && !this.TranslateChildren) {
@@ -698,7 +697,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   GenerateFromEvents(solver: Solver, parameters: OverlapRemovalParameters, events: Array<Event>, isHorizontal: boolean) {
     //  First, sort the events on the perpendicular coordinate of the event
-    //  (e.g. for horizontal constraint generation, order on vertical position).
+    //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
     events.sort()
     // this.#if(VERBOSE)
     // System.Diagnostics.Debug.WriteLine('Events:')
@@ -714,10 +713,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       if (evt.IsForOpen) {
         //  Insert the current node into the scan line.
         scanLine.Insert(currentNode)
-        this.#if(VERBOSE)
-        System.Diagnostics.Debug.WriteLine('ScanAdd: {0}', currentNode)
-        this.#endif
-        //  VERBOSE
+
         //  Find the nodes that are currently open to either side of it and are either overlapping
         //  nodes or the first non-overlapping node in that direction.
         currentNode.LeftNeighbors = this.GetLeftNeighbours(parameters, scanLine, currentNode, isHorizontal)
@@ -730,7 +726,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  If there is currently a non-overlap constraint between any two nodes across the
         //  two neighbour lists we've just created, we can remove them because they will be
         //  transitively enforced by the constraints we'll create for the current node.
-        //  I.e., we can remove the specification for the constraint
+        //  I.OverlapRemovalNode., we can remove the specification for the constraint
         //       leftNeighborNode + gap + padding <= rightNeighborNode
         //  because it is implied by the constraints we'll create for
         //       leftNeighborNode + gap + padding <= node
@@ -752,15 +748,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           for (let jj = 0; jj < numRightNeighbors; jj++) {
             //  TODOunit: test this
             const nodeToRemove: OverlapRemovalNode = currentNode.RightNeighbors[jj]
-            if (leftNeighborNode.RightNeighbors.Remove(nodeToRemove)) {
-              this.#if(VERBOSE)
-              System.Diagnostics.Debug.WriteLine(' {0} RnbourRem {1} --> {2}', 'H', leftNeighborNode, nodeToRemove)
-              // TODO: Warning!!!, inline IF is not supported ?
-              isHorizontal
-              ;('V')
-              this.#endif
-              //  VERBOSE
-            }
+            removeFromArray(leftNeighborNode.RightNeighbors, nodeToRemove)
           }
 
           leftNeighborNode.RightNeighbors.push(currentNode)
@@ -771,15 +759,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           const rightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[ii]
           for (let jj = 0; jj < numLeftNeighbors; jj++) {
             const nodeToRemove: OverlapRemovalNode = currentNode.LeftNeighbors[jj]
-            if (rightNeighborNode.LeftNeighbors.Remove(nodeToRemove)) {
-              this.#if(VERBOSE)
-              System.Diagnostics.Debug.WriteLine(' {0} LnbourRem {1} --> {2}', 'H', nodeToRemove, rightNeighborNode)
-              // TODO: Warning!!!, inline IF is not supported ?
-              isHorizontal
-              ;('V')
-              this.#endif
-              //  VERBOSE
-            }
+            removeFromArray(rightNeighborNode.LeftNeighbors, nodeToRemove)
           }
 
           rightNeighborNode.LeftNeighbors.push(currentNode)
@@ -791,8 +771,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  from its neighbours lists.  If we're closing we should have left neighbours so
       //  this is null then we've likely got some sort of internal calculation error.
       if (currentNode.LeftNeighbors == null) {
-        Debug.Assert(currentNode.LeftNeighbors != null, 'LeftNeighbors should not be null for a Close event')
-        // TODO: Warning!!! continue If
+        // Debug.Assert(currentNode.LeftNeighbors != null, 'LeftNeighbors should not be null for a Close event')
+        continue
       }
 
       //  currentNode is the current node; if it's a cluster, translate it to the node that
@@ -807,17 +787,17 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  case it will have the active neighbours list, not leftNeighborNode (which will
         //  be the left border "fake Node").
         const origLeftNeighborNode: OverlapRemovalNode = currentNode.LeftNeighbors[ii]
-        origLeftNeighborNode.RightNeighbors.Remove(currentNode)
+        removeFromArray(origLeftNeighborNode.RightNeighbors, currentNode)
         const leftNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(origLeftNeighborNode)
-        Debug.Assert(leftNeighborNode.OpenP == origLeftNeighborNode.OpenP, 'leftNeighborNode.OpenP must == origLeftNeighborNode.OpenP')
+        //Debug.Assert(leftNeighborNode.OpenP == origLeftNeighborNode.OpenP, 'leftNeighborNode.OpenP must == origLeftNeighborNode.OpenP')
         //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
         //  We are closing the node here so use an alternative to OverlapP for additional
         //  consistency verification.  Allow a little rounding error.
-        Debug.Assert(
-          isHorizontal ||
-            currentNode.CloseP + (this.NodePaddingP - leftNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
-          'LeftNeighbors: unexpected close/open overlap',
-        )
+        // Debug.Assert(
+        //   isHorizontal ||
+        //     currentNode.CloseP + (this.NodePaddingP - leftNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
+        //   'LeftNeighbors: unexpected close/open overlap',
+        // )
         const p: number = this.ClusterPadding
         // TODO: Warning!!!, inline IF is not supported ?
         leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode
@@ -828,14 +808,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         }
 
         const cst: Constraint = solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
-        Debug.Assert(cst != null, 'LeftNeighbors: unexpected null cst')
-        this.#if(VERBOSE)
-        System.Diagnostics.Debug.WriteLine(' {0} LnbourCst {1} -> {2} g {3:F5}', 'H', cst.Left.Name, cst.Right.Name, cst.Gap)
-        // TODO: Warning!!!, inline IF is not supported ?
-        isHorizontal
-        ;('V')
-        this.#endif
-        //  VERBOSE
       }
 
       //  ... and RightNeighbors must start after the current node.
@@ -843,44 +815,30 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       for (let ii = 0; ii < cRightNeighbours; ii++) {
         //  Keep original node, which may be a cluster; see comments in LeftNeighbors above.
         const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[ii]
-        origRightNeighborNode.LeftNeighbors.Remove(currentNode)
+        removeFromArray(origRightNeighborNode.LeftNeighbors, currentNode)
         const rightNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(origRightNeighborNode)
         //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
         //  Allow a little rounding error.
-        Debug.Assert(
-          isHorizontal ||
-            currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
-          'RightNeighbors: unexpected close/open overlap',
-        )
-        const p: number = this.ClusterPadding
-        // TODO: Warning!!!, inline IF is not supported ?
-        currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode
-        this.NodePadding
+        // Debug.Assert(
+        //   isHorizontal ||
+        //     currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
+        //   'RightNeighbors: unexpected close/open overlap',
+        // )
+        const p =
+          currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
         let separation: number = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
         if (this.TranslateChildren) {
           separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
         }
 
         const cst: Constraint = solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
-        Debug.Assert(cst != null, 'RightNeighbors: unexpected null cst')
-        this.#if(VERBOSE)
-        System.Diagnostics.Debug.WriteLine(' {0} RnbourCst {1} -> {2} g {3:F5}', 'H', cst.Left.Name, cst.Right.Name, cst.Gap)
-        // TODO: Warning!!!, inline IF is not supported ?
-        isHorizontal
-        ;('V')
-        this.#endif
-        //  VERBOSE
       }
 
       //  Note:  although currentNode is closed, there may still be open nodes in its
       //  Neighbour lists; these will subsequently be processed (and removed from
       //  currentNode.*Neighbour) when those Neighbors are closed.
       scanLine.Remove(currentNode)
-      this.#if(VERBOSE)
-      System.Diagnostics.Debug.WriteLine('ScanRem: {0}', currentNode)
-      this.#endif
-      //  VERBOSE
-      //  endelse !evt.IsForOpen
+
       //  @@PERF:  Set Node.Left/RightNeighbors null to let the GC know we're not using them
       //  anymore, unless we can reasonably assume a short lifetime for the ConstraintGenerator.
     }
@@ -941,11 +899,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     isHorizontal: boolean,
   ): boolean {
     //  Sanity check to be sure that the borders are past all other nodes.
-    Debug.Assert(currentNode != this.LeftBorderNode, 'currentNode must != BorderNode')
-    // TODO: Warning!!!, inline IF is not supported ?
-    isLeftNeighbor
-    this.RightBorderNode
-    const overlap: number = overlap(currentNode, nextNode, this.NodePadding)
+    const overlap: number = OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePadding)
     if (overlap <= 0) {
       //  This is the first node encountered on this neighbour-traversal that did not
       //  overlap within the required padding. Add it to the list and we're done with
@@ -953,25 +907,14 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  the horizontal axis; in that case, pretend we never saw it and return true
       //  so the next non-overlapping node will be found.  (See below for more information
       //  on why this is necessary).
-      if (!isHorizontal && overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance) {
-        this.#if(VERBOSE)
-        System.Diagnostics.Debug.WriteLine(' V {0}nbourHTolSkipNO: {1}', 'L', nextNode)
-        // TODO: Warning!!!, inline IF is not supported ?
-        isLeftNeighbor
-        ;('R')
-        this.#endif
-        //  VERBOSE
+      if (
+        !isHorizontal &&
+        OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance
+      ) {
         return true
       }
 
       neighbors.push(nextNode)
-      this.#if(VERBOSE)
-      System.Diagnostics.Debug.WriteLine('{0}nbourAddNO: {1}', 'L', nextNode)
-      // TODO: Warning!!!, inline IF is not supported ?
-      isLeftNeighbor
-      ;('R')
-      this.#endif
-      //  VERBOSE
       return false
     }
 
@@ -984,11 +927,10 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  each direction.  @@DCR: consider adding weights to the defer-to-vertical calculation;
         //  this would allow two nodes to pop up/down if they're being squeezed, rather than
         //  force apart the borders (which happens regardless of their weight).
-        const overlapP: number = overlapP(currentNode, nextNode, this.NodePaddingP)
-        const isOverlapping: boolean = overlap / (currentNode.Size + nextNode.Size) > overlapP / (currentNode.SizeP + nextNode.SizeP)
-        // TODO: Warning!!!, inline IF is not supported ?
-        parameters.ConsiderProportionalOverlap
-        overlap > overlapP
+        const overlapP: number = OverlapRemovalCluster.OverlapP(currentNode, nextNode, this.NodePaddingP)
+        const isOverlapping: boolean = parameters.ConsiderProportionalOverlap
+          ? overlap / (currentNode.Size + nextNode.Size) > overlapP / (currentNode.SizeP + nextNode.SizeP)
+          : overlap > overlapP
         if (isOverlapping) {
           //  Don't skip if either of these is a border node.
           if (
@@ -1004,13 +946,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
             //  Note: it is still possible that we'll pick up a constraint in both directions,
             //  due to either or both of this.padding and the "create a constraint to the first
             //  non-overlapping node" logic.  This is expected and the latter helps retain stability.
-            this.#if(VERBOSE)
-            System.Diagnostics.Debug.WriteLine('{0}nbourDeferToV: {1}', 'L', nextNode)
-            // TODO: Warning!!!, inline IF is not supported ?
-            isLeftNeighbor
-            ;('R')
-            this.#endif
-            //  VERBOSE
             //  We need to track whether we skipped these so that we don't have a broken transition chain.
             //  See Test_OverlapRemoval.cs, Test_DeferToV_Causing_Missing_Cst() for more information.
             if (isLeftNeighbor) {
@@ -1037,33 +972,19 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  and possibly huge vertical movement.  There is a corresponding Assert during constraint
       //  generation when the node is Closed. We have to do this here rather than at runtime because
       //  doing it then may skip a Neighbour that replaced other Neighbors by transitivity.
-      if (overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance) {
-        this.#if(VERBOSE)
-        System.Diagnostics.Debug.WriteLine(' V {0}nbourHTolSkipO: {1}', 'L', nextNode)
-        // TODO: Warning!!!, inline IF is not supported ?
-        isLeftNeighbor
-        ;('R')
-        this.#endif
-        //  VERBOSE
+      if (OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance) {
         return true
       }
     }
 
     //  Add this overlapping neighbour and return true to keep looking for more overlapping neighbours.
     neighbors.push(nextNode)
-    this.#if(VERBOSE)
-    System.Diagnostics.Debug.WriteLine('{0}nbourAddO: {1}', 'L', nextNode)
-    // TODO: Warning!!!, inline IF is not supported ?
-    isLeftNeighbor
-    ;('R')
-    this.#endif
-    //  VERBOSE
     return true
   }
 
   //  Overrides Node.UpdateFromVariable.
-  /* override */ UpdateFromVariable() {
-    OverlapRemovalCluster.ProcessClusterHierarchy(this, () => {}, cluster.UpdateFromVariableWorker())
+  UpdateFromVariable() {
+    OverlapRemovalCluster.ProcessClusterHierarchy(this, (cluster) => cluster.UpdateFromVariableWorker())
   }
 
   UpdateFromVariableWorker() {
@@ -1077,7 +998,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
       //  We put the fake border Nodes right up against the outer true Nodes (plus padding) initially,
       //  and then moved them to the midpoint (subsequently, the caller may have updated their position
-      //  to the barycenter of the cluster, e.g. FastIncrementalLayout).  Because the algorithm
+      //  to the barycenter of the cluster, OverlapRemovalNode.g. FastIncrementalLayout).  Because the algorithm
       //  guarantees a minimal solution, the borders are in their optimal position now (including
       //  padding from their outer nodes).
       this.LeftBorderNode.UpdateFromVariable()
@@ -1103,5 +1024,11 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         node.UpdateFromVariable()
       }
     }
+  }
+}
+function removeFromArray<T>(arr: T[], OverlapRemovalNode: T) {
+  const i = arr.findIndex((a: T) => a == OverlapRemovalNode)
+  if (i >= 0) {
+    arr.splice(i, 1)
   }
 }
