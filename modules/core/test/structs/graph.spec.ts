@@ -135,11 +135,13 @@ test('connected comps', () => {
 
   cc = Array.from(shallowConnectedComponents(g))
   expect(cc.length).toBe(3)
+  const tt = Array.from(g.getClusteredConnectedComponents())
+  expect(cc.length).toBe(tt.length)
 })
 
 test('GetClusteredConnectedComponents', () => {
   const g = parseDotGraph('graphvis/clust3.gv')
-  const comps = Array.from(g.GetClusteredConnectedComponents())
+  const comps = Array.from(g.getClusteredConnectedComponents())
   expect(comps.length).toBe(2)
   const expectedSizes = new Set<number>()
   expectedSizes.add(3)

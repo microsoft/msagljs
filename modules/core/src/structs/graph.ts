@@ -11,7 +11,7 @@ export class Graph extends Node {
    * returns all its nodes with "this" as the parent
    */
 
-  *GetClusteredConnectedComponents(): IterableIterator<Array<Node>> {
+  *getClusteredConnectedComponents(): IterableIterator<Array<Node>> {
     const processed = new Set<Node>()
     const q = new Queue<Node>()
     for (const v of this.deepNodes) {
@@ -33,23 +33,21 @@ export class Graph extends Node {
       } while (q.length > 0)
       yield Array.from(component)
     }
-
-    
   }
-  private* reachableFrom(u: Node): IterableIterator<Node> {
-      for (const e of u.outEdges) {
-        yield e.target
-      }
-      for (const e of u.inEdges) {
-        yield e.source
-      }
-      if (u instanceof Graph) {
-        yield* u.shallowNodes
-      }
-      if (u.parent != this) {
-        yield u.parent as Node
-      }
+  private *reachableFrom(u: Node): IterableIterator<Node> {
+    for (const e of u.outEdges) {
+      yield e.target
     }
+    for (const e of u.inEdges) {
+      yield e.source
+    }
+    if (u instanceof Graph) {
+      yield* u.shallowNodes
+    }
+    if (u.parent != this) {
+      yield u.parent as Node
+    }
+  }
   hasSomeAttrOnIndex(index: number): boolean {
     for (const n of this.deepNodes) {
       if (n.getAttr(index)) return true

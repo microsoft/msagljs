@@ -57,9 +57,9 @@ import { PivotMDS } from '../mds/PivotMDS';
                     c.RectangularBoundary.GenerateFixedConstraints = false;
                 }
                 
-                let components = this.graph.graph.GetClusteredConnectedComponents();
-                this.componentCount = components.Count;
-                for (let component in components) {
+                let components = Array.from(this.graph.graph.getClusteredConnectedComponents())
+                this.componentCount = components.length
+                for (let component of components) {
                     this.LayoutComponent(component);
                 }
                 
@@ -95,7 +95,7 @@ import { PivotMDS } from '../mds/PivotMDS';
             
         }
         
-        private LayoutComponent(component: GeomGraph) {
+        private LayoutComponent(componentTopNodes:Node[]) {
             if (((component.Nodes.Count > 1) 
                         || component.RootCluster.Clusters.Any())) {
                 //  for small graphs (below 100 nodes) do extra iterations
