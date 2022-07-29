@@ -91,7 +91,7 @@ export class Routing extends Algorithm {
     for (const intEdgeList of this.Database.RegularMultiedges()) {
       // Here we try to optimize multi-edge routing
       const m = intEdgeList.length
-      const optimizeShortEdges: boolean = m == 1 && !this.FanAtSourceOrTarget(intEdgeList[0])
+      const optimizeShortEdges: boolean = m === 1 && !this.FanAtSourceOrTarget(intEdgeList[0])
       for (let i: number = Math.floor(m / 2); i < m; i++) {
         this.createSplineForNonSelfEdge(intEdgeList[i], optimizeShortEdges)
       }
@@ -109,7 +109,7 @@ export class Routing extends Algorithm {
   createSelfSplines() {
     for (const [k, v] of this.Database.Multiedges.keyValues()) {
       const ip: IntPair = k
-      if (ip.x == ip.y) {
+      if (ip.x === ip.y) {
         const anchor: Anchor = this.Database.Anchors[ip.x]
         let offset: number = anchor.leftAnchor
         for (const intEdge of v) {
@@ -205,7 +205,7 @@ export class Routing extends Algorithm {
       return
     }
 
-    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.labelBBox), false).length == 0) {
+    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.labelBBox), false).length === 0) {
       const t: {curveClosestPoint: Point; labelSideClosest: Point} = {
         curveClosestPoint: undefined,
         labelSideClosest: undefined,
@@ -280,6 +280,6 @@ export class Routing extends Algorithm {
   }
 
   static GetNodeKind(vertexOffset: number, edgePath: PolyIntEdge): NodeKind {
-    return vertexOffset == 0 ? NodeKind.Top : vertexOffset < edgePath.count ? NodeKind.Internal : NodeKind.Bottom
+    return vertexOffset === 0 ? NodeKind.Top : vertexOffset < edgePath.count ? NodeKind.Internal : NodeKind.Bottom
   }
 }

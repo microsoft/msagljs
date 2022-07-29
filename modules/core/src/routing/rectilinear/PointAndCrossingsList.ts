@@ -81,12 +81,12 @@ export class PointAndCrossingsList {
       const thisPac = this.ListOfPointsAndCrossings[thisIndex]
       const otherPac = other.ListOfPointsAndCrossings[otherIndex]
       const cmp = PointComparer.ComparePP(thisPac.Location, otherPac.Location)
-      if (0 == cmp) {
+      if (0 === cmp) {
         // No duplicates
         newCrossingsList.push(thisPac)
         ++thisIndex
         ++otherIndex
-      } else if (-1 == cmp) {
+      } else if (-1 === cmp) {
         newCrossingsList.push(thisPac)
         ++thisIndex
       } else {
@@ -99,7 +99,7 @@ export class PointAndCrossingsList {
 
   Trim(start: Point, end: Point) {
     this.Reset()
-    if (this.ListOfPointsAndCrossings == null || 0 == this.ListOfPointsAndCrossings.length) {
+    if (this.ListOfPointsAndCrossings == null || 0 === this.ListOfPointsAndCrossings.length) {
       return
     }
 
@@ -117,19 +117,19 @@ export class PointAndCrossingsList {
     const crossingsCount = crossings.length
     // cache for perf
     for (let ii = 0; ii < crossingsCount; ii++) {
-      if (crossings[ii].DirectionToInside == dirToInside) {
+      if (crossings[ii].DirectionToInside === dirToInside) {
         numInDir++
       }
     }
 
-    if (0 == numInDir) {
+    if (0 === numInDir) {
       return null
     }
 
     const vector = new Array(numInDir)
     let jj = 0
     for (let ii = 0; ii < crossingsCount; ii++) {
-      if (crossings[ii].DirectionToInside == dirToInside) {
+      if (crossings[ii].DirectionToInside === dirToInside) {
         vector[jj++] = crossings[ii]
       }
     }

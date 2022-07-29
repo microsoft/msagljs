@@ -12,7 +12,7 @@ export class SegWithIndex {
     this.I = i
   }
   static equal(a: SegWithIndex, b: SegWithIndex) {
-    return a.I == b.I && a.Points == b.Points
+    return a.I === b.I && a.Points === b.Points
   }
   get Start(): Point {
     return this.Points[this.I]

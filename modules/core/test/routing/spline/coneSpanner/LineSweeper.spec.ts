@@ -111,11 +111,11 @@ function CheckVG(vg: VisibilityGraph, ps: Array<Point>, dir: Point) {
 }
 
 function CheckVGOnPoint(p: Point, vg: VisibilityGraph, ps: Array<Point>, dir: Point) {
-  const inCone = ps.filter((q) => p.equal(q) == false && InCone(p, q, dir, Math.PI / 6))
+  const inCone = ps.filter((q) => p.equal(q) === false && InCone(p, q, dir, Math.PI / 6))
   const v = vg.FindVertex(p)
-  expect((inCone.length == 0 && (v == null || (v.OutEdges.count == 0 && Array.from(v.InEdges).length > 0))) || v.OutEdges.count == 1).toBe(
-    true,
-  )
+  expect(
+    (inCone.length === 0 && (v == null || (v.OutEdges.count === 0 && Array.from(v.InEdges).length > 0))) || v.OutEdges.count === 1,
+  ).toBe(true)
 }
 
 function InCone(apex: Point, q: Point, dir: Point, ang: number): boolean {
@@ -128,7 +128,7 @@ function InConePPP(pi: Point, a: Point, b: Point, c: Point): boolean {
   //    TriangleOrientation.Counterclockwise,
   // )
   return (
-    Point.getTriangleOrientation(a, pi, b) == TriangleOrientation.Clockwise &&
-    Point.getTriangleOrientation(b, pi, c) == TriangleOrientation.Clockwise
+    Point.getTriangleOrientation(a, pi, b) === TriangleOrientation.Clockwise &&
+    Point.getTriangleOrientation(b, pi, c) === TriangleOrientation.Clockwise
   )
 }

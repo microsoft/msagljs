@@ -21,13 +21,13 @@ export class SymmetricTuple<T> {
       return false
     }
 
-    if (this == obj) {
+    if (this === obj) {
       return true
     }
 
     const other = obj as unknown as SymmetricTuple<T>
 
-    return (this.A == other.A && this.B == other.B) || (this.A == other.B && this.B == other.A)
+    return (this.A === other.A && this.B === other.B) || (this.A === other.B && this.B === other.A)
   }
 
   public ToString(): string {

@@ -39,7 +39,7 @@
 
 //        /*
 //                Array<CdtEdge> GetCdtEdgesCrossedBySegmentStartingFromSiteAtStart(CdtSiteFeature f, PolylinePoint pp, out CdtFeature nextFeature) {
-//                    Assert.assert(f.Prev == null);
+//                    Assert.assert(f.Prev == null );
 //                    var ret = new Array<CdtEdge>();
 //                    var site = f.Site;
 //                    foreach (var t of site.Triangles) {

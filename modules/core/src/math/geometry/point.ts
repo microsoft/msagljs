@@ -111,7 +111,7 @@ export class Point {
 
   compareTo(other: Point): number {
     const r = compareNumbers(this.x, other.x)
-    if (r != 0) return r
+    if (r !== 0) return r
     return compareNumbers(this.y, other.y)
   }
 
@@ -169,7 +169,7 @@ export class Point {
     return new Point(this.x / c, this.y / c)
   }
   equal(a: Point) {
-    return a.x == this.x && a.y == this.y
+    return a.x === this.x && a.y === this.y
   }
   neg() {
     return new Point(-this.x, -this.y)
@@ -181,7 +181,7 @@ export class Point {
     const cd = c.sub(d)
     const ca = c.sub(a)
     const ret = LinearSystem2.solve(ba.x, cd.x, ca.x, ba.y, cd.y, ca.y)
-    if (ret != undefined) {
+    if (ret !== undefined) {
       return a.add(ba.mul(ret.x))
     } else {
       return
@@ -195,7 +195,7 @@ export class Point {
     const ca = c.sub(a)
     const eps = GeomConstants.tolerance
     const ret = LinearSystem2.solve(ba.x, cd.x, ca.x, ba.y, cd.y, ca.y)
-    if (ret != undefined && ret.x > -eps && ret.x < 1.0 + eps && ret.y > -eps && ret.y < 1.0 + eps) {
+    if (ret !== undefined && ret.x > -eps && ret.x < 1.0 + eps && ret.y > -eps && ret.y < 1.0 + eps) {
       return a.add(ba.mul(ret.x))
     } else {
       return

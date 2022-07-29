@@ -7,7 +7,7 @@ export function compareBooleans(a: boolean, b: boolean): number {
 }
 export function compareNumbers(a: number, b: number): number {
   const t = a - b
-  return t < 0 ? -1 : t == 0 ? 0 : 1
+  return t < 0 ? -1 : t === 0 ? 0 : 1
 }
 
 export function comparePointsYFirst(a: Point, b: Point) {

@@ -14,7 +14,7 @@ export class PerimeterEdge {
 
   constructor(edge: CdtEdge) {
     /*Assert.assert(
-      edge.CcwTriangle == null || edge.CwTriangle == null,
+      edge.CcwTriangle == null  || edge.CwTriangle == null ,
       'one of the edge triangles has to be null',
     )*/
     this.Edge = edge

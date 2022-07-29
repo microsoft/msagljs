@@ -160,26 +160,26 @@ export class CompassVector {
   }
 
   static DirectionsAreParallel(a: Direction, b: Direction): boolean {
-    return a == b || a == CompassVector.OppositeDir(b)
+    return a === b || a === CompassVector.OppositeDir(b)
   }
   // Translates the CompassVector's direction into a new Point.
 
   public ToPoint(): Point {
     let x = 0,
       y = 0
-    if ((this.Dir & Direction.East) == Direction.East) {
+    if ((this.Dir & Direction.East) === Direction.East) {
       x++
     }
 
-    if ((this.Dir & Direction.North) == Direction.North) {
+    if ((this.Dir & Direction.North) === Direction.North) {
       y++
     }
 
-    if ((this.Dir & Direction.West) == Direction.West) {
+    if ((this.Dir & Direction.West) === Direction.West) {
       x--
     }
 
-    if ((this.Dir & Direction.South) == Direction.South) {
+    if ((this.Dir & Direction.South) === Direction.South) {
       y--
     }
 

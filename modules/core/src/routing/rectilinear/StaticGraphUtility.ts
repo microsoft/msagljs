@@ -23,10 +23,10 @@ export class StaticGraphUtility {
   static GetEdgeEnd(edge: VisibilityEdge, dir: Direction): VisibilityVertex {
     const edgeDir: Direction = StaticGraphUtility.EdgeDirectionVE(edge)
     /*Assert.assert(
-      0 != (dir & (edgeDir | CompassVector.OppositeDir(edgeDir))),
+      0 !== (dir & (edgeDir | CompassVector.OppositeDir(edgeDir))),
       'dir is orthogonal to edge',
     )*/
-    return dir == edgeDir ? edge.Target : edge.Source
+    return dir === edgeDir ? edge.Target : edge.Source
   }
 
   static FindAdjacentVertex(vertex: VisibilityVertex, dir: Direction): VisibilityVertex {
@@ -36,14 +36,14 @@ export class StaticGraphUtility {
     // direction without having to track whether we're going forward or backward
     // through the In/OutEdge chain.
     for (const edge of vertex.InEdges) {
-      if (PointComparer.GetDirections(vertex.point, edge.SourcePoint) == dir) {
+      if (PointComparer.GetDirections(vertex.point, edge.SourcePoint) === dir) {
         return edge.Source
       }
     }
 
     // Avoid GetEnumerator overhead.
     for (const edge of vertex.OutEdges) {
-      if (PointComparer.GetDirections(vertex.point, edge.TargetPoint) == dir) {
+      if (PointComparer.GetDirections(vertex.point, edge.TargetPoint) === dir) {
         return edge.Target
       }
     }
@@ -53,13 +53,13 @@ export class StaticGraphUtility {
 
   static FindAdjacentEdge(a: VisibilityVertex, dir: Direction): VisibilityEdge {
     for (const edge of a.InEdges) {
-      if (PointComparer.GetDirections(edge.SourcePoint, a.point) == dir) {
+      if (PointComparer.GetDirections(edge.SourcePoint, a.point) === dir) {
         return edge
       }
     }
 
     for (const edge of a.OutEdges) {
-      if (PointComparer.GetDirections(a.point, edge.TargetPoint) == dir) {
+      if (PointComparer.GetDirections(a.point, edge.TargetPoint) === dir) {
         return edge
       }
     }
@@ -94,7 +94,7 @@ export class StaticGraphUtility {
   static IntervalsOverlapPPPP(start1: Point, end1: Point, start2: Point, end2: Point): boolean {
     return (
       StaticGraphUtility.IntervalsAreCollinear(start1, end1, start2, end2) &&
-      PointComparer.ComparePP(start1, end2) != PointComparer.ComparePP(end1, start2)
+      PointComparer.ComparePP(start1, end2) !== PointComparer.ComparePP(end1, start2)
     )
   }
 
@@ -105,7 +105,7 @@ export class StaticGraphUtility {
       'segments are not in the same orientation',
     )*/
     const vertical: boolean = StaticGraphUtility.IsVerticalPP(start1, end1)
-    if (StaticGraphUtility.IsVerticalPP(start2, end2) == vertical) {
+    if (StaticGraphUtility.IsVerticalPP(start2, end2) === vertical) {
       // This handles touching endpoints as well.
       return vertical ? PointComparer.Equal(start1.x, start2.x) : PointComparer.Equal(start1.y, start2.y)
     }
@@ -138,7 +138,7 @@ export class StaticGraphUtility {
     return (
       PointComparer.EqualPP(first, test) ||
       PointComparer.EqualPP(second, test) ||
-      PointComparer.GetDirections(first, test) == PointComparer.GetDirections(test, second)
+      PointComparer.GetDirections(first, test) === PointComparer.GetDirections(test, second)
     )
   }
 
@@ -147,7 +147,7 @@ export class StaticGraphUtility {
   }
 
   static IsVerticalD(dir: Direction): boolean {
-    return 0 != (dir & (Direction.North | Direction.South))
+    return 0 !== (dir & (Direction.North | Direction.South))
   }
 
   static IsVerticalE(edge: VisibilityEdge): boolean {
@@ -163,7 +163,7 @@ export class StaticGraphUtility {
   }
 
   static IsAscending(dir: Direction): boolean {
-    return (dir & (Direction.North | Direction.East)) != 0
+    return (dir & (Direction.North | Direction.East)) !== 0
   }
 
   static Slope(start: Point, end: Point, scanDir: ScanDirection): number {
@@ -175,10 +175,10 @@ export class StaticGraphUtility {
   static SortAscending(a: Point, b: Point): [Point, Point] {
     const dir: Direction = PointComparer.GetDirections(a, b)
     /*Assert.assert(
-      Direction.None == dir || PointComparer.IsPureDirectionD(dir),
+      Direction.None === dir || PointComparer.IsPureDirectionD(dir),
       'SortAscending with impure direction',
     )*/
-    return Direction.None == dir || StaticGraphUtility.IsAscending(dir) ? [a, b] : [b, a]
+    return Direction.None === dir || StaticGraphUtility.IsAscending(dir) ? [a, b] : [b, a]
   }
 
   static RectangleBorderIntersect(boundingBox: Rectangle, point: Point, dir: Direction): Point {

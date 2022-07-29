@@ -14,7 +14,7 @@ export class SdVertex {
     if (this.PrevEdge == null) {
       return null
     }
-    return this.PrevEdge.Source == this ? this.PrevEdge.Target : this.PrevEdge.Source
+    return this.PrevEdge.Source === this ? this.PrevEdge.Target : this.PrevEdge.Source
   }
 
   PrevEdge: SdBoneEdge

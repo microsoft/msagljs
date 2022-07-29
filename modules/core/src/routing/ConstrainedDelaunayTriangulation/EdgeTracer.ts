@@ -80,7 +80,7 @@ export class EdgeTracer {
 
     this.elementsToBeRemovedFromFront.push(v.item)
     this.AddSiteToRightPolygon(v.item.LeftSite)
-    if (v.item.LeftSite == this.b) {
+    if (v.item.LeftSite === this.b) {
       this.piercedToTheLeftFrontElemNode = v
       // this will stop the traversal
       return
@@ -112,7 +112,7 @@ export class EdgeTracer {
         if (e.CcwTriangle == null && e.CwTriangle == null) {
           const site = e.upperSite.point.x < e.lowerSite.point.x ? e.upperSite : e.lowerSite
           const frontNode = CdtSweeper.FindNodeInFrontBySite(this.front, site)
-          if (frontNode.item.Edge == e) {
+          if (frontNode.item.Edge === e) {
             this.elementsToBeRemovedFromFront.push(frontNode.item)
           }
         }
@@ -123,7 +123,7 @@ export class EdgeTracer {
     // if(CdtSweeper.db)
     //          CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(a.point, b.point) },
     //                      new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });
-    if (this.piercedEdge.CcwTriangle == this.piercedTriangle) {
+    if (this.piercedEdge.CcwTriangle === this.piercedTriangle) {
       this.AddSiteToLeftPolygon(this.piercedEdge.lowerSite)
       this.AddSiteToRightPolygon(this.piercedEdge.upperSite)
     } else {
@@ -170,7 +170,7 @@ export class EdgeTracer {
   removePiercedTriangle(t: CdtTriangle) {
     this.triangles.delete(t)
     for (const e of t.TriEdges) {
-      if (e.CwTriangle == t) {
+      if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
         e.CcwTriangle = null
@@ -188,7 +188,7 @@ export class EdgeTracer {
     } while (Point.pointToTheRightOfLine(v.item.RightSite.point, this.a.point, this.b.point)) //that is why we are adding to the right polygon
     this.elementsToBeRemovedFromFront.push(v.item)
     this.AddSiteToLeftPolygon(v.item.RightSite)
-    if (v.item.RightSite == this.b) {
+    if (v.item.RightSite === this.b) {
       this.piercedToTheRightFrontElemNode = v //this will stop the traversal
       return
     }
@@ -201,11 +201,11 @@ export class EdgeTracer {
   }
 
   AddSiteToPolygonWithCheck(site: CdtSite, list: Array<CdtSite>) {
-    if (site == this.b) {
+    if (site === this.b) {
       return
     }
 
-    if (list.length == 0 || list[list.length - 1] != site) {
+    if (list.length === 0 || list[list.length - 1] !== site) {
       list.push(site)
     }
   }

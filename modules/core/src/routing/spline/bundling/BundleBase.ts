@@ -13,7 +13,7 @@ export class BundleBase {
       this.Curve.value(this.parEnd),
       this.Curve.value(this.parStart),
     )
-    return orientation != TriangleOrientation.Counterclockwise
+    return orientation !== TriangleOrientation.Counterclockwise
   }
   // only one of those is not null
   OutgoingBundleInfo: BundleInfo
@@ -135,7 +135,7 @@ export class BundleBase {
   }
 
   RotateLeftPoint(rotationOfSourceLeftPoint: number, parameterChange: number): Point {
-    if (rotationOfSourceLeftPoint == 0) {
+    if (rotationOfSourceLeftPoint === 0) {
       return this.EndPoint
     }
 
@@ -143,7 +143,7 @@ export class BundleBase {
   }
 
   RotateRigthPoint(rotationOfSourceRightPoint: number, parameterChange: number): Point {
-    if (rotationOfSourceRightPoint == 0) {
+    if (rotationOfSourceRightPoint === 0) {
       return this.StartPoint
     }
 
@@ -167,11 +167,11 @@ export class BundleBase {
 
   RotateBy(rotationOfRightPoint: number, rotationOfLeftPoint: number, parameterChange: number) {
     const change: number = parameterSpan(this.Curve) * parameterChange
-    if (rotationOfRightPoint != 0) {
+    if (rotationOfRightPoint !== 0) {
       this.ParStart = this.AdjustParam(this.ParStart + rotationOfRightPoint * change)
     }
 
-    if (rotationOfLeftPoint != 0) {
+    if (rotationOfLeftPoint !== 0) {
       this.ParEnd = this.AdjustParam(this.ParEnd + rotationOfLeftPoint * change)
     }
   }

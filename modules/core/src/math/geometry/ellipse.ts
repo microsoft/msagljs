@@ -18,7 +18,7 @@ export type EllipseJSON = {parStart: number; parEnd: number; axis0: PointJSON; a
 
 export class Ellipse implements ICurve {
   isFullEllipse(): boolean {
-    return this.parEnd == Math.PI * 2 && this.parStart == 0
+    return this.parEnd === Math.PI * 2 && this.parStart === 0
   }
 
   static fromJSON(eData: EllipseJSON): Ellipse {
@@ -221,7 +221,7 @@ export class Ellipse implements ICurve {
         closest = par
       }
     }
-    if (closest == 0 && high == Math.PI * 2) low = -Math.PI
+    if (closest === 0 && high === Math.PI * 2) low = -Math.PI
     let ret = ClosestPointOnCurve.closestPoint(this, targetPoint, closest, low, high)
     if (ret < 0) ret += 2 * Math.PI
     return ret
@@ -258,7 +258,7 @@ export class Ellipse implements ICurve {
       }
     }
     let parStartWasChanged = false
-    if (closest == 0 && this.parEnd == Math.PI * 2) {
+    if (closest === 0 && this.parEnd === Math.PI * 2) {
       parStartWasChanged = true
       savedParStart = this.parStart
       this.parStart = -Math.PI

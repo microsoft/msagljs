@@ -12,7 +12,7 @@ export class EdgeRoutingSettings {
     return this.edgeRoutingMode
   }
   public set EdgeRoutingMode(value: EdgeRoutingMode) {
-    if (value == EdgeRoutingMode.SplineBundling && this.BundlingSettings == null) {
+    if (value === EdgeRoutingMode.SplineBundling && this.BundlingSettings == null) {
       if (this.BundlingSettings == null) {
         this.BundlingSettings = new BundlingSettings()
       }

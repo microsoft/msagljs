@@ -61,7 +61,7 @@ export class EdgePathsInserter {
 
           for (const ie of list) {
             if (!this.EdgeIsFlat(ie)) {
-              if (ie != e) {
+              if (ie !== e) {
                 const u = ie.LayerEdges[layerOffsetInTheEdge].Source
                 layer[offset] = u
                 this.Nla.x[u] = offset++
@@ -80,7 +80,7 @@ export class EdgePathsInserter {
   }
 
   EdgeIsFlat(ie: PolyIntEdge) {
-    return this.la.y[ie.source] == this.la.y[ie.target]
+    return this.la.y[ie.source] === this.la.y[ie.target]
   }
 
   MapVirtualNodesToEdges() {
@@ -89,7 +89,7 @@ export class EdgePathsInserter {
         if (!this.EdgeIsFlat(e))
           //the edge is not flat
           for (const le of e.LayerEdges)
-            if (le.Target != e.target) {
+            if (le.Target !== e.target) {
               this.virtNodesToIntEdges.set(le.Target, e)
             }
   }
@@ -97,7 +97,7 @@ export class EdgePathsInserter {
   private CreateFullLayeredGraph() {
     let currentVV = this.layeredGraph.NodeCount
     for (const [k, list] of this.database.Multiedges.keyValues()) {
-      if (k.x != k.y) {
+      if (k.x !== k.y) {
         //not a self edge
         let first = true
         let span = 0
@@ -107,7 +107,7 @@ export class EdgePathsInserter {
             span = e.LayerSpan
           } else {
             e.LayerEdges = new Array<LayerEdge>(span)
-            if (span == 1) e.LayerEdges[0] = new LayerEdge(e.source, e.target, e.CrossingWeight)
+            if (span === 1) e.LayerEdges[0] = new LayerEdge(e.source, e.target, e.CrossingWeight)
             else {
               for (let i = 0; i < span; i++) {
                 const bVV = {currentVV: currentVV}
@@ -131,7 +131,7 @@ export class EdgePathsInserter {
   }
 
   static GetSource(boxedVV: {currentVV: number}, e: PolyIntEdge, i: number): number {
-    if (i == 0) return e.source
+    if (i === 0) return e.source
 
     return boxedVV.currentVV++
   }
@@ -142,7 +142,7 @@ export class EdgePathsInserter {
     for (let i = 0; i < this.layeredGraph.NodeCount; i++) this.NLayering[i] = this.la.y[i]
 
     for (const [k, list] of this.database.Multiedges.keyValues()) {
-      if (k.x != k.y && this.la.y[k.x] != this.la.y[k.y]) {
+      if (k.x !== k.y && this.la.y[k.x] !== this.la.y[k.y]) {
         //not a self edge and not a flat edge
         let layer = 0
         let first = true

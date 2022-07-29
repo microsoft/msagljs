@@ -53,7 +53,7 @@ test('single source distances', () => {
     () => CurveFactory.createRectangle(10, 10, new Point(0, 0)),
     () => null,
   )
-  const length = (e: GeomEdge) => (e.edge == bc ? 0.5 : 1)
+  const length = (e: GeomEdge) => (e.edge === bc ? 0.5 : 1)
   const ss = new SingleSourceDistances(geomGraph, <GeomNode>GeomObject.getGeom(a), length)
   ss.run()
   const res = ss.Result
@@ -101,7 +101,7 @@ test('ss distances with decrease', () => {
     () => null,
   )
   const length = (e: GeomEdge) => {
-    if (e.edge == ae || e.edge == ef || e.edge == cf) return 0.1
+    if (e.edge === ae || e.edge === ef || e.edge === cf) return 0.1
     return 1
   }
   const ss = new SingleSourceDistances(geomGraph, <GeomNode>GeomObject.getGeom(a), length)

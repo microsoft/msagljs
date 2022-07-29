@@ -65,7 +65,7 @@ function intersectOnDiameter(a: Point, b: Point) {
   const ls = LineSegment.mkPP(a, b)
   const circ = Ellipse.mkCircle(b.sub(a).length / 2, Point.middle(a, b))
   let xx = Curve.getAllIntersections(ls, circ, false)
-  expect(xx.length == 2).toBeTruthy()
+  expect(xx.length === 2).toBeTruthy()
   expect(closeDistEps(xx[0].x.sub(xx[1].x).length, b.sub(a).length)).toBeTruthy()
   for (const x of xx) {
     expect(Point.closeDistEps(x.x, a) || Point.closeDistEps(x.x, b)).toBeTruthy()
@@ -174,7 +174,7 @@ test('bezier rounded rect intersections', () => {
   for (let i = 1; i <= 190; i++) {
     const rc = CurveFactory.rotateCurveAroundCenterByDegree(bezSeg.clone(), center, i)
     const xx = Curve.getAllIntersections(rr, rc, true)
-    expect(xx.length > 0 && xx.length % 2 != 0).toBe(true)
+    expect(xx.length > 0 && xx.length % 2 !== 0).toBe(true)
   }
 }, 10)
 test('ClosestPoint', () => {

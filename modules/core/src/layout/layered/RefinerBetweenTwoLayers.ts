@@ -110,7 +110,7 @@ export class RefinerBetweenTwoLayers {
   }
 
   private InsertSites(): boolean {
-    if (randomInt(2) == 0) {
+    if (randomInt(2) === 0) {
       return this.CalculateNewTopSite() || this.CalculateNewBottomSite()
     } else {
       return this.CalculateNewBottomSite() || this.CalculateNewTopSite()
@@ -210,7 +210,7 @@ export class RefinerBetweenTwoLayers {
   //        if (this.counterClockwise(ref currentTopSite.v, ref p, ref corner))
   //            corner = p;
   //    }
-  //    return corner != this.currentBottomSite.v;
+  //    return corner !== this.currentBottomSite.v;
   // }
   // private bool StickingCornerFromTheBottomLayer(out Point corner) {
   //    corner = this.currentTopSite.v;
@@ -219,7 +219,7 @@ export class RefinerBetweenTwoLayers {
   //        if (this.counterClockwise(ref currentBottomSite.v, ref p, ref corner))
   //            corner = p;
   //    }
-  //    return corner != this.currentTopSite.v;
+  //    return corner !== this.currentTopSite.v;
   // }
   private Init() {
     if (this.IsTopToTheLeftOfBottom()) {
@@ -355,12 +355,12 @@ export class RefinerBetweenTwoLayers {
   ): IterableIterator<number> {
     let b = 0
     let t = 0
-    if (nodeKind == NodeKind.Bottom) {
+    if (nodeKind === NodeKind.Bottom) {
       b = Number.MAX_VALUE
     }
 
     // we don't have bottom boundaries here since they will be cut off
-    if (nodeKind == NodeKind.Top) {
+    if (nodeKind === NodeKind.Top) {
       t = Number.MAX_VALUE
     }
 
@@ -398,12 +398,12 @@ export class RefinerBetweenTwoLayers {
   ): IterableIterator<number> {
     let b = 0
     let t = 0
-    if (nodeKind == NodeKind.Bottom) {
+    if (nodeKind === NodeKind.Bottom) {
       b = Number.MAX_VALUE
     }
 
     // we don't have bottom boundaries here since they will be cut off
-    if (nodeKind == NodeKind.Top) {
+    if (nodeKind === NodeKind.Top) {
       t = Number.MAX_VALUE
     }
 

@@ -57,23 +57,23 @@ export class UnimodalSequence {
           return m
       }
     }
-    return a == b ? a : this.f(a) <= this.f(b) ? a : b
+    return a === b ? a : this.f(a) <= this.f(b) ? a : b
   }
 
   private BehaviourAtIndex(m: number): Behavior {
     const seqAtM: number = this.f(m)
-    if (m == 0) {
+    if (m === 0) {
       const seqAt1: number = this.f(1)
-      if (seqAt1 == seqAtM) {
+      if (seqAt1 === seqAtM) {
         return Behavior.Extremum
       }
 
       return seqAt1 > seqAtM ? Behavior.Increasing : Behavior.Decreasing
     }
 
-    if (m == this.length - 1) {
+    if (m === this.length - 1) {
       const seqAt1: number = this.f(this.length - 2)
-      if (seqAt1 == seqAtM) {
+      if (seqAt1 === seqAtM) {
         return Behavior.Extremum
       }
       return seqAt1 > seqAtM ? Behavior.Decreasing : Behavior.Increasing
@@ -110,6 +110,6 @@ export class UnimodalSequence {
           return m
       }
     }
-    return a == b ? a : this.f(a) > this.f(b) ? a : b
+    return a === b ? a : this.f(a) > this.f(b) ? a : b
   }
 }

@@ -138,14 +138,14 @@ export class SmoothedPolylineCalculator {
     for (const u of this.edgePath.nodes()) {
       let eastMost = -1
       for (const v of this.LeftBoundaryNodesOfANode(u, Routing.GetNodeKind(uOffset, this.edgePath))) {
-        if (eastMost == -1 || this.layerArrays.x[v] > this.layerArrays.x[eastMost]) {
+        if (eastMost === -1 || this.layerArrays.x[v] > this.layerArrays.x[eastMost]) {
           eastMost = v
         }
 
         ret.push(this.anchors[v].polygonalBoundary)
       }
 
-      if (eastMost != -1) {
+      if (eastMost !== -1) {
         const a: Anchor = this.anchors[eastMost]
         this.thinWestNodes.push(LineSegment.mkLinePXY(a.origin, this.originalGraph.left, a.origin.y).pNodeOverICurve())
       }
@@ -159,10 +159,10 @@ export class SmoothedPolylineCalculator {
   *FillRightTopAndBottomVerts(layer: number[], vPosition: number, nodeKind: NodeKind): IterableIterator<number> {
     let b = 0
     let t = 0
-    if (nodeKind == NodeKind.Bottom) {
+    if (nodeKind === NodeKind.Bottom) {
       b = Number.MAX_VALUE
       // we don't have bottom boundaries here since they will be cut off
-    } else if (nodeKind == NodeKind.Top) {
+    } else if (nodeKind === NodeKind.Top) {
       t = Number.MAX_VALUE
       // we don't have top boundaries here since they will be cut off
     }
@@ -196,9 +196,9 @@ export class SmoothedPolylineCalculator {
   *FillLeftTopAndBottomVerts(layer: number[], vPosition: number, nodeKind: NodeKind): IterableIterator<number> {
     let b = 0
     let t = 0
-    if (nodeKind == NodeKind.Top) {
+    if (nodeKind === NodeKind.Top) {
       t = Number.MAX_VALUE // there are no top vertices - they are cut down by the top boundaryCurve curve
-    } else if (nodeKind == NodeKind.Bottom) {
+    } else if (nodeKind === NodeKind.Bottom) {
       b = Number.MAX_VALUE // there are no bottom vertices - they are cut down by the top boundaryCurve curve
     }
 
@@ -258,7 +258,7 @@ export class SmoothedPolylineCalculator {
     if (
       this.database.MultipleMiddles.has(u) &&
       this.database.MultipleMiddles.has(v) &&
-      this.SourceOfTheOriginalEdgeContainingAVirtualNode(u) == this.SourceOfTheOriginalEdgeContainingAVirtualNode(v)
+      this.SourceOfTheOriginalEdgeContainingAVirtualNode(u) === this.SourceOfTheOriginalEdgeContainingAVirtualNode(v)
     ) {
       return true
     }
@@ -285,7 +285,7 @@ export class SmoothedPolylineCalculator {
       v = ev.Target
     } while (this.IsVirtualVertex(u) && this.IsVirtualVertex(v))
 
-    return u == v
+    return u === v
   }
 
   private IntersectAbove(u: number, v: number): boolean {
@@ -299,7 +299,7 @@ export class SmoothedPolylineCalculator {
       u = eu.Source
       v = ev.Source
     } while (this.IsVirtualVertex(u) && this.IsVirtualVertex(v))
-    return u == v
+    return u === v
   }
 
   private Intersect(e: LayerEdge, m: LayerEdge): boolean {
@@ -379,8 +379,8 @@ export class SmoothedPolylineCalculator {
     if (
       !t.s.next ||
       !t.s.prev ||
-      (t.s.turn == TriangleOrientation.Counterclockwise && this.SegIntersectEastBound(t.s.prev, t.s.next)) ||
-      (t.s.turn == TriangleOrientation.Clockwise && this.SegIntersectWestBound(t.s.prev, t.s.next))
+      (t.s.turn === TriangleOrientation.Counterclockwise && this.SegIntersectEastBound(t.s.prev, t.s.next)) ||
+      (t.s.turn === TriangleOrientation.Clockwise && this.SegIntersectWestBound(t.s.prev, t.s.next))
     ) {
       t.cut = false
       t.s = t.s.next
@@ -417,7 +417,7 @@ export class SmoothedPolylineCalculator {
   }
 
   static Flat(i: CornerSite): boolean {
-    return Point.getTriangleOrientation(i.prev.point, i.point, i.next.point) == TriangleOrientation.Collinear
+    return Point.getTriangleOrientation(i.prev.point, i.point, i.next.point) === TriangleOrientation.Collinear
   }
 
   Reverse(): SmoothedPolylineCalculator {
@@ -493,7 +493,7 @@ export class SmoothedPolylineCalculator {
   }
 
   OptimizeForThreeSites() {
-    /*Assert.assert(this.edgePath.LayerEdges.length == 2)*/
+    /*Assert.assert(this.edgePath.LayerEdges.length === 2)*/
     const top: number = this.EdgePathNode(0)
     const bottom: number = this.EdgePathNode(2)
     const a: Anchor = this.anchors[top]
@@ -522,7 +522,7 @@ export class SmoothedPolylineCalculator {
   }
 
   OptimizeForTwoSites() {
-    /*Assert.assert(this.edgePath.LayerEdges.length == 1)*/
+    /*Assert.assert(this.edgePath.LayerEdges.length === 1)*/
     const top: number = this.EdgePathNode(0)
     const bottom: number = this.EdgePathNode(1)
     const a: Anchor = this.anchors[top]
@@ -591,7 +591,7 @@ export class SmoothedPolylineCalculator {
         return false
       }
 
-      if (t.sign == 1) {
+      if (t.sign === 1) {
         t.ax = a.right - 0.1 * a.rightAnchor
         t.bx = b.left
       } else {
@@ -620,13 +620,13 @@ export class SmoothedPolylineCalculator {
     }
 
     if (
-      this.edgePath.count == 2 &&
+      this.edgePath.count === 2 &&
       this.headSite.next.next != null &&
       this.headSite.next.next.next == null &&
       this.anchors[this.EdgePathNode(1)].node == null
     ) {
       this.OptimizeForThreeSites()
-    } else if (this.edgePath.count == 1) {
+    } else if (this.edgePath.count === 1) {
       this.OptimizeForTwoSites()
     }
   }
@@ -694,7 +694,7 @@ export class SmoothedPolylineCalculator {
     // undecided
     for (let s = this.headSite.next; s != null && s.next != null; s = s.next) {
       const nsign: number = s.turn
-      if (sign == 0) {
+      if (sign === 0) {
         // try to set the sign
         if (nsign > 0) {
           sign = 1
@@ -714,7 +714,7 @@ export class SmoothedPolylineCalculator {
   }
 
   EdgePathNode(i: number): number {
-    return i == this.edgePath.count ? this.edgePath.LayerEdges[this.edgePath.count - 1].Target : this.edgePath.LayerEdges[i].Source
+    return i === this.edgePath.count ? this.edgePath.LayerEdges[this.edgePath.count - 1].Target : this.edgePath.LayerEdges[i].Source
   }
 
   createSmoothedPolyline(): Curve {
@@ -724,7 +724,7 @@ export class SmoothedPolylineCalculator {
     const t = Curve.findCorner(a)
 
     // the corner other end
-    if (t != undefined) {
+    if (t !== undefined) {
       this.createFilletCurve(curve, {a: a, b: t.b, c: t.c})
       curve = this.ExtendCurveToEndpoints(curve)
     } else {
@@ -739,9 +739,9 @@ export class SmoothedPolylineCalculator {
     return true
     for (const n of this.layeredGraph.BaseGraph.nodes) {
       let i = this.edgePath.getNode(0)
-      if (n == this.layeredGraph.BaseGraph.nodes[i]) continue
+      if (n === this.layeredGraph.BaseGraph.nodes[i]) continue
       i = this.edgePath.getNode(this.edgePath.LayerEdges.length)
-      if (n == this.layeredGraph.BaseGraph.nodes[i]) continue
+      if (n === this.layeredGraph.BaseGraph.nodes[i]) continue
       const nc = n.boundaryCurve
 
       if (Curve.CurvesIntersect(nc, curve)) {
@@ -918,7 +918,7 @@ export class SmoothedPolylineCalculator {
   }
 }
 // function getHierDC(hierarchy: PN, color: string): DebugCurve[] {
-//  if (hierarchy == null || hierarchy.node == null) return []
+//  if (hierarchy == null  || hierarchy.node == null ) return []
 //  if (hierarchy.node.hasOwnProperty('children')) {
 //    const n = hierarchy.node as PNInternal
 //    return getHierDC(n.children[0], color).concat(

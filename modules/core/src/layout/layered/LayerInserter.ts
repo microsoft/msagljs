@@ -81,7 +81,7 @@ export class LayerInserter {
       if (span > 0) {
         //ignoring flat edges
         for (const le of e.LayerEdges) {
-          if (le.Target != e.target) {
+          if (le.Target !== e.target) {
             curVNode++
             this.UpdateOldLayer(curVNode++, le.Target)
           }
@@ -114,7 +114,7 @@ export class LayerInserter {
           const list = this.database.Multiedges.get(e.source, e.target)
 
           for (const ie of list) {
-            if (ie != e) {
+            if (ie !== e) {
               const u = ie.LayerEdges[layerOffsetInTheEdge].Source
               layer[offset] = u
               this.Nla.x[u] = offset++
@@ -136,7 +136,7 @@ export class LayerInserter {
     const c = new Array<number>(this.Nla.Layers.length).fill(0)
     for (let i = this.intGraph.nodeCount; i < this.nLayeredGraph.NodeCount; i++) {
       const layer = this.NLayering[i]
-      if (layer % 2 == 1) {
+      if (layer % 2 === 1) {
         //new layers have odd numbers
         this.Nla.Layers[layer][c[layer]++] = i
       }
@@ -147,8 +147,8 @@ export class LayerInserter {
   MapVirtualNodesToEdges() {
     this.virtNodesToIntEdges = new Array<PolyIntEdge>(this.NLayering.length)
     for (const e of this.database.AllIntEdges())
-      if (e.source != e.target && e.LayerEdges != null)
-        for (const le of e.LayerEdges) if (le.Target != e.target) this.virtNodesToIntEdges[le.Target] = e
+      if (e.source !== e.target && e.LayerEdges != null)
+        for (const le of e.LayerEdges) if (le.Target !== e.target) this.virtNodesToIntEdges[le.Target] = e
   }
   // Creating buckets for multi edges and allocating the graph.
   CreateFullLayeredGraph() {
@@ -230,13 +230,13 @@ export class LayerInserter {
     for (let i = 0; i < this.layeredGraph.NodeCount; i++) this.NLayering[i] = this.la.y[i] * 2
 
     for (const [ip, v] of this.database.Multiedges.keyValues()) {
-      if (ip.x != ip.y && this.la.y[ip.x] != this.la.y[ip.y]) {
+      if (ip.x !== ip.y && this.la.y[ip.x] !== this.la.y[ip.y]) {
         //not a self edge and not a flat edge
         const top = this.la.y[ip.x] * 2
         for (const e of v) {
           let layer = top - 1
-          //Assert.assert(e.LayerEdges != undefined && e.LayerEdges != null)
-          for (const le of e.LayerEdges) if (le.Target != e.target) this.NLayering[le.Target] = layer--
+          //Assert.assert(e.LayerEdges !== undefined && e.LayerEdges != null)
+          for (const le of e.LayerEdges) if (le.Target !== e.target) this.NLayering[le.Target] = layer--
         }
       }
     }

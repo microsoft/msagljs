@@ -25,11 +25,11 @@ export class Arrowhead {
   private static calculateArrowheads(edge: GeomEdge): boolean {
     if (edge.sourceArrowhead == null && edge.targetArrowhead == null) return true
     const parStart = Arrowhead.findTrimStartForArrowheadAtSource(edge)
-    if (parStart == undefined) {
+    if (parStart == null) {
       return false
     }
     const parEnd = Arrowhead.findTrimEndForArrowheadAtTarget(edge)
-    if (parEnd == undefined) {
+    if (parEnd == null) {
       return false
     }
     if (
@@ -63,12 +63,12 @@ export class Arrowhead {
     let reps = 10
     do {
       reps--
-      if (reps == 0) return
+      if (reps === 0) return
       intersections = Arrowhead.getIntersectionsWithArrowheadCircle(curve, arrowheadLength, curve.end)
-      p = intersections.length != 0 ? Math.max(...intersections.map((x) => x.par1)) : curve.parEnd
+      p = intersections.length !== 0 ? Math.max(...intersections.map((x) => x.par1)) : curve.parEnd
       newCurveEnd = edgeGeometry.curve.value(p)
       arrowheadLength /= 2
-    } while (newCurveEnd.sub(curve.start).lengthSquared < eps || intersections.length == 0)
+    } while (newCurveEnd.sub(curve.start).lengthSquared < eps || intersections.length === 0)
     //we would like to have at least something left from the curve
     return p
   }
@@ -88,9 +88,9 @@ export class Arrowhead {
     let p: number
     while (--reps > 0) {
       intersections = Arrowhead.getIntersectionsWithArrowheadCircle(curve, arrowheadLength, curve.start)
-      if (intersections.length == 0) return curve.parStart
+      if (intersections.length === 0) return curve.parStart
       p = Math.min(...intersections.map((x) => x.par1))
-      newStart = intersections.filter((x) => x.par1 == p)[0].x
+      newStart = intersections.filter((x) => x.par1 === p)[0].x
       // check that something is left from the curve
       if (newStart.sub(curve.end).lengthSquared >= eps) return p
       arrowheadLength /= 2
@@ -142,7 +142,7 @@ export class Arrowhead {
         if (edgeGeometry.targetArrowhead != null) edgeGeometry.targetArrowhead.length *= 0.5
       }
       count--
-      if (count == 0) break
+      if (count === 0) break
     }
 
     if (!success) {

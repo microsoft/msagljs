@@ -79,8 +79,8 @@ export class ShapeCreator {
     let clusterPort: HookUpAnywhereFromInsidePort = undefined
 
     for (const e of cluster.inEdges()) {
-      if (e.EdgeToAncestor() == ToAncestorEnum.ToAncestor) {
-        if (clusterPort == undefined) {
+      if (e.EdgeToAncestor() === ToAncestorEnum.ToAncestor) {
+        if (clusterPort == null) {
           clusterPort = new HookUpAnywhereFromInsidePort(() => cluster.boundaryCurve)
         }
         e.targetPort = clusterPort
@@ -89,8 +89,8 @@ export class ShapeCreator {
       }
     }
     for (const e of cluster.outEdges()) {
-      if (e.EdgeToAncestor() == ToAncestorEnum.FromAncestor) {
-        if (clusterPort == undefined) {
+      if (e.EdgeToAncestor() === ToAncestorEnum.FromAncestor) {
+        if (clusterPort == null) {
           clusterPort = new HookUpAnywhereFromInsidePort(() => cluster.boundaryCurve)
         }
         e.sourcePort = clusterPort

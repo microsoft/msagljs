@@ -53,7 +53,7 @@ export class CombinatorialNudger {
       path.SetFirstEdge(t.value)
     }
 
-    while ((t = pathEdgesEnum.next()).done == false) {
+    while ((t = pathEdgesEnum.next()).done === false) {
       path.AddEdge(t.value)
     }
 
@@ -129,14 +129,14 @@ export class CombinatorialNudger {
   }
 
   static CompareTwoPathEdges(x: PathEdge, y: PathEdge): number {
-    if (x == y) {
+    if (x === y) {
       return 0
     }
 
-    /*Assert.assert(x.AxisEdge == y.AxisEdge)*/
+    /*Assert.assert(x.AxisEdge === y.AxisEdge)*/
     // Nudger.ShowOrderedPaths(null, new[] { x.Path, y.Path }, x.AxisEdge.SourcePoint, x.AxisEdge.TargetPoint);
     const r: number = CombinatorialNudger.CompareInDirectionStartingFromAxisEdge(x, y, x.AxisEdge, x.AxisEdge.Direction)
-    return r != 0
+    return r !== 0
       ? r
       : -CombinatorialNudger.CompareInDirectionStartingFromAxisEdge(x, y, x.AxisEdge, CompassVector.OppositeDir(x.AxisEdge.Direction))
   }
@@ -157,39 +157,39 @@ export class CombinatorialNudger {
         return 0
       }
 
-      if (x.AxisEdge == y.AxisEdge) {
+      if (x.AxisEdge === y.AxisEdge) {
         direction = CombinatorialNudger.FindContinuedDirection(axisEdge, direction, x.AxisEdge)
         axisEdge = x.AxisEdge
         const r: number = CombinatorialNudger.GetExistingOrder(x, y)
-        if (r == CombinatorialNudger.NotOrdered) {
+        if (r === CombinatorialNudger.NotOrdered) {
           continue
         }
 
-        return direction == axisEdge.Direction ? r : -r
+        return direction === axisEdge.Direction ? r : -r
       }
 
       // there is a fork
-      const forkVertex = direction == axisEdge.Direction ? axisEdge.Target : axisEdge.Source
+      const forkVertex = direction === axisEdge.Direction ? axisEdge.Target : axisEdge.Source
       const xFork = CombinatorialNudger.OtherVertex(x.AxisEdge, forkVertex)
       const yFork = CombinatorialNudger.OtherVertex(y.AxisEdge, forkVertex)
-      const projection = CombinatorialNudger.ProjectionForCompare(axisEdge, direction != axisEdge.Direction)
+      const projection = CombinatorialNudger.ProjectionForCompare(axisEdge, direction !== axisEdge.Direction)
       return compareNumbers(projection(xFork.point), projection(yFork.point))
     }
   }
 
   static FindContinuedDirection(edge: AxisEdge, direction: Direction, nextAxisEdge: AxisEdge): Direction {
-    if (edge.Direction == direction)
-      return nextAxisEdge.Source == edge.Target ? nextAxisEdge.Direction : CompassVector.OppositeDir(nextAxisEdge.Direction)
+    if (edge.Direction === direction)
+      return nextAxisEdge.Source === edge.Target ? nextAxisEdge.Direction : CompassVector.OppositeDir(nextAxisEdge.Direction)
 
-    return nextAxisEdge.Source == edge.Source ? nextAxisEdge.Direction : CompassVector.OppositeDir(nextAxisEdge.Direction)
+    return nextAxisEdge.Source === edge.Source ? nextAxisEdge.Direction : CompassVector.OppositeDir(nextAxisEdge.Direction)
   }
 
   static OtherVertex(axisEdge: VisibilityEdge, v: VisibilityVertex): VisibilityVertex {
-    return axisEdge.Source == v ? axisEdge.Target : axisEdge.Source
+    return axisEdge.Source === v ? axisEdge.Target : axisEdge.Source
   }
 
   static ProjectionForCompare(axisEdge: AxisEdge, isReversed: boolean): (p: Point) => number {
-    return axisEdge.Direction == Direction.North
+    return axisEdge.Direction === Direction.North
       ? isReversed
         ? (p: Point) => -p.x
         : (p: Point) => p.x
@@ -199,18 +199,18 @@ export class CombinatorialNudger {
   }
 
   static GetNextPathEdgeInDirection(e: PathEdge, axisEdge: AxisEdge, direction: Direction): PathEdge {
-    /*Assert.assert(e.AxisEdge == axisEdge)*/
-    return axisEdge.Direction == direction ? (e.Reversed ? e.Prev : e.Next) : e.Reversed ? e.Next : e.Prev
+    /*Assert.assert(e.AxisEdge === axisEdge)*/
+    return axisEdge.Direction === direction ? (e.Reversed ? e.Prev : e.Next) : e.Reversed ? e.Next : e.Prev
   }
 
   static GetExistingOrder(x: PathEdge, y: PathEdge): number {
     const xi: number = x.Index
-    if (xi == -1) {
+    if (xi === -1) {
       return CombinatorialNudger.NotOrdered
     }
 
     const yi: number = y.Index
-    /*Assert.assert(yi != -1)*/
+    /*Assert.assert(yi !== -1)*/
     return compareNumbers(xi, yi)
   }
 
@@ -222,7 +222,7 @@ export class CombinatorialNudger {
     for (const v of graph.Vertices()) {
       const inDegree: number = v.InEdgesLength()
       dictionary.set(v, inDegree)
-      if (inDegree == 0) {
+      if (inDegree === 0) {
         queue.enqueue(v)
       }
     }
@@ -241,7 +241,7 @@ export class CombinatorialNudger {
       for (const edge of visVertex.OutEdges) {
         const incomingEdges = inDegreeLeftUnprocessed.get(edge.Target)
         inDegreeLeftUnprocessed.set(edge.Target, incomingEdges - 1)
-        if (incomingEdges == 1) {
+        if (incomingEdges === 1) {
           sourcesQueue.enqueue(edge.Target)
         }
 

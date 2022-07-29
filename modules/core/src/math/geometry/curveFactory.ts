@@ -119,13 +119,13 @@ export class CurveFactory {
   static isRoundedRect(ic: ICurve): RoundedRectRadii | undefined {
     if (!(ic instanceof Curve)) return
     const segs = ic.segs
-    if (segs.length != 8 && segs.length != 4) return
-    const full = segs.length == 8 ? true : false
+    if (segs.length !== 8 && segs.length !== 4) return
+    const full = segs.length === 8 ? true : false
     let radX: number
     let radY: number
     for (let k = 0; k < 4; k++) {
       const i = full ? 2 * k + 1 : k
-      if (k == 0) {
+      if (k === 0) {
         if (!(segs[i] instanceof Ellipse)) {
           return
         }
@@ -137,7 +137,7 @@ export class CurveFactory {
           return
         }
         const el = segs[i] as Ellipse
-        if (radX != el.aAxis.length || radY != el.bAxis.length) return
+        if (radX !== el.aAxis.length || radY !== el.bAxis.length) return
       }
       // some more checks are missing!
     }
@@ -148,7 +148,7 @@ export class CurveFactory {
   }
 
   static mkRectangleWithRoundedCorners(width: number, height: number, radX: number, radY: number, center: Point = new Point(0, 0)): Curve {
-    if (radX == 0 || radY == 0) {
+    if (radX === 0 || radY === 0) {
       return CurveFactory.createRectangle(width, height, center)
     }
     const c = new Curve()

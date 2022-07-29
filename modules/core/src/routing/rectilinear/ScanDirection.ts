@@ -36,23 +36,23 @@ export class ScanDirection {
     )*/
     this.Dir = directionAlongScanLine
     this.DirectionAsPoint = CompassVector.toPoint(this.Dir)
-    this.PerpDirection = Direction.North == directionAlongScanLine ? Direction.East : Direction.North
+    this.PerpDirection = Direction.North === directionAlongScanLine ? Direction.East : Direction.North
     this.PerpDirectionAsPoint = CompassVector.toPoint(this.PerpDirection)
     this.OppositeDirection = CompassVector.OppositeDir(directionAlongScanLine)
   }
 
   get IsHorizontal(): boolean {
-    return Direction.East == this.Dir
+    return Direction.East === this.Dir
   }
 
   get IsVertical(): boolean {
-    return Direction.North == this.Dir
+    return Direction.North === this.Dir
   }
 
   // Compare in perpendicular direction first, then parallel direction.
   Compare(lhs: Point, rhs: Point): number {
     const cmp = this.ComparePerpCoord(lhs, rhs)
-    return 0 != cmp ? cmp : this.CompareScanCoord(lhs, rhs)
+    return 0 !== cmp ? cmp : this.CompareScanCoord(lhs, rhs)
   }
 
   CompareScanCoord(lhs: Point, rhs: Point): number {

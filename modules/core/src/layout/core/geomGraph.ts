@@ -137,7 +137,7 @@ export class GeomGraph extends GeomNode {
         const curveUnderTest = (r as GeomEdge).curve
         if (
           Curve.intersectionOne(curveUnderTest, perimeter, false) != null ||
-          Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) == PointLocation.Inside
+          Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) === PointLocation.Inside
         )
           yield r
       }
@@ -244,7 +244,7 @@ export class GeomGraph extends GeomNode {
   }
 
   private pumpTheBoxToTheGraph(t: {b: Rectangle}) {
-    //Assert.assert(this.graph.isEmpty() == false)
+    //Assert.assert(this.graph.isEmpty() === false)
     for (const e of this.edges()) {
       if (e.underCollapsedGraph()) continue
       if (!(e.source.node.isDescendantOf(this.graph) && e.target.node.isDescendantOf(this.graph))) {

@@ -5,7 +5,7 @@ test('unimodal sequence', () => {
   const f = (m: number) => t[m]
   let us = new UnimodalSequence(f, t.length)
   const min = us.FindMinimum()
-  expect(min == 0 || min == t.length - 1).toBe(true)
+  expect(min === 0 || min === t.length - 1).toBe(true)
   expect(us.FindMaximum()).toBe(3)
 
   const l = [0, 1, 2, 3, 3.1, 1, -1]

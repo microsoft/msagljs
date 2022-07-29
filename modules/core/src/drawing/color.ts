@@ -375,7 +375,7 @@ export class Color {
 
   static Xex(i: number): string {
     const s = i.toString(16)
-    if (s.length == 1) {
+    if (s.length === 1) {
       return '0' + s
     }
 
@@ -383,7 +383,7 @@ export class Color {
   }
 
   static equal(a: Color, b: Color): boolean {
-    return a.a == b.a && a.r == b.r && a.b == b.b && a.g == b.g
+    return a.a === b.a && a.r === b.r && a.b === b.b && a.g === b.g
   }
 
   // !=
@@ -391,7 +391,7 @@ export class Color {
   toString(): string {
     return this.keyword
       ? this.keyword
-      : '"#' + Color.Xex(this.R) + Color.Xex(this.G) + Color.Xex(this.B) + (this.A == 255 ? '' : Color.Xex(this.A)) + '"'
+      : '"#' + Color.Xex(this.R) + Color.Xex(this.G) + Color.Xex(this.B) + (this.A === 255 ? '' : Color.Xex(this.A)) + '"'
   }
 
   //

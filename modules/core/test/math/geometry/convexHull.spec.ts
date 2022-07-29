@@ -526,7 +526,7 @@ function VerifyAndDisplayConvexHull(points: Point[], filename: string) {
 function VerifyPointsAreInOrOnHull(points: Array<Point>, hull: Polyline) {
   // A convex hull may not pick up points that are just barely outside the hull
   for (const point of points) {
-    if (Curve.PointRelativeToCurveLocation(point, hull) == PointLocation.Outside) {
+    if (Curve.PointRelativeToCurveLocation(point, hull) === PointLocation.Outside) {
       const hullPoint = hull.value(hull.closestParameter(point))
       expect(Point.closeIntersections(point, hullPoint)).toBe(true)
     }

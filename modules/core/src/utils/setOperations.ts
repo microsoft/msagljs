@@ -47,7 +47,7 @@ export function setIntersection<T>(a: Set<T>, b: Set<T>): Set<T> {
 }
 
 export function setIntersectionOfArray<T>(arr: Set<T>[]): Set<T> {
-  if (arr.length == 0) return new Set<T>()
+  if (arr.length === 0) return new Set<T>()
   let ret = arr[0]
   for (let i = 1; i < arr.length; i++) {
     ret = setIntersection(ret, arr[i])
@@ -60,7 +60,7 @@ export function insertRange<T>(collection: Set<T>, addedArray: Iterable<T>) {
 }
 
 export function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  if (a.size != b.size) return false
+  if (a.size !== b.size) return false
   for (const u of a) if (!b.has(u)) return false
   return true
 }

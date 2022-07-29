@@ -57,7 +57,7 @@
 //        for (int i = 1; i < tangents.Count; i++) { //we processed the first element already
 //            Tangent t = tangents[i];
 //            if (t.Diagonal != null) {
-//                if (t.Diagonal.RbNode == activeDiagonalTree.TreeMinimum())
+//                if (t.Diagonal.RbNode === activeDiagonalTree.TreeMinimum())
 //                    AddVisibleEdge(t);
 //                if (t.IsHigh)
 //                    RemoveDiagonalFromActiveNodes(t.Diagonal);
@@ -65,7 +65,7 @@
 //                if (t.IsLow) {
 //                    this.activeDiagonalComparer.PointOnTangentAndInsertedDiagonal = t.End.point;
 //                    this.InsertActiveDiagonal(new Diagonal(t, t.Comp));
-//                    if (t.Diagonal.RbNode == activeDiagonalTree.TreeMinimum())
+//                    if (t.Diagonal.RbNode === activeDiagonalTree.TreeMinimum())
 //                        AddVisibleEdge(t);
 //                }
 //            }
@@ -107,10 +107,10 @@
 //            }
 //        }
 
-//        if (firstTangent.Diagonal.RbNode == this.activeDiagonalTree.TreeMinimum())
+//        if (firstTangent.Diagonal.RbNode === this.activeDiagonalTree.TreeMinimum())
 //            AddVisibleEdge(firstTangent);
 
-//        if (firstTangent.IsLow == false) { //remove the diagonal of the top tangent from active edges
+//        if (firstTangent.IsLow === false) { //remove the diagonal of the top tangent from active edges
 //            Diagonal diag = firstTangent.Diagonal;
 //            RemoveDiagonalFromActiveNodes(diag);
 //        }
@@ -145,11 +145,11 @@
 //        static bool RayIntersectDiagonal(Point pivot, Point pointOnRay, Diagonal diagonal) {
 //        Point a = diagonal.start;
 //        Point b = diagonal.End;
-//        return Point.getTriangleOrientation(pivot, a, b) == TriangleOrientation.Counterclockwise
+//        return Point.getTriangleOrientation(pivot, a, b) === TriangleOrientation.Counterclockwise
 //            &&
-//            Point.getTriangleOrientation(pivot, pointOnRay, a) != TriangleOrientation.Counterclockwise
+//            Point.getTriangleOrientation(pivot, pointOnRay, a) !== TriangleOrientation.Counterclockwise
 //            &&
-//            Point.getTriangleOrientation(pivot, pointOnRay, b) != TriangleOrientation.Clockwise;
+//            Point.getTriangleOrientation(pivot, pointOnRay, b) !== TriangleOrientation.Clockwise;
 //    }
 
 //    // compare tangents by measuring the counterclockwise angle between the tangent and the edge
@@ -161,7 +161,7 @@
 
 //        private void OrganizeTangents() {
 //        foreach(Polygon q of polygons)
-//        if (q != this.currentPolygon)
+//        if (q !== this.currentPolygon)
 //            ProcessPolygonQ(q);
 
 //        this.tangents.Sort(new Comparison<Tangent>(TangentComparison));

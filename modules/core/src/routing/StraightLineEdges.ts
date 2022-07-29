@@ -186,7 +186,7 @@ export class StraightLineEdges extends Algorithm {
   public static CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge: GeomEdge) {
     const a = geomedge.source.center
     const b = geomedge.target.center
-    if (geomedge.source == geomedge.target) {
+    if (geomedge.source === geomedge.target) {
       const dx = 2 / (3 * geomedge.source.boundaryCurve.boundingBox.width)
       const dy = geomedge.source.boundingBox.height / 4
       geomedge.underlyingPolyline = StraightLineEdges.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)

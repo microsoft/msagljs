@@ -80,7 +80,7 @@ class PointSetList {
   coveredLength = 0
 
   AddFirst(p: PointSet): number {
-    if (this.points.size != 0) {
+    if (this.points.size !== 0) {
       const q = this.points.first.value
       this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length
     }
@@ -90,7 +90,7 @@ class PointSetList {
   }
 
   AddLast(p: PointSet): number {
-    if (this.points.size != 0) {
+    if (this.points.size !== 0) {
       const q: PointSet = this.points.last.value
       this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length
     }
@@ -412,14 +412,14 @@ export class EdgeLabelPlacement extends Algorithm {
           bestConflictIndex = conflictIndex
           bestRectangle = queryRect
           // If the best location was found, we're done
-          if (bestConflictIndex == Number.MAX_VALUE) {
+          if (bestConflictIndex === Number.MAX_VALUE) {
             break
           }
         }
       }
 
       // If the best location was found, we're done
-      if (bestConflictIndex == Number.MAX_VALUE) {
+      if (bestConflictIndex === Number.MAX_VALUE) {
         break
       }
     }
@@ -429,9 +429,9 @@ export class EdgeLabelPlacement extends Algorithm {
       const r = new RectangleObstacle(bestRectangle, null)
       this.AddLabelObstacle(r)
       const labelInfo = this.getLabelInfo(label)
-      if (bestConflictIndex == 0) labelInfo.placementResult = LabelPlacementResult.OverlapsOtherLabels
-      else if (bestConflictIndex == 1) labelInfo.placementResult = LabelPlacementResult.OverlapsNodes
-      else if (bestConflictIndex == 2) labelInfo.placementResult = LabelPlacementResult.OverlapsEdges
+      if (bestConflictIndex === 0) labelInfo.placementResult = LabelPlacementResult.OverlapsOtherLabels
+      else if (bestConflictIndex === 1) labelInfo.placementResult = LabelPlacementResult.OverlapsNodes
+      else if (bestConflictIndex === 2) labelInfo.placementResult = LabelPlacementResult.OverlapsEdges
       else labelInfo.placementResult = LabelPlacementResult.OverlapsNothing
       return true
     }
@@ -492,7 +492,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   // <returns>An enumeration of the possible sides (-1 or 1).</returns>
   static GetPossibleSides(side: PlacementSide, derivative: Point): number[] {
-    if (derivative.length == 0) {
+    if (derivative.length === 0) {
       side = PlacementSide.Any
     }
 
@@ -687,7 +687,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   // <returns>True if the query point itnersects with any of the obstacles.</returns>
   Conflict(labelPos: Point, radius: number, wh: Size): boolean {
-    return this.ConflictIndex(labelPos, radius, wh) != Number.MAX_VALUE
+    return this.ConflictIndex(labelPos, radius, wh) !== Number.MAX_VALUE
   }
 
   //    Determines the index of the first obstacle map that the rectangle intersects.
@@ -705,7 +705,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
       for (const obstacle of this.obstacleMaps[i].GetAllIntersecting(queryRect)) {
         // If we're overlapping a node...
-        if (<LabelPlacementResult>i == LabelPlacementResult.OverlapsNodes) {
+        if (<LabelPlacementResult>i === LabelPlacementResult.OverlapsNodes) {
           // ...and the node is a cluster...
           const isRectangleObstacle = obstacle instanceof RectangleObstacle
           if (isRectangleObstacle) {

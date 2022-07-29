@@ -32,7 +32,7 @@ export class PointPair {
 
   public CompareTo(other: PointPair): number {
     const cr: number = comparePointsYX(this.first, other.first)
-    if (cr != 0) {
+    if (cr !== 0) {
       return cr
     }
 

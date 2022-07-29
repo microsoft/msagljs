@@ -55,10 +55,10 @@ export abstract class OptimalPacking extends Algorithm {
     // need to overshoot upperbound when it is optimal
     upperBound += precision
     this.bestPackingCost = Number.MAX_VALUE
-    if (this.rectangles.length == 1) {
+    if (this.rectangles.length === 1) {
       // the trivial solution for just one rectangle is widthLowerBound
       this.PackLimit(lowerBound)
-    } else if (this.rectangles.length == 2) {
+    } else if (this.rectangles.length === 2) {
       // if we have 2 rectangles just try the two possibilities
       this.PackLimit(lowerBound)
       this.PackLimit(upperBound)
@@ -71,7 +71,7 @@ export abstract class OptimalPacking extends Algorithm {
 
   PackLimit(limit: number): number {
     let cost = this.cachedCosts.get(limit)
-    if (cost == undefined) {
+    if (cost == null) {
       const packing = this.createPacking(this.rectangles, limit)
       packing.run()
       this.cachedCosts.set(limit, (cost = Math.abs(packing.PackedAspectRatio - this.desiredAspectRatio)))
@@ -124,7 +124,7 @@ export abstract class OptimalPacking extends Algorithm {
       return leftSearch()
     }
 
-    // Doh! f(x2) == f(x4)!  Have to search both branches.
+    // Doh! f(x2) === f(x4)!  Have to search both branches.
     const right: number = rightSearch()
     const left: number = leftSearch()
     return f(left) < f(right) ? left : right

@@ -48,7 +48,7 @@ export class Balancing extends Algorithm {
     this.jumpers.delete(jumper)
     const upLow = this.possibleJumperFeasibleIntervals.get(jumper)
     const ji = this.CalcJumpInfo(upLow.x, upLow.y, jumper)
-    if (ji == undefined) return
+    if (ji == null) return
     this.layering[jumper] = ji.layerToJumpTo
     const jumperCount = this.nodeCount[jumper]
     this.vertsCounts[ji.jumperLayer] -= jumperCount
@@ -96,7 +96,7 @@ export class Balancing extends Algorithm {
 
     this.possibleJumperFeasibleIntervals = new Map<number, IntPair>()
 
-    for (let i = 0; i < this.dag.nodeCount; i++) if (deltas[i] == 0) this.CalculateRegionAndInsertJumper(i)
+    for (let i = 0; i < this.dag.nodeCount; i++) if (deltas[i] === 0) this.CalculateRegionAndInsertJumper(i)
   }
 
   CalculateRegionAndInsertJumper(i: number) {
@@ -135,7 +135,7 @@ export class Balancing extends Algorithm {
         min = this.vertsCounts[i]
         layerToJumpTo = i
       }
-    if (layerToJumpTo == -1) return
+    if (layerToJumpTo === -1) return
     return {jumperLayer: jumperLayer, layerToJumpTo: layerToJumpTo}
   }
   // Up returns the first infeasible layer up from i that i cannot jump to
@@ -147,7 +147,7 @@ export class Balancing extends Algorithm {
       if (r < ret) ret = r
     }
 
-    if (ret == Number.MAX_SAFE_INTEGER) ret = this.layering[i] + 1
+    if (ret === Number.MAX_SAFE_INTEGER) ret = this.layering[i] + 1
 
     return ret
   }
@@ -160,7 +160,7 @@ export class Balancing extends Algorithm {
       if (r > ret) ret = r
     }
 
-    if (ret == Number.NEGATIVE_INFINITY) ret = this.layering[i] - 1
+    if (ret === Number.NEGATIVE_INFINITY) ret = this.layering[i] - 1
 
     return ret
   }

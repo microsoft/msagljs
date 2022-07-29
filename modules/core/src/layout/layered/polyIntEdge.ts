@@ -57,7 +57,7 @@ class Routing {
     }
     const segmentInFrontOfLabel = Routing.GetSegmentInFrontOfLabel(e.curve, e.label.center.y)
     if (segmentInFrontOfLabel == null) return
-    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.labelBBox), false).length == 0) {
+    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.labelBBox), false).length === 0) {
       const t = Routing.FindClosestPoints(segmentInFrontOfLabel, labelSide)
       if (t) {
         //shift the label if needed
@@ -150,7 +150,7 @@ export class PolyIntEdge implements IIntEdge {
   }
 
   isSelfEdge(): boolean {
-    return this.source == this.target
+    return this.source === this.target
   }
 
   reversedClone() {
@@ -175,7 +175,7 @@ export class PolyIntEdge implements IIntEdge {
   getNode(i: number): number {
     if (i >= 0) {
       if (i < this.LayerEdges.length) return this.LayerEdges[i].Source
-      if (i == this.LayerEdges.length) return this.LayerEdges[i - 1].Target
+      if (i === this.LayerEdges.length) return this.LayerEdges[i - 1].Target
     }
     throw new Error('wrong index ' + i)
   }

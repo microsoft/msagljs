@@ -59,11 +59,11 @@ export class UniformOneDimensionalSolver {
         this.solverShell.AddFixedVariable(i, v.Position)
       } else {
         this.solverShell.AddVariableWithIdealPositionNN(i, this.idealPositions.get(i))
-        if (v.LowBound != Number.NEGATIVE_INFINITY) {
+        if (v.LowBound !== Number.NEGATIVE_INFINITY) {
           this.constraints.add(new IntPair(this.GetBoundId(v.LowBound), i))
         }
 
-        if (v.UpperBound != Number.POSITIVE_INFINITY) {
+        if (v.UpperBound !== Number.POSITIVE_INFINITY) {
           this.constraints.add(new IntPair(i, this.GetBoundId(v.UpperBound)))
         }
       }
@@ -99,11 +99,11 @@ export class UniformOneDimensionalSolver {
         continue
       }
 
-      if (v.LowBound != Number.NEGATIVE_INFINITY) {
+      if (v.LowBound !== Number.NEGATIVE_INFINITY) {
         this.RegisterBoundVar(v.LowBound)
       }
 
-      if (v.UpperBound != Number.POSITIVE_INFINITY) {
+      if (v.UpperBound !== Number.POSITIVE_INFINITY) {
         this.RegisterBoundVar(v.UpperBound)
       }
     }
@@ -150,7 +150,7 @@ export class UniformOneDimensionalSolver {
   }
 
   AddVariableNNBN(id: number, position: number, isFixed: boolean, width: number) {
-    /*Assert.assert(id == this.varList.length)*/
+    /*Assert.assert(id === this.varList.length)*/
     //new UniformSolverVar { IsFixed = isFixed, Position = position, Width=width
     const v = new UniformSolverVar()
     v.Position = position

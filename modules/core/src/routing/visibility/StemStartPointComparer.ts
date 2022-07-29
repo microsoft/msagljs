@@ -13,7 +13,7 @@ export class StemStartPointComparer {
   }
 
   IComparer(i: Stem, j: Stem): number {
-    if (i == j) return 0
+    if (i === j) return 0
     if (i == null) return -1
     if (j == null) return 1
 

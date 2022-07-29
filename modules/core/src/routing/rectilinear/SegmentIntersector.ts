@@ -22,11 +22,11 @@ class SegEvent {
   Segment: ScanSegment
 
   get IsVertical(): boolean {
-    return SegEventType.HOpen != this.EventType
+    return SegEventType.HOpen !== this.EventType
   }
 
   get Site(): Point {
-    return SegEventType.VClose == this.EventType ? this.Segment.End : this.Segment.Start
+    return SegEventType.VClose === this.EventType ? this.Segment.End : this.Segment.Start
   }
 
   ToString(): string {
@@ -77,7 +77,7 @@ export class SegmentIntersector {
       this.eventList.push(new SegEvent(SegEventType.HOpen, seg))
     }
 
-    if (0 == this.eventList.length) {
+    if (0 === this.eventList.length) {
       return null
       // empty
     }
@@ -135,7 +135,7 @@ export class SegmentIntersector {
   }
   ScanInsert(seg: ScanSegment) {
     /*Assert.assert(
-      this.verticalSegmentsScanLine.find(seg) == null,
+      this.verticalSegmentsScanLine.find(seg) == null ,
       'seg already exists in the rbtree',
     )*/
     // RBTree's internal operations on insert/remove etc. mean the node can't cache the
@@ -157,7 +157,7 @@ export class SegmentIntersector {
     let segNode: RBNode<ScanSegment> = this.verticalSegmentsScanLine.findFirst(this.findFirstPred)
     for (; null != segNode; segNode = this.verticalSegmentsScanLine.next(segNode)) {
       const vSeg: ScanSegment = segNode.item
-      if (1 == PointComparer.Compare(vSeg.Start.x, hSeg.End.x)) {
+      if (1 === PointComparer.Compare(vSeg.Start.x, hSeg.End.x)) {
         break
         // Out of HSeg range
       }
@@ -179,7 +179,7 @@ export class SegmentIntersector {
   // For ordering events first by Y, then X, then by whether it's an H or V seg.
 
   Compare(first: SegEvent, second: SegEvent): number {
-    if (first == second) {
+    if (first === second) {
       return 0
     }
 
@@ -194,7 +194,7 @@ export class SegmentIntersector {
     // Unlike the ScanSegment-generating scanline in VisibilityGraphGenerator, this scanline has no slope
     // calculations so no additional rounding error is introduced.
     let cmp: number = PointComparer.Compare(first.Site.y, second.Site.y)
-    if (0 != cmp) {
+    if (0 !== cmp) {
       return cmp
     }
 
@@ -206,12 +206,12 @@ export class SegmentIntersector {
         !StaticGraphUtility.IntervalsOverlapSS(first.Segment, second.Segment) ||
           0 ==
             PointComparer.ComparePP(first.Segment.Start, second.Segment.End) ||
-          0 == PointComparer.ComparePP(first.Segment.End, second.Segment.Start),
+          0 === PointComparer.ComparePP(first.Segment.End, second.Segment.Start),
         'V subsumption failure detected in SegEvent comparison',
       )*/
-      if (0 == cmp) {
+      if (0 === cmp) {
         // false is < true.
-        cmp = (SegEventType.VClose == first.EventType ? 1 : 0) - (SegEventType.VClose == second.EventType ? 1 : 0)
+        cmp = (SegEventType.VClose === first.EventType ? 1 : 0) - (SegEventType.VClose === second.EventType ? 1 : 0)
       }
 
       return cmp
@@ -225,7 +225,7 @@ export class SegmentIntersector {
         !StaticGraphUtility.IntervalsOverlapSS(first.Segment, second.Segment) ||
           0 ==
             PointComparer.ComparePP(first.Segment.Start, second.Segment.End) ||
-          0 == PointComparer.ComparePP(first.Segment.End, second.Segment.Start),
+          0 === PointComparer.ComparePP(first.Segment.End, second.Segment.Start),
         'H subsumption failure detected in SegEvent comparison',
       )*/
       cmp = PointComparer.Compare(first.Site.x, second.Site.x)
@@ -239,13 +239,13 @@ export class SegmentIntersector {
     // (RectilinearTests.Connected_Vertical_Segments_Are_Intersected tests that we get the expected count here.)
     // Start assuming Vevent is 'first' and it's VOpen, which should come before HOpen.
     cmp = -1
-    // Start with first == VOpen
-    if (SegEventType.VClose == vEvent.EventType) {
+    // Start with first === VOpen
+    if (SegEventType.VClose === vEvent.EventType) {
       cmp = 1
-      // change to first == VClose
+      // change to first === VClose
     }
 
-    if (vEvent != first) {
+    if (vEvent !== first) {
       cmp *= -1
       // undo the swap.
     }
@@ -256,7 +256,7 @@ export class SegmentIntersector {
   // For ordering V segments in the scanline by X.
 
   CompareSS(first: ScanSegment, second: ScanSegment): number {
-    if (first == second) {
+    if (first === second) {
       return 0
     }
 
@@ -273,7 +273,7 @@ export class SegmentIntersector {
     let cmp: number = PointComparer.Compare(first.Start.x, second.Start.x)
     // Separate segments may join at Start and End due to overlap, so compare the Y positions;
     // the Close (lowest Y) comes before the Open.
-    if (0 == cmp) {
+    if (0 === cmp) {
       cmp = PointComparer.Compare(first.Start.y, second.Start.y)
     }
 

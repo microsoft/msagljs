@@ -116,11 +116,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   CloseRemainingCones() {
-    if (this.leftConeSides.count == 0) {
+    if (this.leftConeSides.count === 0) {
       return
     }
 
-    //Assert.assert(this.leftConeSides.count == this.rightConeSides.count)
+    //Assert.assert(this.leftConeSides.count === this.rightConeSides.count)
     let p: PolylinePoint = this.BorderPolyline.startPoint
     let steps = this.leftConeSides.count
     // we cannot make more than leftConeSides.Count if the data is correct
@@ -216,7 +216,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
       p = pn
       pSign = pnSigh
-      if (p == startPoint) {
+      if (p === startPoint) {
         throw new Error('cannod decide if the polyline intersects the cone!')
         //Assert.assert(false)
       }
@@ -270,7 +270,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //                Assert.assert(!Point.closeDistEps(p.point, pn.point));
   //                Assert.assert((pn.point - p.point)*(pn.NextOnPolyline.point - pn.point) > -GeomConstants.tolerance);
   //                p = pn;
-  //            } while (p != BorderPolyline.startPoint);
+  //            } while (p !== BorderPolyline.startPoint);
   //        }
   // #if TEST_MSAGL
 
@@ -305,7 +305,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     const edgesToFix = coneApexVert != null ? Array.from(coneApexVert.InEdges).concat(Array.from(coneApexVert.OutEdges.allNodes())) : null
     if (edgesToFix) {
       for (const edge of edgesToFix) {
-        const otherPort = (edge.Target == coneApexVert ? edge.Source : edge.Target).point
+        const otherPort = (edge.Target === coneApexVert ? edge.Source : edge.Target).point
         VisibilityGraph.RemoveEdge(edge)
         this.portEdgesGraph.AddEdgePP(otherPort, p)
       }
@@ -394,7 +394,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   ProcessLeftIntersectionEvent(leftIntersectionEvent: LeftIntersectionEvent) {
-    if (leftIntersectionEvent.coneLeftSide.Removed == false) {
+    if (leftIntersectionEvent.coneLeftSide.Removed === false) {
       if (
         Math.abs(leftIntersectionEvent.EndVertex.point.sub(leftIntersectionEvent.Site).dot(this.SweepDirection)) <
         GeomConstants.distanceEpsilon
@@ -439,7 +439,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
     // restore Z for the time being
     // Z = PreviousZ;
-    if (rightIntersectionEvent.coneRightSide.Removed == false) {
+    if (rightIntersectionEvent.coneRightSide.Removed === false) {
       // it can happen that the cone side participating in the intersection is gone;
       // obstracted by another obstacle or because of a vertex found inside of the cone
       // PrintOutRightSegTree();
@@ -483,7 +483,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   CloseConesCoveredBySegment(leftPoint: Point, rightPoint: Point, tree: RBTree<ConeSide>) {
     //Assert.assert(rightPoint.sub(leftPoint).dot(this.directionPerp) > GeomConstants.distanceEpsilon)
     let node = tree.findFirst(
-      (s) => Point.getTriangleOrientation(s.Start, s.Start.add(s.Direction), leftPoint) == TriangleOrientation.Counterclockwise,
+      (s) => Point.getTriangleOrientation(s.Start, s.Start.add(s.Direction), leftPoint) === TriangleOrientation.Counterclockwise,
     )
     if (node == null) return
     const x: Point = Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction)
@@ -495,7 +495,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     do {
       conesToRemove.push(node.item.Cone)
       node = tree.next(node)
-    } while (node != null && Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) != undefined)
+    } while (node != null && Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) !== undefined)
 
     for (const cone of conesToRemove) this.RemoveCone(cone)
   }
@@ -729,11 +729,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   static PointIsToTheLeftOfSegment(p: Point, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) === TriangleOrientation.Counterclockwise
   }
 
   static PointIsToTheRightOfSegment(p: Point, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) == TriangleOrientation.Clockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) === TriangleOrientation.Clockwise
   }
 
   FixConeLeftSideIntersections(leftSide: BrokenConeSide, rbNode: RBNode<ConeSide>) {
@@ -830,7 +830,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   RemoveCone(cone: Cone) {
     // the following should not happen if the containment hierarchy is correct.
     // If containment is not correct it still should not result in a fatal error, just a funny looking route.
-    // Assert.assert(cone.Removed == false);
+    // Assert.assert(cone.Removed === false);
     cone.Removed = true
     this.RemoveSegFromLeftTree(cone.LeftSide)
     this.RemoveSegFromRightTree(cone.RightSide)
@@ -838,7 +838,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   RemoveSegFromRightTree(coneSide: ConeSide) {
     //   ShowRightTree();
-    //Assert.assert(coneSide.Removed == false)
+    //Assert.assert(coneSide.Removed === false)
     this.coneSideComparer.SetOperand(coneSide)
     let b = this.rightConeSides.remove(coneSide)
     coneSide.Removed = true
@@ -850,7 +850,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       b = this.rightConeSides.remove(coneSide)
       this.Z = tmpZ
       // #if TEST_MSAGL
-      //                 if (b == null) {
+      //                 if (b == null ) {
       //                     PrintOutRightSegTree();
       //                 }
       // #endif
@@ -858,7 +858,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   RemoveSegFromLeftTree(coneSide: ConeSide) {
-    //Assert.assert(coneSide.Removed == false)
+    //Assert.assert(coneSide.Removed === false)
     coneSide.Removed = true
     this.coneSideComparer.SetOperand(coneSide)
     const b = this.leftConeSides.remove(coneSide)
@@ -872,7 +872,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       this.leftConeSides.remove(coneSide)
       this.Z = tmpZ
       // #if TEST_MSAGL
-      //                 if (b == null) {
+      //                 if (b == null ) {
       //                     PrintOutLeftSegTree();
       //                     ShowLeftTree(new Ellipse(2, 2, coneSide.start));
       //                 }
@@ -1059,7 +1059,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       rbNode = this.leftConeSides.find(leftConeSide)
       this.Z = tmpZ
       // #if TEST_MSAGL
-      // //                if (rbNode == null) {
+      // //                if (rbNode == null ) {
       //                     //GeometryGraph gg = CreateGraphFromObstacles();
       //                     //gg.Save("c:\\tmp\\bug");
       // //                    PrintOutLeftSegTree();
@@ -1091,9 +1091,9 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   GetRbNodeEmergency(leftConeSide: ConeSide): RBNode<ConeSide> {
-    if (this.leftConeSides.count == 0) return null
+    if (this.leftConeSides.count === 0) return null
     for (let node = this.leftConeSides.treeMinimum(); node != null; node = this.leftConeSides.next(node)) {
-      if (node.item == leftConeSide) {
+      if (node.item === leftConeSide) {
         return node
       }
     }
@@ -1124,11 +1124,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //         }
   // #endif
   static VertexIsToTheLeftOfSegment(vertexEvent: SweepEvent, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) === TriangleOrientation.Counterclockwise
   }
 
   static VertexIsToTheRightOfSegment(vertexEvent: SweepEvent, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) == TriangleOrientation.Clockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) === TriangleOrientation.Clockwise
   }
 
   FindFirstSegmentInTheRightTreeNotToTheLeftOfVertex(vertexEvent: SweepEvent): RBNode<ConeSide> {
@@ -1146,7 +1146,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   invariant(): boolean {
-    // if (this.leftConeSides.count != this.rightConeSides.count) {
+    // if (this.leftConeSides.count !== this.rightConeSides.count) {
     //  return false
     // }
     for (const cs of this.leftConeSides) {
@@ -1161,14 +1161,14 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     }
     // const lsSet = new Set<ConeSide>(this.leftConeSides)
     // const rsSet = new Set<ConeSide>(this.rightConeSides)
-    // if (lsSet.size != rsSet.size) return false
+    // if (lsSet.size !== rsSet.size) return false
     // const cones = new Set<Cone>()
     // for (const ls of lsSet) {
     //  const cone = ls.Cone
     //  if (!rsSet.has(cone.RightSide)) return false
     //  cones.add(cone)
     // }
-    // if (cones.size != lsSet.size) return false
+    // if (cones.size !== lsSet.size) return false
     // for (const rs of rsSet) {
     //  if (!cones.has(rs.Cone)) {
     //    return false

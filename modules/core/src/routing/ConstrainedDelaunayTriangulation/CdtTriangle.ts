@@ -78,7 +78,7 @@ export class CdtTriangle {
 
   // in the trianlge, which is always oriented counterclockwise, the edge starts at site
   BindEdgeToTriangle(site: CdtSite, edge: CdtEdge) {
-    if (site == edge.upperSite) {
+    if (site === edge.upperSite) {
       edge.CcwTriangle = this
     } else {
       edge.CwTriangle = this
@@ -109,7 +109,7 @@ export class CdtTriangle {
 
   OppositeEdge(pi: CdtSite): CdtEdge {
     const index = this.Sites.index(pi)
-    /*Assert.assert(index != -1)*/
+    /*Assert.assert(index !== -1)*/
     return this.TriEdges.getItem(index + 1)
   }
 

@@ -47,7 +47,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
     }
   }
   IsEmpty() {
-    return this.heapSize == 0
+    return this.heapSize === 0
   }
 
   PutAtI(i: number, h: GenericHeapElement<T>) {
@@ -55,7 +55,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
     h.indexToA = i
   }
   Dequeue(): T {
-    if (this.heapSize == 0) {
+    if (this.heapSize === 0) {
       throw new Error('dequeue on an empty queue')
     }
 
@@ -65,7 +65,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
   }
 
   DequeueAndGetPriority(t: {priority: number}): T {
-    if (this.heapSize == 0) {
+    if (this.heapSize === 0) {
       throw new Error('dequeue on an empty queue')
     }
 
@@ -91,7 +91,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
         smallest = r
       }
 
-      if (smallest != i) {
+      if (smallest !== i) {
         this.SwapWithParent(smallest)
       } else {
         break
@@ -133,7 +133,7 @@ export class GenericBinaryHeapPriorityQueue<T> {
   //
 
   public Peek(t: {priority: number}): T {
-    if (this.count == 0) {
+    if (this.count === 0) {
       t.priority = 0
       return
     }

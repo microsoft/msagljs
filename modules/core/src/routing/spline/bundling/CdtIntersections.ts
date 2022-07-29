@@ -23,7 +23,7 @@ export class CdtIntersections {
     while (threader.MoveNext()) {
       const piercedEdge = threader.CurrentPiercedEdge
       if (piercedEdge.Constrained) {
-        //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner)
+        //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
           return false
@@ -156,7 +156,7 @@ export class CdtIntersections {
       triangles.push(threader.CurrentTriangle)
       const piercedEdge = threader.CurrentPiercedEdge
       if (piercedEdge.Constrained) {
-        //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner)
+        //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
           return false
@@ -179,7 +179,7 @@ export class CdtIntersections {
     //            do {
     //                triangles.Add(currentTriangle);
     //                if (piercedEdge.Constrained) {
-    //                    //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner);
+    //                    //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner);
     //                    Polyline poly = (Polyline)piercedEdge.lowerSite.Owner;
     //                    if (!obstaclesToIgnore.Contains(poly)) return false;
     //                }
@@ -245,7 +245,7 @@ export class CdtIntersections {
     while (threader.MoveNext()) {
       const piercedEdge = threader.CurrentPiercedEdge
       if (piercedEdge.Constrained) {
-        //Assert.assert(piercedEdge.lowerSite.Owner == piercedEdge.upperSite.Owner)
+        //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
           return false

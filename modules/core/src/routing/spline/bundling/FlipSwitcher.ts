@@ -126,7 +126,7 @@ export class FlipSwitcher {
     const eb: GeomEdge = this.polylineToEdgeGeom.get(polyB)
 
     if (
-      ea.lineWidth != eb.lineWidth ||
+      ea.lineWidth !== eb.lineWidth ||
       this.metroGraphData.EdgeLooseEnterable == null ||
       !setsAreEqual(this.metroGraphData.EdgeLooseEnterable.get(ea), this.metroGraphData.EdgeLooseEnterable.get(eb))
     ) {
@@ -136,7 +136,7 @@ export class FlipSwitcher {
     // polyB.init()
     // FlipSwitcher.debugCount++
 
-    // if (FlipSwitcher.debugCount == 3) {
+    // if (FlipSwitcher.debugCount === 3) {
     //  const da = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', polyA)
     //  const aStart = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(10, polyA.start))
     //  const aEnd = DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(5, polyA.end))
@@ -155,20 +155,20 @@ export class FlipSwitcher {
     const bFirst = pts[0]
     const bLast = pts[1]
     const forwardOrderB = pts[2]
-    //Assert.assert(this.PolylinePointsAreInForwardOrder(aFirst, aLast) == forwardOrderA)
-    //Assert.assert(this.PolylinePointsAreInForwardOrder(bFirst, bLast) == forwardOrderB)
+    //Assert.assert(this.PolylinePointsAreInForwardOrder(aFirst, aLast) === forwardOrderA)
+    //Assert.assert(this.PolylinePointsAreInForwardOrder(bFirst, bLast) === forwardOrderB)
     // 0 - the end
     // 1 - not intersect
     // 2 - intersect
     const rel1: number = this.FindRelationOnFirstPoint(aFirst, bFirst, forwardOrderA, forwardOrderB)
     const rel2: number = this.FindRelationOnLastPoint(aLast, bLast, forwardOrderA, forwardOrderB)
     // no intersection on both sides
-    if (rel1 != 2 && rel2 != 2) {
+    if (rel1 !== 2 && rel2 !== 2) {
       return false
     }
 
     // can't swap to reduce crossings
-    if (rel1 == 1 || rel2 == 1) {
+    if (rel1 === 1 || rel2 === 1) {
       return false
     }
 
@@ -212,9 +212,9 @@ export class FlipSwitcher {
     //Assert.assert(false)
   }
   PolylinePointsAreInForwardOrder(u: PolylinePoint, v: PolylinePoint): boolean {
-    //Assert.assert(u.polyline == v.polyline)
+    //Assert.assert(u.polyline === v.polyline)
     for (let p: PolylinePoint = u; p != null; p = p.next) {
-      if (p == v) {
+      if (p === v) {
         return true
       }
     }
@@ -238,7 +238,7 @@ export class FlipSwitcher {
       const prevA: PolylinePoint = this.Prev(aFirst, forwardOrderA)
       const prevB: PolylinePoint = this.Prev(bFirst, forwardOrderB)
       if (prevA == null || prevB == null) {
-        //Assert.assert(prevA == null && prevB == null)
+        //Assert.assert(prevA == null  && prevB == null )
         return 0
       }
 
@@ -261,7 +261,7 @@ export class FlipSwitcher {
       const nextA: PolylinePoint = this.Next(aLast, forwardOrderA)
       const nextB: PolylinePoint = this.Next(bLast, forwardOrderB)
       if (nextA == null || nextB == null) {
-        //Assert.assert(nextA == null && nextB == null)
+        //Assert.assert(nextA == null  && nextB == null )
         return 0
       }
 
@@ -299,13 +299,13 @@ export class FlipSwitcher {
       const bs: Point = a0.point
       const left0: number = getOrientationOf3Vectors(a1p.point.sub(bs), b1p.point.sub(bs), a0n.point.sub(bs))
       const left1: number = getOrientationOf3Vectors(a1p.point.sub(bs), b0n.point.sub(bs), a0n.point.sub(bs))
-      //Assert.assert(left0 != 0 && left1 != 0)
-      return left0 == left1 ? 1 : 2
+      //Assert.assert(left0 !== 0 && left1 !== 0)
+      return left0 === left1 ? 1 : 2
     } else {
       const left0: number = getOrientationOf3Vectors(a0p.point.sub(a0.point), a0n.point.sub(a0.point), b0n.point.sub(a0.point))
       const left1: number = getOrientationOf3Vectors(a1n.point.sub(a1.point), b1p.point.sub(a1.point), a1p.point.sub(a1.point))
-      //Assert.assert(left0 != 0 && left1 != 0)
-      return left0 == left1 ? 1 : 2
+      //Assert.assert(left0 !== 0 && left1 !== 0)
+      return left0 === left1 ? 1 : 2
     }
   }
 
@@ -356,7 +356,7 @@ export class FlipSwitcher {
 
   GetRangeOnPolyline(start: PolylinePoint, end: PolylinePoint, forwardOrder: boolean): Array<PolylinePoint> {
     const res: Array<PolylinePoint> = new Array<PolylinePoint>()
-    for (let pp: PolylinePoint = start; pp != end; pp = this.Next(pp, forwardOrder)) {
+    for (let pp: PolylinePoint = start; pp !== end; pp = this.Next(pp, forwardOrder)) {
       res.push(pp)
     }
 
@@ -384,19 +384,19 @@ export class FlipSwitcher {
   PolylineIsOK(poly: Polyline): boolean {
     const pointsToPP = new PointSet()
     for (let pp = poly.startPoint; pp != null; pp = pp.next) {
-      if (pp == poly.startPoint) {
+      if (pp === poly.startPoint) {
         if (pp.prev != null) {
           return false
         }
-      } else if (pp.prev.next != pp) {
+      } else if (pp.prev.next !== pp) {
         return false
       }
 
-      if (pp == poly.endPoint) {
+      if (pp === poly.endPoint) {
         if (pp.next != null) {
           return false
         }
-      } else if (pp.next.prev != pp) {
+      } else if (pp.next.prev !== pp) {
         return false
       }
 
@@ -431,7 +431,7 @@ function removeFromPointMap(pathsThroughPoints: PointMap<Set<PolylinePoint>>, po
   if (!s) return
 
   s.delete(pp)
-  if (s.size == 0) {
+  if (s.size === 0) {
     pathsThroughPoints.deleteP(point)
   }
 }

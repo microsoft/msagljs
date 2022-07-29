@@ -66,7 +66,7 @@ export class BinaryHeapWithComparer<T> {
       }
     }
 
-    if (i == this.heapSize) {
+    if (i === this.heapSize) {
       // can we do one more step:
       const leftSon: T = this.A[i]
       if (this.compare(leftSon, candidate) < 0) {

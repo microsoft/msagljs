@@ -142,7 +142,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   ProcessLeftIntersectionEvent(leftIntersectionEvent: LeftIntersectionEvent) {
-    if (leftIntersectionEvent.coneLeftSide.Removed == false) {
+    if (leftIntersectionEvent.coneLeftSide.Removed === false) {
       if (Math.abs(this.GetZP(leftIntersectionEvent.EndVertex.point.sub(leftIntersectionEvent.Site))) < GeomConstants.distanceEpsilon) {
         // the cone is totally covered by a horizontal segment
         this.RemoveCone(leftIntersectionEvent.coneLeftSide.Cone)
@@ -181,7 +181,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
     // restore this.Z for the time being
     // this.Z = PreviousZ;
-    if (rightIntersectionEvent.coneRightSide.Removed == false) {
+    if (rightIntersectionEvent.coneRightSide.Removed === false) {
       // it can happen that the cone side participating in the intersection is gone;
       // obstracted by another obstacle or because of a vertex found inside of the cone
       // PrintOutRightSegTree();
@@ -223,10 +223,10 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
 
   CloseConesCoveredBySegment(leftPoint: Point, rightPoint: Point, tree: RBTree<ConeSide>) {
     let node: RBNode<ConeSide> = tree.findFirst(
-      (s) => Point.getTriangleOrientation(s.Start, s.Start.add(s.Direction), leftPoint) == TriangleOrientation.Counterclockwise,
+      (s) => Point.getTriangleOrientation(s.Start, s.Start.add(s.Direction), leftPoint) === TriangleOrientation.Counterclockwise,
     )
 
-    if (node == null || Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) == undefined) {
+    if (node == null || Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) == null) {
       return
     }
 
@@ -234,7 +234,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     do {
       conesToRemove.push(node.item.Cone)
       node = tree.next(node)
-    } while (node && Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) != undefined)
+    } while (node && Point.IntervalIntersectsRay(leftPoint, rightPoint, node.item.Start, node.item.Direction) !== undefined)
 
     for (const cone of conesToRemove) this.RemoveCone(cone)
   }
@@ -438,11 +438,11 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   static PointIsToTheLeftOfSegment(p: Point, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) === TriangleOrientation.Counterclockwise
   }
 
   static PointIsToTheRightOfSegment(p: Point, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) == TriangleOrientation.Clockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), p) === TriangleOrientation.Clockwise
   }
 
   FixConeLeftSideIntersections(obstSideStart: PolylinePoint, obstSideEnd: PolylinePoint, rbNode: RBNode<ConeSide>) {
@@ -522,7 +522,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   RemoveCone(cone: Cone) {
-    //Assert.assert(cone.Removed == false)
+    //Assert.assert(cone.Removed === false)
     cone.Removed = true
     this.RemoveSegFromLeftTree(cone.LeftSide)
     this.RemoveSegFromRightTree(cone.RightSide)
@@ -530,7 +530,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
 
   RemoveSegFromRightTree(coneSide: ConeSide) {
     //   ShowRightTree();
-    //Assert.assert(coneSide.Removed == false)
+    //Assert.assert(coneSide.Removed === false)
     this.coneSideComparer.SetOperand(coneSide)
     let b: RBNode<ConeSide> = this.rightConeSides.remove(coneSide)
     coneSide.Removed = true
@@ -547,7 +547,7 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
   }
 
   RemoveSegFromLeftTree(coneSide: ConeSide) {
-    // Assert.assert(coneSide.Removed == false)
+    // Assert.assert(coneSide.Removed === false)
     coneSide.Removed = true
     this.coneSideComparer.SetOperand(coneSide)
     let b: RBNode<ConeSide> = this.leftConeSides.remove(coneSide)
@@ -699,23 +699,25 @@ export class LineSweeperForPortLocations extends LineSweeperBase /* IConeSweeper
     // Assert.assert(this.PortLocations.findIndex((p) => p.equal(a)) >= 0)
     const ab: VisibilityEdge = this.visibilityGraph.AddEdgePP(a, b)
     const av: VisibilityVertex = ab.Source
-    // Assert.assert(av.point == a && ab.TargetPoint == b)
+    // Assert.assert(av.point === a && ab.TargetPoint === b)
     // all edges adjacent to a which are different from ab
-    const edgesToFix: VisibilityEdge[] = av.InEdges.filter((e) => e != ab).concat(Array.from(av.OutEdges.allNodes()).filter((e) => e != ab))
+    const edgesToFix: VisibilityEdge[] = av.InEdges.filter((e) => e !== ab).concat(
+      Array.from(av.OutEdges.allNodes()).filter((e) => e !== ab),
+    )
 
     for (const edge of edgesToFix) {
-      const c = (edge.Target == av ? edge.Source : edge.Target).point
+      const c = (edge.Target === av ? edge.Source : edge.Target).point
       VisibilityGraph.RemoveEdge(edge)
       this.visibilityGraph.AddEdgePP(c, b)
     }
   }
 
   static VertexIsToTheLeftOfSegment(vertexEvent: SweepEvent, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) === TriangleOrientation.Counterclockwise
   }
 
   static VertexIsToTheRightOfSegment(vertexEvent: SweepEvent, seg: ConeSide): boolean {
-    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) == TriangleOrientation.Clockwise
+    return Point.getTriangleOrientation(seg.Start, seg.Start.add(seg.Direction), vertexEvent.Site) === TriangleOrientation.Clockwise
   }
 
   FindFirstSegmentInTheRightTreeNotToTheLeftOfVertex(vertexEvent: SweepEvent): RBNode<ConeSide> {

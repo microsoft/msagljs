@@ -81,7 +81,7 @@ export class ParallelogramNode {
   }
 
   static createParallelogramNodeForCurveSeg(start: number, end: number, seg: ICurve, eps: number): PN {
-    const closedSeg = start == seg.parStart && end == seg.parEnd && Point.close(seg.start, seg.end, GeomConstants.distanceEpsilon)
+    const closedSeg = start === seg.parStart && end === seg.parEnd && Point.close(seg.start, seg.end, GeomConstants.distanceEpsilon)
     if (closedSeg) return ParallelogramNode.createNodeWithSegmentSplit(start, end, seg, eps)
 
     const s = seg.value(start)
@@ -106,7 +106,7 @@ export class ParallelogramNode {
 
     if (ParallelogramNode.WithinEpsilon(seg, start, end, eps)) {
       const box = ParallelogramNode.createParallelogramOnSubSeg(start, end, seg)
-      if (box != undefined) return createPNLeaf(start, end, box, seg, eps)
+      if (box !== undefined) return createPNLeaf(start, end, box, seg, eps)
     }
     return ParallelogramNode.createNodeWithSegmentSplit(start, end, seg, eps)
   }

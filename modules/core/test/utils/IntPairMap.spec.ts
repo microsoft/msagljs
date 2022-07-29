@@ -12,5 +12,5 @@ test('IntPairMap', () => {
   expect(p[0].y < 3).toBe(true)
   const kv = Array.from(m.keyValues())
   expect(kv[0][1] < 5).toBe(true)
-  expect(kv.length == 4).toBe(true)
+  expect(kv.length === 4).toBe(true)
 })

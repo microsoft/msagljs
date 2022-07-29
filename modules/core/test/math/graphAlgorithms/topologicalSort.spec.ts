@@ -17,8 +17,8 @@ test('find cycle', () => {
 function checkPair(p: [number, number], order: number[]) {
   const sourceIndex = order.indexOf(p[0])
   const targetIndex = order.indexOf(p[1])
-  expect(sourceIndex != -1).toBe(true)
-  expect(targetIndex != -1).toBe(true)
+  expect(sourceIndex !== -1).toBe(true)
+  expect(targetIndex !== -1).toBe(true)
   expect(sourceIndex < targetIndex).toBe(true)
 }
 

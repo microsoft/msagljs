@@ -60,7 +60,7 @@ export abstract class Entity {
   /**  Determines if this node is a descendant of the given graph.*/
   isDescendantOf(graph: Graph): boolean {
     for (const p of this.getAncestors()) {
-      if (p == graph) return true
+      if (p === graph) return true
     }
     return false
   }

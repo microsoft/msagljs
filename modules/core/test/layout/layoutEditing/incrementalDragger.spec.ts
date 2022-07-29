@@ -38,14 +38,14 @@ function edgesAreAttachedToNode(gNode: GeomNode): boolean {
   for (const ge of gNode.outEdges()) {
     const p = ge.sourceArrowhead ? ge.sourceArrowhead.tipPosition : ge.curve.start
     const close = pointCloseToNodeBoundary(p, gNode)
-    if (close == false) {
+    if (close === false) {
       return false
     }
   }
   for (const ge of gNode.inEdges()) {
     const p = ge.targetArrowhead ? ge.targetArrowhead.tipPosition : ge.curve.end
     const close = pointCloseToNodeBoundary(p, gNode)
-    if (close == false) {
+    if (close === false) {
       return false
     }
   }
@@ -53,14 +53,14 @@ function edgesAreAttachedToNode(gNode: GeomNode): boolean {
     {
       const p = ge.sourceArrowhead ? ge.sourceArrowhead.tipPosition : ge.curve.start
       const close = pointCloseToNodeBoundary(p, gNode)
-      if (close == false) {
+      if (close === false) {
         return false
       }
     }
     {
       const p = ge.targetArrowhead ? ge.targetArrowhead.tipPosition : ge.curve.end
       const close = pointCloseToNodeBoundary(p, gNode)
-      if (close == false) {
+      if (close === false) {
         return false
       }
     }

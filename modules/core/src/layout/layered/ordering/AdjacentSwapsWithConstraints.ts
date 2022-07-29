@@ -219,7 +219,7 @@ export class AdjacentSwapsWithConstraints {
   }
 
   HeadOfTheCoin(): boolean {
-    return randomInt(2) == 0
+    return randomInt(2) === 0
   }
 
   DoSwaps() {
@@ -261,7 +261,7 @@ export class AdjacentSwapsWithConstraints {
         return false
       }
 
-      if (uPosition != k) {
+      if (uPosition !== k) {
         return false
       }
     }
@@ -397,7 +397,7 @@ export class AdjacentSwapsWithConstraints {
     const v: number = layer[i + 1]
     const u: number = layer[i]
     const gain: number = this.SwapGain(u, v)
-    if (gain > 0 || (gain == 0 && this.HeadOfTheCoin())) {
+    if (gain > 0 || (gain === 0 && this.HeadOfTheCoin())) {
       this.Swap(u, v)
       return
     }
@@ -470,7 +470,7 @@ export class AdjacentSwapsWithConstraints {
   }
 
   private UAndVAreOnSameLayer(u: number, v: number): boolean {
-    return this.layering[u] == this.layering[v]
+    return this.layering[u] === this.layering[v]
   }
 
   private UIsToTheLeftOfV(u: number, v: number): boolean {

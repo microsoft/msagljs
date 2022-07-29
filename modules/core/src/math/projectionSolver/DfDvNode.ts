@@ -43,7 +43,7 @@ export class DfDvNode {
   }
 
   get IsLeftToRight(): boolean {
-    return this.VariableToEval == this.ConstraintToEval.Right
+    return this.VariableToEval === this.ConstraintToEval.Right
   }
 
   toString(): string {

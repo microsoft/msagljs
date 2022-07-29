@@ -85,7 +85,7 @@ export class SsstRectilinearPath {
   }
 
   private InitPath(sourceVertexEntries: VertexEntry[], source: VisibilityVertexRectilinear, target: VisibilityVertexRectilinear): boolean {
-    if (source == target || !this.InitEntryDirectionsAtTarget(target)) {
+    if (source === target || !this.InitEntryDirectionsAtTarget(target)) {
       return false
     }
 
@@ -120,11 +120,11 @@ export class SsstRectilinearPath {
     }
 
     // If this returns false then the target is isolated.
-    return this.EntryDirectionsToTarget != Direction.None
+    return this.EntryDirectionsToTarget !== Direction.None
   }
 
   private static IsInDirs(direction: Direction, dirs: Direction): boolean {
-    return direction == (direction & dirs)
+    return direction === (direction & dirs)
   }
 
   MultistageAdjustedCostBound(bestCost: number): number {
@@ -143,7 +143,7 @@ export class SsstRectilinearPath {
 
     const dirToTarget: Direction = CompassVector.VectorDirection(vectorToTarget)
     let numberOfBends: number
-    if (entryDirToVertex == Direction.None) {
+    if (entryDirToVertex === Direction.None) {
       entryDirToVertex = Direction.East | (Direction.North | (Direction.West | Direction.South))
       numberOfBends = this.GetNumberOfBends(entryDirToVertex, dirToTarget)
     } else {
@@ -160,7 +160,7 @@ export class SsstRectilinearPath {
   }
 
   private GetNumberOfBendsForPureDirection(entryDirToVertex: Direction, dirToTarget: Direction): number {
-    if ((dirToTarget & entryDirToVertex) == dirToTarget) {
+    if ((dirToTarget & entryDirToVertex) === dirToTarget) {
       if (SsstRectilinearPath.IsInDirs(dirToTarget, this.EntryDirectionsToTarget)) {
         return 0
       }
@@ -184,7 +184,7 @@ export class SsstRectilinearPath {
     entryDirectionsToTarget: Direction,
   ): number {
     const a: Direction = dirToTarget & entryDirToVertex
-    if (a == Direction.None) {
+    if (a === Direction.None) {
       return (
         SsstRectilinearPath.GetBendsForNotPureDirection(
           dirToTarget,
@@ -195,7 +195,7 @@ export class SsstRectilinearPath {
     }
 
     const b: Direction = dirToTarget & entryDirectionsToTarget
-    if (b == Direction.None) {
+    if (b === Direction.None) {
       return (
         SsstRectilinearPath.GetBendsForNotPureDirection(
           dirToTarget,
@@ -205,7 +205,7 @@ export class SsstRectilinearPath {
       )
     }
 
-    return (a | b) == dirToTarget ? 1 : 2
+    return (a | b) === dirToTarget ? 1 : 2
   }
 
   private static AddOneTurn: Direction[] = [
@@ -287,7 +287,7 @@ export class SsstRectilinearPath {
     let lastEntryDir: Direction = Direction.None
     while (true) {
       // Reduce unnecessary AxisEdge creations in Nudger by including only bend points, not points in the middle of a segment.
-      if (lastEntryDir == t.entry.Direction) {
+      if (lastEntryDir === t.entry.Direction) {
         skippedCollinearEntry = true
       } else {
         skippedCollinearEntry = false
@@ -296,7 +296,7 @@ export class SsstRectilinearPath {
       }
 
       const previousEntry = t.entry.PreviousEntry
-      if (previousEntry == null || t.entry.Vertex == firstVertexInStage) {
+      if (previousEntry == null || t.entry.Vertex === firstVertexInStage) {
         break
       }
 
@@ -320,7 +320,7 @@ export class SsstRectilinearPath {
     const dirToNeighbor = SsstRectilinearPath.GetLengthAndNumberOfBendsToNeighborVertex(bestEntry, neigVer, weight, t)
     if (
       this.CombinedCost(t.length, t.numberOfBends) < this.CombinedCost(entryFromNeighbor.Length, entryFromNeighbor.NumberOfBends) ||
-      bestEntry.Vertex.Degree == 1
+      bestEntry.Vertex.Degree === 1
     ) {
       const cost =
         this.TotalCostFromSourceToVertex(t.length, t.numberOfBends) + this.HeuristicDistanceFromVertexToTarget(neigVer.point, dirToNeighbor)
@@ -372,7 +372,7 @@ export class SsstRectilinearPath {
     t.length = prevEntry.Length + SsstRectilinearPath.ManhattanDistance(prevEntry.Vertex.point, vertex.point) * weight
     const directionToVertex: Direction = CompassVector.DirectionFromPointToPoint(prevEntry.Vertex.point, vertex.point)
     t.numberOfBends = prevEntry.NumberOfBends
-    if (prevEntry.Direction != Direction.None && directionToVertex != prevEntry.Direction) {
+    if (prevEntry.Direction !== Direction.None && directionToVertex !== prevEntry.Direction) {
       t.numberOfBends++
     }
 
@@ -402,7 +402,7 @@ export class SsstRectilinearPath {
     while (this.queue.count > 0) {
       const bestEntry = this.queue.Dequeue()
       const bestVertex = bestEntry.Vertex
-      if (bestVertex == this.Target) {
+      if (bestVertex === this.Target) {
         if (targetVertexEntries == null) {
           this.Cleanup()
           return bestEntry
@@ -412,7 +412,7 @@ export class SsstRectilinearPath {
         // before we dequeued it, or it was closed.  So, we simply remove the direction from the valid target entry directions
         // and if we get to none, we're done.  We return a null path until the final stage.
         bestEntry.Direction
-        if (this.EntryDirectionsToTarget == Direction.None) {
+        if (this.EntryDirectionsToTarget === Direction.None) {
           let i = 0
           for (const t of this.Target.VertexEntries) {
             targetVertexEntries[i++] = t
@@ -476,11 +476,11 @@ export class SsstRectilinearPath {
 
     // This is after the initial source vertex so PreviousEntry won't be null.
     const neigVer = isInEdges ? <VisibilityVertexRectilinear>edge.Source : edge.Target
-    if (neigVer == bestEntry.PreviousVertex) {
+    if (neigVer === bestEntry.PreviousVertex) {
       // For multistage paths, the source may be a waypoint outside the graph boundaries that is collinear
       // with both the previous and next points in the path; in that case it may have only one degree.
       // For other cases, we just ignore it and the path will be abandoned.
-      if (bestEntry.Vertex.Degree > 1 || bestEntry.Vertex != this.Source) {
+      if (bestEntry.Vertex.Degree > 1 || bestEntry.Vertex !== this.Source) {
         return
       }
 
@@ -491,11 +491,11 @@ export class SsstRectilinearPath {
     // Enqueue in reverse order of preference per comments on NextNeighbor class.
     const neigDir = CompassVector.DirectionFromPointToPoint(bestEntry.Vertex.point, neigVer.point)
     let nextNeighbor = this.nextNeighbors[2]
-    if (neigDir != bestEntry.Direction) {
-      nextNeighbor = this.nextNeighbors[neigDir == preferredBendDir ? 1 : 0]
+    if (neigDir !== bestEntry.Direction) {
+      nextNeighbor = this.nextNeighbors[neigDir === preferredBendDir ? 1 : 0]
     }
 
-    /*Assert.assert(nextNeighbor.Vertex == null, 'bend neighbor already exists')*/
+    /*Assert.assert(nextNeighbor.Vertex == null , 'bend neighbor already exists')*/
     nextNeighbor.Set(<VisibilityVertexRectilinear>neigVer, edge.Weight)
   }
 
@@ -551,7 +551,7 @@ export class SsstRectilinearPath {
       const entryFromNeighbor = bestEntry.Vertex.VertexEntries[CompassVector.ToIndex(dirFromNeighbor)]
       if (entryFromNeighbor != null) {
         /*Assert.assert(
-          entryFromNeighbor.PreviousVertex == neigVer,
+          entryFromNeighbor.PreviousVertex === neigVer,
           'mismatch in turnback PreviousEntry',
         )*/
         /*Assert.assert(

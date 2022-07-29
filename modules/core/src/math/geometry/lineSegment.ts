@@ -110,7 +110,7 @@ export class LineSegment implements ICurve {
   /*      
 static internal IntersectionInfo Cross(LineSeg coeff, LineSeg side1){
 IntersectionInfo xx=CrossTwoLines(coeff.start, coeff.End-coeff.start,side1.start, side1.End-side1.start);
-if (xx == null)
+if (xx == null )
 {
 //parallel segs
 Point adir=coeff.d1(0);
@@ -254,7 +254,7 @@ return xx;
   // returns true if segments are not parallel and are intesecting
   static IntersectPPPP(a: Point, b: Point, c: Point, d: Point): Point | undefined {
     const r = Point.lineLineIntersection(a, b, c, d)
-    if (r == undefined) return
+    if (r == null) return
     if (LineSegment.xIsBetweenPoints(a, b, r) && LineSegment.xIsBetweenPoints(c, d, r)) return r
     else return
   }

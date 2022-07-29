@@ -20,11 +20,11 @@ export class CdtEdge {
 
   public constructor(a: CdtSite, b: CdtSite) {
     const above = Cdt.AbovePP(a.point, b.point)
-    if (above == 1) {
+    if (above === 1) {
       this.upperSite = a
       this.lowerSite = b
     } else {
-      /*Assert.assert(above != 0)*/
+      /*Assert.assert(above !== 0)*/
       this.lowerSite = a
       this.upperSite = b
     }
@@ -42,9 +42,9 @@ export class CdtEdge {
   }
   public set CcwTriangle(value: CdtTriangle) {
     /*Assert.assert(
-      value == null ||
-        this.cwTriangle == null ||
-        value.OppositeSite(this) != this.cwTriangle.OppositeSite(this),
+      value == null  ||
+        this.cwTriangle == null  ||
+        value.OppositeSite(this) !== this.cwTriangle.OppositeSite(this),
     )*/
     this.ccwTriangle = value
   }
@@ -54,9 +54,9 @@ export class CdtEdge {
   }
   public set CwTriangle(value: CdtTriangle) {
     /*Assert.assert(
-      value == null ||
-        this.ccwTriangle == null ||
-        value.OppositeSite(this) != this.ccwTriangle.OppositeSite(this),
+      value == null  ||
+        this.ccwTriangle == null  ||
+        value.OppositeSite(this) !== this.ccwTriangle.OppositeSite(this),
     )*/
     this.cwTriangle = value
   }
@@ -67,11 +67,11 @@ export class CdtEdge {
   }
 
   public IsAdjacent(pi: CdtSite): boolean {
-    return pi == this.upperSite || pi == this.lowerSite
+    return pi === this.upperSite || pi === this.lowerSite
   }
 
   public GetOtherTriangle_T(triangle: CdtTriangle): CdtTriangle {
-    return this.ccwTriangle == triangle ? this.cwTriangle : this.ccwTriangle
+    return this.ccwTriangle === triangle ? this.cwTriangle : this.ccwTriangle
   }
 
   // A string that represents the current object.
@@ -81,6 +81,6 @@ export class CdtEdge {
 
   public OtherSite(site: CdtSite): CdtSite {
     /*Assert.assert(this.IsAdjacent(site))*/
-    return this.upperSite == site ? this.lowerSite : this.upperSite
+    return this.upperSite === site ? this.lowerSite : this.upperSite
   }
 }

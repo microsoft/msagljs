@@ -97,7 +97,7 @@ test('sorted map', () => {
   expect(a[0]).toBe(-1)
   expect(a[1]).toBe(0)
   expect(a[2]).toBe(2)
-  expect(m.size == 3)
+  expect(m.size === 3)
 })
 
 test('show API', () => {
@@ -351,7 +351,7 @@ export function qualityMetric(gg: GeomGraph): number {
   const internsectionWeight = 100
   for (const e of gg.edges()) {
     for (const u of gg.edges()) {
-      if (e == u) continue
+      if (e === u) continue
       if (crossed(e, u)) {
         r += internsectionWeight
       }
@@ -397,7 +397,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
 //  ss: SugiyamaLayoutSettings = new SugiyamaLayoutSettings(),
 // ) {
 //  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
-//  if (dg == null) return null
+//  if (dg == null ) return null
 //  createGeometry(dg.graph, nodeBoundaryFunc, measureTextSize)
 //  const ll = new LayeredLayout(
 //    GeomObject.getGeom(dg.graph) as GeomGraph,
@@ -433,7 +433,7 @@ test('brandes', () => {
   const path = 'graphvis/'
 
   for (let i = 0; i < sortedList.length && i < 100; i++) {
-    if (i != 44) continue
+    if (i !== 44) continue
     const f = sortedList[i]
     if (f.match('big(.*).gv')) continue // the parser bug
     // pmpipe.gv = sortedList[21] fails
@@ -581,7 +581,7 @@ function testEdgeCurve(curve: ICurve, rect: Rectangle) {
     //     ),
     //   )
     // }
-    // if (calls == 478311) {
+    // if (calls === 478311) {
     //   setDump(true)
     // }
     // expect(contains).toBe(true)

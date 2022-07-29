@@ -35,7 +35,7 @@ export class ShapeObstacleCalculator {
   OverlapsDetected: boolean
 
   Calculate() {
-    if (this.MainShape.Children.length == 0) {
+    if (this.MainShape.Children.length === 0) {
       return
     }
 
@@ -56,7 +56,7 @@ export class ShapeObstacleCalculator {
 
   // this test is valid in our situation where the tight polylines are disjoint and the shape can cross only one of them
   static ShapeIsInsideOfPoly(shape: Shape, tightPolyline: Polyline): boolean {
-    return Curve.PointRelativeToCurveLocation(shape.BoundaryCurve.start, tightPolyline) == PointLocation.Inside
+    return Curve.PointRelativeToCurveLocation(shape.BoundaryCurve.start, tightPolyline) === PointLocation.Inside
   }
 
   CreateTigthLooseCouples() {
@@ -82,7 +82,7 @@ export class ShapeObstacleCalculator {
   InitialTightPolyline(shape: Shape): Polyline {
     const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
     const stickingPointsArray = flatMap(this.LoosePolylinesUnderShape(shape), (p) => Array.from(p)).filter(
-      (p) => Curve.PointRelativeToCurveLocation(p, poly) == PointLocation.Outside,
+      (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
     if (stickingPointsArray.length <= 0) {

@@ -80,7 +80,7 @@ export class TransientGraphUtility {
     }
     TransientGraphUtility.GetBrackets(sourceVertex, targetVertex, dirToTarget, t)
 
-    // If null != edge then targetVertex is between bracketSource and bracketTarget and SplitEdge returns the
+    // If null !=  edge then targetVertex is between bracketSource and bracketTarget and SplitEdge returns the
     // first half-edge (and weight is ignored as the split uses the edge weight).
     let edge = this.VisGraph.FindEdgePP(t.bracketSource.point, t.bracketTarget.point)
     edge = edge != null ? this.SplitEdge(edge, t.splitVertex) : this.CreateEdge(t.bracketSource, t.bracketTarget, weight)
@@ -117,7 +117,7 @@ export class TransientGraphUtility {
       }
       if (TransientGraphUtility.FindBracketingVertices(targetVertex, sourceVertex.point, CompassVector.OppositeDir(dirToTarget), tt)) {
         /*Assert.assert(
-          t.bracketSource == sourceVertex,
+          t.bracketSource === sourceVertex,
           'Mismatched bracketing detection',
         )*/
         t.bracketSource = tt.bracketTarget
@@ -147,7 +147,7 @@ export class TransientGraphUtility {
         return true
       }
 
-      if (dirToTarget != PointComparer.GetDirections(t.bracketTarget.point, targetPoint)) {
+      if (dirToTarget !== PointComparer.GetDirections(t.bracketTarget.point, targetPoint)) {
         // bracketTarget is past vertex in the traversal direction.
         break
       }
@@ -227,7 +227,7 @@ export class TransientGraphUtility {
     // startVertex must therefore be located such that pointLocation is in 'dir' direction from it,
     // or is on the same line.
     // StaticGraphUtility.Assert((0
-    //                == (CompassVector.OppositeDir(dir) & PointComparer.GetDirections(startVertex.point, pointLocation))), "the ray from 'dir' is away from pointLocation", this.ObstacleTree, this.VisGraph);
+    //                === (CompassVector.OppositeDir(dir) & PointComparer.GetDirections(startVertex.point, pointLocation))), "the ray from 'dir' is away from pointLocation", this.ObstacleTree, this.VisGraph);
     while (true) {
       const nextVertex: VisibilityVertex = StaticGraphUtility.FindAdjacentVertex(startVertex, dir)
       if (nextVertex == null) {
@@ -236,7 +236,7 @@ export class TransientGraphUtility {
 
       const dirCheck: Direction = PointComparer.GetDirections(nextVertex.point, pointLocation)
       // If the next vertex is past the intersection with pointLocation, this edge brackets it.
-      if (0 != (CompassVector.OppositeDir(dir) & dirCheck)) {
+      if (0 !== (CompassVector.OppositeDir(dir) & dirCheck)) {
         return this.VisGraph.FindEdgePP(startVertex.point, nextVertex.point)
       }
 
@@ -255,13 +255,13 @@ export class TransientGraphUtility {
     let currentVertex: VisibilityVertex = startVertex
     const currentDirTowardLocation: Direction = dirTowardLocation
     // First move toward pointLocation far as we can.
-    while (Direction.None != currentDirTowardLocation) {
+    while (Direction.None !== currentDirTowardLocation) {
       const nextVertex: VisibilityVertex = StaticGraphUtility.FindAdjacentVertex(currentVertex, dirTowardLocation)
       if (nextVertex == null) {
         break
       }
 
-      if (0 != (CompassVector.OppositeDir(dirTowardLocation) & PointComparer.GetDirections(nextVertex.point, pointLocation))) {
+      if (0 !== (CompassVector.OppositeDir(dirTowardLocation) & PointComparer.GetDirections(nextVertex.point, pointLocation))) {
         break
       }
 
@@ -274,7 +274,7 @@ export class TransientGraphUtility {
     let perpEdge: VisibilityEdge
     while (true) {
       perpEdge = this.FindPerpendicularOrContainingEdge(currentVertex, dir, pointLocation)
-      if (perpEdge != null || currentVertex == startVertex) {
+      if (perpEdge != null || currentVertex === startVertex) {
         break
       }
 
@@ -353,7 +353,7 @@ export class TransientGraphUtility {
     // To avoid this we add the edges in each direction from splitVertex with FindOrAddEdge.  If we've
     // come here from a previous call to FindOrAddEdge, then that call has found the bracketing vertices,
     // which are the endpoints of 'edge', and we've removed 'edge', so we will not call SplitEdge again.
-    if ((this.IsSparseVg || edge.Weight == ScanSegment.OverlappedWeight) && splitVertex.Degree > 0) {
+    if ((this.IsSparseVg || edge.Weight === ScanSegment.OverlappedWeight) && splitVertex.Degree > 0) {
       this.FindOrAddEdge(splitVertex, edge.Source, edge.Weight)
       return this.FindOrAddEdge(splitVertex, edge.Target, edge.Weight)
     }
@@ -372,7 +372,7 @@ export class TransientGraphUtility {
     isOverlapped: boolean,
   ) {
     const dir = PointComparer.GetDirections(maxVisibilitySegment.start, maxVisibilitySegment.end)
-    if (dir == Direction.None) {
+    if (dir === Direction.None) {
       return
     }
 
@@ -382,7 +382,7 @@ export class TransientGraphUtility {
     )*/
     // Shoot the edge chain out to the shorter of max visibility or intersection with the limitrect.
     // StaticGraphUtility.Assert((Point.closeDistEps(maxVisibilitySegment.start, startVertex.point)
-    //                || (PointComparer.GetPureDirectionVV(maxVisibilitySegment.start, startVertex.point) == dir)), "Inconsistent direction found", this.ObstacleTree, this.VisGraph);
+    //                || (PointComparer.GetPureDirectionVV(maxVisibilitySegment.start, startVertex.point) === dir)), "Inconsistent direction found", this.ObstacleTree, this.VisGraph);
     const oppositeFarBound: number = StaticGraphUtility.GetRectangleBound(limitRect, dir)
     const maxDesiredSplicePoint: Point = StaticGraphUtility.IsVerticalD(dir)
       ? GeomConstants.RoundPoint(new Point(startVertex.point.x, oppositeFarBound))
@@ -392,7 +392,7 @@ export class TransientGraphUtility {
       return
     }
 
-    if (PointComparer.GetDirections(startVertex.point, maxDesiredSplicePoint) != dir) {
+    if (PointComparer.GetDirections(startVertex.point, maxDesiredSplicePoint) !== dir) {
       // It's in the opposite direction, so no need to do anything.
       return
     }
@@ -401,7 +401,7 @@ export class TransientGraphUtility {
     // through to the worker function so it knows whether it can go past maxDesiredSegment (which may be limited
     // by limitRect).
     let maxDesiredSegment = maxVisibilitySegment
-    if (PointComparer.GetDirections(maxDesiredSplicePoint, maxDesiredSegment.end) == dir) {
+    if (PointComparer.GetDirections(maxDesiredSplicePoint, maxDesiredSegment.end) === dir) {
       maxDesiredSegment = LineSegment.mkPP(maxDesiredSegment.start, maxDesiredSplicePoint)
     }
 
@@ -416,16 +416,16 @@ export class TransientGraphUtility {
     pacList: PointAndCrossingsList,
     isOverlapped: boolean,
   ) {
-    // StaticGraphUtility.Assert((PointComparer.GetDirections(maxDesiredSegment.start, maxDesiredSegment.end) == extendDir), "maxDesiredSegment is reversed", this.ObstacleTree, this.VisGraph);
+    // StaticGraphUtility.Assert((PointComparer.GetDirections(maxDesiredSegment.start, maxDesiredSegment.end) === extendDir), "maxDesiredSegment is reversed", this.ObstacleTree, this.VisGraph);
     // Direction*s*, because it may return None, which is valid and means startVertex is on the
     // border of an obstacle and we don't want to go inside it.
     const segmentDir: Direction = PointComparer.GetDirections(startVertex.point, maxDesiredSegment.end)
-    if (segmentDir != extendDir) {
+    if (segmentDir !== extendDir) {
       // OppositeDir may happen on overlaps where the boundary has a gap in its ScanSegments due to other obstacles
       // overlapping it and each other.  This works because the port has an edge connected to startVertex,
       // which is on a ScanSegment outside the obstacle.
       // StaticGraphUtility.Assert((isOverlapped
-      //                || (segmentDir != CompassVector.OppositeDir(extendDir))), "obstacle encountered between prevPoint and startVertex", this.ObstacleTree, this.VisGraph);
+      //                || (segmentDir !== CompassVector.OppositeDir(extendDir))), "obstacle encountered between prevPoint and startVertex", this.ObstacleTree, this.VisGraph);
       return
     }
 
@@ -453,7 +453,7 @@ export class TransientGraphUtility {
   }
 
   private SpliceGroupBoundaryCrossings(crossingList: PointAndCrossingsList, startVertex: VisibilityVertex, maxSegment: LineSegment) {
-    if (crossingList == null || 0 == crossingList.Count()) {
+    if (crossingList == null || 0 === crossingList.Count()) {
       return
     }
 
@@ -507,7 +507,7 @@ export class TransientGraphUtility {
     for (;;) {
       const nextVertex = StaticGraphUtility.FindAdjacentVertex(returnVertex, dir)
       // This returns Directions. None on a match.
-      if (nextVertex == null || PointComparer.GetDirections(nextVertex.point, start) == oppositeDir) {
+      if (nextVertex == null || PointComparer.GetDirections(nextVertex.point, start) === oppositeDir) {
         break
       }
 
@@ -606,10 +606,10 @@ export class TransientGraphUtility {
         // This should always have been found in the find-the-next-target loop above if there is
         // a vertex (which would be nextExtendVertex, which we just found) between spliceSource
         // and spliceTarget.  Even for a sparse graph, an edge should not skip over a vertex.
-        // StaticGraphUtility.Assert((spliceTarget == StaticGraphUtility.FindAdjacentVertex(nextExtendVertex, spliceTargetDir)), "no edge exists between an existing nextExtendVertex and spliceTarget", this.ObstacleTree, this.VisGraph);
+        // StaticGraphUtility.Assert((spliceTarget === StaticGraphUtility.FindAdjacentVertex(nextExtendVertex, spliceTargetDir)), "no edge exists between an existing nextExtendVertex and spliceTarget", this.ObstacleTree, this.VisGraph);
       } else {
-        // StaticGraphUtility.Assert(((spliceTarget == null)
-        //                || (spliceTargetDir == PointComparer.GetPureDirectionVV(nextExtendPoint, spliceTarget.point))), "spliceTarget is not to spliceTargetDir of nextExtendVertex", this.ObstacleTree, this.VisGraph);
+        // StaticGraphUtility.Assert(((spliceTarget == null )
+        //                || (spliceTargetDir === PointComparer.GetPureDirectionVV(nextExtendPoint, spliceTarget.point))), "spliceTarget is not to spliceTargetDir of nextExtendVertex", this.ObstacleTree, this.VisGraph);
         nextExtendVertex = this.AddVertex(nextExtendPoint)
       }
 
@@ -624,7 +624,7 @@ export class TransientGraphUtility {
 
       extendVertex = nextExtendVertex
       // Test GetDirections because it may return Directions. None.
-      if (0 == (extendDir & PointComparer.GetDirections(nextExtendPoint, maxDesiredSegment.end))) {
+      if (0 === (extendDir & PointComparer.GetDirections(nextExtendPoint, maxDesiredSegment.end))) {
         // At or past the desired max extension point, so we're done.
         t.spliceTarget = null
         break
@@ -670,7 +670,7 @@ export class TransientGraphUtility {
     const prevDir: Direction = PointComparer.GetDirections(t.spliceSource.point, nextExtendPoint)
     let nextDir: Direction = prevDir
     let spliceTarget = t.spliceSource
-    while (nextDir == prevDir) {
+    while (nextDir === prevDir) {
       t.spliceSource = spliceTarget
       spliceTarget = StaticGraphUtility.FindAdjacentVertex(t.spliceSource, spliceTargetDir)
       if (spliceTarget == null) {
@@ -694,10 +694,10 @@ export class TransientGraphUtility {
     // If we've spliced out of overlapped space into free space, we may be able to turn off the
     // overlapped state if we have a perpendicular non-overlapped edge.
     let edge = this.FindNextEdge(nextExtendVertex, CompassVector.RotateLeft(extendDir))
-    let maybeFreeSpace = edge == null ? false : ScanSegment.NormalWeight == edge.Weight
+    let maybeFreeSpace = edge == null ? false : ScanSegment.NormalWeight === edge.Weight
     if (!maybeFreeSpace) {
       edge = this.FindNextEdge(nextExtendVertex, CompassVector.RotateRight(extendDir))
-      maybeFreeSpace = edge == null ? false : ScanSegment.NormalWeight == edge.Weight
+      maybeFreeSpace = edge == null ? false : ScanSegment.NormalWeight === edge.Weight
     }
 
     return !maybeFreeSpace || this.ObstacleTree.PointIsInsideAnObstaclePD(nextExtendVertex.point, extendDir)
@@ -727,11 +727,11 @@ export class TransientGraphUtility {
   }
 
   static IsReflectionEdge(edge: VisibilityEdge): boolean {
-    return edge != null && edge.Weight == ScanSegment.ReflectionWeight
+    return edge != null && edge.Weight === ScanSegment.ReflectionWeight
   }
 
   static IsPointPastSegmentEnd(maxSegment: LineSegment, point: Point): boolean {
-    return PointComparer.GetDirections(maxSegment.start, maxSegment.end) == PointComparer.GetDirections(maxSegment.end, point)
+    return PointComparer.GetDirections(maxSegment.start, maxSegment.end) === PointComparer.GetDirections(maxSegment.end, point)
   }
 
   toString(): string {

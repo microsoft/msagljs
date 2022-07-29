@@ -199,7 +199,7 @@ export class SimulatedAnnealing {
 */
   TryMoveStation(s: Station): boolean {
     let direction: Point = this.BuildDirection(s)
-    if (direction.length == 0) {
+    if (direction.length === 0) {
       return false
     }
 
@@ -233,9 +233,9 @@ export class SimulatedAnnealing {
   moveIsLegalForAdjacentBundles(s: Station, sNewPosition: Point): boolean {
     for (const poly of this.metroGraphData.looseIntersections.obstacleTree.AllHitItems(
       Rectangle.mkOnPoints([sNewPosition]),
-      (poly) => Curve.PointRelativeToCurveLocation(sNewPosition, poly) != PointLocation.Outside,
+      (poly) => Curve.PointRelativeToCurveLocation(sNewPosition, poly) !== PointLocation.Outside,
     )) {
-      if (s.getELP().has(poly) == false) {
+      if (s.getELP().has(poly) === false) {
         return false
       }
     }

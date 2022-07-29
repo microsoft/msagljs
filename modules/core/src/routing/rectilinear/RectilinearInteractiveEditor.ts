@@ -25,7 +25,7 @@ export class RectilinearInteractiveEditor {
     const r = RectilinearInteractiveEditor.FillRouter(cornerFitRadius, padding, obstacleNodes, geometryEdges, edgeRoutingMode)
     r.run()
     RectilinearInteractiveEditor.CreateSelfEdges(
-      Array.from(geometryEdges).filter((e) => e.sourcePort.Location == e.targetPort.Location),
+      Array.from(geometryEdges).filter((e) => e.sourcePort.Location === e.targetPort.Location),
       cornerFitRadius,
     )
   }
@@ -70,7 +70,7 @@ export class RectilinearInteractiveEditor {
     edgeRoutingMode: EdgeRoutingMode,
   ): RectilinearEdgeRouter {
     // Assert.assert(
-    //   EdgeRoutingMode.Rectilinear == edgeRoutingMode || EdgeRoutingMode.RectilinearToCenter == edgeRoutingMode,
+    //   EdgeRoutingMode.Rectilinear === edgeRoutingMode || EdgeRoutingMode.RectilinearToCenter === edgeRoutingMode,
     //   'Non-rectilinear edgeRoutingMode',
     // )
     const nodeShapesMap = new Map<GeomNode, Shape>()
@@ -115,7 +115,7 @@ export class RectilinearInteractiveEditor {
   public static CreateSimpleEdgeCurveWithGivenFitRadius(edge: GeomEdge, cornerFitRadius: number) {
     const a = edge.source.center
     const b = edge.target.center
-    if (edge.source == edge.target) {
+    if (edge.source === edge.target) {
       const dx = edge.source.boundaryCurve.boundingBox.width / 2
       const dy = edge.source.boundingBox.height / 4
       edge.underlyingPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
@@ -139,7 +139,7 @@ export class RectilinearInteractiveEditor {
   public static CreateSimpleEdgeCurve(edge: GeomEdge) {
     const a = edge.source.center
     const b = edge.target.center
-    if (edge.source == edge.target) {
+    if (edge.source === edge.target) {
       const dx = edge.source.boundaryCurve.boundingBox.width / 2
       const dy = edge.source.boundingBox.height / 4
       edge.underlyingPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)

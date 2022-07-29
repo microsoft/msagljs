@@ -48,7 +48,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
     super(obstacles, new CompassVector(direction).ToPoint())
     this.DirectionPerp = new CompassVector(direction).Right.ToPoint()
     this.PathOrders = pathOrders
-    this.xProjection = direction == Direction.North ? (p) => p.x : (p) => -p.y
+    this.xProjection = direction === Direction.North ? (p) => p.x : (p) => -p.y
     this.edgeContainersTree = new RBTree<AxisEdgesContainer>((a, b) => this.CompareAA(a, b))
     this.SweepPole = CompassVector.VectorDirection(this.SweepDirection)
     /*Assert.assert(CompassVector.IsPureDirection(this.SweepPole))*/
@@ -129,7 +129,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   ProjectionsOfEdgesOverlap(leftEdge: AxisEdge, rightEdge: AxisEdge): boolean {
-    return this.SweepPole == Direction.North
+    return this.SweepPole === Direction.North
       ? !(
           leftEdge.TargetPoint.y < rightEdge.SourcePoint.y - GeomConstants.distanceEpsilon ||
           rightEdge.TargetPoint.y < leftEdge.SourcePoint.y - GeomConstants.distanceEpsilon
@@ -165,7 +165,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
 
   // a point on the edge on Z level
   ConstraintEdgeWithObstaclesAtZ(edge: AxisEdge, point: Point) {
-    /*Assert.assert(point == edge.Source.point || point == edge.Target.point)*/
+    /*Assert.assert(point === edge.Source.point || point === edge.Target.point)*/
     this.ConstraintEdgeWithObstaclesAtZFromLeft(edge, point)
     this.ConstraintEdgeWithObstaclesAtZFromRight(edge, point)
   }
@@ -288,15 +288,15 @@ export class FreeSpaceFinder extends LineSweeperBase {
   //        dd.Add(new DebugCurve(200, 1, color, new LineSegment(axisEdge.Source.point, axisEdge.Target.point)));
   //        let perp: Point = new Point(0, 1);
   //        // TODO: Warning!!!, inline IF is not supported ?
-  //        (axisEdge.Direction == Direction.East);
+  //        (axisEdge.Direction === Direction.East);
   //        new Point(-1, 0);
-  //        if ((axisEdge.LeftBound != Number.NEGATIVE_INFINITY)) {
+  //        if ((axisEdge.LeftBound !== Number.NEGATIVE_INFINITY)) {
   //            dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
   //                                    + (axisEdge.LeftBound * perp)), (axisEdge.Target.point
   //                                    + (axisEdge.LeftBound * perp)))));
   //        }
 
-  //        if ((axisEdge.RightBound != Number.POSITIVE_INFINITY)) {
+  //        if ((axisEdge.RightBound !== Number.POSITIVE_INFINITY)) {
   //            dd.Add(new DebugCurve(200, 0.5, color, new LineSegment((axisEdge.Source.point
   //                                    - (axisEdge.RightBound * perp)), (axisEdge.Target.point
   //                                    - (axisEdge.RightBound * perp)))));
@@ -359,7 +359,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   ProcessRightVertex(rightVertexEvent: VertexEvent, nextVertex: PolylinePoint) {
-    /*Assert.assert(this.Z == rightVertexEvent.Site.dot(this.SweepDirection))*/
+    /*Assert.assert(this.Z === rightVertexEvent.Site.dot(this.SweepDirection))*/
     const site = rightVertexEvent.Site
     this.ProcessPrevSegmentForRightVertex(rightVertexEvent, site)
     const delta = nextVertex.point.sub(rightVertexEvent.Site)
@@ -394,7 +394,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
 
   NotRestricting(edge: AxisEdge, polyline: Polyline): boolean {
     const p = this.AxisEdgesToObstaclesTheyOriginatedFrom.get(edge)
-    return p == polyline
+    return p === polyline
   }
 
   ProcessPrevSegmentForRightVertex(rightVertexEvent: VertexEvent, site: Point) {
@@ -415,7 +415,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   ProcessLeftVertex(leftVertexEvent: VertexEvent, nextVertex: PolylinePoint) {
-    /*Assert.assert(this.Z == leftVertexEvent.Site.dot(this.SweepDirection))*/
+    /*Assert.assert(this.Z === leftVertexEvent.Site.dot(this.SweepDirection))*/
     const site = leftVertexEvent.Site
     this.ProcessPrevSegmentForLeftVertex(leftVertexEvent, site)
     const delta: Point = nextVertex.point.sub(leftVertexEvent.Site)
@@ -481,7 +481,7 @@ export class FreeSpaceFinder extends LineSweeperBase {
   }
 
   EdgeIsParallelToSweepDir(edge: AxisEdge): boolean {
-    return edge.Direction == this.SweepPole || edge.Direction == CompassVector.OppositeDir(this.SweepPole)
+    return edge.Direction === this.SweepPole || edge.Direction === CompassVector.OppositeDir(this.SweepPole)
   }
 
   static EdgeHighPointEvent(edge: AxisEdge, point: Point): SweepEvent {

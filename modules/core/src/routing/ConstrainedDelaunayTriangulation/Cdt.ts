@@ -117,7 +117,7 @@ export class Cdt extends Algorithm {
 
   AddConstrainedEdge(a: Point, b: Point, poly: Polyline) {
     const ab = Cdt.AbovePP(a, b)
-    /*Assert.assert(ab != 0)*/
+    /*Assert.assert(ab !== 0)*/
     let upperPoint: CdtSite
     let lowerPoint: CdtSite
     if (ab > 0) {
@@ -136,7 +136,7 @@ export class Cdt extends Algorithm {
   }
 
   static GetOrCreateEdge(a: CdtSite, b: CdtSite): CdtEdge {
-    if (Cdt.AboveCC(a, b) == 1) {
+    if (Cdt.AboveCC(a, b) === 1) {
       const e = a.EdgeBetweenUpperSiteAndLowerSite(b)
       if (e != null) {
         return e
@@ -154,7 +154,7 @@ export class Cdt extends Algorithm {
   }
 
   static CreateEdgeOnOrderedCouple(upperPoint: CdtSite, lowerPoint: CdtSite): CdtEdge {
-    /*Assert.assert(Cdt.AboveCC(upperPoint, lowerPoint) == 1)*/
+    /*Assert.assert(Cdt.AboveCC(upperPoint, lowerPoint) === 1)*/
     return new CdtEdge(upperPoint, lowerPoint)
   }
 
@@ -217,7 +217,7 @@ export class Cdt extends Algorithm {
     for (const site of this.PointsToSites.values()) {
       for (const e of site.Edges) {
         const oSite = e.lowerSite
-        /*Assert.assert(oSite != site)*/
+        /*Assert.assert(oSite !== site)*/
         oSite.AddInEdge(e)
       }
     }
@@ -253,7 +253,7 @@ export class Cdt extends Algorithm {
     const us = edge.upperSite
     let edgeIsThere = false
     for (const e of us.Edges) {
-      if (e == edge) {
+      if (e === edge) {
         edgeIsThere = true
         break
       }
@@ -262,6 +262,6 @@ export class Cdt extends Algorithm {
       return false
     }
     const usShouldBe = this.PointsToSites.get(us.point)
-    return usShouldBe == us
+    return usShouldBe === us
   }
 }

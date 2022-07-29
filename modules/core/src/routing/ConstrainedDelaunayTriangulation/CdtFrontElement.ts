@@ -15,14 +15,14 @@ export class CdtFrontElement {
 
   constructor(leftSite: CdtSite, edge: CdtEdge) {
     /*Assert.assert(
-      (edge.upperSite.point.x != edge.lowerSite.point.x &&
+      (edge.upperSite.point.x !== edge.lowerSite.point.x &&
         edge.upperSite.point.x < edge.lowerSite.point.x &&
-        leftSite == edge.upperSite) ||
+        leftSite === edge.upperSite) ||
         (edge.upperSite.point.x > edge.lowerSite.point.x &&
-          leftSite == edge.lowerSite),
+          leftSite === edge.lowerSite),
     )*/
 
-    this.RightSite = edge.upperSite == leftSite ? edge.lowerSite : edge.upperSite
+    this.RightSite = edge.upperSite === leftSite ? edge.lowerSite : edge.upperSite
     this.LeftSite = leftSite
     this.Edge = edge
   }

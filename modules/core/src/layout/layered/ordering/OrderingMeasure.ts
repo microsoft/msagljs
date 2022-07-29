@@ -10,7 +10,7 @@ export class OrderingMeasure {
   }
 
   LayerGroupDisbalance(l: number[], origGroupOptSize: number, virtGroupOptSize: number) {
-    if (origGroupOptSize == 1) return this.LayerGroupDisbalanceWithOrigSeparators(l, virtGroupOptSize)
+    if (origGroupOptSize === 1) return this.LayerGroupDisbalanceWithOrigSeparators(l, virtGroupOptSize)
     else return this.LayerGroupDisbalanceWithVirtSeparators(l, origGroupOptSize)
   }
 
@@ -59,6 +59,6 @@ export class OrderingMeasure {
   }
 
   IsPerfect() {
-    return this.numberOfCrossings == 0
+    return this.numberOfCrossings === 0
   }
 }

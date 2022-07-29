@@ -209,7 +209,7 @@ export class Anchor {
   }
 
   static pad(curve: Polyline, padding: number): Polyline {
-    if (padding == 0) return curve
+    if (padding === 0) return curve
 
     if (Anchor.curveIsConvex(curve)) {
       return Anchor.padConvexCurve(curve, padding)
@@ -219,7 +219,7 @@ export class Anchor {
   static padCorner(poly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number) {
     const cornerInfo = Anchor.getPaddedCorner(p0, p1, p2, padding)
     poly.addPoint(cornerInfo.a)
-    if (cornerInfo.numberOfPoints == 2) poly.addPoint(cornerInfo.b)
+    if (cornerInfo.numberOfPoints === 2) poly.addPoint(cornerInfo.b)
   }
 
   static padConvexCurve(poly: Polyline, padding: number) {
@@ -247,7 +247,7 @@ export class Anchor {
     const u = first.point
     const v = second.point
     const w = third.point
-    const ccw = Point.getTriangleOrientation(u, v, w) == TriangleOrientation.Counterclockwise
+    const ccw = Point.getTriangleOrientation(u, v, w) === TriangleOrientation.Counterclockwise
     const uv = v.sub(u)
     //uvPerp has to look outside of the curve
     const uvPerp = uv.rotate((ccw ? -Math.PI : Math.PI) / 2).normalize()
@@ -289,9 +289,9 @@ export class Anchor {
   static curveIsConvex(poly: Polyline) {
     let orientation = TriangleOrientation.Collinear
     for (const or of Anchor.orientations(poly)) {
-      if (or == TriangleOrientation.Collinear) continue
-      if (orientation == TriangleOrientation.Collinear) orientation = or
-      else if (or != orientation) return false
+      if (or === TriangleOrientation.Collinear) continue
+      if (orientation === TriangleOrientation.Collinear) orientation = or
+      else if (or !== orientation) return false
     }
     return true
   }

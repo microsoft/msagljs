@@ -13,7 +13,7 @@ function DivideNodes<T, P>(
 ) {
   const groupSplitThreshold = 2
   for (let i = 0; i < nodes.length; i++) {
-    if (i == seed0 || i == seed1) continue
+    if (i === seed0 || i === seed1) continue
 
     // ReSharper disable InconsistentNaming
     const box0_ = t.box0.add_rect(nodes[i].irect)
@@ -48,9 +48,9 @@ function DivideNodes<T, P>(
 }
 /**  calculates an RTree with the leaves in the given nodes */
 export function CreateRectNodeOnArrayOfRectNodes<T, P>(nodes: RectangleNode<T, P>[]): RectangleNode<T, P> {
-  if (nodes.length == 0) return null
+  if (nodes.length === 0) return null
 
-  if (nodes.length == 1) return nodes[0]
+  if (nodes.length === 1) return nodes[0]
 
   //Finding the seeds
   const t = {b0: nodes[0].irect, seed0: 1}
@@ -93,7 +93,7 @@ function ChooseSeeds<T, P>(nodes: RectangleNode<T, P>[], t: {b0: IRectangle<P>; 
 
   //init seed1
   for (let i = 0; i < nodes.length; i++) {
-    if (i != t.seed0) {
+    if (i !== t.seed0) {
       seed1 = i
       break
     }
@@ -103,7 +103,7 @@ function ChooseSeeds<T, P>(nodes: RectangleNode<T, P>[], t: {b0: IRectangle<P>; 
   //Now try to improve the second seed
 
   for (let i = 0; i < nodes.length; i++) {
-    if (i == t.seed0) continue
+    if (i === t.seed0) continue
     const area1 = nodes[t.seed0].irect.add_rect(nodes[i].irect).area
     if (area1 > area) {
       seed1 = i
@@ -144,12 +144,12 @@ function VisitTreeStatic<T, P>(
   hitRectangle: IRectangle<P>,
 ): HitTestBehavior {
   if (rectangleNode.irect.intersects_rect(hitRectangle)) {
-    if (hitTest(rectangleNode.UserData) == HitTestBehavior.Continue) {
+    if (hitTest(rectangleNode.UserData) === HitTestBehavior.Continue) {
       if (rectangleNode.Left != null) {
         // If rectangleNode.Left is not null, rectangleNode.Right won't be either.
         if (
-          VisitTreeStatic(rectangleNode.Left, hitTest, hitRectangle) == HitTestBehavior.Continue &&
-          VisitTreeStatic(rectangleNode.Right, hitTest, hitRectangle) == HitTestBehavior.Continue
+          VisitTreeStatic(rectangleNode.Left, hitTest, hitRectangle) === HitTestBehavior.Continue &&
+          VisitTreeStatic(rectangleNode.Right, hitTest, hitRectangle) === HitTestBehavior.Continue
         ) {
           return HitTestBehavior.Continue
         }
@@ -187,7 +187,7 @@ export class RectangleNode<T, P> {
     return this.left
   }
   set Left(value) {
-    if (this.left != null && this.left.Parent == this) this.left.Parent = null
+    if (this.left != null && this.left.Parent === this) this.left.Parent = null
     this.left = value
     if (this.left != null) this.left.Parent = this
   }
@@ -196,14 +196,14 @@ export class RectangleNode<T, P> {
     return this.right
   }
   set Right(value) {
-    if (this.right != null && this.right.Parent == this) this.right.Parent = null
+    if (this.right != null && this.right.Parent === this) this.right.Parent = null
     this.right = value
     if (this.right != null) this.right.Parent = this
   }
 
   get IsLeftChild(): boolean {
     /*Assert.assert(this.Parent != null)*/
-    return this == this.Parent.Left
+    return this === this.Parent.Left
   }
 
   // brings the first leaf which rectangle was hit and the delegate is happy with the object
@@ -211,7 +211,7 @@ export class RectangleNode<T, P> {
     if (this.irect.contains_point(point)) {
       if (this.IsLeaf) {
         if (hitTestForPointDelegate != null) {
-          return hitTestForPointDelegate(point, this.UserData) == HitTestBehavior.Stop ? this : null
+          return hitTestForPointDelegate(point, this.UserData) === HitTestBehavior.Stop ? this : null
         }
         return this
       }
@@ -233,7 +233,7 @@ export class RectangleNode<T, P> {
     if (!this.irect.contains_point(point)) return null
 
     if (this.IsLeaf) {
-      return hitTest(point, this.UserData) == HitTestBehavior.Stop ? this : null
+      return hitTest(point, this.UserData) === HitTestBehavior.Stop ? this : null
     }
 
     return this.Left.FirstHitNodeWithPredicate(point, hitTest) ?? this.Right.FirstHitNodeWithPredicate(point, hitTest)

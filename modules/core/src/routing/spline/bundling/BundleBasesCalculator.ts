@@ -91,11 +91,11 @@ export class BundleBasesCalculator {
           )
           neighbor.BundleBases.set(station, bb2)
 
-          if (Curve.PointRelativeToCurveLocation(neighbor.Position, station.BoundaryCurve) != PointLocation.Outside) {
+          if (Curve.PointRelativeToCurveLocation(neighbor.Position, station.BoundaryCurve) !== PointLocation.Outside) {
             bb.IsParent = true
             addToMapOfArrays(this.internalBases, station, bb)
             addToMapOfArrays(this.externalBases, neighbor, bb2)
-          } else if (Curve.PointRelativeToCurveLocation(station.Position, neighbor.BoundaryCurve) != PointLocation.Outside) {
+          } else if (Curve.PointRelativeToCurveLocation(station.Position, neighbor.BoundaryCurve) !== PointLocation.Outside) {
             bb2.IsParent = true
             addToMapOfArrays(this.externalBases, station, bb)
             addToMapOfArrays(this.internalBases, neighbor, bb2)
@@ -270,7 +270,7 @@ export class BundleBasesCalculator {
 
     rBase.ParStart = rBase.AdjustParam(x + GeomConstants.distanceEpsilon)
     lBase.ParEnd = lBase.AdjustParam(x - GeomConstants.distanceEpsilon)
-    // Assert.assert(intersectBases(rBase, lBase) == null)
+    // Assert.assert(intersectBases(rBase, lBase) == null )
   }
 
   // find a cut point for 2 segments
@@ -370,8 +370,8 @@ export class BundleBasesCalculator {
 
       if (this.OptimizeBundle(bundleInfo, parameterChange, t)) {
         progress = true
-        /*bool isClusterS = bundleInfo.SourceBase.CurveCenter != bundleInfo.SourceBase.Position;
-                    bool isClusterT = bundleInfo.TargetBase.CurveCenter != bundleInfo.TargetBase.Position;
+        /*bool isClusterS = bundleInfo.SourceBase.CurveCenter !== bundleInfo.SourceBase.Position;
+                    bool isClusterT = bundleInfo.TargetBase.CurveCenter !== bundleInfo.TargetBase.Position;
                     while ((isClusterS || isClusterT) && OptimizeBundle(bundleInfo, parameterChange, ref cost)) { }*/
       } else this.fixedBundles.add(bundleInfo)
     }
@@ -604,7 +604,7 @@ export class BundleBasesCalculator {
   }
 
   SeparationCostForAdjacentBundleBases(base0: BundleBase, base1: BundleBase): number {
-    //Assert.assert(base0.Curve == base1.Curve)
+    //Assert.assert(base0.Curve === base1.Curve)
     const boundaryCurve: ICurve = base0.Curve
     const len: number = this.IntervalsOverlapLength(base0.ParStart, base0.ParEnd, base1.ParStart, base1.ParEnd, boundaryCurve)
     const mn: number = Math.min(base0.Span, base1.Span)

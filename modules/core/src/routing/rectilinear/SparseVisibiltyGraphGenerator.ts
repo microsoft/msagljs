@@ -310,7 +310,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
 
       if (nextNode.item.Obstacle.IsGroup) {
         // Do not create internal group crossings in non-overlapped obstacles.
-        if (overlapDepth == 0 || isInsideOverlappedObstacle) {
+        if (overlapDepth === 0 || isInsideOverlappedObstacle) {
           this.HandleGroupCrossing(site, nextNode.item)
         }
 
@@ -388,7 +388,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
 
   private AddPerpendicularCoordForGroupCrossing(intersect: Point) {
     const nonCrossingPerpSlot = this.FindPerpendicularSlot(intersect, 0)
-    if (-1 != nonCrossingPerpSlot) {
+    if (-1 !== nonCrossingPerpSlot) {
       this.perpendicularSegmentVector.Item(nonCrossingPerpSlot).AddPendingPerpendicularCoord(this.parallelSegmentVector.CurrentSlot.Coord)
     }
   }
@@ -401,15 +401,15 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
     // Skip sides of obstacles that we do not actually pass through.
     const bbox = side.Obstacle.VisibilityBoundingBox
     if (this.ScanDirection.IsHorizontal) {
-      return start.y == bbox.bottom || start.y == bbox.top
+      return start.y === bbox.bottom || start.y === bbox.top
     }
 
-    return start.x == bbox.left || start.x == bbox.right
+    return start.x === bbox.left || start.x === bbox.right
   }
 
   private CreateScanSegment(start: Point, side: BasicObstacleSide, weight: number): Point {
     const end = this.ScanLineIntersectSide(start, side)
-    if (start != end) {
+    if (start !== end) {
       this.parallelSegmentVector.CreateScanSegment(
         start,
         end,
@@ -521,7 +521,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
     item: ScanSegmentVectorItem,
   ): boolean {
     // With overlaps, we may have bboxSteinerPoints on segments that do not contain vertices.
-    while (t.j < bboxSteinerPoints.length && this.currentAxisPointComparer(bboxSteinerPoints[t.j], currentVertexPoint) == -1) {
+    while (t.j < bboxSteinerPoints.length && this.currentAxisPointComparer(bboxSteinerPoints[t.j], currentVertexPoint) === -1) {
       if (!item.TraverseToSegmentContainingPoint(bboxSteinerPoints[t.j])) {
         // Done with this vectorItem, move to the next item.
         return false
@@ -579,7 +579,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
   ): number {
     const coord = segmentVector.GetParallelCoord(site)
     const slot = coordMap.get(coord)
-    if (slot != undefined) {
+    if (slot !== undefined) {
       return slot
     }
 
@@ -592,7 +592,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
     // 3.  Non-extreme vertices in the perpendicular direction (e.g. for a triangle, we add the X's of
     //     the left and right to the coords, but not of the top).
     // 4.  Non-rectilinear group side intersections.
-    return directionIfMiss == 0 ? -1 : segmentVector.FindNearest(coord, directionIfMiss)
+    return directionIfMiss === 0 ? -1 : segmentVector.FindNearest(coord, directionIfMiss)
   }
 
   private AddSlotToSegmentIntersections(parallelItem: ScanSegmentVectorItem, perpSlot: number) {

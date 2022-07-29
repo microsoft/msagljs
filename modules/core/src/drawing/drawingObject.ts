@@ -12,40 +12,40 @@ import {Attribute} from '../structs/attribute'
 export abstract class DrawingObject extends Attribute {
   static copyValidFields(source: DrawingObject, target: DrawingObject) {
     if (source == null || target == null) return
-    if (source.color && source.color.keyword && source.color.keyword.toLowerCase() != 'black') {
+    if (source.color && source.color.keyword && source.color.keyword.toLowerCase() !== 'black') {
       target.color = source.color
     }
     if (source.fillColor) {
       target.fillColor = source.fillColor
     }
-    if (source.labelfontcolor && source.labelfontcolor.keyword.toLowerCase() != 'black') {
+    if (source.labelfontcolor && source.labelfontcolor.keyword.toLowerCase() !== 'black') {
       target.labelfontcolor = source.labelfontcolor
     }
-    if (source.labelText != null && source.labelText != '' && source.labelText != source.id) {
+    if (source.labelText != null && source.labelText !== '' && source.labelText !== source.id) {
       target.labelText = source.labelText
     }
-    if (source.fontColor && source.fontColor.keyword.toLowerCase() != 'black') {
+    if (source.fontColor && source.fontColor.keyword.toLowerCase() !== 'black') {
       target.fontColor = source.fontColor
     }
     if (source.styles && source.styles.length) {
       target.styles = source.styles.map((a) => a)
     }
-    if (source.pencolor && source.pencolor.keyword != 'black') {
+    if (source.pencolor && source.pencolor.keyword !== 'black') {
       target.pencolor = source.pencolor
     }
-    if (source.penwidth && source.penwidth != 1) {
+    if (source.penwidth && source.penwidth !== 1) {
       target.penwidth = source.penwidth
     }
     if (source.rankdir) {
       target.rankdir = source.rankdir
     }
-    if (source.fontname && source.fontname != DrawingObject.defaultLabelFontName) {
+    if (source.fontname && source.fontname !== DrawingObject.defaultLabelFontName) {
       target.fontname = source.fontname
     }
     if (source.margin) {
       target.margin = source.margin
     }
-    if (source.fontsize && source.fontsize != DrawingObject.defaultLabelFontSize) {
+    if (source.fontsize && source.fontsize !== DrawingObject.defaultLabelFontSize) {
       target.fontsize = source.fontsize
     }
     if (source.orientation) {
@@ -86,19 +86,19 @@ export abstract class DrawingObject extends Attribute {
     }
   }
   *attrIter(): IterableIterator<Attr> {
-    if (this.color && this.color.keyword.toLowerCase() != 'black') {
+    if (this.color && this.color.keyword.toLowerCase() !== 'black') {
       yield {type: 'attr', id: 'color', eq: this.color.toString()}
     }
     if (this.fillColor) {
       yield {type: 'attr', id: 'fillColor', eq: this.fillColor.toString()}
     }
-    if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() != 'black') {
+    if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() !== 'black') {
       yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
     }
-    if ((this.labelText == null || this.labelText == '') && this.entity && this.labelText != this.id) {
+    if ((this.labelText == null || this.labelText === '') && this.entity && this.labelText !== this.id) {
       yield {type: 'attr', id: 'label', eq: this.labelText}
     }
-    if (this.fontColor && this.fontColor.keyword.toLowerCase() != 'black') {
+    if (this.fontColor && this.fontColor.keyword.toLowerCase() !== 'black') {
       yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}
     }
 
@@ -106,22 +106,22 @@ export abstract class DrawingObject extends Attribute {
       const styleString = this.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
       yield {type: 'attr', id: 'style', eq: styleString}
     }
-    if (this.pencolor && this.pencolor.keyword != 'black') {
+    if (this.pencolor && this.pencolor.keyword !== 'black') {
       yield {type: 'attr', id: 'pencolor', eq: this.pencolor.toString()}
     }
-    if (this.penwidth && this.penwidth != 1) {
+    if (this.penwidth && this.penwidth !== 1) {
       yield {type: 'attr', id: 'penwidth', eq: this.penwidth.toString()}
     }
     if (this.rankdir) {
       yield {type: 'attr', id: 'rankdir', eq: this.rankdir.toString()}
     }
-    if (this.fontname && this.fontname != DrawingObject.defaultLabelFontName) {
+    if (this.fontname && this.fontname !== DrawingObject.defaultLabelFontName) {
       yield {type: 'attr', id: 'fontname', eq: this.fontname}
     }
     if (this.margin) {
       yield {type: 'attr', id: 'margin', eq: this.margin.toString()}
     }
-    if (this.fontsize && this.fontsize != DrawingObject.defaultLabelFontSize) {
+    if (this.fontsize && this.fontsize !== DrawingObject.defaultLabelFontSize) {
       yield {type: 'attr', id: 'fontsize', eq: this.fontsize.toString()}
     }
     if (this.orientation) {

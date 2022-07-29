@@ -38,13 +38,13 @@ export class IncrementalDragger {
     this.nodeSeparation = layoutSettings.NodeSeparation
     this.layoutSettings = layoutSettings
     this.pushingNodesArray = pushingNodes
-    // Debug.Assert((this.pushingNodesArray.All(() => {  }, (IncrementalDragger.DefaultClusterParent(n) == null))
-    //                 || (new Set<GeomNode>(this.pushingNodesArray.Select(() => {  }, n.ClusterParent)).Count == 1)), "dragged nodes have to belong to the same cluster");
+    // Debug.Assert((this.pushingNodesArray.All(() => {  }, (IncrementalDragger.DefaultClusterParent(n) == null ))
+    //                 || (new Set<GeomNode>(this.pushingNodesArray.Select(() => {  }, n.ClusterParent)).Count === 1)), "dragged nodes have to belong to the same cluster");
     this.InitBumperPushers()
   }
 
   InitBumperPushers() {
-    if (this.pushingNodesArray.length == 0) {
+    if (this.pushingNodesArray.length === 0) {
       return
     }
     let gg = GeomGraph.getGeom(this.pushingNodesArray[0].node.parent as Graph)
@@ -65,7 +65,7 @@ export class IncrementalDragger {
       const bumperPusher = this.listOfPushers[i]
       bumperPusher.PushNodes()
       const cluster = bumperPusher.FirstPushingNode().node.parent
-      if (cluster == this.geomGraph_.graph) {
+      if (cluster === this.geomGraph_.graph) {
         break
       }
       const sg = GeomGraph.getGeom(cluster as Graph)

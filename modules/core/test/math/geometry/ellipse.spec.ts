@@ -21,7 +21,7 @@ test('intersect quarters', () => {
   const rc = rr.clone()
   rc.translate(new Point(-3, 3))
   const xx = Curve.getAllIntersections(rr, rc, true)
-  expect(xx.length == 1).toBeTruthy()
+  expect(xx.length === 1).toBeTruthy()
   expect(Point.close(rr.value(xx[0].par0), xx[0].x, GeomConstants.intersectionEpsilon)).toBe(true)
 })
 

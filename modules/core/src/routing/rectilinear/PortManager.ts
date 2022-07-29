@@ -126,14 +126,14 @@ export class PortManager {
     }
 
     const roundedLocation = GeomConstants.RoundPoint(port.Location)
-    if (PointLocation.Outside == Curve.PointRelativeToCurveLocation(roundedLocation, obstacle.InputShape.BoundaryCurve)) {
+    if (PointLocation.Outside === Curve.PointRelativeToCurveLocation(roundedLocation, obstacle.InputShape.BoundaryCurve)) {
       // Obstacle.Port is outside Obstacle.Shape; handle it as a FreePoint.
       return null
     }
 
     if (
-      obstacle.InputShape.BoundaryCurve != port.Curve &&
-      PointLocation.Outside == Curve.PointRelativeToCurveLocation(roundedLocation, port.Curve)
+      obstacle.InputShape.BoundaryCurve !== port.Curve &&
+      PointLocation.Outside === Curve.PointRelativeToCurveLocation(roundedLocation, port.Curve)
     ) {
       // Obstacle.Port is outside port.Curve; handle it as a FreePoint.
       return null
@@ -216,7 +216,7 @@ export class PortManager {
     dirFromGraph: Direction,
     endpointVertices: Array<VisibilityVertex>,
   ) {
-    if (Direction.None == dirFromGraph) {
+    if (Direction.None === dirFromGraph) {
       // Not out of bounds on this axis.
       return
     }
@@ -232,7 +232,7 @@ export class PortManager {
   }
 
   SetAllAncestorsActive(edgeGeom: GeomEdge, shapeToObstacleMap: Map<Shape, Obstacle>): boolean {
-    if (0 == this.AncestorSets.size) {
+    if (0 === this.AncestorSets.size) {
       return false
     }
 
@@ -264,7 +264,7 @@ export class PortManager {
 
   FindAncestorsAndObstaclePort(port: Port, t: {oport: ObstaclePort}): Set<Shape> {
     t.oport = this.FindObstaclePort(port)
-    if (0 == this.AncestorSets.size) {
+    if (0 === this.AncestorSets.size) {
       return null
     }
 
@@ -450,7 +450,7 @@ export class PortManager {
         }
 
         const points =
-          sourceEntrance.IsVertical == targetEntrance.IsVertical
+          sourceEntrance.IsVertical === targetEntrance.IsVertical
             ? PortManager.GetPathPointsFromOverlappingCollinearVisibility(sourceEntrance, targetEntrance)
             : PortManager.GetPathPointsFromIntersectingVisibility(sourceEntrance, targetEntrance)
 
@@ -578,7 +578,7 @@ export class PortManager {
   private GetBorderIntersections(location: Point, lineSeg: LineSegment, curve: ICurve, t: {xx0: Point; xx1: Point}) {
     // Important:  the LineSegment must be the first arg to GetAllIntersections so RawIntersection works.
     const xxs = Curve.getAllIntersections(lineSeg, curve, true)
-    /*Assert.assert(2 == xxs.length, 'Expected two intersections')*/
+    /*Assert.assert(2 === xxs.length, 'Expected two intersections')*/
     t.xx0 = GeomConstants.RoundPoint(xxs[0].x)
     t.xx1 = GeomConstants.RoundPoint(xxs[1].x)
   }
@@ -629,7 +629,7 @@ export class PortManager {
       const perpDirs: Direction = CompassVector.VectorDirection(PortManager.GetDerivative(oport, unpaddedBorderIntersect))
       let perpDir: Direction
       outDir | CompassVector.OppositeDir(outDir)
-      if (Direction.None != (outDir & perpDirs)) {
+      if (Direction.None !== (outDir & perpDirs)) {
         // If the derivative is in the same direction as outDir then perpDir is toward the obstacle
         // interior and must be reversed.
         perpDir = CompassVector.OppositeDir(perpDir)
@@ -773,11 +773,11 @@ export class PortManager {
     }
 
     // pointLocation is not on the initial scanSeg, so see if there is a transient edge between
-    // pointLocation and edgeIntersect.  edgeIntersect == segsegVertex.Point if pointLocation is
+    // pointLocation and edgeIntersect.  edgeIntersect === segsegVertex.Point if pointLocation is
     // collinear with intSegBefore (pointLocation is before or after intSegBefore's VisibilityVertices).
     const dirTowardLocation: Direction = PointComparer.GetDirections(edgeIntersect, pointLocation)
     let perpDir: Direction = PointComparer.GetDirections(tt.segsegVertex.point, pointLocation)
-    if (dirTowardLocation == perpDir) {
+    if (dirTowardLocation === perpDir) {
       // intSegBefore is collinear with pointLocation so walk to the vertex closest to pointLocation.
       const ot: {
         bracketTarget: VisibilityVertex
@@ -792,8 +792,8 @@ export class PortManager {
     }
 
     // Now make perpDir have only the perpendicular component.
-    perpDir &= ~dirTowardLocation // if this is Directions. None, pointLocation == edgeIntersect
-    // StaticGraphUtility.Assert((Direction.None != perpDir), "pointLocation == initial segsegVertex.Point should already have exited", this.ObstacleTree, this.VisGraph);
+    perpDir &= ~dirTowardLocation // if this is Directions. None, pointLocation === edgeIntersect
+    // StaticGraphUtility.Assert((Direction.None !== perpDir), "pointLocation === initial segsegVertex.Point should already have exited", this.ObstacleTree, this.VisGraph);
     // Other TransientVE edge chains may have been added between the control point and the
     // ScanSegment (which is always non-transient), and they may have split ScanSegment VEs.
     // Fortunately we know we'll always have all transient edge chains extended to or past any

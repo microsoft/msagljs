@@ -34,7 +34,7 @@ export class BimodalSequence {
   }
   // following Chazelle, Dobkin
   FindMinimum(): number {
-    if (this.f(0) == this.f(this.length - 1)) {
+    if (this.f(0) === this.f(this.length - 1)) {
       //we have an unimodal function
       return new UnimodalSequence(this.f, this.length).FindMinimum()
     }
@@ -42,7 +42,7 @@ export class BimodalSequence {
   }
 
   FindMaximum(): number {
-    if (this.f(0) == this.f(this.length - 1)) {
+    if (this.f(0) === this.f(this.length - 1)) {
       //we have an unimodal function
       return new UnimodalSequence(this.f, this.length).FindMaximum()
     }

@@ -238,7 +238,7 @@ export class MetroGraphData {
   ProcessPolylinePoints(poly: Polyline): void {
     let p = poly.startPoint
     this.RegisterStation(p, true)
-    for (p = p.next; p != poly.endPoint; p = p.next) {
+    for (p = p.next; p !== poly.endPoint; p = p.next) {
       this.RegisterStation(p, false)
     }
 
@@ -253,7 +253,7 @@ export class MetroGraphData {
     } else {
       //  #if(TEST_MSAGL && TEST_MSAGL)
       //  const s = this.PointToStations[pp.point]
-      //  Assert.assert(s.IsRealNode == isRealNode)
+      //  Assert.assert(s.IsRealNode === isRealNode)
       //  #endif
     }
   }
@@ -381,7 +381,7 @@ export class MetroGraphData {
     const station = this.PointToStations.get(point)
     if (!this.cachedEnterableLooseForEnd.has(point)) {
       for (const poly of this.LooseTree.AllHitItems_(point))
-        if (Curve.PointRelativeToCurveLocation(point, poly) == PointLocation.Inside) station.AddEnterableLoosePolyline(poly)
+        if (Curve.PointRelativeToCurveLocation(point, poly) === PointLocation.Inside) station.AddEnterableLoosePolyline(poly)
 
       this.cachedEnterableLooseForEnd.set(point, station.getELP())
     } else {
@@ -392,7 +392,7 @@ export class MetroGraphData {
   AddTightEnterableForEnd(point: Point) {
     const station = this.PointToStations.get(point)
     for (const poly of this.TightTree.AllHitItems_(point))
-      if (Curve.PointRelativeToCurveLocation(point, poly) == PointLocation.Inside) {
+      if (Curve.PointRelativeToCurveLocation(point, poly) === PointLocation.Inside) {
         station.AddEnterableTightPolyline(poly)
       }
   }
@@ -458,8 +458,8 @@ export class MetroGraphData {
 
     const polys = metroline.sourceAndTargetLoosePolylines()
     return (
-      Curve.PointRelativeToCurveLocation(point, polys[0]) == PointLocation.Outside &&
-      Curve.PointRelativeToCurveLocation(point, polys[1]) == PointLocation.Outside
+      Curve.PointRelativeToCurveLocation(point, polys[0]) === PointLocation.Outside &&
+      Curve.PointRelativeToCurveLocation(point, polys[1]) === PointLocation.Outside
     )
   }
 }

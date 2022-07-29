@@ -36,7 +36,7 @@ export class Obstacle {
   GetPortChanges(t: {addedPorts: Set<Port>; removedPorts: Set<Port>}): boolean {
     t.addedPorts = substractSets(this.InputShape.Ports, this.Ports)
     t.removedPorts = substractSets(this.Ports, this.InputShape.Ports)
-    if (0 == t.addedPorts.size && 0 == t.removedPorts.size) {
+    if (0 === t.addedPorts.size && 0 === t.removedPorts.size) {
       return false
     }
 
@@ -68,7 +68,7 @@ export class Obstacle {
 
   CreateInitialSides(startPoint: PolylinePoint, scanDir: ScanDirection) {
     /*Assert.assert(
-      this.ActiveLowSide == null && this.ActiveHighSide == null,
+      this.ActiveLowSide == null  && this.ActiveHighSide == null ,
       'Cannot call SetInitialSides when sides are already set',
     )*/
     this.ActiveLowSide = new LowObstacleSide(this, startPoint, scanDir)
@@ -99,7 +99,7 @@ export class Obstacle {
     return obs
   }
   private IsPolylineRectangle(): boolean {
-    if (this.PaddedPolyline.count != 4) {
+    if (this.PaddedPolyline.count !== 4) {
       return false
     }
 
@@ -115,12 +115,12 @@ export class Obstacle {
       nextPpt = ppt.nextOnPolyline
       const nextDir = CompassVector.DirectionFromPointToPoint(ppt.point, nextPpt.point)
       // We know the polyline is clockwise.
-      if (nextDir != CompassVector.RotateRight(dir)) {
+      if (nextDir !== CompassVector.RotateRight(dir)) {
         return false
       }
 
       dir = nextDir
-    } while (ppt != this.PaddedPolyline.startPoint)
+    } while (ppt !== this.PaddedPolyline.startPoint)
 
     return true
   }
@@ -134,7 +134,7 @@ export class Obstacle {
     do {
       ppt.point = GeomConstants.RoundPoint(ppt.point)
       ppt = ppt.nextOnPolyline
-    } while (ppt != polyline.startPoint)
+    } while (ppt !== polyline.startPoint)
 
     Obstacle.RemoveCloseAndCollinearVerticesInPlace(polyline)
     // We've modified the points so the BoundingBox may have changed; force it to be recalculated.
@@ -148,7 +148,7 @@ export class Obstacle {
   // A single convex hull is shared by all obstacles contained by it and we only want one occurrence of that
   // convex hull's polyline in the visibility graph generation.
   get IsPrimaryObstacle(): boolean {
-    return this.ConvexHull == null || this == this.ConvexHull.PrimaryObstacle
+    return this.ConvexHull == null || this === this.ConvexHull.PrimaryObstacle
   }
   static RemoveCloseAndCollinearVerticesInPlace(polyline: Polyline): Polyline {
     const epsilon = GeomConstants.intersectionEpsilon * 10
@@ -171,16 +171,16 @@ export class Obstacle {
 
     if (
       polyline.endPoint.prev != null &&
-      polyline.endPoint.prev != polyline.startPoint &&
-      Point.getTriangleOrientation(polyline.endPoint.prev.point, polyline.end, polyline.start) == TriangleOrientation.Collinear
+      polyline.endPoint.prev !== polyline.startPoint &&
+      Point.getTriangleOrientation(polyline.endPoint.prev.point, polyline.end, polyline.start) === TriangleOrientation.Collinear
     ) {
       polyline.RemoveEndPoint()
     }
 
     if (
       polyline.startPoint.next != null &&
-      polyline.endPoint.prev != polyline.startPoint &&
-      Point.getTriangleOrientation(polyline.end, polyline.start, polyline.startPoint.next.point) == TriangleOrientation.Collinear
+      polyline.endPoint.prev !== polyline.startPoint &&
+      Point.getTriangleOrientation(polyline.end, polyline.start, polyline.startPoint.next.point) === TriangleOrientation.Collinear
     ) {
       polyline.RemoveStartPoint()
     }
@@ -194,14 +194,14 @@ export class Obstacle {
   Ordinal: number
   clump: Array<Obstacle>
   get isOverlapped() {
-    return this.clump != undefined && this.clump.length > 0
+    return this.clump !== undefined && this.clump.length > 0
   }
   get IsSentinel() {
     return this.InputShape == null
   }
 
   IsInSameClump(other: Obstacle): boolean {
-    return this.isOverlapped && this.clump == other.clump
+    return this.isOverlapped && this.clump === other.clump
   }
 
   Close() {

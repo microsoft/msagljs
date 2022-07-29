@@ -127,7 +127,7 @@ export class BumperPusher {
   }
 
   FindClusterNodeRecurse(node: RectangleNode<GeomNode, Point>, cluster: GeomNode, previousBox: Rectangle): RectangleNode<GeomNode, Point> {
-    if (node.UserData != null) return node.UserData == cluster ? node : null
+    if (node.UserData != null) return node.UserData === cluster ? node : null
 
     let n0: RectangleNode<GeomNode, Point> = null
     if (previousBox.intersects(node.left.irect as Rectangle)) n0 = this.FindClusterNodeRecurse(node.Left, cluster, previousBox)

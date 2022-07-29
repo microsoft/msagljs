@@ -37,7 +37,7 @@ export class PathRefiner {
   }
 
   static AdjustPathPoints(points: Array<Point>): Array<Point> {
-    if (!points || points.length == 0) return
+    if (!points || points.length === 0) return
     const arr = []
 
     let p: Point = GeomConstants.RoundPoint(points[0])
@@ -120,7 +120,7 @@ export class PathRefiner {
       projectionToDirection: PointProjection
     },
   ) {
-    if (direction == Direction.East) {
+    if (direction === Direction.East) {
       t.projectionToDirection = (p) => p.x
       t.projectionToPerp = (p) => p.y
     } else {

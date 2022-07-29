@@ -66,11 +66,11 @@ export class NodeCollection {
 
   getNode(id: string): Node {
     let r = this.nodeMap.get(id)
-    if (r != undefined) return r
+    if (r !== undefined) return r
     for (const p of this.nodeMap) {
       if (p[1] instanceof Graph) {
         r = (p[1] as Graph).nodeCollection.getNode(id)
-        if (r != undefined) {
+        if (r !== undefined) {
           return r
         }
       }
@@ -115,7 +115,7 @@ export class NodeCollection {
   addEdge(edge: Edge): void {
     this.addNode(edge.source)
     this.addNode(edge.target)
-    if (edge.source != edge.target) {
+    if (edge.source !== edge.target) {
       edge.source.outEdges.add(edge)
       edge.target.inEdges.add(edge)
     } else {
@@ -140,28 +140,28 @@ export class NodeCollection {
 
   nodeIsConsistent(n: Node): boolean {
     for (const e of n.outEdges) {
-      if (e.source != n) {
+      if (e.source !== n) {
         return false
       }
-      if (e.source == e.target) {
+      if (e.source === e.target) {
         return false
       }
     }
     for (const e of n.inEdges) {
-      if (e.target != n) {
+      if (e.target !== n) {
         return false
       }
 
-      if (e.source == e.target) {
+      if (e.source === e.target) {
         return false
       }
     }
 
     for (const e of n.selfEdges) {
-      if (e.target != e.source) {
+      if (e.target !== e.source) {
         return false
       }
-      if (e.source != n) {
+      if (e.source !== n) {
         return false
       }
     }

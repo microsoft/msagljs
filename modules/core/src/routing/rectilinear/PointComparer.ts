@@ -29,7 +29,7 @@ export class PointComparer {
 
   // <returns>True if the inputs are close enough to be considered equal, else false</returns>
   static Equal(x: number, y: number): boolean {
-    return PointComparer.Compare(x, y) == 0
+    return PointComparer.Compare(x, y) === 0
   }
 
   // The usual Compare operation, with inputs that are assumed to have been Round()ed.
@@ -61,7 +61,7 @@ export class PointComparer {
           )),
     )*/
     /*Assert.assert(
-      (0 == cmp) ==
+      (0 === cmp) ==
         (Direction.None ==
           CompassVector.VectorDirectionPP(
             new Point(lhs, 0),
@@ -77,7 +77,7 @@ export class PointComparer {
   // less than rhs, else 1.</returns>
   static ComparePP(lhs: Point, rhs: Point): number {
     let cmp: number = PointComparer.Compare(lhs.x, rhs.x)
-    if (cmp == 0) {
+    if (cmp === 0) {
       cmp = PointComparer.Compare(lhs.y, rhs.y)
     }
 
@@ -87,7 +87,7 @@ export class PointComparer {
   // return true if less or equal holds for two values that are assumed to have been Round()ed
   static LessOrEqual(a: number, b: number): boolean {
     const comp: number = PointComparer.Compare(a, b)
-    return comp < 0 || comp == 0
+    return comp < 0 || comp === 0
   }
 
   static Less(a: number, b: number): boolean {
@@ -133,7 +133,7 @@ export class PointComparer {
     // Is a lower than b along the orthogonal line segment?  That means moving
     // from a to b is in the increasing direction.
     const dir: Direction = PointComparer.GetDirections(a, b)
-    return Direction.East == dir || Direction.North == dir
+    return Direction.East === dir || Direction.North === dir
   }
 
   static GetPureDirectionVV(first: VisibilityVertex, second: VisibilityVertex): Direction {

@@ -96,10 +96,10 @@ export class Qpsc {
   //
   //      And comp_dfdv(i , AC, ~c) is a bit different too:
   //          Dfdv = df/dv[i]
-  //          For each c in AC s.t. i=lv[c] and c!= ~c:
+  //          For each c in AC s.t. i=lv[c] and c!== ~c:
   //              Lambda[c] = comp_dfdv(rv[c], AC, c)
   //              dfdv += Lambda[c] * s[lv[c]]
-  //          For each c in AC s.t. i=rv[c] and c!= ~c:
+  //          For each c in AC s.t. i=rv[c] and c!== ~c:
   //              Lambda[c] = comp_dfdv(lv[c], AC, c)
   //              dfdv -= Lambda[c] * s[rv[c]]
   //
@@ -181,8 +181,8 @@ export class Qpsc {
   //    qpsc.ProjectComplete()
   AddVariable(variable: Variable) {
     /*Assert.assert(
-      this.matrixQ[variable.Ordinal] == null &&
-        this.vectorQpscVars[variable.Ordinal].Variable == null,
+      this.matrixQ[variable.Ordinal] == null  &&
+        this.vectorQpscVars[variable.Ordinal].Variable == null ,
       'variable.Ordinal already exists',
     )*/
     this.isFirstProjectCall = true
@@ -197,10 +197,10 @@ export class Qpsc {
       for (const neighborWeightPair of variable.Neighbors) {
         // We should already have verified this in AddNeighbourPair.
         /*Assert.assert(
-          neighborWeightPair.Neighbor.Ordinal != variable.Ordinal,
+          neighborWeightPair.Neighbor.Ordinal !== variable.Ordinal,
           'self-neighbors are not allowed',
         )*/
-        // For the neighbor KeyValuePairs, Key == neighboring variable and Value == relationship
+        // For the neighbor KeyValuePairs, Key === neighboring variable and Value === relationship
         // weight.  If we've already encountered this pair then we'll sum the relationship weights, under
         // the assumption the caller will be doing something like creating edges for different reasons,
         // and multiple edges should be like rubber bands, the sum of the strengths.  Mathematica also
@@ -214,13 +214,13 @@ export class Qpsc {
       }
     }
 
-    // endif null != variable.Neighbors
+    // endif null !=  variable.Neighbors
     // Add the sparse row to the matrix (all non-zero slots of vectorPrevY are weights to that neighbor).
     for (let ii = 0; ii < this.vectorPrevY.length; ii++) {
-      if (0 != this.vectorPrevY[ii]) {
+      if (0 !== this.vectorPrevY[ii]) {
         // The diagonal must be > 0 and off-diagonal < 0.
         /*Assert.assert(
-          (ii == variable.Ordinal) == this.vectorPrevY[ii] > 0,
+          (ii === variable.Ordinal) === this.vectorPrevY[ii] > 0,
           'Diagonal must be > 0.0',
         )*/
         // All 'A' cells must be 2*(summed weights).
@@ -244,7 +244,7 @@ export class Qpsc {
     for (const qvar of this.vectorQpscVars) {
       const variable = qvar.Variable
       for (const cell of this.matrixQ[variable.Ordinal]) {
-        if (cell.Column == variable.Ordinal) {
+        if (cell.Column === variable.Ordinal) {
           if (this.solverParameters.Advanced.ScaleInQpsc) {
             variable.Scale = 1 / Math.sqrt(Math.abs(cell.Value))
             if (!Number.isFinite(variable.Scale)) {
@@ -273,13 +273,13 @@ export class Qpsc {
     // conversion of Q to scaledQ s.t.
     //   for all ii
     //      for all jj
-    //         if ii == jj, scaledQ[ii][jj] = 1
+    //         if ii === jj, scaledQ[ii][jj] = 1
     //         else         scaledQ[ii][jj] = Q[ii][jj] * var[ii].scale * var[jj].scale
     // /
     for (let rowNum = 0; rowNum < this.matrixQ.length; rowNum++) {
       const row = this.matrixQ[rowNum]
       for (let sparseCol = 0; sparseCol < row.length; sparseCol++) {
-        if (row[sparseCol].Column == rowNum) {
+        if (row[sparseCol].Column === rowNum) {
           row[sparseCol].Value = 1
         } else {
           // Diagonal on left scales rows [SQ], on right scales columns [QS].
@@ -321,17 +321,17 @@ export class Qpsc {
     // ...g = Q'y + b'
     Qpsc.VectorVectorAdd(this.gradientVector, this.vectorWiDi, this.gradientVector)
     //
-    // Compute: alpha = g#g / g#Q'g  (# == transpose)
+    // Compute: alpha = g#g / g#Q'g  (# === transpose)
     //
     const alphaNumerator: number = Qpsc.VectorVectorMultiply(this.gradientVector, this.gradientVector)
     // Compute numerator of stepsize
     let alphaDenominator = 0
-    if (0 != alphaNumerator) {
+    if (0 !== alphaNumerator) {
       this.MatrixVectorMultiply(this.gradientVector, this.vectorQg)
       alphaDenominator = Qpsc.VectorVectorMultiply(this.vectorQg, this.gradientVector)
     }
 
-    if (0 == alphaDenominator) {
+    if (0 === alphaDenominator) {
       return false
     }
 
@@ -371,14 +371,14 @@ export class Qpsc {
     const betaNumerator: number = Qpsc.VectorVectorMultiply(this.gradientVector, this.vectorCurY)
     // Compute numerator of stepsize
     let beta = 0
-    if (0 != betaNumerator) {
-      // Calculate Qp first (matrix ops are associative so (AB)C == A(BC), so calculate the rhs first
+    if (0 !== betaNumerator) {
+      // Calculate Qp first (matrix ops are associative so (AB)C === A(BC), so calculate the rhs first
       // with MatrixVectorMultiply).  Temporarily hijack vectorQg for this operation.
       this.MatrixVectorMultiply(this.vectorCurY, this.vectorQg)
       // Now p#(Qp).
       const betaDenominator: number = Qpsc.VectorVectorMultiply(this.vectorQg, this.vectorCurY)
       // Dividing by almost-0 would yield a huge value which we'd cap at 1.0 below.
-      beta = 0 == betaDenominator ? 1 : betaNumerator / betaDenominator
+      beta = 0 === betaDenominator ? 1 : betaNumerator / betaDenominator
       if (beta > 1) {
         // Note:  With huge ranges, beta is >>1 here - like 50 or millions.  This is expected as
         // we're dividing by p#Qp where p is potentially quite small.
@@ -435,8 +435,8 @@ export class Qpsc {
       // with some allowance for rounding error.
       const diff: number = this.previousFunctionValue - currentFunctionValue
       let quotient = 0
-      if (diff != 0) {
-        const divisor = 0 != this.previousFunctionValue ? this.previousFunctionValue : currentFunctionValue
+      if (diff !== 0) {
+        const divisor = 0 !== this.previousFunctionValue ? this.previousFunctionValue : currentFunctionValue
         quotient = Math.abs(diff / divisor)
       }
 

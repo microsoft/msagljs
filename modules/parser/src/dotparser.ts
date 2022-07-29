@@ -37,7 +37,7 @@ import {parseColor} from './utils'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
   for (const attr of o.attr_list) {
-    if (attr.type == 'attr') {
+    if (attr.type === 'attr') {
       const str = attr.eq
       switch (attr.id) {
         // geometry attributes
@@ -206,10 +206,10 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.ranksep = parseFloat(str)
           break
         case 'splines':
-          drawingObj.splines = str == 'true'
+          drawingObj.splines = str === 'true'
           break
         case 'overlap':
-          drawingObj.overlap = str == 'true'
+          drawingObj.overlap = str === 'true'
           break
         case 'arrowtail':
           drawingObj.arrowtail = arrowTypeEnumFromString(str)
@@ -230,10 +230,10 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.dir = dirTypeEnumFromString(str)
           break
         case 'concentrate':
-          drawingObj.concentrate = str == 'true'
+          drawingObj.concentrate = str === 'true'
           break
         case 'compound':
-          drawingObj.compound = str == 'true'
+          drawingObj.compound = str === 'true'
           break
         case 'lhead':
           drawingObj.lhead = str
@@ -245,7 +245,7 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.bgcolor = parseColor(str)
           break
         case 'center':
-          drawingObj.center = str == true || parseInt(str) == 1
+          drawingObj.center = str === true || parseInt(str) === 1
           break
         case 'colorscheme':
           drawingObj.colorscheme = str
@@ -266,16 +266,16 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.labelloc = str
           break
         case 'decorate':
-          drawingObj.decorate = str == 'true'
+          drawingObj.decorate = str === 'true'
           break
         case 'tailclip':
-          drawingObj.tailclip = str == 'true'
+          drawingObj.tailclip = str === 'true'
           break
         case 'headclip':
-          drawingObj.headclip = str == 'true'
+          drawingObj.headclip = str === 'true'
           break
         case 'constraint':
-          drawingObj.constraint = str == 'true'
+          drawingObj.constraint = str === 'true'
           break
         case 'gradientangle':
           drawingObj.gradientangle = parseFloat(str)
@@ -305,10 +305,10 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.f = parseFloat(str)
           break
         case 'nojustify':
-          drawingObj.nojustify = str == 'true'
+          drawingObj.nojustify = str === 'true'
           break
         case 'root':
-          drawingObj.root = str == 'true'
+          drawingObj.root = str === 'true'
           break
         case 'page':
           drawingObj.page = parseFloatTuple(str)
@@ -409,7 +409,7 @@ class DotParser {
     const nc = graph.nodeCollection
     let sn: Node
     let tn: Node
-    if (so.type == 'node_id') {
+    if (so.type === 'node_id') {
       const s = so.id.toString()
       if (!nc.hasNode(s)) {
         sn = this.newNode(s, graph, false)
@@ -433,14 +433,14 @@ class DotParser {
       }
       return drObjs
     }
-    if (to.type == 'node_id') {
+    if (to.type === 'node_id') {
       const t = to.id.toString()
       if (!nc.hasNode(t)) {
         tn = this.newNode(t, graph, false)
       } else {
         tn = nc.getNode(t)
       }
-    } else if (to.type == 'subgraph') {
+    } else if (to.type === 'subgraph') {
       const subgraphEdges = new Array<Edge>()
       for (const ch of to.children) {
         if (ch.type === 'node_stmt') {
@@ -497,20 +497,20 @@ class DotParser {
     if (this.ast == null) return null
     this.graph = new Graph(this.ast[0].id ? this.ast[0].id.toString() : '__graph__')
     this.drawingGraph = new DrawingGraph(this.graph)
-    this.parseUnderGraph(this.ast[0].children, this.graph, this.ast[0].type == 'digraph', false)
+    this.parseUnderGraph(this.ast[0].children, this.graph, this.ast[0].type === 'digraph', false)
     removeEmptySubgraphs(this.graph)
     createGeomForSubgraphs(this.graph)
     return this.graph
   }
   parseGraphAttr(o: AttrStmt, graph: Graph) {
-    if (o.target == 'node') {
+    if (o.target === 'node') {
       const dg = DrawingGraph.getDrawingObj(graph) as DrawingGraph
       if (dg.defaultNodeObject == null) {
         dg.defaultNodeObject = new DrawingNode(null)
       }
       // but also parse it for the default node attribute
       parseAttrOnDrawingObj(null, dg.defaultNodeObject, o)
-    } else if (o.target == 'graph') {
+    } else if (o.target === 'graph') {
       parseAttrs(o, graph)
     }
   }
@@ -518,12 +518,12 @@ class DotParser {
   getEntitiesSubg(o: Subgraph, graph: Graph, directed: boolean): Entity[] {
     let ret = []
     for (const ch of o.children) {
-      if (ch.type == 'edge_stmt') {
+      if (ch.type === 'edge_stmt') {
         for (let i = 0; i < ch.edge_list.length - 1; i++) {
           for (const e of this.parseEdge(ch.edge_list[i], ch.edge_list[i + 1], graph, directed, ch)) ret.push(e)
         }
-      } else if (ch.type == 'attr_stmt') {
-      } else if (ch.type == 'node_stmt') {
+      } else if (ch.type === 'attr_stmt') {
+      } else if (ch.type === 'node_stmt') {
         ret.push(this.parseNode(ch, graph, true))
       } else if (ch.type === 'subgraph') {
         if (ch.id != null) {
@@ -579,19 +579,19 @@ class DotParser {
   }
   process_same_rank(o: Subgraph, dg: DrawingGraph): boolean {
     const attr = o.children[0]
-    if (attr == undefined) return false
-    if (attr.type != 'attr_stmt') return false
+    if (attr == null) return false
+    if (attr.type !== 'attr_stmt') return false
     const attr_list = attr.attr_list
-    if (attr_list == undefined) return false
-    if (attr_list.length == 0) return false
+    if (attr_list == null) return false
+    if (attr_list.length === 0) return false
     const attr_0 = attr_list[0]
-    if (attr_0.type != 'attr') return false
-    if (attr_0.id != 'rank') return false
+    if (attr_0.type !== 'attr') return false
+    if (attr_0.id !== 'rank') return false
     switch (attr_0.eq) {
       case 'min':
         for (let i = 1; i < o.children.length; i++) {
           const c = o.children[i]
-          if (c.type == 'node_stmt') {
+          if (c.type === 'node_stmt') {
             dg.graphVisData.minRanks.push(c.node_id.id.toString())
           } else {
             throw new Error()
@@ -602,7 +602,7 @@ class DotParser {
       case 'max':
         for (let i = 1; i < o.children.length; i++) {
           const c = o.children[i]
-          if (c.type == 'node_stmt') {
+          if (c.type === 'node_stmt') {
             dg.graphVisData.minRanks.push(c.node_id.id.toString())
           } else {
             throw new Error()
@@ -614,11 +614,11 @@ class DotParser {
         const sameRank = []
         for (let i = 1; i < o.children.length; i++) {
           const c = o.children[i]
-          if (c.type == 'node_stmt') {
+          if (c.type === 'node_stmt') {
             this.newNode(c.node_id.id.toString(), dg.graph, false)
             sameRank.push(c.node_id.id.toString())
-          } else if (c.type == 'attr_stmt') {
-            if (c.target == 'node') {
+          } else if (c.type === 'attr_stmt') {
+            if (c.target === 'node') {
               if (dg.defaultNodeObject == null) {
                 dg.defaultNodeObject = new DrawingNode(null)
               }
@@ -633,7 +633,7 @@ class DotParser {
       case 'source': {
         for (let i = 1; i < o.children.length; i++) {
           const c = o.children[i]
-          if (c.type == 'node_stmt') {
+          if (c.type === 'node_stmt') {
             dg.graphVisData.sourceRanks.push(c.node_id.id.toString())
           } else {
             throw new Error()
@@ -645,7 +645,7 @@ class DotParser {
         {
           for (let i = 1; i < o.children.length; i++) {
             const c = o.children[i]
-            if (c.type == 'node_stmt') {
+            if (c.type === 'node_stmt') {
               dg.graphVisData.sinkRanks.push(c.node_id.id.toString())
             } else {
               throw new Error()
@@ -736,7 +736,7 @@ function parseFloatQuatriple(str: any): any {
 
 function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: Entity[]) {
   for (const ch of o.children) {
-    if (ch.type == 'attr_stmt') {
+    if (ch.type === 'attr_stmt') {
       for (const ent of entities) parseAttrs(ch, ent)
     }
   }
@@ -802,7 +802,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
   }
   // attach node and subgraphs stmts to their parents
   for (const n of graph.deepNodes) {
-    if (n.parent == graph) {
+    if (n.parent === graph) {
       continue
     }
     const subGraph = idToStmt.get((n.parent as Graph).id) as Subgraph
@@ -812,7 +812,7 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
   for (const e of graph.deepEdges) {
     const es = edgeStmt(e)
     const parent: Node = edgeParent(e, nodeLevels)
-    if (parent == graph) {
+    if (parent === graph) {
       children.push(es)
     } else {
       const subGraph = idToStmt.get(parent.id) as Subgraph
@@ -898,8 +898,8 @@ function edgeParent(e: Edge, nodeLevels: Map<string, number>): Node {
     t = t.parent as Node
     tLevel--
   }
-  // Assert.assert(sLevel == tLevel)
-  while (s.parent != t.parent) {
+  // Assert.assert(sLevel === tLevel)
+  while (s.parent !== t.parent) {
     s = s.parent as Node
     t = t.parent as Node
   }
@@ -959,14 +959,14 @@ function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
 function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
   if (geomGraph == null) return
   const bb = geomGraph.boundingBox
-  if (bb && bb.isEmpty() == false) {
+  if (bb && bb.isEmpty() === false) {
     const rJSON = {left: bb.left, right: bb.right, top: bb.top, bottom: bb.bottom}
     yield {type: 'attr', id: 'graphBoundingBox', eq: JSON.stringify(rJSON)}
   }
-  if (geomGraph.radX != 10) {
+  if (geomGraph.radX !== 10) {
     yield {type: 'attr', id: 'radX', eq: geomGraph.radX.toString()}
   }
-  if (geomGraph.radY != 10) {
+  if (geomGraph.radY !== 10) {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }

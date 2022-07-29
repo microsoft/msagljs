@@ -17,7 +17,7 @@ export class AxisEdge extends VisibilityEdge {
     this.LeftBound = Number.NEGATIVE_INFINITY
     this.Direction = CompassVector.DirectionFromPointToPoint(source.point, target.point)
     /*Assert.assert(
-      this.Direction == Direction.East || this.Direction == Direction.North,
+      this.Direction === Direction.East || this.Direction === Direction.North,
     )*/
   }
 

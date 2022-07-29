@@ -19,7 +19,7 @@ export class Edge extends Entity {
     super()
     this.source = s
     this.target = t
-    if (s != t) {
+    if (s !== t) {
       s.outEdges.add(this)
       t.inEdges.add(this)
     } else {
@@ -28,7 +28,7 @@ export class Edge extends Entity {
   }
 
   add() {
-    if (this.source != this.target) {
+    if (this.source !== this.target) {
       this.source.outEdges.add(this)
       this.target.inEdges.add(this)
     } else {
@@ -36,7 +36,7 @@ export class Edge extends Entity {
     }
   }
   remove() {
-    if (this.source != this.target) {
+    if (this.source !== this.target) {
       this.source.outEdges.delete(this)
       this.target.inEdges.delete(this)
     } else {
@@ -47,7 +47,7 @@ export class Edge extends Entity {
     return '(' + this.source.toString() + '->' + this.target.toString() + ')'
   }
   isInterGraphEdge(): boolean {
-    return this.source.parent != this.target.parent
+    return this.source.parent !== this.target.parent
   }
 
   EdgeToAncestor(): ToAncestorEnum {

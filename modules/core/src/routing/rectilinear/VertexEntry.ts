@@ -22,9 +22,9 @@ export class VertexEntry {
     // S which has a prevEntry from S.
     // #if (TEST_MSAGL)
     // if ((this.PreviousEntry != null)) {
-    //    Assert.assert((this.PreviousEntry.Vertex == prevEntry.Vertex), "Inconsistent prevEntry vertex");
-    //    Assert.assert((this.PreviousEntry.Direction != prevEntry.Direction), "Duplicate prevEntry direction");
-    //    Assert.assert((this.Direction == CompassVector.PureDirectionFromPointToPoint(this.PreviousEntry.Vertex.point, this.Vertex.point)), "Inconsistent entryDir");
+    //    Assert.assert((this.PreviousEntry.Vertex === prevEntry.Vertex), "Inconsistent prevEntry vertex");
+    //    Assert.assert((this.PreviousEntry.Direction !== prevEntry.Direction), "Duplicate prevEntry direction");
+    //    Assert.assert((this.Direction === CompassVector.PureDirectionFromPointToPoint(this.PreviousEntry.Vertex.point, this.Vertex.point)), "Inconsistent entryDir");
     // }
 
     // #endif

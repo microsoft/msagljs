@@ -192,7 +192,7 @@ export class ObstacleTree {
       a.IsRectangle && b.IsRectangle,
       'Only rectangles should come here',
     )*/
-    if (a == b || this.OverlapPairAlreadyFound(a, b)) {
+    if (a === b || this.OverlapPairAlreadyFound(a, b)) {
       return
     }
 
@@ -219,7 +219,7 @@ export class ObstacleTree {
 
   private EvaluateOverlappedPairForConvexHull(a: Obstacle, b: Obstacle) {
     /*Assert.assert(!a.IsGroup && !b.IsGroup, 'Groups should not come here')*/
-    if (a == b || this.OverlapPairAlreadyFound(a, b)) {
+    if (a === b || this.OverlapPairAlreadyFound(a, b)) {
       return
     }
 
@@ -265,7 +265,7 @@ export class ObstacleTree {
 
   private EvaluateOverlappedPairForGroup(a: Obstacle, b: Obstacle) {
     /*Assert.assert(a.IsGroup, 'Inconsistency in overlapping group enumeration')*/
-    if (a == b || this.OverlapPairAlreadyFound(a, b)) {
+    if (a === b || this.OverlapPairAlreadyFound(a, b)) {
       return
     }
 
@@ -306,12 +306,12 @@ export class ObstacleTree {
   }
 
   private static FirstPolylineStartIsInsideSecondPolyline(first: Polyline, second: Polyline): boolean {
-    return Curve.PointRelativeToCurveLocation(first.start, second) != PointLocation.Outside
+    return Curve.PointRelativeToCurveLocation(first.start, second) !== PointLocation.Outside
   }
 
   private AddClumpToConvexHull(obstacle: Obstacle) {
     if (obstacle.isOverlapped) {
-      for (const sibling of obstacle.clump.filter((sib) => sib.Ordinal != obstacle.Ordinal)) {
+      for (const sibling of obstacle.clump.filter((sib) => sib.Ordinal !== obstacle.Ordinal)) {
         this.overlapPairs.add(new IntPair(obstacle.Ordinal, sibling.Ordinal))
       }
 
@@ -322,7 +322,7 @@ export class ObstacleTree {
 
   private AddConvexHullToConvexHull(obstacle: Obstacle) {
     if (obstacle.IsInConvexHull) {
-      for (const sibling of obstacle.ConvexHull.Obstacles.filter((sib) => sib.Ordinal != obstacle.Ordinal)) {
+      for (const sibling of obstacle.ConvexHull.Obstacles.filter((sib) => sib.Ordinal !== obstacle.Ordinal)) {
         this.overlapPairs.add(new IntPair(obstacle.Ordinal, sibling.Ordinal))
       }
 
@@ -336,7 +336,7 @@ export class ObstacleTree {
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
       // GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
-      if (component.length == 1) {
+      if (component.length === 1) {
         continue
       }
 
@@ -353,7 +353,7 @@ export class ObstacleTree {
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
       // GetComponents returns at least one self-entry for each index - including the < FirstNonSentinelOrdinal ones.
-      if (component.length == 1) {
+      if (component.length === 1) {
         continue
       }
 
@@ -459,7 +459,7 @@ export class ObstacleTree {
     const outerPolyline = aIsInsideB ? b.VisibilityPolyline : a.VisibilityPolyline
 
     for (const innerPoint of innerLoosePolyline) {
-      if (Curve.PointRelativeToCurveLocation(innerPoint, outerPolyline) == PointLocation.Outside) {
+      if (Curve.PointRelativeToCurveLocation(innerPoint, outerPolyline) === PointLocation.Outside) {
         const outerParamPoint = Curve.ClosestPoint(outerPolyline, innerPoint)
         if (!Point.closeIntersections(innerPoint, outerParamPoint)) {
           return true
@@ -482,7 +482,7 @@ export class ObstacleTree {
     for (const group of this.GetAllGroups()) {
       const groupBox = group.VisibilityBoundingBox
       for (const obstacle of this.Root.GetNodeItemsIntersectingRectangle(groupBox)) {
-        if (obstacle != group && Curve.ClosedCurveInteriorsIntersect(obstacle.VisibilityPolyline, group.VisibilityPolyline)) {
+        if (obstacle !== group && Curve.ClosedCurveInteriorsIntersect(obstacle.VisibilityPolyline, group.VisibilityPolyline)) {
           if (obstacle.IsInConvexHull) {
             /*Assert.assert(
               obstacle.IsPrimaryObstacle,
@@ -539,7 +539,7 @@ export class ObstacleTree {
 
   CreateMaxVisibilitySegment(startPoint: Point, dir: Direction, t: {pacList: PointAndCrossingsList}): LineSegment {
     const graphBoxBorderIntersect = StaticGraphUtility.RectangleBorderIntersect(this.GraphBox, startPoint, dir)
-    if (PointComparer.GetDirections(startPoint, graphBoxBorderIntersect) == Direction.None) {
+    if (PointComparer.GetDirections(startPoint, graphBoxBorderIntersect) === Direction.None) {
       t.pacList = null
       return LineSegment.mkPP(startPoint, startPoint)
     }
@@ -595,7 +595,7 @@ export class ObstacleTree {
   }
 
   InsideObstacleHitTest(location: Point, obstacle: Obstacle): HitTestBehavior {
-    if (obstacle == this.insideHitTestIgnoreObstacle1 || obstacle == this.insideHitTestIgnoreObstacle2) {
+    if (obstacle === this.insideHitTestIgnoreObstacle1 || obstacle === this.insideHitTestIgnoreObstacle2) {
       // It's one of the two obstacles we already know about.
       return HitTestBehavior.Continue
     }
@@ -630,14 +630,14 @@ export class ObstacleTree {
     // or outside; if it's a collinear flat boundary, there can be 3 intersections to this point which again
     // means we're on the border (and 3 shouldn't happen anymore with the curve intersection fixes and
     // PointIsInsideRectangle check above).  So the interesting case is that we have 2 intersections.
-    if (2 == xxs.length) {
+    if (2 === xxs.length) {
       const firstInt: Point = GeomConstants.RoundPoint(xxs[0].x)
       const secondInt: Point = GeomConstants.RoundPoint(xxs[1].x)
       // If we're on either intersection, we're on the border rather than inside.
       if (
         !PointComparer.EqualPP(location, firstInt) &&
         !PointComparer.EqualPP(location, secondInt) &&
-        location.compareTo(firstInt) != location.compareTo(secondInt)
+        location.compareTo(firstInt) !== location.compareTo(secondInt)
       ) {
         // We're inside.  However, this may be an almost-flat side, in which case rounding
         // could have reported the intersection with the start or end of the same side and
@@ -645,7 +645,7 @@ export class ObstacleTree {
         // are on the same side (integral portion of the parameter), we consider location
         // to be on the border.  testSeg is always xxs[*].Segment0.
         /*Assert.assert(
-          testSeg == xxs[0].seg0,
+          testSeg === xxs[0].seg0,
           'incorrect parameter ordering to GetAllIntersections',
         )*/
         if (!closeDistEps(Math.floor(xxs[0].par1), Math.floor(xxs[1].par1))) {
@@ -690,10 +690,10 @@ export class ObstacleTree {
   private GetRestrictedIntersectionTestSegment(startPoint: Point, endPoint: Point) {
     // Due to rounding issues use a larger line span for intersection calculations.
     const segDir = PointComparer.GetDirections(startPoint, endPoint)
-    const startX = Direction.West == segDir ? this.GraphBox.right : Direction.East == segDir ? this.GraphBox.left : startPoint.x
-    const endX = Direction.West == segDir ? this.GraphBox.left : Direction.East == segDir ? this.GraphBox.right : endPoint.x
-    const startY = Direction.South == segDir ? this.GraphBox.top * 2 : Direction.North == segDir ? this.GraphBox.bottom : startPoint.y
-    const endY = Direction.South == segDir ? this.GraphBox.bottom : Direction.North == segDir ? this.GraphBox.top : startPoint.y
+    const startX = Direction.West === segDir ? this.GraphBox.right : Direction.East === segDir ? this.GraphBox.left : startPoint.x
+    const endX = Direction.West === segDir ? this.GraphBox.left : Direction.East === segDir ? this.GraphBox.right : endPoint.x
+    const startY = Direction.South === segDir ? this.GraphBox.top * 2 : Direction.North === segDir ? this.GraphBox.bottom : startPoint.y
+    const endY = Direction.South === segDir ? this.GraphBox.bottom : Direction.North === segDir ? this.GraphBox.top : startPoint.y
     this.restrictedIntersectionTestSegment = LineSegment.mkPP(new Point(startX, startY), new Point(endX, endY))
   }
 
@@ -748,12 +748,12 @@ export class ObstacleTree {
       const intersect = GeomConstants.RoundPoint(intersectionInfo.x)
 
       const dirToIntersect = PointComparer.GetDirections(this.currentRestrictedRay.start, intersect)
-      if (dirToIntersect == CompassVector.OppositeDir(testDirection)) {
+      if (dirToIntersect === CompassVector.OppositeDir(testDirection)) {
         continue
       }
 
       numberOfGoodIntersections++
-      if (Direction.None == dirToIntersect) {
+      if (Direction.None === dirToIntersect) {
         localLeastDistSquared = 0
         closestIntersectionInfo = intersectionInfo
         continue
@@ -776,7 +776,7 @@ export class ObstacleTree {
     if (null != closestIntersectionInfo) {
       // If there was only one intersection and it is quite close to an end, ignore it.
       // If there is more than one intersection, we have crossed the obstacle so we want it.
-      if (numberOfGoodIntersections == 1) {
+      if (numberOfGoodIntersections === 1) {
         const intersect = GeomConstants.RoundPoint(closestIntersectionInfo.x)
         if (
           Point.closeIntersections(intersect, this.currentRestrictedRay.start) ||
@@ -813,7 +813,7 @@ export class ObstacleTree {
       // // The derivative is always clockwise, so if the side contains the rightward rotation of the
       // direction from the ray origin, then we're hitting it from the inside; otherwise from the outside.
       let dirToInsideOfGroup = dirTowardIntersect
-      if (0 != (dirsOfSide & CompassVector.RotateRight(dirTowardIntersect))) {
+      if (0 !== (dirsOfSide & CompassVector.RotateRight(dirTowardIntersect))) {
         dirToInsideOfGroup = CompassVector.OppositeDir(dirToInsideOfGroup)
       }
 

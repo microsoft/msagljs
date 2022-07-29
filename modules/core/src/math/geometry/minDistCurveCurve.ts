@@ -174,7 +174,7 @@ export class MinDistCurveCurve {
       abort =
         numberOfBoundaryCrossings >= maxNumberOfBoundaryCrossings ||
         numberOfTotalReps >= maxNumberOfTotalReps ||
-        (d.s == 0 && d.t == 0 && bc)
+        (d.s === 0 && d.t === 0 && bc)
     } while ((Math.abs(d.s) >= GeomConstants.tolerance || Math.abs(d.t) >= GeomConstants.tolerance) && !abort)
 
     if (abort) {
@@ -198,7 +198,7 @@ export class MinDistCurveCurve {
 
   // d is is {s:number; d:number}
   private chopDsDt(d: any) {
-    if (d.s != 0 && d.t != 0) {
+    if (d.s !== 0 && d.t !== 0) {
       let k1 = 1 //we are looking for a chopped vector of the form k(ds, dt)
 
       if (this.si + d.s > this.aMax)
@@ -216,7 +216,7 @@ export class MinDistCurveCurve {
       const k = Math.min(k1, k2)
       d.s *= k
       d.t *= k
-    } else if (d.s == 0) {
+    } else if (d.s === 0) {
       if (this.ti + d.t > this.bMax) d.t = this.bMax - this.ti
       else if (this.ti + d.t < this.bMin) d.t = this.bMin - this.ti
     } else {

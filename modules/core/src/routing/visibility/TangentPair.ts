@@ -118,9 +118,9 @@ export class TangentPair {
 
   // we pretend here that the branches go clockwise from p0 to p1, and from q0 to q1
   TangentBetweenBranches(p0: number, p1: number, q0: number, q1: number): [number, number] {
-    while (p1 != p0 || q1 != q0) {
-      const mp = p1 != p0 ? this.MedianOnP(p0, p1) : p0
-      const mq = q1 != q0 ? this.MedianOnQ(q0, q1) : q0
+    while (p1 !== p0 || q1 !== q0) {
+      const mp = p1 !== p0 ? this.MedianOnP(p0, p1) : p0
+      const mq = q1 !== q0 ? this.MedianOnQ(q0, q1) : q0
       const mpp: Point = this.P.pnt(mp)
       const mqp: Point = this.Q.pnt(mq)
       // SugiyamaLayoutSettings.Show(P.Polyline, ls(mp, mq), ls(p1,q0), ls(p0,q1), Q.Polyline);
@@ -133,7 +133,7 @@ export class TangentPair {
         } else {
           moveOnP = false
         }
-      } else if (p1 != p0) {
+      } else if (p1 !== p0) {
         // we have only two point in the branch
         // try to move p0 clockwise
         if (this.LeftFromLineOnP(p1, this.P.pnt(p0), mqp)) {
@@ -156,7 +156,7 @@ export class TangentPair {
         } else {
           moveOnQ = false
         }
-      } else if (q1 != q0) {
+      } else if (q1 !== q0) {
         // we have only two points in the branch
         if (this.LeftFromLineOnQ(q1, this.Q.pnt(q0), mpp)) {
           q0 = q1
@@ -237,13 +237,13 @@ export class TangentPair {
     // LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(P.Polyline), new DebugCurve(Q.Polyline), new DebugCurve("red",Ls(p2, 0)), new DebugCurve("blue",Ls(p1, 0)));
     m.p2 = r.leftTangentPoint
     m.p1 = r.rightTangentPoint
-    if (m.p2 == m.p1) m.p2 += this.P.count
+    if (m.p2 === m.p1) m.p2 += this.P.count
 
     this.Q.GetTangentPoints(r, this.P.pp(0).point)
     // LayoutAlgorithmSettings.Show(P.Polyline, Q.Polyline, Ls(0, q1), Ls(0, q2));
     m.q1 = r.leftTangentPoint
     m.q2 = r.rightTangentPoint
-    if (m.q2 == m.q1) {
+    if (m.q2 === m.q1) {
       m.q2 += this.Q.count
     }
 
@@ -254,9 +254,9 @@ export class TangentPair {
   FindClosestPoints_(t: {p1: number; p2: number; q2: number; q1: number; pClosest: Point; qClosest: Point}) {
     while (this.ChunksAreLong(t.p2, t.p1, t.q2, t.q1)) this.ShrinkChunks(t)
 
-    if (t.p1 == t.p2) {
+    if (t.p1 === t.p2) {
       t.pClosest = this.P.pp(t.p2).point
-      if (t.q1 == t.q2) t.qClosest = this.Q.pp(t.q1).point
+      if (t.q1 === t.q2) t.qClosest = this.Q.pp(t.q1).point
       else {
         //                   if(debug) LayoutAlgorithmSettings.Show(new LineSegment(P.Pnt(p2), Q.Pnt(q2)), new LineSegment(P.Pnt(p1), Q.Pnt(q1)), P.Polyline, Q.Polyline);
         t.qClosest = Point.ClosestPointAtLineSegment(t.pClosest, this.Q.pp(t.q1).point, this.Q.pp(t.q2).point)
@@ -264,7 +264,7 @@ export class TangentPair {
         else if (Point.closeDistEps(t.qClosest, this.Q.pnt(t.q2))) t.q1 = t.q2
       }
     } else {
-      /*Assert.assert(t.q1 == t.q2)*/
+      /*Assert.assert(t.q1 === t.q2)*/
       t.qClosest = this.Q.pp(t.q1).point
       t.pClosest = Point.ClosestPointAtLineSegment(t.qClosest, this.P.pp(t.p1).point, this.P.pp(t.p2).point)
       if (Point.closeDistEps(t.pClosest, this.P.pnt(t.p1))) t.p2 = t.p1
@@ -283,7 +283,7 @@ export class TangentPair {
       return true
     }
 
-    if (pLength == 2 && qLength == 2) {
+    if (pLength === 2 && qLength === 2) {
       return true
     }
 
@@ -291,8 +291,8 @@ export class TangentPair {
   }
 
   ShrinkChunks(t: {p2: number; p1: number; q2: number; q1: number}) {
-    const mp = t.p1 == t.p2 ? t.p1 : this.P.Median(t.p1, t.p2)
-    const mq = t.q1 == t.q2 ? t.q1 : this.Q.Median(t.q2, t.q1)
+    const mp = t.p1 === t.p2 ? t.p1 : this.P.Median(t.p1, t.p2)
+    const mq = t.q1 === t.q2 ? t.q1 : this.Q.Median(t.q2, t.q1)
     const mP = this.P.pp(mp).point
     const mQ = this.Q.pp(mq).point
 
@@ -325,15 +325,15 @@ export class TangentPair {
     if (this.OnlyOneChunkContainsExactlyTwoVertices(t, {mp: mp, mq: mq}, angles)) return
 
     // the case where we have exactly two vertices in each chunk
-    if (t.p2 == this.P.Next(t.p1) && t.q1 == this.Q.Next(t.q2)) {
+    if (t.p2 === this.P.Next(t.p1) && t.q1 === this.Q.Next(t.q2)) {
       const md = LineSegment.minDistBetweenLineSegments(this.P.pnt(t.p1), this.P.pnt(t.p2), this.Q.pnt(t.q1), this.Q.pnt(t.q2))
       //Assert.assert(res);
-      if (md.parab == 0) t.p2 = t.p1
-      else if (md.parab == 1) t.p1 = t.p2
-      else if (md.parcd == 0) t.q2 = t.q1
-      else if (md.parcd == 1) t.q1 = t.q2
+      if (md.parab === 0) t.p2 = t.p1
+      else if (md.parab === 1) t.p1 = t.p2
+      else if (md.parcd === 0) t.q2 = t.q1
+      else if (md.parcd === 1) t.q1 = t.q2
 
-      /*Assert.assert(t.p1 == t.p2 || t.q1 == t.q2)*/
+      /*Assert.assert(t.p1 === t.p2 || t.q1 === t.q2)*/
       return
       //we have trapeze {t.p1,t.p2,q2,q1} here
       //let t.p1,t.p2 be the low base of the trapes
@@ -397,7 +397,7 @@ export class TangentPair {
       const orientation = Point.getTriangleOrientation(mpp, mqp, this.Q.pp(0).point)
       const nextOrientation = Point.getTriangleOrientation(mpp, mqp, mpnp)
 
-      if (orientation == nextOrientation) t.p1 = this.P.Next(mp)
+      if (orientation === nextOrientation) t.p1 = this.P.Next(mp)
       else t.p2 = this.P.Prev(mp)
       ret = true
     }
@@ -410,7 +410,7 @@ export class TangentPair {
       const mqnp = this.Q.pp(this.Q.Next(mq)).point
       const orientation = Point.getTriangleOrientation(mpp, mqp, this.P.pp(0).point)
       const nextOrientation = Point.getTriangleOrientation(mpp, mqp, mqnp)
-      if (orientation == nextOrientation) t.q2 = this.Q.Next(mq)
+      if (orientation === nextOrientation) t.q2 = this.Q.Next(mq)
       else t.q1 = this.Q.Prev(mq)
       ret = true
     }
@@ -465,8 +465,8 @@ export class TangentPair {
     l: {mp: number; mq: number},
     angles: {a1: number; b1: number; a2: number; b2: number},
   ): boolean {
-    const pSideIsShort = t.p2 == this.P.Next(t.p1)
-    const qSideIsShort = t.q1 == this.Q.Next(t.q2)
+    const pSideIsShort = t.p2 === this.P.Next(t.p1)
+    const qSideIsShort = t.q1 === this.Q.Next(t.q2)
     if (pSideIsShort && !qSideIsShort) {
       this.ProcessShortSide(t, l.mp, l.mq, angles.a1, angles.b1, angles.a2, angles.b2)
       return true
@@ -519,7 +519,7 @@ export class TangentPair {
     b2: number,
   ) {
     //case 2.1
-    if (mp == t.p2) this.ProcessSide(t, mq, a1, b1, b2)
+    if (mp === t.p2) this.ProcessSide(t, mq, a1, b1, b2)
     else {
       if (a2 <= Math.PI) {
         if (a2 + b2 >= Math.PI) {
@@ -574,13 +574,13 @@ export class TangentPair {
     a1: number,
     b1: number,
   ): boolean {
-    if (t.p1 == t.p2) {
+    if (t.p1 === t.p2) {
       if (b1 >= Math.PI / 2) t.q1 = mq
       else t.q2 = mq
 
       return true
     }
-    if (t.q1 == t.q2) {
+    if (t.q1 === t.q2) {
       if (a1 >= Math.PI / 2) t.p1 = mp
       else t.p2 = mp
       return true
@@ -611,7 +611,7 @@ export class TangentPair {
 
   // bool QContains(number x ,number y) {
   //   foreach (Point p of Q.Polyline) {
-  //       if (p.x == x && p.y == y)
+  //       if (p.x === x && p.y === y)
   //           return true;
   //   }
   //   return false;
@@ -619,7 +619,7 @@ export class TangentPair {
 
   //bool PContains(number x, number y) {
   //   foreach (Point p of P.Polyline) {
-  //       if (p.x == x && p.y == y)
+  //       if (p.x === x && p.y === y)
   //           return true;
   //   }
   //   return false;

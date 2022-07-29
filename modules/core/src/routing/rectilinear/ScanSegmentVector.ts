@@ -112,7 +112,7 @@ export class ScanSegmentVector {
         return directionIfMiss > 0 ? low : low - 1
       }
 
-      if (coord == item.Coord) {
+      if (coord === item.Coord) {
         break
       }
     }
@@ -151,7 +151,7 @@ export class ScanSegmentVector {
       let prevSegment = item.FirstSegment
       for (let segment = prevSegment.NextSegment; segment != null; segment = segment.NextSegment) {
         if (segment.HasSparsePerpendicularCoords && prevSegment.HasSparsePerpendicularCoords) {
-          if (segment.Start == prevSegment.End) {
+          if (segment.Start === prevSegment.End) {
             const perpCoord: number = this.GetPerpendicularCoord(segment.Start)
             prevSegment.AddSparseEndpoint(perpCoord)
             segment.AddSparseEndpoint(perpCoord)
@@ -164,6 +164,6 @@ export class ScanSegmentVector {
   }
 
   toString(): string {
-    return (this.IsHorizontal ? '(H) count' : '(V) count == ') + this.vector.length
+    return (this.IsHorizontal ? '(H) count' : '(V) count === ') + this.vector.length
   }
 }

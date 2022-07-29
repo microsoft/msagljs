@@ -27,12 +27,12 @@ export class InteractiveObstacleCalculator {
   OverlapsDetected: boolean
   private static PadCorner(poly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number): boolean {
     const padInfo = InteractiveObstacleCalculator.GetPaddedCorner(p0, p1, p2, padding)
-    if (padInfo.numberOfPoints == -1) {
+    if (padInfo.numberOfPoints === -1) {
       return false
     }
 
     poly.addPoint(padInfo.a)
-    if (padInfo.numberOfPoints == 2) {
+    if (padInfo.numberOfPoints === 2) {
       poly.addPoint(padInfo.b)
     }
 
@@ -79,7 +79,7 @@ export class InteractiveObstacleCalculator {
 
     this.RootOfLooseHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(this.LooseObstacles)
     // Assert.assert(
-    //  InteractiveObstacleCalculator.GetOverlappedPairSet(this.RootOfLooseHierarchy).size == 0,
+    //  InteractiveObstacleCalculator.GetOverlappedPairSet(this.RootOfLooseHierarchy).size === 0,
     //  'Overlaps are found in LooseObstacles',
     // )
   }
@@ -97,7 +97,7 @@ export class InteractiveObstacleCalculator {
     if (!this.IsEmpty()) this.CreateLooseObstacles()
   }
   IsEmpty(): boolean {
-    return this.TightObstacles == null || this.TightObstacles.size == 0
+    return this.TightObstacles == null || this.TightObstacles.size === 0
   }
   constructor(obstacles: Array<ICurve>, tightPadding: number, loosePadding: number, ignoreTightPadding: boolean) {
     this.Obstacles = obstacles
@@ -131,7 +131,7 @@ export class InteractiveObstacleCalculator {
   }
 
   static PointIsInside(point: Point, curve: ICurve): boolean {
-    return Curve.PointRelativeToCurveLocation(point, curve) == PointLocation.Inside
+    return Curve.PointRelativeToCurveLocation(point, curve) === PointLocation.Inside
   }
 
   CreateTightObstaclesIgnoringTightPadding() {
@@ -139,7 +139,7 @@ export class InteractiveObstacleCalculator {
     const polylineHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(polysWithoutPadding)
     const overlappingPairSet = InteractiveObstacleCalculator.GetOverlappedPairSet(polylineHierarchy)
     this.TightObstacles = new Set<Polyline>()
-    if (overlappingPairSet.size == 0) {
+    if (overlappingPairSet.size === 0) {
       for (const polyline of polysWithoutPadding) {
         const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(polylineHierarchy, polyline, this.TightPadding)
         this.TightObstacles.add(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(polyline, distance))
@@ -170,7 +170,7 @@ export class InteractiveObstacleCalculator {
     tightPadding: number,
     tightObstacleSet: Set<Polyline>,
   ): RectangleNode<Polyline, Point> {
-    if (obstacles.length == 0) {
+    if (obstacles.length === 0) {
       return null
     }
 
@@ -243,8 +243,8 @@ export class InteractiveObstacleCalculator {
   static OneCurveLiesInsideOfOther(polyA: ICurve, polyB: ICurve): boolean {
     // Assert.assert(!Curve.CurvesIntersect(polyA, polyB), 'The curves should not intersect')
     return (
-      Curve.PointRelativeToCurveLocation(polyA.start, polyB) != PointLocation.Outside ||
-      Curve.PointRelativeToCurveLocation(polyB.start, polyA) != PointLocation.Outside
+      Curve.PointRelativeToCurveLocation(polyA.start, polyB) !== PointLocation.Outside ||
+      Curve.PointRelativeToCurveLocation(polyB.start, polyA) !== PointLocation.Outside
     )
   }
 
@@ -295,7 +295,7 @@ export class InteractiveObstacleCalculator {
     const polygon = new Polygon(polyline)
     const boundingBox = polyline.boundingBox.clone()
     boundingBox.pad(2 * desiredPadding)
-    for (const poly of Array.from(hierarchy.GetNodeItemsIntersectingRectangle(boundingBox)).filter((p) => p != polyline)) {
+    for (const poly of Array.from(hierarchy.GetNodeItemsIntersectingRectangle(boundingBox)).filter((p) => p !== polyline)) {
       const separation = Polygon.Distance(polygon, new Polygon(poly)).dist
       dist = Math.min(dist, separation / InteractiveObstacleCalculator.LooseDistCoefficient)
     }
@@ -312,7 +312,7 @@ export class InteractiveObstacleCalculator {
     const u: Point = first.point
     const v: Point = second.point
     const w: Point = third.point
-    if (Point.getTriangleOrientation(u, v, w) == TriangleOrientation.Counterclockwise) {
+    if (Point.getTriangleOrientation(u, v, w) === TriangleOrientation.Counterclockwise) {
       return {a: undefined, b: undefined, numberOfPoints: -1}
     }
     let uvPerp: Point = v
@@ -328,7 +328,7 @@ export class InteractiveObstacleCalculator {
         .mul(padding)
         .rotate(Math.PI / 2)
       const a = Point.lineLineIntersection(u.add(uvPerp), v.add(uvPerp), v.add(vwPerp), w.add(vwPerp))
-      /*Assert.assert(a != undefined)*/
+      /*Assert.assert(a !== undefined)*/
       return {a: a, b: a, numberOfPoints: 1}
     }
 
@@ -352,7 +352,7 @@ export class InteractiveObstacleCalculator {
       .sub(v)
       .rotate(Math.PI / 4)
       .add(v)
-    return Point.getTriangleOrientation(v, a, w) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(v, a, w) === TriangleOrientation.Counterclockwise
     //   return Point.Angle(u, v, w) > Math.PI / 4;
   }
   static CreatePaddedPolyline(poly: Polyline, padding: number): Polyline {
@@ -361,7 +361,7 @@ export class InteractiveObstacleCalculator {
         poly.start,
         poly.startPoint.next.point,
         poly.startPoint.next.next.point,
-      ) == TriangleOrientation.Clockwise,
+      ) === TriangleOrientation.Clockwise,
       'Unpadded polyline is not clockwise',
     )*/
     const ret = new Polyline()
@@ -393,7 +393,7 @@ export class InteractiveObstacleCalculator {
         ret.start,
         ret.startPoint.next.point,
         ret.startPoint.next.next.point,
-      ) != TriangleOrientation.Counterclockwise,
+      ) !== TriangleOrientation.Counterclockwise,
       'Padded polyline is counterclockwise',
     )*/
     ret.closed = true

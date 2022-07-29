@@ -114,7 +114,7 @@ export class Curve implements ICurve {
   }
 
   static CurvesIntersect(curve1: ICurve, curve2: ICurve): boolean {
-    return curve1 == curve2 || Curve.intersectionOne(curve1, curve2, false) != null
+    return curve1 === curve2 || Curve.intersectionOne(curve1, curve2, false) != null
   }
   // fields
   private parEnd_: number
@@ -204,7 +204,7 @@ export class Curve implements ICurve {
 
     const e = this.getSegIndexParam(params.end)
 
-    if (s.segIndex == e.segIndex) return this.segs[s.segIndex].trim(s.par, e.par)
+    if (s.segIndex === e.segIndex) return this.segs[s.segIndex].trim(s.par, e.par)
 
     let c = new Curve()
 
@@ -257,7 +257,7 @@ export class Curve implements ICurve {
     if (curve == null) return this //nothing happens
     this.boundingBox_ = null
     /*Assert.assert(
-      this.segs.length == 0 || Point.close(this.end, curve.start, 0.001),
+      this.segs.length === 0 || Point.close(this.end, curve.start, 0.001),
     )*/
     if (!(curve instanceof Curve)) {
       this.segs.push(curve)
@@ -296,7 +296,7 @@ export class Curve implements ICurve {
 
   // finds an intersection between to curves,
   static intersectionOne(curve0: ICurve, curve1: ICurve, liftIntersection: boolean): IntersectionInfo {
-    /*Assert.assert(curve0 != curve1)*/
+    /*Assert.assert(curve0 !== curve1)*/
     //           number c0S = curve0.parStart, c1S = curve1.parStart;
     //           if (CurvesAreCloseAtParams(curve0, curve1, c0S, c1S)) {
     //               number mc0 = 0.5 * (curve0.parStart + curve0.parEnd);
@@ -369,7 +369,7 @@ export class Curve implements ICurve {
     const ret: IntersectionInfo[] = []
     const lineParallelogram = lineSeg.pNodeOverICurve()
     const curveParallelogramRoot = curve.pNodeOverICurve()
-    if (Parallelogram.intersect(lineParallelogram.parallelogram, curveParallelogramRoot.parallelogram) == false) return ret
+    if (Parallelogram.intersect(lineParallelogram.parallelogram, curveParallelogramRoot.parallelogram) === false) return ret
     let parOffset = 0.0
     for (const seg of curve.segs) {
       const iiList = Curve.getAllIntersections(lineSeg, seg, false)
@@ -733,13 +733,13 @@ export class Curve implements ICurve {
   }
 
   static liftParameterToCurve(curve: ICurve, par: number, seg: ICurve) {
-    if (curve == seg) return par
+    if (curve === seg) return par
     if (!curve.hasOwnProperty('segs')) return
     const c = curve as Curve
 
     let offset = 0
     for (const s of c.segs) {
-      if (s == seg) return par + offset
+      if (s === seg) return par + offset
       offset += Curve.paramSpan(s)
     }
     throw 'bug in liftParameterToCurve'
@@ -831,7 +831,7 @@ export class Curve implements ICurve {
   }
 
   static adjustParameters(l0: PN, ls0: LineSegment, l1: PN, ls1: LineSegment, sol: CurveCrossOutput) {
-    if (ls0 != l0.seg && l0.seg instanceof Polyline == false)
+    if (ls0 !== l0.seg && l0.seg instanceof Polyline === false)
       //l0.seg is not a LineSegment and not a polyline
       sol.aSol = l0.seg.closestParameter(sol.x)
     //we need to find the correct parameter
@@ -839,7 +839,7 @@ export class Curve implements ICurve {
       const leaf0 = l0.node as PNLeaf
       sol.aSol = leaf0.low + sol.aSol * (leaf0.high - leaf0.low)
     }
-    if (ls1 != l1.seg && l1.seg instanceof Polyline == false)
+    if (ls1 !== l1.seg && l1.seg instanceof Polyline === false)
       //l1.seg is not a LineSegment and not a polyline
       sol.bSol = l1.seg.closestParameter(sol.x)
     //we need to find the correct parameter
@@ -930,11 +930,11 @@ export class Curve implements ICurve {
   ): CurveCrossOutput | undefined {
     if (a instanceof LineSegment && b instanceof LineSegment) {
       const r = Curve.crossTwoLineSegs(a.start, a.end, b.start, b.end, amin, amax, bmin, bmax)
-      if (r != undefined) return r
+      if (r !== undefined) return r
     }
 
     const mdout = Curve.minDistWithinIntervals(a, b, amin, amax, bmin, bmax, aGuess, bGuess)
-    if (mdout == undefined) return
+    if (mdout == null) return
 
     const aMinusB = mdout.aX.sub(mdout.bX)
     return aMinusB.dot(aMinusB) >= GeomConstants.distanceEpsilon
@@ -960,7 +960,7 @@ export class Curve implements ICurve {
     const v = bStart.sub(bEnd)
     const w = bStart.sub(aStart)
     const sol = LinearSystem2.solve(u.x, v.x, w.x, u.y, v.y, w.y)
-    if (sol == undefined) return
+    if (sol == null) return
     let aSol = sol.x
     let bSol = sol.y
     const x = aStart.add(u.mul(aSol))
@@ -1014,7 +1014,7 @@ export class Curve implements ICurve {
           }
         }
 
-        const insideThisTime: boolean = intersections.length % 2 == 1
+        const insideThisTime: boolean = intersections.length % 2 === 1
         // to be on the safe side we need to get the same result at least twice
         if (insideThisTime) {
           inside++
@@ -1065,7 +1065,7 @@ export class Curve implements ICurve {
       // so pseg enters the spline
       let exitSeg: ICurve = null
       for (let i = 0; i < polyline.segs.length - 1; i++) {
-        if (polyline.segs[i] == pseg) {
+        if (polyline.segs[i] === pseg) {
           exitSeg = polyline.segs[i + 1]
           break
         }
@@ -1085,7 +1085,7 @@ export class Curve implements ICurve {
       // so pseg exits the spline
       let enterSeg: ICurve = null
       for (let i: number = polyline.segs.length - 1; i > 0; i--) {
-        if (polyline.segs[i] == pseg) {
+        if (polyline.segs[i] === pseg) {
           enterSeg = polyline.segs[i - 1]
           break
         }
@@ -1129,7 +1129,7 @@ export class Curve implements ICurve {
       // so pseg enters the spline
       let exitSeg: ICurve = null
       for (let i = 0; i < polygon.segs.length; i++) {
-        if (polygon.segs[i] == pseg) {
+        if (polygon.segs[i] === pseg) {
           exitSeg = polygon.segs[(i + 1) % polygon.segs.length]
           break
         }
@@ -1148,7 +1148,7 @@ export class Curve implements ICurve {
       // so pseg exits the spline
       let enterSeg: ICurve = null
       for (let i = 0; i < polygon.segs.length; i++) {
-        if (polygon.segs[i] == pseg) {
+        if (polygon.segs[i] === pseg) {
           enterSeg = polygon.segs[i > 0 ? i - 1 : polygon.segs.length - 1]
 
           break
@@ -1174,11 +1174,11 @@ export class Curve implements ICurve {
   //so pseg exits the spline 
   ICurve enterSeg = null;
   for (int i = polyline.segs.length - 1; i > 0; i--)
-  if (polyline.segs[i] == pseg) {
+  if (polyline.segs[i] === pseg) {
   enterSeg = polyline.segs[i - 1];
   break;
   }
-  if (enterSeg == null)
+  if (enterSeg == null )
   return false;
   Point tsn = ts.rotate((Math.PI/2));
   boolean touch = (tsn*pseg.derivative(pseg.Parstart))*
@@ -1221,7 +1221,7 @@ export class Curve implements ICurve {
       {
       boolean poly = true;
       for (ICurve s of segs)
-      if (s is LineSeg == false)
+      if (s is LineSeg === false)
       {
       poly = false;
       break;
@@ -1263,7 +1263,7 @@ export class Curve implements ICurve {
   get boundingBox() {
     if (this.boundingBox_) return this.boundingBox_
 
-    if (this.segs.length == 0) {
+    if (this.segs.length === 0) {
       this.boundingBox_ = Rectangle.mkEmpty()
     } else {
       const b = this.segs[0].boundingBox.clone()
@@ -1412,7 +1412,7 @@ export class Curve implements ICurve {
 
   tryToGetRightSegment(t: number) {
     if (Math.abs(t - this.parEnd) < GeomConstants.tolerance) {
-      if (this.start == this.end) return this.segs[0]
+      if (this.start === this.end) return this.segs[0]
       return null
     }
 
@@ -1445,18 +1445,18 @@ export class Curve implements ICurve {
     }
 
     const xx = Curve.getAllIntersections(innerCurve, outerCurve, true)
-    if (xx.length == 0) {
+    if (xx.length === 0) {
       return Curve.NonIntersectingCurveIsInsideOther(innerCurve, outerCurve)
     }
 
-    if (xx.length == 1)
+    if (xx.length === 1)
       //it has to be a touch
       return !innerCurve.start.equal(xx[0].x)
-        ? Curve.PointRelativeToCurveLocation(innerCurve.start, outerCurve) == PointLocation.Inside
+        ? Curve.PointRelativeToCurveLocation(innerCurve.start, outerCurve) === PointLocation.Inside
         : Curve.PointRelativeToCurveLocation(innerCurve.value((innerCurve.parStart + innerCurve.parEnd) / 2), outerCurve) ==
             PointLocation.Inside
     for (const p of Curve.PointsBetweenIntersections(innerCurve, xx)) {
-      if (Curve.PointRelativeToCurveLocation(p, outerCurve) == PointLocation.Outside) {
+      if (Curve.PointRelativeToCurveLocation(p, outerCurve) === PointLocation.Outside) {
         return false
       }
     }
@@ -1484,13 +1484,13 @@ export class Curve implements ICurve {
     for (let par: number = a.parStart; par < a.parEnd; par += 0.5) {
       // continue as long as we have boundary points.
       const parLoc: PointLocation = Curve.PointRelativeToCurveLocation(a.value(par), b)
-      if (PointLocation.Boundary != parLoc) {
-        return PointLocation.Inside == parLoc
+      if (PointLocation.Boundary !== parLoc) {
+        return PointLocation.Inside === parLoc
       }
     }
 
     // All points so far were on border so it is not considered inside; test the End.
-    return PointLocation.Outside != Curve.PointRelativeToCurveLocation(a.end, b)
+    return PointLocation.Outside !== Curve.PointRelativeToCurveLocation(a.end, b)
   }
   // Tests whether the interiors of two closed convex curves intersect
   static ClosedCurveInteriorsIntersect(c1: ICurve, c2: ICurve): boolean {
@@ -1499,21 +1499,21 @@ export class Curve implements ICurve {
     }
 
     const xx = Curve.getAllIntersections(c1, c2, true)
-    if (xx.length == 0) {
+    if (xx.length === 0) {
       return Curve.NonIntersectingCurveIsInsideOther(c1, c2) || Curve.NonIntersectingCurveIsInsideOther(c2, c1)
     }
 
-    if (xx.length == 1) {
+    if (xx.length === 1) {
       //it is a touch
       return !c1.start.equal(xx[0].x)
-        ? Curve.PointRelativeToCurveLocation(c1.start, c2) == PointLocation.Inside
-        : Curve.PointRelativeToCurveLocation(c1.value((c1.parStart + c1.parEnd) / 2), c2) == PointLocation.Inside ||
+        ? Curve.PointRelativeToCurveLocation(c1.start, c2) === PointLocation.Inside
+        : Curve.PointRelativeToCurveLocation(c1.value((c1.parStart + c1.parEnd) / 2), c2) === PointLocation.Inside ||
           !c2.start.equal(xx[0].x)
-        ? Curve.PointRelativeToCurveLocation(c2.start, c1) == PointLocation.Inside
-        : Curve.PointRelativeToCurveLocation(c2.value((c2.parStart + c2.parEnd) / 2), c1) == PointLocation.Inside
+        ? Curve.PointRelativeToCurveLocation(c2.start, c1) === PointLocation.Inside
+        : Curve.PointRelativeToCurveLocation(c2.value((c2.parStart + c2.parEnd) / 2), c1) === PointLocation.Inside
     }
     for (const p of Curve.PointsBetweenIntersections(c1, xx)) {
-      if (Curve.PointRelativeToCurveLocation(p, c2) == PointLocation.Inside) {
+      if (Curve.PointRelativeToCurveLocation(p, c2) === PointLocation.Inside) {
         return true
       }
     }
@@ -1540,7 +1540,7 @@ export class Curve implements ICurve {
   /*  #endregion
        
        public static boolean CurvesIntersect(ICurve curve1, ICurve curve2) {
-       return curve1 == curve2 || (CurveCurveIntersectionOne(curve1, curve2, false) != null);
+       return curve1 === curve2 || (CurveCurveIntersectionOne(curve1, curve2, false) != null);
        }
        */
   static createBezierSeg(kPrev: number, kNext: number, a: CornerSite, b: CornerSite, c: CornerSite): BezierSeg {
@@ -1582,7 +1582,7 @@ export class Curve implements ICurve {
   static findNewEnd(spline: ICurve, targetBoundary: ICurve, narrowestInterval: boolean, end: number): number {
     //SugiyamaLayoutSettings.Show(c, spline);
     const intersections = Curve.getAllIntersections(spline, targetBoundary, true)
-    if (intersections.length == 0) {
+    if (intersections.length === 0) {
       end = spline.parEnd
       return end
     }
@@ -1599,7 +1599,7 @@ export class Curve implements ICurve {
 
   static findNewStart(spline: ICurve, start: number, sourceBoundary: ICurve, narrowestInterval: boolean): number {
     const intersections = Curve.getAllIntersections(spline, sourceBoundary, true)
-    if (intersections.length == 0) {
+    if (intersections.length === 0) {
       start = spline.parStart
       return
     }
@@ -1674,7 +1674,7 @@ function isCloseToLineSeg(a: number, ap: Point, b: number, bp: Point, s: ICurve,
   for (const x of [1 / 3, 0.5, 2 / 3]) {
     const p = a * x + b * (1 - x) // the parameter on the curve s
     const pointsAreClose = Point.closeSquare(s.value(p), Point.mkPoint(x, ap, 1 - x, bp), e)
-    if (pointsAreClose == false) {
+    if (pointsAreClose === false) {
       return false
     }
   }
@@ -1747,7 +1747,7 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
 
     const e = Math.min(eps, ap.sub(bp).length / 10)
     const ps = interpolate(a, ap, b, bp, curve, e)
-    if (ps.length == 2) return true
+    if (ps.length === 2) return true
 
     for (let i = 1; i < ps.length - 1; i++) {
       const p = ps[i]

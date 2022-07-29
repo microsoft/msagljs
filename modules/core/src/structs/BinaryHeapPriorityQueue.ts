@@ -49,7 +49,7 @@ export class BinaryHeapPriorityQueue {
 
   // return the first element of the queue and removes it from the queue
   Dequeue(): number {
-    if (this.heapSize == 0) {
+    if (this.heapSize === 0) {
       throw new Error()
     }
 
@@ -69,7 +69,7 @@ export class BinaryHeapPriorityQueue {
           smallest = r
         }
 
-        if (smallest != i) {
+        if (smallest !== i) {
           this.SwapWithParent(smallest)
         } else {
           break
@@ -84,7 +84,7 @@ export class BinaryHeapPriorityQueue {
   }
 
   IsEmpty(): boolean {
-    return this.heapSize == 0
+    return this.heapSize === 0
   }
 
   DecreasePriority(o: number, newPriority: number) {

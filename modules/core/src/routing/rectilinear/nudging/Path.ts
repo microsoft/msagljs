@@ -57,7 +57,7 @@ export class Path {
 
   AddEdge(edge: PathEdge) {
     edge.Path = this
-    /*Assert.assert(edge.Source == this.LastEdge.Target)*/
+    /*Assert.assert(edge.Source === this.LastEdge.Target)*/
     this.LastEdge.Next = edge
     edge.Prev = this.LastEdge
     this.LastEdge = edge

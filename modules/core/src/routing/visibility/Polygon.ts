@@ -69,7 +69,7 @@ export class Polygon {
 
   // the median of a chunk going clockwise from p1 to p2
   Median(p1: number, p2: number): number {
-    /*Assert.assert(p1 != p2)*/
+    /*Assert.assert(p1 !== p2)*/
     // otherwise we do not know what arc is mean: the whole one or just the point
     if (p2 > p1) {
       return Math.floor((p2 + p1) / 2)
@@ -86,7 +86,7 @@ export class Polygon {
       directionToTheHill = directionToTheHill.mul(-1)
     }
 
-    if (p1 == p2) {
+    if (p1 === p2) {
       p2 = this.Next(p1)
     }
 
@@ -104,7 +104,7 @@ export class Polygon {
       }
 
       p1 = m
-    } while (p1 != p2)
+    } while (p1 !== p2)
 
     return p1
   }
@@ -154,7 +154,7 @@ export class Polygon {
   static PolygonIsLegalDebug(a: Polygon): boolean {
     const poly = a.Polyline
     for (let p = poly.startPoint; p.next != null && p.next.next != null; p = p.next) {
-      if (Point.getTriangleOrientation(p.point, p.next.point, p.next.next.point) == TriangleOrientation.Collinear) {
+      if (Point.getTriangleOrientation(p.point, p.next.point, p.next.next.point) === TriangleOrientation.Collinear) {
         return false
       }
     }

@@ -27,7 +27,7 @@ export class ViolationCache {
   // The lowest violation in the cache.
   LowViolation: number
   get IsFull(): boolean {
-    return this.numConstraints == ViolationCache.MaxConstraints
+    return this.numConstraints === ViolationCache.MaxConstraints
   }
 
   Clear() {
@@ -63,8 +63,8 @@ export class ViolationCache {
       // Also remove any constraint that may have been activated by MergeBlocks or marked unsatisfiable
       // by Block.Expand.
       if (
-        constraint.Left.Block == blockToFilter ||
-        constraint.Right.Block == blockToFilter ||
+        constraint.Left.Block === blockToFilter ||
+        constraint.Right.Block === blockToFilter ||
         constraint.IsActive ||
         constraint.IsUnsatisfiable
       ) {
@@ -79,8 +79,8 @@ export class ViolationCache {
         const violation: number =
           constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
         /*Assert.assert(
-          constraint.Violation == violation,
-          'LeftConstraints: constraint.Violation must == violation',
+          constraint.Violation === violation,
+          'LeftConstraints: constraint.Violation must === violation',
         )*/
         if (violation < this.LowViolation) {
           this.LowViolation = violation
@@ -88,7 +88,7 @@ export class ViolationCache {
       }
     }
 
-    if (0 == this.numConstraints) {
+    if (0 === this.numConstraints) {
       this.LowViolation = 0
     }
 
@@ -103,8 +103,8 @@ export class ViolationCache {
       const violation: number =
         constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
       /*Assert.assert(
-        constraint.Violation == violation,
-        'constraint.Violation must == violation',
+        constraint.Violation === violation,
+        'constraint.Violation must === violation',
       )*/
       if (violation > targetViolation) {
         targetViolation = violation
@@ -123,8 +123,8 @@ export class ViolationCache {
       'constraintToInsert.Violation must be > LowViolation',
     )*/
     /*Assert.assert(
-      constraintToInsert.Violation == insertViolation,
-      'constraintToInsert.Violation must == insertViolation',
+      constraintToInsert.Violation === insertViolation,
+      'constraintToInsert.Violation must === insertViolation',
     )*/
     let indexOfLowestViolation = 0
     let lowViolation: number = insertViolation
@@ -134,8 +134,8 @@ export class ViolationCache {
       const cacheViolation: number =
         constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
       /*Assert.assert(
-        constraint.Violation == cacheViolation,
-        'constraint.Violation must == cacheViolation',
+        constraint.Violation === cacheViolation,
+        'constraint.Violation must === cacheViolation',
       )*/
       if (cacheViolation < lowViolation) {
         // If we don't replace an existing block pair, then we'll replace the lowest

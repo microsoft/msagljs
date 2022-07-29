@@ -102,7 +102,7 @@ export class StaircaseRemover {
   // ignoring crossing at ls.Start
 
   static IsCrossing(ls: LineSegment, rTree: RTree<SegWithIndex, Point>, segsToIgnore: SegWithIndex[]): boolean {
-    for (const seg of rTree.GetAllIntersecting(ls.boundingBox)) if (segsToIgnore.findIndex((p) => p == seg) == -1) return true
+    for (const seg of rTree.GetAllIntersecting(ls.boundingBox)) if (segsToIgnore.findIndex((p) => p === seg) === -1) return true
 
     return false
   }
@@ -123,8 +123,8 @@ export class StaircaseRemover {
     const f = pts[offset + 4]
     w.canHaveStaircaseAtI = false
     if (
-      CompassVector.DirectionFromPointToPoint(a, b) != CompassVector.DirectionFromPointToPoint(c, d) ||
-      CompassVector.DirectionFromPointToPoint(b, c) != CompassVector.DirectionFromPointToPoint(d, f)
+      CompassVector.DirectionFromPointToPoint(a, b) !== CompassVector.DirectionFromPointToPoint(c, d) ||
+      CompassVector.DirectionFromPointToPoint(b, c) !== CompassVector.DirectionFromPointToPoint(d, f)
     ) {
       return false
     }

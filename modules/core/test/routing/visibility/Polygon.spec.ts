@@ -26,13 +26,13 @@ test('almost two circles', () => {
   const pts = circlePoints(n_corners, rad, center_a)
   const pa = new Polyline()
   for (let i = 0; i < pts.length; i++) {
-    if (i == 3 || i == 9) continue
+    if (i === 3 || i === 9) continue
     pa.addPoint(pts[i])
   }
   a = new Polygon(pa)
   const pb = new Polyline()
   for (let i = 0; i < pts.length; i++) {
-    if (i == 1 || i == 15) continue
+    if (i === 1 || i === 15) continue
     pb.addPoint(pts[i].add(new Point(2 * rad + 1, 2 * rad + 1).rotate(Math.PI / 10)))
   }
   b = new Polygon(pb)

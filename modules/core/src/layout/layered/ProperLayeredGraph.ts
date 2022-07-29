@@ -37,11 +37,11 @@ export class ProperLayeredGraph {
       }
       for (let i = 1; i < e.LayerEdges.length; i++) {
         const le = e.LayerEdges[i]
-        // Assert.assert(le.Source != e.source)
+        // Assert.assert(le.Source !== e.source)
         this.firstVirtualNode = Math.min(this.firstVirtualNode, le.Source)
       }
     }
-    if (this.firstVirtualNode == Number.POSITIVE_INFINITY) {
+    if (this.firstVirtualNode === Number.POSITIVE_INFINITY) {
       this.firstVirtualNode = this.BaseGraph.nodeCount
       this.totalNumberOfNodes = this.BaseGraph.nodeCount
     }
@@ -51,8 +51,8 @@ export class ProperLayeredGraph {
     for (const e of this.BaseGraph.edges)
       if (e.LayerSpan > 0)
         for (const le of e.LayerEdges) {
-          if (le.Target != e.target) this.virtualNodesToInEdges[le.Target - this.firstVirtualNode] = le
-          if (le.Source != e.source) this.virtualNodesToOutEdges[le.Source - this.firstVirtualNode] = le
+          if (le.Target !== e.target) this.virtualNodesToInEdges[le.Target - this.firstVirtualNode] = le
+          if (le.Source !== e.source) this.virtualNodesToOutEdges[le.Source - this.firstVirtualNode] = le
         }
   }
 
@@ -71,7 +71,7 @@ export class ProperLayeredGraph {
     if (node < this.BaseGraph.nodeCount)
       //original node
       for (const e of this.BaseGraph.inEdges[node]) {
-        if (e.source != e.target && e.LayerEdges != null) yield ProperLayeredGraph.LastEdge(e)
+        if (e.source !== e.target && e.LayerEdges != null) yield ProperLayeredGraph.LastEdge(e)
       }
     else if (node >= this.firstVirtualNode) yield this.InEdgeOfVirtualNode(node)
   }
@@ -88,7 +88,7 @@ export class ProperLayeredGraph {
     if (node < this.BaseGraph.nodeCount)
       //original node
       for (const e of this.BaseGraph.outEdges[node]) {
-        if (e.source != e.target && e.LayerEdges != null) yield ProperLayeredGraph.FirstEdge(e)
+        if (e.source !== e.target && e.LayerEdges != null) yield ProperLayeredGraph.FirstEdge(e)
       }
     else if (node >= this.firstVirtualNode) yield this.OutEdgeOfVirtualNode(node)
   }

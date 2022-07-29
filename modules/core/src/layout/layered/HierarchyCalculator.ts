@@ -21,11 +21,11 @@ export class HierarchyCalculator {
   }
 
   Calc(nodes: Array<PN>): PN {
-    if (nodes.length == 0) {
+    if (nodes.length === 0) {
       return null
     }
 
-    if (nodes.length == 1) {
+    if (nodes.length === 1) {
       return nodes[0]
     }
 
@@ -48,7 +48,7 @@ export class HierarchyCalculator {
     // the compiler forces me to init it
     // init seed1
     for (let i = 0; i < nodes.length; i++) {
-      if (i != seed0) {
+      if (i !== seed0) {
         seed1 = i
         break
       }
@@ -56,7 +56,7 @@ export class HierarchyCalculator {
     area = Parallelogram.parallelogramOfTwo(nodes[seed0].parallelogram, nodes[seed1].parallelogram).area
     // Now try to improve the second seed
     for (let i = 0; i < nodes.length; i++) {
-      if (i == seed0) {
+      if (i === seed0) {
         continue
       }
 
@@ -76,7 +76,7 @@ export class HierarchyCalculator {
     let box1: Parallelogram = nodes[seed1].parallelogram
     // divide nodes on two groups
     for (let i = 0; i < nodes.length; i++) {
-      if (i == seed0 || i == seed1) {
+      if (i === seed0 || i === seed1) {
         continue
       }
 

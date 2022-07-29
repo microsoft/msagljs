@@ -32,7 +32,7 @@ export class Constraint {
     // Note: newVectorIndex may be the same as the old one if we are changing the state
     // of the last inactive or first active constraint.
     /*Assert.assert(
-      this.IsActive != activeState,
+      this.IsActive !== activeState,
       'Constraint is already set to activationState',
     )*/
     this.IsActive = activeState
@@ -112,18 +112,18 @@ export class Constraint {
     this.Lagrangian = 0
   }
 
-  // Compare this Constraint to rhs by their Variables in ascending order (this == lhs, other == rhs).
+  // Compare this Constraint to rhs by their Variables in ascending order (this === lhs, other === rhs).
 
   // The object being compared to.
   // <returns>-1 if this.Left/Right are "less"; +1 if this.Left/Right are "greater"; 0 if this.Left/Right
   //         and rhs.Left/Right are equal.</returns>
   public CompareTo(other: Constraint): number {
     let cmp: number = this.Left.CompareTo(other.Left)
-    if (0 == cmp) {
+    if (0 === cmp) {
       cmp = this.Right.CompareTo(other.Right)
     }
 
-    if (0 == cmp) {
+    if (0 === cmp) {
       cmp = compareNumbers(this.Gap, other.Gap)
     }
 

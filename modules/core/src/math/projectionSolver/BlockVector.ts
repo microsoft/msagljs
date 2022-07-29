@@ -18,14 +18,14 @@ export class BlockVector {
     block.VectorIndex = this.Vector.length
     this.Vector.push(block)
     /*Assert.assert(
-      this.Vector[block.VectorIndex] == block,
+      this.Vector[block.VectorIndex] === block,
       'Inconsistent block.VectorIndex',
     )*/
   }
 
   Remove(block: Block) {
     /*Assert.assert(
-      this.Vector[block.VectorIndex] == block,
+      this.Vector[block.VectorIndex] === block,
       'Inconsistent block.VectorIndex',
     )*/
     const swapBlock: Block = this.Vector[this.Vector.length - 1]

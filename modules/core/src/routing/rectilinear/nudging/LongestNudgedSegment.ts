@@ -37,7 +37,7 @@ export class LongestNudgedSegment extends SegmentBase {
   }
 
   AddEdge(edge: PathEdge) {
-    if (this.Edges.length == 0) {
+    if (this.Edges.length === 0) {
       let dir = CompassVector.VectorDirectionPP(edge.Source, edge.Target)
       switch (dir) {
         case Direction.South:
@@ -116,7 +116,7 @@ export class LongestNudgedSegment extends SegmentBase {
       return lb
     }
 
-    return this.CompassDirection == Direction.North ? this.Edges[0].Source.x : -this.Edges[0].Source.y
+    return this.CompassDirection === Direction.North ? this.Edges[0].Source.x : -this.Edges[0].Source.y
   }
 
   GetRightBound(): number {
@@ -132,7 +132,7 @@ export class LongestNudgedSegment extends SegmentBase {
   }
 
   Position(): number {
-    return this.CompassDirection == Direction.North ? this.Edges[0].Source.x : -this.Edges[0].Source.y
+    return this.CompassDirection === Direction.North ? this.Edges[0].Source.x : -this.Edges[0].Source.y
   }
 
   IdealPosition = 0

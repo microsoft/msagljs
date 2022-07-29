@@ -52,8 +52,8 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
     const t: number = edge.target
     if (
       s < this.layeredGraph.NodeCount &&
-      this.layerArrays.y[s] == this.layerArrays.y[t] &&
-      this.layerArrays.x[s] == this.layerArrays.x[t] + 1
+      this.layerArrays.y[s] === this.layerArrays.y[t] &&
+      this.layerArrays.x[s] === this.layerArrays.x[t] + 1
     ) {
       return 0
     }
@@ -69,7 +69,7 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
     // t0 is set to -1 to only avoid the warning
     // there are only two edges in graph.OutEdges(s)
     for (const intEdge of this.outEdges[s]) {
-      if (s0 == -1) {
+      if (s0 === -1) {
         s0 = intEdge.target
       } else {
         t0 = intEdge.target
@@ -84,7 +84,8 @@ export class XLayoutGraph extends BasicGraphOnEdges<PolyIntEdge> {
       k++
     }
 
-    const ret = k == 0 ? this.weightMultiplierOfOriginalOriginal : k == 1 ? this.weightMultOfOneVirtual : this.weightMultiplierOfTwoVirtual
+    const ret =
+      k === 0 ? this.weightMultiplierOfOriginalOriginal : k === 1 ? this.weightMultOfOneVirtual : this.weightMultiplierOfTwoVirtual
     return ret
   }
 

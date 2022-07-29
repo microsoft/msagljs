@@ -43,7 +43,7 @@ export class CdtSite {
     /*Assert.assert(Cdt.AboveCC(this, b) > 0)*/
     if (this.Edges != null) {
       for (const edge of this.Edges) {
-        if (edge.lowerSite == b) {
+        if (edge.lowerSite === b) {
           return edge
         }
       }
@@ -70,20 +70,20 @@ export class CdtSite {
     //going counterclockwise around the site
     let e = edge
     do {
-      const t = e.upperSite == this ? e.CcwTriangle : e.CwTriangle
+      const t = e.upperSite === this ? e.CcwTriangle : e.CwTriangle
       if (t == null) {
         e = null
         break
       }
       yield t
       e = t.TriEdges.getItem(t.TriEdges.index(e) + 2)
-    } while (e != edge) //full circle
+    } while (e !== edge) //full circle
 
-    if (e != edge) {
+    if (e !== edge) {
       //we have not done the full circle, starting again with edge but now going clockwise around the site
       e = edge
       do {
-        const t = e.upperSite == this ? e.CwTriangle : e.CcwTriangle
+        const t = e.upperSite === this ? e.CwTriangle : e.CcwTriangle
         if (t == null) {
           break
         }

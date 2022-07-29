@@ -63,7 +63,7 @@ export class Polyline implements ICurve {
   /**  adds a point to the polyline */
   addPoint(p: Point) {
     // Assert.assert(
-    //  this.endPoint == null || !Point.closeDistEps(p, this.endPoint.point),
+    //  this.endPoint == null  || !Point.closeDistEps(p, this.endPoint.point),
     // )
     const pp = new PolylinePoint()
     pp.polyline = this
@@ -81,7 +81,7 @@ export class Polyline implements ICurve {
   }
 
   PrependPoint(p: Point) {
-    // Assert.assert(this.endPoint == null || !Point.closeDistEps(p, this.endPoint.point))
+    // Assert.assert(this.endPoint == null  || !Point.closeDistEps(p, this.endPoint.point))
     const pp = PolylinePoint.mkFromPoint(p)
     pp.polyline = this
     if (this.startPoint != null) {
@@ -276,7 +276,7 @@ export class Polyline implements ICurve {
     const ret = new Polyline()
     ret.addPoint(curve.start)
     for (const ls of curve.segs) ret.addPoint(ls.end)
-    ret.closed = curve.start == curve.end
+    ret.closed = curve.start === curve.end
     return ret
   }
   trim(start: number, end: number): ICurve {
@@ -293,7 +293,7 @@ export class Polyline implements ICurve {
     let p = this.startPoint
     do {
       p.point = p.point.add(delta)
-      if (p == this.endPoint) break
+      if (p === this.endPoint) break
       p = p.getNext()
     } while (true)
     this.setInitIsRequired()
@@ -314,7 +314,7 @@ export class Polyline implements ICurve {
     let p = this.endPoint
     do {
       r.addPoint(p.point)
-      if (p == this.startPoint) break
+      if (p === this.startPoint) break
       p = p.getPrev()
     } while (true)
     return r
@@ -380,7 +380,7 @@ export class Polyline implements ICurve {
     let p = this.startPoint
     do {
       r.addPoint(p.point)
-      if (p == this.endPoint) break
+      if (p === this.endPoint) break
       p = p.getNext()
     } while (true)
     return r

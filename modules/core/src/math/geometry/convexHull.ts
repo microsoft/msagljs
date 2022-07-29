@@ -28,7 +28,7 @@ export class ConvexHull {
       if (point.y < this.pivot.y) {
         this.pivot = point
         pivotIndex = n
-      } else if (point.y == this.pivot.y) {
+      } else if (point.y === this.pivot.y) {
         if (point.x > this.pivot.x) {
           this.pivot = point
           pivotIndex = n
@@ -43,7 +43,7 @@ export class ConvexHull {
       // we will not copy the pivot into the hull points
       n = 0
       for (const point of bodyPoints) {
-        if (n != pivotIndex) {
+        if (n !== pivotIndex) {
           this.hullPoints[n++] = {
             point: point,
             deleted: false,
@@ -73,11 +73,11 @@ export class ConvexHull {
   }
 
   *Calculate(): IterableIterator<Point> {
-    if (this.pivot.y == Number.MAX_SAFE_INTEGER) {
+    if (this.pivot.y === Number.MAX_SAFE_INTEGER) {
       return
     }
 
-    if (this.hullPoints.length == 0) {
+    if (this.hullPoints.length === 0) {
       yield this.pivot
       return
     }
@@ -132,7 +132,7 @@ export class ConvexHull {
   }
 
   LeftTurnToPivot(): boolean {
-    return Point.getTriangleOrientation(this.StackSecondPoint, this.StackTopPoint, this.pivot) == TriangleOrientation.Counterclockwise
+    return Point.getTriangleOrientation(this.StackSecondPoint, this.StackTopPoint, this.pivot) === TriangleOrientation.Counterclockwise
   }
 
   StackHasMoreThanTwoPoints(): boolean {
@@ -154,11 +154,11 @@ export class ConvexHull {
       this.StackTopPoint,
       this.hullPoints[i].point,
     )
-    if (orientation == TriangleOrientation.Counterclockwise) {
+    if (orientation === TriangleOrientation.Counterclockwise) {
       return true
     }
 
-    if (orientation == TriangleOrientation.Clockwise) {
+    if (orientation === TriangleOrientation.Clockwise) {
       return false
     }
 
@@ -171,7 +171,7 @@ export class ConvexHull {
       return false
     }
 
-    /*Assert.assert(this.StackSecondPoint == this.pivot)*/
+    /*Assert.assert(this.StackSecondPoint === this.pivot)*/
     return this.StackTopPoint.x > this.pivot.x + GeomConstants.distanceEpsilon && point.x < this.pivot.x - GeomConstants.distanceEpsilon
   }
 
@@ -187,7 +187,7 @@ export class ConvexHull {
     const convexHull = Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(points)))
     // #if (TEST_MSAGL)
     // for (let point of points) {
-    //    if ((Curve.PointRelativeToCurveLocation(point, convexHull) == PointLocation.Outside)) {
+    //    if ((Curve.PointRelativeToCurveLocation(point, convexHull) === PointLocation.Outside)) {
     //        let hullPoint = convexHull[convexHull.closestParameter(point)];
     //        //  This can be too restrictive if very close points are put into the hull.  It is probably
     //        //  better to clean up in the caller before doing this, but this assert can also be relaxed.
@@ -206,7 +206,7 @@ export class ConvexHull {
 
 function hullPointComparer(pivot: Point): (i: HullPoint, j: HullPoint) => number {
   return (i: HullPoint, j: HullPoint) => {
-    if (i == j) {
+    if (i === j) {
       return 0
     }
 

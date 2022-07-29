@@ -47,7 +47,7 @@ export class ShapeCreatorForRoutingToParents {
     let parent = Parent(geomNode)
     do {
       for (const n of Children(parent)) ShapeCreatorForRoutingToParents.CreateShapeIfNeeeded(n, nodesToShapes)
-      if (parent == ancestor) break
+      if (parent === ancestor) break
       parent = Parent(parent)
     } while (true)
     ShapeCreatorForRoutingToParents.CreateShapeIfNeeeded(parent, nodesToShapes)
@@ -96,7 +96,7 @@ export class ShapeCreatorForRoutingToParents {
         }
       }
 
-      if (parent == ancestor) {
+      if (parent === ancestor) {
         break
       }
 

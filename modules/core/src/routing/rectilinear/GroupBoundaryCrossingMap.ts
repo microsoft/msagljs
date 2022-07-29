@@ -28,10 +28,10 @@ export class GroupBoundaryCrossingMap {
     // cache for perf
     for (let ii = 0; ii < crossingsCount; ii++) {
       const crossing = crossings[ii]
-      if (crossing.Group == group) {
+      if (crossing.Group === group) {
         // At a given location for a given group, there is only one valid dirToInside.
         /*Assert.assert(
-          dirToInside == crossing.DirectionToInside,
+          dirToInside === crossing.DirectionToInside,
           'Mismatched dirToInside',
         )*/
         return crossing
@@ -50,7 +50,7 @@ export class GroupBoundaryCrossingMap {
   pointList: Array<Point> = new Array<Point>()
 
   GetOrderedListBetween(start: Point, end: Point): PointAndCrossingsList {
-    if (this.pointCrossingMap.size == 0) {
+    if (this.pointCrossingMap.size === 0) {
       return null
     }
 

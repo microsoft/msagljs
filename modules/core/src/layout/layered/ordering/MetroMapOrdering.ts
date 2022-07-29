@@ -150,7 +150,7 @@ export class MetroMapOrdering {
 
         const o1: number = inverseToOrder.get(succ1)
         const o2: number = inverseToOrder.get(succ2)
-        /*Assert.assert(o1 != -1 && o2 != -1)*/
+        /*Assert.assert(o1 !== -1 && o2 !== -1)*/
         return compareNumbers(o1, o2)
       }
 

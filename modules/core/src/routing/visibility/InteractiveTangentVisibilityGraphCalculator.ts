@@ -77,7 +77,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
       // we processed the first element already
       const t: Tangent = this.tangents[i]
       if (t.Diagonal != null) {
-        if (t.Diagonal.RbNode == this.activeDiagonalTree.treeMinimum()) {
+        if (t.Diagonal.RbNode === this.activeDiagonalTree.treeMinimum()) {
           this.AddVisibleEdge(t)
         }
 
@@ -87,7 +87,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
       } else if (t.IsLow) {
         this.activeDiagonalComparer.PointOnTangentAndInsertedDiagonal = t.End.point
         this.InsertActiveDiagonal(new Diagonal(t, t.Comp))
-        if (t.Diagonal.RbNode == this.activeDiagonalTree.treeMinimum()) {
+        if (t.Diagonal.RbNode === this.activeDiagonalTree.treeMinimum()) {
           this.AddVisibleEdge(t)
         }
       }
@@ -101,7 +101,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
   // this function will also add the first tangent to the visible edges if needed
 
   private InitActiveDiagonals() {
-    if (this.tangents.length == 0) {
+    if (this.tangents.length === 0) {
       return
     }
 
@@ -118,11 +118,11 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
         this.InsertActiveDiagonal(diagonal)
       }
 
-      if (firstTangent.Diagonal.RbNode == this.activeDiagonalTree.treeMinimum()) {
+      if (firstTangent.Diagonal.RbNode === this.activeDiagonalTree.treeMinimum()) {
         this.AddVisibleEdge(firstTangent)
       }
 
-      if (firstTangent.IsLow == false) {
+      if (firstTangent.IsLow === false) {
         // remove the diagonal of the top tangent from active edges
         const diag: Diagonal = firstTangent.Diagonal
         this.RemoveDiagonalFromActiveNodes(diag)
@@ -156,9 +156,9 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
     const a: Point = diagonal.Start
     const b: Point = diagonal.End
     return (
-      Point.getTriangleOrientation(pivot, a, b) == TriangleOrientation.Counterclockwise &&
-      Point.getTriangleOrientation(pivot, pointOnRay, a) != TriangleOrientation.Counterclockwise &&
-      Point.getTriangleOrientation(pivot, pointOnRay, b) != TriangleOrientation.Clockwise
+      Point.getTriangleOrientation(pivot, a, b) === TriangleOrientation.Counterclockwise &&
+      Point.getTriangleOrientation(pivot, pointOnRay, a) !== TriangleOrientation.Counterclockwise &&
+      Point.getTriangleOrientation(pivot, pointOnRay, b) !== TriangleOrientation.Clockwise
     )
   }
 
@@ -179,7 +179,7 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
 
   private OrganizeTangents() {
     for (const q of this.AllObstacles()) {
-      if (q != this.currentPolygon) {
+      if (q !== this.currentPolygon) {
         this.ProcessPolygonQ(q)
       }
     }

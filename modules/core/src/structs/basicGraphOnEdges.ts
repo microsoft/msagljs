@@ -41,7 +41,7 @@ export class BasicGraphOnEdges<TEdge extends IEdge> {
   // the method is not efficient, takes linear time
   removeEdge(edge: TEdge) {
     BasicGraphOnEdges.deleteFromArray(this.edges, edge)
-    if (edge.source != edge.target) {
+    if (edge.source !== edge.target) {
       BasicGraphOnEdges.deleteFromArray(this.outEdges[edge.source], edge)
       BasicGraphOnEdges.deleteFromArray(this.inEdges[edge.target], edge)
     } else {
@@ -74,7 +74,7 @@ export class BasicGraphOnEdges<TEdge extends IEdge> {
     this.selfEdges = new Array<TEdge[]>(this.nodeCount)
 
     for (const e of this.edges) {
-      if (e.source != e.target) {
+      if (e.source !== e.target) {
         outEdgesCounts[e.source]++
         inEdgesCounts[e.target]++
       } else {
@@ -98,7 +98,7 @@ export class BasicGraphOnEdges<TEdge extends IEdge> {
     for (const e of this.edges) {
       const u = e.source
       const v = e.target
-      if (u != v) {
+      if (u !== v) {
         this.outEdges[u][outEdgesCounts[u]++] = e
         this.inEdges[v][inEdgesCounts[v]++] = e
       } else {
@@ -120,7 +120,7 @@ export class BasicGraphOnEdges<TEdge extends IEdge> {
 
   addEdge(e: TEdge) {
     this.edges.push(e)
-    if (e.source != e.target) {
+    if (e.source !== e.target) {
       this.outEdges[e.source].push(e)
       this.inEdges[e.target].push(e)
     } else {
@@ -130,7 +130,7 @@ export class BasicGraphOnEdges<TEdge extends IEdge> {
 
   // We assume that the graph is connected here
   *nodesOfConnectedGraph(): IterableIterator<number> {
-    if (this.edges.length == 0) return
+    if (this.edges.length === 0) return
     const enqueed = new Set<number>()
     const q = new Queue<number>()
     let i = this.edges[0].source

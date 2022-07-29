@@ -107,7 +107,7 @@ export class ConstrainedOrdering {
   }
 
   static ExistsShortMultiEdge(layering: number[], multiedges: IntPairMap<Array<PolyIntEdge>>): boolean {
-    return Array.from(multiedges.keyValues()).some(([k, v]) => v.length > 2 && layering[k.x] == 1 + layering[k.y])
+    return Array.from(multiedges.keyValues()).some(([k, v]) => v.length > 2 && layering[k.x] === 1 + layering[k.y])
   }
 
   // Calculate() {
@@ -124,13 +124,13 @@ export class ConstrainedOrdering {
 
   HasCrossWeights(): boolean {
     for (const le of this.ProperLayeredGraph.Edges) {
-      if (le.CrossingWeight != 1) return true
+      if (le.CrossingWeight !== 1) return true
     }
     return false
   }
 
   static ExistsShortLabeledEdge(layering: number[], edges: Array<PolyIntEdge>): boolean {
-    return edges.some((edge) => layering[edge.source] == layering[edge.target] + 1 && edge.edge.label != null)
+    return edges.some((edge) => layering[edge.source] === layering[edge.target] + 1 && edge.edge.label != null)
   }
 
   AllocateXPositions() {
@@ -259,7 +259,7 @@ export class ConstrainedOrdering {
   //  }
 
   //  for (let i= 0; (i < this.ProperLayeredGraph.NodeCount); i++) {
-  //    if ((alreadyInLayers[i] == false)) {
+  //    if ((alreadyInLayers[i] === false)) {
   //      this.AddVertToLayers(i, runninglayerCounts, alreadyInLayers);
   //    }
 
@@ -364,13 +364,13 @@ export class ConstrainedOrdering {
   //  let nodesToComponentRoots = new Map<number, number>();
   //  for (let component of verticalComponents) {
   //    let ca = component.ToArray();
-  //    if ((ca.length == 1)) {
+  //    if ((ca.length === 1)) {
   //      continue
   //    }
 
   //    let componentRoot: number = -1;
   //    for (let j of component) {
-  //      if ((componentRoot == -1)) {
+  //      if ((componentRoot === -1)) {
   //        componentRoot = j;
   //      }
 
@@ -432,7 +432,7 @@ export class ConstrainedOrdering {
   //    for (let couple of layerInfo.flatEdges) {
   //      let sourceBlockRoot: number = ConstrainedOrdering.NodeToBlockRootSoftOnLayerInfo(layerInfo, couple.Item1);
   //      let targetBlockRoot: number = ConstrainedOrdering.NodeToBlockRootSoftOnLayerInfo(layerInfo, couple.Item2);
-  //      if ((sourceBlockRoot != targetBlockRoot)) {
+  //      if ((sourceBlockRoot !== targetBlockRoot)) {
   //        solver.AddGoalTwoVariablesAreClose(sourceBlockRoot, targetBlockRoot);
   //      }
 
@@ -443,7 +443,7 @@ export class ConstrainedOrdering {
   // }
 
   // static NodeIsConstrainedBelow(v: number, layerInfo: LayerInfo): boolean {
-  //  if ((layerInfo == null)) {
+  //  if ((layerInfo == null )) {
   //    return false;
   //  }
 
@@ -451,7 +451,7 @@ export class ConstrainedOrdering {
   // }
 
   // static NodeIsConstrainedAbove(v: number, layerInfo: LayerInfo): boolean {
-  //  if ((layerInfo == null)) {
+  //  if ((layerInfo == null )) {
   //    return false;
   //  }
 
@@ -615,7 +615,7 @@ export class ConstrainedOrdering {
   //  let span: number = LayeredLayoutEngine.EdgeSpan(this.initialLayering, ie);
   //  ie.LayerEdges = new Array(span);
   //  Assert.assert((span > 0));
-  //  if ((span == 1)) {
+  //  if ((span === 1)) {
   //    ie.LayerEdges[0] = new LayerEdge(ie.Source, ie.Target, ie.CrossingWeight);
   //  }
   //  else {
@@ -656,7 +656,7 @@ export class ConstrainedOrdering {
   // FillFlatEdges() {
   //  for (let edge: PolyIntEdge of this.intGraph.edges) {
   //    let l: number = this.initialLayering[edge.Source];
-  //    if ((l == this.initialLayering[edge.Target])) {
+  //    if ((l === this.initialLayering[edge.Target])) {
   //      this.GetOrCreateLayerInfo(l).flatEdges.Insert(new Tuple<number, number>(edge.Source, edge.Target));
   //    }
 

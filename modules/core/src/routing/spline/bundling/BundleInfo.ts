@@ -197,28 +197,28 @@ export class BundleInfo {
   TrimSegWithBoundaryCurves(ls: LineSegment, s: {par: number}, t: {par: number}): LineSegment {
     // ls goes from target to source
     let inters = Curve.getAllIntersections(ls, this.SourceBase.Curve, true)
-    if (inters.length == 0) {
+    if (inters.length === 0) {
       t.par = 0
       s.par = 0
       return null
     }
 
     let sourceX: IntersectionInfo
-    if (inters.length == 1) sourceX = inters[0]
+    if (inters.length === 1) sourceX = inters[0]
     else {
       if (!this.SourceBase.IsParent) sourceX = inters[0].par0 < inters[1].par0 ? inters[0] : inters[1]
       else sourceX = inters[0].par0 < inters[1].par0 ? inters[1] : inters[0]
     }
 
     inters = Curve.getAllIntersections(ls, this.TargetBase.Curve, true)
-    if (inters.length == 0) {
+    if (inters.length === 0) {
       t.par = 0
       s.par = 0
       return null
     }
 
     let targetX: IntersectionInfo
-    if (inters.length == 1) targetX = inters[0]
+    if (inters.length === 1) targetX = inters[0]
     else {
       if (!this.TargetBase.IsParent) targetX = inters[0].par0 > inters[1].par0 ? inters[0] : inters[1]
       else targetX = inters[0].par0 > inters[1].par0 ? inters[1] : inters[0]
@@ -245,8 +245,8 @@ export class BundleInfo {
     rotationOfTargetLeftPoint: number,
     parameterChange: number,
   ) {
-    const needToUpdateSource: boolean = rotationOfSourceRightPoint != 0 || rotationOfSourceLeftPoint != 0
-    const needToUpdateTarget: boolean = rotationOfTargetRightPoint != 0 || rotationOfTargetLeftPoint != 0
+    const needToUpdateSource: boolean = rotationOfSourceRightPoint !== 0 || rotationOfSourceLeftPoint !== 0
+    const needToUpdateTarget: boolean = rotationOfTargetRightPoint !== 0 || rotationOfTargetLeftPoint !== 0
     if (needToUpdateSource) {
       this.SourceBase.RotateBy(rotationOfSourceRightPoint, rotationOfSourceLeftPoint, parameterChange)
     }
@@ -309,7 +309,7 @@ export class BundleInfo {
     // 1. we can't have intersections with obstacles
     // (we check borderlines of the bundle only)
     if (!this.SourceBase.IsParent && !this.TargetBase.IsParent) {
-      if (rotationOfSourceLeftPoint != 0 || rotationOfTargetRightPoint != 0) {
+      if (rotationOfSourceLeftPoint !== 0 || rotationOfTargetRightPoint !== 0) {
         const rSoP: Point = this.SourceBase.RotateLeftPoint(rotationOfSourceLeftPoint, parameterChange)
         const lTarP: Point = this.TargetBase.RotateRigthPoint(rotationOfTargetRightPoint, parameterChange)
         if (!this.LineIsLegal(rSoP, lTarP)) {
@@ -317,7 +317,7 @@ export class BundleInfo {
         }
       }
 
-      if (rotationOfSourceRightPoint != 0 || rotationOfTargetLeftPoint != 0) {
+      if (rotationOfSourceRightPoint !== 0 || rotationOfTargetLeftPoint !== 0) {
         const lSoP: Point = this.SourceBase.RotateRigthPoint(rotationOfSourceRightPoint, parameterChange)
         const rTarP: Point = this.TargetBase.RotateLeftPoint(rotationOfTargetLeftPoint, parameterChange)
         if (!this.LineIsLegal(lSoP, rTarP)) {
@@ -325,7 +325,7 @@ export class BundleInfo {
         }
       }
     } else {
-      if (rotationOfSourceLeftPoint != 0 || rotationOfTargetLeftPoint != 0) {
+      if (rotationOfSourceLeftPoint !== 0 || rotationOfTargetLeftPoint !== 0) {
         const lSoP: Point = this.SourceBase.RotateLeftPoint(rotationOfSourceLeftPoint, parameterChange)
         const lTarP: Point = this.TargetBase.RotateLeftPoint(rotationOfTargetLeftPoint, parameterChange)
         if (!this.LineIsLegal(lSoP, lTarP)) {
@@ -333,7 +333,7 @@ export class BundleInfo {
         }
       }
 
-      if (rotationOfSourceRightPoint != 0 || rotationOfTargetRightPoint != 0) {
+      if (rotationOfSourceRightPoint !== 0 || rotationOfTargetRightPoint !== 0) {
         const rSoP: Point = this.SourceBase.RotateRigthPoint(rotationOfSourceRightPoint, parameterChange)
         const rTarP: Point = this.TargetBase.RotateRigthPoint(rotationOfTargetRightPoint, parameterChange)
         if (!this.LineIsLegal(rSoP, rTarP)) {
@@ -343,13 +343,13 @@ export class BundleInfo {
     }
 
     // 2. we are also not allowed to change the order of bundles around a hub
-    if (rotationOfSourceRightPoint != 0 || rotationOfSourceLeftPoint != 0) {
+    if (rotationOfSourceRightPoint !== 0 || rotationOfSourceLeftPoint !== 0) {
       if (!this.SourceBase.RelativeOrderOfBasesIsPreserved(rotationOfSourceRightPoint, rotationOfSourceLeftPoint, parameterChange)) {
         return false
       }
     }
 
-    if (rotationOfTargetRightPoint != 0 || rotationOfTargetLeftPoint != 0) {
+    if (rotationOfTargetRightPoint !== 0 || rotationOfTargetLeftPoint !== 0) {
       if (!this.TargetBase.RelativeOrderOfBasesIsPreserved(rotationOfTargetRightPoint, rotationOfTargetLeftPoint, parameterChange)) {
         return false
       }
@@ -359,6 +359,6 @@ export class BundleInfo {
   }
 
   LineIsLegal(a: Point, b: Point): boolean {
-    return this.tightObstaclesInTheBoundingBox.find((t) => Curve.intersectionOne(LineSegment.mkPP(a, b), t, false) != null) == undefined
+    return this.tightObstaclesInTheBoundingBox.find((t) => Curve.intersectionOne(LineSegment.mkPP(a, b), t, false) != null) == null
   }
 }

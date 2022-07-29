@@ -29,7 +29,7 @@ export class BasicReflectionEvent extends SweepEvent {
 
   // If true, we have a staircase situation.
   IsStaircaseStep(reflectionTarget: Obstacle): boolean {
-    return this.InitialObstacle == reflectionTarget
+    return this.InitialObstacle === reflectionTarget
   }
 
   private site: Point

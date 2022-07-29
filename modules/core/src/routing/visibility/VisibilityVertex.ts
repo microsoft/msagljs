@@ -72,9 +72,9 @@ export class VisibilityVertex {
   RemoveInEdge(edge: VisibilityEdge) {
     // eslint-disable-next-line for-direction
     const i = this._inEdges.indexOf(edge)
-    if (i == -1) return
+    if (i === -1) return
     const last = this._inEdges.length - 1
-    if (i != last) {
+    if (i !== last) {
       this._inEdges[i] = this._inEdges[last]
     }
     this._inEdges.pop()
@@ -87,12 +87,12 @@ export class VisibilityVertex {
   }
 
   static FindFirst_t(n: RBNode<VisibilityEdge>, tree: RBTree<VisibilityEdge>, targetPoint: Point): RBNode<VisibilityEdge> {
-    if (n == tree.nil) {
+    if (n === tree.nil) {
       return null
     }
 
     let ret = null
-    while (n != tree.nil) {
+    while (n !== tree.nil) {
       n = n.item.TargetPoint.compareTo(targetPoint) >= 0 ? (ret = n).left : n.right
     }
     return ret
@@ -101,14 +101,14 @@ export class VisibilityVertex {
   get(target: VisibilityVertex): VisibilityEdge {
     let node = VisibilityVertex.FindFirst(this.OutEdges, target.point)
     if (node != null) {
-      if (node.item.Target == target) {
+      if (node.item.Target === target) {
         return node.item
       }
     }
 
     node = VisibilityVertex.FindFirst(target.OutEdges, this.point)
     if (node != null) {
-      if (node.item.Target == this) {
+      if (node.item.Target === this) {
         return node.item
       }
     }

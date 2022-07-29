@@ -6,19 +6,19 @@
   item2: T
 
   has(t: T): boolean {
-    return t == this.item0 || t == this.item1 || t == this.item2
+    return t === this.item0 || t === this.item1 || t === this.item2
   }
 
   index(t: T): number {
-    if (t == this.item0) {
+    if (t === this.item0) {
       return 0
     }
 
-    if (t == this.item1) {
+    if (t === this.item1) {
       return 1
     }
 
-    if (t == this.item2) {
+    if (t === this.item2) {
       return 2
     }
 

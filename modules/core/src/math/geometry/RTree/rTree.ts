@@ -29,7 +29,7 @@ function RebuildUnderNodeWithoutLeaf<T, P>(nodeForRebuild: RectangleNode<T, P>, 
   /*Assert.assert(!nodeForRebuild.IsLeaf)*/
   const t = new Array<RectangleNode<T, P>>()
   for (const n of nodeForRebuild.GetAllLeafNodes()) {
-    if (n != leaf) {
+    if (n !== leaf) {
       t.push(n)
     }
   }
@@ -58,7 +58,7 @@ function NumberOfIntersectedIsLessThanBoundOnNode<T, P>(
   /*Assert.assert(t.bound > 0)*/
   if (!node.irect.intersects_rect(rect)) return true
   if (node.IsLeaf) {
-    if (conditionFunc(node.UserData)) return --t.bound != 0
+    if (conditionFunc(node.UserData)) return --t.bound !== 0
     return true
   }
 
@@ -165,11 +165,11 @@ export class RTree<T, P> {
     existingNode.irect = existingNode.Left.irect.add_rect(existingNode.Right.irect)
   }
   public GetAllIntersecting(queryRegion: IRectangle<P>): T[] {
-    return this._rootNode == null || this.Count == 0 ? [] : Array.from(this._rootNode.GetNodeItemsIntersectingRectangle(queryRegion))
+    return this._rootNode == null || this.Count === 0 ? [] : Array.from(this._rootNode.GetNodeItemsIntersectingRectangle(queryRegion))
   }
 
   public OneIntersecting(queryRegion: IRectangle<P>): {intersectedLeaf: T} {
-    if (this._rootNode == null || this.Count == 0) {
+    if (this._rootNode == null || this.Count === 0) {
       return
     }
 
@@ -182,12 +182,12 @@ export class RTree<T, P> {
 
   // Get all leaf nodes with rectangles intersecting the specified rectangular region
   GetAllLeavesIntersectingRectangle(queryRegion: IRectangle<P>): Iterable<RectangleNode<T, P>> {
-    return this._rootNode == null || this.Count == 0 ? [] : this._rootNode.GetLeafRectangleNodesIntersectingRectangle(queryRegion)
+    return this._rootNode == null || this.Count === 0 ? [] : this._rootNode.GetLeafRectangleNodesIntersectingRectangle(queryRegion)
   }
 
   // Does minimal work to determine if any objects of the tree intersect with the query region
   public IsIntersecting(queryRegion: IRectangle<P>): boolean {
-    if (this._rootNode == null || this.Count == 0) return false
+    if (this._rootNode == null || this.Count === 0) return false
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const _ of this._rootNode.GetNodeItemsIntersectingRectangle(queryRegion)) {
       return true
@@ -201,7 +201,7 @@ export class RTree<T, P> {
       return false
     }
     for (const node of this._rootNode.GetLeafRectangleNodesIntersectingRectangle(rectangle)) {
-      if (node.UserData == userData) return true
+      if (node.UserData === userData) return true
     }
     return false
   }
@@ -213,7 +213,7 @@ export class RTree<T, P> {
 
     let ret = undefined
     for (const node of this._rootNode.GetLeafRectangleNodesIntersectingRectangle(rectangle)) {
-      if (node.UserData == userData) {
+      if (node.UserData === userData) {
         ret = node
       }
     }
@@ -221,7 +221,7 @@ export class RTree<T, P> {
       return
     }
 
-    if (this.RootNode.Count == 1) {
+    if (this.RootNode.Count === 1) {
       this.RootNode = null
     } else {
       this.RemoveLeaf(ret)
@@ -240,7 +240,7 @@ export class RTree<T, P> {
       //replace the parent with the sibling and update bounding boxes and counts
       const parent = leaf.Parent
       if (parent == null) {
-        /*Assert.assert(this._rootNode == leaf)*/
+        /*Assert.assert(this._rootNode === leaf)*/
         this._rootNode = new RectangleNode<T, P>()
       } else {
         TransferFromSibling(parent, leaf.IsLeftChild ? parent.Right : parent.Left)

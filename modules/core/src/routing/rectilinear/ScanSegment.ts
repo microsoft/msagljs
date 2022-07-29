@@ -68,11 +68,11 @@ export class ScanSegment extends SegmentBase {
   // For overlaps, we will need to create a VisibilityVertex at the junction of overlapped/nonoverlapped
   // segments, but we don't want to create this for non-overlapped situations.
   get IsOverlapped(): boolean {
-    return ScanSegment.OverlappedWeight == this.Weight
+    return ScanSegment.OverlappedWeight === this.Weight
   }
 
   get IsReflection(): boolean {
-    return ScanSegment.ReflectionWeight == this.Weight
+    return ScanSegment.ReflectionWeight === this.Weight
   }
 
   NeedStartOverlapVertex: boolean
@@ -80,7 +80,7 @@ export class ScanSegment extends SegmentBase {
   NeedEndOverlapVertex: boolean
 
   static IsVerticalSegment(start: Point, end: Point): boolean {
-    return start.x == end.x
+    return start.x === end.x
   }
 
   MergeGroupBoundaryCrossingList(other: PointAndCrossingsList) {
@@ -117,8 +117,8 @@ export class ScanSegment extends SegmentBase {
   AppendVisibilityVertex(vg: VisibilityGraph, newVertex: VisibilityVertex) {
     /*Assert.assert(newVertex != null, 'newVertex must not be null')*/
     /*Assert.assert(
-      (this.LowestVisibilityVertex == null) ==
-        (this.HighestVisibilityVertex == null),
+      (this.LowestVisibilityVertex == null ) ==
+        (this.HighestVisibilityVertex == null ),
       'Mismatched null Lowest/HighestVisibilityVertex',
     )*/
     /*Assert.assert(
@@ -149,7 +149,7 @@ export class ScanSegment extends SegmentBase {
     }
   }
   private AddVisibilityEdge(source: VisibilityVertex, target: VisibilityVertex): VisibilityEdge {
-    /*Assert.assert(source.point != target.point, 'Self-edges are not allowed')*/
+    /*Assert.assert(source.point !== target.point, 'Self-edges are not allowed')*/
     /*Assert.assert(
       PointComparer.IsPureLower(source.point, target.point),
       'Impure or reversed direction encountered',
@@ -159,14 +159,14 @@ export class ScanSegment extends SegmentBase {
       StaticGraphUtility.FindAdjacentVertex(
         source,
         StaticGraphUtility.EdgeDirectionVV(source, target),
-      ) == null,
+      ) == null ,
       'Duplicate outEdge from Source vertex',
     )*/
     /*Assert.assert(
       StaticGraphUtility.FindAdjacentVertex(
         target,
         StaticGraphUtility.EdgeDirectionVV(target, source),
-      ) == null,
+      ) == null ,
       'Duplicate inEdge to Target vertex',
     )*/
     const edge = new VisibilityEdge(source, target, this.Weight)
@@ -252,8 +252,8 @@ export class ScanSegment extends SegmentBase {
     // These may differ by more than Curve.DistanceEpsilon in the case of reflection lookahead
     // segments collinear with vertex-derived segments, so have a looser tolerance here and we'll
     // adjust the segments in ScanSegmentTree.MergeSegments.
-    if (t.seg.Weight != weight) {
-      if (t.seg.Start == newStart && t.seg.End == newEnd) {
+    if (t.seg.Weight !== weight) {
+      if (t.seg.Start === newStart && t.seg.End === newEnd) {
         // This is probably because of a rounding difference by one DistanceEpsilon reporting being
         // inside an obstacle vs. the scanline intersection calculation side-ordering.
         // Test is RectilinearFileTests.Overlap_Rounding_Vertex_Intersects_Side.
@@ -264,8 +264,8 @@ export class ScanSegment extends SegmentBase {
       // In the case of groups, we go through the group boundary; this may coincide with a
       // reflection segment. RectilinearFileTests.ReflectionSubsumedBySegmentExitingGroup.
       /*Assert.assert(
-        (t.seg.Weight == ScanSegment.OverlappedWeight) ==
-          (weight == ScanSegment.OverlappedWeight) ||
+        (t.seg.Weight === ScanSegment.OverlappedWeight) ==
+          (weight === ScanSegment.OverlappedWeight) ||
           Curve.closeIntersectionPoints(t.seg.End, newStart) ||
           Curve.closeIntersectionPoints(t.seg.Start, newEnd),
         'non-equal overlap-mismatched ScanSegments overlap by more than just Start/End',
@@ -276,8 +276,8 @@ export class ScanSegment extends SegmentBase {
     // Subsume the input segment.  Return whether the start/end points were extended (newStart
     // is before this.Start, or newEnd is after this.End), so the caller can generate reflections
     // and so we can merge group border crossings.
-    ot.extendStart = -1 == scanDir.CompareScanCoord(newStart, t.seg.Start)
-    ot.extendEnd = 1 == scanDir.CompareScanCoord(newEnd, t.seg.End)
+    ot.extendStart = -1 === scanDir.CompareScanCoord(newStart, t.seg.Start)
+    ot.extendEnd = 1 === scanDir.CompareScanCoord(newEnd, t.seg.End)
     if (ot.extendStart || ot.extendEnd) {
       // We order by start and end so need to replace this in the tree regardless of which end changes.
       tree.Remove(t.seg)
@@ -290,7 +290,7 @@ export class ScanSegment extends SegmentBase {
   }
 
   IntersectsSegment(seg: ScanSegment): boolean {
-    return StaticGraphUtility.SegmentsIntersection(this, seg) != undefined
+    return StaticGraphUtility.SegmentsIntersection(this, seg) !== undefined
   }
 
   toString(): string {
@@ -302,7 +302,7 @@ export class ScanSegment extends SegmentBase {
     return (
       PointComparer.EqualPP(this.Start, test) ||
       PointComparer.EqualPP(this.End, test) ||
-      PointComparer.GetDirections(this.Start, test) == PointComparer.GetDirections(test, this.End)
+      PointComparer.GetDirections(this.Start, test) === PointComparer.GetDirections(test, this.End)
     )
   }
 

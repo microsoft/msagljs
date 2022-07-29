@@ -57,11 +57,11 @@ export class GTreeOverlapRemoval {
   }
 
   RemoveOverlapsOnTinyGraph() {
-    if (this._nodes.length == 1) {
+    if (this._nodes.length === 1) {
       return
     }
 
-    if (this._nodes.length == 2) {
+    if (this._nodes.length === 2) {
       const a = this._nodes[0]
       const b = this._nodes[1]
       if (Point.closeDistEps(a.center, b.center)) {
@@ -143,15 +143,15 @@ export class GTreeOverlapRemoval {
       }
     }
 
-    if (numCrossings == 0 || scanlinePhase) {
+    if (numCrossings === 0 || scanlinePhase) {
       const additionalCrossings: number = this.FindProximityEdgesWithSweepLine(proximityEdges, nodeSizes, nodePositions)
-      if (numCrossings == 0 && additionalCrossings == 0) {
+      if (numCrossings === 0 && additionalCrossings === 0) {
         //                    if(nodeSizes.Length>100)
         //                    ShowAndMoveBoxesRemoveLater(null, proximityEdges, nodeSizes, nodePositions, -1);
         return false
       }
 
-      if (numCrossings == 0 && !scanlinePhase) {
+      if (numCrossings === 0 && !scanlinePhase) {
         return false
       }
     }

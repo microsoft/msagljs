@@ -28,7 +28,7 @@ export function CrossRectangleNodes<TA, TB, P>(a: RectangleNode<TA, P>, b: Recta
 
 export function CrossRectangleNodesSameType<T, P>(a: RectangleNode<T, P>, b: RectangleNode<T, P>, action: (u: T, v: T) => void) {
   if (!a.irect.intersects_rect(b.irect)) return
-  if (a == b) HandleEquality(a, action)
+  if (a === b) HandleEquality(a, action)
   else if (a.Left == null) {
     if (b.Left == null) {
       action(a.UserData, b.UserData)
@@ -56,7 +56,7 @@ export function FindIntersectionWithProperty<T, P>(
   property: (u: T, v: T) => boolean,
 ): boolean {
   if (!a.irect.intersects_rect(b.irect)) return false
-  if (a == b) return HandleEqualityCheck(a, property)
+  if (a === b) return HandleEqualityCheck(a, property)
 
   if (a.Left == null) {
     if (b.Left == null) return property(a.UserData, b.UserData)

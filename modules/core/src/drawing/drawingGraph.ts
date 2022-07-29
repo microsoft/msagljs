@@ -82,7 +82,7 @@ export class DrawingGraph extends DrawingNode {
   private createEdgeGeometry(e: Edge) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)
     const ge = new GeomEdge(e)
-    if (de.directed == false) {
+    if (de.directed === false) {
       ge.targetArrowhead = null
     }
     if (de.labelText) {

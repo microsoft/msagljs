@@ -47,11 +47,15 @@ export class SingleSourceMultipleTargetsShortestPathOnVisibilityGraph {
   }
 
   private PassableOutEdge(e: VisibilityEdge): boolean {
-    return e.Source == this.source || this.targets.has(e.Target) || !SingleSourceMultipleTargetsShortestPathOnVisibilityGraph.IsForbidden(e)
+    return (
+      e.Source === this.source || this.targets.has(e.Target) || !SingleSourceMultipleTargetsShortestPathOnVisibilityGraph.IsForbidden(e)
+    )
   }
 
   private PassableInEdge(e: VisibilityEdge): boolean {
-    return this.targets.has(e.Source) || e.Target == this.source || !SingleSourceMultipleTargetsShortestPathOnVisibilityGraph.IsForbidden(e)
+    return (
+      this.targets.has(e.Source) || e.Target === this.source || !SingleSourceMultipleTargetsShortestPathOnVisibilityGraph.IsForbidden(e)
+    )
   }
 
   private static IsForbidden(e: VisibilityEdge): boolean {
@@ -70,7 +74,7 @@ export class SingleSourceMultipleTargetsShortestPathOnVisibilityGraph {
       this.closestTarget = v
     }
 
-    if (v != this.source && this._visGraph.PreviosVertex(v) == null) {
+    if (v !== this.source && this._visGraph.PreviosVertex(v) == null) {
       v.Distance = c
       this._visGraph.SetPreviousEdge(v, l)
       pq.Enqueue(v, c)
@@ -97,7 +101,7 @@ export class SingleSourceMultipleTargetsShortestPathOnVisibilityGraph {
     do {
       ret.push(v)
       v = this._visGraph.PreviosVertex(v)
-    } while (v != this.source)
+    } while (v !== this.source)
 
     ret.push(this.source)
     return ret.reverse()

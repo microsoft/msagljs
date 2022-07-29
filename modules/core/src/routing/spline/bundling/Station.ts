@@ -19,8 +19,8 @@ export class Station {
 
   debStop(): boolean {
     return (
-      //(this.SerialNumber == 1 && this.Position.sub(new Point(706.0327200902565, 203.36018761064003)).length < 0.01) ||
-      this.SerialNumber == 28 && this.Position.sub(new Point(841.2662778763244, 303.3817005853006)).length < 0.001
+      //(this.SerialNumber === 1 && this.Position.sub(new Point(706.0327200902565, 203.36018761064003)).length < 0.01) ||
+      this.SerialNumber === 28 && this.Position.sub(new Point(841.2662778763244, 303.3817005853006)).length < 0.001
     )
   }
 
@@ -60,13 +60,13 @@ export class Station {
     return this.EnterableLoosePolylines
   }
   setELP(s: Set<Polyline>) {
-    // if (this.SerialNumber == 32 && s.size > 0) {
+    // if (this.SerialNumber === 32 && s.size > 0) {
     //  console.log(this)
     // }
     this.EnterableLoosePolylines = s
   }
   addEL(p: Polyline) {
-    // if (this.SerialNumber == 32) {
+    // if (this.SerialNumber === 32) {
     //  console.log(this)
     // }
     this.EnterableLoosePolylines.add(p)
@@ -79,7 +79,7 @@ export class Station {
   BoundaryCurve: ICurve
 
   public static less(a: Station, b: Station): boolean {
-    //Assert.assert(a == b || a.SerialNumber != b.SerialNumber)
+    //Assert.assert(a === b || a.SerialNumber !== b.SerialNumber)
     return a.SerialNumber < b.SerialNumber
   }
 

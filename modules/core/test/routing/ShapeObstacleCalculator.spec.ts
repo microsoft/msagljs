@@ -32,7 +32,7 @@ test('calculate with two children', () => {
   const shObstCalc = new ShapeObstacleCalculator(root, 2, 4, new Map<Shape, TightLooseCouple>())
   shObstCalc.Calculate()
   const tightPolylines = Array.from(shObstCalc.tightHierarchy.GetAllLeaves())
-  expect(tightPolylines.length == 2).toBe(true)
+  expect(tightPolylines.length === 2).toBe(true)
 })
 
 test('overlap: two children', () => {
@@ -47,7 +47,7 @@ test('overlap: two children', () => {
   const shObstCalc = new ShapeObstacleCalculator(root, 2, 4, new Map<Shape, TightLooseCouple>())
   shObstCalc.Calculate()
   const tightPolylines = Array.from(shObstCalc.tightHierarchy.GetAllLeaves())
-  expect(tightPolylines.length == 1).toBe(true)
+  expect(tightPolylines.length === 1).toBe(true)
   // const dc = []
   // for (const p of shObstCalc.coupleHierarchy.GetAllLeaves()) {
   //  dc.push(DebugCurve.mkDebugCurveCI('Red', p.TightPolyline))

@@ -29,7 +29,7 @@ export class HorizontalConstraintsForSugiyama {
   nodeIdToIndex: Map<string, number>
 
   get IsEmpty() {
-    return this.leftRightNeighbors.length == 0 && this.upDownVerticalConstraints.length == 0 && this.leftRightConstraints.length == 0
+    return this.leftRightNeighbors.length === 0 && this.upDownVerticalConstraints.length === 0 && this.leftRightConstraints.length === 0
   }
 
   AddSameLayerNeighbors(neighbors: Array<GeomNode>) {
@@ -48,7 +48,7 @@ export class HorizontalConstraintsForSugiyama {
   CreateMappingOfNeibBlocks() {
     const graph = this.BasicGraphFromLeftRightIntNeibs()
     for (let root = 0; root < graph.nodeCount; root++)
-      if (graph.inEdges[root].length == 0 && !this.nodeToBlockRoot.has(root)) {
+      if (graph.inEdges[root].length === 0 && !this.nodeToBlockRoot.has(root)) {
         const block = new Array<number>()
         let current = root
         for (let outEdges = graph.outEdges[current]; outEdges.length > 0; outEdges = graph.outEdges[current]) {
@@ -96,9 +96,9 @@ export class HorizontalConstraintsForSugiyama {
     this.LeftRighInts = IntPairSet.mk(
       this.leftRightConstraints
         .map((p) => mktuple(this.NodeIndex(p[0]), this.NodeIndex(p[1])))
-        .filter((p) => p[0] != -1 && p[1] != -1)
+        .filter((p) => p[0] !== -1 && p[1] !== -1)
         .map((ip) => new IntPair(this.NodeToBlockRootSoft(ip[0]), this.NodeToBlockRootSoft(ip[1])))
-        .filter((ip) => ip.x != ip.x),
+        .filter((ip) => ip.x !== ip.x),
     )
     const feedbackSet = CycleRemoval.getFeedbackSet(mkGraphOnEdges(Array.from(this.LeftRighInts.values())))
     for (const ip of feedbackSet) this.LeftRighInts.remove(new IntPair(ip.source, ip.target))
@@ -108,7 +108,7 @@ export class HorizontalConstraintsForSugiyama {
     this.LeftRightIntNeibs = IntPairSet.mk(
       Array.from(this.leftRightNeighbors.values())
         .map((p) => [this.NodeIndex(p[0]), this.NodeIndex(p[1])])
-        .filter((t) => t[0] != -1 && t[1] != -1)
+        .filter((t) => t[0] !== -1 && t[1] !== -1)
         .map((t) => new IntPair(t[0], t[1])),
     )
 
@@ -116,7 +116,7 @@ export class HorizontalConstraintsForSugiyama {
     this.VerticalInts = IntPairSet.mk(
       this.upDownVerticalConstraints
         .map((p) => [this.NodeIndex(p[0]), this.NodeIndex(p[1])])
-        .filter((p) => p[0] != -1 && p[1] != -1 && yLayers[p[0]] > yLayers[p[1]])
+        .filter((p) => p[0] !== -1 && p[1] !== -1 && yLayers[p[0]] > yLayers[p[1]])
         .map((p) => new IntPair(p[0], p[1])),
     )
   }

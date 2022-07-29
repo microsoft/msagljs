@@ -15,7 +15,7 @@ test('pivot distances', () => {
   const pivotDistances = new PivotDistances(gg, pivotArray, () => 1)
   pivotDistances.run()
   expect(pivotArray[0]).toBe(0)
-  expect(pivotArray[1] != pivotArray[0]).toBe(true)
+  expect(pivotArray[1] !== pivotArray[0]).toBe(true)
   expect(pivotDistances.Result.length).toBe(7)
   const min = new Array(gg.graph.shallowNodeCount).fill(Number.POSITIVE_INFINITY)
   for (let i = 0; i < pivotArray.length - 1; i++) {

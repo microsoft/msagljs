@@ -53,7 +53,7 @@ export class PathFixer {
   }
 
   run(): boolean {
-    if (this.metroGraphData.Edges.length == 0) {
+    if (this.metroGraphData.Edges.length === 0) {
       return false
     }
 
@@ -124,7 +124,7 @@ export class PathFixer {
 
   InsertPointsOnPolypoint(pp: PolylinePoint, splittingPoints: PointPairMap<Array<Point>>, metroline: Metroline): boolean {
     const pointPair = new PointPair(pp.point, pp.next.point)
-    const reversed = pp.point != pointPair.First
+    const reversed = pp.point !== pointPair.First
     const list: Array<Point> = splittingPoints.get(pointPair)
     if (!list) {
       return false
@@ -174,7 +174,7 @@ export class PathFixer {
       const previous: PolylinePoint = pointsToPp.get(point)
       if (previous) {
         // we have a cycle
-        for (let px = previous.next; px != pp.next; px = px.next) {
+        for (let px = previous.next; px !== pp.next; px = px.next) {
           pointsToPp.deleteP(px.point)
         }
 
@@ -221,7 +221,7 @@ export class PathFixer {
     for (let p = polyline.startPoint.next; p != null && p.next != null; p = p.next) {
       if (
         this.pointsToDelete.has(p.point) &&
-        Point.getTriangleOrientation(p.prev.point, p.point, p.next.point) == TriangleOrientation.Collinear
+        Point.getTriangleOrientation(p.prev.point, p.point, p.next.point) === TriangleOrientation.Collinear
       ) {
         // forget p
         const pp = p.prev

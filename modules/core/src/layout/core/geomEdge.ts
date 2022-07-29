@@ -42,7 +42,7 @@ export class GeomEdge extends GeomObject {
   lineWidth = 1
 
   translate(delta: Point) {
-    if (delta.x == 0 && delta.y == 0) return
+    if (delta.x === 0 && delta.y === 0) return
     // RaiseLayoutChangeEvent(delta);
     if (this.curve != null) this.curve.translate(delta)
 

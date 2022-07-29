@@ -87,11 +87,11 @@ export class LayeredLayout extends Algorithm {
 
     const intEdges: PolyIntEdge[] = []
     for (const edge of this.originalGraph.edges()) {
-      /*Assert.assert(!(edge.source == null || edge.target == null))*/
+      /*Assert.assert(!(edge.source == null  || edge.target == null ))*/
       const source = this.nodeIdToIndex.get(edge.source.id)
-      if (source == undefined) continue
+      if (source == null) continue
       const target = this.nodeIdToIndex.get(edge.target.id)
-      if (target == undefined) continue
+      if (target == null) continue
       const intEdge = new PolyIntEdge(source, target, edge)
       intEdges.push(intEdge)
     }
@@ -105,13 +105,13 @@ export class LayeredLayout extends Algorithm {
   }
 
   run() {
-    if (this.originalGraph.shallowNodeCount == 0) {
+    if (this.originalGraph.shallowNodeCount === 0) {
       this.originalGraph.boundingBox = Rectangle.mkEmpty()
       return
     }
     preRunTransform(this.originalGraph, this.sugiyamaSettings.transform)
     this.engineLayerArrays = this.calculateLayers()
-    if (this.sugiyamaSettings.edgeRoutingSettings.EdgeRoutingMode == EdgeRoutingMode.SugiyamaSplines) {
+    if (this.sugiyamaSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines) {
       this.runPostLayering()
     }
     postRunTransform(this.originalGraph, this.sugiyamaSettings.transform)
@@ -121,7 +121,7 @@ export class LayeredLayout extends Algorithm {
     const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
-    if (mode == EdgeRoutingMode.SugiyamaSplines) {
+    if (mode === EdgeRoutingMode.SugiyamaSplines) {
       this.calculateEdgeSplines()
     } else {
       routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges), this.cancelToken)
@@ -193,7 +193,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   TryToSatisfyMinWidth() {
-    if (this.sugiyamaSettings.MinimalWidth == 0) {
+    if (this.sugiyamaSettings.MinimalWidth === 0) {
       return
     }
 
@@ -227,7 +227,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   TryToSatisfyMinHeight() {
-    if (this.sugiyamaSettings.MinimalHeight == 0) {
+    if (this.sugiyamaSettings.MinimalHeight === 0) {
       return
     }
 
@@ -364,7 +364,7 @@ export class LayeredLayout extends Algorithm {
 
         layerEdge = new LayerEdge(d0, e.target, e.CrossingWeight, e.weight)
         e.LayerEdges[pe] = layerEdge
-      } else if (span == 1) {
+      } else if (span === 1) {
         const layerEdge = new LayerEdge(e.source, e.target, e.CrossingWeight, e.weight)
         e.LayerEdges[pe] = layerEdge
       }
@@ -442,7 +442,7 @@ export class LayeredLayout extends Algorithm {
     // If there are an even number of multi-edges between two nodes then
     // add a virtual edge in the multi-edge dict to improve the placement, but only in case when the edge goes down only one layer.
     for (const [k, v] of this.database.Multiedges.keyValues())
-      if (v.length % 2 == 0 && layerArrays.y[k.x] - 1 == layerArrays.y[k.y]) {
+      if (v.length % 2 === 0 && layerArrays.y[k.x] - 1 === layerArrays.y[k.y]) {
         const e = new GeomEdge(null)
         const newVirtualEdge = new PolyIntEdge(k.x, k.y, e)
         newVirtualEdge.IsVirtualEdge = true
@@ -458,18 +458,18 @@ export class LayeredLayout extends Algorithm {
     let needToInsertLayers = false
     let multipleEdges = false
     for (const ie of this.IntGraph.edges)
-      if (ie.hasLabel && layerArrays.y[ie.source] != layerArrays.y[ie.target]) {
+      if (ie.hasLabel && layerArrays.y[ie.source] !== layerArrays.y[ie.target]) {
         //if an edge is a flat edge then
         needToInsertLayers = true
         break
       }
 
-    if (needToInsertLayers == false && this.constrainedOrdering == null)
+    if (needToInsertLayers === false && this.constrainedOrdering == null)
       //if we have constrains the multiple edges have been already represented in layers
       for (const [k, v] of this.database.Multiedges.keyValues())
         if (v.length > 1) {
           multipleEdges = true
-          if (layerArrays.y[k.x] - layerArrays.y[k.y] == 1) {
+          if (layerArrays.y[k.x] - layerArrays.y[k.y] === 1) {
             //there is a multi edge spanning exactly one layer; unfortunately we need to introduce virtual vertices for
             //the edges middle points
             needToInsertLayers = true
@@ -600,7 +600,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   CalculateOriginalGraphBox() {
-    if (this.anchors.length == 0) return
+    if (this.anchors.length === 0) return
     const box = new Rectangle({
       left: this.anchors[0].left,
       top: this.anchors[0].top,
@@ -630,11 +630,11 @@ export class LayeredLayout extends Algorithm {
   StraightenEdgePaths() {
     let ret = false
     for (const e of this.database.AllIntEdges())
-      if (e.LayerSpan == 2)
+      if (e.LayerSpan === 2)
         ret = this.ShiftVertexWithNeighbors(e.LayerEdges[0].Source, e.LayerEdges[0].Target, e.LayerEdges[1].Target) || ret
     return ret
     //foreach (LayerEdge[][] edgeStrings of this.dataBase.RefinedEdges.Values)
-    //   if (edgeStrings[0].length == 2)
+    //   if (edgeStrings[0].length === 2)
     //       foreach (LayerEdge[] edgePath of edgeStrings)
     //           ret = ShiftVertexWithNeighbors(edgePath[0].Source, edgePath[0].Target, edgePath[1].Target) || ret;
     //return ret;
@@ -768,7 +768,7 @@ export class LayeredLayout extends Algorithm {
     for (const [k, v] of this.database.Multiedges.keyValues()) {
       if (k.isDiagonal()) continue
       const e = this.verticalConstraints.gluedIntEdge(v[0])
-      if (e.source != e.target) ret.set(e.source, e.target, e)
+      if (e.source !== e.target) ret.set(e.source, e.target, e)
     }
 
     const gluedUpDownConstraints = Array.from(this.verticalConstraints.gluedUpDownIntConstraints.values()).map((p) =>
@@ -834,9 +834,9 @@ export class LayeredLayout extends Algorithm {
     for (const ie of this.gluedDagSkeletonForLayering.edges) gluedPairsToGluedEdge.set(ie.source, ie.target, ie)
 
     for (const [k, v] of this.database.Multiedges.keyValues())
-      if (k.x != k.y) {
+      if (k.x !== k.y) {
         const gluedPair = this.verticalConstraints.gluedIntPair(k)
-        if (gluedPair.x == gluedPair.y) continue
+        if (gluedPair.x === gluedPair.y) continue
         const gluedIntEdge = gluedPairsToGluedEdge.get(gluedPair.x, gluedPair.y)
         for (const ie of v) gluedIntEdge.weight += ie.weight
       }
@@ -851,7 +851,7 @@ export class LayeredLayout extends Algorithm {
 }
 
 function SnapDeltaUp(y: number, gridSize: number) {
-  if (gridSize == 0) return 0
+  if (gridSize === 0) return 0
   // how much to snap?
   const k = Math.floor(y / gridSize)
   const delta = y - k * gridSize
@@ -888,7 +888,7 @@ function CalculateAnchorSizes(
     if (intEdge.LayerEdges != null) {
       for (const layerEdge of intEdge.LayerEdges) {
         const v = layerEdge.Target
-        if (v != intEdge.target) {
+        if (v !== intEdge.target) {
           const anchor = anchors[v]
           if (!database.MultipleMiddles.has(v)) {
             anchor.leftAnchor = anchor.rightAnchor = VirtualNodeWidth() / 2.0
@@ -1023,22 +1023,22 @@ function MakeVirtualNodesTall(
 }
 
 function NeedToSnapTopsToGrid(settings: SugiyamaLayoutSettings) {
-  return settings.SnapToGridByY == SnapToGridByY.Top
+  return settings.SnapToGridByY === SnapToGridByY.Top
 }
 
 function NeedToSnapBottomsToGrid(settings: SugiyamaLayoutSettings) {
-  return settings.SnapToGridByY == SnapToGridByY.Bottom
+  return settings.SnapToGridByY === SnapToGridByY.Bottom
 }
 
 function TryToPutLabelOutsideOfAngle(a: Anchor, predecessor: Anchor, successor: Anchor): boolean {
   if (a.labelIsToTheRightOfTheSpline) {
-    if (Point.getTriangleOrientation(predecessor.origin, a.origin, successor.origin) == TriangleOrientation.Clockwise) return true
+    if (Point.getTriangleOrientation(predecessor.origin, a.origin, successor.origin) === TriangleOrientation.Clockwise) return true
 
     const la = a.leftAnchor
     const ra = a.rightAnchor
     const x = a.x
     PutLabelToTheLeft(a)
-    if (Point.getTriangleOrientation(predecessor.origin, a.origin, successor.origin) == TriangleOrientation.Counterclockwise) return true
+    if (Point.getTriangleOrientation(predecessor.origin, a.origin, successor.origin) === TriangleOrientation.Counterclockwise) return true
     a.x = x
     a.leftAnchor = la
     a.rightAnchor = ra
@@ -1064,7 +1064,7 @@ function GetFlatPairs(layer: number[], layering: number[], intGraph: BasicGraphO
   const pairs = new IntPairSet()
   for (const v of layer) {
     if (v >= intGraph.nodeCount) continue
-    for (const edge of intGraph.outEdges[v]) if (layering[edge.source] == layering[edge.target]) pairs.addNN(edge.source, edge.target)
+    for (const edge of intGraph.outEdges[v]) if (layering[edge.source] === layering[edge.target]) pairs.addNN(edge.source, edge.target)
   }
 
   return Array.from(pairs.values())

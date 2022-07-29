@@ -30,7 +30,7 @@ export class ScanSegmentVectorItem {
   // Restores state between intersection passes.
 
   ResetForIntersections() {
-    /*Assert.assert(null != this.FirstSegment, 'Empty ScanSegmentVectorItem')*/
+    /*Assert.assert(null !=  this.FirstSegment, 'Empty ScanSegmentVectorItem')*/
     this.CurrentSegment = this.FirstSegment
   }
 
@@ -64,7 +64,7 @@ export class ScanSegmentVectorItem {
     const pointCoord = this.IsHorizontal ? point.y : point.x
     if (!PointComparer.Equal(this.Coord, pointCoord)) {
       /*Assert.assert(
-        PointComparer.Compare(this.Coord, pointCoord) == -1,
+        PointComparer.Compare(this.Coord, pointCoord) === -1,
         'point is before current Coord',
       )*/
       while (this.MoveNext()) {
@@ -143,14 +143,14 @@ export class ScanSegmentVectorItem {
       return '-0- ' + this.Coord
     }
 
-    return this.IsHorizontal ? '(H) Y == ' + this.Coord : '(V) X == '
+    return this.IsHorizontal ? '(H) Y === ' + this.Coord : '(V) X === '
   }
 
   AppendScanSegment(segment: ScanSegment) {
     if (this.FirstSegment == null) {
       this.FirstSegment = segment
     } else {
-      // Note: segment.Start may != Current.End due to skipping internal ScanSegment creation for non-overlapped obstacles.
+      // Note: segment.Start may !== Current.End due to skipping internal ScanSegment creation for non-overlapped obstacles.
       this.CurrentSegment.NextSegment = segment
     }
 

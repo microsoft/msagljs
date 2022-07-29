@@ -133,7 +133,7 @@ export class XCoordsWithAlignment {
 
       predecessors.sort((a, b) => this.CompareByX(a, b))
       const m: number = Math.floor(count / 2)
-      if (m * 2 == count) {
+      if (m * 2 === count) {
         this.upperMedians[i] = new IntPair(predecessors[m - 1], predecessors[m])
       } else {
         this.upperMedians[i] = predecessors[m]
@@ -161,7 +161,7 @@ export class XCoordsWithAlignment {
 
       successors.sort((a, b) => this.CompareByX(a, b))
       const m: number = Math.floor(count / 2)
-      if (m * 2 == count) {
+      if (m * 2 === count) {
         this.lowMedians[i] = new IntPair(successors[m - 1], successors[m])
       } else {
         this.lowMedians[i] = successors[m]
@@ -197,7 +197,7 @@ export class XCoordsWithAlignment {
       }
 
       this.x = this.xCoords[i]
-      if (delta != 0) {
+      if (delta !== 0) {
         for (let j = 0; j < this.nOfVertices; j++) {
           this.x[j] = this.x[j] + delta
         }
@@ -218,11 +218,11 @@ export class XCoordsWithAlignment {
   }
 
   static IsLeftMostAssignment(i: number): boolean {
-    return i == 0 || i == 2
+    return i === 0 || i === 2
   }
 
   AssignmentBounds(i: number, t: {a: number; b: number}) {
-    if (this.nOfVertices == 0) {
+    if (this.nOfVertices === 0) {
       t.a = 0
       t.b = 0
     } else {
@@ -474,7 +474,7 @@ export class XCoordsWithAlignment {
 
   private AlignmentToTheRightOfInner(lowLayer: number[], i: number, posInnerSource: number): LayerEdge {
     const numOfInEdges: number = this.NumberOfInEdges(lowLayer[i])
-    if (numOfInEdges == 1) {
+    if (numOfInEdges === 1) {
       let ie: LayerEdge = null
       for (const e of this.InEdges(lowLayer[i])) {
         ie = e
@@ -546,14 +546,14 @@ export class XCoordsWithAlignment {
     // create the graph first
     const edges = new Array<PolyIntEdge>()
     for (let v = 0; v < this.nOfVertices; v++) {
-      if (v == this.root[v]) {
+      if (v === this.root[v]) {
         //v is a root
         let w = v //w will be running over the block
         do {
           const rn = {neighbor: 0}
           if (this.TryToGetRightNeighbor(w, rn)) edges.push(new PolyIntEdge(v, this.root[rn.neighbor], null))
           w = this.align[w]
-        } while (w != v)
+        } while (w !== v)
       }
     }
 
@@ -562,7 +562,7 @@ export class XCoordsWithAlignment {
     const topoSort: number[] = TopologicalSort.getOrderOnGraph(blockGraph)
     // start placing the blocks according to the order
     for (const v of topoSort) {
-      if (v == this.root[v]) {
+      if (v === this.root[v]) {
         let vx = 0
         let vIsLeftMost = true
         let w: number = v
@@ -578,15 +578,15 @@ export class XCoordsWithAlignment {
             }
           }
           w = this.align[w]
-        } while (w != v)
+        } while (w !== v)
         this.x[v] = vx
       }
     }
 
     // push the roots of the graph maximally to the right
     for (const v of topoSort) {
-      if (v == this.root[v]) {
-        if (blockGraph.inEdges[v].length == 0) {
+      if (v === this.root[v]) {
+        if (blockGraph.inEdges[v].length === 0) {
           let w: number = v
           // w runs over the block
           let xLeftMost: number = this.RightMost(-XCoordsWithAlignment.infinity, XCoordsWithAlignment.infinity)
@@ -598,8 +598,8 @@ export class XCoordsWithAlignment {
             }
 
             w = this.align[w]
-          } while (w != v)
-          if (xl != xLeftMost) {
+          } while (w !== v)
+          if (xl !== xLeftMost) {
             this.x[v] = xLeftMost
           }
         }
@@ -607,7 +607,7 @@ export class XCoordsWithAlignment {
     }
 
     for (let v = 0; v < this.nOfVertices; v++) {
-      if (v != this.root[v]) {
+      if (v !== this.root[v]) {
         this.x[v] = this.x[this.root[v]]
       }
     }

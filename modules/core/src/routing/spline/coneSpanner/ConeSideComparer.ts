@@ -45,11 +45,11 @@ export class ConeSideComparer {
 
   CompareObstacleSideAndConeSide(coneSide: ConeSide): number {
     const orientation = Point.getTriangleOrientation(this.x, coneSide.Start, coneSide.Start.add(coneSide.Direction))
-    if (orientation == TriangleOrientation.Counterclockwise) {
+    if (orientation === TriangleOrientation.Counterclockwise) {
       return -1
     }
 
-    if (orientation == TriangleOrientation.Clockwise) {
+    if (orientation === TriangleOrientation.Clockwise) {
       return 1
     }
 
@@ -59,11 +59,11 @@ export class ConeSideComparer {
 
   CompareConeSideAndObstacleSide(coneSide: ConeSide, brokenConeSide: BrokenConeSide): number {
     const orientation = Point.getTriangleOrientation(this.x, brokenConeSide.start, brokenConeSide.End)
-    if (orientation == TriangleOrientation.Counterclockwise) {
+    if (orientation === TriangleOrientation.Counterclockwise) {
       return -1
     }
 
-    if (orientation == TriangleOrientation.Clockwise) {
+    if (orientation === TriangleOrientation.Clockwise) {
       return 1
     }
 
@@ -80,11 +80,11 @@ export class ConeSideComparer {
   }
 
   CompareBrokenSides(aObst: BrokenConeSide, bObst: BrokenConeSide): number {
-    if (aObst.EndVertex == bObst.EndVertex) {
+    if (aObst.EndVertex === bObst.EndVertex) {
       return ConeSideComparer.CompareNotIntersectingSegs(aObst.ConeSide, bObst.ConeSide)
     }
 
-    if (Point.getTriangleOrientation(this.x, bObst.start, bObst.EndVertex.point) == TriangleOrientation.Counterclockwise) {
+    if (Point.getTriangleOrientation(this.x, bObst.start, bObst.EndVertex.point) === TriangleOrientation.Counterclockwise) {
       return -1
     }
 

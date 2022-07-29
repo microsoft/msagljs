@@ -220,7 +220,7 @@ function addEdge(nodes: GeomNode[], takenPairs: IntPairSet, edges: GeomEdge[]): 
   do {
     j = randomInt(nodes.length)
     if (takenPairs.hasxy(i, j)) continue
-  } while (i == j)
+  } while (i === j)
   takenPairs.addNN(i, j)
   const e = new GeomEdge(new Edge(nodes[i].node, nodes[j].node))
   edges.push(e)
@@ -247,7 +247,7 @@ export function generateRandomGraphOnQueue(q: Queue<Graph>, nodeCount: number, c
     Assert.assert(graph.isEmpty())
     let nodesToAdd = randomInt(nodeCount)
     nodeCount -= nodesToAdd
-    let graphsToAdd = nodesToAdd == 0 ? 0 : randomInt(nodesToAdd)
+    let graphsToAdd = nodesToAdd === 0 ? 0 : randomInt(nodesToAdd)
 
     nodesToAdd -= graphsToAdd
     while (nodesToAdd-- > 0) {
@@ -270,11 +270,11 @@ export function generateRandomGraphOnQueue(q: Queue<Graph>, nodeCount: number, c
 
 function generateEdges(g: Graph, edgeCount: number) {
   const nodes = Array.from(g.deepNodes)
-  if (nodes.length == 0) return
+  if (nodes.length === 0) return
   while (edgeCount-- > 0) {
     const i = randomInt(nodes.length)
     let j = randomInt(nodes.length)
-    if (j == i) {
+    if (j === i) {
       j = (j + 1) % nodes.length
     }
     new Edge(nodes[i], nodes[j])

@@ -98,7 +98,7 @@ export class SvgDebugWriter {
   }
 
   private static isFullEllipse(ell: Ellipse): boolean {
-    return ell.parEnd == Math.PI * 2 && ell.parStart == 0
+    return ell.parEnd === Math.PI * 2 && ell.parStart === 0
   }
 
   private static ellipseToString(ellipse: Ellipse): string {
@@ -283,7 +283,7 @@ export class SvgDebugWriter {
   }
   private myEscape(text: string): string {
     const chars = Array.from(text)
-    const ret = chars.map((a) => (a == '<' ? '&lt;' : a == '>' ? '&gt;' : a))
+    const ret = chars.map((a) => (a === '<' ? '&lt;' : a === '>' ? '&gt;' : a))
     return ret.join('')
   }
   private writeLabel(node: Node, label: Rectangle) {

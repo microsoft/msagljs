@@ -32,7 +32,7 @@ function* Neighbors<TEdge extends IEdge>(graph: BasicGraphOnEdges<TEdge>, s: num
 }
 
 function Enqueue(i: number, q: Queue<number>, enqueueed: boolean[]) {
-  if (enqueueed[i] == false) {
+  if (enqueueed[i] === false) {
     q.enqueue(i)
     enqueueed[i] = true
   }

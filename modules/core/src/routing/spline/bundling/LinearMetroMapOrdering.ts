@@ -104,8 +104,8 @@
 //            }
 
 //            internal static MetroEdge CreateFromTwoEdges(int v, MetroEdge e1, MetroEdge e2) {
-//                int s = e1.Source() == v ? e1.Target() : e1.Source();
-//                int t = e2.Source() == v ? e2.Target() : e2.Source();
+//                int s = e1.Source() === v ? e1.Target() : e1.Source();
+//                int t = e2.Source() === v ? e2.Target() : e2.Source();
 
 //                if (s < t)
 //                    return CreateFromTwoEdges(v, e1.nodes, e2.nodes);
@@ -115,7 +115,7 @@
 
 //            internal static MetroEdge CreateFromTwoEdges(int v, Array<int> e1, Array < int > e2) {
 //            Array < int > nodes = new Array<int>(e1.Count + e2.Count - 1);
-//            if (e1[0] != v) {
+//            if (e1[0] !== v) {
 //                for (int i = 0; i < e1.Count; i++)
 //                nodes.Add(e1[i]);
 //            }
@@ -124,7 +124,7 @@
 //                nodes.Add(e1[i]);
 //            }
 
-//            if (e2[0] == v) {
+//            if (e2[0] === v) {
 //                for (int i = 1; i < e2.Count; i++)
 //                nodes.Add(e2[i]);
 //            }
@@ -189,19 +189,19 @@
 //            public override bool Equals(object obj) {
 //            if (!(obj is MetroEdge))
 //            return false;
-//            return (MetroEdge)obj == this;
+//            return (MetroEdge)obj === this;
 
 //        }
 
-//            public static bool operator == (MetroEdge pair0, MetroEdge pair1) {
-//            if (pair0.GetHashCode() != pair1.GetHashCode()) return false;
+//            public static bool operator === (MetroEdge pair0, MetroEdge pair1) {
+//            if (pair0.GetHashCode() !== pair1.GetHashCode()) return false;
 //            return true;
 //            //TODO: are conflicts possible?
 //            //return pair0.nodes.SequenceEqual(pair1.nodes);
 //        }
 
-//            public static bool operator != (MetroEdge pair0, MetroEdge pair1) {
-//            return !(pair0 == pair1);
+//            public static bool operator !== (MetroEdge pair0, MetroEdge pair1) {
+//            return !(pair0 === pair1);
 //        }
 
 //    }
@@ -339,13 +339,13 @@
 // void UpdateAdjacencyData(int a, MetroEdge oldEdge, Array < PathList > newSubList) {
 //    //find a (cached) position of oldEdge in order
 //    LinkedListNode < MetroEdge > node = adjacencyIndex[new Tuple<int, MetroEdge>(a, oldEdge)];
-//    Assert.assert(node.Value == oldEdge);
+//    Assert.assert(node.Value === oldEdge);
 
 //    LinkedListNode < MetroEdge > inode = node;
 //    foreach(PathList pl of newSubList) {
 //        MetroEdge newEdge = pl.edge;
 
-//        if (oldEdge.Source() == a)
+//        if (oldEdge.Source() === a)
 //            node = node.Array.AddAfter(node, newEdge);
 //        else
 //            node = node.Array.AddBefore(node, newEdge);
@@ -363,14 +363,14 @@
 //    Array < int > res = new Array<int>();
 
 //    PathList pl = e2p[edge];
-//    if (pl.subLists == null) {
+//    if (pl.subLists == null ) {
 //        foreach(PathOnEdge path of pl.paths)
 //        res.Add(path.index);
 //    }
 //    else {
 //        foreach(PathList subList of pl.subLists) {
 //            Array < int > subResult = RestoreResult(subList.edge);
-//            if (!(edge.Source() == subList.edge.Source() || edge.Target() == subList.edge.Target()))
+//            if (!(edge.Source() === subList.edge.Source() || edge.Target() === subList.edge.Target()))
 //                subResult.Reverse();
 //            res.AddRange(subResult);
 //        }
@@ -465,7 +465,7 @@
 
 //            curPathSet.Add(paths[i]);
 
-//            if (j == paths.Count - 1 || nowEdge != nextEdge) {
+//            if (j === paths.Count - 1 || nowEdge !== nextEdge) {
 //                //process
 //                MetroEdge newEdge = MetroEdge.CreateFromTwoEdges(v, oldEdge, nowEdge);
 //                PathList pl = new PathList();
@@ -478,7 +478,7 @@
 //            }
 //        }
 
-//        if (oldEdge.Source() == v) subLists.Reverse();
+//        if (oldEdge.Source() === v) subLists.Reverse();
 //        res.Add(oldEdge, subLists);
 //    }
 
@@ -490,12 +490,12 @@
 // MetroEdge FindNextEdgeOnPath(int v, PathOnEdge pathOnEdge) {
 //    if (pathOnEdge.node.next != null) {
 //        int o = OppositeNode(pathOnEdge.node.next.Value, v);
-//        if (o != -1) return pathOnEdge.node.next.Value;
+//        if (o !== -1) return pathOnEdge.node.next.Value;
 //    }
 
 //    if (pathOnEdge.node.Previous != null) {
 //        int o = OppositeNode(pathOnEdge.node.Previous.Value, v);
-//        if (o != -1) return pathOnEdge.node.Previous.Value;
+//        if (o !== -1) return pathOnEdge.node.Previous.Value;
 //    }
 
 //    throw new NotSupportedException();
@@ -504,8 +504,8 @@
 // // return an opposite vertex of a given edge
 // // <
 // int OppositeNode(MetroEdge edge, int v) {
-//    if (edge.Source() == v) return edge.Target();
-//    if (edge.Target() == v) return edge.Source();
+//    if (edge.Source() === v) return edge.Target();
+//    if (edge.Target() === v) return edge.Source();
 
 //    return -1;
 // }
@@ -514,22 +514,22 @@
 // // <
 // void UpdatePath(PathOnEdge pathOnEdge, int v, MetroEdge newEdge) {
 //    LinkedListNode < MetroEdge > f = pathOnEdge.node;
-//    Assert.assert(f.Value.Source() == v || f.Value.Target() == v);
+//    Assert.assert(f.Value.Source() === v || f.Value.Target() === v);
 
 //    int a, b;
 
 //    a = OppositeNode(f.Value, v);
 
-//    if (f.next != null && (b = OppositeNode(f.next.Value, v)) != -1) {
-//        Assert.assert((a == newEdge.Source() || a == newEdge.Target()));
-//        Assert.assert((b == newEdge.Source() || b == newEdge.Target()));
+//    if (f.next != null && (b = OppositeNode(f.next.Value, v)) !== -1) {
+//        Assert.assert((a === newEdge.Source() || a === newEdge.Target()));
+//        Assert.assert((b === newEdge.Source() || b === newEdge.Target()));
 
 //        f.Value = newEdge;
 //        f.Array.Remove(f.next);
 //    }
-//    else if (f.Previous != null && (b = OppositeNode(f.Previous.Value, v)) != -1) {
-//        Assert.assert((a == newEdge.Source() || a == newEdge.Target()));
-//        Assert.assert((b == newEdge.Source() || b == newEdge.Target()));
+//    else if (f.Previous != null && (b = OppositeNode(f.Previous.Value, v)) !== -1) {
+//        Assert.assert((a === newEdge.Source() || a === newEdge.Target()));
+//        Assert.assert((b === newEdge.Source() || b === newEdge.Target()));
 
 //        f.Value = newEdge;
 //        f.Array.Remove(f.Previous);

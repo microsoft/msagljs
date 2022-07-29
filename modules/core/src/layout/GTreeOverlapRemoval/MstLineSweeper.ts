@@ -21,7 +21,7 @@ export class MstLineSweeper {
     this._nodeSizes = nodeSizes
     this._nodePositions = nodePositions
     this._forLayers = forLayers
-    /*Assert.assert(nodePositions.length == nodeSizes.length)*/
+    /*Assert.assert(nodePositions.length === nodeSizes.length)*/
     this._q = new BinaryHeapPriorityQueue(nodeSizes.length * 2)
   }
 

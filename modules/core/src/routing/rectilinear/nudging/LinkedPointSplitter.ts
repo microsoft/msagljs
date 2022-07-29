@@ -22,7 +22,7 @@ export class LinkedPointSplitter {
 
   VerticalPoints: Array<LinkedPoint>
   SplitPoints() {
-    if (this.VerticalPoints.length == 0 || this.HorizontalPoints.length == 0) {
+    if (this.VerticalPoints.length === 0 || this.HorizontalPoints.length === 0) {
       return
     }
 
@@ -41,7 +41,7 @@ export class LinkedPointSplitter {
 
   ProcessEvent(linkedPoint: LinkedPoint, z: number) {
     if (closeDistEps(linkedPoint.Next.Point.x, linkedPoint.Point.x)) {
-      if (z == LinkedPointSplitter.Low(linkedPoint)) {
+      if (z === LinkedPointSplitter.Low(linkedPoint)) {
         this.ProcessLowLinkedPointEvent(linkedPoint)
       } else {
         this.ProcessHighLinkedPointEvent(linkedPoint)

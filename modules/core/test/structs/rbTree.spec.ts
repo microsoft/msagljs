@@ -26,10 +26,10 @@ export class RbTreeUtils {
     } else {
       const leftHeight: number = this.computeBlackHeight(root.left)
       const rightHeight: number = this.computeBlackHeight(root.right)
-      if (leftHeight == -1 || rightHeight == -1 || rightHeight != leftHeight) {
+      if (leftHeight === -1 || rightHeight === -1 || rightHeight !== leftHeight) {
         return -1
       }
-      return (root.color == RBColor.Black ? 1 : 0) + leftHeight
+      return (root.color === RBColor.Black ? 1 : 0) + leftHeight
     }
   }
 }
@@ -65,7 +65,7 @@ test('check black height(s) are equal', () => {
   const tree: RBTree<number> = RbTreeUtils.buildTreeWithNums(vals, comparer)
   const blackHeight = RbTreeUtils.computeBlackHeight(tree.getRoot())
   // console.log(blackHeight)
-  expect(blackHeight != -1).toBe(true)
+  expect(blackHeight !== -1).toBe(true)
   //   'difference in black height of left and right branch of a subtree',
 })
 
@@ -78,7 +78,7 @@ test('check removal', () => {
   tree.remove(10)
   let i = 1
   for (const node of tree) {
-    if (i == 10) expect(node).toBe(11) // 'node w/ value 10 not removed')
+    if (i === 10) expect(node).toBe(11) // 'node w/ value 10 not removed')
     i++
   }
 })

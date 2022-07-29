@@ -31,7 +31,7 @@ export class CdtThreader {
     this.currentTriangle = startTriangle
     this.start = start
     this.end = end
-    //Assert.assert(CdtThreader.PointLocationForTriangle(start, startTriangle) != PointLocation.Outside)
+    //Assert.assert(CdtThreader.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
   }
 
   *Triangles(): IterableIterator<CdtTriangle> {
@@ -39,11 +39,11 @@ export class CdtThreader {
   }
 
   FindFirstPiercedEdge(): CdtEdge {
-    //Assert.assert(CdtThreader.PointLocationForTriangle(this.start, this.currentTriangle) != PointLocation.Outside)
-    //Assert.assert(CdtThreader.PointLocationForTriangle(this.end, this.currentTriangle) == PointLocation.Outside)
+    //Assert.assert(CdtThreader.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)
+    //Assert.assert(CdtThreader.PointLocationForTriangle(this.end, this.currentTriangle) === PointLocation.Outside)
     const sign0 = this.GetHyperplaneSign(this.currentTriangle.Sites.item0)
     const sign1 = this.GetHyperplaneSign(this.currentTriangle.Sites.item1)
-    if (sign0 != sign1) {
+    if (sign0 !== sign1) {
       if (
         Point.getTriangleOrientation(this.end, this.currentTriangle.Sites.item0.point, this.currentTriangle.Sites.item1.point) ==
         TriangleOrientation.Clockwise
@@ -55,7 +55,7 @@ export class CdtThreader {
     }
 
     const sign2 = this.GetHyperplaneSign(this.currentTriangle.Sites.item2)
-    if (sign1 != sign2) {
+    if (sign1 !== sign2) {
       if (
         Point.getTriangleOrientation(this.end, this.currentTriangle.Sites.item1.point, this.currentTriangle.Sites.item2.point) ==
         TriangleOrientation.Clockwise
@@ -102,27 +102,27 @@ export class CdtThreader {
     // pierced index
     const oppositeSite = this.currentTriangle.Sites.getItem(i + 2)
     const oppositeSiteSign = this.GetHyperplaneSign(oppositeSite)
-    if (this.negativeSign == 0) {
-      //Assert.assert(this.positiveSign == 1)
-      if (oppositeSiteSign == -1 || oppositeSiteSign == 0) {
+    if (this.negativeSign === 0) {
+      //Assert.assert(this.positiveSign === 1)
+      if (oppositeSiteSign === -1 || oppositeSiteSign === 0) {
         this.negativeSign = oppositeSiteSign
         j = i + 1
       } else {
         j = i + 2
       }
-    } else if (this.positiveSign == 0) {
-      //Assert.assert(this.negativeSign == -1)
-      if (oppositeSiteSign == 1 || oppositeSiteSign == 0) {
+    } else if (this.positiveSign === 0) {
+      //Assert.assert(this.negativeSign === -1)
+      if (oppositeSiteSign === 1 || oppositeSiteSign === 0) {
         this.positiveSign = oppositeSiteSign
         j = i + 2
       } else {
         j = i + 1
       }
-    } else if (oppositeSiteSign != this.positiveSign) {
+    } else if (oppositeSiteSign !== this.positiveSign) {
       this.negativeSign = oppositeSiteSign
       j = i + 1
     } else {
-      //Assert.assert(this.negativeSign != oppositeSiteSign)
+      //Assert.assert(this.negativeSign !== oppositeSiteSign)
       this.positiveSign = oppositeSiteSign
       j = i + 2
     }

@@ -14,6 +14,6 @@ export class IntPair {
     return this.y
   }
   isDiagonal(): boolean {
-    return this.x == this.y
+    return this.x === this.y
   }
 }

@@ -12,7 +12,7 @@ test('PointMap', () => {
   expect(p[0].y < 3).toBe(true)
   const kv = Array.from(m)
   expect(kv[0][1] < 5).toBe(true)
-  expect(kv.length == 4).toBe(true)
+  expect(kv.length === 4).toBe(true)
 
   m.delete(1.3, 1)
   expect(m.hasxy(1.3, 1)).toBe(false)

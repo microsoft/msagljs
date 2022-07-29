@@ -128,7 +128,7 @@ export class Intersections {
       }
 
       const pl: PointLocation = Curve.PointRelativeToCurveLocation(center, obstacle)
-      if (pl != PointLocation.Outside) {
+      if (pl !== PointLocation.Outside) {
         Intersections.containingPoly = obstacle
         return false
       }

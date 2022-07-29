@@ -176,7 +176,7 @@ export class Solver {
           // Cache for perf
           for (let ii = 0; ii < numConstraints; ii++) {
             const constraint: Constraint = constraintsForVar.Constraints[ii]
-            if (variable == constraint.Left) {
+            if (variable === constraint.Left) {
               yield
               return constraint
             }
@@ -213,12 +213,12 @@ export class Solver {
       throw new Error('Cannot add Variables or Constraints once Solve() has been called')
     }
 
-    if (left == right) {
+    if (left === right) {
       throw new Error('Cannot add a constraint between a variable and itself')
     }
 
-    // Get the dictionary entries so we can store these until Solve() is called.  kvp.Key == lstConstraints,
-    // kvp.Value == number of constraints in lstConstraints that are LeftConstraints for the variable.
+    // Get the dictionary entries so we can store these until Solve() is called.  kvp.Key === lstConstraints,
+    // kvp.Value === number of constraints in lstConstraints that are LeftConstraints for the variable.
     // kvpConstraintsForVar(Left|Right) are bidirectional for that variable, but we're operating only on
     // varLeft's LeftConstraints and varRight's RightConstraints; this is slightly more complicated logic
     // than just having two Lists, but for large numbers of variables, having all constraints in a single
@@ -259,7 +259,7 @@ export class Solver {
   public SetConstraintUpdate(constraint: Constraint, gap: number) {
     // Defer this to the Solve() call, so the variables' positions are not altered by doing a
     // Block.Split here (which updates Block.ReferencePos, upon which Variable.(Scaled)ActualPos relies).
-    if (gap != constraint.Gap) {
+    if (gap !== constraint.Gap) {
       this.updatedConstraints.push([constraint, gap])
     }
   }
@@ -276,7 +276,7 @@ export class Solver {
       throw new Error('relationshipWeight')
     }
 
-    if (variable1 == variable2) {
+    if (variable1 === variable2) {
       throw new Error()
     }
 
@@ -335,7 +335,7 @@ export class Solver {
     //
     // If no constraints have been loaded, there's nothing to do.  Two distinct variables
     // are required to create a constraint, so this also ensures a minimum number of variables.
-    if (0 == this.numberOfConstraints) {
+    if (0 === this.numberOfConstraints) {
       // For Qpsc, we may have neighbours but no constraints.
       if (!this.IsQpsc) {
         return <Solution>this.solverSolution.Clone()
@@ -378,7 +378,7 @@ export class Solver {
 
   // end Solve()
   private CheckForUpdatedConstraints() {
-    if (0 == this.updatedConstraints.length) {
+    if (0 === this.updatedConstraints.length) {
       return
     }
 
@@ -440,12 +440,12 @@ export class Solver {
 
       // Create the Variable's Constraint arrays, using the single emptyConstraintList for efficiency.
       let leftConstraints: Constraint[] = this.emptyConstraintList
-      if (0 != numLeftConstraints) {
+      if (0 !== numLeftConstraints) {
         leftConstraints = new Array(numLeftConstraints)
       }
 
       let rightConstraints: Constraint[] = this.emptyConstraintList
-      if (0 != numRightConstraints) {
+      if (0 !== numRightConstraints) {
         rightConstraints = new Array(numRightConstraints)
       }
 
@@ -458,7 +458,7 @@ export class Solver {
         // ReSharper disable PossibleNullReferenceException
         const loadedConstraint: Constraint = constraints[loadedConstraintIndex]
         // ReSharper restore PossibleNullReferenceException
-        if (variable == loadedConstraint.Left) {
+        if (variable === loadedConstraint.Left) {
           leftConstraints[leftConstraintIndex++] = loadedConstraint
         } else {
           rightConstraints[rightConstraintIndex++] = loadedConstraint
@@ -466,12 +466,12 @@ export class Solver {
       }
 
       /*Assert.assert(
-        leftConstraintIndex == numLeftConstraints,
-        'leftConstraintIndex must == numLeftConstraints',
+        leftConstraintIndex === numLeftConstraints,
+        'leftConstraintIndex must === numLeftConstraints',
       )*/
       /*Assert.assert(
-        rightConstraintIndex == numRightConstraints,
-        'rightConstraintIndex must == numRightConstraints',
+        rightConstraintIndex === numRightConstraints,
+        'rightConstraintIndex must === numRightConstraints',
       )*/
       // Done with per-variable constraint loading.  Now load the big list of all constraints.
       // All constraints are stored in a LeftConstraints array (and duplicated in a RightConstraints
@@ -528,7 +528,7 @@ export class Solver {
   }
 
   private CheckForLimitsExceeded(): boolean {
-    // if (null != this.timeoutStopwatch) {
+    // if (null !=  this.timeoutStopwatch) {
     //  if (
     //    this.timeoutStopwatch.ElapsedMilliseconds >= this.solverParams.TimeLimit
     //  ) {
@@ -662,7 +662,7 @@ export class Solver {
   private MergeEqualityConstraints() {
     // PerfNote: We only call this routine once so don't worry about Array-Enumerator overhead.
     for (const constraint of this.equalityConstraints) {
-      if (constraint.Left.Block == constraint.Right.Block) {
+      if (constraint.Left.Block === constraint.Right.Block) {
         // They are already in the same block and we are here on the first pass that merges blocks
         // containing only equality constraints.  Thus we know that there is already a chain of equality
         // constraints joining constraint.Left and constraint.Right, and that chain will always be
@@ -671,7 +671,7 @@ export class Solver {
         // would potentially lead to cycles; this is consistent with the non-equality constraint
         // approach of not activating constraints that are not violated).
         if (Math.abs(constraint.Violation) > this.solverParams.GapTolerance) {
-          // This is an equivalence conflict, such as a + 3 == b; b + 3 == c; a + 9 == c.
+          // This is an equivalence conflict, such as a + 3 === b; b + 3 === c; a + 9 === c.
           constraint.IsUnsatisfiable = true
           this.allConstraints.NumberOfUnsatisfiableConstraints++
         }
@@ -684,7 +684,7 @@ export class Solver {
   }
 
   private Project(): boolean {
-    if (this.numberOfConstraints == 0) {
+    if (this.numberOfConstraints === 0) {
       // We are here for the neighbours-only case.
       return false
     }
@@ -716,7 +716,7 @@ export class Solver {
       )*/
       // Perf note: Variables (and Blocks) use the default Object.Equals implementation, which is
       // simply ReferenceEquals for reference types.
-      if (maxViolatedConstraint.Left.Block == maxViolatedConstraint.Right.Block) {
+      if (maxViolatedConstraint.Left.Block === maxViolatedConstraint.Right.Block) {
         maxViolatedConstraint.Left.Block.Expand(maxViolatedConstraint)
         if (maxViolatedConstraint.IsUnsatisfiable) {
           this.violationCache.Clear()
@@ -769,7 +769,7 @@ export class Solver {
     let blockTo = violatedConstraint.Left.Block
     let blockFrom = violatedConstraint.Right.Block
     /*Assert.assert(
-      blockTo != blockFrom,
+      blockTo !== blockFrom,
       'Merging of constraints in the same block is not allowed',
     )*/
     // The violation amount is the needed distance to move to tightly satisfy the constraint.
@@ -818,7 +818,7 @@ export class Solver {
     for (let ii = 0; ii < numBlocks; ii++) {
       const block = this.allBlocks.item(ii)
       /*Assert.assert(
-        0 != block.Variables.length,
+        0 !== block.Variables.length,
         'block must have nonzero variable count',
       )*/
       const newSplitBlock = block.Split(this.IsQpsc)
@@ -835,7 +835,7 @@ export class Solver {
     }
 
     // The paper uses "did not split" for the return but "did split" seems more intuitive
-    return 0 != newBlocks.length
+    return 0 !== newBlocks.length
   }
 
   // end SplitBlocks
@@ -892,7 +892,7 @@ export class Solver {
             constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
           /*Assert.assert(
             closeDistEps(constraint.Violation, violation),
-            'LeftConstraints: constraint.Violation must == violation',
+            'LeftConstraints: constraint.Violation must === violation',
           )*/
           if (greaterDistEps(violation, maxViolation)) {
             // Cache the previous high violation.  Pass the violation as a tiny perf optimization
@@ -909,13 +909,13 @@ export class Solver {
 
       // endfor each LeftConstraint
       for (const constraint of variable.RightConstraints) {
-        if (!constraint.IsActive && !constraint.IsUnsatisfiable && constraint.Left.Block != this.lastModifiedBlock) {
+        if (!constraint.IsActive && !constraint.IsUnsatisfiable && constraint.Left.Block !== this.lastModifiedBlock) {
           const violation: number =
             constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
-          // Assert.assert(constraint.Violation == violation, "LeftConstraints: constraint.Violation must == violation");
+          // Assert.assert(constraint.Violation === violation, "LeftConstraints: constraint.Violation must === violation");
           /*Assert.assert(
             closeDistEps(constraint.Violation, violation),
-            'LeftConstraints: constraint.Violation must == violation',
+            'LeftConstraints: constraint.Violation must === violation',
           )*/
           // if (violation > maxViolation)
           if (greaterDistEps(violation, maxViolation)) {
@@ -972,7 +972,7 @@ export class Solver {
         constraint.Left.ActualPos * constraint.Left.Scale + (constraint.Gap - constraint.Right.ActualPos * constraint.Right.Scale)
       /*Assert.assert(
         closeDistEps(constraint.Violation, violation),
-        'constraint.Violation must == violation',
+        'constraint.Violation must === violation',
       )*/
       let cacheInsertConstraint: Constraint = null
       let cacheInsertViolation = 0
@@ -990,10 +990,10 @@ export class Solver {
         // If constraint was a violation but not > maxViolation, then we'll look to insert it into the cache.
         // (We already know that if the previous maxViolatedConstraint is to be inserted, then its violation is
         // greater than any in the cache).  On the first iteration of "for each constraint", maxViolatedConstraint
-        // is null, hence the constraint != maxViolatedConstraint test.
+        // is null, hence the constraint !== maxViolatedConstraint test.
         if (
           cacheInsertConstraint == null &&
-          constraint != maxViolatedConstraint &&
+          constraint !== maxViolatedConstraint &&
           (!this.violationCache.IsFull || violation > this.violationCache.LowViolation)
         ) {
           // Either the cache isn't full or the new constraint is more violated than the lowest cached constraint.

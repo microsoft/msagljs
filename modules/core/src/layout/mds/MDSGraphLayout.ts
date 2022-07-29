@@ -79,11 +79,11 @@ export class MdsGraphLayout extends Algorithm {
   ) {
     arrays.x = new Array(geometryGraph.shallowNodeCount)
     arrays.y = new Array(geometryGraph.shallowNodeCount)
-    if (arrays.x.length == 0) {
+    if (arrays.x.length === 0) {
       return
     }
 
-    if (arrays.x.length == 1) {
+    if (arrays.x.length === 1) {
       arrays.x[0] = arrays.y[0] = 0
       return
     }
@@ -110,7 +110,7 @@ export class MdsGraphLayout extends Algorithm {
   LayoutConnectedGraphWithMds() {
     const arrays: {x: number[]; y: number[]} = {x: [], y: []}
     MdsGraphLayout.LayoutGraphWithMds(this.graph, this.settings, arrays, this.length)
-    if (this.settings.RotationAngle != 0) {
+    if (this.settings.RotationAngle !== 0) {
       Transform.Rotate(arrays.x, arrays.y, this.settings.RotationAngle)
     }
 
@@ -163,7 +163,7 @@ export class MdsGraphLayout extends Algorithm {
   //      HitTestBehavior.Stop
   //      null
   //      numberOfHits++
-  //      if (numberOfHits == maxNumberOfHits) {
+  //      if (numberOfHits === maxNumberOfHits) {
   //        return maxNumberOfHits
   //      }
   //    }
@@ -190,10 +190,10 @@ export class MdsGraphLayout extends Algorithm {
 
   // Pack the given graph components to the specified aspect ratio
   public static PackGraphs(graphs: GeomGraph[], settings: LayoutSettings): Rectangle {
-    if (graphs.length == 0) {
+    if (graphs.length === 0) {
       return Rectangle.mkEmpty()
     }
-    if (graphs.length == 1) return graphs[0].boundingBox
+    if (graphs.length === 1) return graphs[0].boundingBox
     const rectangles = graphs.map((g) => g.boundingBox)
     const originalLeftBottoms = new Array<{g: GeomGraph; lb: Point}>()
     for (const g of graphs) {

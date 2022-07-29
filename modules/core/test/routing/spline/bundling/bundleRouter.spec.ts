@@ -71,7 +71,7 @@ test('shells.gv', () => {
 test('random graphs', () => {
   for (let nodeCount = 7; nodeCount < 10; nodeCount++)
     for (let seed = 10; seed < 20; seed++) {
-      if ((nodeCount == 7 && seed == 14) || true) {
+      if ((nodeCount === 7 && seed === 14) || true) {
         const gg: GeomGraph = generateRandomGeomGraph(
           seed,
           nodeCount,
@@ -94,7 +94,7 @@ test('random graphs', () => {
 xtest('brandom subgraphs 10_20', () => {
   for (let numberOfNodes = 10; numberOfNodes < 20; numberOfNodes++) {
     for (let seed = 0; seed < 5; seed++) {
-      if (true || (seed == 273 && numberOfNodes == 34)) {
+      if (true || (seed === 273 && numberOfNodes === 34)) {
         try {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
@@ -110,7 +110,7 @@ xtest('brandom subgraphs 10_20', () => {
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
-          if (edges.length == 0) continue
+          if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
           //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
@@ -128,7 +128,7 @@ xtest('brandom subgraphs 10_20', () => {
 xtest('brandom subgraphs 40_50', () => {
   for (let numberOfNodes = 40; numberOfNodes < 50; numberOfNodes++) {
     for (let seed = 0; seed < 300; seed++) {
-      if (true || (seed == 273 && numberOfNodes == 34)) {
+      if (true || (seed === 273 && numberOfNodes === 34)) {
         try {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
@@ -144,7 +144,7 @@ xtest('brandom subgraphs 40_50', () => {
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
-          if (edges.length == 0) continue
+          if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
           //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
@@ -161,7 +161,7 @@ xtest('brandom subgraphs 40_50', () => {
 xtest('brandom subgraphs 50_60', () => {
   for (let numberOfNodes = 50; numberOfNodes < 60; numberOfNodes++) {
     for (let seed = 0; seed < 300; seed++) {
-      if (true || (seed == 273 && numberOfNodes == 34)) {
+      if (true || (seed === 273 && numberOfNodes === 34)) {
         try {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
@@ -177,7 +177,7 @@ xtest('brandom subgraphs 50_60', () => {
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
-          if (edges.length == 0) continue
+          if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
           //         //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
@@ -240,7 +240,7 @@ test('fans', () => {
 xtest('brandom subgraphs 60_70', () => {
   for (let numberOfNodes = 69; numberOfNodes < 70; numberOfNodes++) {
     for (let seed = 0; seed < 1; seed++) {
-      if (true || (seed == 273 && numberOfNodes == 34)) {
+      if (true || (seed === 273 && numberOfNodes === 34)) {
         try {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
@@ -256,7 +256,7 @@ xtest('brandom subgraphs 60_70', () => {
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
           g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
-          if (edges.length == 0) continue
+          if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
           //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.svg')
@@ -292,7 +292,7 @@ test('cut random graphs', () => {
   }
   const ids = ['c', 'f', 'a', 'g']
   for (const n of g.deepNodesIt()) {
-    if (ids.find((t) => n.id == t)) {
+    if (ids.find((t) => n.id === t)) {
       const parent: Graph = <Graph>n.node.parent
       parent.removeNode(n.node)
     }

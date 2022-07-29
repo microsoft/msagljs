@@ -33,7 +33,7 @@ export class SingleSourceDistances extends Algorithm {
     const q = new GenericBinaryHeapPriorityQueue<GeomNode>((a, b) => a - b)
     const d: Map<GeomNode, number> = new Map<GeomNode, number>()
     for (const node of this.graph.shallowNodes()) {
-      const dist = node == this.source ? 0 : Number.POSITIVE_INFINITY
+      const dist = node === this.source ? 0 : Number.POSITIVE_INFINITY
       q.Enqueue(node, dist)
       d.set(node, dist)
     }
@@ -67,7 +67,7 @@ export class SingleSourceDistances extends Algorithm {
     let i = 0
     for (const v of this.graph.shallowNodes()) {
       const dist = d.get(v)
-      if (dist != undefined) {
+      if (dist !== undefined) {
         this.result[i++] = dist
       } else {
         this.result[i++] = Number.POSITIVE_INFINITY

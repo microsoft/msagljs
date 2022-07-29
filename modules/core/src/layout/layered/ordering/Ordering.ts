@@ -19,7 +19,7 @@ import {flatMap} from '../../../utils/setOperations'
 // See GraphLayout.pdfhttps://www.researchgate.net/profile/Lev_Nachmanson/publication/30509007_Drawing_graphs_with_GLEE/links/54b6b2930cf2e68eb27edf71/Drawing-graphs-with-GLEE.pdf
 
 function HeadOfTheCoin() {
-  return randomInt(2) == 0
+  return randomInt(2) === 0
 }
 
 // This method can be improved: see the paper Simple And Efficient ...
@@ -55,7 +55,7 @@ function GetCrossingCountFromStripWhenTopLayerIsShorter(
     const ew = edge.CrossingWeight
     tree[index] += ew
     while (index > 0) {
-      if (index % 2 != 0) cc += ew * tree[index + 1] //intersect everything accumulated in the right sibling
+      if (index % 2 !== 0) cc += ew * tree[index + 1] //intersect everything accumulated in the right sibling
       index = Math.floor((index - 1) / 2)
       tree[index] += ew
     }
@@ -86,7 +86,7 @@ function GetCrossingCountFromStripWhenBottomLayerIsShorter(
     const ew = edge.CrossingWeight
     tree[index] += ew
     while (index > 0) {
-      if (index % 2 != 0) cc += ew * tree[index + 1] //intersect everything accumulated in the right sibling
+      if (index % 2 !== 0) cc += ew * tree[index + 1] //intersect everything accumulated in the right sibling
       index = Math.floor((index - 1) / 2)
       tree[index] += ew
     }
@@ -170,7 +170,7 @@ export class Ordering extends Algorithm {
   ) {
     let hasCrossWeight = false
     for (const le of graph.Edges)
-      if (le.CrossingWeight != 1) {
+      if (le.CrossingWeight !== 1) {
         hasCrossWeight = true
         break
       }
@@ -181,10 +181,10 @@ export class Ordering extends Algorithm {
 
   run() {
     // #if DEBUGORDERING
-    // if (graph.NumberOfVertices != layering.length)
+    // if (graph.NumberOfVertices !== layering.length)
     //  throw new System.Exception("the layering does not correspond to the graph");
     // for (IntEdge e of graph.Edges)
-    // if (layering[e.Source] - layering[e.Target] != 1)
+    // if (layering[e.Source] - layering[e.Target] !== 1)
     //  throw new System.Exception("the edge in the graph does not span exactly one layer:" + e);
     // #endif
 
@@ -226,7 +226,7 @@ export class Ordering extends Algorithm {
 
     //Stopwatch sw = Stopwatch.StartNew();
     for (let i = 0; i < this.MaxOfIterations && countOfNoGainSteps < this.NoGainStepsBound && !this.measure.IsPerfect(); i++) {
-      const up = i % 2 == 0
+      const up = i % 2 === 0
 
       this.LayerByLayerSweep(up)
 
@@ -294,7 +294,7 @@ export class Ordering extends Algorithm {
 
     for (const m of medianValues) {
       const v = vertices[i++]
-      if (m == -1.0) continue
+      if (m === -1.0) continue
 
       if (!s.has(m)) s.set(m, v)
       else {
@@ -327,14 +327,14 @@ export class Ordering extends Algorithm {
     const senum = s.values()
 
     for (i = 0; i < vertices.length; ) {
-      if (medianValues[i] != -1) {
+      if (medianValues[i] !== -1) {
         const o = senum.next().value
         if (typeof o === 'number') vertices[i++] = o as number
         else {
           const al = o as number[]
           for (const v of al) {
             //find the first empty spot
-            while (medianValues[i] == -1) i++
+            while (medianValues[i] === -1) i++
             vertices[i++] = v
           }
         }
@@ -353,7 +353,7 @@ export class Ordering extends Algorithm {
       p = this.properLayeredGraph.InEdgesCount(node)
     }
 
-    if (p == 0) return -1.0
+    if (p === 0) return -1.0
 
     const parray = new Array<number>(p) //we do not have multiple edges
 
@@ -365,9 +365,9 @@ export class Ordering extends Algorithm {
 
     const m = Math.floor(p / 2)
 
-    if (p % 2 == 1) return parray[m]
+    if (p % 2 === 1) return parray[m]
 
-    if (p == 2) return 0.5 * (parray[0] + parray[1])
+    if (p === 2) return 0.5 * (parray[0] + parray[1])
 
     const left = parray[m - 1] - parray[0]
 
@@ -384,7 +384,7 @@ export class Ordering extends Algorithm {
     //depth first traversal inside one layer
     const q = new Stack<number>()
     //enqueue all sources of the graph
-    for (let i = 0; i < this.properLayeredGraph.NodeCount; i++) if (this.properLayeredGraph.InEdgesCount(i) == 0) q.push(i)
+    for (let i = 0; i < this.properLayeredGraph.NodeCount; i++) if (this.properLayeredGraph.InEdgesCount(i) === 0) q.push(i)
 
     const visited = new Array<boolean>(this.properLayeredGraph.NodeCount).fill(false)
 
@@ -691,7 +691,7 @@ export class Ordering extends Algorithm {
 
     const gain = this.SwapGain(u, v)
 
-    if (gain > 0 || (gain == 0 && HeadOfTheCoin())) this.Swap(u, v)
+    if (gain > 0 || (gain === 0 && HeadOfTheCoin())) this.Swap(u, v)
   }
 
   SwapGain(u: number, v: number) {
@@ -710,7 +710,7 @@ export class Ordering extends Algorithm {
   LowerNeighborsForbidTheSwap(u: number, v: number) {
     let uCount: number
     let vCount: number
-    if ((uCount = this.properLayeredGraph.OutEdgesCount(u)) == 0 || (vCount = this.properLayeredGraph.OutEdgesCount(v)) == 0) return false
+    if ((uCount = this.properLayeredGraph.OutEdgesCount(u)) === 0 || (vCount = this.properLayeredGraph.OutEdgesCount(v)) === 0) return false
 
     return this.X[this.successors[u][uCount >> 1]] < this.X[this.successors[v][vCount >> 1]]
   }
@@ -718,7 +718,7 @@ export class Ordering extends Algorithm {
   UpperNeighborsForbidTheSwap(u: number, v: number) {
     const uCount = this.properLayeredGraph.InEdgesCount(u)
     const vCount = this.properLayeredGraph.InEdgesCount(v)
-    if (uCount == 0 || vCount == 0) return false
+    if (uCount === 0 || vCount === 0) return false
 
     return this.X[this.predecessors[u][uCount >> 1]] < this.X[this.predecessors[v][vCount >> 1]]
   }

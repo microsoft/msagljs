@@ -56,7 +56,7 @@ export class StationPositionsAdjuster {
       progress ||= adjuster.RelaxConstrainedEdges()
       progress ||= step <= 3 && adjuster.UnglueEdgesFromBundleToSaveInk(false)
       progress ||= adjuster.GlueCollinearNeighbors(step)
-      progress ||= step == 3 && adjuster.RemoveDoublePathCrossings()
+      progress ||= step === 3 && adjuster.RemoveDoublePathCrossings()
       if (!progress) {
         break
       }
@@ -90,7 +90,7 @@ export class StationPositionsAdjuster {
     CrossRectangleNodesSameType<Station, Point>(circlesHierarchy, circlesHierarchy, (i, j) =>
       this.TryToGlueStations(i, j, gluingMap, gluedDomain),
     )
-    if (gluingMap.size == 0) {
+    if (gluingMap.size === 0) {
       return false
     }
     //Assert.assert(SimulatedAnnealing.stationsArePositionedCorrectly(this.metroGraphData))
@@ -138,7 +138,7 @@ export class StationPositionsAdjuster {
   }
 
   TryToGlueStations(i: Station, j: Station, gluingMap: Map<Station, Station>, gluedDomain: Set<Station>): boolean {
-    //Assert.assert(i != j)
+    //Assert.assert(i !== j)
     if (!setsAreEqual(i.getELP(), j.getELP())) return false
     const d: number = i.Position.sub(j.Position).length
     const r1: number = Math.max(i.Radius, 5)
@@ -197,7 +197,7 @@ export class StationPositionsAdjuster {
     for (const adj of i.Neighbors) {
       const k = StationPositionsAdjuster.Glued(adj, gluingMap)
       newInk -= k.Position.sub(i.Position).length
-      newInk += this.metroGraphData.RealEdgeCount(k, j) == 0 ? k.Position.sub(j.Position).length : 0
+      newInk += this.metroGraphData.RealEdgeCount(k, j) === 0 ? k.Position.sub(j.Position).length : 0
     }
 
     gain += CostCalculator.InkError(oldInk, newInk, this.bundlingSettings)
@@ -252,7 +252,7 @@ export class StationPositionsAdjuster {
       const station = StationPositionsAdjuster.Glued(metroline[i], gluedMap)
       if (seenStations.has(station)) {
         // we made a cycle - need to cut it out
-        while (ret.top != station) {
+        while (ret.top !== station) {
           seenStations.delete(ret.pop())
         }
 
@@ -396,10 +396,10 @@ export class StationPositionsAdjuster {
     const ab = a.sub(b).length
     const bc = b.sub(c).length
     const ac = a.sub(c).length
-    if (abPolylines.size == abcPolylines.size) newInk -= ab
-    if (bcPolylines.size == abcPolylines.size) newInk -= bc
+    if (abPolylines.size === abcPolylines.size) newInk -= ab
+    if (bcPolylines.size === abcPolylines.size) newInk -= bc
     const t = segsToPolylines.get(new PointPair(a, c))
-    if (!t || t.size == 0) newInk += ac
+    if (!t || t.size === 0) newInk += ac
     gain += CostCalculator.InkError(oldInk, newInk, this.bundlingSettings)
 
     //path lengths
@@ -448,10 +448,10 @@ export class StationPositionsAdjuster {
     const ac = distPP(a, c)
 
     //fixing ink
-    if (abPolylines.size == abcPolylines.size) this.ink -= ab
-    if (bcPolylines.size == abcPolylines.size) this.ink -= bc
+    if (abPolylines.size === abcPolylines.size) this.ink -= ab
+    if (bcPolylines.size === abcPolylines.size) this.ink -= bc
     const t = segsToPolylines.get(new PointPair(a, c))
-    if (!t || t.size == 0) this.ink += ac
+    if (!t || t.size === 0) this.ink += ac
 
     //fixing edge lengths
     for (const metroline of abcPolylines) {
@@ -530,7 +530,7 @@ export class StationPositionsAdjuster {
   }
 
   TryToGlueEdges(node: Station, a: Station, b: Station, gluedEdges: TupleMap<Station, Station, Point>, step: number) {
-    //Assert.assert(a != b)
+    //Assert.assert(a !== b)
     const angle = Point.anglePCP(a.Position, node.Position, b.Position)
     if (angle < this.bundlingSettings.AngleThreshold) {
       const la = distPP(a.Position, node.Position)
@@ -726,7 +726,7 @@ export class StationPositionsAdjuster {
   }
 
   SplitPolylinePoint(node: PolylinePoint, pointToInsert: Point) {
-    if (node.point == pointToInsert || node.next.point == pointToInsert) {
+    if (node.point === pointToInsert || node.next.point === pointToInsert) {
       return
     }
 
@@ -775,12 +775,12 @@ export class StationPositionsAdjuster {
 
         //choose the closest
         const dist = distPP(d[0], d[1])
-        if (bestDist == -1 || dist < bestDist) {
+        if (bestDist === -1 || dist < bestDist) {
           bestDist = dist
           bestPoint = d[1]
         }
       }
-      if (bestDist == -1) return false
+      if (bestDist === -1) return false
 
       if (!this.metroGraphData.looseIntersections.HubAvoidsObstaclesPNS__(bestPoint, 0, setIntersection(a.getELP(), b.getELP())))
         return false

@@ -6,16 +6,16 @@ import {Attr} from 'dotparser'
 export class DrawingNode extends DrawingObject {
   *attrIter(): IterableIterator<Attr> {
     yield* super.attrIter()
-    if (this.shape && this.shape != ShapeEnum.box) {
+    if (this.shape && this.shape !== ShapeEnum.box) {
       yield {type: 'attr', id: 'shape', eq: this.shape.toString()}
     }
-    if (this.xRad && this.xRad != 3) {
+    if (this.xRad && this.xRad !== 3) {
       yield {type: 'attr', id: 'xRad', eq: this.xRad.toString()}
     }
-    if (this.yRad && this.yRad != 3) {
+    if (this.yRad && this.yRad !== 3) {
       yield {type: 'attr', id: 'yRad', eq: this.yRad.toString()}
     }
-    if (this.padding && this.padding != 2) {
+    if (this.padding && this.padding !== 2) {
       yield {type: 'attr', id: 'padding', eq: this.padding.toString()}
     }
   }

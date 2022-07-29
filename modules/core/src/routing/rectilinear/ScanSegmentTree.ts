@@ -35,7 +35,7 @@ export class ScanSegmentTree {
     const node = this.segmentTree.find(seg)
     if (node != null) {
       /*Assert.assert(
-        seg.IsOverlapped == node.item.IsOverlapped,
+        seg.IsOverlapped === node.item.IsOverlapped,
         'Existing node found with different isOverlapped',
       )*/
       return node
@@ -56,8 +56,8 @@ export class ScanSegmentTree {
 
   Remove(seg: ScanSegment) {
     /*Assert.assert(
-      seg.IsVertical == this.ScanDirection.IsVertical,
-      'seg.IsVertical != this.ScanDirection.IsVertical',
+      seg.IsVertical === this.ScanDirection.IsVertical,
+      'seg.IsVertical !== this.ScanDirection.IsVertical',
     )*/
     this.segmentTree.remove(seg)
   }
@@ -180,7 +180,7 @@ export class ScanSegmentTree {
 
   MergeAndRemoveNextNode(currentSegment: ScanSegment, nextSegNode: RBNode<ScanSegment>): RBNode<ScanSegment> {
     // Merge at the ends only - if we're here, start will be the same or greater.
-    if (-1 == this.ScanDirection.Compare(currentSegment.End, nextSegNode.item.End)) {
+    if (-1 === this.ScanDirection.Compare(currentSegment.End, nextSegNode.item.End)) {
       currentSegment.Update(currentSegment.Start, nextSegNode.item.End)
     }
 
@@ -205,7 +205,7 @@ export class ScanSegmentTree {
           currentSegNode = nextSegNode
           break
         case 0:
-          if (nextSegNode.item.IsOverlapped == currentSegNode.item.IsOverlapped) {
+          if (nextSegNode.item.IsOverlapped === currentSegNode.item.IsOverlapped) {
             // Overlapping is the same, so merge.  Because the ordering in the tree is that
             // same-Start nodes are ordered by longest-End first, this will retain the tree ordering.
             currentSegNode = this.MergeAndRemoveNextNode(currentSegNode.item, nextSegNode)
@@ -219,7 +219,7 @@ export class ScanSegmentTree {
           break
         default:
           /*Assert.assert(
-            nextSegNode.item.Start != currentSegNode.item.Start ||
+            nextSegNode.item.Start !== currentSegNode.item.Start ||
               nextSegNode.item.End < currentSegNode.item.End,
             'Identical segments are not allowed, and longer ones must come first',
           )*/
@@ -228,7 +228,7 @@ export class ScanSegmentTree {
           // In the case of reflection lookahead segments, the side-intersection calculated from
           // horizontal vs. vertical directions may be slightly different along the parallel
           // coordinate from an overlapped segment, so let non-overlapped win that disagreement.
-          if (currentSegNode.item.IsOverlapped != nextSegNode.item.IsOverlapped) {
+          if (currentSegNode.item.IsOverlapped !== nextSegNode.item.IsOverlapped) {
             /*Assert.assert(
               Point.closeIntersections(
                 currentSegNode.item.End,
@@ -240,7 +240,7 @@ export class ScanSegmentTree {
               // If the Starts are different, then currentSegNode is the only item at its
               // start, so we don't need to re-insert.  Otherwise, we need to remove it and
               // re-find nextSegNode's side.
-              if (currentSegNode.item.Start == nextSegNode.item.Start) {
+              if (currentSegNode.item.Start === nextSegNode.item.Start) {
                 // currentSegNode is a tiny overlapped segment between two non-overlapped segments (so
                 // we'll have another merge later, when we hit the other non-overlapped segment).
                 // Notice reversed params.  TestNote: No longer have repro with the change to convex hulls;
@@ -251,7 +251,7 @@ export class ScanSegmentTree {
                 currentSegNode.item.Update(currentSegNode.item.Start, nextSegNode.item.Start)
                 currentSegNode = nextSegNode
               }
-            } else if (currentSegNode.item.End == nextSegNode.item.End) {
+            } else if (currentSegNode.item.End === nextSegNode.item.End) {
               // nextSegNode is a tiny non-overlapped segment between two overlapped segments (so
               // we'll have another merge later, when we hit the other non-overlapped segment).
               // TestNote: No longer have repro with the change to convex hulls;
@@ -287,7 +287,7 @@ export class ScanSegmentTree {
   // bottom, scanning horizontally) then order ScanSegments first by lowest Y coord, then by lowest X coord.
 
   public Compare(first: ScanSegment, second: ScanSegment): number {
-    if (first == second) {
+    if (first === second) {
       return 0
     }
 
@@ -301,7 +301,7 @@ export class ScanSegmentTree {
 
     // This orders on both axes.
     let cmp: number = this.ScanDirection.Compare(first.Start, second.Start)
-    if (0 == cmp) {
+    if (0 === cmp) {
       // Longer segments come first, to make overlap removal easier.
       cmp = this.ScanDirection.Compare(first.End, second.End) * -1
     }

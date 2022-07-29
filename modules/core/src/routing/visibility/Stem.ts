@@ -22,14 +22,14 @@ export class Stem {
   }
 
   constructor(start: PolylinePoint, end: PolylinePoint) {
-    //Assert.assert(start.polyline == end.polyline)
+    //Assert.assert(start.polyline === end.polyline)
     this.start = start
     this.end = end
   }
 
   *Sides(): IterableIterator<PolylinePoint> {
     let v: PolylinePoint = this.start
-    while (v != this.end) {
+    while (v !== this.end) {
       const side: PolylinePoint = v
       yield side
       v = side.nextOnPolyline
@@ -37,7 +37,7 @@ export class Stem {
   }
 
   MoveStartClockwise(): boolean {
-    if (this.Start != this.End) {
+    if (this.Start !== this.End) {
       this.Start = this.Start.nextOnPolyline
       return true
     }

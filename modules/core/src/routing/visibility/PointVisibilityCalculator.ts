@@ -94,7 +94,7 @@ export class PointVisibilityCalculator {
         this.heapForSorting.Dequeue()
       }
 
-      if (this.heapForSorting.Count == 0) {
+      if (this.heapForSorting.Count === 0) {
         break
       }
     }
@@ -118,7 +118,7 @@ export class PointVisibilityCalculator {
         if (source.point.y < this.q.y) {
           if (side.nextOnPolyline.point.y >= this.q.y) {
             const orientation: TriangleOrientation = Point.getTriangleOrientation(this.q, source.point, side.nextOnPolyline.point)
-            if (orientation == TriangleOrientation.Counterclockwise || orientation == TriangleOrientation.Collinear) {
+            if (orientation === TriangleOrientation.Counterclockwise || orientation === TriangleOrientation.Collinear) {
               crosses = true
               // we have two stems here
               yield new Stem(stem.Start, side)
@@ -134,7 +134,7 @@ export class PointVisibilityCalculator {
           crosses = true
           // we need to add one or two stems here
           yield new Stem(side, stem.End)
-          if (side != stem.Start) {
+          if (side !== stem.Start) {
             yield new Stem(stem.Start, hole.prev(source))
           }
           this.RegisterActiveSide(side)
@@ -156,7 +156,7 @@ export class PointVisibilityCalculator {
 
   // private Polyline GetPolylineBetweenPolyPointsTest(Polyline hole, PolylinePoint p0, PolylinePoint p1) {
   //    Polyline ret = new Polyline();
-  //    while (p0 != p1) {
+  //    while (p0 !== p1) {
   //        ret.AddPoint(p0.Point);
   //        p0 = hole.Next(p0);
   //    }
@@ -197,7 +197,7 @@ export class PointVisibilityCalculator {
     let node: RBNode<PolylinePoint>
     if ((node = this.sideNodes.get(inSide))) {
       // we have an active edge
-      if (node == this.activeSidesTree.treeMinimum()) {
+      if (node === this.activeSidesTree.treeMinimum()) {
         this.AddEdge(v)
       }
 
@@ -220,7 +220,7 @@ export class PointVisibilityCalculator {
       if (!(outsideNode = this.sideNodes.get(outSide))) {
         outsideNode = this.activeSidesTree.insert(outSide)
         this.sideNodes.set(outSide, outsideNode)
-        if (outsideNode == this.activeSidesTree.treeMinimum()) {
+        if (outsideNode === this.activeSidesTree.treeMinimum()) {
           this.AddEdge(v)
         }
       }
@@ -231,8 +231,8 @@ export class PointVisibilityCalculator {
 
   AddEdge(v: PolylinePoint) {
     if (
-      this.visibilityKind == VisibilityKind.Regular ||
-      (this.visibilityKind == VisibilityKind.Tangent && PointVisibilityCalculator.LineTouchesPolygon(this.QVertex.point, v))
+      this.visibilityKind === VisibilityKind.Regular ||
+      (this.visibilityKind === VisibilityKind.Tangent && PointVisibilityCalculator.LineTouchesPolygon(this.QVertex.point, v))
     ) {
       this.visibilityGraph.AddEdgeF(this.QVertex.point, v.point, (a, b) => new TollFreeVisibilityEdge(a, b))
     }
@@ -265,7 +265,7 @@ export class PointVisibilityCalculator {
 
   GetOutgoingSide(v: PolylinePoint): PolylinePoint {
     const visibleStem: Stem = this.visibleBoundaries.get(v.polyline)
-    if (v == visibleStem.End) {
+    if (v === visibleStem.End) {
       return null
     }
 
@@ -294,7 +294,7 @@ export class PointVisibilityCalculator {
     let a: PolylinePoint
     let needToGoCounterclockWise = true
     for (a = hole.startPoint; !this.HoleSideIsVisibleFromQ(hole, a); a = hole.next(a)) {
-      //Assert.assert(needToGoCounterclockWise || a != hole.startPoint)
+      //Assert.assert(needToGoCounterclockWise || a !== hole.startPoint)
       // check that we have not done the full circle
       needToGoCounterclockWise = false
     }

@@ -15,7 +15,7 @@ test('vg0', () => {
   const v = g.FindVertex(new Point(0, 0))
   expect(v.point.equal(new Point(0, 0))).toBe(true)
   const u = g.FindVertex(new Point(0, 0.5))
-  expect(u == undefined).toBe(true)
+  expect(u == null).toBe(true)
   g.RemoveVertex(v)
 })
 

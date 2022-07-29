@@ -97,7 +97,7 @@ export class Block {
     //    Do the iterations of ComputeDvDv
     //    If we find the target, then traverse the parent chain to populate the list bottom-up
     /*Assert.assert(
-      0 == this.allConstraints.DfDvStack.length,
+      0 === this.allConstraints.DfDvStack.length,
       'Leftovers of ComputeDfDvStack',
     )*/
     this.allConstraints.DfDvStack = new Stack()
@@ -124,16 +124,16 @@ export class Block {
           /*Assert.assert(
             !constraint.IsActive ||
               !(
-                node.IsLeftToRight && constraint.Right == node.VariableDoneEval
+                node.IsLeftToRight && constraint.Right === node.VariableDoneEval
               ),
             'this cycle should not happen',
           )*/
-          if (constraint.IsActive && constraint.Right != node.VariableDoneEval) {
+          if (constraint.IsActive && constraint.Right !== node.VariableDoneEval) {
             // variableToEval is now considered "done"
             const childNode = this.GetDfDvNode(node, constraint, constraint.Right, node.VariableToEval)
             // If the node has no constraints other than the one we're now processing, it's a leaf
             // and we don't need the overhead of pushing to and popping from the stack.
-            if (1 == constraint.Right.ActiveConstraintCount) {
+            if (1 === constraint.Right.ActiveConstraintCount) {
               this.ProcessDfDvLeafNodeDirectly(childNode)
             } else {
               this.PushDfDvNode(childNode)
@@ -146,13 +146,13 @@ export class Block {
           /*Assert.assert(
             !constraint.IsActive ||
               !(
-                !node.IsLeftToRight && constraint.Left == node.VariableDoneEval
+                !node.IsLeftToRight && constraint.Left === node.VariableDoneEval
               ),
             'this cycle should not happen',
           )*/
-          if (constraint.IsActive && constraint.Left != node.VariableDoneEval) {
+          if (constraint.IsActive && constraint.Left !== node.VariableDoneEval) {
             const childNode = this.GetDfDvNode(node, constraint, constraint.Left, node.VariableToEval)
-            if (1 == constraint.Left.ActiveConstraintCount) {
+            if (1 === constraint.Left.ActiveConstraintCount) {
               this.ProcessDfDvLeafNodeDirectly(childNode)
             } else {
               this.PushDfDvNode(childNode)
@@ -171,14 +171,14 @@ export class Block {
       // the stack and process it.  If it's the initial node, we've already updated DummyConstraint.Lagrangian
       // from all child nodes, and it's of the DummyParentNode as well so this will add the final dfdv.
       /*Assert.assert(
-        this.allConstraints.DfDvStack.top == node,
+        this.allConstraints.DfDvStack.top === node,
         "DfDvStack.top should be 'node'",
       )*/
       this.allConstraints.DfDvStack.pop()
       this.ProcessDfDvLeafNode(node)
-      if (node == firstNode) {
+      if (node === firstNode) {
         /*Assert.assert(
-          0 == this.allConstraints.DfDvStack.length,
+          0 === this.allConstraints.DfDvStack.length,
           'Leftovers of DfDvStack on completion of loop',
         )*/
         break
@@ -262,9 +262,9 @@ export class Block {
   }
 
   CheckForConstraintPathTarget(node: DfDvNode) {
-    if (this.pathTargetVariable == node.VariableToEval) {
+    if (this.pathTargetVariable === node.VariableToEval) {
       // Add every variable from pathTargetVariable up the callchain up to but not including initialVarToEval.
-      while (node.Parent != this.dfDvDummyParentNode) {
+      while (node.Parent !== this.dfDvDummyParentNode) {
         this.constraintPath.push(new ConstraintDirectionPair(node.ConstraintToEval, node.IsLeftToRight))
         node = node.Parent
       }
@@ -375,7 +375,7 @@ export class Block {
     // active constraints; even if SplitBlocks eventually happens, if the variable must be repositioned
     // again (via the global-constraint-maxviolation check) its constraint will be reactivated.
     // By the same token, ExpandBlock and SplitBlocks implicitly address/optimize all situations
-    // (or close enough) where an Active (i.e. == Gap) constraint would be better made inactive
+    // (or close enough) where an Active (i.e. === Gap) constraint would be better made inactive
     // and the gap grown.
     this.ComputeDfDv(this.Variables[0])
     // We only split the block if it has a non-equality constraint with a Lagrangian that is more than a
@@ -444,7 +444,7 @@ export class Block {
     // block-merge processing are done.
     this.Variables.push(variable)
     variable.Block = this
-    if (1 == this.Variables.length) {
+    if (1 === this.Variables.length) {
       // The block's information is set to that of the initial variable's "actual" state; we won't
       // call UpdateReferencePosFromSums.
       this.Scale = variable.Scale
@@ -507,9 +507,9 @@ export class Block {
     for (let ii = 0; ii < numVars; ii++) {
       const v = this.Variables[ii]
       // The derivation on this is from the paper:  a_i * YB + b_i
-      //      a_i == this.Scale / v.Scale
-      //      YB  == this.ReferencePos
-      //      b_i == v.OffsetInBlock / v.Scale
+      //      a_i === this.Scale / v.Scale
+      //      YB  === this.ReferencePos
+      //      b_i === v.OffsetInBlock / v.Scale
       // Thus
       //      ((this.Scale / v.Scale) * this.ReferencePos) + (v.OffsetInBlock / v.Scale)
       // reorganizes to...
@@ -530,11 +530,11 @@ export class Block {
     // variables that are connected from the left.  This is just like ComputeDfDv except
     // that of this case we start with the variableDoneEval being the Left variable.
     /*Assert.assert(
-      0 == this.allConstraints.DfDvStack.length,
+      0 === this.allConstraints.DfDvStack.length,
       'Leftovers of ComputeDfDvStack',
     )*/
     this.allConstraints.DfDvStack = new Stack<DfDvNode>()
-    /*Assert.assert(0 == lstVars.length, 'Leftovers of lstVars')*/
+    /*Assert.assert(0 === lstVars.length, 'Leftovers of lstVars')*/
     // Variables for initializing the first node.
     const dummyConstraint = new Constraint(initialVarToEval)
     this.dfDvDummyParentNode = new DfDvNode(dummyConstraint)
@@ -549,10 +549,10 @@ export class Block {
       if (!node.ChildrenHaveBeenPushed) {
         node.ChildrenHaveBeenPushed = true
         for (const constraint of node.VariableToEval.LeftConstraints) {
-          if (constraint.IsActive && constraint.Right != node.VariableDoneEval) {
+          if (constraint.IsActive && constraint.Right !== node.VariableDoneEval) {
             // If the node has no constraints other than the one we're now processing, it's a leaf
             // and we don't need the overhead of pushing to and popping from the stack.
-            if (1 == constraint.Right.ActiveConstraintCount) {
+            if (1 === constraint.Right.ActiveConstraintCount) {
               //  this.Debug_CycleCheck(constraint)
               //  this.Debug_MarkForCycleCheck(constraint)
               lstVars.push(constraint.Right)
@@ -564,9 +564,9 @@ export class Block {
         }
 
         for (const constraint of node.VariableToEval.RightConstraints) {
-          if (constraint.IsActive && constraint.Left != node.VariableDoneEval) {
+          if (constraint.IsActive && constraint.Left !== node.VariableDoneEval) {
             // See comments of .LeftConstraints
-            if (1 == constraint.Left.ActiveConstraintCount) {
+            if (1 === constraint.Left.ActiveConstraintCount) {
               //  this.Debug_CycleCheck(constraint)
               //  this.Debug_MarkForCycleCheck(constraint)
               lstVars.push(constraint.Left)
@@ -585,7 +585,7 @@ export class Block {
 
       // We are at a non-leaf node and have "recursed" through all its descendents, so we're done with it.
       /*Assert.assert(
-        this.allConstraints.DfDvStack.top == node,
+        this.allConstraints.DfDvStack.top === node,
         "DfDvStack.top should be 'node'",
       )*/
       this.allConstraints.RecycleDfDvNode(this.allConstraints.DfDvStack.pop())
@@ -611,7 +611,7 @@ export class Block {
     let lastKeepIndex: number = this.Variables.length - 1
     for (let currentIndex: number = this.Variables.length - 1; currentIndex >= 0; currentIndex--) {
       const currentVariable: Variable = this.Variables[currentIndex]
-      if (currentVariable.Block == newSplitBlock) {
+      if (currentVariable.Block === newSplitBlock) {
         if (currentIndex < lastKeepIndex) {
           // Swap of the one from the end.
           this.Variables[currentIndex] = this.Variables[lastKeepIndex]
@@ -624,12 +624,12 @@ export class Block {
     // end for each var to keep
     // Now remove the end slots we're not keeping.  lastKeepIndex is -1 if we are removing all variables.
     /*Assert.assert(
-      numVarsToMove == this.Variables.length - lastKeepIndex - 1,
+      numVarsToMove === this.Variables.length - lastKeepIndex - 1,
       'variable should not be found twice (probable cycle-detection problem',
     )*/
     this.Variables = this.Variables.slice(0, lastKeepIndex + 1)
 
-    if (0 == this.Variables.length) {
+    if (0 === this.Variables.length) {
       // This is probably due to unsatisfiable constraints; we've transferred all the variables,
       // so just don't split at all; move the variables back into the current block rather than
       // leaving an empty block of the list.  Caller will detect the empty newSplitBlock and ignore it.

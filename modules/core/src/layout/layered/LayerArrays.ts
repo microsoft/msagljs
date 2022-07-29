@@ -23,10 +23,10 @@ export class LayerArrays {
     let dropVal = 0
     for (let i = 0; i < this.Layers.length; i++) {
       drop[i] = dropVal
-      if (this.Layers[i].length == 0) dropVal++
+      if (this.Layers[i].length === 0) dropVal++
     }
 
-    if (dropVal == 0) return this
+    if (dropVal === 0) return this
 
     //we do have empty layers
     const ny = new Array<number>(this.y.length)
@@ -135,7 +135,7 @@ export function layersAreCorrect(layerArrays: LayerArrays): boolean {
 export function layerHasDublicatesOrUndef(layer: number[]) {
   const s = new Set<number>()
   for (const v of layer) {
-    if (v == undefined) {
+    if (v == null) {
       return true
     }
     if (s.has(v)) return true

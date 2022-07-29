@@ -24,7 +24,7 @@ export class Graph extends Node {
 
   noEmptySubgraphs(): boolean {
     for (const g of this.subgraphs()) {
-      if (g.shallowNodeCount == 0) return false
+      if (g.shallowNodeCount === 0) return false
     }
     return true
   }
@@ -41,7 +41,7 @@ export class Graph extends Node {
   }
 
   isEmpty() {
-    return this.shallowNodeCount == 0
+    return this.shallowNodeCount === 0
   }
 
   setEdge(sourceId: string, targetId: string): Edge {
@@ -127,7 +127,7 @@ export class Graph extends Node {
 
   /** adds a node to the graph */
   addNode(n: Node): Node {
-    /*Assert.assert(n.parent == null || n.parent == this)*/
+    /*Assert.assert(n.parent == null  || n.parent === this)*/
     n.parent = this
     this.nodeCollection.addNode(n)
     // Assert.assert(this.isConsistent())
@@ -155,7 +155,7 @@ export class Graph extends Node {
   // otherwise set n = n.parent and repeat.
   // Return null if the node parent is above the graph.
   liftNode(n: Node): Node {
-    while (n != null && n.parent != this) {
+    while (n != null && n.parent !== this) {
       n = <Node>n.parent
     }
     return n

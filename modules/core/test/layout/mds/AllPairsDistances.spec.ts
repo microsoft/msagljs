@@ -32,7 +32,7 @@ test('all pairs distances', () => {
     () => CurveFactory.createRectangle(10, 10, new Point(0, 0)),
     () => null,
   )
-  const length = (e: GeomEdge) => (e.edge == bc ? 0.5 : 1)
+  const length = (e: GeomEdge) => (e.edge === bc ? 0.5 : 1)
   const ss = new AllPairsDistances(geomGraph, length)
   ss.run()
   const res = ss.Result

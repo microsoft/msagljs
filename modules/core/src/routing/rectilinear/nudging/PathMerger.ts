@@ -60,9 +60,9 @@ export class PathMerger {
   //                foreach (var pathOff of pathOffs) {
   //                    var path = pathOff.Key;
   //                    var linkedPoint = pathOff.Value;
-  //                    if (linkedPoint.Point != p)
+  //                    if (linkedPoint.Point !== p)
   //                        return false;
-  //                    if (FindLinkedPointInPath(path, p) == null) {
+  //                    if (FindLinkedPointInPath(path, p) == null ) {
   //                        return false;
   //                    }
   //                }
@@ -88,7 +88,7 @@ export class PathMerger {
   }
 
   static *GetPointsInBetween(a: LinkedPoint, b: LinkedPoint): IterableIterator<Point> {
-    for (let i = a.Next; i != b; i = i.Next) {
+    for (let i = a.Next; i !== b; i = i.Next) {
       yield i.Point
     }
   }
@@ -120,7 +120,7 @@ export class PathMerger {
   // <returns>true is a is before b of the path</returns>
   static Before(a: LinkedPoint, b: LinkedPoint): boolean {
     for (a = a.Next; a != null; a = a.Next) {
-      if (a == b) {
+      if (a === b) {
         return true
       }
     }

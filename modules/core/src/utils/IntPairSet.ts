@@ -16,7 +16,7 @@ export class IntPairSet {
       return false
     }
     const s = this.arrayOfSets[x]
-    return s != undefined && s.has(y)
+    return s !== undefined && s.has(y)
   }
 
   constructor() {
@@ -38,14 +38,14 @@ export class IntPairSet {
   }
   add(p: IntPair) {
     let s = this.arrayOfSets[p.x]
-    if (s == undefined) {
+    if (s == null) {
       this.arrayOfSets[p.x] = s = new Set<number>()
     }
     s.add(p.y)
   }
   addNN(x: number, y: number) {
     let s = this.arrayOfSets[x]
-    if (s == undefined) {
+    if (s == null) {
       this.arrayOfSets[x] = s = new Set<number>()
     }
     s.add(y)

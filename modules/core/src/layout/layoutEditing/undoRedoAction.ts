@@ -130,6 +130,6 @@ export class UndoRedoAction {
 
   // returns true if the was a change in the bounding box of the graph
   get GraphBoundingBoxHasChanged(): boolean {
-    return this.graphBoundingBoxAfter != this.graphBoundingBoxBefore
+    return this.graphBoundingBoxAfter !== this.graphBoundingBoxBefore
   }
 }

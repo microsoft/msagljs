@@ -86,7 +86,7 @@ export class Variable {
 
   ActiveConstraintCount = 0
 
-  // The (x1-x2)^2 neighbor relationships: Key == NeighborVar, Value == Weight of relationship
+  // The (x1-x2)^2 neighbor relationships: Key === NeighborVar, Value === Weight of relationship
   Neighbors: Array<NeighborAndWeight>
 
   constructor(ordinal: number, userData: any, desiredPos: number, weight: number, scale: number) {
@@ -156,7 +156,7 @@ export class Variable {
     this.RightConstraints = rightConstraints
   }
 
-  // Compare the Variables by their ordinals, in ascending order (this == lhs, other == rhs).
+  // Compare the Variables by their ordinals, in ascending order (this === lhs, other === rhs).
 
   // The object being compared to.
   // <returns>-1 if this.Ordinal is "less"; +1 if this.Ordinal is "greater"; 0 if this.Ordinal

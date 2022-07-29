@@ -31,12 +31,12 @@ export class ConeSpanner extends Algorithm {
     borderPolyline: Polyline,
   ): ConeSpanner {
     const ret = new ConeSpanner(obstacles, visibilityGraph)
-    // Assert.assert(borderPolyline == null || obstacles.every((o) => Curve.CurveIsInsideOther(o, borderPolyline)))
+    // Assert.assert(borderPolyline == null  || obstacles.every((o) => Curve.CurveIsInsideOther(o, borderPolyline)))
     // Assert.assert(
-    //  borderPolyline == null ||
-    //  Array.from(ports.values()).every((o) => Curve.PointRelativeToCurveLocation(o, borderPolyline) == PointLocation.Inside),
+    //  borderPolyline == null  ||
+    //  Array.from(ports.values()).every((o) => Curve.PointRelativeToCurveLocation(o, borderPolyline) === PointLocation.Inside),
     // )
-    // Assert.assert(obstacles.All(o => ports.All(p => Curve.PointRelativeToCurveLocation(p, o) == PointLocation.Outside)));
+    // Assert.assert(obstacles.All(o => ports.All(p => Curve.PointRelativeToCurveLocation(p, o) === PointLocation.Outside)));
     // todo: uncomment this assert - it failes on D:\progression\src\ddsuites\src\vs\Progression\ScenarioTests\Grouping\GroupingResources\GroupBySelection2.dgml
     // when dragging
     // Assert.assert(coneAngle > Math.PI / (180 * 2) && coneAngle <= Math.PI / 2)

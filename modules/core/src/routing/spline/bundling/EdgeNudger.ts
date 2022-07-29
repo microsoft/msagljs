@@ -58,7 +58,7 @@ export class EdgeNudger extends Algorithm {
   }
 
   CreateCurves() {
-    //Assert.assert(this.metroGraphData.Metrolines.length == this.metroGraphData.Edges.length)
+    //Assert.assert(this.metroGraphData.Metrolines.length === this.metroGraphData.Edges.length)
     for (let i = 0; i < this.metroGraphData.Metrolines.length; i++) {
       this.CreateCurveLine(this.metroGraphData.Metrolines[i], this.metroGraphData.Edges[i])
     }
@@ -220,9 +220,9 @@ export class EdgeNudger extends Algorithm {
   ): Array<[Point, Point]> {
     const ret = new Array<[Point, Point]>()
     if (
-      metroGraphData.Stations.length == 0 ||
+      metroGraphData.Stations.length === 0 ||
       metroGraphData.Stations[0].BundleBases == null ||
-      metroGraphData.Stations[0].BundleBases.size == 0
+      metroGraphData.Stations[0].BundleBases.size === 0
     )
       return []
     let start: Point = EdgeNudger.FindCurveStart(metroGraphData, metroMapOrdering, line)
@@ -334,7 +334,7 @@ export class EdgeNudger extends Algorithm {
     const p2 = Point.middle(p1, p3)
     const orient1 = Point.getTriangleOrientation(p0, p1, p2)
     const orient2 = Point.getTriangleOrientation(p2, p3, p4)
-    if (orient1 != orient2) {
+    if (orient1 !== orient2) {
       return EdgeNudger.StandardBezier(p0, ts, p4, te)
     }
     const curve = new Curve()
@@ -463,7 +463,7 @@ export class EdgeNudger extends Algorithm {
     const minDelLength: number = Math.min(del0.length, del1.length)
     const midPointOfShorter: Point = shorterSeg.value(0.5)
     const maxDelLen: number = Math.max(del0.length, del1.length)
-    if (this.NicelyAligned(<BezierSeg>longerSeg.Segment, del0, del1, midPointOfShorter, minDelLength, maxDelLen) == 0) {
+    if (this.NicelyAligned(<BezierSeg>longerSeg.Segment, del0, del1, midPointOfShorter, minDelLength, maxDelLen) === 0) {
       return false
     }
 
@@ -499,7 +499,7 @@ export class EdgeNudger extends Algorithm {
     highP1 = t.highP
     let r: number = this.NicelyAligned(seg, del0, del1, midPointOfShorter, minDelLength, maxDel)
     do {
-      if (r == -1) {
+      if (r === -1) {
         // pull the control points lower
         const p1: Point = Point.middle(seg.B(1), lowP1)
 
@@ -508,7 +508,7 @@ export class EdgeNudger extends Algorithm {
         highP2 = seg.B(2)
         seg = new BezierSeg(start, p1, p2, end)
       } else {
-        //Assert.assert(r == 1)
+        //Assert.assert(r === 1)
         // pull the control points higher
         const p1: Point = Point.middle(seg.B(1), highP1)
 
@@ -519,7 +519,7 @@ export class EdgeNudger extends Algorithm {
         seg = new BezierSeg(start, p1, p2, end)
       }
 
-      if ((r = this.NicelyAligned(seg, del0, del1, midPointOfShorter, minDelLength, maxDel)) == 0) {
+      if ((r = this.NicelyAligned(seg, del0, del1, midPointOfShorter, minDelLength, maxDel)) === 0) {
         longerOrientedSeg.Segment = seg
         longerOrientedSeg.Other.Segment = seg
         return true

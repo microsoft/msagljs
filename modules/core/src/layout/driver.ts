@@ -20,11 +20,11 @@ import {EdgeLabelPlacement} from './edgeLabelPlacement'
 //  edgeRoutingSettings: EdgeRoutingSettings,
 //  cornerFitRadius = 3,
 // ) {
-//  if (edgeRoutingSettings.edgeRoutingMode != EdgeRoutingMode.Rectilinear) {
+//  if (edgeRoutingSettings.edgeRoutingMode !== EdgeRoutingMode.Rectilinear) {
 //    // TODO: enable other modes
 //    routeStraightEdges(geomG)
 //  } else {
-//    if (edgeRoutingSettings.EdgeRoutingMode == EdgeRoutingMode.Rectilinear)
+//    if (edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.Rectilinear)
 //      routeRectilinearEdges(geomG, edgeRoutingSettings.padding, cornerFitRadius)
 //  }
 // }
@@ -32,10 +32,10 @@ import {EdgeLabelPlacement} from './edgeLabelPlacement'
 // function routeStraightEdges(geomG: GeomGraph) {
 //  for (const u of geomG.deepNodes) {
 //    for (const e of u.outEdges()) {
-//      if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
+//      if (e.curve == null ) StraightLineEdges.RouteEdge(e, 0)
 //    }
 //    for (const e of u.selfEdges()) {
-//      if (e.curve == null) StraightLineEdges.RouteEdge(e, 0)
+//      if (e.curve == null ) StraightLineEdges.RouteEdge(e, 0)
 //    }
 //  }
 // }
@@ -109,13 +109,13 @@ export function getEdgeRoutingSettingsFromAncestors(geomGraph: GeomGraph): EdgeR
 
 export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) {
   const ers: EdgeRoutingSettings = getEdgeRoutingSettingsFromAncestors(geomGraph)
-  if (ers.EdgeRoutingMode == EdgeRoutingMode.Rectilinear) {
+  if (ers.EdgeRoutingMode === EdgeRoutingMode.Rectilinear) {
     routeRectilinearEdges(geomGraph, edgesToRoute, cancelToken)
-  } else if (ers.EdgeRoutingMode == EdgeRoutingMode.Spline || ers.EdgeRoutingMode == EdgeRoutingMode.SplineBundling) {
+  } else if (ers.EdgeRoutingMode === EdgeRoutingMode.Spline || ers.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
     routeSplines(geomGraph, edgesToRoute, cancelToken)
-  } else if (ers.EdgeRoutingMode == EdgeRoutingMode.StraightLine) {
+  } else if (ers.EdgeRoutingMode === EdgeRoutingMode.StraightLine) {
     straightLineEdgePatcher(geomGraph, edgesToRoute, cancelToken)
-  } else if (ers.EdgeRoutingMode != EdgeRoutingMode.None) {
+  } else if (ers.EdgeRoutingMode !== EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }
   positionLabelsIfNeeded(geomGraph)
@@ -192,13 +192,13 @@ export function layoutGeomGraphDetailed(
     for (const n of graphUnderSurgery.shallowNodes) {
       for (const e of n.outEdges) {
         const lifted = graphUnderSurgery.liftNode(e.target)
-        if (lifted == null || lifted == n) {
+        if (lifted == null || lifted === n) {
           ret.add(e)
         }
       }
       for (const e of n.inEdges) {
         const lifted = graphUnderSurgery.liftNode(e.source)
-        if (lifted == null || lifted == n) {
+        if (lifted == null || lifted === n) {
           ret.add(e)
         }
       }
@@ -208,7 +208,7 @@ export function layoutGeomGraphDetailed(
   }
 
   function layoutComps() {
-    if (connectedGraphs.length == 1) {
+    if (connectedGraphs.length === 1) {
       layoutEngine(geomG, cancelToken)
     } else {
       for (const cg of connectedGraphs) {
@@ -229,7 +229,7 @@ function createLiftedEdges(graph: Graph): Array<[GeomEdge, Edge]> {
     for (const uv of u.outEdges.values()) {
       const v = uv.target
       const liftedV = graph.liftNode(v)
-      if (liftedV == null || (liftedU == u && liftedV == v) || liftedU == liftedV) {
+      if (liftedV == null || (liftedU === u && liftedV === v) || liftedU === liftedV) {
         continue
       }
       uv.remove()
@@ -271,9 +271,9 @@ export function routeRectilinearEdges(
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph) {
-  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges).filter((edge) => edge.label && edge.label.isPositioned == false)
+  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges).filter((edge) => edge.label && edge.label.isPositioned === false)
 
-  if (edgesWithNonPositionedLabels.length == 0) return
+  if (edgesWithNonPositionedLabels.length === 0) return
   const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
   ep.run()
 }
@@ -290,7 +290,7 @@ export function geometryIsCreated(graph: Graph): boolean {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false
     if (n instanceof Graph) {
-      if (geometryIsCreated(n) == false) return false
+      if (geometryIsCreated(n) === false) return false
     }
   }
   for (const e of graph.edges) {
@@ -309,7 +309,7 @@ export function layoutIsCalculated(graph: Graph): boolean {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false
     if (n instanceof Graph) {
-      if (layoutIsCalculated(n) == false) return false
+      if (layoutIsCalculated(n) === false) return false
     }
   }
   for (const e of graph.edges) {

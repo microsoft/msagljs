@@ -17,7 +17,7 @@ export type GeomNodeJSON = {
 }
 export class GeomNode extends GeomObject {
   translate(delta: Point) {
-    if (delta.x == 0 && delta.y == 0) return
+    if (delta.x === 0 && delta.y === 0) return
     const m = new PlaneTransformation(1, 0, delta.x, 0, 1, delta.y)
     this.transform(m)
   }
@@ -74,7 +74,7 @@ export class GeomNode extends GeomObject {
     if (this.boundaryCurve != null) {
       // RoundedRect is special, rather then simply scaling the geometry we want to keep the corner radii constant
       const radii = CurveFactory.isRoundedRect(this.boundaryCurve)
-      if (radii == undefined) {
+      if (radii == null) {
         /*Assert.assert(this.boundaryCurve.boundingBox.width > 0)*/
         /*Assert.assert(this.boundaryCurve.boundingBox.height > 0)*/
         const scaleX = targetBounds.width / this.boundaryCurve.boundingBox.width

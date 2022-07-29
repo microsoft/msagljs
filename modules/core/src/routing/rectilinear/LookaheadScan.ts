@@ -29,7 +29,7 @@ export class LookaheadScan {
   Add(initialSite: BasicReflectionEvent) {
     // Assert we can't find it - subsumption should have taken care of that.
     /*Assert.assert(
-      this.Find(initialSite.Site) == null,
+      this.Find(initialSite.Site) == null ,
       'Should not add the same Lookahead coordinate twice',
     )*/
     this.eventTree.insert(initialSite)
@@ -67,7 +67,7 @@ export class LookaheadScan {
   RemoveExact(initialSite: BasicReflectionEvent): boolean {
     const node: RBNode<BasicReflectionEvent> = this.eventTree.find(initialSite)
     if (null != node) {
-      if (node.item.Site == initialSite.Site) {
+      if (node.item.Site === initialSite.Site) {
         this.eventTree.deleteNodeInternal(node)
         return true
       }

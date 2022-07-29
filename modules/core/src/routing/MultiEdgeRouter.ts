@@ -60,7 +60,7 @@ export class MultiEdgeRouter {
 
   private GetPortCurve(port: Port): ICurve {
     const curve = this.nodeTree.FirstHitNodeWithPredicate(port.Location, (point, c) =>
-      Curve.PointRelativeToCurveLocation(point, c) != PointLocation.Outside ? HitTestBehavior.Stop : HitTestBehavior.Continue,
+      Curve.PointRelativeToCurveLocation(point, c) !== PointLocation.Outside ? HitTestBehavior.Stop : HitTestBehavior.Continue,
     ).UserData
     return curve
   }

@@ -107,7 +107,7 @@
 //         this.HookUpToViewerEvents();
 //         this.ToggleEntityPredicate =(modifierKeys, mouseButtons, draggingParameter) => LayoutEditor.LeftButtonIsPressed(mouseButtons);
 //         this.NodeInsertPredicate = (modifierKeys, mouseButtons, draggingParameter) =>
-//              LayoutEditor.MiddleButtonIsPressed(mouseButtons) && draggingParameter == false;
+//              LayoutEditor.MiddleButtonIsPressed(mouseButtons) && draggingParameter === false;
 
 //         this.DecorateObjectForDragging = this.TheDefaultObjectDecorator;
 //         this.RemoveObjDraggingDecorations = this.TheDefaultObjectDecoratorRemover;
@@ -134,7 +134,7 @@
 //     }
 
 //     ViewChangeEventHandler(sender: Object, e: any) {
-//         if ((this.graph == null)) {
+//         if ((this.graph == null )) {
 //             return;
 //         }
 //     }
@@ -329,14 +329,14 @@
 //     ///  If set to true then we are of a mode for node insertion
 //     ///  </summary>
 //      get InsertingEdge(): boolean {
-//         if ((this.viewer == null)) {
+//         if ((this.viewer == null )) {
 //             return false;
 //         }
 
 //         return this.viewer.InsertingEdge;
 //     }
 //      set InsertingEdge(value: boolean)  {
-//         if ((this.viewer == null)) {
+//         if ((this.viewer == null )) {
 //             return;
 //         }
 
@@ -477,7 +477,7 @@
 // }
 
 // MakeExpandedEdgesVisible(cluster: Cluster) {
-//     Debug.Assert((cluster.IsCollapsed == false));
+//     Debug.Assert((cluster.IsCollapsed === false));
 //     for (let node of cluster.Nodes) {
 //         LayoutEditor.UnhideNodeEdges((<Node>(node.UserData)));
 //     }
@@ -544,7 +544,7 @@
 // }
 
 // ReportBeforeChange(viewerObject: IViewerObject) {
-//     if (((this.CurrentUndoAction == null)
+//     if (((this.CurrentUndoAction == null )
 //                 || this.CurrentUndoAction.ContainsAffectedObject(viewerObject))) {
 //         return;
 //     }
@@ -628,12 +628,12 @@
 
 // static LeftButtonIsPressed(mouseButtons: MouseButtons): boolean {
 //     return ((mouseButtons & MouseButtons.Left)
-//                 == MouseButtons.Left);
+//                 === MouseButtons.Left);
 // }
 
 // static MiddleButtonIsPressed(mouseButtons: MouseButtons): boolean {
 //     return ((mouseButtons & MouseButtons.Middle)
-//                 == MouseButtons.Middle);
+//                 === MouseButtons.Middle);
 // }
 
 // MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: MsaglMouseEventArgs): boolean {
@@ -659,7 +659,7 @@
 //                 let geomEdge = drawingEdge.GeometryEdge;
 //                 if (((geomEdge != null)
 //                             && this.viewer.LayoutEditingEnabled)) {
-//                     if ((geomEdge.UnderlyingPolyline == null)) {
+//                     if ((geomEdge.UnderlyingPolyline == null )) {
 //                         geomEdge.UnderlyingPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge);
 //                     }
 
@@ -719,16 +719,16 @@
 // //         }
 // ModifierKeyIsPressed(): boolean {
 //     let modifierKeyWasUsed: boolean = (((this.viewer.ModifierKeys & ModifierKeys.Control)
-//                 == ModifierKeys.Control)
+//                 === ModifierKeys.Control)
 //                 || ((this.viewer.ModifierKeys & ModifierKeys.Shift)
-//                 == ModifierKeys.Shift));
+//                 === ModifierKeys.Shift));
 //     return modifierKeyWasUsed;
 // }
 
 // SwitchToEdgeEditing(edge: IViewerEdge) {
 //     this.UnselectEverything();
 //     let editableEdge = (<IEditableObject>(edge));
-//     if ((editableEdge == null)) {
+//     if ((editableEdge == null )) {
 //         return;
 //     }
 
@@ -752,7 +752,7 @@
 // }
 
 // SelectObjectForDragging(obj: IViewerObject) {
-//     if ((obj.MarkedForDragging == false)) {
+//     if ((obj.MarkedForDragging === false)) {
 //         obj.MarkedForDragging = true;
 //         this.dragGroup.Insert(obj);
 //         this.DecorateObjectForDragging(obj);
@@ -810,7 +810,7 @@
 
 // ViewerMouseDown(sender: Object, e: MsaglMouseEventArgs) {
 //     if ((!this.viewer.LayoutEditingEnabled
-//                 || (this.viewer.Graph == null))) {
+//                 || (this.viewer.Graph == null ))) {
 //         return;
 //     }
 
@@ -889,7 +889,7 @@
 //             node = this.SetPortWhenDraggingStraightLine(/* ref */port, /* ref */mousePosition);
 //         }
 //         else {
-//             if ((InteractiveEdgeRouter == null)) {
+//             if ((InteractiveEdgeRouter == null )) {
 //                 this.PrepareForEdgeDragging();
 //             }
 
@@ -934,7 +934,7 @@
 
 // CreateOrUpdateCurvePort(t: number, geomNode: GeometryNode, port: Port): Port {
 //     let cp = (<CurvePort>(port));
-//     if ((cp == null)) {
+//     if ((cp == null )) {
 //         return new CurvePort(geomNode.BoundaryCurve, t);
 //     }
 
@@ -972,7 +972,7 @@
 // }
 
 // GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): IEnumerable<IViewerNode> {
-//     if ((this.looseObstaclesToTheirViewerNodes == null)) {
+//     if ((this.looseObstaclesToTheirViewerNodes == null )) {
 //         this.InitLooseObstaclesToViewerNodeMap();
 //     }
 
@@ -1012,7 +1012,7 @@
 // }
 
 // static PointIsInside(point: Point, iCurve: ICurve): boolean {
-//     return (Curve.PointRelativeToCurveLocation(point, iCurve) == PointLocation.Inside);
+//     return (Curve.PointRelativeToCurveLocation(point, iCurve) === PointLocation.Inside);
 // }
 
 // NeedToCreateBoundaryPort(mousePoint: Point, node: IViewerNode, /* out */portParameter: number): boolean {
@@ -1101,7 +1101,7 @@
 
 // GetDraggingMode(): DraggingMode {
 //     let incremental: boolean = (((this.viewer.ModifierKeys & ModifierKeys.Shift)
-//                 == ModifierKeys.Shift)
+//                 === ModifierKeys.Shift)
 //                 || this.viewer.IncrementalDraggingModeAlways);
 //     return DraggingMode.Incremental;
 //     // TODO: Warning!!!, inline IF is not supported ?
@@ -1123,7 +1123,7 @@
 //     // restrict the dragged elements to be under the same cluster
 //     let activeObjCluster: Cluster = LayoutEditor.GetActiveObjectCluster(this.ActiveDraggedObject);
 //     for (let draggObj: IViewerObject of this.dragGroup) {
-//         if ((LayoutEditor.GetActiveObjectCluster(draggObj) == activeObjCluster)) {
+//         if ((LayoutEditor.GetActiveObjectCluster(draggObj) === activeObjCluster)) {
 //             yield;
 //         }
 
@@ -1238,13 +1238,13 @@
 // FinishRoutingEdge() {
 //     GeomEdge.SourceArrowhead = null;
 //     // TODO: Warning!!!, inline IF is not supported ?
-//     (this.EdgeAttr.ArrowheadAtSource == ArrowStyle.None);
+//     (this.EdgeAttr.ArrowheadAtSource === ArrowStyle.None);
 //     new Arrowhead();
 //     GeomEdge.TargetArrowhead = null;
 //     // TODO: Warning!!!, inline IF is not supported ?
-//     (this.EdgeAttr.ArrowheadAtTarget == ArrowStyle.None);
+//     (this.EdgeAttr.ArrowheadAtTarget === ArrowStyle.None);
 //     new Arrowhead();
-//     if ((this.TargetOfInsertedEdge != this.SourceOfInsertedEdge)) {
+//     if ((this.TargetOfInsertedEdge !== this.SourceOfInsertedEdge)) {
 //         InteractiveEdgeRouter.TryToRemoveInflectionsAndCollinearSegments(GeomEdge.SmoothedPolyline);
 //         InteractiveEdgeRouter.SmoothCorners(GeomEdge.SmoothedPolyline);
 //         GeomEdge.Curve = GeomEdge.SmoothedPolyline.CreateCurve();
@@ -1279,16 +1279,16 @@
 // ProcessRightClickOnSelectedEdge(e: MsaglMouseEventArgs) {
 //     this.mouseRightButtonDownPoint = viewer.ScreenToSource(e);
 //     this.cornerInfo = this.AnalyzeInsertOrDeletePolylineCorner(this.mouseRightButtonDownPoint, this.SelectedEdge.RadiusOfPolylineCorner);
-//     if ((this.cornerInfo == null)) {
+//     if ((this.cornerInfo == null )) {
 //         return;
 //     }
 
 //     e.Handled = true;
 //     let edgeRemoveCouple = new [string, ()=>void>("Remove edge", () =] {  }, viewer.RemoveEdge(this.SelectedEdge, true));
-//     if ((this.cornerInfo.Item2 == PolylineCornerType.PreviousCornerForInsertion)) {
+//     if ((this.cornerInfo.Item2 === PolylineCornerType.PreviousCornerForInsertion)) {
 //         viewer.PopupMenus(new [string, ()=>void]("Insert polyline corner", this.InsertPolylineCorner), edgeRemoveCouple);
 //     }
-//     else if ((this.cornerInfo.Item2 == PolylineCornerType.CornerToDelete)) {
+//     else if ((this.cornerInfo.Item2 === PolylineCornerType.CornerToDelete)) {
 //         viewer.PopupMenus(new [string, ()=>void]("Delete polyline corner", this.DeleteCorner), edgeRemoveCouple);
 //     }
 
@@ -1392,7 +1392,7 @@
 // ///  <returns>null if a corner is not found</returns>
 
 //  AnalyzeInsertOrDeletePolylineCorner(point: Point, tolerance: number): [CornerSite, PolylineCornerType] {
-//     if ((this.SelectedEdge == null)) {
+//     if ((this.SelectedEdge == null )) {
 //         return null;
 //     }
 
@@ -1456,8 +1456,8 @@
 // }
 
 //  static RectRouting(mode: EdgeRoutingMode): boolean {
-//     return ((mode == EdgeRoutingMode.Rectilinear)
-//                 || (mode == EdgeRoutingMode.RectilinearToCenter));
+//     return ((mode === EdgeRoutingMode.Rectilinear)
+//                 || (mode === EdgeRoutingMode.RectilinearToCenter));
 // }
 
 // EnumerateNodeBoundaryCurves(): IEnumerable<ICurve> {
@@ -1469,7 +1469,7 @@
 // }
 
 //  ForgetEdgeDragging() {
-//     if ((this.viewer.Graph == null)) {
+//     if ((this.viewer.Graph == null )) {
 //         return;
 //     }
 
@@ -1488,7 +1488,7 @@
 // ///  prepares for edge dragging
 // ///  </summary>
 //  PrepareForEdgeDragging() {
-//     if ((this.viewer.Graph == null)) {
+//     if ((this.viewer.Graph == null )) {
 //         return;
 //     }
 
@@ -1498,7 +1498,7 @@
 
 //     let settings = this.viewer.Graph.LayoutAlgorithmSettings;
 //     if (!LayoutEditor.RectRouting(settings.EdgeRoutingSettings.EdgeRoutingMode)) {
-//         if ((InteractiveEdgeRouter == null)) {
+//         if ((InteractiveEdgeRouter == null )) {
 //             let padding = (settings.NodeSeparation / 3);
 //             let loosePadding = (0.65 * padding);
 //             InteractiveEdgeRouter = new InteractiveEdgeRouter(this.EnumerateNodeBoundaryCurves(), padding, loosePadding, 0);
@@ -1590,7 +1590,7 @@
 //     this.UnselectEverything();
 //     if ((this.ToggleEntityPredicate(this.viewer.ModifierKeys, this.PressedMouseButtons, true)
 //                 && ((this.viewer.ModifierKeys & ModifierKeys.Shift)
-//                 != ModifierKeys.Shift))) {
+//                 !== ModifierKeys.Shift))) {
 //         this.SelectEntitiesForDraggingWithRectangle(e);
 //     }
 
@@ -1605,7 +1605,7 @@
 // }
 
 // CalculateEdgeInteractivelyToLocation(location: Point): GeomEdge {
-//     if ((InteractiveEdgeRouter.SourcePort == null)) {
+//     if ((InteractiveEdgeRouter.SourcePort == null )) {
 //         InteractiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolyline);
 //     }
 
@@ -1617,7 +1617,7 @@
 // }
 
 // DraggingStraightLine(): boolean {
-//     if ((this.viewer.Graph == null)) {
+//     if ((this.viewer.Graph == null )) {
 //         return true;
 //     }
 
@@ -1626,13 +1626,13 @@
 // }
 
 // CalculateEdgeInteractively(targetPortParameter: Port, portLoosePolyline: Polyline): GeomEdge {
-//     if ((InteractiveEdgeRouter.SourcePort == null)) {
+//     if ((InteractiveEdgeRouter.SourcePort == null )) {
 //         InteractiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolyline);
 //     }
 
 //     let curve: ICurve;
 //     let smoothedPolyline: SmoothedPolyline = null;
-//     if ((this.SourceOfInsertedEdge == this.TargetOfInsertedEdge)) {
+//     if ((this.SourceOfInsertedEdge === this.TargetOfInsertedEdge)) {
 //         curve = new LineSegment(this.SourcePort.Location, this.TargetPort.Location);
 //     }
 //     else {
@@ -1670,7 +1670,7 @@
 // ///  </summary>
 // ///  <param name="node"></param>
 //  DetachNode(node: IViewerNode) {
-//     if ((node == null)) {
+//     if ((node == null )) {
 //         return;
 //     }
 

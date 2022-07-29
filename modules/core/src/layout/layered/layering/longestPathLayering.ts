@@ -41,9 +41,9 @@ export class LongestPathLayering implements LayerCalculator {
   }
 }
 function edgeIsOff(e: NetworkEdge, topoOrder: number[]): boolean {
-  const i = topoOrder.findIndex((x) => x == e.source)
-  const j = topoOrder.findIndex((x) => x == e.target)
-  if (i == -1 || j == -1 || i >= j) {
+  const i = topoOrder.findIndex((x) => x === e.source)
+  const j = topoOrder.findIndex((x) => x === e.target)
+  if (i === -1 || j === -1 || i >= j) {
     return true
   }
   return false

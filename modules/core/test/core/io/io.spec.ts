@@ -80,7 +80,7 @@ xtest('graph ldbxtried.gv', () => {
 
   const edges = []
   for (const e of g.deepEdges) {
-    if (e.source.parent != e.target.parent) {
+    if (e.source.parent !== e.target.parent) {
       const geomEdge = GeomObject.getGeom(e) as GeomEdge
       geomEdge.curve = null
       edges.push(geomEdge)
@@ -169,10 +169,10 @@ test('measuredTextSize is preserved', () => {
   const json = graphToJSON(graph)
   const newGraph = parseJSONGraph(json)
   const boxBecame = GeomGraph.getGeom(newGraph).boundingBox
-  expect(boxBecame.width == boxWas.width).toBe(true)
-  expect(boxBecame.right == boxWas.right).toBe(true)
-  expect(boxBecame.left == boxWas.left).toBe(true)
-  expect(boxBecame.bottom == boxWas.bottom).toBe(true)
+  expect(boxBecame.width === boxWas.width).toBe(true)
+  expect(boxBecame.right === boxWas.right).toBe(true)
+  expect(boxBecame.left === boxWas.left).toBe(true)
+  expect(boxBecame.bottom === boxWas.bottom).toBe(true)
   for (const n of newGraph.shallowNodes) {
     const dn = DrawingObject.getDrawingObj(n) as DrawingNode
     expect(dn.measuredTextSize.height > 0 && dn.measuredTextSize.width > 0).toBe(true)

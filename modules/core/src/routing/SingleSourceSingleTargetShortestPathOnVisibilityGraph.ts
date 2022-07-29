@@ -72,11 +72,11 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   // }
 
   private PassableOutEdge(e: VisibilityEdge): boolean {
-    return e.Source == this._source || e.Target == this._target || !SingleSourceSingleTargetShortestPathOnVisibilityGraph.IsForbidden(e)
+    return e.Source === this._source || e.Target === this._target || !SingleSourceSingleTargetShortestPathOnVisibilityGraph.IsForbidden(e)
   }
 
   private PassableInEdge(e: VisibilityEdge): boolean {
-    return e.Source == this._target || e.Target == this._source || !SingleSourceSingleTargetShortestPathOnVisibilityGraph.IsForbidden(e)
+    return e.Source === this._target || e.Target === this._source || !SingleSourceSingleTargetShortestPathOnVisibilityGraph.IsForbidden(e)
   }
 
   private static IsForbidden(e: VisibilityEdge): boolean {
@@ -92,13 +92,13 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   ) {
     const len = l.Length + penalty
     const c = u.Distance + len
-    if (v != this._source && this._visGraph.PreviosVertex(v) == null) {
+    if (v !== this._source && this._visGraph.PreviosVertex(v) == null) {
       v.Distance = c
       this._visGraph.SetPreviousEdge(v, l)
-      if (v != this._target) {
+      if (v !== this._target) {
         pq.Enqueue(v, this.H(v))
       }
-    } else if (v != this._source && c < v.Distance) {
+    } else if (v !== this._source && c < v.Distance) {
       // This condition should never hold for the dequeued nodes.
       // However because of a very rare case of an epsilon error it might!
       // In this case DecreasePriority will fail to find "v" and the algorithm will continue working.
@@ -107,7 +107,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
       // smaller distance.
       v.Distance = c
       this._visGraph.SetPreviousEdge(v, l)
-      if (v != this._target) {
+      if (v !== this._target) {
         pq.DecreasePriority(v, this.H(v))
       }
     }
@@ -121,13 +121,13 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   ) {
     const len = l.Length
     const c = u.Distance + len
-    if (v != this._source && this._visGraph.PreviosVertex(v) == null) {
+    if (v !== this._source && this._visGraph.PreviosVertex(v) == null) {
       v.Distance = c
       this._visGraph.SetPreviousEdge(v, l)
-      if (v != this._target) {
+      if (v !== this._target) {
         pq.Enqueue(v, this.H(v))
       }
-    } else if (v != this._source && c < v.Distance) {
+    } else if (v !== this._source && c < v.Distance) {
       // This condition should never hold for the dequeued nodes.
       // However because of a very rare case of an epsilon error it might!
       // In this case DecreasePriority will fail to find "v" and the algorithm will continue working.
@@ -136,7 +136,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
       // smaller distance.
       v.Distance = c
       this._visGraph.SetPreviousEdge(v, l)
-      if (v != this._target) {
+      if (v !== this._target) {
         pq.DecreasePriority(v, this.H(v))
       }
     }
@@ -156,7 +156,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
       }
 
       v = this._visGraph.PreviosVertex(v)
-    } while (v != this._source)
+    } while (v !== this._source)
 
     ret.push(this._source)
     return ret.reverse()

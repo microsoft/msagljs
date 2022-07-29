@@ -134,7 +134,7 @@ export class Parallelogram {
       Parallelogram.separByB(parallelogram1, parallelogram0)
     )
 
-    if (ret == false) return false
+    if (ret === false) return false
 
     if (!(parallelogram0.isSeg && parallelogram1.isSeg)) return true
 

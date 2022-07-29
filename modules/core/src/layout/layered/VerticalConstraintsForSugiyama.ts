@@ -42,10 +42,10 @@ export class VerticalConstraintsForSugiyama {
 
   get isEmpty() {
     return (
-      this.maxLayerOfGeomGraph.size == 0 &&
-      this.minLayerOfGeomGraph.size == 0 &&
-      this.sameLayerConstraints.length == 0 &&
-      this.upDownConstraints.length == 0
+      this.maxLayerOfGeomGraph.size === 0 &&
+      this.minLayerOfGeomGraph.size === 0 &&
+      this.sameLayerConstraints.length === 0 &&
+      this.upDownConstraints.length === 0
     )
   }
 
@@ -98,16 +98,16 @@ export class VerticalConstraintsForSugiyama {
   }
 
   addMaxMinConstraintsToGluedConstraints() {
-    if (this.maxRepresentative != -1)
+    if (this.maxRepresentative !== -1)
       for (let i = 0; i < this.intGraph.nodeCount; i++) {
         const j = this.nodeToRepr(i)
-        if (j != this.maxRepresentative) this.gluedUpDownIntConstraints.add(new IntPair(this.maxRepresentative, j))
+        if (j !== this.maxRepresentative) this.gluedUpDownIntConstraints.add(new IntPair(this.maxRepresentative, j))
       }
 
-    if (this.minRepresentative != -1)
+    if (this.minRepresentative !== -1)
       for (let i = 0; i < this.intGraph.nodeCount; i++) {
         const j = this.nodeToRepr(i)
-        if (j != this.minRepresentative) this.gluedUpDownIntConstraints.add(new IntPair(j, this.minRepresentative))
+        if (j !== this.minRepresentative) this.gluedUpDownIntConstraints.add(new IntPair(j, this.minRepresentative))
       }
   }
 
@@ -154,15 +154,15 @@ export class VerticalConstraintsForSugiyama {
 
   createEdgesOfSameLayers(): IntPair[] {
     const ret = new Array<IntPair>()
-    if (this.maxRepresentative != -1) {
+    if (this.maxRepresentative !== -1) {
       this.maxLayerInt
-        .filter((v) => v != this.maxRepresentative)
+        .filter((v) => v !== this.maxRepresentative)
         .map((v) => new IntPair(this.maxRepresentative, v))
         .forEach((p) => ret.push(p))
     }
-    if (this.minRepresentative != -1) {
+    if (this.minRepresentative !== -1) {
       this.minLayerInt
-        .filter((v) => v != this.minRepresentative)
+        .filter((v) => v !== this.minRepresentative)
         .map((v) => new IntPair(this.minRepresentative, v))
         .forEach((p) => ret.push(p))
     }
@@ -179,7 +179,7 @@ export class VerticalConstraintsForSugiyama {
         for (const v of sameLayerNodes) this.sameLayerDictionaryOfRepresentatives.set(v, (representative = this.minRepresentative))
       } else {
         for (const v of sameLayerNodes) {
-          if (representative == -1) representative = v
+          if (representative === -1) representative = v
           this.sameLayerDictionaryOfRepresentatives.set(v, representative)
         }
       }
@@ -188,11 +188,11 @@ export class VerticalConstraintsForSugiyama {
   }
 
   componentIsMinLayer(component: number[]): boolean {
-    return component.findIndex((p) => this.minRepresentative == p) >= 0
+    return component.findIndex((p) => this.minRepresentative === p) >= 0
   }
 
   componentsIsMaxLayer(component: number[]): boolean {
-    return component.findIndex((p) => this.maxRepresentative == p) >= 0
+    return component.findIndex((p) => this.maxRepresentative === p) >= 0
   }
 
   createIntegerConstraints() {
@@ -211,7 +211,7 @@ export class VerticalConstraintsForSugiyama {
   }
 
   createIntConstraintsFromStringCouples(list: [GeomNode, GeomNode][]): [number, number][] {
-    return list.map((couple) => [this.nodeIndex(couple[0]), this.nodeIndex(couple[1])]).filter((t) => t[0] != -1 && t[1] != -1) as [
+    return list.map((couple) => [this.nodeIndex(couple[0]), this.nodeIndex(couple[1])]).filter((t) => t[0] !== -1 && t[1] !== -1) as [
       number,
       number,
     ][]
@@ -228,10 +228,10 @@ export class VerticalConstraintsForSugiyama {
   }
 
   createIntConstraintsFromExtremeLayer(setOfNodes: Set<GeomNode>): number[] {
-    //return new Array<number>(from node in setOfNodes let index = NodeIndex(node) where index != -1 select index);
+    //return new Array<number>(from node in setOfNodes let index = NodeIndex(node) where index !== -1 select index);
     return Array.from(setOfNodes)
       .map((n) => this.nodeIndex(n))
-      .filter((i) => i != -1)
+      .filter((i) => i !== -1)
   }
 
   nodeIndex(node: GeomNode) {
@@ -250,7 +250,7 @@ export class VerticalConstraintsForSugiyama {
 
   *unglueEdge(gluedEdge: IEdge): IterableIterator<IEdge> {
     for (const source of this.unglueNode(gluedEdge.source))
-      for (const edge of this.intGraph.outEdges[source]) if (this.nodeToRepr(edge.target) == gluedEdge.target) yield edge
+      for (const edge of this.intGraph.outEdges[source]) if (this.nodeToRepr(edge.target) === gluedEdge.target) yield edge
   }
 
   createGluedGraph(): BasicGraphOnEdges<IntPair> {

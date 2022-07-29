@@ -34,7 +34,7 @@ test('polyline test intersection one', () => {
   }
   const ls = LineSegment.mkPP(new Point(10, 0), new Point(20, 40))
   const x = Curve.intersectionOne(ls, poly, true)
-  expect(x != undefined).toBe(true)
+  expect(x !== undefined).toBe(true)
   expect(x.par1 > 1).toBe(true)
 })
 
@@ -46,10 +46,10 @@ test('polyline test all intersection', () => {
   }
   let ls = LineSegment.mkPP(new Point(10, 0), new Point(10, 40))
   let xx = Curve.getAllIntersections(ls, poly, true)
-  expect(xx.length == 1).toBe(true)
+  expect(xx.length === 1).toBe(true)
   ls = LineSegment.mkPP(new Point(0, 5), new Point(40, 6))
   xx = Curve.getAllIntersections(ls, poly, true)
-  expect(xx.length == 3).toBe(true)
+  expect(xx.length === 3).toBe(true)
   for (const i of xx) {
     expect(i.x.y > 5 && i.x.y < 6).toBeTruthy()
     expect(i.x.x > 0 && i.x.x < 30).toBeTruthy()
@@ -65,14 +65,14 @@ test('polyline test all intersection with polyline', () => {
 
   const trans = new PlaneTransformation(1, 0, 0, 0, -1, 5)
   const polyFlipped = poly.transform(trans)
-  expect(polyFlipped.end.x == poly.end.x).toBeTruthy()
-  expect(polyFlipped.end.y == 5 - poly.end.y).toBeTruthy()
+  expect(polyFlipped.end.x === poly.end.x).toBeTruthy()
+  expect(polyFlipped.end.y === 5 - poly.end.y).toBeTruthy()
   const xx = Curve.getAllIntersections(poly, polyFlipped, false)
   const dc = [DebugCurve.mkDebugCurveTWCI(90, 0.1, 'Black', poly), DebugCurve.mkDebugCurveTWCI(90, 0.1, 'Green', polyFlipped)]
   for (const inters of xx) {
     dc.push(DebugCurve.mkDebugCurveCI('Red', CurveFactory.mkCircle(0.05, inters.x)))
   }
-  expect(xx.length == 3).toBe(true)
+  expect(xx.length === 3).toBe(true)
 })
 
 test('closest par', () => {

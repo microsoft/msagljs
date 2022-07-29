@@ -29,7 +29,7 @@ export class FreePoint {
   OutOfBoundsDirectionFromGraph: Direction
 
   get IsOutOfBounds(): boolean {
-    return Direction.None != this.OutOfBoundsDirectionFromGraph
+    return Direction.None !== this.OutOfBoundsDirectionFromGraph
   }
 
   private maxVisibilitySegmentsAndCrossings: SegmentAndCrossings[] = new Array(4)
@@ -76,7 +76,7 @@ export class FreePoint {
   ExtendEdgeChain(transUtil: TransientGraphUtility, targetVertex: VisibilityVertex, dirToExtend: Direction, limitRect: Rectangle) {
     // Extend the edge chain to the opposite side of the limit rectangle.
     // StaticGraphUtility.Assert((PointComparer.Equal(this.Point, targetVertex.point)
-    //                || (PointComparer.GetPureDirectionVV(this.Point, targetVertex.point) == dirToExtend)), "input dir does not match with to-targetVertex direction", transUtil.ObstacleTree, transUtil.VisGraph);
+    //                || (PointComparer.GetPureDirectionVV(this.Point, targetVertex.point) === dirToExtend)), "input dir does not match with to-targetVertex direction", transUtil.ObstacleTree, transUtil.VisGraph);
     let extendOverlapped = this.IsOverlapped
     if (extendOverlapped) {
       // The initial vertex we connected to may be on the border of the enclosing obstacle,
@@ -110,7 +110,7 @@ export class FreePoint {
     } else {
       // For a waypoint this will be a target and then a source, so there may be a different lateral edge to
       // connect to. In that case make sure we are consistent in directions - back up the start point if needed.
-      if (PointComparer.GetDirections(startVertex.point, segmentAndCrossings[0].start) == dirToExtend) {
+      if (PointComparer.GetDirections(startVertex.point, segmentAndCrossings[0].start) === dirToExtend) {
         segmentAndCrossings[0].start = startVertex.point
       }
     }

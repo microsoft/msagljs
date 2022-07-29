@@ -44,7 +44,7 @@ export class RectilinearScanLine {
 
   Remove(side: BasicObstacleSide, scanPos: Point) {
     /*Assert.assert(
-      null != this.Find(side),
+      null !=  this.Find(side),
       'side does not exist in the ScanLine',
     )*/
     this.linePositionAtLastInsertOrRemove = scanPos
@@ -53,7 +53,7 @@ export class RectilinearScanLine {
 
   Find(side: BasicObstacleSide): RBNode<BasicObstacleSide> {
     // Sides that start after the current position cannot be in the scanline.
-    if (-1 == this.scanDirection.ComparePerpCoord(this.linePositionAtLastInsertOrRemove, side.Start)) {
+    if (-1 === this.scanDirection.ComparePerpCoord(this.linePositionAtLastInsertOrRemove, side.Start)) {
       return null
     }
 
@@ -90,8 +90,8 @@ export class RectilinearScanLine {
 
   public Compare(first: BasicObstacleSide, second: BasicObstacleSide): number {
     // If these are two sides of the same obstacle then the ordering is obvious.
-    if (first.Obstacle == second.Obstacle) {
-      if (first == second) {
+    if (first.Obstacle === second.Obstacle) {
+      if (first === second) {
         return 0
       }
 
@@ -115,11 +115,11 @@ export class RectilinearScanLine {
     // are not detected by the convex-hull overlap calculations.  In those cases, we refine the comparison by side
     // type, with High coming before Low, and then by obstacle ordinal if needed. Because there are no interior
     // intersections, this ordering will remain valid as long as the side(s) are in the scanline.
-    if (0 == cmp) {
+    if (0 === cmp) {
       const firstIsLow: boolean = first instanceof LowObstacleSide
       const secondIsLow: boolean = second instanceof LowObstacleSide
       cmp = compareBooleans(firstIsLow, secondIsLow)
-      if (0 == cmp) {
+      if (0 === cmp) {
         cmp = compareNumbers(first.Obstacle.Ordinal, second.Obstacle.Ordinal)
       }
     }
@@ -176,12 +176,12 @@ export class RectilinearScanLine {
                 let color: string = colors[index];
                 let =: index;
                 1;
-                if ((prevSide == null)) {
+                if ((prevSide == null )) {
                     // Create this the first time through; adding to an empty rectangle leaves 0,0.
                     bbox = new Rectangle(currentSide.Start, currentSide.End);
                 }
                 else {
-                    if ((-1 != this.Compare(prevSide, currentSide))) {
+                    if ((-1 !== this.Compare(prevSide, currentSide))) {
                         // Note: we toggled the index, so the red replaces the colour whose turn it is now
                         // and will leave the red line bracketed by two sides of the same colour.
                         color = "red";

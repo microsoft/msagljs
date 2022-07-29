@@ -16,7 +16,7 @@ export class EventQueue {
   }
 
   Reset(scanDir: ScanDirection) {
-    /*Assert.assert(0 == this.eventTree.Count, 'Stray events in EventQueue.Reset')*/
+    /*Assert.assert(0 === this.eventTree.Count, 'Stray events in EventQueue.Reset')*/
     this.scanDirection = scanDir
   }
 
@@ -34,7 +34,7 @@ export class EventQueue {
   }
 
   public Compare(lhs: SweepEvent, rhs: SweepEvent): number {
-    if (lhs == rhs) {
+    if (lhs === rhs) {
       return 0
     }
 

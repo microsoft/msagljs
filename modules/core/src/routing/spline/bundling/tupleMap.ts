@@ -1,7 +1,7 @@
 export class TupleMap<A, B, C> {
   mainMap = new Map<A, Map<B, C>>()
   get isEmpty(): boolean {
-    return this.mainMap.size == 0 || this.everyMapIsEmpty()
+    return this.mainMap.size === 0 || this.everyMapIsEmpty()
   }
   everyMapIsEmpty(): boolean {
     for (const b of this.mainMap.values()) {

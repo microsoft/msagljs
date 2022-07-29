@@ -52,7 +52,7 @@ export class AllPairsDistances extends Algorithm {
   //
   static Stress(graph: GeomGraph, length: (e: GeomEdge) => number): number {
     let stress = 0
-    if (graph.edgeCount == 0) {
+    if (graph.edgeCount === 0) {
       return stress
     }
 
@@ -68,7 +68,7 @@ export class AllPairsDistances extends Algorithm {
     for (const u of graph.shallowNodes()) {
       let j = 0
       for (const v of graph.shallowNodes()) {
-        if (i != j) {
+        if (i !== j) {
           const duv: number = u.center.sub(v.center).length
           const Duv: number = l * D[i][j]
           const d: number = Duv - duv

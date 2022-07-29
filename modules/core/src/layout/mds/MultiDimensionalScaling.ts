@@ -46,7 +46,7 @@ export class MultidimensionalScaling {
   // Note that matrix width and vector length
   // have to be equal, otherwise null is returned.
   static MultiplyX(A: number[][], x: number[]): number[] {
-    if (A[0].length != x.length) return null
+    if (A[0].length !== x.length) return null
     const y = new Array<number>(x.length).fill(0)
     for (let i = 0; i < A.length; i++) {
       for (let j = 0; j < A[0].length; j++) {
@@ -141,7 +141,7 @@ export class MultidimensionalScaling {
   }
   // Gives the inner product of two vectors of the same size.
   static DotProduct(x: number[], y: number[]): number {
-    if (x.length != y.length) return 0
+    if (x.length !== y.length) return 0
     let result = 0
     for (let i = 0; i < x.length; i++) {
       result += x[i] * y[i]
@@ -152,7 +152,7 @@ export class MultidimensionalScaling {
   // Orthogonalizes a vector against another vector, so that
   // their scalar product is 0.
   static MakeOrthogonal(x: number[], y: number[]) {
-    if (x.length != y.length) return
+    if (x.length !== y.length) return
     const prod = MultidimensionalScaling.DotProduct(x, y) / MultidimensionalScaling.DotProduct(y, y)
     for (let i = 0; i < x.length; i++) {
       x[i] -= prod * y[i]
@@ -192,7 +192,7 @@ export class MultidimensionalScaling {
     const index = new Array<number>(k)
     for (let i = 0; i < k; i++) {
       for (let j = 0; j < n; j++) {
-        if (d[i][j] == 0) {
+        if (d[i][j] === 0) {
           index[i] = j
         }
       }
@@ -201,7 +201,7 @@ export class MultidimensionalScaling {
     const wSum = new Array<number>(k).fill(0)
     for (let i = 0; i < k; i++) {
       for (let j = 0; j < n; j++) {
-        if (index[i] != j) {
+        if (index[i] !== j) {
           wSum[i] += w[i][j]
         }
       }
@@ -211,7 +211,7 @@ export class MultidimensionalScaling {
         let xNew = 0
         let yNew = 0
         for (let j = 0; j < n; j++) {
-          if (i != j) {
+          if (i !== j) {
             let inv = Math.sqrt(Math.pow(x[index[i]] - x[j], 2) + Math.pow(y[index[i]] - y[j], 2))
             if (inv > 0) inv = 1 / inv
             xNew += w[i][j] * (x[j] + d[i][j] * (x[index[i]] - x[j]) * inv)
@@ -233,7 +233,7 @@ export class MultidimensionalScaling {
     const wSum = new Array<number>(n).fill(0)
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
-        if (i != j) wSum[i] += w[i][j]
+        if (i !== j) wSum[i] += w[i][j]
       }
     }
     for (let c = 0; c < iter; c++) {
@@ -241,7 +241,7 @@ export class MultidimensionalScaling {
         let xNew = 0
         let yNew = 0
         for (let j = 0; j < n; j++) {
-          if (i != j) {
+          if (i !== j) {
             let inv = Math.sqrt(Math.pow(x[i] - x[j], 2) + Math.pow(y[i] - y[j], 2))
             if (inv > 0) inv = 1 / inv
             xNew += w[i][j] * (x[j] + d[i][j] * (x[i] - x[j]) * inv)

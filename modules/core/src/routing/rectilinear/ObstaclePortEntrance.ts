@@ -51,7 +51,7 @@ export class ObstaclePortEntrance {
   }
 
   get CanExtend(): boolean {
-    return PointComparer.GetDirections(this.MaxVisibilitySegment.start, this.MaxVisibilitySegment.end) != Direction.None
+    return PointComparer.GetDirections(this.MaxVisibilitySegment.start, this.MaxVisibilitySegment.end) !== Direction.None
   }
 
   constructor(oport: ObstaclePort, unpaddedBorderIntersect: Point, outDir: Direction, obstacleTree: ObstacleTree) {
@@ -64,7 +64,7 @@ export class ObstaclePortEntrance {
       StaticGraphUtility.RectangleBorderIntersect(oport.Obstacle.VisibilityBoundingBox, this.UnpaddedBorderIntersect, outDir),
     )
     const xxs = Curve.getAllIntersections(lineSeg, oport.Obstacle.VisibilityPolyline, true)
-    /*Assert.assert(1 == xxs.length, 'Expected one intersection')*/
+    /*Assert.assert(1 === xxs.length, 'Expected one intersection')*/
     this.VisibilityBorderIntersect = GeomConstants.RoundPoint(xxs[0].x)
     const t = {pacList: <PointAndCrossingsList>null}
     this.MaxVisibilitySegment = obstacleTree.CreateMaxVisibilitySegment(this.VisibilityBorderIntersect, this.OutwardDirection, t)
@@ -82,7 +82,7 @@ export class ObstaclePortEntrance {
       }
     }
 
-    if (this.Obstacle.IsInConvexHull && this.unpaddedToPaddedBorderWeight == ScanSegment.NormalWeight) {
+    if (this.Obstacle.IsInConvexHull && this.unpaddedToPaddedBorderWeight === ScanSegment.NormalWeight) {
       this.SetUnpaddedToPaddedBorderWeightFromHullSiblingOverlaps(obstacleTree)
     }
   }
@@ -101,7 +101,7 @@ export class ObstaclePortEntrance {
       rect,
       (obs) => obs.VisibilityPolyline,
       Array.from(obstacleTree.Root.GetLeafRectangleNodesIntersectingRectangle(rect))
-        .filter((node: RectangleNode<Obstacle, Point>) => !node.UserData.IsGroup && node.UserData != this.Obstacle)
+        .filter((node: RectangleNode<Obstacle, Point>) => !node.UserData.IsGroup && node.UserData !== this.Obstacle)
         .map((node: RectangleNode<Obstacle, Point>) => node.UserData),
     )
   }
@@ -113,7 +113,7 @@ export class ObstaclePortEntrance {
     return this.InteriorEdgeCrossesObstacleRFI(
       rect,
       (obs) => obs.PaddedPolyline,
-      this.Obstacle.ConvexHull.Obstacles.filter((obs) => obs != this.Obstacle),
+      this.Obstacle.ConvexHull.Obstacles.filter((obs) => obs !== this.Obstacle),
     )
   }
 
@@ -135,7 +135,7 @@ export class ObstaclePortEntrance {
         return true
       }
 
-      if (PointLocation.Outside != Curve.PointRelativeToCurveLocation(this.UnpaddedBorderIntersect, blockerPolyline)) {
+      if (PointLocation.Outside !== Curve.PointRelativeToCurveLocation(this.UnpaddedBorderIntersect, blockerPolyline)) {
         return true
       }
     }
@@ -153,7 +153,7 @@ export class ObstaclePortEntrance {
     }
 
     const pac = StaticGraphUtility.IsAscending(this.OutwardDirection) ? this.pointAndCrossingsList.First : this.pointAndCrossingsList.Last
-    return PointComparer.GetDirections(this.MaxVisibilitySegment.start, pac.Location) == PointComparer.GetDirections(pac.Location, point)
+    return PointComparer.GetDirections(this.MaxVisibilitySegment.start, pac.Location) === PointComparer.GetDirections(pac.Location, point)
   }
 
   AddToAdjacentVertex(transUtil: TransientGraphUtility, targetVertex: VisibilityVertex, limitRect: Rectangle, routeToCenter: boolean) {
@@ -164,7 +164,7 @@ export class ObstaclePortEntrance {
     }
 
     // There is no vertex at VisibilityBorderIntersect, so create it and link it to targetVertex.
-    // Note: VisibilityBorderIntersect may == targetIntersect if that is on our border, *and*
+    // Note: VisibilityBorderIntersect may === targetIntersect if that is on our border, *and*
     // targetIntersect may be on the border of a touching obstacle, in which case this will splice
     // into or across the adjacent obstacle, which is consistent with "touching is overlapped".
     // So we don't use UnpaddedBorderIntersect as prevPoint when calling ExtendEdgeChain.
@@ -179,7 +179,7 @@ export class ObstaclePortEntrance {
     // be able to happen.
     // See RectilinearTests.PaddedBorderIntersectMeetsIncomingScanSegment for an example of what happens
     // when VisibilityBorderIntersect is on the incoming ScanSegment (it jumps out above with borderVertex found).
-    if (this.OutwardDirection == PointComparer.GetDirections(targetVertex.point, this.VisibilityBorderIntersect)) {
+    if (this.OutwardDirection === PointComparer.GetDirections(targetVertex.point, this.VisibilityBorderIntersect)) {
       /*Assert.assert(
         false,
         'Unexpected reversed direction between VisibilityBorderIntersect and targetVertex',

@@ -134,9 +134,9 @@ export class SolverShell {
       this.solution = this.solver.SolvePar(solverParameters)
       t.executionLimitExceeded = this.solution.ExecutionLimitExceeded
       fixedVarsMoved = this.AdjustConstraintsForMovedFixedVars()
-    } while (fixedVarsMoved && this.solution.ExecutionLimitExceeded == false)
+    } while (fixedVarsMoved && this.solution.ExecutionLimitExceeded === false)
 
-    return this.solution.ExecutionLimitExceeded == false
+    return this.solution.ExecutionLimitExceeded === false
   }
 
   //        void DumpToFile(string fileName) {
@@ -162,7 +162,7 @@ export class SolverShell {
       if (SolverShell.Close(v, this.GetVariableResolvedPosition(k))) continue
       movedFixedVars.add(k)
     }
-    if (movedFixedVars.size == 0) {
+    if (movedFixedVars.size === 0) {
       return false
     }
 
@@ -197,7 +197,7 @@ export class SolverShell {
       return false
     }
 
-    if (neighbors.length == 0) {
+    if (neighbors.length === 0) {
       return false
     }
 
@@ -227,7 +227,7 @@ export class SolverShell {
       }
     }
 
-    if (scale == 1) {
+    if (scale === 1) {
       scale = 2
     }
 

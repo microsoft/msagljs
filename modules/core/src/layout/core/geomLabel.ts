@@ -34,7 +34,7 @@ export class GeomLabel {
 
   public get isPositioned() {
     const center = this.center
-    return center.x != -77 || center.y != -77
+    return center.x !== -77 || center.y !== -77
   }
   /** mark the label as not having a position */
   requirePositioning() {

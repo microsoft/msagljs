@@ -74,7 +74,7 @@ export class Nudger {
   }
 
   MapPathToItsObstacles(path: Path) {
-    if (!path.PathPoints || (<Point[]>path.PathPoints).length == 0) return
+    if (!path.PathPoints || (<Point[]>path.PathPoints).length === 0) return
     const fr = path.PathPoints as Array<Point>
     const startNode = this.HierarchyOfObstacles.FirstHitNodeWithPredicate(fr[0], Nudger.ObstacleTest)
     const endNode = this.HierarchyOfObstacles.FirstHitNodeWithPredicate(fr[fr.length - 1], Nudger.ObstacleTest)
@@ -84,7 +84,7 @@ export class Nudger {
   }
 
   static ObstacleTest(pnt: Point, polyline: Polyline): HitTestBehavior {
-    return Curve.PointRelativeToCurveLocation(pnt, polyline) != PointLocation.Outside ? HitTestBehavior.Stop : HitTestBehavior.Continue
+    return Curve.PointRelativeToCurveLocation(pnt, polyline) !== PointLocation.Outside ? HitTestBehavior.Stop : HitTestBehavior.Continue
   }
 
   HierarchyOfObstacles: RectangleNode<Polyline, Point>
@@ -118,14 +118,14 @@ export class Nudger {
     }
 
     const lastUnmappedEdge = this.FindLastUnmappedEdge(path)
-    for (let edge = firstUnmappedEdge; edge != null && edge != lastUnmappedEdge; edge = edge.Next) {
+    for (let edge = firstUnmappedEdge; edge != null && edge !== lastUnmappedEdge; edge = edge.Next) {
       this.axisEdgesToObstaclesTheyOriginatedFrom.delete(edge.AxisEdge)
     }
   }
 
   FindLastUnmappedEdge(path: Path): PathEdge {
     for (let edge = path.LastEdge; edge != null; edge = edge.Prev) {
-      if (edge.AxisEdge.Direction != this.NudgingDirection) {
+      if (edge.AxisEdge.Direction !== this.NudgingDirection) {
         return edge
       }
     }
@@ -135,7 +135,7 @@ export class Nudger {
 
   FindFirstUnmappedEdge(path: Path): PathEdge {
     for (let edge = path.FirstEdge; edge != null; edge = edge.Next) {
-      if (edge.AxisEdge.Direction != this.NudgingDirection) {
+      if (edge.AxisEdge.Direction !== this.NudgingDirection) {
         return edge
       }
     }
@@ -270,7 +270,7 @@ export class Nudger {
   // sometimes we have very small mistakes  of the positions that have to be fixed
 
   static Rectilinearise(a: Point, b: Point): Point {
-    if (a.x == b.x || a.y == b.y) return b
+    if (a.x === b.x || a.y === b.y) return b
     const dx = Math.abs(a.x - b.x)
     const dy = Math.abs(a.y - b.y)
     return dx < dy ? new Point(a.x, b.y) : new Point(b.x, a.y)
@@ -298,7 +298,7 @@ export class Nudger {
     }
 
     const t = this.Solver.GetVariablePosition(segment.Id)
-    return this.NudgingDirection == Direction.North ? new Point(t, point.y) : new Point(point.x, -t)
+    return this.NudgingDirection === Direction.North ? new Point(t, point.y) : new Point(point.x, -t)
   }
 
   // static ShowPathsFromPoints(paths: Array<Path>, enumerable: Array<Polyline>) {
@@ -480,7 +480,7 @@ export class Nudger {
   // }
 
   static LineSegOfLongestSeg(ls: LongestNudgedSegment, dir: Direction): ICurve {
-    const projectionToDir = dir == Direction.East ? (p: Point) => p.x : (p: Point) => p.y
+    const projectionToDir = dir === Direction.East ? (p: Point) => p.x : (p: Point) => p.y
 
     const mm = {min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY}
     for (const edge of ls.Edges) {
@@ -488,7 +488,7 @@ export class Nudger {
       Nudger.UpdateMinMaxWithPoint(mm, projectionToDir, edge.Target)
     }
 
-    return dir == Direction.East
+    return dir === Direction.East
       ? new LineSegment(mm.min, -ls.IdealPosition, mm.max, -ls.IdealPosition)
       : new LineSegment(ls.IdealPosition, mm.min, ls.IdealPosition, mm.max)
   }
@@ -658,11 +658,11 @@ export class Nudger {
           segment.Width,
         )
         //           Assert.assert(leftBound + Curve.DistanceEpsilon < rightBound); //this assert does not hold for overlaps
-        if (leftBound != Number.NEGATIVE_INFINITY) {
+        if (leftBound !== Number.NEGATIVE_INFINITY) {
           this.Solver.SetLowBound(leftBound, segment.Id)
         }
 
-        if (rightBound != Number.POSITIVE_INFINITY) {
+        if (rightBound !== Number.POSITIVE_INFINITY) {
           this.Solver.SetUpperBound(segment.Id, rightBound)
         }
       }
@@ -672,7 +672,7 @@ export class Nudger {
   }
 
   static SegmentPosition(segment: SegmentBase, direction: Direction): number {
-    return direction == Direction.North ? segment.Start.x : -segment.Start.y
+    return direction === Direction.North ? segment.Start.x : -segment.Start.y
   }
 
   // ReSharper disable UnusedMember.Local
@@ -739,7 +739,7 @@ export class Nudger {
       const rect = sh.BoundingBox
       for (const e of path.PathEdges()) {
         const edge = e.AxisEdge
-        if (edge.Direction == this.NudgingDirection) {
+        if (edge.Direction === this.NudgingDirection) {
           this.BoundAxisEdgeByRect(rect, edge)
         }
       }
@@ -776,8 +776,8 @@ export class Nudger {
   }
 
   BoundAxisByPoint(point: Point, axisEdge: AxisEdge) {
-    if (axisEdge != null && axisEdge.Direction == this.NudgingDirection) {
-      if (this.NudgingDirection == Direction.North) {
+    if (axisEdge != null && axisEdge.Direction === this.NudgingDirection) {
+      if (this.NudgingDirection === Direction.North) {
         axisEdge.BoundFromLeft(point.x)
         axisEdge.BoundFromRight(point.x)
       } else {
@@ -793,8 +793,8 @@ export class Nudger {
   }
 
   BoundAxisEdgeByRect(rectangle: Rectangle, axisEdge: AxisEdge) {
-    if (axisEdge != null && axisEdge.Direction == this.NudgingDirection) {
-      if (this.NudgingDirection == Direction.North) {
+    if (axisEdge != null && axisEdge.Direction === this.NudgingDirection) {
+      if (this.NudgingDirection === Direction.North) {
         axisEdge.BoundFromLeft(rectangle.left)
         axisEdge.BoundFromRight(rectangle.right)
       } else {
@@ -805,7 +805,7 @@ export class Nudger {
   }
 
   CreateLongestNudgedSegments() {
-    const projectionToPerp = this.NudgingDirection == Direction.East ? (p: Point) => -p.y : (p: Point) => p.x
+    const projectionToPerp = this.NudgingDirection === Direction.East ? (p: Point) => -p.y : (p: Point) => p.x
 
     this.LongestNudgedSegs = new Array<LongestNudgedSegment>()
     for (let i = 0; i < this.Paths.length; i++) {
@@ -864,7 +864,7 @@ export class Nudger {
     const oppositeDir = CompassVector.OppositeDir(this.NudgingDirection)
     for (const edge of path.PathEdges()) {
       const edgeDir = edge.Direction
-      if (edgeDir == this.NudgingDirection || edgeDir == oppositeDir) {
+      if (edgeDir === this.NudgingDirection || edgeDir === oppositeDir) {
         if (currentLongestSeg == null) {
           edge.LongestNudgedSegment = currentLongestSeg = new LongestNudgedSegment(this.LongestNudgedSegs.length)
           this.LongestNudgedSegs.push(currentLongestSeg)
@@ -919,7 +919,7 @@ export class Nudger {
     }
 
     const p = t.points[n]
-    if (dir == Direction.East || dir == Direction.West) {
+    if (dir === Direction.East || dir === Direction.West) {
       t.points[n] = new Point(location.x, p.y)
     } else {
       t.points[n] = new Point(p.x, location.y)
@@ -927,7 +927,7 @@ export class Nudger {
   }
 
   static ProjectionsAreClose(a: Point, dir: Direction, b: Point): boolean {
-    if (dir == Direction.East || dir == Direction.West) {
+    if (dir === Direction.East || dir === Direction.West) {
       return closeDistEps(a.x, b.x)
     }
 
@@ -944,7 +944,7 @@ export class Nudger {
     }
 
     const p = t.points[0]
-    if (dir == Direction.East || dir == Direction.West) {
+    if (dir === Direction.East || dir === Direction.West) {
       t.points[0] = new Point(location.x, p.y)
     } else {
       t.points[0] = new Point(p.x, location.y)
@@ -961,7 +961,7 @@ export class Nudger {
     let i = 1
     while (++i < points.length) {
       const dir = CompassVector.VectorDirectionPP(b, points[i])
-      if (!(dir == prevDir || CompassVector.OppositeDir(dir) == prevDir || dir == Direction.None)) {
+      if (!(dir === prevDir || CompassVector.OppositeDir(dir) === prevDir || dir === Direction.None)) {
         if (!Point.closeDistEps(a, b)) {
           // make sure that we are not returning the same point twice
           ret.push((a = Nudger.Rectilinearise(a, b)))
@@ -991,7 +991,7 @@ export class Nudger {
     ancestorsSets: Map<Shape, Set<Shape>>,
     removeStaircases: boolean,
   ) {
-    if (paths.length == 0) {
+    if (paths.length === 0) {
       return
     }
 

@@ -34,7 +34,7 @@ export class CdtSweeper extends Algorithm {
   constructor(listOfSites: Array<CdtSite>, p_1: CdtSite, p_2: CdtSite, createEdgeDelegate: (a: CdtSite, b: CdtSite) => CdtEdge) {
     super(null)
     this.listOfSites = listOfSites
-    if (this.listOfSites.length == 0) {
+    if (this.listOfSites.length === 0) {
       return
     }
     this.p_1 = p_1
@@ -49,7 +49,7 @@ export class CdtSweeper extends Algorithm {
   }
 
   run() {
-    if (this.listOfSites.length == 0) {
+    if (this.listOfSites.length === 0) {
       return
     }
 
@@ -83,10 +83,10 @@ export class CdtSweeper extends Algorithm {
     let b: PerimeterEdge
     do {
       b = a.Next
-      if (Point.getTriangleOrientation(a.Start.point, a.End.point, b.End.point) == TriangleOrientation.Counterclockwise) {
+      if (Point.getTriangleOrientation(a.Start.point, a.End.point, b.End.point) === TriangleOrientation.Counterclockwise) {
         return a
       } else a = b
-    } while (b != firstPerimeterEdge)
+    } while (b !== firstPerimeterEdge)
     return null
   }
 
@@ -96,9 +96,9 @@ export class CdtSweeper extends Algorithm {
     let e = firstPerimeterEdge
     do {
       e = e.Next
-      if (e.Start.point.x < pivot.Start.point.x || (e.Start.point.x == pivot.Start.point.x && e.Start.point.y < pivot.Start.point.y))
+      if (e.Start.point.x < pivot.Start.point.x || (e.Start.point.x === pivot.Start.point.x && e.Start.point.y < pivot.Start.point.y))
         pivot = e
-    } while (e != firstPerimeterEdge)
+    } while (e !== firstPerimeterEdge)
     return pivot
   }
 
@@ -130,7 +130,7 @@ export class CdtSweeper extends Algorithm {
       }
 
       prevPe = pe
-    } while (edge != firstEdge)
+    } while (edge !== firstEdge)
 
     listStart.Prev = pe
     pe.Next = listStart
@@ -177,7 +177,7 @@ export class CdtSweeper extends Algorithm {
   static RemoveTriangleWithEdges(cdtTriangles: Set<CdtTriangle>, t: CdtTriangle) {
     cdtTriangles.delete(t)
     for (const e of t.TriEdges) {
-      if (e.CwTriangle == t) {
+      if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
         e.CcwTriangle = null
@@ -192,7 +192,7 @@ export class CdtSweeper extends Algorithm {
   static RemoveTriangleButLeaveEdges(cdtTriangles: Set<CdtTriangle>, t: CdtTriangle) {
     cdtTriangles.delete(t)
     for (const e of t.TriEdges) {
-      if (e.CwTriangle == t) {
+      if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
         e.CcwTriangle = null
@@ -217,7 +217,7 @@ export class CdtSweeper extends Algorithm {
   //     CdtFrontElement p = null;
   //     foreach(var cdtFrontElement of front) {
   //         if (p != null)
-  //             Assert.assert(p.RightSite == cdtFrontElement.LeftSite);
+  //             Assert.assert(p.RightSite === cdtFrontElement.LeftSite);
   //         p = cdtFrontElement;
   //     }
   // }
@@ -440,7 +440,7 @@ export class CdtSweeper extends Algorithm {
 
   ShortcutTwoListElements(a: PerimeterEdge): PerimeterEdge {
     const b = a.Next
-    /*Assert.assert(a.End == b.Start)*/
+    /*Assert.assert(a.End === b.Start)*/
     let t = CdtTriangle.mkSSSEE(a.Start, a.End, b.End, a.Edge, b.Edge, this.createEdgeDelegate)
     this.triangles.add(t)
     const newEdge = t.TriEdges.getItem(2)
@@ -462,7 +462,7 @@ export class CdtSweeper extends Algorithm {
   ShortcutTwoFrontElements(aNode: RBNode<CdtFrontElement>, bNode: RBNode<CdtFrontElement>): RBNode<CdtFrontElement> {
     const aElem = aNode.item
     const bElem = bNode.item
-    /*Assert.assert(aElem.RightSite == bElem.LeftSite)*/
+    /*Assert.assert(aElem.RightSite === bElem.LeftSite)*/
     let t: CdtTriangle = CdtTriangle.mkSSSEED(
       aElem.LeftSite,
       aElem.RightSite,
@@ -522,7 +522,7 @@ export class CdtSweeper extends Algorithm {
 
   static DropsSharpEnoughToTheLeft(frontElement: CdtFrontElement): boolean {
     const edge = frontElement.Edge
-    if (frontElement.RightSite != edge.upperSite) {
+    if (frontElement.RightSite !== edge.upperSite) {
       return false
     }
 
@@ -535,11 +535,11 @@ export class CdtSweeper extends Algorithm {
     let rightEdge: CdtEdge = null
     let leftEdge: CdtEdge = null
     for (const edge of pi.Edges) {
-      if (leftEdge == null && edge.lowerSite == leftSite) {
+      if (leftEdge == null && edge.lowerSite === leftSite) {
         leftEdge = edge
       }
 
-      if (rightEdge == null && edge.lowerSite == rightSite) {
+      if (rightEdge == null && edge.lowerSite === rightSite) {
         rightEdge = edge
       }
 
@@ -608,7 +608,7 @@ export class CdtSweeper extends Algorithm {
 
   static DropsSharpEnoughToTheRight(frontElement: CdtFrontElement): boolean {
     const edge = frontElement.Edge
-    if (frontElement.LeftSite != edge.upperSite) {
+    if (frontElement.LeftSite !== edge.upperSite) {
       return false
     }
 
@@ -623,7 +623,7 @@ export class CdtSweeper extends Algorithm {
 
   InsertAndLegalizeTriangle(pi: CdtSite, frontElement: CdtFrontElement) {
     if (
-      Point.getTriangleOrientation(pi.point, frontElement.LeftSite.point, frontElement.RightSite.point) != TriangleOrientation.Collinear
+      Point.getTriangleOrientation(pi.point, frontElement.LeftSite.point, frontElement.RightSite.point) !== TriangleOrientation.Collinear
     ) {
       const tr = CdtTriangle.mkSED(pi, frontElement.Edge, this.createEdgeDelegate)
       this.triangles.add(tr)
@@ -646,7 +646,7 @@ export class CdtSweeper extends Algorithm {
   }
 
   LegalizeEdge(pi: CdtSite, edge: CdtEdge) {
-    /*Assert.assert(pi != edge.upperSite && pi != edge.lowerSite)*/
+    /*Assert.assert(pi !== edge.upperSite && pi !== edge.lowerSite)*/
     if (edge.Constrained || edge.CcwTriangle == null || edge.CwTriangle == null) {
       return
     }
@@ -660,14 +660,14 @@ export class CdtSweeper extends Algorithm {
 
   LegalizeEdgeForOtherCwTriangle(pi: CdtSite, edge: CdtEdge) {
     const i = edge.CwTriangle.TriEdges.index(edge)
-    //           if (i == -1)
+    //           if (i === -1)
     //           {
     //               Array<DebugCurve> ls = new Array<DebugCurve>();
     //               ls.Add(new DebugCurve(new Ellipse(2, 2, pi.point)));
     //               for (int j = 0; j < 3; j++)
     //               {
     //                   var ee = edge.CwTriangle.Edges[j];
-    //                   ls.Add(new DebugCurve(100,1, j == i ? "red" : "blue", new LineSegment(ee.upperSite.point, ee.lowerSite.point)));
+    //                   ls.Add(new DebugCurve(100,1, j === i ? "red" : "blue", new LineSegment(ee.upperSite.point, ee.lowerSite.point)));
     //               }
     //               ls.Add(new DebugCurve("purple", new LineSegment(edge.upperSite.point, edge.lowerSite.point)));
     //
@@ -698,7 +698,7 @@ export class CdtSweeper extends Algorithm {
   //     ls.push(DebugCurve.mkDebugCurveTWCI(new Ellipse(2, 2, pi.point)));
   //     for (int j = 0; j < 3; j++) {
   //         var ee = edge.CcwTriangle.Edges[j];
-  //         ls.push(DebugCurve.mkDebugCurveTWCI(j == i ? "red" : "blue", LineSegment.mkPP(ee.upperSite.point, ee.lowerSite.point)));
+  //         ls.push(DebugCurve.mkDebugCurveTWCI(j === i ? "red" : "blue", LineSegment.mkPP(ee.upperSite.point, ee.lowerSite.point)));
   //     }
   //     ls.push(DebugCurve.mkDebugCurveTWCI(100, 1, "black", Circumcircle(edge.CcwTriangle.Sites.getItem(0].point, edge.CcwTriangle.Sites[1].point, edge.CcwTriangle.Sites[2).point)));
   //     LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(ls);
@@ -720,11 +720,11 @@ export class CdtSweeper extends Algorithm {
 }
 
 function removeFromArray<T>(arr: T[], item: T) {
-  if (arr.length == 0) return
-  const i = arr.findIndex((e) => item == e)
+  if (arr.length === 0) return
+  const i = arr.findIndex((e) => item === e)
 
   if (i >= 0) {
-    if (i != arr.length - 1) {
+    if (i !== arr.length - 1) {
       arr[i] = arr[arr.length - 1] // save the last element
     }
     arr.pop()
@@ -742,8 +742,8 @@ function InCone(pi: CdtSite, a: CdtSite, b: CdtSite, c: CdtSite): boolean {
   )*/
 
   return (
-    Point.getTriangleOrientation(a.point, pi.point, b.point) == TriangleOrientation.Clockwise &&
-    Point.getTriangleOrientation(b.point, pi.point, c.point) == TriangleOrientation.Clockwise
+    Point.getTriangleOrientation(a.point, pi.point, b.point) === TriangleOrientation.Clockwise &&
+    Point.getTriangleOrientation(b.point, pi.point, c.point) === TriangleOrientation.Clockwise
   )
 }
 // Testing that d of inside of the circumcircle of (a,b,c).
@@ -779,9 +779,9 @@ function TriangleIsCorrect(t: CdtTriangle) {
     const a = t.Sites.getItem(i)
     const b = t.Sites.getItem(i + 1)
     if (!e.IsAdjacent(a) || !e.IsAdjacent(b)) return false
-    if (e.upperSite == a) {
-      if (e.CcwTriangle != t) return false
-    } else if (e.CwTriangle != t) return false
+    if (e.upperSite === a) {
+      if (e.CcwTriangle !== t) return false
+    } else if (e.CwTriangle !== t) return false
   }
   return true
 }
@@ -817,13 +817,13 @@ function Flip(pi: CdtSite, edge: CdtEdge): CdtEdge {
   ot.TriEdges.setItem(eOtherIndex, edgeBeforPi)
   ot.TriEdges.setItem(eOtherIndex + 1, newEdge)
   //orient the new edge and the two edges that move from one triangle to another
-  if (edgeBeforPl.lowerSite == pl) edgeBeforPl.CcwTriangle = t
+  if (edgeBeforPl.lowerSite === pl) edgeBeforPl.CcwTriangle = t
   else edgeBeforPl.CwTriangle = t
 
-  if (edgeBeforPi.lowerSite == pi) edgeBeforPi.CcwTriangle = ot
+  if (edgeBeforPi.lowerSite === pi) edgeBeforPi.CcwTriangle = ot
   else edgeBeforPi.CwTriangle = ot
 
-  if (newEdge.upperSite == pi) {
+  if (newEdge.upperSite === pi) {
     newEdge.CcwTriangle = ot
     newEdge.CwTriangle = t
   } else {

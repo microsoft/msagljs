@@ -189,9 +189,9 @@ export class SplineRouter extends Algorithm {
     return ret
   }
   Initialize(obstacles: Array<Shape>, coneAngleValue: number) {
-    this.rootShapes = obstacles.filter((s) => s.Parents == null || s.Parents.length == 0)
+    this.rootShapes = obstacles.filter((s) => s.Parents == null || s.Parents.length === 0)
     this.coneAngle = coneAngleValue
-    if (this.coneAngle == 0) {
+    if (this.coneAngle === 0) {
       this.coneAngle = Math.PI / 6
     }
   }
@@ -296,7 +296,7 @@ export class SplineRouter extends Algorithm {
 
   CalculateShapeToBoundaries(shape: Shape) {
     this.ProgressStep()
-    if (shape.Children.length == 0) {
+    if (shape.Children.length === 0) {
       return
     }
 
@@ -444,7 +444,7 @@ export class SplineRouter extends Algorithm {
 
     t.multiEdges = null
     for (const edgeGroup of portLocationPairsToEdges.values()) {
-      if (edgeGroup.length == 1 || this.OverlapsDetected) {
+      if (edgeGroup.length === 1 || this.OverlapsDetected) {
         addRange(t.regularEdges, edgeGroup)
       } else {
         if (t.multiEdges == null) {
@@ -498,7 +498,7 @@ export class SplineRouter extends Algorithm {
   }
 
   GetObstaclesFromPassport(passport: Set<Shape>): Set<Shape> {
-    if (passport.size == 0) {
+    if (passport.size === 0) {
       return new Set<Shape>(this.root.Children)
     }
 
@@ -537,7 +537,7 @@ export class SplineRouter extends Algorithm {
   }
 
   GetAllAncestors(passport: Set<Shape>): Set<Shape> {
-    if (passport.size == 0) {
+    if (passport.size === 0) {
       return new Set<Shape>()
     }
 
@@ -550,7 +550,7 @@ export class SplineRouter extends Algorithm {
   }
 
   GetCommonAncestorsAbovePassport(passport: Set<Shape>): Set<Shape> {
-    if (passport.size == 0) {
+    if (passport.size === 0) {
       return new Set<Shape>()
     }
 
@@ -608,14 +608,14 @@ export class SplineRouter extends Algorithm {
 
         const a = <Polyline>cdtSite.Owner
         const b = <Polyline>cdtEdge.lowerSite.Owner
-        if (a == b) {
+        if (a === b) {
           continue
         }
 
         const aParent: Shape = loosePolylinesToLooseParentShapeMap.get(a)
         if (aParent) {
           const bParent: Shape = loosePolylinesToLooseParentShapeMap.get(b)
-          if (aParent == bParent) {
+          if (aParent === bParent) {
             gates.add(cdtEdge)
           }
         }
@@ -642,10 +642,10 @@ export class SplineRouter extends Algorithm {
   GetEdgeEnterablePolylines(edge: GeomEdge, looseEnterable: Set<Polyline>, tightEnterable: Set<Polyline>) {
     const sourceShape = this.portsToShapes.get(edge.sourcePort)
     const targetShape = this.portsToShapes.get(edge.targetPort)
-    if (sourceShape != this.root) {
+    if (sourceShape !== this.root) {
       this.GetEnterablesForShape(sourceShape, looseEnterable, tightEnterable)
     }
-    if (targetShape != this.root) {
+    if (targetShape !== this.root) {
       this.GetEnterablesForShape(targetShape, looseEnterable, tightEnterable)
     }
   }
@@ -707,11 +707,11 @@ export class SplineRouter extends Algorithm {
       return ret
     }
 
-    if (sourceShape != this.looseRoot) {
+    if (sourceShape !== this.looseRoot) {
       insertRange(ret, sourceShape.Parents)
     }
 
-    if (targetShape != this.looseRoot) {
+    if (targetShape !== this.looseRoot) {
       insertRange(ret, targetShape.Parents)
     }
 
@@ -822,7 +822,7 @@ export class SplineRouter extends Algorithm {
   }
 
   LooseShapeOfOriginalShape(s: Shape): Shape {
-    if (s == this.root) {
+    if (s === this.root) {
       return this.looseRoot
     }
 
@@ -834,7 +834,7 @@ export class SplineRouter extends Algorithm {
   }
 
   TightPolyOfOriginalShape(s: Shape): Polyline {
-    if (s == this.root) {
+    if (s === this.root) {
       return null
     }
 
@@ -842,8 +842,8 @@ export class SplineRouter extends Algorithm {
   }
 
   //    static GetEdgeColor(e: VisibilityEdge, sourcePort: Port, targetPort: Port): string {
-  //  if (((sourcePort == null)
-  //    || (targetPort == null))) {
+  //  if (((sourcePort == null )
+  //    || (targetPort == null ))) {
   //    return "green";
   //  }
 
@@ -855,7 +855,7 @@ export class SplineRouter extends Algorithm {
 
   //  return "green";
   //  // TODO: Warning!!!, inline IF is not supported ?
-  //  ((e.IsPassable == null)
+  //  ((e.IsPassable == null )
   //    || e.IsPassable());
   //  "red";
   // }
@@ -1047,7 +1047,7 @@ export class SplineRouter extends Algorithm {
     for (let p = boundary.startPoint; true; p = pn) {
       pn = p.nextOnPolyline
       this.visGraph.AddEdgePP(p.point, pn.point)
-      if (pn == boundary.startPoint) {
+      if (pn === boundary.startPoint) {
         break
       }
     }
@@ -1106,7 +1106,7 @@ export class SplineRouter extends Algorithm {
       }
 
       p = pn
-      if (p == boundary.startPoint) {
+      if (p === boundary.startPoint) {
         throw new Error()
       }
     }
@@ -1114,7 +1114,7 @@ export class SplineRouter extends Algorithm {
 
   // creates a root; a shape with BoundaryCurve set to null
   GetOrCreateRoot() {
-    if (this.rootShapes.length == 1) {
+    if (this.rootShapes.length === 1) {
       const r: Shape = this.rootShapes[0]
       if (r.BoundaryCurve == null) {
         this.root = r

@@ -508,7 +508,7 @@ export class RectilinearEdgeRouter extends Algorithm {
   }
 
   private GenerateObstacleTree() {
-    if (this.Obstacles == null || this.Obstacles.length == 0) {
+    if (this.Obstacles == null || this.Obstacles.length === 0) {
       throw new Error('No obstacles have been added')
     }
 
@@ -542,7 +542,7 @@ export class RectilinearEdgeRouter extends Algorithm {
   }
 
   GenerateVisibilityGraph() {
-    if (this.Obstacles == null || this.Obstacles.length == 0) {
+    if (this.Obstacles == null || this.Obstacles.length === 0) {
       throw new Error('No obstacles have been set')
     }
 

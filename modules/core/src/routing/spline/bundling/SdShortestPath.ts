@@ -184,7 +184,7 @@ export class SdShortestPath {
       this.targetLoosePoly = this.SetPortVerticesAndObstacles(this.CurrentEdgeGeometry.targetPort, false)
       const ret: Array<SdBoneEdge> = this.RouteOnKnownSourceTargetVertices(
         this.CurrentEdgeGeometry.targetPort.Location.sub(this.CurrentEdgeGeometry.sourcePort.Location).normalize(),
-        i == 0,
+        i === 0,
       )
       if (ret != null) {
         return ret
@@ -231,7 +231,7 @@ export class SdShortestPath {
   }
 
   ProcessOutcomingBoneEdge(v: SdVertex, outBoneEdge: SdBoneEdge, pathDirection: Point, lookingForMonotonePath: boolean) {
-    //Assert.assert(v == outBoneEdge.Source)
+    //Assert.assert(v === outBoneEdge.Source)
     if (lookingForMonotonePath && pathDirection.dot(outBoneEdge.TargetPoint.sub(outBoneEdge.SourcePoint)) < 0) {
       return
     }
@@ -240,7 +240,7 @@ export class SdShortestPath {
   }
 
   ProcessIncomingBoneEdge(v: SdVertex, inBoneEdge: SdBoneEdge, pathDirection: Point, lookingForMonotonePath: boolean) {
-    //Assert.assert(v == inBoneEdge.Target)
+    //Assert.assert(v === inBoneEdge.Target)
     if (lookingForMonotonePath && pathDirection.dot(inBoneEdge.SourcePoint.sub(inBoneEdge.TargetPoint)) < 0) {
       return
     }
@@ -300,7 +300,7 @@ export class SdShortestPath {
 
   RegisterPathInBoneEdge(boneEdge: SdBoneEdge) {
     boneEdge.AddOccupiedEdge()
-    if (this.CdtProperty != null && this.BundlingSettings.CapacityOverflowCoefficient != 0) {
+    if (this.CdtProperty != null && this.BundlingSettings.CapacityOverflowCoefficient !== 0) {
       this.UpdateResidualCostsOfCrossedCdtEdges(boneEdge)
     }
   }
@@ -308,7 +308,7 @@ export class SdShortestPath {
   UpdateResidualCostsOfCrossedCdtEdges(boneEdge: SdBoneEdge) {
     for (const cdtEdge of boneEdge.CrossedCdtEdges) {
       if (this.AdjacentToSourceOrTarget(cdtEdge)) continue
-      if (cdtEdge.ResidualCapacity == cdtEdge.Capacity) {
+      if (cdtEdge.ResidualCapacity === cdtEdge.Capacity) {
         cdtEdge.ResidualCapacity -= this.BundlingSettings.edgeWidthShrinkCoeff * this.CurrentEdgeGeometry.lineWidth
       } else {
         cdtEdge.ResidualCapacity -= this.BundlingSettings.ActualEdgeWidth(this.CurrentEdgeGeometry)
@@ -331,7 +331,7 @@ export class SdShortestPath {
   }
 
   CapacityOverflowCost(boneEdge: SdBoneEdge): number {
-    if (this.CdtProperty == null || this.BundlingSettings.CapacityOverflowCoefficient == 0) return 0
+    if (this.CdtProperty == null || this.BundlingSettings.CapacityOverflowCoefficient === 0) return 0
     let ret = 0
     for (const cdtEdge of this.CrossedCdtEdgesOfBoneEdge(boneEdge)) {
       ret += this.CostOfCrossingCdtEdgeLocal(
@@ -381,7 +381,7 @@ export class SdShortestPath {
     e: CdtEdge,
   ): number {
     let w = currentEdgeGeometry.lineWidth * bundlingSettings.edgeWidthShrinkCoeff
-    if (e.Capacity != e.ResidualCapacity) {
+    if (e.Capacity !== e.ResidualCapacity) {
       w += bundlingSettings.EdgeSeparation * bundlingSettings.edgeWidthShrinkCoeff
     }
 
@@ -408,10 +408,10 @@ export class SdShortestPath {
 
   AdjacentToSourceOrTarget(e: CdtEdge): boolean {
     return (
-      e.upperSite.Owner == this.sourceLoosePoly ||
-      e.lowerSite.Owner == this.sourceLoosePoly ||
-      e.upperSite.Owner == this.targetLoosePoly ||
-      e.lowerSite.Owner == this.targetLoosePoly
+      e.upperSite.Owner === this.sourceLoosePoly ||
+      e.lowerSite.Owner === this.sourceLoosePoly ||
+      e.upperSite.Owner === this.targetLoosePoly ||
+      e.lowerSite.Owner === this.targetLoosePoly
     )
   }
 
@@ -502,7 +502,7 @@ export class SdShortestPath {
     // this is a convex hull edge or an obstacle edge
     const startPoly = <Polyline>e.upperSite.Owner
     const endPoly = <Polyline>e.lowerSite.Owner
-    if (startPoly != endPoly) {
+    if (startPoly !== endPoly) {
       // e.Capacity = Polygon.Distance(new Polygon(startPoly), new Polygon(endPoly)); //todo: cache this
       // e.Capacity = (e.upperSite.point - e.lowerSite.point).length;
       const distA: number = Polygon.DistancePoint(new Polygon(startPoly), e.lowerSite.point)

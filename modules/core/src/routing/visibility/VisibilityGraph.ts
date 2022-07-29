@@ -34,7 +34,7 @@ export class VisibilityGraph {
     const prev: VisibilityEdge = this._prevEdgesMap.get(v)
     if (!prev) return null
 
-    if (prev.Source == v) {
+    if (prev.Source === v) {
       return prev.Target
     }
 
@@ -42,7 +42,7 @@ export class VisibilityGraph {
   }
 
   SetPreviousEdge(v: VisibilityVertex, e: VisibilityEdge) {
-    /*Assert.assert(v == e.Source || v == e.Target)*/
+    /*Assert.assert(v === e.Source || v === e.Target)*/
     this._prevEdgesMap.set(v, e)
   }
 
@@ -81,7 +81,7 @@ export class VisibilityGraph {
 
   AddHole(polyline: Polyline) {
     let p = polyline.startPoint
-    while (p != polyline.endPoint) {
+    while (p !== polyline.endPoint) {
       this.AddEdgePlPl(p, p.next)
       p = p.next
     }
@@ -95,8 +95,8 @@ export class VisibilityGraph {
         // Find the first non-collinear segments and see which direction the triangle is.
         // If it's consistent with Clockwise, then return the polyline, else return its Reverse.
         const orientation = Point.getTriangleOrientation(p.point, p.next.point, p.next.next.point)
-        if (orientation != TriangleOrientation.Collinear) {
-          yield orientation == TriangleOrientation.Clockwise ? poly : <Polyline>poly.reverse()
+        if (orientation !== TriangleOrientation.Collinear) {
+          yield orientation === TriangleOrientation.Clockwise ? poly : <Polyline>poly.reverse()
           break
         }
       }
@@ -116,27 +116,27 @@ export class VisibilityGraph {
   //      let b: PolylinePoint = a.next;
   //      let c: PolylinePoint = b.next;
   //      let orient: TriangleOrientation = Point.getTriangleOrientation(a.point, b.point, c.point);
-  //      while ((c != polyline.endPoint)) {
+  //      while ((c !== polyline.endPoint)) {
   //          a = a.next;
   //          b = b.next;
   //          c = c.next;
   //          let currentOrient = Point.getTriangleOrientation(a.point, b.point, c.point);
-  //          if ((currentOrient == TriangleOrientation.Collinear)) {
+  //          if ((currentOrient === TriangleOrientation.Collinear)) {
   //              continue
   //          }
 
-  //          if ((orient == TriangleOrientation.Collinear)) {
+  //          if ((orient === TriangleOrientation.Collinear)) {
   //              orient = currentOrient;
   //          }
-  //          else if ((orient != currentOrient)) {
+  //          else if ((orient !== currentOrient)) {
   //              throw new InvalidOperationException();
   //          }
 
   //      }
 
   //      let o = Point.getTriangleOrientation(polyline.endPoint.Point, polyline.startPoint.Point, polyline.startPoint.Next.Point);
-  //      if (((o != TriangleOrientation.Collinear)
-  //                  && (o != orient))) {
+  //      if (((o !== TriangleOrientation.Collinear)
+  //                  && (o !== orient))) {
   //          throw new InvalidOperationException();
   //      }
 
@@ -191,7 +191,7 @@ export class VisibilityGraph {
       return visEdge
     }
 
-    if (source == target) {
+    if (source === target) {
       //Assert.assert(false, 'Self-edges are not allowed')
       throw new Error('Self-edges are not allowed')
     }
@@ -207,7 +207,7 @@ export class VisibilityGraph {
   }
 
   static AddEdge(edge: VisibilityEdge) {
-    /*Assert.assert(edge.Source != edge.Target)*/
+    /*Assert.assert(edge.Source !== edge.Target)*/
     edge.Source.OutEdges.insert(edge)
     edge.Target.addInEdge(edge)
   }
@@ -275,7 +275,7 @@ export class VisibilityGraph {
   //  RemoveEdge(p1: Point, p2: Point) {
   //      //  the order of p1 and p2 is not important.
   //      let edge: VisibilityEdge = this.FindEdge(p1, p2);
-  //      if ((edge == null)) {
+  //      if ((edge == null )) {
   //          return;
   //      }
 

@@ -18,7 +18,7 @@ export type MstEdge = {
 export class MstOnDelaunayTriangulation {
   // Computes the minimum spanning tree on a set of edges
   static GetMst(proximityEdges: Array<MstEdge>, size: number): Array<MstEdge> {
-    if (proximityEdges.length == 0) {
+    if (proximityEdges.length === 0) {
       return null
     }
 

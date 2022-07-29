@@ -26,7 +26,7 @@ export class GeneralMetroMapOrdering {
   *GetOrder(u: Station, v: Station): IterableIterator<Metroline> {
     const pointPair = new PointPair(u.Position, v.Position)
     const orderedMetrolineListForUv = this.bundles.get(pointPair).Metrolines
-    if (u.Position == pointPair.First) {
+    if (u.Position === pointPair.First) {
       for (let i = 0; i < orderedMetrolineListForUv.length; i++) {
         yield orderedMetrolineListForUv[i]
       }
@@ -40,7 +40,7 @@ export class GeneralMetroMapOrdering {
   /**   Get the index of line on the edge (u->v) and node u */
   GetLineIndexInOrder(u: Station, v: Station, ml: Metroline): number {
     const pp = new PointPair(u.Position, v.Position)
-    const reversed = u.Position != pp.First // we can use the object comparison here because there is no cloning in PointPair
+    const reversed = u.Position !== pp.First // we can use the object comparison here because there is no cloning in PointPair
     const d = this.bundles.get(pp).LineIndexInOrder
     return !reversed ? d.get(ml) : d.size - 1 - d.get(ml)
   }

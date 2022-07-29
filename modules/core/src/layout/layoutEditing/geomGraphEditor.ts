@@ -164,9 +164,9 @@ export class GeometryGraphEditor {
 
   Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
     this.GraphBoundingBoxGetsExtended = false
-    if (delta.x != 0 || delta.y != 0) {
+    if (delta.x !== 0 || delta.y !== 0) {
       if (this.EditedEdge == null) {
-        if (this.EdgeRoutingMode != EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode != EdgeRoutingMode.RectilinearToCenter) {
+        if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
           this.DragObjectsForNonRectilinearCase(delta, draggingMode)
         } else {
           this.DragObjectsForRectilinearCase(delta)
@@ -206,9 +206,9 @@ export class GeometryGraphEditor {
   }
 
   DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
-    if (draggingMode == DraggingMode.Incremental) {
+    if (draggingMode === DraggingMode.Incremental) {
       this.DragIncrementally(delta)
-    } else if (this.EdgeRoutingMode == EdgeRoutingMode.Spline || this.EdgeRoutingMode == EdgeRoutingMode.SplineBundling) {
+    } else if (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
       this.DragWithSplinesOrBundles(delta)
     } else {
       this.DragWithStraightLines(delta)
@@ -233,11 +233,11 @@ export class GeometryGraphEditor {
   PropagateChangesToClusterParents() {
     const touchedClusters = new Set<GeomGraph>()
     for (const n of this.objectsToDrag) {
-      if (n instanceof GeomNode == false) continue
+      if (n instanceof GeomNode === false) continue
       const geomNode = n as GeomNode
       for (const c of geomNode.node.getAncestors()) {
         const gc = GeomObject.getGeom(c)
-        if (gc != this.geomGraph && !this.objectsToDrag.has(gc)) {
+        if (gc !== this.geomGraph && !this.objectsToDrag.has(gc)) {
           touchedClusters.add(gc as GeomGraph)
         }
       }
@@ -329,7 +329,7 @@ export class GeometryGraphEditor {
     }
 
     this.incrementalDragger.Drag(delta)
-    this.GraphBoundingBoxGetsExtended = box != this.graph.boundingBox
+    this.GraphBoundingBoxGetsExtended = box !== this.graph.boundingBox
   }
 
   DragEdgeEdit(lastMousePosition: Point, delta: Point) {
@@ -358,7 +358,7 @@ export class GeometryGraphEditor {
     this.EditedEdge = null
     this.CalculateDragSets(markedObjects)
     this.InsertToListAndSetTheBoxBefore(new ObjectDragUndoRedoAction(this.graph))
-    if (dragMode == DraggingMode.Incremental) {
+    if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
     }
   }
@@ -477,7 +477,7 @@ export class GeometryGraphEditor {
 
     const separation: number = nodeSeparation * 6
     const k: number = edges.length / 2
-    const even: boolean = k * 2 == edges.length
+    const even: boolean = k * 2 === edges.length
     let off: number
     if (even) {
       off = (separation / 2) * -1

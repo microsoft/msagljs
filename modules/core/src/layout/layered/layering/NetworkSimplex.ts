@@ -127,7 +127,7 @@ export class NetworkSimplex implements LayerCalculator {
       const e: NetworkEdge = this.getNonTreeEdgeIncidentToTheTreeWithMinimalAmountOfSlack()
       if (e == null) break //all edges are tree edges
       let slack = this.slack(e)
-      /*Assert.assert(slack != 0, 'the tree should be tight')*/
+      /*Assert.assert(slack !== 0, 'the tree should be tight')*/
 
       if (this.vertexInTree(e.source)) slack = -slack
 
@@ -162,7 +162,7 @@ export class NetworkSimplex implements LayerCalculator {
   }
 
   allLowCutsHaveBeenDone(v: number) {
-    for (const ie of this.incidentEdges(v)) if (ie.inTree && ie.cut == NetworkEdge.infinity && ie != this.parent(v)) return false
+    for (const ie of this.incidentEdges(v)) if (ie.inTree && ie.cut === NetworkEdge.infinity && ie !== this.parent(v)) return false
     return true
   }
 
@@ -173,7 +173,7 @@ export class NetworkSimplex implements LayerCalculator {
   // otherwise return zero
 
   edgeSourceTargetVal(e: NetworkEdge, treeEdge: NetworkEdge): number {
-    // if (e.inTree || treeEdge.inTree == false)
+    // if (e.inTree || treeEdge.inTree === false)
     // throw new Exception("wrong params for EdgeSOurceTargetVal");
 
     return this.vertexSourceTargetVal(e.source, treeEdge) - this.vertexSourceTargetVal(e.target, treeEdge)
@@ -205,14 +205,14 @@ export class NetworkSimplex implements LayerCalculator {
         if (cutEdge == null) continue
         let cut = 0
         for (const e of this.incidentEdges(w)) {
-          if (e.inTree == false) {
+          if (e.inTree === false) {
             const e0Val = this.edgeSourceTargetVal(e, cutEdge)
-            if (e0Val != 0) cut += e0Val * e.weight
+            if (e0Val !== 0) cut += e0Val * e.weight
           } //e0 is a tree edge
           else {
-            if (e == cutEdge) cut += e.weight
+            if (e === cutEdge) cut += e.weight
             else {
-              const impact = cutEdge.source == e.target || cutEdge.target == e.source ? 1 : -1
+              const impact = cutEdge.source === e.target || cutEdge.target === e.source ? 1 : -1
               const edgeContribution = this.edgeContribution(e, w)
               cut += edgeContribution * impact
             }
@@ -220,7 +220,7 @@ export class NetworkSimplex implements LayerCalculator {
         }
 
         cutEdge.cut = cut
-        const v = cutEdge.source == w ? cutEdge.target : cutEdge.source
+        const v = cutEdge.source === w ? cutEdge.target : cutEdge.source
         if (this.allLowCutsHaveBeenDone(v)) newFront.push(v)
       }
       //swap new front and front
@@ -239,10 +239,10 @@ export class NetworkSimplex implements LayerCalculator {
   edgeContribution(e: NetworkEdge, w: number): number {
     let ret = e.cut - e.weight
     for (const ie of this.incidentEdges(w)) {
-      if (ie.inTree == false) {
+      if (ie.inTree === false) {
         const sign = this.edgeSourceTargetVal(ie, e)
-        if (sign == -1) ret += ie.weight
-        else if (sign == 1) ret -= ie.weight
+        if (sign === -1) ret += ie.weight
+        else if (sign === 1) ret -= ie.weight
       }
     }
     return ret
@@ -327,7 +327,7 @@ export class NetworkSimplex implements LayerCalculator {
 
       //finally done with v
       this.setLim(v, curLim++)
-      if (this.lim(v) == this.low(v)) this.leaves.push(v)
+      if (this.lim(v) === this.low(v)) this.leaves.push(v)
     }
   }
 
@@ -344,7 +344,7 @@ export class NetworkSimplex implements LayerCalculator {
 
     for (let i = 0; i < this.nodeCount; i++) {
       if (llow <= this.vertices[i].lim && this.vertices[i].lim <= llim) this.setLow(i, 0)
-      else if (this.low(i) == this.lim(i)) this.leaves.push(i)
+      else if (this.low(i) === this.lim(i)) this.leaves.push(i)
     }
 
     this.initLowLimParentAndLeavesOnSubtree(llow, l)
@@ -371,7 +371,7 @@ export class NetworkSimplex implements LayerCalculator {
         if (slack < minSlack) {
           eret = e
           minSlack = slack
-          if (slack == 1) return e
+          if (slack === 1) return e
         }
       }
 
@@ -381,7 +381,7 @@ export class NetworkSimplex implements LayerCalculator {
         if (slack < minSlack) {
           eret = e
           minSlack = slack
-          if (slack == 1) return e
+          if (slack === 1) return e
         }
       }
     }
@@ -411,7 +411,7 @@ export class NetworkSimplex implements LayerCalculator {
       for (const e of this.graph.outEdges[v]) {
         if (this.vertexInTree(e.target)) continue
 
-        if (this.layers[e.source] - this.layers[e.target] == e.separation) {
+        if (this.layers[e.source] - this.layers[e.target] === e.separation) {
           q.push(e.target)
           this.addVertexToTree(e.target)
           this.treeVertices.push(e.target)
@@ -422,7 +422,7 @@ export class NetworkSimplex implements LayerCalculator {
       for (const e of this.graph.inEdges[v]) {
         if (this.vertexInTree(e.source)) continue
 
-        if (this.layers[e.source] - this.layers[e.target] == e.separation) {
+        if (this.layers[e.source] - this.layers[e.target] === e.separation) {
           q.push(e.source)
           this.addVertexToTree(e.source)
           this.treeVertices.push(e.source)
@@ -460,13 +460,13 @@ export class NetworkSimplex implements LayerCalculator {
     for (const f of this.graph.edges) {
       const slack = this.slack(f)
       if (
-        f.inTree == false &&
-        this.edgeSourceTargetVal(f, leavingEdge) == -1 &&
-        (slack < minSlack || (slack == minSlack && (continuation = randomInt(2) == 1)))
+        f.inTree === false &&
+        this.edgeSourceTargetVal(f, leavingEdge) === -1 &&
+        (slack < minSlack || (slack === minSlack && (continuation = randomInt(2) === 1)))
       ) {
         minSlack = slack
         enteringEdge = f
-        if (minSlack == 0 && !continuation) break
+        if (minSlack === 0 && !continuation) break
         continuation = false
       }
     }
@@ -502,18 +502,18 @@ export class NetworkSimplex implements LayerCalculator {
 
     //set layers to infinity under l
     for (let i = 0; i < this.nodeCount; i++)
-      if (this.low(l) <= this.lim(i) && this.lim(i) <= this.lim(l) && i != l) this.layers[i] = NetworkEdge.infinity
+      if (this.low(l) <= this.lim(i) && this.lim(i) <= this.lim(l) && i !== l) this.layers[i] = NetworkEdge.infinity
 
     while (front.length > 0) {
       const u = front.pop()
       for (const oe of this.graph.outEdges[u]) {
-        if (oe.inTree && this.layers[oe.target] == NetworkEdge.infinity) {
+        if (oe.inTree && this.layers[oe.target] === NetworkEdge.infinity) {
           this.layers[oe.target] = this.layers[u] - oe.separation
           front.push(oe.target)
         }
       }
       for (const ie of this.graph.inEdges[u]) {
-        if (ie.inTree && this.layers[ie.source] == NetworkEdge.infinity) {
+        if (ie.inTree && this.layers[ie.source] === NetworkEdge.infinity) {
           this.layers[ie.source] = this.layers[u] + ie.separation
           front.push(ie.source)
         }
@@ -548,16 +548,16 @@ export class NetworkSimplex implements LayerCalculator {
 
         if (cutEdge == null) continue
 
-        if (cutEdge.cut != NetworkEdge.infinity) continue //the value of this cut has not been changed
+        if (cutEdge.cut !== NetworkEdge.infinity) continue //the value of this cut has not been changed
         let cut = 0
         for (const ce of this.incidentEdges(w)) {
-          if (ce.inTree == false) {
+          if (ce.inTree === false) {
             cut += this.edgeSourceTargetVal(ce, cutEdge) * ce.weight
           } //e0 is a tree edge
           else {
-            if (ce == cutEdge) cut += ce.weight
+            if (ce === cutEdge) cut += ce.weight
             else {
-              const impact = cutEdge.source == ce.target || cutEdge.target == ce.source ? 1 : -1
+              const impact = cutEdge.source === ce.target || cutEdge.target === ce.source ? 1 : -1
               const edgeContribution = this.edgeContribution(ce, w)
               cut += edgeContribution * impact
             }
@@ -565,7 +565,7 @@ export class NetworkSimplex implements LayerCalculator {
         }
 
         cutEdge.cut = cut
-        const u = cutEdge.source == w ? cutEdge.target : cutEdge.source
+        const u = cutEdge.source === w ? cutEdge.target : cutEdge.source
         if (this.allLowCutsHaveBeenDone(u)) newFront.push(u)
       }
       //swap newFrontAndFront
@@ -579,10 +579,10 @@ export class NetworkSimplex implements LayerCalculator {
     //we mark the path by setting the cut value to infinity
 
     let v = f.target
-    while (v != l) {
+    while (v !== l) {
       const p = this.parent(v)
       p.cut = NetworkEdge.infinity
-      v = p.source == v ? p.target : p.source
+      v = p.source === v ? p.target : p.source
     }
 
     f.cut = NetworkEdge.infinity //have to do it because f will be in the path between end points of e in the new tree
@@ -607,10 +607,10 @@ export class NetworkSimplex implements LayerCalculator {
     //so just start walking up from the source
     let l = f.source
 
-    while ((this.low(l) <= fMin && fmax <= this.lim(l)) == false) {
+    while ((this.low(l) <= fMin && fmax <= this.lim(l)) === false) {
       const p = this.parent(l)
       p.cut = NetworkEdge.infinity
-      l = p.source == l ? p.target : p.source
+      l = p.source === l ? p.target : p.source
     }
     return l
   }
@@ -622,7 +622,7 @@ export class NetworkSimplex implements LayerCalculator {
         for (const f of this.graph.edges) {
           cut += this.edgeSourceTargetVal(f, e) * f.weight
         }
-        if (e.cut != cut) console.log(String.Format('cuts are wrong for {0}; should be {1} but is {2}', e, cut, e.cut))
+        if (e.cut !== cut) console.log(String.Format('cuts are wrong for {0}; should be {1} but is {2}', e, cut, e.cut))
       }
     }
   }
@@ -633,7 +633,7 @@ export class NetworkSimplex implements LayerCalculator {
   }
 
   run() {
-    if (this.graph.edges.length == 0 && this.graph.nodeCount == 0) {
+    if (this.graph.edges.length === 0 && this.graph.nodeCount === 0) {
       this.layers = []
     } else {
       this.feasibleTree()

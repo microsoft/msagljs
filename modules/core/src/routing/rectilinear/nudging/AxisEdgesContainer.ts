@@ -30,6 +30,6 @@ export class AxisEdgesContainer {
   }
 
   IsEmpty(): boolean {
-    return this.edges.size == 0
+    return this.edges.size === 0
   }
 }

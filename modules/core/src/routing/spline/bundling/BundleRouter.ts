@@ -64,7 +64,7 @@ export class BundleRouter extends Algorithm {
     this.bundlingSettings = bundlingSettings
     this.bundlingSettings.edgeWidthShrinkCoeff = 1
     this.edgesToRoute = edgesToRoute
-    this.regularEdges = edgesToRoute.filter((e) => e.source != e.target)
+    this.regularEdges = edgesToRoute.filter((e) => e.source !== e.target)
     this.VisibilityGraph = visibilityGraph
     this.shortestPathRouter = shortestPathRouter
     this.LoosePadding = loosePadding
@@ -315,7 +315,7 @@ export class BundleRouter extends Algorithm {
 
   RouteSelfEdges() {
     for (const edge of this.edgesToRoute) {
-      if (edge.source == edge.target) {
+      if (edge.source === edge.target) {
         const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
         edge.curve = GeomEdge.RouteSelfEdge(edge.source.boundaryCurve, this.LoosePadding * 2, t)
       }

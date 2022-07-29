@@ -3,7 +3,7 @@
 // namespace Microsoft.Msagl.Routing {
 //    internal class Corner {
 //        protected bool Equals(Corner other) {
-//            return b == other.b && ((a == other.a && c == other.c) || (a == other.c && c == other.a));
+//            return b === other.b && ((a === other.a && c === other.c) || (a === other.c && c === other.a));
 //        }
 
 //        public override int GetHashCode() {
