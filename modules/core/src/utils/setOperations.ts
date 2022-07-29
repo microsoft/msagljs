@@ -64,15 +64,17 @@ export function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
   for (const u of a) if (!b.has(u)) return false
   return true
 }
-
-export function flatMap<U, T>(arr: ReadonlyArray<T>, callback: (elem: T) => Iterable<U>): U[] {
+/** return the concatenated array of items */
+export function flattenArray<U, T>(arr: ReadonlyArray<T>, callback: (elem: T) => Iterable<U>): U[] {
   const ret = []
   for (const f of arr) {
     for (const u of callback(f)) ret.push(u)
   }
   return ret
 }
-
+/** adds val to map.get(key) if the key exists, otherwise creates the key pair and
+ * executes the former instruction
+ */
 export function addToMapOfSets<K, V>(map: Map<K, Set<V>>, key: K, val: V) {
   let s = map.get(key)
   if (!s) {

@@ -12,7 +12,7 @@ import {CrossRectangleNodesSameType} from '../math/geometry/RTree/RectangleNodeU
 import {GetConnectedComponents} from '../math/graphAlgorithms/ConnectedComponentCalculator'
 import {mkGraphOnEdgesArray} from '../structs/basicGraphOnEdges'
 import {IntPair} from '../utils/IntPair'
-import {flatMap} from '../utils/setOperations'
+import {flattenArray} from '../utils/setOperations'
 import {Polygon} from './visibility/Polygon'
 
 export class InteractiveObstacleCalculator {
@@ -226,7 +226,7 @@ export class InteractiveObstacleCalculator {
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
       const polys = component.map((i) => intToPoly[i])
-      const points = flatMap(polys, (p) => p)
+      const points = flattenArray(polys, (p) => p)
       const convexHull = ConvexHull.createConvexHullAsClosedPolyline(points)
       for (const poly of polys) {
         tightObsts.delete(poly)
