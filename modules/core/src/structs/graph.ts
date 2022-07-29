@@ -7,6 +7,49 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. Some nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  /**  Iterates over all connected components of the graph and for each component
+   * returns all its nodes with "this" as the parent
+   */
+
+  *GetClusteredConnectedComponents(): IterableIterator<Array<Node>> {
+    const processed = new Set<Node>()
+    const q = new Queue<Node>()
+    for (const v of this.deepNodes) {
+      if (processed.has(v)) continue
+      processed.add(v)
+      q.enqueue(v)
+      const component = new Set<Node>()
+      do {
+        const u = q.dequeue()
+        if (u.parent === this) {
+          component.add(u)
+        }
+        for (const w of this.reachableFrom(u)) {
+          if (!processed.has(w)) {
+            processed.add(w)
+            q.enqueue(w)
+          }
+        }
+      } while (q.length > 0)
+      yield Array.from(component)
+    }
+
+    
+  }
+  private* reachableFrom(u: Node): IterableIterator<Node> {
+      for (const e of u.outEdges) {
+        yield e.target
+      }
+      for (const e of u.inEdges) {
+        yield e.source
+      }
+      if (u instanceof Graph) {
+        yield* u.shallowNodes
+      }
+      if (u.parent != this) {
+        yield u.parent as Node
+      }
+    }
   hasSomeAttrOnIndex(index: number): boolean {
     for (const n of this.deepNodes) {
       if (n.getAttr(index)) return true
