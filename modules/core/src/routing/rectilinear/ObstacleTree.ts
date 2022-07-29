@@ -10,7 +10,7 @@ import {mkGraphOnEdges} from '../../structs/basicGraphOnEdges'
 import {closeDistEps} from '../../utils/compare'
 import {IntPair} from '../../utils/IntPair'
 import {IntPairSet} from '../../utils/IntPairSet'
-import {flatMap} from '../../utils/setOperations'
+import {flattenArray} from '../../utils/setOperations'
 import {Shape} from '../shape'
 import {GroupBoundaryCrossingMap} from './GroupBoundaryCrossingMap'
 import {Obstacle} from './obstacle'
@@ -359,7 +359,7 @@ export class ObstacleTree {
 
       found = true
       const obstacles = component.map(this.OrdinalToObstacle)
-      const points: Point[] = flatMap(obstacles, (p) => p.VisibilityPolyline)
+      const points: Point[] = flattenArray(obstacles, (p) => p.VisibilityPolyline)
 
       const och = new OverlapConvexHull(ConvexHull.createConvexHullAsClosedPolyline(points), obstacles)
       for (const obstacle of obstacles) {

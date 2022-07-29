@@ -11,10 +11,10 @@ import {CancelToken} from '../../../utils/cancelToken'
 import {LayerEdge} from '../layerEdge'
 import {Stack} from 'stack-typescript'
 
-import {EdgeComparerBySource} from './edgeComparerBySource'
-import {EdgeComparerByTarget} from './edgeComparerByTarget'
-import {Algorithm} from '../../../utils/algorithm'
-import {flatMap} from '../../../utils/setOperations'
+import {EdgeComparerBySource} from './EdgeComparerBySource'
+import {EdgeComparerByTarget} from './EdgeComparerByTarget'
+import {Algorithm} from './../../../utils/algorithm'
+import {flattenArray} from '../../../utils/setOperations'
 // Works on the layered graph.
 // See GraphLayout.pdfhttps://www.researchgate.net/profile/Lev_Nachmanson/publication/30509007_Drawing_graphs_with_GLEE/links/54b6b2930cf2e68eb27edf71/Drawing-graphs-with-GLEE.pdf
 
@@ -96,7 +96,7 @@ function GetCrossingCountFromStripWhenBottomLayerIsShorter(
 }
 
 function EdgesOfStrip(bottomVerts: number[], properLayeredGraph: ProperLayeredGraph): LayerEdge[] {
-  return flatMap(bottomVerts, (v) => properLayeredGraph.InEdges(v))
+  return flattenArray(bottomVerts, (v) => properLayeredGraph.InEdges(v))
 }
 
 export function GetCrossingsTotal(properLayeredGraph: ProperLayeredGraph, layerArrays: LayerArrays) {

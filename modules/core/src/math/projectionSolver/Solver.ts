@@ -2,7 +2,7 @@
 // solution that minimally satisfies the constraints.
 
 import {greaterDistEps} from '../../utils/compare'
-import {flatMap} from '../../utils/setOperations'
+import {flattenArray} from '../../utils/setOperations'
 import {Block} from './Block'
 import {BlockVector} from './BlockVector'
 import {Constraint} from './Constraint'
@@ -148,7 +148,7 @@ export class Solver {
   // This enumerates all Variables created by AddVariable.
 
   public get Variables(): Array<Variable> {
-    return flatMap(this.allBlocks.Vector, (block) => block.Variables)
+    return flattenArray(this.allBlocks.Vector, (block) => block.Variables)
   }
 
   // The number of variables added to the Solver.

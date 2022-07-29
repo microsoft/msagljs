@@ -8,7 +8,7 @@ import {ConvexHull} from '../math/geometry/convexHull'
 import {Polyline} from '../math/geometry/polyline'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/RectangleNode'
 import {CrossRectangleNodes} from '../math/geometry/RTree/RectangleNodeUtils'
-import {flatMap} from '../utils/setOperations'
+import {flattenArray} from '../utils/setOperations'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {Shape} from './shape'
 import {TightLooseCouple} from './TightLooseCouple'
@@ -81,7 +81,7 @@ export class ShapeObstacleCalculator {
 
   InitialTightPolyline(shape: Shape): Polyline {
     const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
-    const stickingPointsArray = flatMap(this.LoosePolylinesUnderShape(shape), (p) => p).filter(
+    const stickingPointsArray = flattenArray(this.LoosePolylinesUnderShape(shape), (p) => p).filter(
       (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
