@@ -50,8 +50,8 @@ import { PivotMDS } from '../mds/PivotMDS';
             }
             else {
                 for (let c of this.graph.subgraphs()) {
-                    if (((c .RectangularBoundary == null) {
-                        // TODO: Warning!!! continue If
+                    if (c .RectangularBoundary == null) {
+                        continue
                     }
                     
                     c.RectangularBoundary.GenerateFixedConstraints = false;
