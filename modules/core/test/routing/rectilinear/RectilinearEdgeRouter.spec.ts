@@ -378,6 +378,7 @@ test('layout 100-150 gv files with MDS rect', () => {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 150) return
     if (i < 100) continue
+    if (i != 108) continue
     let dg: DrawingGraph
 
     try {

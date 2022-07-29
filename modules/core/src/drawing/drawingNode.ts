@@ -106,6 +106,6 @@ export class DrawingNode extends DrawingObject {
   }
 
   get id(): string {
-    return this.node.id
+    return this.node ? this.node.id : null
   }
 }

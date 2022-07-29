@@ -123,8 +123,8 @@ export function parseDotGraph(fileName: string, absolutePath = false): Graph {
     const graphStr = fs.readFileSync(fpath, 'utf-8')
     return parseDot(graphStr)
   } catch (Error) {
-    console.log('file = ' + fileName + ' error:' + Error.message)
-    return null
+    const str = 'file = ' + fileName + ' error:' + Error.message
+    throw str
   }
 }
 export function parseJSONFile(fileName: string, absolutePath = false): Graph {
