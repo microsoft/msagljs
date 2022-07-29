@@ -57,7 +57,7 @@ import { PivotMDS } from '../mds/PivotMDS';
                     c.RectangularBoundary.GenerateFixedConstraints = false;
                 }
                 
-                let components = this.graph.GetClusteredConnectedComponents().ToList();
+                let components = this.graph.graph.GetClusteredConnectedComponents();
                 this.componentCount = components.Count;
                 for (let component in components) {
                     this.LayoutComponent(component);
