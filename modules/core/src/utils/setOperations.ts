@@ -65,7 +65,7 @@ export function setsAreEqual<T>(a: Set<T>, b: Set<T>): boolean {
   return true
 }
 
-export function flatMap<U, T>(arr: ReadonlyArray<T>, callback: (elem: T) => ReadonlyArray<U>): U[] {
+export function flatMap<U, T>(arr: ReadonlyArray<T>, callback: (elem: T) => Iterable<U>): U[] {
   const ret = []
   for (const f of arr) {
     for (const u of callback(f)) ret.push(u)
