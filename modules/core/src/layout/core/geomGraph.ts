@@ -35,6 +35,7 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  RectangularBoundary: any
   *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
     for (const n of this.graph.allSuccessorsWidthFirst()) {
       yield GeomNode.getGeom(n) as GeomNode

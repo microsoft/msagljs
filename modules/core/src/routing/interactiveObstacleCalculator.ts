@@ -226,7 +226,7 @@ export class InteractiveObstacleCalculator {
     const connectedComponents = GetConnectedComponents(graph)
     for (const component of connectedComponents) {
       const polys = component.map((i) => intToPoly[i])
-      const points = flatMap(polys, (p) => Array.from(p))
+      const points = flatMap(polys, (p) => p)
       const convexHull = ConvexHull.createConvexHullAsClosedPolyline(points)
       for (const poly of polys) {
         tightObsts.delete(poly)

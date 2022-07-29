@@ -96,7 +96,7 @@ function GetCrossingCountFromStripWhenBottomLayerIsShorter(
 }
 
 function EdgesOfStrip(bottomVerts: number[], properLayeredGraph: ProperLayeredGraph): LayerEdge[] {
-  return flatMap(bottomVerts, (v) => Array.from(properLayeredGraph.InEdges(v)))
+  return flatMap(bottomVerts, (v) => properLayeredGraph.InEdges(v))
 }
 
 export function GetCrossingsTotal(properLayeredGraph: ProperLayeredGraph, layerArrays: LayerArrays) {

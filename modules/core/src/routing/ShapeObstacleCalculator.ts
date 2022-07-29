@@ -81,7 +81,7 @@ export class ShapeObstacleCalculator {
 
   InitialTightPolyline(shape: Shape): Polyline {
     const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
-    const stickingPointsArray = flatMap(this.LoosePolylinesUnderShape(shape), (p) => Array.from(p)).filter(
+    const stickingPointsArray = flatMap(this.LoosePolylinesUnderShape(shape), (p) => p).filter(
       (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
