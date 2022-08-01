@@ -7,7 +7,7 @@ import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
-import {layoutDrawingGraph} from './layout'
+import {layoutGraph, layoutGraphOnWorker} from './layout'
 import {Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, GeomEdge} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
@@ -44,10 +44,12 @@ export default class Renderer extends EventSource {
   private _textMeasurer: TextMeasurer
   private _graphHighlighter: GraphHighlighter
   private _highlightedNodeId: string | null
+  private _layoutWorkerUrl?: string
 
-  constructor(container: HTMLElement = document.body) {
+  constructor(container: HTMLElement = document.body, layoutWorkerUrl?: string) {
     super()
 
+    this._layoutWorkerUrl = layoutWorkerUrl
     this._textMeasurer = new TextMeasurer()
 
     if (window.getComputedStyle(container).position === 'static') {
@@ -119,12 +121,12 @@ export default class Renderer extends EventSource {
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done
-   * Set options to null to use existing geometry
+   * Explicitly set options to null to use existing geometry
    */
-  setGraph(graph: Graph, options: LayoutOptions | null = this._layoutOptions) {
+  async setGraph(graph: Graph, options: LayoutOptions | null = this._layoutOptions) {
     if (this._graph === graph) {
       if (options) {
-        this.setOptions(options)
+        await this.setOptions(options)
       }
     } else {
       this._graph = graph
@@ -136,17 +138,15 @@ export default class Renderer extends EventSource {
 
         const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
         drawingGraph.createGeometry(this._textMeasurer.measure)
-        layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
-      }
-
-      if (this._deck.layerManager) {
+        await this._layoutGraph(true)
+      } else if (this._deck.layerManager) {
         // deck is ready
         this._update()
       }
     }
   }
 
-  setOptions(options: LayoutOptions) {
+  async setOptions(options: LayoutOptions) {
     const oldLabelSettings = this._layoutOptions.label
     const newLabelSettings = options.label
     const fontChanged = !deepEqual(oldLabelSettings, newLabelSettings)
@@ -163,12 +163,7 @@ export default class Renderer extends EventSource {
       drawingGraph.createGeometry(this._textMeasurer.measure)
     }
     const relayout = fontChanged
-    layoutDrawingGraph(drawingGraph, this._layoutOptions, relayout)
-
-    if (this._deck.layerManager) {
-      // deck is ready
-      this._update()
-    }
+    await this._layoutGraph(relayout)
   }
 
   zoomTo(rectangle: Rectangle) {
@@ -200,6 +195,23 @@ export default class Renderer extends EventSource {
       })
       this._deck.layerManager.setNeedsRedraw('hightlight changed')
     }
+  }
+
+  private async _layoutGraph(forceUpdate: boolean) {
+    console.time('layout')
+    if (this._layoutWorkerUrl) {
+      this._graph = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate)
+    } else {
+      layoutGraph(this._graph, this._layoutOptions, forceUpdate)
+    }
+    console.timeEnd('layout')
+
+    console.time('initial render')
+    if (this._deck.layerManager) {
+      // deck is ready
+      this._update()
+    }
+    console.timeEnd('initial render')
   }
 
   private _update() {

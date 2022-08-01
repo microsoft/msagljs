@@ -57,6 +57,15 @@
       #settings > div {
         margin: 4px 0;
       }
+      #settings.disabled {
+        background-image: url('./spinner.gif');
+        background-size: 48px;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+      #settings.disabled > div {
+        visibility: hidden;
+      }
       #settings label {
         font-weight: bold;
         min-width: 120px;
