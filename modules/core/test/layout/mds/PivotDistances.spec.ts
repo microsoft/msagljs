@@ -1,6 +1,6 @@
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {PivotDistances} from '../../../src/layout/mds/PivotDistances'
-import {layoutGraphWithMds} from '../../../src/layout/mds/PivotMDS'
+import {PivotDistances} from '../../../src/layout/mds/pivotDistances'
+import {layoutGraphWithMds} from '../../../src/layout/mds/pivotMDS'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
 

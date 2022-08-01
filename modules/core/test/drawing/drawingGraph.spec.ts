@@ -1,7 +1,7 @@
 import {GeomGraph} from '../../src'
 import {DrawingGraph} from '../../src/drawing/drawingGraph'
 import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
-import {layoutGraphWithMds} from '../../src/layout/mds/PivotMDS'
+import {layoutGraphWithMds} from '../../src/layout/mds/pivotMDS'
 import {measureTextSize, parseDotGraph} from '../utils/testUtils'
 
 // xtest('drawingGraph layout', () => {

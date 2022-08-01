@@ -1,11 +1,14 @@
 import { Direction } from '../../math/geometry';
 import { Edge } from '../../structs/edge';
 import {Algorithm} from '../../utils/algorithm'
-import { GeomGraph } from '../core';
+import { GeomGraph } from '../../'
 import { FastIncrementalLayout } from '../incremental/fastIncrementalLayout';
 import { FastIncrementalLayoutSettings } from '../incremental/fastIncrementalLayoutSettings';
-import { MdsGraphLayout } from '../mds/MDSGraphLayout';
-import { PivotMDS } from '../mds/PivotMDS';
+import { MdsGraphLayout } from '../mds/mDSGraphLayout';
+import { PivotMDS } from '../mds/pivotMDS';
+import { IGeomGraph } from './iGeomGraph';
+import { GeomConnectedComponent } from './geomConnectedComponent';
+import { LayoutAlgorithmHelpers } from './layoutAlgorithmHelpers';
     ///  <summary>
     ///  Methods for obtaining an initial layout of a graph using various means.
     ///  </summary>
@@ -25,7 +28,7 @@ import { PivotMDS } from '../mds/PivotMDS';
         ///  <summary>
         ///  Static layout of graph by gradually adding constraints.
         ///  Uses PivotMds to find initial layout.
-        ///  Breaks the graph into connected components (nodes in the same cluster are considered
+        ///  Breaks the graph into connected components (nodes of the same cluster are considered
         ///  connected whether or not there is an edge between them), then lays out each component
         ///  individually.  Finally, a simple packing is applied.
         ///  ratio as close as possible to the PackingAspectRatio property (not currently used).
@@ -57,47 +60,30 @@ import { PivotMDS } from '../mds/PivotMDS';
                     c.RectangularBoundary.GenerateFixedConstraints = false;
                 }
                 
-                let components = Array.from(this.graph.graph.getClusteredConnectedComponents())
+                let components = Array.from(this.graph.graph.getClusteredConnectedComponents()).map(topNodes=>new GeomConnectedComponent(topNodes))
                 this.componentCount = components.length
                 for (let component of components) {
                     this.LayoutComponent(component);
                 }
                 
-                this.graph.BoundingBox = MdsGraphLayout.PackGraphs(components, this.settings);
-                this.ProgressComplete();
-                //  update positions of original graph elements
-                for (let v in this.graph.Nodes) {
-                    let copy = (<GraphConnectedComponents.AlgorithmDataNodeWrap>(v.AlgorithmData));
-                    Debug.Assert((copy != null));
-                    v.Center = copy.node.Center;
-                }
+                this.graph.boundingBox = MdsGraphLayout.PackGraphs(components, this.settings);
                 
-                for (let e in this.graph.Edges) {
-                    let copy = (<Edge>(e.AlgorithmData));
-                    if ((copy != null)) {
-                        e.EdgeGeometry = copy.EdgeGeometry;
-                        e.EdgeGeometry.Curve = copy.Curve;
-                    }
-                    
-                }
-                
-                for (let c in this.graph.RootCluster.AllClustersDepthFirst().Where(() => {  }, (c != this.graph.RootCluster))) {
-                    let copy = (<GraphConnectedComponents.AlgorithmDataNodeWrap>(c.AlgorithmData));
-                    let copyCluster = (<Cluster>(copy.node));
-                    Debug.Assert((copyCluster != null));
-                    c.RectangularBoundary = copyCluster.RectangularBoundary;
-                    c.RectangularBoundary.GenerateFixedConstraints = c.RectangularBoundary.GenerateFixedConstraintsDefault;
-                    c.BoundingBox = c.RectangularBoundary.Rect;
-                    c.RaiseLayoutDoneEvent();
-                }
+                // for (let c of this.graph.subgraphs()) {
+                //     let copy = (<GraphConnectedComponents.AlgorithmDataNodeWrap>(c.AlgorithmData));
+                //     let copyCluster = (<Cluster>(copy.node));
+                //     Debug.Assert((copyCluster != null));
+                //     c.RectangularBoundary = copyCluster.RectangularBoundary;
+                //     c.RectangularBoundary.GenerateFixedConstraints = c.RectangularBoundary.GenerateFixedConstraintsDefault;
+                //     c.BoundingBox = c.RectangularBoundary.Rect;
+                //     c.RaiseLayoutDoneEvent();
+                // }
                 
             }
             
         }
         
-        private LayoutComponent(componentTopNodes:Node[]) {
-            if (((component.Nodes.Count > 1) 
-                        || component.RootCluster.Clusters.Any())) {
+        private LayoutComponent(component:IGeomGraph) {
+            if (component.shallowNodeCount > 1 ) {
                 //  for small graphs (below 100 nodes) do extra iterations
                 this.settings.MaxIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.Nodes.Count, 50, 500, 5, 10);
                 this.settings.MinorIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.Nodes.Count, 50, 500, 3, 20);
@@ -111,7 +97,7 @@ import { PivotMDS } from '../mds/PivotMDS';
                 
                 let fil: FastIncrementalLayout = new FastIncrementalLayout(component, this.settings, this.settings.MinConstraintLevel, () => {  }, this.settings);
                 Debug.Assert((this.settings.Iterations == 0));
-                for (let level in this.GetConstraintLevels(component)) {
+                for (let level of this.GetConstraintLevels(component)) {
                     if ((level > this.settings.MaxConstraintLevel)) {
                         break;
                     }

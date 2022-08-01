@@ -4,8 +4,8 @@ import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph, optimalPackingRunner} from '../core/geomGraph'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
-import {MdsGraphLayout} from './MDSGraphLayout'
-import {MdsLayoutSettings} from './MDSLayoutSettings'
+import {MdsGraphLayout} from './mDSGraphLayout'
+import {MdsLayoutSettings} from './mDSLayoutSettings'
 
 export function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToken = null, flipToScreenCoords = true) {
   let mdsSettings: MdsLayoutSettings

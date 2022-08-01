@@ -1,7 +1,7 @@
 import {DrawingGraph} from '../../src/drawing/drawingGraph'
 import {GeomGraph} from '../../src/layout/core'
 import {GeomObject} from '../../src/layout/core/geomObject'
-import {layoutGraphWithMds} from '../../src/layout/mds/PivotMDS'
+import {layoutGraphWithMds} from '../../src/layout/mds/pivotMDS'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {parseDotGraph} from '../utils/testUtils'
 

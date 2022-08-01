@@ -19,5 +19,5 @@ export class OverlapRemovalGlobalConfiguration {
   ///  </summary>
   public static /* const */ ClusterDefaultBorderWidth = 0.001
 
-  private static /* internal */ /* const */ EventComparisonEpsilon = 1e-6
+  static /* const */ EventComparisonEpsilon = 1e-6
 }
