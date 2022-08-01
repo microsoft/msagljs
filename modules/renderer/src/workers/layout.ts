@@ -6,18 +6,20 @@ import {layoutGraph} from '../layout'
 
 export default function initLayoutWorker() {
   globalThis.onmessage = ({data}) => {
-    switch (data.command) {
+    switch (data.type) {
       case 'layout': {
         const graph = parseJSON(data.graph)
 
-        const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
-        drawingGraph.createGeometry()
+        console.debug('graph transfer to worker', Date.now() - data.timestamp + ' ms')
 
+        const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
+        // GeomEdge is missing without this step
+        drawingGraph.createGeometry()
         layoutGraph(graph, data.options, data.forceUpdate)
-        console.debug('[worker] layout completed', new Date().toJSON().slice(11))
 
         postMessage({
           type: 'layout-done',
+          timestamp: Date.now(),
           graph: graphToJSON(graph),
         })
       }

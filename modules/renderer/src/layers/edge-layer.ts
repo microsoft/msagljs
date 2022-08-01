@@ -44,6 +44,7 @@ type Arrow = {
 
 export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
   static defaultProps = defaultProps
+  static layerName = 'EdgeLayer'
 
   state!: {
     arrows: Arrow[]

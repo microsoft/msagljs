@@ -198,20 +198,16 @@ export default class Renderer extends EventSource {
   }
 
   private async _layoutGraph(forceUpdate: boolean) {
-    console.time('layout')
     if (this._layoutWorkerUrl) {
       this._graph = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate)
     } else {
       layoutGraph(this._graph, this._layoutOptions, forceUpdate)
     }
-    console.timeEnd('layout')
 
-    console.time('initial render')
     if (this._deck.layerManager) {
       // deck is ready
       this._update()
     }
-    console.timeEnd('initial render')
   }
 
   private _update() {
@@ -225,6 +221,7 @@ export default class Renderer extends EventSource {
       return
     }
 
+    console.time('initial render')
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
@@ -325,5 +322,6 @@ export default class Renderer extends EventSource {
     } as Event)
 
     this.zoomTo(geomGraph.boundingBox)
+    console.timeEnd('initial render')
   }
 }

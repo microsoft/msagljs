@@ -35,8 +35,7 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
       } else if (data.type === 'layout-done') {
         try {
           graph = parseJSON(data.graph)
-
-          console.debug('[main]   layout received ', new Date().toJSON().slice(11))
+          console.debug('graph transfer to main thread', Date.now() - data.timestamp + ' ms')
 
           resolve(graph)
         } catch (err) {
@@ -45,10 +44,9 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
       }
     }
 
-    console.debug('[main]   layout initiated', new Date().toJSON().slice(11))
-
     layoutWorker.postMessage({
-      command: 'layout',
+      type: 'layout',
+      timestamp: Date.now(),
       graph: graphToJSON(graph),
       options,
       forceUpdate,
@@ -87,9 +85,13 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   }
 
   if (needsLayout) {
+    console.time('layoutGeomGraph')
     layoutGeomGraph(geomGraph, null)
+    console.timeEnd('layoutGeomGraph')
   } else if (needsReroute) {
+    console.time('routeEdges')
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
+    console.time('routeEdges')
   }
   return graph
 }
