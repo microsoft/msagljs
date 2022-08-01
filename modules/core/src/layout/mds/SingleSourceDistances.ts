@@ -3,9 +3,10 @@ import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
 import {GeomNode} from '../core/geomNode'
+import { IGeomGraph } from '../initialLayout/iGeomGraph'
 // Provides functionality for computing distances in a graph.
 export class SingleSourceDistances extends Algorithm {
-  private graph: GeomGraph
+  private graph: IGeomGraph
 
   private source: GeomNode
   private: number[]
@@ -16,7 +17,7 @@ export class SingleSourceDistances extends Algorithm {
   // all other nodes in a graph with nonnegative edge lengths.
   // The distance between a node and itself is 0; the distance between a pair of
   // nodes for which no connecting path exists is Number.POSITIVE_INFINITY.
-  constructor(graph: GeomGraph, source: GeomNode, length: (e: GeomEdge) => number) {
+  constructor(graph: IGeomGraph, source: GeomNode, length: (e: GeomEdge) => number) {
     super(null) // todo: pass the canceltoken
     this.graph = graph
     this.source = source
