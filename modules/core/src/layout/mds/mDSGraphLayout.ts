@@ -2,8 +2,8 @@ import {Point} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
 import {GeomGraph} from '../core/geomGraph'
 import {AllPairsDistances} from './AllPairsDistances'
-import {MdsLayoutSettings} from './MDSLayoutSettings'
-import {PivotDistances} from './PivotDistances'
+import {MdsLayoutSettings} from './mDSLayoutSettings'
+import {PivotDistances} from './pivotDistances'
 import {Transform} from './Transform'
 import {Algorithm} from '../../utils/algorithm'
 import {CancelToken} from '../../utils/cancelToken'
@@ -13,6 +13,7 @@ import {MultidimensionalScaling} from './MultiDimensionalScaling'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 
 // Class for graph layout with multidimensional scaling.
 export class MdsGraphLayout extends Algorithm {
@@ -189,13 +190,13 @@ export class MdsGraphLayout extends Algorithm {
   //  }
 
   // Pack the given graph components to the specified aspect ratio
-  public static PackGraphs(graphs: GeomGraph[], settings: CommonLayoutSettings): Rectangle {
+  public static PackGraphs(graphs: IGeomGraph[], settings: CommonLayoutSettings): Rectangle {
     if (graphs.length === 0) {
       return Rectangle.mkEmpty()
     }
     if (graphs.length === 1) return graphs[0].boundingBox
     const rectangles = graphs.map((g) => g.boundingBox)
-    const originalLeftBottoms = new Array<{g: GeomGraph; lb: Point}>()
+    const originalLeftBottoms = new Array<{g: IGeomGraph; lb: Point}>()
     for (const g of graphs) {
       originalLeftBottoms.push({g: g, lb: g.boundingBox.leftBottom.clone()})
     }
