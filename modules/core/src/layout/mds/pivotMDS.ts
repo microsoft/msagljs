@@ -4,6 +4,7 @@ import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph, optimalPackingRunner} from '../core/geomGraph'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
+import { IGeomGraph } from '../initialLayout/iGeomGraph'
 import {MdsGraphLayout} from './mDSGraphLayout'
 import {MdsLayoutSettings} from './mDSLayoutSettings'
 
@@ -21,7 +22,7 @@ export function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToke
 // Initial layout using PivotMDS method for a graph with subgraphs
 export class PivotMDS extends Algorithm {
   length: (e: GeomEdge) => number
-  private graph: GeomGraph
+  private graph: IGeomGraph
 
   // scales the final layout by the specified factor on X
   iterationsWithMajorization: number
@@ -45,7 +46,7 @@ export class PivotMDS extends Algorithm {
 
   // Layout graph by the PivotMds method.  Uses spectral techniques to obtain a layout in
   // O(n^2) time when iterations with majorization are used, otherwise it is more like O(PivotNumber*n).
-  constructor(graph: GeomGraph, cancelToken: CancelToken, length: (e: GeomEdge) => number, settings: MdsLayoutSettings) {
+  constructor(graph: IGeomGraph, cancelToken: CancelToken, length: (e: GeomEdge) => number, settings: MdsLayoutSettings) {
     super(cancelToken)
     this.graph = graph
     this.length = length

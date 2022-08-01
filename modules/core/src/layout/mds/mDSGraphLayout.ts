@@ -17,12 +17,12 @@ import {IGeomGraph} from '../initialLayout/iGeomGraph'
 
 // Class for graph layout with multidimensional scaling.
 export class MdsGraphLayout extends Algorithm {
-  graph: GeomGraph
+  graph: IGeomGraph
   length: (e: GeomEdge) => number
   settings: MdsLayoutSettings
 
   // Constructs the multidimensional scaling algorithm.
-  public constructor(settings: MdsLayoutSettings, geometryGraph: GeomGraph, cancelToken: CancelToken, length: (e: GeomEdge) => number) {
+  public constructor(settings: MdsLayoutSettings, geometryGraph: IGeomGraph, cancelToken: CancelToken, length: (e: GeomEdge) => number) {
     super(cancelToken)
     this.settings = settings
     this.graph = geometryGraph
@@ -41,7 +41,7 @@ export class MdsGraphLayout extends Algorithm {
 
   // Scales a configuration such that the average edge length in the drawing
   // equals the average of the given edge lengths.
-  static ScaleToAverageEdgeLength(g: GeomGraph, x: number[], y: number[], length: (e: GeomEdge) => number) {
+  static ScaleToAverageEdgeLength(g: IGeomGraph, x: number[], y: number[], length: (e: GeomEdge) => number) {
     const index = new Map<GeomNode, number>()
     let c = 0
     for (const node of g.shallowNodes()) {
@@ -73,7 +73,7 @@ export class MdsGraphLayout extends Algorithm {
   // Layouts a connected graph with Multidimensional Scaling, using
   // shortest-path distances as Euclidean target distances.
   static LayoutGraphWithMds(
-    geometryGraph: GeomGraph,
+    geometryGraph: IGeomGraph,
     settings: MdsLayoutSettings,
     arrays: {x: number[]; y: number[]},
     length: (e: GeomEdge) => number,

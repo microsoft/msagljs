@@ -53,5 +53,8 @@
       "npm run eslint",
       "npm run prettier"
     ]
+  },
+  "dependencies": {
+    "yarn": "^1.22.19"
   }
 }

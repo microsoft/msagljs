@@ -1,10 +1,11 @@
 ﻿import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
+import { IGeomGraph } from '../initialLayout/iGeomGraph'
 import {SingleSourceDistances} from './SingleSourceDistances'
 // An algorithm for computing the distances between a selected set of nodes and all nodes.
 export class PivotDistances extends Algorithm {
-  private graph: GeomGraph
+  private graph: IGeomGraph
   private length: (e: GeomEdge) => number
   private pivotArray: number[]
   private result: number[][]
@@ -16,7 +17,7 @@ export class PivotDistances extends Algorithm {
   // Computes distances between a selected set of nodes and all nodes.
   // Pivot nodes are selected with maxmin strategy (first at random, later
   // ones to maximize distances to all previously selected ones).
-  constructor(graph: GeomGraph, pivotArray: number[], length: (e: GeomEdge) => number) {
+  constructor(graph: IGeomGraph, pivotArray: number[], length: (e: GeomEdge) => number) {
     super(null) // todo: pass the canceltoken
     this.graph = graph
     this.pivotArray = pivotArray

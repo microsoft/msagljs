@@ -3,9 +3,10 @@ import {Algorithm} from '../../utils/algorithm'
 import {SingleSourceDistances} from './SingleSourceDistances'
 
 import {GeomEdge} from '../core/geomEdge'
+import { IGeomGraph } from '../initialLayout/iGeomGraph'
 // Algorithm for computing the distance between every pair of nodes in a graph.
 export class AllPairsDistances extends Algorithm {
-  private graph: GeomGraph
+  private graph: IGeomGraph
   length: (e: GeomEdge) => number
 
   result: Array<number[]>
@@ -19,7 +20,7 @@ export class AllPairsDistances extends Algorithm {
 
   // Computes distances between every pair of nodes in a graph.
   // Distances are symmetric if the graph is undirected.
-  constructor(graph: GeomGraph, length: (e: GeomEdge) => number) {
+  constructor(graph: IGeomGraph, length: (e: GeomEdge) => number) {
     super(null)
     this.graph = graph
     this.length = length
