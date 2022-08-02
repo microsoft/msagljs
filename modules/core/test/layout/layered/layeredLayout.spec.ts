@@ -33,7 +33,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
-import {TextMeasurerOptions} from '../../../src/drawing/color'
+import {Color, TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 type P = [number, number]
 
@@ -168,7 +168,15 @@ test('disconnected comps', () => {
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/disconnected.svg')
   t.writeGeomGraph(g)
 })
-
+function color(i: number) {
+  if (i == 0) {
+    return 'Blue'
+  }
+  if (i == 1) {
+    return 'Green'
+  }
+  return 'Black'
+}
 test('margins', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   createGeometry(dg, measureTextSize)
@@ -179,6 +187,11 @@ test('margins', () => {
   ll.run()
   const t: SvgDebugWriter = new SvgDebugWriter('/tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg')
   t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  const g = GeomObject.getGeom(dg.graph) as GeomGraph
+  const dc = Array.from(g.deepEdges)
+    .map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.curve))
+    .concat(Array.from(g.deepEdges).map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.boundingBox.perimeter())))
+  SvgDebugWriter.dumpDebugCurves('/tmp/arr.svg', dc)
 })
 
 test('undirected pach', () => {

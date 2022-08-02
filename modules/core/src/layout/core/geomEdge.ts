@@ -101,8 +101,23 @@ export class GeomEdge extends GeomObject {
 
     if (this.curve != null) rect.addRecSelf(this.curve.boundingBox)
 
-    if (this.sourceArrowhead != null) rect.add(this.sourceArrowhead.tipPosition)
-    if (this.targetArrowhead != null) rect.add(this.targetArrowhead.tipPosition)
+    if (this.sourceArrowhead != null) {
+      rect.add(this.sourceArrowhead.tipPosition)
+      let d = this.sourceArrowhead.tipPosition.sub(this.curve.start)
+      // assume that the arrowhead angle is 25 degrees
+      d = d.rotate90Cw().mul(Math.tan(25 * 0.5 * (Math.PI / 180.0)))
+      rect.add(d.add(this.curve.start))
+      rect.add(this.curve.start.sub(d))
+    }
+    if (this.targetArrowhead != null) {
+      rect.add(this.targetArrowhead.tipPosition)
+      rect.add(this.targetArrowhead.tipPosition)
+      let d = this.targetArrowhead.tipPosition.sub(this.curve.end)
+      // assume that the arrowhead angle is 25 degrees
+      d = d.rotate90Cw().mul(Math.tan(25 * 0.5 * (Math.PI / 180.0)))
+      rect.add(d.add(this.curve.end))
+      rect.add(this.curve.end.sub(d))
+    }
     if (this.label) {
       rect.addRecSelf(this.label.boundingBox)
     }
