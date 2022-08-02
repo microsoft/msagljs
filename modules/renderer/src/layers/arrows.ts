@@ -7,12 +7,14 @@ const iconAtlasRaw =
 
 const imageScale = 4
 
-export const iconAtlas = load(iconAtlasRaw, ImageLoader, {
-  imagebitmap: {
-    resizeWidth: 256 * imageScale,
-    resizeHeight: 128 * imageScale,
-  },
-})
+export const iconAtlas =
+  typeof Image !== 'undefined' &&
+  load(iconAtlasRaw, ImageLoader, {
+    imagebitmap: {
+      resizeWidth: 256 * imageScale,
+      resizeHeight: 128 * imageScale,
+    },
+  })
 
 export const iconMapping = scale(
   {

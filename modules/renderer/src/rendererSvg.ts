@@ -1,6 +1,6 @@
 import {DrawingGraph, DrawingNode} from 'msagl-js/drawing'
 
-import {layoutDrawingGraph} from './layout'
+import {layoutGraph} from './layout'
 import {Graph} from 'msagl-js'
 
 import {deepEqual} from './utils'
@@ -59,7 +59,7 @@ export class RendererSvg {
       }
 
       if (this.needCalculateLayout) {
-        layoutDrawingGraph(drawingGraph, this._layoutOptions, true)
+        layoutGraph(graph, this._layoutOptions, true)
       }
 
       this._update()
@@ -84,7 +84,7 @@ export class RendererSvg {
       drawingGraph.createGeometry(this._textMeasurer.measure)
     }
     const relayout = fontChanged
-    layoutDrawingGraph(drawingGraph, this._layoutOptions, relayout)
+    layoutGraph(this._graph, this._layoutOptions, relayout)
     this._update()
   }
 

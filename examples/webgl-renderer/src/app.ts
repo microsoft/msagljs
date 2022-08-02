@@ -2,15 +2,29 @@ import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, geometryIsCreated, GeomGraph} from 'msagl-js'
+import {EdgeRoutingMode, geometryIsCreated, GeomGraph, Graph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
 
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 
-const renderer = new Renderer(document.getElementById('viewer'))
+const renderer = new Renderer(document.getElementById('viewer'), './worker.js')
 renderer.addControl(new SearchControl())
+
+function updateRender(graph: Graph, settings?: LayoutOptions | null): Promise<void>
+function updateRender(settings: LayoutOptions): Promise<void>
+
+async function updateRender(graphOrSettings: Graph | LayoutOptions, settings?: LayoutOptions | null) {
+  const settingsContainer = <HTMLDivElement>document.getElementById('settings')
+  settingsContainer.classList.add('disabled')
+  if (graphOrSettings instanceof Graph) {
+    await renderer.setGraph(graphOrSettings, settings)
+  } else {
+    await renderer.setOptions(graphOrSettings)
+  }
+  settingsContainer.classList.remove('disabled')
+}
 
 // Dot file selector
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
@@ -23,7 +37,7 @@ for (const name of SAMPLE_DOT) {
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
-    renderer.setGraph(graph)
+    updateRender(graph)
     document.getElementById('graph-name').innerText = graph.id
   })
 }
@@ -37,7 +51,7 @@ for (const r in ROUTING) {
   edgeRoutingSelect.appendChild(option)
 }
 edgeRoutingSelect.onchange = () => {
-  renderer.setOptions(getSettings())
+  updateRender(getSettings())
 }
 
 // Settings: layout
@@ -49,7 +63,7 @@ for (const l in LAYOUT) {
   layoutSelect.appendChild(option)
 }
 layoutSelect.onchange = () => {
-  renderer.setOptions(getSettings())
+  updateRender(getSettings())
 }
 
 // Settings: font
@@ -62,19 +76,19 @@ for (const f of FONT) {
   fontSelect.appendChild(option)
 }
 fontSelect.onchange = () => {
-  renderer.setOptions(getSettings())
+  updateRender(getSettings())
 }
 
 // File selector
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
-  renderer.setGraph(graph)
+  updateRender(graph)
   document.getElementById('graph-name').innerText = graph.id
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   const hasGeom = geometryIsCreated(graph)
-  renderer.setGraph(graph, hasGeom ? null : getSettings())
+  updateRender(graph, hasGeom ? null : getSettings())
   document.getElementById('graph-name').innerText = graph.id
 })()
 

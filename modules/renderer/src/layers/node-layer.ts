@@ -20,6 +20,7 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
     fromIndex: {type: 'function', compare: false},
     getTextSize: {type: 'accessor', value: 16},
   }
+  static layerName = 'NodeLayer'
 
   getPickingInfo({sourceLayer, info}: GetPickingInfoParams) {
     if (sourceLayer.id.endsWith('boundary') && info.picked) {

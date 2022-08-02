@@ -12,13 +12,55 @@ import {
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
+import {parseJSON, graphToJSON} from '@msagl/parser'
+
 import type {LayoutOptions} from './renderer'
 
-/** lay out the DrawingGraph dg*/
-export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, forceUpdate = false): GeomGraph {
+let layoutWorker: Worker = null
+let layoutInProgress = false
+
+export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, options: LayoutOptions, forceUpdate = false): Promise<Graph> {
+  if (layoutInProgress) {
+    layoutWorker.terminate()
+    layoutWorker = null
+  }
+  if (!layoutWorker) {
+    layoutWorker = new Worker(workerUrl)
+  }
+
+  return new Promise((resolve, reject) => {
+    layoutWorker.onmessage = ({data}) => {
+      if (data.type === 'error') {
+        reject(data.message)
+      } else if (data.type === 'layout-done') {
+        try {
+          graph = parseJSON(data.graph)
+          console.debug('graph transfer to main thread', Date.now() - data.timestamp + ' ms')
+
+          resolve(graph)
+        } catch (err) {
+          reject(err.message)
+        }
+      }
+    }
+
+    layoutWorker.postMessage({
+      type: 'layout',
+      timestamp: Date.now(),
+      graph: graphToJSON(graph),
+      options,
+      forceUpdate,
+    })
+    layoutInProgress = true
+  })
+}
+
+/** lay out the given graph */
+export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = false): Graph {
   let needsReroute = false
   let needsLayout = forceUpdate
-  const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph) // grab the GeomGraph from the underlying Graph
+  const drawingGraph: DrawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
+  const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(graph) // grab the GeomGraph from the underlying Graph
 
   function updateLayoutSettings(gg: GeomGraph) {
     if (!gg) return
@@ -26,7 +68,7 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, for
       updateLayoutSettings(subgraph)
     }
 
-    const settings = resolveLayoutSettings(dg, gg, options)
+    const settings = resolveLayoutSettings(drawingGraph, gg, options)
     const diff = diffLayoutSettings(gg.layoutSettings, settings)
     needsLayout = needsLayout || diff.layoutChanged
     needsReroute = needsReroute || diff.routingChanged
@@ -43,11 +85,15 @@ export function layoutDrawingGraph(dg: DrawingGraph, options: LayoutOptions, for
   }
 
   if (needsLayout) {
+    console.time('layoutGeomGraph')
     layoutGeomGraph(geomGraph, null)
+    console.timeEnd('layoutGeomGraph')
   } else if (needsReroute) {
+    console.time('routeEdges')
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
+    console.time('routeEdges')
   }
-  return geomGraph
+  return graph
 }
 
 function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: LayoutOptions): LayoutSettings {
