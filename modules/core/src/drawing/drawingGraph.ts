@@ -1,5 +1,5 @@
 import {DrawingEdge} from '.'
-import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size} from '..'
+import {Arrowhead, CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size} from '..'
 import {Graph, Node} from '..'
 import {TextMeasurerOptions} from '.'
 import {DrawingNode} from './drawingNode'
@@ -82,7 +82,11 @@ export class DrawingGraph extends DrawingNode {
   private createEdgeGeometry(e: Edge) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)
     const ge = new GeomEdge(e)
-    if (de.directed === false) {
+    if (de.directed) {
+      if (ge.targetArrowhead == null) {
+        ge.targetArrowhead = new Arrowhead()
+      }
+    } else {
       ge.targetArrowhead = null
     }
     if (de.labelText) {

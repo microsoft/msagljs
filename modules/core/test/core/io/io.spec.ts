@@ -186,11 +186,11 @@ test('measuredTextSize is preserved', () => {
 test('graph style', () => {
   const g = parseDotGraph('graphvis/style.gv')
   const jsonOfG: JSONGraph = graphToJSON(g)
-  const content = JSON.stringify(jsonOfG, null, 2)
+  //const content = JSON.stringify(jsonOfG, null, 2)
   const newG = parseJSONGraph(jsonOfG)
-  const ws = fs.openSync('/tmp/style_out.JSON', 'w', 0o666)
-  fs.writeFileSync(ws, content)
-  fs.close(ws)
+  // const ws = fs.openSync('/tmp/style_out.JSON', 'w', 0o666)
+  // fs.writeFileSync(ws, content)
+  // fs.close(ws)
   expect(newG != null).toBe(true)
   const dg = DrawingGraph.getDrawingObj(newG) as DrawingGraph
   dg.createGeometry()
