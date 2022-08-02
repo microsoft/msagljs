@@ -61,6 +61,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
 
       for (const eg of params.props.data as Iterable<GeomEdge>) {
         if (eg.sourceArrowhead) {
+          // TODO: if this check is on, then the geometry should not try to test it independently
           if (!clipBounds || clipBounds.contains(eg.sourceArrowhead.tipPosition)) {
             arrows.push({
               edge: eg,
@@ -71,6 +72,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           }
         }
         if (eg.targetArrowhead) {
+          // TODO: if this check is on, then the geometry should not try to test it independently
           if (!clipBounds || clipBounds.contains(eg.targetArrowhead.tipPosition)) {
             arrows.push({
               edge: eg,

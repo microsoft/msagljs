@@ -94,6 +94,27 @@ export class GeomEdge extends GeomObject {
   get source(): GeomNode {
     return GeomObject.getGeom(this.edge.source) as GeomNode
   }
+  /** iterates over the source arrowhead corner points */
+  *sourceArrowheadPoints(angle: number): IterableIterator<Point> {
+    if (this.sourceArrowhead == null) return
+    yield this.sourceArrowhead.tipPosition
+    let d = this.sourceArrowhead.tipPosition.sub(this.curve.start)
+    // assume that the arrowhead angle is 25 degrees
+    d = d.rotate90Cw().mul(Math.tan(angle * 0.5 * (Math.PI / 180.0)))
+    yield d.add(this.curve.start)
+    yield this.curve.start.sub(d)
+  }
+
+  /** iterates over the target arrowhead corner points */
+  *targetArrowheadPoints(angle: number): IterableIterator<Point> {
+    if (this.targetArrowhead == null) return
+    yield this.targetArrowhead.tipPosition
+    let d = this.targetArrowhead.tipPosition.sub(this.curve.end)
+    // assume that the arrowhead angle is 25 degrees
+    d = d.rotate90Cw().mul(Math.tan(angle * 0.5 * (Math.PI / 180.0)))
+    yield d.add(this.curve.end)
+    yield this.curve.end.sub(d)
+  }
 
   get boundingBox(): Rectangle {
     const rect = Rectangle.mkEmpty()
@@ -101,23 +122,13 @@ export class GeomEdge extends GeomObject {
 
     if (this.curve != null) rect.addRecSelf(this.curve.boundingBox)
 
-    if (this.sourceArrowhead != null) {
-      rect.add(this.sourceArrowhead.tipPosition)
-      let d = this.sourceArrowhead.tipPosition.sub(this.curve.start)
-      // assume that the arrowhead angle is 25 degrees
-      d = d.rotate90Cw().mul(Math.tan(25 * 0.5 * (Math.PI / 180.0)))
-      rect.add(d.add(this.curve.start))
-      rect.add(this.curve.start.sub(d))
+    for (const p of this.sourceArrowheadPoints(25)) {
+      rect.add(p)
     }
-    if (this.targetArrowhead != null) {
-      rect.add(this.targetArrowhead.tipPosition)
-      rect.add(this.targetArrowhead.tipPosition)
-      let d = this.targetArrowhead.tipPosition.sub(this.curve.end)
-      // assume that the arrowhead angle is 25 degrees
-      d = d.rotate90Cw().mul(Math.tan(25 * 0.5 * (Math.PI / 180.0)))
-      rect.add(d.add(this.curve.end))
-      rect.add(this.curve.end.sub(d))
+    for (const p of this.targetArrowheadPoints(25)) {
+      rect.add(p)
     }
+
     if (this.label) {
       rect.addRecSelf(this.label.boundingBox)
     }

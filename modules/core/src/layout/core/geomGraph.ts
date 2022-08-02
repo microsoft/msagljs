@@ -125,7 +125,22 @@ export class GeomGraph extends GeomNode {
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
   }
-  private rrect: RRect;
+  private rrect: RRect
+
+  edgeCurveOrArrowheadsIntersectRect(geomEdge: GeomEdge, rect: Rectangle): boolean {
+    for (const p of geomEdge.sourceArrowheadPoints(25)) {
+      if (rect.contains(p)) return true
+    }
+    for (const p of geomEdge.targetArrowheadPoints(25)) {
+      if (rect.contains(p)) return true
+    }
+    const curveUnderTest = geomEdge.curve
+    const perimeter = rect.perimeter()
+    return (
+      Curve.intersectionOne(curveUnderTest, perimeter, false) != null ||
+      Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) === PointLocation.Inside
+    )
+  }
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
   *intersectedObjects(rtree: RTree<GeomObject, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
     const result = rtree.GetAllIntersecting(rect)
@@ -134,12 +149,9 @@ export class GeomGraph extends GeomNode {
       if (r instanceof GeomNode) yield r
       if (onlyNodes) continue
       if (r instanceof GeomEdge) {
-        const curveUnderTest = (r as GeomEdge).curve
-        if (
-          Curve.intersectionOne(curveUnderTest, perimeter, false) != null ||
-          Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) === PointLocation.Inside
-        )
-          yield r
+        // TODO : another version could be here just "yield r" !
+        // That will return every edge which bounding box intersects rect
+        if (this.edgeCurveOrArrowheadsIntersectRect(r, rect)) yield r
       }
     }
   }
