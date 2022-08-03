@@ -85,8 +85,8 @@ import { LayoutAlgorithmHelpers } from './layoutAlgorithmHelpers';
         private LayoutComponent(component:IGeomGraph) {
             if (component.shallowNodeCount > 1 ) {
                 //  for small graphs (below 100 nodes) do extra iterations
-                this.settings.MaxIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.Nodes.Count, 50, 500, 5, 10);
-                this.settings.MinorIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.Nodes.Count, 50, 500, 3, 20);
+                this.settings.MaxIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.shallowNodeCount, 50, 500, 5, 10);
+                this.settings.MinorIterations = LayoutAlgorithmHelpers.NegativeLinearInterpolation(component.shallowNodeCount, 50, 500, 3, 20);
                 if ((this.settings.MinConstraintLevel == 0)) {
                     //  run PivotMDS with a largish Scale so that the layout comes back oversized.
                     //  subsequent incremental iterations do a better job of untangling when they're pulling it in
