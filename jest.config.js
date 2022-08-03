@@ -1,4 +1,5 @@
 module.exports = {
+  maxWorkers: '50%',
   preset: 'ts-jest',
   roots: ['<rootDir>/modules'],
   testMatch: ['**/?(*.)+(spec|test).+(ts|tsx)'],

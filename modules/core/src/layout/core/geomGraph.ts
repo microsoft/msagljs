@@ -144,14 +144,14 @@ export class GeomGraph extends GeomNode {
   /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
   *intersectedObjects(rtree: RTree<GeomObject, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<GeomObject> {
     const result = rtree.GetAllIntersecting(rect)
-    const perimeter = rect.perimeter()
-    for (const r of result) {
-      if (r instanceof GeomNode) yield r
-      if (onlyNodes) continue
-      if (r instanceof GeomEdge) {
-        // TODO : another version could be here just "yield r" !
-        // That will return every edge which bounding box intersects rect
-        if (this.edgeCurveOrArrowheadsIntersectRect(r, rect)) yield r
+    if (onlyNodes) {
+      for (const r of result) {
+        if (r instanceof GeomNode) yield r
+      }
+    } else {
+      // nodes and edges
+      for (const r of result) {
+        if (r instanceof GeomNode || r instanceof GeomEdge) yield r
       }
     }
   }
