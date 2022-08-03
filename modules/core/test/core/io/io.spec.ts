@@ -2,7 +2,7 @@ import {graphToJSON, parseDot, parseJSONGraph} from '../../../../parser/src/dotp
 import {Curve, LineSegment, Point, Polyline} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
-import {parseDotGraph, parseJSONFile} from '../../utils/testUtils'
+import {measureTextSize, parseDotGraph, parseJSONFile} from '../../utils/testUtils'
 import {Graph as JSONGraph} from 'dotparser'
 import {GeomEdge, GeomGraph} from '../../../src/layout/core'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
@@ -18,6 +18,7 @@ import {Edge} from '../../../src/structs/edge'
 import {Node} from '../../../src/structs/node'
 import {DrawingNode} from '../../../src/drawing/drawingNode'
 import {DrawingEdge} from '../../../src/drawing/drawingEdge'
+import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)
@@ -104,6 +105,32 @@ test('graph smlred', () => {
   const subgraphs = Array.from(graph.subgraphs())
   expect(subgraphs.length).toBe(subgraphsWas)
   expect(graph.nodeCountDeep).toBe(nodesWas)
+})
+
+test('graph fsm', () => {
+  const g = parseDotGraph('graphvis/fsm.gv')
+  const dg = DrawingGraph.getDrawingGraph(g)
+  dg.createGeometry(measureTextSize)
+  const geomGraph = GeomGraph.getGeom(g)
+  layoutGraphWithSugiayma(geomGraph, null, false)
+  let labelsWas = 0
+  for (const e of geomGraph.deepEdges) {
+    if (e.label) labelsWas++
+  }
+  const jsonOfGraph: JSONGraph = graphToJSON(g)
+
+  const graph = parseJSONGraph(jsonOfGraph)
+  let labelsNow = 0
+  const ngg = GeomGraph.getGeom(graph)
+  for (const e of ngg.deepEdges) {
+    if (e.label) {
+      labelsNow++
+      expect(e.labelBBox.width > 0).toBe(true)
+    }
+  }
+
+  expect(labelsNow).toBe(labelsWas)
+  //  new SvgDebugWriter('/tmp/fsm_recovered.svg').writeGeomGraph(GeomGraph.getGeom(graph))
 })
 
 test('graph a.gv', () => {

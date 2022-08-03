@@ -95,7 +95,7 @@ export abstract class DrawingObject extends Attribute {
     if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() !== 'black') {
       yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
     }
-    if ((this.labelText == null || this.labelText === '') && this.entity && this.labelText !== this.id) {
+    if (!(this.labelText == null || this.labelText === '') && this.entity && this.labelText !== this.id) {
       yield {type: 'attr', id: 'label', eq: this.labelText}
     }
     if (this.fontColor && this.fontColor.keyword.toLowerCase() !== 'black') {

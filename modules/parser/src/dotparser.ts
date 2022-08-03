@@ -17,6 +17,7 @@ import {
   Rectangle,
   RectJSON,
   Arrowhead,
+  GeomLabel,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -83,6 +84,13 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
             geomEdge.targetArrowhead = new Arrowhead()
           }
           geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          break
+        }
+        case 'geomEdgeLabel': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          const json = JSON.parse(str) as RectJSON
+          geomEdge.label = new GeomLabel(null, geomEdge)
+          geomEdge.label.boundingBox = new Rectangle(json)
           break
         }
         // end of geometry attributes
@@ -836,6 +844,11 @@ function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
 
     if (geomEdge.targetArrowhead) {
       yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+    }
+    if (geomEdge.label) {
+      const bb = geomEdge.labelBBox
+      const rJSON = {left: bb.left, right: bb.right, top: bb.top, bottom: bb.bottom}
+      yield {type: 'attr', id: 'geomEdgeLabel', eq: JSON.stringify(rJSON)}
     }
   }
   yield* drawingObjAttrIter(DrawingObject.getDrawingObj(edge))

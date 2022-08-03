@@ -9,7 +9,7 @@ export class GeomLabel {
   parent: GeomObject
   constructor(size: Size, parent: GeomObject) {
     /*Assert.assert(label instanceof Label)*/
-    this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
+    if (size) this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
     this.parent = parent
   }
   boundingBox: Rectangle
