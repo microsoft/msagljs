@@ -1,5 +1,5 @@
 import {Point, Rectangle} from '../../math/geometry'
-import {Node} from '../..'
+import {GeomNode, Node} from '../..'
 import {IGeomGraph} from './iGeomGraph'
 
 export class GeomConnectedComponent implements IGeomGraph {
@@ -7,6 +7,15 @@ export class GeomConnectedComponent implements IGeomGraph {
   topNodes: Node[]
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
+  }
+  edges() {
+    throw new Error('Method not implemented.')
+  }
+  shallowNodes(): Iterable<GeomNode> {
+    throw new Error('Method not implemented.')
+  }
+  pumpTheBoxToTheGraphWithMargins(): Rectangle {
+    throw new Error('Method not implemented.')
   }
   shallowNodeCount: number
   translate(delta: Point) {
