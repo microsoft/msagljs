@@ -1078,7 +1078,7 @@ function SetFlatEdgesLabelsHeightAndPositionts(pair: IntPair, ymax: number, dy: 
     height += dy
     const label = edge.edge.label
     if (label != null) {
-      label.center = new Point(label.center.x, ymax + height + label.height / 2)
+      label.positionCenter(new Point(label.center.x, ymax + height + label.height / 2))
       height += label.height
     }
   }
@@ -1175,16 +1175,16 @@ function postRunTransform(geometryGraph: GeomGraph, transform: PlaneTransformati
       e.label.height = r.height
     }
   }
-  TransformCurves(geometryGraph, transform)
+  TransformEdges(geometryGraph, transform)
   if (geometryGraph.graph.parent == null) {
     geometryGraph.boundingBox = null
   }
 }
 
-function TransformCurves(geometryGraph: GeomGraph, m: PlaneTransformation) {
+function TransformEdges(geometryGraph: GeomGraph, m: PlaneTransformation) {
   for (const e of geometryGraph.edges()) {
-    if (e.label != null) {
-      e.label.center = m.multiplyPoint(e.label.center)
+    if (e.label) {
+      e.label.transform(m)
     }
 
     TransformEdgeCurve(m, e)

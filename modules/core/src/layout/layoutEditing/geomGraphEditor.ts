@@ -139,7 +139,7 @@ export class GeometryGraphEditor {
   // public /*event*/ ChangeInUndoRedoList: EventHandler;  // not sure what happens with events
 
   static DragLabel(label: GeomLabel, delta: Point) {
-    label.center = label.center.add(delta)
+    label.positionCenter(label.center.add(delta))
     const edge = <GeomEdge>GeomObject.getGeom(label.parent.entity)
     if (edge != null) {
       GeometryGraphEditor.CalculateAttachedSegmentEnd(label, edge)

@@ -51,7 +51,7 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
         const label = <GeomLabel>geomObj
         if (label != null) {
           const lrd = <LabelRestoreData>kv[1]
-          label.center = lrd.Center
+          label.positionCenter(lrd.Center)
         } else {
           throw new Error('not implemented')
         }

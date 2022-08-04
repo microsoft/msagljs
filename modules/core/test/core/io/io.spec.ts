@@ -11,14 +11,12 @@ import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph, layoutIsCalculated} from '../../../src/layout/driver'
-import * as fs from 'fs'
 import {DrawingObject} from '../../../src/drawing/drawingObject'
-import {Graph} from '../../../src/structs/graph'
-import {Edge} from '../../../src/structs/edge'
-import {Node} from '../../../src/structs/node'
 import {DrawingNode} from '../../../src/drawing/drawingNode'
 import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
+import {SugiyamaLayoutSettings} from '../../../src/layout/layered/SugiyamaLayoutSettings'
+import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)
@@ -228,4 +226,26 @@ test('graph style', () => {
 test('layout is loaded', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
   expect(layoutIsCalculated(g)).toBe(true)
+})
+
+xtest('layout settings', () => {
+  const sugiyamaLS = new SugiyamaLayoutSettings()
+
+  sugiyamaLS.sameRanks.push(['a', 'b'])
+  sugiyamaLS.sameRanks.push(['c', 'd'])
+  // let savedSS = ''
+  // {
+  //   const json = Object.assign(sugiyamaLS)
+  //   expect(json instanceof SugiyamaLayoutSettings).toBe(true)
+  //   expect(json.transform instanceof PlaneTransformation).toBe(true)
+  //   expect(json.transform.isIdentity()).toBe(true)
+  //   savedSS = JSON.stringify(json)
+  // }
+
+  // {
+  //   const json = JSON.parse(savedSS)
+  //   expect(json instanceof SugiyamaLayoutSettings).toBe(true)
+  //   expect(json.transform instanceof PlaneTransformation).toBe(true)
+  //   expect(json.transform.isIdentity()).toBe(true)
+  // }
 })

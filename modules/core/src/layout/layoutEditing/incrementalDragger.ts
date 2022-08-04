@@ -120,7 +120,7 @@ export class IncrementalDragger {
     const par = curve.getParameterAtLength(lenAtLabelAttachment)
     const tang = curve.derivative(par)
     const norm = (lf.RightSide ? tang.rotate90Cw() : tang.rotate90Ccw()).normalize().mul(lf.NormalLength)
-    edge.label.center = curve.value(par).add(norm)
+    edge.label.positionCenter(curve.value(par).add(norm))
   }
 
   InitLabelFixtures(edges: Iterable<GeomEdge>) {

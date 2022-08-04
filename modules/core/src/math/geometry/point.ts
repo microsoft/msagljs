@@ -144,7 +144,7 @@ export class Point {
   }
 
   constructor(x: number, y: number) {
-    Assert.assert(!(isNaN(x) || isNaN(y)))
+    // Assert.assert(!(isNaN(x) || isNaN(y)))
     this.x_ = x
     this.y_ = y
   }

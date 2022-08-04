@@ -118,7 +118,7 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
   } else if (ers.EdgeRoutingMode !== EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }
-  positionLabelsIfNeeded(geomGraph)
+  positionLabelsIfNeeded(geomGraph, edgesToRoute)
 }
 /** Lays out a GeomGraph, which is possibly disconnected and might have sub-graphs */
 export function layoutGeomGraphDetailed(
@@ -157,7 +157,7 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.parent == null) {
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
-    positionLabelsIfNeeded(geomG)
+    positionLabelsIfNeeded(geomG, edgesToRoute)
     geomG.boundingBox = geomG.pumpTheBoxToTheGraphWithMargins()
 
     if (flipToScreenCoords) {
@@ -270,17 +270,15 @@ export function routeRectilinearEdges(
   const rr = RectilinearEdgeRouter.constructorGNAN(geomG, edgesToRoute, nodePadding, cornerFitRadius)
   rr.run()
 }
-function positionLabelsIfNeeded(geomG: GeomGraph) {
-  const edgesWithNonPositionedLabels = Array.from(geomG.deepEdges).filter((edge) => edge.label && edge.label.isPositioned === false)
-
-  if (edgesWithNonPositionedLabels.length === 0) return
-  const ep = EdgeLabelPlacement.constructorGA(geomG, edgesWithNonPositionedLabels)
+function positionLabelsIfNeeded(geomG: GeomGraph, edges: GeomEdge[]) {
+  if (edges.length === 0) return
+  const ep = EdgeLabelPlacement.constructorGA(geomG, edges)
   ep.run()
 }
 /** mark labels as required positoning */
 function requireLabelPositioning(geomG: GeomGraph) {
   for (const e of geomG.deepEdges) {
-    if (e.label) e.label.requirePositioning()
+    if (e.label) e.label.isPositioned = false
   }
 }
 

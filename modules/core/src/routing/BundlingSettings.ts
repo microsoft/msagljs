@@ -1,5 +1,23 @@
 import {GeomEdge} from '../layout/core'
-
+export type BundlingSettingsJSON = {
+  capacityOverflowCoefficient?: number
+  RotateBundles?: boolean
+  MaxHubRadius?: number
+  MinHubRadius?: number
+  CreateUnderlyingPolyline?: boolean
+  pathLengthImportance?: number
+  inkImportance?: number
+  edgeSeparation?: number
+  _edgeWidthShrinkCoeff?: number
+  useCubicBezierSegmentsInsideOfHubs?: boolean
+  angleThreshold?: number
+  hubRepulsionImportance?: number
+  bundleRepulsionImportance?: number
+  minimalRatioOfGoodCdtEdges?: number
+  highestQuality?: number
+  KeepOverlaps?: boolean
+  StopAfterShortestPaths?: boolean
+}
 export class BundlingSettings {
   // the default value of CapacityOverflowCoefficient
   public static DefaultCapacityOverflowCoefficientMultiplier = 1000
@@ -139,9 +157,6 @@ export class BundlingSettings {
   public set HighestQuality(value: boolean) {
     this.highestQuality = value
   }
-
-  // if is set to true the original spline before the trimming should be kept under the corresponding GeomEdge
-  KeepOriginalSpline = false
 
   // if set to true then the edges will be routed one on top of each other with no gap inside of a bundle
   KeepOverlaps = false

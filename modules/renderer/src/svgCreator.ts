@@ -18,7 +18,7 @@ import {
   Size,
   CurveFactory,
 } from 'msagl-js'
-import {DrawingEdge, DrawingObject, DrawingNode, DrawingGraph, Color, StyleEnum, ShapeEnum} from 'msagl-js/drawing'
+import {DrawingEdge, DrawingObject, DrawingNode, Color, StyleEnum, ShapeEnum} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'

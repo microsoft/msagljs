@@ -43,16 +43,16 @@ class Routing {
     const shift = curveClosestPoint.sub(labelSideClosest)
     const shiftLength = shift.length
     //  SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
-    if (shiftLength > w) e.label.center = e.label.center.add(shift.div(shiftLength * (shiftLength - w)))
+    if (shiftLength > w) e.label.positionCenter(e.label.center.add(shift.div(shiftLength * (shiftLength - w))))
   }
 
   static updateLabel(e: GeomEdge, anchor: Anchor) {
     let labelSide: LineSegment = null
     if (anchor.labelIsToTheRightOfTheSpline) {
-      e.label.center = new Point(anchor.x + anchor.rightAnchor / 2, anchor.y)
+      e.label.positionCenter(new Point(anchor.x + anchor.rightAnchor / 2, anchor.y))
       labelSide = LineSegment.mkPP(e.labelBBox.leftTop, e.labelBBox.leftBottom)
     } else if (anchor.labelIsToTheLeftOfTheSpline) {
-      e.label.center = new Point(anchor.x - anchor.leftAnchor / 2, anchor.y)
+      e.label.positionCenter(new Point(anchor.x - anchor.leftAnchor / 2, anchor.y))
       labelSide = LineSegment.mkPP(e.labelBBox.rightTop, e.labelBBox.rightBottom)
     }
     const segmentInFrontOfLabel = Routing.GetSegmentInFrontOfLabel(e.curve, e.label.center.y)

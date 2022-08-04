@@ -30,7 +30,7 @@ test('trim edge with arrowheads', () => {
   gab.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(10, 5)), gab)
   const m = Point.middle(ga.center, gb.center)
 
-  gab.label.boundingBox = Rectangle.mkPP(m, m.add(new Point(10, 10)))
+  gab.label.setBoundingBox(Rectangle.mkPP(m, m.add(new Point(10, 10))))
   const curve = LineSegment.mkPP(ga.center, gb.center)
   gab.sourceArrowhead = new Arrowhead()
   gab.targetArrowhead = new Arrowhead()

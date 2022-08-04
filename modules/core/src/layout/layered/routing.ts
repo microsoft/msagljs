@@ -138,7 +138,9 @@ export class Routing extends Algorithm {
             const center = new Point(curveMiddle.x + intEdge.labelWidth / 2, anchor.y)
             const del = new Point(intEdge.edge.label.width / 2, intEdge.edge.label.height / 2)
             const box = Rectangle.mkPP(center.add(del), center.sub(del))
-            intEdge.edge.label.boundingBox = box
+            intEdge.edge.label.width = box.width
+            intEdge.edge.label.height = box.height
+            intEdge.edge.label.positionCenter(center)
           }
 
           Arrowhead.trimSplineAndCalculateArrowheadsII(
@@ -193,10 +195,10 @@ export class Routing extends Algorithm {
   static UpdateLabel(e: GeomEdge, anchor: Anchor) {
     let labelSide: LineSegment = null
     if (anchor.labelIsToTheRightOfTheSpline) {
-      e.label.center = new Point(anchor.x + anchor.rightAnchor / 2, anchor.y)
+      e.label.positionCenter(new Point(anchor.x + anchor.rightAnchor / 2, anchor.y))
       labelSide = LineSegment.mkPP(e.labelBBox.leftTop, e.labelBBox.leftBottom)
     } else if (anchor.labelIsToTheLeftOfTheSpline) {
-      e.label.center = new Point(anchor.x - anchor.leftAnchor / 2, anchor.y)
+      e.label.positionCenter(new Point(anchor.x - anchor.leftAnchor / 2, anchor.y))
       labelSide = LineSegment.mkPP(e.labelBBox.rightTop, e.labelBBox.rightBottom)
     }
 
@@ -236,7 +238,7 @@ export class Routing extends Algorithm {
     const shiftLength: number = shift.length
     //   SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
     if (shiftLength > w) {
-      e.label.center = e.label.center.add(shift.div(shiftLength * (shiftLength - w)))
+      e.label.positionCenter(e.label.center.add(shift.div(shiftLength * (shiftLength - w))))
     }
   }
 

@@ -1,6 +1,5 @@
 import {
   GeomGraph,
-  Size,
   layoutGeomGraph,
   MdsLayoutSettings,
   SugiyamaLayoutSettings,

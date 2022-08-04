@@ -1,7 +1,15 @@
 import {Rectangle, Size} from './../../math/geometry/rectangle'
 import {GeomObject, Point} from '../..'
+import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 
 export class GeomLabel {
+  private _isPositioned = false
+  public get isPositioned(): boolean {
+    return this._isPositioned
+  }
+  public set isPositioned(value: boolean) {
+    this._isPositioned = value
+  }
   /** this field is needed for interactive editing */
   AttachmentSegmentEnd: Point
   /** this field is needed for interactive editing */
@@ -12,7 +20,17 @@ export class GeomLabel {
     if (size) this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
     this.parent = parent
   }
-  boundingBox: Rectangle
+  private _boundingBox: Rectangle
+  public get boundingBox(): Rectangle {
+    return this._boundingBox
+  }
+  private set boundingBox(value: Rectangle) {
+    this._boundingBox = value
+  }
+  setBoundingBox(b: Rectangle) {
+    this.isPositioned = true
+    this._boundingBox = b
+  }
   get width() {
     return this.boundingBox.width
   }
@@ -25,19 +43,21 @@ export class GeomLabel {
   set height(value) {
     this.boundingBox.height = value
   }
+
   get center() {
     return this.boundingBox.center
   }
-  set center(value) {
+  private set center(value) {
     this.boundingBox.center = value
   }
-
-  public get isPositioned() {
-    const center = this.center
-    return center.x !== -77 || center.y !== -77
+  translate(delta: Point) {
+    if (this.isPositioned) this.center = this.center.add(delta)
   }
-  /** mark the label as not having a position */
-  requirePositioning() {
-    this.boundingBox.center = new Point(-77, -77)
+  transform(m: PlaneTransformation) {
+    if (this.isPositioned) this.center = m.multiplyPoint(this.center)
+  }
+  positionCenter(p: Point) {
+    this.boundingBox.center = p
+    this.isPositioned = true
   }
 }

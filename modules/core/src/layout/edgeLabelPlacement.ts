@@ -376,7 +376,7 @@ export class EdgeLabelPlacement extends Algorithm {
       cen = cen.add(p)
     }
 
-    label.center = cen.div(labelInfo.innerPoints.length + labelInfo.outerPoints.length)
+    label.positionCenter(cen.div(labelInfo.innerPoints.length + labelInfo.outerPoints.length))
   }
 
   public PlaceEdgeLabelHorizontally(edge: GeomEdge): boolean {
@@ -400,10 +400,11 @@ export class EdgeLabelPlacement extends Algorithm {
     )) {
       const cp = curvePoints[index]
 
-      const der: Point = curve.derivative(cp[0]).normalize()
+      let der = curve.derivative(cp[0])
       if (closeDistEps(der.lengthSquared, 0)) {
         continue
       }
+      der = der.normalize()
 
       for (const side of EdgeLabelPlacement.GetPossibleSides(this.getLabelInfo(label).placementSide, der)) {
         const queryRect: Rectangle = EdgeLabelPlacement.GetLabelBounds(cp[1], der, wh, side)

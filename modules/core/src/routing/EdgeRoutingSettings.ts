@@ -1,6 +1,31 @@
 ﻿import {BundlingSettings} from './BundlingSettings'
 import {EdgeRoutingMode} from './EdgeRoutingMode'
 
+type EdgeRoutingSettingsJSON = {
+  edgeRoutingMode?: EdgeRoutingMode
+
+  coneAngle?: number
+
+  // Amount of space to leave around nodes
+  padding?: number
+
+  polylinePadding?: number
+
+  // the settings for general edge bundling
+  bundlingSettingsJSON?: any //BundlingSettingsJSON
+
+  routingToParentConeAngle?: number
+
+  simpleSelfLoopsForParentEdgesThreshold?: number
+
+  incrementalRoutingThreshold?: number
+
+  routeMultiEdgesAsBundles?: boolean
+
+  // if set to true the original spline is kept under the corresponding GeomEdge
+  KeepOriginalSpline?: boolean
+}
+
 export class EdgeRoutingSettings {
   constructor() {
     this.EdgeRoutingMode = EdgeRoutingMode.Spline

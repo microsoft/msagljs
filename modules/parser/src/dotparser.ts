@@ -90,7 +90,7 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
           const json = JSON.parse(str) as RectJSON
           geomEdge.label = new GeomLabel(null, geomEdge)
-          geomEdge.label.boundingBox = new Rectangle(json)
+          geomEdge.label.setBoundingBox(new Rectangle(json))
           break
         }
         // end of geometry attributes

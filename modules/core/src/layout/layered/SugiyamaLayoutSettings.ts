@@ -10,6 +10,11 @@ export enum SnapToGridByY {
   Top,
   Bottom,
 }
+
+type LayoutSettingsJSON = {
+  minimalWidth?: number
+}
+
 /** The base class for hierarchy of layout settings: it specifies the minumal allowed distance between the nodes,  the minimal size of the resulting bounding box, settings for edge routing, and the ratio for the graph boxes packing algorithm  */
 export class LayoutSettings {
   edgeRoutingSettings = new EdgeRoutingSettings()
@@ -47,6 +52,10 @@ export class LayoutSettings {
 }
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
 export class SugiyamaLayoutSettings extends LayoutSettings {
+  static createFrom(ss: any) {
+    throw new Error('Method not implemented.')
+  }
+
   sameRanks = new Array<string[]>()
 
   verticalConstraints = new VerticalConstraintsForSugiyama()
