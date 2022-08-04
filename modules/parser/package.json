@@ -1,6 +1,6 @@
 {
   "name": "@msagl/parser",
-  "version": "0.0.70",
+  "version": "0.0.71",
   "description": "Graph parser for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/parse-color": "^1.0.1",
     "dotparser": "^1.1.1",
-    "msagl-js": "^0.0.69",
+    "msagl-js": "^0.0.70",
     "parse-color": "^1.0.0"
   }
 }
