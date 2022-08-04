@@ -290,6 +290,10 @@ export default class Renderer extends EventSource {
             getWidth: 1,
             getDepth: this._graphHighlighter.edgeDepth,
             resolution: 2 ** (tile.index.z - 2),
+            fontFamily: fontSettings.fontFamily,
+            fontWeight: fontSettings.fontWeight,
+            lineHeight: fontSettings.lineHeight,
+            getTextSize: fontSettings.fontSize,
           }),
 
           new NodeLayer({
@@ -298,10 +302,10 @@ export default class Renderer extends EventSource {
             getPickingColor: (n, {target}) => this._graphHighlighter.encodeNodeIndex(n, target),
             fromIndex: (i) => this._graphHighlighter.getNode(i),
             nodeDepth: this._graphHighlighter.nodeDepth,
+            getLineWidth: 1,
             fontFamily: fontSettings.fontFamily,
             fontWeight: fontSettings.fontWeight,
             lineHeight: fontSettings.lineHeight,
-            getLineWidth: 1,
             getTextSize: fontSettings.fontSize,
             pickable: true,
           }),

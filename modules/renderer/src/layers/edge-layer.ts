@@ -1,14 +1,14 @@
 import {CompositeLayer, Unit, Accessor, Color, UpdateParameters, Position, LayersList, LayerProps, DefaultProps} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
-import {IconLayer} from '@deck.gl/layers/typed'
+import {IconLayer, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {iconAtlas, iconMapping} from './arrows'
-import {ICurve, GeomEdge, Point, LineSegment, clipWithRectangle, BezierSeg, Ellipse, Curve, Rectangle} from 'msagl-js'
+import {ICurve, GeomEdge, GeomLabel, Point, LineSegment, clipWithRectangle, BezierSeg, Ellipse, Curve, Rectangle} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 
 import CurveLayer from './curve-layer'
 import {CURVE} from './curve-layer'
 
-type EdgeLayerProps = {
+type EdgeLayerProps = TextLayerProps<GeomEdge> & {
   getDepth?: Buffer
 
   clipBounds?: Rectangle
@@ -21,9 +21,12 @@ type EdgeLayerProps = {
 
   getWidth?: Accessor<GeomEdge, number>
   getColor?: Accessor<GeomEdge, Color>
+  getTextSize: Accessor<GeomEdge, number>
 } & LayerProps<GeomEdge>
 
 const defaultProps: DefaultProps<EdgeLayerProps> = {
+  ...TextLayer.defaultProps,
+
   resolution: {type: 'number', value: 1},
 
   widthUnits: 'common',
@@ -137,6 +140,23 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           getSize: (d) => getArrowSize(d.tip, d.end),
           getAngle: (d) => getArrowAngle(d.tip, d.end),
           sizeUnits: 'common',
+        },
+      ),
+
+      new TextLayer<GeomEdge>(
+        this.props,
+        this.getSubLayerProps({
+          id: 'label',
+        }),
+        {
+          dataTransform: (data: GeomEdge[]) => data.filter((eg) => eg.label),
+          getPosition: (e) => pointToArray(e.label.center),
+          getText: (e) => (<DrawingEdge>DrawingEdge.getDrawingObj(e.edge)).labelText,
+          getColor: getEdgeColor,
+          getSize: this.props.getTextSize,
+          sizeMaxPixels: 48,
+          sizeUnits: 'common',
+          characterSet: 'auto',
         },
       ),
     ]
