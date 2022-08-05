@@ -100,7 +100,7 @@ export class IncrementalDragger {
       this.layoutSettings.edgeRoutingSettings.Padding,
       this.layoutSettings.edgeRoutingSettings.PolylinePadding,
       this.layoutSettings.edgeRoutingSettings.ConeAngle,
-      this.layoutSettings.edgeRoutingSettings.BundlingSettings,
+      this.layoutSettings.edgeRoutingSettings.bundlingSettings,
     )
     router.run()
     this.PositionLabels(this.changedEdges)

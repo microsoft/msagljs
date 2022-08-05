@@ -282,7 +282,7 @@ export class GeometryGraphEditor {
       this.LayoutSettings.edgeRoutingSettings.Padding,
       this.LayoutSettings.edgeRoutingSettings.PolylinePadding,
       this.LayoutSettings.edgeRoutingSettings.ConeAngle,
-      this.LayoutSettings.edgeRoutingSettings.BundlingSettings,
+      this.LayoutSettings.edgeRoutingSettings.bundlingSettings,
     )
     router.run()
     const elp = EdgeLabelPlacement.constructorG(this.graph)

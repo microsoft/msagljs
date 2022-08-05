@@ -14,11 +14,32 @@ export type BundlingSettingsJSON = {
   hubRepulsionImportance?: number
   bundleRepulsionImportance?: number
   minimalRatioOfGoodCdtEdges?: number
-  highestQuality?: number
+  highestQuality?: boolean
   KeepOverlaps?: boolean
   StopAfterShortestPaths?: boolean
 }
 export class BundlingSettings {
+  static createFromJSON(s: BundlingSettingsJSON): BundlingSettings {
+    const r = new BundlingSettings()
+    if (s.capacityOverflowCoefficient) r.capacityOverflowCoefficient = s.capacityOverflowCoefficient
+    if (s.RotateBundles) r.RotateBundles = s.RotateBundles
+    if (s.MaxHubRadius) r.MaxHubRadius = s.MaxHubRadius
+    if (s.MinHubRadius) r.MinHubRadius = s.MinHubRadius
+    if (s.CreateUnderlyingPolyline) r.CreateUnderlyingPolyline = s.CreateUnderlyingPolyline
+    if (s.pathLengthImportance) r.pathLengthImportance = s.pathLengthImportance
+    if (s.inkImportance) r.inkImportance = s.inkImportance
+    if (s.edgeSeparation) r.edgeSeparation = s.edgeSeparation
+    if (s._edgeWidthShrinkCoeff) r._edgeWidthShrinkCoeff = s._edgeWidthShrinkCoeff
+    if (s.useCubicBezierSegmentsInsideOfHubs) r.useCubicBezierSegmentsInsideOfHubs = s.useCubicBezierSegmentsInsideOfHubs
+    if (s.angleThreshold) r.angleThreshold = s.angleThreshold
+    if (s.hubRepulsionImportance) r.hubRepulsionImportance = s.hubRepulsionImportance
+    if (s.bundleRepulsionImportance) r.bundleRepulsionImportance = s.bundleRepulsionImportance
+    if (s.minimalRatioOfGoodCdtEdges) r.minimalRatioOfGoodCdtEdges = s.minimalRatioOfGoodCdtEdges
+    if (s.highestQuality) r.HighestQuality = s.highestQuality
+    if (s.KeepOverlaps) r.KeepOverlaps = s.KeepOverlaps
+    if (s.StopAfterShortestPaths) r.StopAfterShortestPaths = s.StopAfterShortestPaths
+    return r
+  }
   // the default value of CapacityOverflowCoefficient
   public static DefaultCapacityOverflowCoefficientMultiplier = 1000
 

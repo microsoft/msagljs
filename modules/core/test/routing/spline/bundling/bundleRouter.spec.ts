@@ -108,7 +108,7 @@ xtest('brandom subgraphs 10_20', () => {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-          g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
+          g.layoutSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
@@ -142,7 +142,7 @@ xtest('brandom subgraphs 40_50', () => {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-          g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
+          g.layoutSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
@@ -175,7 +175,7 @@ xtest('brandom subgraphs 50_60', () => {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-          g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
+          g.layoutSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
@@ -229,7 +229,7 @@ test('fans', () => {
   eGeom.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(100, 150, 0, 0, new Point(90, -100))
   g.layoutSettings = new MdsLayoutSettings()
   g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-  g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
+  g.layoutSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
   // todo : add a check that EdgeNudger create disjoint segments inside of the hub
   const sr = new SplineRouter(g, Array.from(g.edges()))
   sr.run()
@@ -254,7 +254,7 @@ xtest('brandom subgraphs 60_70', () => {
             e.targetArrowhead = null
           }
           g.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-          g.layoutSettings.edgeRoutingSettings.BundlingSettings.edgeSeparation *= 2
+          g.layoutSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
           const edges = Array.from(g.deepEdges)
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)

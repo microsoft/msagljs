@@ -1,8 +1,17 @@
 // Settings controlling how ideal edge lengths will be calculated for layouts that consider it.
 
 import {Direction} from '../math/geometry/direction'
-
+export type EdgeConstraintsJSON = {
+  direction?: Direction
+  separation?: number
+}
 export class EdgeConstraints {
+  static createFromJSON(s: EdgeConstraintsJSON): EdgeConstraints {
+    const r = new EdgeConstraints()
+    if (s.direction) r.direction = s.direction
+    if (s.separation) r.Separation = s.separation
+    return r
+  }
   direction = Direction.None
   constrainedEdgeSeparation = 0
   // If not equal to Direction.None, then direction separation constraints will be applied to all edges on InitializeLayout

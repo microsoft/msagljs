@@ -1,6 +1,24 @@
-import {EdgeConstraints} from '../edgeConstraints'
+import {EdgeConstraints, EdgeConstraintsJSON} from '../edgeConstraints'
 import {LayoutSettings} from '../layered/layoutSettings'
+export type MdsLayoutSettingsJSON = {
+  pivotNumber: number
 
+  iterationsWithMajorization: number
+
+  scaleX: number
+
+  scaleY: number
+
+  exponent: number
+
+  rotationAngle: number
+
+  removeOverlaps: boolean
+
+  _callIterationsWithMajorizationThreshold: number
+  edgeConstraints: EdgeConstraintsJSON
+  // Settings for calculation of ideal edge length
+}
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings extends LayoutSettings {
   // the setting of Multi-Dimensional Scaling layout

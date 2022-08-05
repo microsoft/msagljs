@@ -142,7 +142,7 @@ export class SplineRouter extends Algorithm {
       edgeRoutingSettings.Padding,
       edgeRoutingSettings.PolylinePadding,
       edgeRoutingSettings.ConeAngle,
-      edgeRoutingSettings.BundlingSettings,
+      edgeRoutingSettings.bundlingSettings,
     )
   }
 
@@ -206,9 +206,9 @@ export class SplineRouter extends Algorithm {
       this.BundlingSettings == null &&
       this.geomGraph.layoutSettings &&
       this.geomGraph.layoutSettings.edgeRoutingSettings &&
-      this.geomGraph.layoutSettings.edgeRoutingSettings.BundlingSettings
+      this.geomGraph.layoutSettings.edgeRoutingSettings.bundlingSettings
     ) {
-      this.BundlingSettings = this.geomGraph.layoutSettings.edgeRoutingSettings.BundlingSettings
+      this.BundlingSettings = this.geomGraph.layoutSettings.edgeRoutingSettings.bundlingSettings
     }
 
     this.Initialize(obstacles, this.coneAngle)
@@ -1207,6 +1207,6 @@ export class SplineRouter extends Algorithm {
 export function routeSplines(gg: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken): void {
   const ers = gg.layoutSettings ? gg.layoutSettings.edgeRoutingSettings : getEdgeRoutingSettingsFromAncestors(gg)
   //const ers = gg.layoutSettings.edgeRoutingSettings
-  const sr = new SplineRouter(gg, edgesToRoute, ers.Padding, ers.PolylinePadding, ers.coneAngle, ers.BundlingSettings, cancelToken)
+  const sr = new SplineRouter(gg, edgesToRoute, ers.Padding, ers.PolylinePadding, ers.coneAngle, ers.bundlingSettings, cancelToken)
   sr.run()
 }

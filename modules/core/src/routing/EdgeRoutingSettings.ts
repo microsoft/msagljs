@@ -27,6 +27,33 @@ export type EdgeRoutingSettingsJSON = {
 }
 
 export class EdgeRoutingSettings {
+  static createFromJSON(source: EdgeRoutingSettingsJSON): EdgeRoutingSettings {
+    const ret = new EdgeRoutingSettings()
+    if (source.edgeRoutingMode) source.edgeRoutingMode = ret.edgeRoutingMode
+
+    if (source.coneAngle) ret.coneAngle = source.coneAngle
+
+    // Amount of space to leave around nodes
+    if (source.padding) ret.padding = source.padding
+
+    if (source.polylinePadding) ret.polylinePadding = source.polylinePadding
+
+    // the settings for general edge bundling
+    if (source.bundlingSettingsJSON) ret.bundlingSettings = BundlingSettings.createFromJSON(source.bundlingSettingsJSON)
+
+    if (source.routingToParentConeAngle) ret.routingToParentConeAngle = source.routingToParentConeAngle
+
+    if (source.simpleSelfLoopsForParentEdgesThreshold)
+      ret.simpleSelfLoopsForParentEdgesThreshold = source.simpleSelfLoopsForParentEdgesThreshold
+
+    if (source.incrementalRoutingThreshold) ret.incrementalRoutingThreshold = source.incrementalRoutingThreshold
+
+    if (source.routeMultiEdgesAsBundles) ret.routeMultiEdgesAsBundles = source.routeMultiEdgesAsBundles
+
+    // if set to true the original spline is kept under the corresponding GeomEdge
+    if (source.KeepOriginalSpline) ret.KeepOriginalSpline = source.KeepOriginalSpline
+    return ret
+  }
   constructor() {
     this.EdgeRoutingMode = EdgeRoutingMode.Spline
   }
@@ -37,9 +64,9 @@ export class EdgeRoutingSettings {
     return this.edgeRoutingMode
   }
   public set EdgeRoutingMode(value: EdgeRoutingMode) {
-    if (value === EdgeRoutingMode.SplineBundling && this.BundlingSettings == null) {
-      if (this.BundlingSettings == null) {
-        this.BundlingSettings = new BundlingSettings()
+    if (value === EdgeRoutingMode.SplineBundling && this.bundlingSettings == null) {
+      if (this.bundlingSettings == null) {
+        this.bundlingSettings = new BundlingSettings()
       }
     }
     this.edgeRoutingMode = value
@@ -77,7 +104,7 @@ export class EdgeRoutingSettings {
   }
 
   // the settings for general edge bundling
-  BundlingSettings: BundlingSettings
+  bundlingSettings: BundlingSettings
 
   routingToParentConeAngle: number = Math.PI / 6
 

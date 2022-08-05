@@ -2,7 +2,6 @@
 import {Point} from '../../..'
 import {Polyline, LineSegment, PointLocation, GeomConstants} from '../../../math/geometry'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-
 import {BundlingSettings} from '../../BundlingSettings'
 import {Cdt} from '../../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtSite} from '../../ConstrainedDelaunayTriangulation/CdtSite'
