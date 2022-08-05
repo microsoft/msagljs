@@ -2,7 +2,7 @@
 
 ![Test Status](https://github.com/microsoft/msagljs/workflows/Test%20Status/badge.svg?branch=master)
 
-`msagl-js` is a JavaScript implementation of advanced graph layout algorithms. It is a port of [MSAGL](https://github.com/microsoft/automatic-graph-layout). `msagl-js` is currently under development and it comprises the following modules:
+`msagl-js` is a JavaScript implementation of advanced graph layout algorithms. It is a port of .NET layout engine [MSAGL](https://github.com/microsoft/automatic-graph-layout). `msagl-js` is currently under development and it comprises the following modules:
 
 - `msagl-js`: the core graph data structures and layout engine
 - `@msagl/parser`: convert common formats to MSAGL Graph instances
