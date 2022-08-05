@@ -15,8 +15,7 @@ import {DrawingObject} from '../../../src/drawing/drawingObject'
 import {DrawingNode} from '../../../src/drawing/drawingNode'
 import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
-import {SugiyamaLayoutSettings} from '../../../src/layout/layered/SugiyamaLayoutSettings'
-import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
+import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)

@@ -24,7 +24,7 @@ export abstract class DrawingObject extends Attribute {
     if (source.labelText != null && source.labelText !== '' && source.labelText !== source.id) {
       target.labelText = source.labelText
     }
-    if (source.fontColor && source.fontColor.keyword.toLowerCase() !== 'black') {
+    if (source.fontColor && source.fontColor.keyword && source.fontColor.keyword.toLowerCase() !== 'black') {
       target.fontColor = source.fontColor
     }
     if (source.styles && source.styles.length) {

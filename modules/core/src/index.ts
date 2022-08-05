@@ -1,5 +1,5 @@
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge} from './layout/core'
-export {SugiyamaLayoutSettings} from './layout/layered/SugiyamaLayoutSettings'
+export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {LayoutSettings} from './layout/layered/layoutSettings'
 export {CancelToken} from './utils/cancelToken'
