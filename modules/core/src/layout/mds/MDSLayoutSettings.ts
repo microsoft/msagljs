@@ -1,5 +1,5 @@
 import {EdgeConstraints} from '../edgeConstraints'
-import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {LayoutSettings} from '../layered/layoutSettings'
 
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings extends LayoutSettings {

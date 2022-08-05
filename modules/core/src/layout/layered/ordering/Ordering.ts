@@ -8,7 +8,7 @@ import {SugiyamaLayoutSettings} from '../SugiyamaLayoutSettings'
 import {OrderingMeasure} from './OrderingMeasure'
 import {SortedMap} from '@esfx/collections-sortedmap'
 import {CancelToken} from '../../../utils/cancelToken'
-import {LayerEdge} from '../LayerEdge'
+import {LayerEdge} from '../layerEdge'
 import {Stack} from 'stack-typescript'
 
 import {EdgeComparerBySource} from './EdgeComparerBySource'

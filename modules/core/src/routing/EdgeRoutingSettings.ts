@@ -1,7 +1,7 @@
-﻿import {BundlingSettings} from './BundlingSettings'
+﻿import {BundlingSettings, BundlingSettingsJSON} from './BundlingSettings'
 import {EdgeRoutingMode} from './EdgeRoutingMode'
 
-type EdgeRoutingSettingsJSON = {
+export type EdgeRoutingSettingsJSON = {
   edgeRoutingMode?: EdgeRoutingMode
 
   coneAngle?: number
@@ -12,7 +12,7 @@ type EdgeRoutingSettingsJSON = {
   polylinePadding?: number
 
   // the settings for general edge bundling
-  bundlingSettingsJSON?: any //BundlingSettingsJSON
+  bundlingSettingsJSON?: BundlingSettingsJSON
 
   routingToParentConeAngle?: number
 

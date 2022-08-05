@@ -1,7 +1,7 @@
 import {IIntEdge} from './iIntEdge'
 import {GeomEdge} from './../core/geomEdge'
 import {ICurve} from './../../math/geometry/icurve'
-import {LayerEdge} from './LayerEdge'
+import {LayerEdge} from './layerEdge'
 import {Anchor} from './anchor'
 
 import {LineSegment} from '../../math/geometry/lineSegment'

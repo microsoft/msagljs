@@ -1,7 +1,7 @@
 import {BasicGraph} from '../../structs/BasicGraph'
 
 import {GeomNode} from '../core/geomNode'
-import {LayerEdge} from './LayerEdge'
+import {LayerEdge} from './layerEdge'
 import {PolyIntEdge} from './polyIntEdge'
 
 // a class representing a graph where every edge goes down only one layer

@@ -9,7 +9,7 @@ import {randomInt} from '../../utils/random'
 import {GeomGraph} from '../core/geomGraph'
 import {Anchor} from './anchor'
 import {LayerArrays} from './LayerArrays'
-import {LayerEdge} from './LayerEdge'
+import {LayerEdge} from './layerEdge'
 import {NodeKind} from './NodeKind'
 import {ProperLayeredGraph} from './ProperLayeredGraph'
 

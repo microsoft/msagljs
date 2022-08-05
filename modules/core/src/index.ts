@@ -1,6 +1,7 @@
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge} from './layout/core'
-export {SugiyamaLayoutSettings, LayoutSettings} from './layout/layered/SugiyamaLayoutSettings'
+export {SugiyamaLayoutSettings} from './layout/layered/SugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
+export {LayoutSettings} from './layout/layered/layoutSettings'
 export {CancelToken} from './utils/cancelToken'
 export {CurveFactory, interpolateICurve, Point, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
 export {LayerDirectionEnum} from './layout/layered/layerDirectionEnum'

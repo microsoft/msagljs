@@ -4,7 +4,7 @@ import {Graph} from '../../structs/graph'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
 import {GeomNode} from '../core/geomNode'
-import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {LayoutSettings} from '../layered/layoutSettings'
 import {BumperPusher} from './bumperPusher'
 import {LabelFixture} from './labelFixture'
 

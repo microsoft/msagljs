@@ -8,7 +8,7 @@ import {IntPair} from '../../utils/IntPair'
 import {IntPairSet} from '../../utils/IntPairSet'
 import {Anchor} from './anchor'
 import {LayerArrays} from './LayerArrays'
-import {LayerEdge} from './LayerEdge'
+import {LayerEdge} from './layerEdge'
 import {PolyIntEdge} from './polyIntEdge'
 import {ProperLayeredGraph} from './ProperLayeredGraph'
 

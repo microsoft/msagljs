@@ -6,7 +6,7 @@ import {GeomEdge} from './geomEdge'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
-import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {LayoutSettings} from '../layered/layoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, CurveFactory, ICurve, PointLocation} from '../../math/geometry'
 

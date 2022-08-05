@@ -10,7 +10,7 @@ import {CancelToken} from '../../utils/cancelToken'
 import {GeomNode} from '../core/geomNode'
 import {GeomEdge} from '../core/geomEdge'
 import {MultidimensionalScaling} from './MultiDimensionalScaling'
-import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {LayoutSettings} from '../layered/layoutSettings'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 
