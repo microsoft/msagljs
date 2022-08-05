@@ -16,12 +16,46 @@ import {DrawingNode} from '../../../src/drawing/drawingNode'
 import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
+import {LayoutSettings} from '../../../src/layout/layered/layoutSettings'
+import {EdgeRoutingSettings} from '../../../src/routing/EdgeRoutingSettings'
+import {BundlingSettings} from '../../../src/routing/BundlingSettings'
+
 test('point', () => {
   const p = new Point(1, 2)
   const pString = JSON.stringify(p.toJSON(), null, 2)
   const pData = JSON.parse(pString)
   const pRead = Point.fromJSON(pData)
   expect(pRead.x).toBe(1)
+})
+test('layout settings', () => {
+  const ls = new LayoutSettings()
+  ls.NodeSeparation = 13
+  const lsJSON = ls.toJSON()
+  const newLs = LayoutSettings.fromJSON(lsJSON)
+  expect(newLs.NodeSeparation == 13).toBe(true)
+})
+
+test('edge routing settings', () => {
+  const es = new EdgeRoutingSettings()
+  es.ConeAngle = 25
+  const esJSON = es.toJSON()
+  const newEs = EdgeRoutingSettings.fromJSON(esJSON)
+  expect(es.ConeAngle == newEs.ConeAngle).toBe(true)
+  expect(es.bundlingSettings == null).toBe(true)
+  expect(newEs.bundlingSettings == null).toBe(true)
+})
+
+test('edge routing settings and bundling settings', () => {
+  const es = new EdgeRoutingSettings()
+  es.ConeAngle = 25
+  es.bundlingSettings = new BundlingSettings()
+  es.bundlingSettings.MaxHubRadius = 20
+  const esJSON = es.toJSON()
+
+  const newEs = EdgeRoutingSettings.fromJSON(esJSON)
+  expect(es.ConeAngle == newEs.ConeAngle).toBe(true)
+  expect(es.bundlingSettings == null).toBe(false)
+  expect(newEs.bundlingSettings.MaxHubRadius == 20).toBe(true)
 })
 
 test('lineSegment', () => {

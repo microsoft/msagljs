@@ -33,7 +33,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
-import {Color, TextMeasurerOptions} from '../../../src/drawing/color'
+import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 type P = [number, number]
 

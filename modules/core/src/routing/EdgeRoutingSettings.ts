@@ -27,7 +27,17 @@ export type EdgeRoutingSettingsJSON = {
 }
 
 export class EdgeRoutingSettings {
-  static createFromJSON(source: EdgeRoutingSettingsJSON): EdgeRoutingSettings {
+  toJSON(): EdgeRoutingSettingsJSON {
+    const ret: EdgeRoutingSettingsJSON = {}
+    if (this.EdgeRoutingMode != EdgeRoutingMode.Spline) ret.edgeRoutingMode = EdgeRoutingMode.Spline
+    if (this.ConeAngle != 30) ret.coneAngle = this.ConeAngle
+    if (this.padding != 3) ret.padding = this.padding
+    if (this.polylinePadding != 1.5) ret.polylinePadding = this.polylinePadding
+    if (this.bundlingSettings) ret.bundlingSettingsJSON = this.bundlingSettings.toJSON()
+
+    return ret
+  }
+  static fromJSON(source: EdgeRoutingSettingsJSON): EdgeRoutingSettings {
     const ret = new EdgeRoutingSettings()
     if (source.edgeRoutingMode) source.edgeRoutingMode = ret.edgeRoutingMode
 

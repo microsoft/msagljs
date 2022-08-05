@@ -19,6 +19,29 @@ export type BundlingSettingsJSON = {
   StopAfterShortestPaths?: boolean
 }
 export class BundlingSettings {
+  toJSON(): BundlingSettingsJSON {
+    const ret: BundlingSettingsJSON = {}
+    if (this.capacityOverflowCoefficient != BundlingSettings.DefaultCapacityOverflowCoefficientMultiplier)
+      ret.capacityOverflowCoefficient = this.capacityOverflowCoefficient
+    if (this.RotateBundles) ret.RotateBundles = this.RotateBundles
+    if (this.MaxHubRadius != 50) ret.MaxHubRadius = this.MaxHubRadius
+    if (this.MinHubRadius != 0.1) ret.MinHubRadius = this.MinHubRadius
+    if (this.CreateUnderlyingPolyline) ret.CreateUnderlyingPolyline = this.CreateUnderlyingPolyline
+    if (this.pathLengthImportance != BundlingSettings.DefaultPathLengthImportance) ret.pathLengthImportance = this.pathLengthImportance
+    if (this.inkImportance != BundlingSettings.DefaultInkImportance) ret.inkImportance = this.inkImportance
+    if (this.edgeSeparation != BundlingSettings.DefaultEdgeSeparation) ret.edgeSeparation = this.edgeSeparation
+    if (this._edgeWidthShrinkCoeff != 1) ret._edgeWidthShrinkCoeff = this._edgeWidthShrinkCoeff
+    if (this.useCubicBezierSegmentsInsideOfHubs) ret.useCubicBezierSegmentsInsideOfHubs = this.useCubicBezierSegmentsInsideOfHubs
+    if (this.angleThreshold != (Math.PI / 180) * 45) ret.angleThreshold = this.angleThreshold
+    if (this.hubRepulsionImportance != 100) ret.hubRepulsionImportance = this.hubRepulsionImportance
+    if (this.bundleRepulsionImportance != 100) ret.bundleRepulsionImportance = this.bundleRepulsionImportance
+    if (this.minimalRatioOfGoodCdtEdges != 0.9) ret.minimalRatioOfGoodCdtEdges = this.minimalRatioOfGoodCdtEdges
+    if (!this.highestQuality) ret.highestQuality = this.highestQuality
+    if (this.KeepOverlaps) ret.KeepOverlaps = this.KeepOverlaps
+    if (this.StopAfterShortestPaths) ret.StopAfterShortestPaths = this.StopAfterShortestPaths
+
+    return ret
+  }
   static createFromJSON(s: BundlingSettingsJSON): BundlingSettings {
     const r = new BundlingSettings()
     if (s.capacityOverflowCoefficient) r.capacityOverflowCoefficient = s.capacityOverflowCoefficient
@@ -117,7 +140,7 @@ export class BundlingSettings {
     return coeff * (this.edgeSeparation + e.lineWidth)
   }
 
-  useCubicBezierSegmentsInsideOfHubs: boolean
+  useCubicBezierSegmentsInsideOfHubs = false
 
   // if is set to true will be using Cubic Bezie Segments inside of hubs, otherwise will be using Biarcs
   public get UseCubicBezierSegmentsInsideOfHubs(): boolean {
