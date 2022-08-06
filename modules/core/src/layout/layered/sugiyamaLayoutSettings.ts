@@ -32,7 +32,27 @@ export type SugiyamaLayoutSettingsJSON = {
 
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
 export class SugiyamaLayoutSettings extends LayoutSettings {
-  static createFrom(s: SugiyamaLayoutSettingsJSON) {
+  exportToJSON(): SugiyamaLayoutSettingsJSON {
+    const r: SugiyamaLayoutSettingsJSON = {}
+    if (this.sameRanks) r.sameRanks = this.sameRanks
+    if (this.verticalConstraints) r.verticalConstraints = this.verticalConstraints
+    if (this.horizontalConstraints) r.horizontalConstraints = this.horizontalConstraints
+    if (this.NoGainAdjacentSwapStepsBound != 5) r.horizontalConstraints = this.horizontalConstraints
+    if (this.RepetitionCoefficientForOrdering != 1) r.RepetitionCoefficientForOrdering = this.RepetitionCoefficientForOrdering
+    if (this.AspectRatio) r.AspectRatio = this.AspectRatio
+    if (this.MaxNumberOfPassesInOrdering != 24) r.MaxNumberOfPassesInOrdering = this.MaxNumberOfPassesInOrdering
+    if (this.BrandesThreshold != 600) r.BrandesThreshold = this.BrandesThreshold
+    if (this.LabelCornersPreserveCoefficient != 0.1) r.LabelCornersPreserveCoefficient = this.LabelCornersPreserveCoefficient
+    if (this.MinNodeHeight != (72 * 0.5) / 4) r.MinNodeHeight = this.MinNodeHeight
+    if (this.MinNodeWidth != (72 * 0.75) / 4) r.MinNodeWidth = this.MinNodeWidth
+    if (this.SnapToGridByY != SnapToGridByY.None) r.SnapToGridByY = this.SnapToGridByY
+    if (this.yLayerSep != 10 * 3) r.yLayerSep = this.yLayerSep
+    if (this.transform) r.transform = this.transform
+    if (this.GridSizeByY) r.GridSizeByY = this.GridSizeByY
+    if (this.GridSizeByX) r.GridSizeByX = this.GridSizeByX
+    return r
+  }
+  static createFromJSON(s: SugiyamaLayoutSettingsJSON): SugiyamaLayoutSettings {
     const r = new SugiyamaLayoutSettings()
     if (s.sameRanks) r.sameRanks = s.sameRanks
     if (s.verticalConstraints) r.verticalConstraints = s.verticalConstraints
@@ -43,16 +63,17 @@ export class SugiyamaLayoutSettings extends LayoutSettings {
     if (s.MaxNumberOfPassesInOrdering) r.MaxNumberOfPassesInOrdering = s.MaxNumberOfPassesInOrdering
     if (s.BrandesThreshold) r.BrandesThreshold = s.BrandesThreshold
     if (s.LabelCornersPreserveCoefficient) r.LabelCornersPreserveCoefficient = s.LabelCornersPreserveCoefficient
-    if (s.MinNodeHeight) r.minimalHeight = s.MinNodeHeight
-    if (s.MinNodeWidth) r.minimalWidth = r.minimalWidth
+    if (s.MinNodeHeight) r.MinNodeHeight = s.MinNodeHeight
+    if (s.MinNodeWidth) r.MinNodeWidth = r.MinNodeWidth
     if (s.SnapToGridByY) r.SnapToGridByY = s.SnapToGridByY
     if (s.yLayerSep) r.yLayerSep = s.yLayerSep
     if (s.transform) r.transform = s.transform
     if (s.GridSizeByY) r.GridSizeByY = s.GridSizeByY
     if (s.GridSizeByX) r.GridSizeByX = s.GridSizeByX
+    return r
   }
 
-  sameRanks = new Array<string[]>()
+  sameRanks: Array<string[]>
 
   verticalConstraints = new VerticalConstraintsForSugiyama()
   horizontalConstraints = new HorizontalConstraintsForSugiyama()

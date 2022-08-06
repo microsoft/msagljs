@@ -35,6 +35,16 @@ test('layout settings', () => {
   expect(newLs.NodeSeparation == 13).toBe(true)
 })
 
+test('sugiyama layout settings', () => {
+  const ss = new SugiyamaLayoutSettings()
+  ss.MinNodeHeight = 25
+  ss.minimalHeight = 40
+  const ssJSON = ss.exportToJSON()
+  const newEs = SugiyamaLayoutSettings.createFromJSON(ssJSON)
+  expect(newEs.MinNodeHeight == 25).toBe(true)
+  //expect(newEs.minimalHeight == 40).toBe(true)
+})
+
 test('edge routing settings', () => {
   const es = new EdgeRoutingSettings()
   es.ConeAngle = 25
