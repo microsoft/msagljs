@@ -10,6 +10,7 @@ import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
@@ -34,8 +35,8 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 }
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
-export class GeomGraph extends GeomNode {
-  RectangularBoundary: any
+export class GeomGraph extends GeomNode implements IGeomGraph {
+  RectangularBoundary: any;
   *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
     for (const n of this.graph.allSuccessorsWidthFirst()) {
       yield GeomNode.getGeom(n) as GeomNode
@@ -291,6 +292,12 @@ export class GeomGraph extends GeomNode {
   constructor(graph: Graph) {
     super(graph)
     this.rrect = new RRect({left: 0, right: -1, top: 20, bottom: 0, radX: this.radX, radY: this.radY})
+  }
+  get uniformMargins() {
+    return Math.max(this.margins.left, this.margins.right, this.margins.right, this.margins.bottom)
+  }
+  set uniformMargins(value: number) {
+    this.margins.left = this.margins.right = this.margins.right = this.margins.bottom = value
   }
 
   get height() {
