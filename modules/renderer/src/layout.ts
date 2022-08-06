@@ -105,7 +105,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     }
   }
 
-  let layoutSettings: LayoutSettings
+  let layoutSettings: any
   switch (overrides.layoutType) {
     case 'Sugiyama LR': {
       const ss: SugiyamaLayoutSettings = <SugiyamaLayoutSettings>(layoutSettings = new SugiyamaLayoutSettings())
