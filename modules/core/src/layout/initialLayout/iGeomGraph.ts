@@ -1,10 +1,11 @@
 import {Point, Rectangle} from '../../math/geometry'
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
-import { GeomNode } from '../core'
+import {GeomNode} from '../core'
 
 export interface IGeomGraph {
+  uniformMargins: number
   edges()
-  shallowNodes(): Iterable<GeomNode> 
+  shallowNodes(): Iterable<GeomNode>
   pumpTheBoxToTheGraphWithMargins(): Rectangle
   shallowNodeCount: number
   translate(delta: Point)

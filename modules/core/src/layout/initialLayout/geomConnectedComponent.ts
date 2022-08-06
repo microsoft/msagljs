@@ -8,6 +8,7 @@ export class GeomConnectedComponent implements IGeomGraph {
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
   }
+  uniformMargins: number
   edges() {
     throw new Error('Method not implemented.')
   }

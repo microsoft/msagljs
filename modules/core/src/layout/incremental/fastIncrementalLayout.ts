@@ -10,6 +10,8 @@ import { GeomGraph } from "../core";
 import { FloatingPort } from "../core/floatingPort";
 import { FastIncrementalLayoutSettings } from "./fastIncrementalLayoutSettings";
 import { AxisSolver } from "./axisSolver";
+import { LayoutSettings } from "../layered/SugiyamaLayoutSettings";
+import { IGeomGraph } from "../initialLayout/iGeomGraph";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -33,7 +35,7 @@ import { AxisSolver } from "./axisSolver";
         ///  </summary>
          energy: number;
         
-        graph: GeomGraph;
+        graph: IGeomGraph;
         
         horizontalSolver: AxisSolver;
         
@@ -50,7 +52,7 @@ import { AxisSolver } from "./axisSolver";
         
         verticalSolver: AxisSolver;
         
-        clusterSettings: Func<Cluster, LayoutAlgorithmSettings>;
+        clusterSettings: (g:GeomGraph)=> LayoutSettings;
         
         clusterEdges: Array<Edge> = new Array<Edge>();
         
@@ -61,13 +63,13 @@ import { AxisSolver } from "./axisSolver";
         ///  <param name="settings">The settings for the algorithm.</param>
         ///  <param name="initialConstraintLevel">initialize at this constraint level</param>
         ///  <param name="clusterSettings">settings by cluster</param>
-         constructor (geometryGraph: GeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: Func<Cluster, LayoutAlgorithmSettings>) {
+         constructor (geometryGraph: IGeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: (g:GeomGraph)=>LayoutSettings) {
+            super(null)
             this.graph = geometryGraph;
             this.settings = this.settings;
             this.clusterSettings = this.clusterSettings;
             let i: number = 0;
-            let allNodes: ICollection<Node> = this.graph.Nodes;
-            this.nodes = new Array(allNodes.Count);
+            this.nodes = new Array(geometryGraph.Count);
             for (let v: Node in allNodes) {
                 this.nodes[i] = new FiNode(i, v);
                 v.AlgorithmData = new FiNode(i, v);
