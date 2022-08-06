@@ -1,3 +1,4 @@
+import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {EdgeConstraints, EdgeConstraintsJSON} from '../edgeConstraints'
 import {LayoutSettings} from '../layered/layoutSettings'
 export type MdsLayoutSettingsJSON = {
@@ -20,7 +21,21 @@ export type MdsLayoutSettingsJSON = {
   // Settings for calculation of ideal edge length
 }
 /** Settings for multi-dimensional scaling */
-export class MdsLayoutSettings extends LayoutSettings {
+export class MdsLayoutSettings {
+  get NodeSeparation() {
+    return this.layoutSettings.NodeSeparation
+  }
+  set NodeSeparation(value: number) {
+    this.layoutSettings.NodeSeparation = value
+  }
+  layoutSettings = new LayoutSettings()
+  get edgeRoutingSettings() {
+    return this.layoutSettings.edgeRoutingSettings
+  }
+  set edgeRoutingSettings(value: EdgeRoutingSettings) {
+    this.layoutSettings.edgeRoutingSettings = value
+  }
+
   // the setting of Multi-Dimensional Scaling layout
 
   // private double epsilon = Math.Pow(10,-8);

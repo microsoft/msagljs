@@ -38,9 +38,8 @@ test('layout settings', () => {
 test('sugiyama layout settings', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.MinNodeHeight = 25
-  ss.minimalHeight = 40
-  const ssJSON = ss.exportToJSON()
-  const newEs = SugiyamaLayoutSettings.createFromJSON(ssJSON)
+  const ssJSON = ss.toJSON()
+  const newEs = SugiyamaLayoutSettings.fromJSON(ssJSON)
   expect(newEs.MinNodeHeight == 25).toBe(true)
   //expect(newEs.minimalHeight == 40).toBe(true)
 })

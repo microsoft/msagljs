@@ -33,7 +33,7 @@ export class IncrementalDragger {
 
   //
 
-  public constructor(pushingNodes: Array<GeomNode>, graph: GeomGraph, layoutSettings: LayoutSettings) {
+  public constructor(pushingNodes: Array<GeomNode>, graph: GeomGraph, layoutSettings: any) {
     this.geomGraph = graph
     this.nodeSeparation = layoutSettings.NodeSeparation
     this.layoutSettings = layoutSettings

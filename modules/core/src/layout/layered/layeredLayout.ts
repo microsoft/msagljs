@@ -119,7 +119,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   runPostLayering() {
-    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.edgeRoutingSettings
+    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.layoutSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
     if (mode === EdgeRoutingMode.SugiyamaSplines) {
@@ -151,8 +151,6 @@ export class LayeredLayout extends Algorithm {
   }
 
   UpdateNodePositionData() {
-    this.TryToSatisfyMinWidhtAndMinHeight()
-
     for (let i = 0; i < this.IntGraph.nodeCount && i < this.database.Anchors.length; i++)
       this.IntGraph.nodes[i].center = this.database.Anchors[i].origin
 
@@ -188,56 +186,6 @@ export class LayeredLayout extends Algorithm {
     anchor.x = node.center.x
   }
 
-  TryToSatisfyMinWidhtAndMinHeight() {
-    this.TryToSatisfyMinWidth()
-    this.TryToSatisfyMinHeight()
-  }
-
-  TryToSatisfyMinWidth() {
-    if (this.sugiyamaSettings.MinimalWidth === 0) {
-      return
-    }
-
-    const w: number = this.GetCurrentWidth()
-    if (w < this.sugiyamaSettings.MinimalWidth) {
-      this.StretchWidth()
-    }
-  }
-
-  StretchWidth() {
-    // calculate the desired span of the anchor centers and the current span of anchor center
-    const desiredSpan = new RealNumberSpan()
-    for (const node of this.originalGraph.shallowNodes()) {
-      desiredSpan.AddValue(node.boundingBox.width / 2)
-      desiredSpan.AddValue(this.sugiyamaSettings.MinimalWidth - node.boundingBox.width / 2)
-    }
-
-    const currentSpan = new RealNumberSpan()
-    for (const anchor of this.NodeAnchors()) {
-      currentSpan.AddValue(anchor.x)
-    }
-
-    if (currentSpan.length > GeomConstants.distanceEpsilon) {
-      const stretch: number = desiredSpan.length / currentSpan.length
-      if (stretch > 1) {
-        for (const a of this.anchors) {
-          a.x *= stretch
-        }
-      }
-    }
-  }
-
-  TryToSatisfyMinHeight() {
-    if (this.sugiyamaSettings.MinimalHeight === 0) {
-      return
-    }
-
-    const h: number = this.GetCurrentHeight()
-    if (h < this.sugiyamaSettings.MinimalHeight) {
-      this.StretchHeight()
-    }
-  }
-
   GetCurrentHeight(): number {
     const span = new RealNumberSpan()
     for (const anchor of this.NodeAnchors()) {
@@ -246,28 +194,6 @@ export class LayeredLayout extends Algorithm {
     }
 
     return span.length
-  }
-
-  StretchHeight() {
-    const desiredSpan = new RealNumberSpan()
-    for (const node of this.originalGraph.shallowNodes()) {
-      desiredSpan.AddValue(node.boundingBox.height / 2)
-      desiredSpan.AddValue(this.sugiyamaSettings.MinimalHeight - node.boundingBox.height / 2)
-    }
-
-    const currentSpan = new RealNumberSpan()
-    for (const anchor of this.NodeAnchors()) {
-      currentSpan.AddValue(anchor.y)
-    }
-
-    if (currentSpan.length > GeomConstants.distanceEpsilon) {
-      const stretch: number = desiredSpan.length / currentSpan.length
-      if (stretch > 1) {
-        for (const a of this.anchors) {
-          a.y *= stretch
-        }
-      }
-    }
   }
 
   *NodeAnchors(): IterableIterator<Anchor> {

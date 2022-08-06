@@ -5,6 +5,7 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {closeDistEps} from '../../utils/compare'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {LayoutSettings} from './layoutSettings'
+import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 export enum SnapToGridByY {
   None,
   Top,
@@ -31,8 +32,18 @@ export type SugiyamaLayoutSettingsJSON = {
 }
 
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
-export class SugiyamaLayoutSettings extends LayoutSettings {
-  exportToJSON(): SugiyamaLayoutSettingsJSON {
+export class SugiyamaLayoutSettings {
+  layoutSettings: LayoutSettings = new LayoutSettings()
+  get NodeSeparation(): number {
+    return this.layoutSettings.NodeSeparation
+  }
+  get edgeRoutingSettings() {
+    return this.layoutSettings.edgeRoutingSettings
+  }
+  set edgeRoutingSettings(value: EdgeRoutingSettings) {
+    this.layoutSettings.edgeRoutingSettings = value
+  }
+  toJSON(): SugiyamaLayoutSettingsJSON {
     const r: SugiyamaLayoutSettingsJSON = {}
     if (this.sameRanks) r.sameRanks = this.sameRanks
     if (this.verticalConstraints) r.verticalConstraints = this.verticalConstraints
@@ -52,7 +63,7 @@ export class SugiyamaLayoutSettings extends LayoutSettings {
     if (this.GridSizeByX) r.GridSizeByX = this.GridSizeByX
     return r
   }
-  static createFromJSON(s: SugiyamaLayoutSettingsJSON): SugiyamaLayoutSettings {
+  static fromJSON(s: SugiyamaLayoutSettingsJSON): SugiyamaLayoutSettings {
     const r = new SugiyamaLayoutSettings()
     if (s.sameRanks) r.sameRanks = s.sameRanks
     if (s.verticalConstraints) r.verticalConstraints = s.verticalConstraints
@@ -105,8 +116,7 @@ export class SugiyamaLayoutSettings extends LayoutSettings {
   GridSizeByX = 0
 
   constructor() {
-    super()
-    this.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
+    this.layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
   }
 
   transformIsRotation(ang: number): boolean {

@@ -173,13 +173,13 @@ export class GeomGraph extends GeomNode {
       gg.layoutSettings = ls
     }
   }
-  private _layoutSettings: LayoutSettings
-  get layoutSettings(): LayoutSettings {
+  private _layoutSettings: any
+  get layoutSettings(): any {
     return this._layoutSettings
   }
 
   // recursively sets the same settings for subgraphs
-  set layoutSettings(value: LayoutSettings) {
+  set layoutSettings(value: any) {
     this._layoutSettings = value
   }
 

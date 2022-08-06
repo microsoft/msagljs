@@ -41,7 +41,7 @@ import {EdgeLabelPlacement} from './edgeLabelPlacement'
 //  }
 // }
 
-export function enforceLayoutSettings(geomGraph: GeomGraph, ss: LayoutSettings) {
+export function enforceLayoutSettings(geomGraph: GeomGraph, ss: any) {
   if (!geomGraph.layoutSettings) geomGraph.layoutSettings = ss
 
   for (const n of geomGraph.shallowNodes()) {
@@ -57,7 +57,7 @@ function createSettingsIfNeeded(geomGraph: GeomGraph) {
   }
 }
 
-function figureOutSettings(geomGraph: GeomGraph): LayoutSettings {
+function figureOutSettings(geomGraph: GeomGraph): any {
   const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
   if (tooLargeForLayered) {
     return new MdsLayoutSettings()
