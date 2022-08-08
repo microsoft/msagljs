@@ -20,6 +20,7 @@ import {CommonLayoutSettings} from '../../../src/layout/layered/commonLayoutSett
 import {EdgeRoutingSettings} from '../../../src/routing/EdgeRoutingSettings'
 import {BundlingSettings} from '../../../src/routing/BundlingSettings'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
+import {MdsLayoutSettings} from '../../../src/layout/mds/MDSLayoutSettings'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -333,4 +334,13 @@ test('changed bundling Sugiyama are preserved', () => {
   const nss = SugiyamaLayoutSettings.fromJSON(json)
   expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
   expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius).toBe(10000)
+})
+
+test('default mdsSettings are preserved', () => {
+  const s = new MdsLayoutSettings()
+  const sJSON = s.toJSON()
+  const str = JSON.stringify(sJSON)
+  const newJSON = JSON.parse(str)
+  const ns = MdsLayoutSettings.fromJSON(newJSON)
+  expect(ns != null).toBe(true)
 })
