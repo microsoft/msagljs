@@ -5,7 +5,7 @@ import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {Algorithm} from '../../utils/algorithm'
 import {PolyIntEdge} from './polyIntEdge'
 import {SugiyamaLayoutSettings, SnapToGridByY} from './sugiyamaLayoutSettings'
-import {LayoutSettings} from './layoutSettings'
+import {CommonLayoutSettings} from './commonLayoutSettings'
 
 import {IEdge} from '../../structs/iedge'
 import {CycleRemoval} from './CycleRemoval'
@@ -46,7 +46,7 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
 }
 
 export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null, flipToScreenCoords = true) {
-  const ss: LayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
+  const ss: CommonLayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
   enforceLayoutSettings(geomGraph, ss)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner, flipToScreenCoords)
 }

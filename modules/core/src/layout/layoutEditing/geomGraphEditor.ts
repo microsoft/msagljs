@@ -14,7 +14,7 @@ import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
 import {GeomObject} from '../core/geomObject'
 import {EdgeLabelPlacement} from '../edgeLabelPlacement'
-import {LayoutSettings} from '../layered/layoutSettings'
+import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
 import {EventHandler} from './eventHandler'
 import {IncrementalDragger} from './incrementalDragger'
@@ -36,7 +36,7 @@ export class GeometryGraphEditor {
 
   graph: GeomGraph
 
-  layoutSettings: LayoutSettings
+  layoutSettings: CommonLayoutSettings
 
   objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
@@ -87,10 +87,10 @@ export class GeometryGraphEditor {
     this.RaiseChangeInUndoList()
   }
 
-  public get LayoutSettings(): LayoutSettings {
+  public get LayoutSettings(): CommonLayoutSettings {
     return this.layoutSettings
   }
-  public set LayoutSettings(value: LayoutSettings) {
+  public set LayoutSettings(value: CommonLayoutSettings) {
     this.layoutSettings = value
   }
 

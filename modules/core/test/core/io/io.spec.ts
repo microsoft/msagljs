@@ -16,9 +16,10 @@ import {DrawingNode} from '../../../src/drawing/drawingNode'
 import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
-import {LayoutSettings} from '../../../src/layout/layered/layoutSettings'
+import {CommonLayoutSettings} from '../../../src/layout/layered/commonLayoutSettings'
 import {EdgeRoutingSettings} from '../../../src/routing/EdgeRoutingSettings'
 import {BundlingSettings} from '../../../src/routing/BundlingSettings'
+import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -28,10 +29,10 @@ test('point', () => {
   expect(pRead.x).toBe(1)
 })
 test('layout settings', () => {
-  const ls = new LayoutSettings()
+  const ls = new CommonLayoutSettings()
   ls.NodeSeparation = 13
   const lsJSON = ls.toJSON()
-  const newLs = LayoutSettings.fromJSON(lsJSON)
+  const newLs = CommonLayoutSettings.fromJSON(lsJSON)
   expect(newLs.NodeSeparation == 13).toBe(true)
 })
 
@@ -270,24 +271,32 @@ test('layout is loaded', () => {
   expect(layoutIsCalculated(g)).toBe(true)
 })
 
-xtest('layout settings', () => {
-  const sugiyamaLS = new SugiyamaLayoutSettings()
+test('layout settings same rank', () => {
+  {
+    const sugiyamaLS = new SugiyamaLayoutSettings()
+    sugiyamaLS.transform = new PlaneTransformation(11, 22, 33, 44, 55, 66)
+    sugiyamaLS.sameRanks = []
+    sugiyamaLS.sameRanks.push(['a', 'b'])
+    sugiyamaLS.sameRanks.push(['c', 'd'])
+    const sjson = sugiyamaLS.toJSON()
+    const jsonString = JSON.stringify(sjson)
+    const nJSON = JSON.parse(jsonString)
+    const nss = SugiyamaLayoutSettings.fromJSON(nJSON)
+    const sameRanks = nss.sameRanks
+    expect(sameRanks.length == 2).toBe(true)
+    expect(sameRanks[1].length == 2).toBe(true)
 
-  sugiyamaLS.sameRanks.push(['a', 'b'])
-  sugiyamaLS.sameRanks.push(['c', 'd'])
-  // let savedSS = ''
-  // {
-  //   const json = Object.assign(sugiyamaLS)
-  //   expect(json instanceof SugiyamaLayoutSettings).toBe(true)
-  //   expect(json.transform instanceof PlaneTransformation).toBe(true)
-  //   expect(json.transform.isIdentity()).toBe(true)
-  //   savedSS = JSON.stringify(json)
-  // }
-
-  // {
-  //   const json = JSON.parse(savedSS)
-  //   expect(json instanceof SugiyamaLayoutSettings).toBe(true)
-  //   expect(json.transform instanceof PlaneTransformation).toBe(true)
-  //   expect(json.transform.isIdentity()).toBe(true)
-  // }
+    expect(sameRanks[1][1] == 'd').toBe(true)
+    const tr = nss.transform
+    expect(tr instanceof PlaneTransformation).toBe(true)
+    expect(tr.getElem(0, 0)).toBe(11)
+  }
+  {
+    const ss = new SugiyamaLayoutSettings()
+    const ssj = ss.toJSON()
+    const str = JSON.stringify(ssj)
+    const json = JSON.parse(str)
+    const nss = SugiyamaLayoutSettings.fromJSON(json)
+    expect(nss.transform.isIdentity()).toBe(true)
+  }
 })

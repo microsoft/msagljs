@@ -4,7 +4,7 @@ import {LayerDirectionEnum} from './layerDirectionEnum'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {closeDistEps} from '../../utils/compare'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
-import {LayoutSettings} from './layoutSettings'
+import {CommonLayoutSettings} from './commonLayoutSettings'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 export enum SnapToGridByY {
   None,
@@ -26,14 +26,14 @@ export type SugiyamaLayoutSettingsJSON = {
   MinNodeWidth?: number
   SnapToGridByY?: SnapToGridByY
   yLayerSep?: number
-  transform?: PlaneTransformation
+  transform?: Array<Array<number>>
   GridSizeByY?: number
   GridSizeByX?: number
 }
 
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
 export class SugiyamaLayoutSettings {
-  layoutSettings: LayoutSettings = new LayoutSettings()
+  layoutSettings: CommonLayoutSettings = new CommonLayoutSettings()
   get NodeSeparation(): number {
     return this.layoutSettings.NodeSeparation
   }
@@ -58,7 +58,7 @@ export class SugiyamaLayoutSettings {
     if (this.MinNodeWidth != (72 * 0.75) / 4) r.MinNodeWidth = this.MinNodeWidth
     if (this.SnapToGridByY != SnapToGridByY.None) r.SnapToGridByY = this.SnapToGridByY
     if (this.yLayerSep != 10 * 3) r.yLayerSep = this.yLayerSep
-    if (this.transform) r.transform = this.transform
+    if (this.transform) r.transform = this.transform.elements
     if (this.GridSizeByY) r.GridSizeByY = this.GridSizeByY
     if (this.GridSizeByX) r.GridSizeByX = this.GridSizeByX
     return r
@@ -78,7 +78,15 @@ export class SugiyamaLayoutSettings {
     if (s.MinNodeWidth) r.MinNodeWidth = r.MinNodeWidth
     if (s.SnapToGridByY) r.SnapToGridByY = s.SnapToGridByY
     if (s.yLayerSep) r.yLayerSep = s.yLayerSep
-    if (s.transform) r.transform = s.transform
+    if (s.transform)
+      r.transform = new PlaneTransformation(
+        s.transform[0][0],
+        s.transform[0][1],
+        s.transform[0][2],
+        s.transform[1][0],
+        s.transform[1][1],
+        s.transform[1][2],
+      )
     if (s.GridSizeByY) r.GridSizeByY = s.GridSizeByY
     if (s.GridSizeByX) r.GridSizeByX = s.GridSizeByX
     return r

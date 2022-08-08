@@ -6,11 +6,11 @@ export type LayoutSettingsJSON = {
   packingAspectRatio?: number
 }
 
-/** The base class for hierarchy of layout settings: it specifies the minumal allowed distance between the nodes,  the minimal size of the resulting bounding box, settings for edge routing, and the ratio for the graph boxes packing algorithm  */
+/** The common data of layout settings: it specifies the minumal allowed distance between the nodes,  the minimal size of the resulting bounding box, settings for edge routing, and the ratio for the graph boxes packing algorithm  */
 
-export class LayoutSettings {
-  static fromJSON(s: LayoutSettingsJSON): LayoutSettings {
-    const ret = new LayoutSettings()
+export class CommonLayoutSettings {
+  static fromJSON(s: LayoutSettingsJSON): CommonLayoutSettings {
+    const ret = new CommonLayoutSettings()
     if (s.nodeSeparation != 10) ret.nodeSeparation = s.nodeSeparation
     if (s.packingAspectRatio) ret.packingAspectRatio = s.packingAspectRatio
     return ret

@@ -4,7 +4,7 @@ import {Graph} from '../../structs/graph'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
 import {GeomNode} from '../core/geomNode'
-import {LayoutSettings} from '../layered/layoutSettings'
+import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {BumperPusher} from './bumperPusher'
 import {LabelFixture} from './labelFixture'
 
@@ -20,7 +20,7 @@ export class IncrementalDragger {
 
   nodeSeparation: number
 
-  layoutSettings: LayoutSettings
+  layoutSettings: CommonLayoutSettings
 
   listOfPushers = new Array<BumperPusher>()
 

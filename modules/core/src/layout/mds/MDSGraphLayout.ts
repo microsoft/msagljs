@@ -10,7 +10,7 @@ import {CancelToken} from '../../utils/cancelToken'
 import {GeomNode} from '../core/geomNode'
 import {GeomEdge} from '../core/geomEdge'
 import {MultidimensionalScaling} from './MultiDimensionalScaling'
-import {LayoutSettings} from '../layered/layoutSettings'
+import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 
@@ -189,7 +189,7 @@ export class MdsGraphLayout extends Algorithm {
   //  }
 
   // Pack the given graph components to the specified aspect ratio
-  public static PackGraphs(graphs: GeomGraph[], settings: LayoutSettings): Rectangle {
+  public static PackGraphs(graphs: GeomGraph[], settings: CommonLayoutSettings): Rectangle {
     if (graphs.length === 0) {
       return Rectangle.mkEmpty()
     }

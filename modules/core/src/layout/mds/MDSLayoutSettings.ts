@@ -1,6 +1,6 @@
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {EdgeConstraints, EdgeConstraintsJSON} from '../edgeConstraints'
-import {LayoutSettings} from '../layered/layoutSettings'
+import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 export type MdsLayoutSettingsJSON = {
   pivotNumber: number
 
@@ -28,7 +28,7 @@ export class MdsLayoutSettings {
   set NodeSeparation(value: number) {
     this.layoutSettings.NodeSeparation = value
   }
-  layoutSettings = new LayoutSettings()
+  layoutSettings = new CommonLayoutSettings()
   get edgeRoutingSettings() {
     return this.layoutSettings.edgeRoutingSettings
   }
