@@ -22,10 +22,47 @@ export type MdsLayoutSettingsJSON = {
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings {
   static fromJSON(s: MdsLayoutSettingsJSON): MdsLayoutSettings {
-    return undefined
+    const ret = new MdsLayoutSettings()
+    if (s.pivotNumber) ret.pivotNumber = s.pivotNumber
+
+    if (s.iterationsWithMajorization) ret.iterationsWithMajorization = s.iterationsWithMajorization
+
+    if (s.scaleX) ret.scaleX = s.scaleX
+
+    if (s.scaleY) ret.scaleY = s.scaleY
+
+    if (s.exponent) ret.exponent = s.exponent
+
+    if (s.rotationAngle) ret.rotationAngle = s.rotationAngle
+
+    if (s.removeOverlaps != undefined) ret.removeOverlaps = s.removeOverlaps
+
+    if (s._callIterationsWithMajorizationThreshold)
+      ret._callIterationsWithMajorizationThreshold = s._callIterationsWithMajorizationThreshold
+    if (s.edgeConstraints) ret.edgeConstraints = EdgeConstraints.fromJSON(s.edgeConstraints)
+
+    return ret
   }
-  toJSON(): MdsLayoutSettings {
-    return undefined
+  toJSON(): MdsLayoutSettingsJSON {
+    const ret: MdsLayoutSettingsJSON = {}
+    if (this.pivotNumber != 50) ret.pivotNumber = this.pivotNumber
+
+    if (this.iterationsWithMajorization != 30) ret.iterationsWithMajorization = this.iterationsWithMajorization
+
+    if (this.scaleX != 200) ret.scaleX = this.scaleX
+
+    if (this.scaleY != 200) ret.scaleY = this.scaleY
+
+    if (this.exponent != -2) ret.exponent = this.exponent
+
+    if (this.rotationAngle != 0) ret.rotationAngle = this.rotationAngle
+
+    if (!this.removeOverlaps) ret.removeOverlaps = this.removeOverlaps
+
+    if (this._callIterationsWithMajorizationThreshold != 3000)
+      ret._callIterationsWithMajorizationThreshold = this._callIterationsWithMajorizationThreshold
+    if (this.edgeConstraints != null) ret.edgeConstraints = this.edgeConstraints.toJSON()
+    return ret
   }
   get NodeSeparation() {
     return this.layoutSettings.NodeSeparation

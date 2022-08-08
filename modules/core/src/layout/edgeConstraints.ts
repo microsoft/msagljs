@@ -6,11 +6,21 @@ export type EdgeConstraintsJSON = {
   separation?: number
 }
 export class EdgeConstraints {
-  static createFromJSON(s: EdgeConstraintsJSON): EdgeConstraints {
+  static fromJSON(s: EdgeConstraintsJSON): EdgeConstraints {
     const r = new EdgeConstraints()
     if (s.direction) r.direction = s.direction
     if (s.separation) r.Separation = s.separation
     return r
+  }
+  toJSON(): EdgeConstraintsJSON {
+    const ret: EdgeConstraintsJSON = {}
+    if (this.direction != Direction.None) {
+      ret.direction = this.direction
+    }
+    if (this.Separation) {
+      ret.separation = this.Separation
+    }
+    return ret
   }
   direction = Direction.None
   constrainedEdgeSeparation = 0
