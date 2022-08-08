@@ -28,7 +28,7 @@ test('point', () => {
   const pRead = Point.fromJSON(pData)
   expect(pRead.x).toBe(1)
 })
-test('layout settings', () => {
+test('layout Sugiyama', () => {
   const ls = new CommonLayoutSettings()
   ls.NodeSeparation = 13
   const lsJSON = ls.toJSON()
@@ -313,7 +313,7 @@ test('commonLayoutSetting are preserved', () => {
   expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings == null).toBe(true)
 })
 
-test('default bundling settings are preserved', () => {
+test('default bundling Sugiyama are preserved', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
   const ssj = ss.toJSON()
@@ -323,7 +323,7 @@ test('default bundling settings are preserved', () => {
   expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
 })
 
-test('changed bundling settings are preserved', () => {
+test('changed bundling Sugiyama are preserved', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
   ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius = 10000

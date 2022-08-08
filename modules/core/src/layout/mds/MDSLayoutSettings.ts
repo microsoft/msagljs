@@ -2,28 +2,30 @@ import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {EdgeConstraints, EdgeConstraintsJSON} from '../edgeConstraints'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 export type MdsLayoutSettingsJSON = {
-  pivotNumber: number
+  pivotNumber?: number
 
-  iterationsWithMajorization: number
+  iterationsWithMajorization?: number
 
-  scaleX: number
+  scaleX?: number
 
-  scaleY: number
+  scaleY?: number
 
-  exponent: number
+  exponent?: number
 
-  rotationAngle: number
+  rotationAngle?: number
 
-  removeOverlaps: boolean
+  removeOverlaps?: boolean
 
-  _callIterationsWithMajorizationThreshold: number
-  edgeConstraints: EdgeConstraintsJSON
-  // Settings for calculation of ideal edge length
+  _callIterationsWithMajorizationThreshold?: number
+  edgeConstraints?: EdgeConstraintsJSON
 }
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings {
+  static fromJSON(s: MdsLayoutSettingsJSON): MdsLayoutSettings {
+    return undefined
+  }
   toJSON(): MdsLayoutSettings {
-    throw new Error()
+    return undefined
   }
   get NodeSeparation() {
     return this.layoutSettings.NodeSeparation
