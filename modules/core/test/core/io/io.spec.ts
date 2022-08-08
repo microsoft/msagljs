@@ -310,4 +310,27 @@ test('commonLayoutSetting are preserved', () => {
   const nss = SugiyamaLayoutSettings.fromJSON(json)
   expect(nss.commonLayoutSettings.NodeSeparation).toBe(100)
   expect(nss.commonLayoutSettings.edgeRoutingSettings.ConeAngle).toBe(22)
+  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings == null).toBe(true)
+})
+
+test('default bundling settings are preserved', () => {
+  const ss = new SugiyamaLayoutSettings()
+  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
+  const ssj = ss.toJSON()
+  const str = JSON.stringify(ssj)
+  const json = JSON.parse(str)
+  const nss = SugiyamaLayoutSettings.fromJSON(json)
+  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
+})
+
+test('changed bundling settings are preserved', () => {
+  const ss = new SugiyamaLayoutSettings()
+  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
+  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius = 10000
+  const ssj = ss.toJSON()
+  const str = JSON.stringify(ssj)
+  const json = JSON.parse(str)
+  const nss = SugiyamaLayoutSettings.fromJSON(json)
+  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
+  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius).toBe(10000)
 })
