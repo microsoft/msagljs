@@ -119,7 +119,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   runPostLayering() {
-    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.layoutSettings.edgeRoutingSettings
+    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.commonLayoutSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
     if (mode === EdgeRoutingMode.SugiyamaSplines) {

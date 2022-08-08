@@ -22,6 +22,9 @@ export type MdsLayoutSettingsJSON = {
 }
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings {
+  toJSON(): MdsLayoutSettings {
+    throw new Error()
+  }
   get NodeSeparation() {
     return this.layoutSettings.NodeSeparation
   }

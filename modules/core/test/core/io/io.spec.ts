@@ -300,3 +300,14 @@ test('layout settings same rank', () => {
     expect(nss.transform.isIdentity()).toBe(true)
   }
 })
+test('commonLayoutSetting are preserved', () => {
+  const ss = new SugiyamaLayoutSettings()
+  ss.commonLayoutSettings.NodeSeparation = 100
+  ss.commonLayoutSettings.edgeRoutingSettings.ConeAngle = 22
+  const ssj = ss.toJSON()
+  const str = JSON.stringify(ssj)
+  const json = JSON.parse(str)
+  const nss = SugiyamaLayoutSettings.fromJSON(json)
+  expect(nss.commonLayoutSettings.NodeSeparation).toBe(100)
+  expect(nss.commonLayoutSettings.edgeRoutingSettings.ConeAngle).toBe(22)
+})

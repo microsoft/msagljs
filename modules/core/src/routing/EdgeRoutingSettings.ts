@@ -30,7 +30,7 @@ export class EdgeRoutingSettings {
   toJSON(): EdgeRoutingSettingsJSON {
     const ret: EdgeRoutingSettingsJSON = {}
     if (this.EdgeRoutingMode != EdgeRoutingMode.Spline) ret.edgeRoutingMode = EdgeRoutingMode.Spline
-    if (this.ConeAngle != 30) ret.coneAngle = this.ConeAngle
+    if (this.ConeAngle != 30 * (Math.PI / 180)) ret.coneAngle = this.ConeAngle
     if (this.padding != 3) ret.padding = this.padding
     if (this.polylinePadding != 1.5) ret.polylinePadding = this.polylinePadding
     if (this.bundlingSettings) ret.bundlingSettingsJSON = this.bundlingSettings.toJSON()
