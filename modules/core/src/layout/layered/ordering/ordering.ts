@@ -11,8 +11,8 @@ import {CancelToken} from '../../../utils/cancelToken'
 import {LayerEdge} from '../layerEdge'
 import {Stack} from 'stack-typescript'
 
-import {EdgeComparerBySource} from './EdgeComparerBySource'
-import {EdgeComparerByTarget} from './EdgeComparerByTarget'
+import {EdgeComparerBySource} from './edgeComparerBySource'
+import {EdgeComparerByTarget} from './edgeComparerByTarget'
 import {Algorithm} from './../../../utils/algorithm'
 import {flattenArray} from '../../../utils/setOperations'
 // Works on the layered graph.
