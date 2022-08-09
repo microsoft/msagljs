@@ -1,6 +1,5 @@
 import { Algorithm } from "../../utils/algorithm";    
-
-import { BasicGraphOnEdges } from "../../structs/basicGraphOnEdges";
+import { BasicGraphOnEdges, mkGraphOnEdgesN } from "../../structs/basicGraphOnEdges";
 import { FiEdge } from "./fiEdge";
 import { FiNode } from "./fiNode";
 import { IConstraint } from "./iConstraint";
@@ -10,8 +9,9 @@ import { GeomGraph } from "../core";
 import { FloatingPort } from "../core/floatingPort";
 import { FastIncrementalLayoutSettings } from "./fastIncrementalLayoutSettings";
 import { AxisSolver } from "./axisSolver";
-import { LayoutSettings } from "../layered/SugiyamaLayoutSettings";
 import { IGeomGraph } from "../initialLayout/iGeomGraph";
+import { AlgorithmData } from "../../structs/algorithmData";
+import { GetConnectedComponents as getConnectedComponents } from "../../math/graphAlgorithms/ConnectedComponentCalculator";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -52,7 +52,7 @@ import { IGeomGraph } from "../initialLayout/iGeomGraph";
         
         verticalSolver: AxisSolver;
         
-        clusterSettings: (g:GeomGraph)=> LayoutSettings;
+        clusterSettings: (g:GeomGraph)=> any;
         
         clusterEdges: Array<Edge> = new Array<Edge>();
         
@@ -63,56 +63,58 @@ import { IGeomGraph } from "../initialLayout/iGeomGraph";
         ///  <param name="settings">The settings for the algorithm.</param>
         ///  <param name="initialConstraintLevel">initialize at this constraint level</param>
         ///  <param name="clusterSettings">settings by cluster</param>
-         constructor (geometryGraph: IGeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: (g:GeomGraph)=>LayoutSettings) {
+         constructor (geometryGraph: IGeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number, clusterSettings: (g:GeomGraph)=>any) {
             super(null)
             this.graph = geometryGraph;
             this.settings = this.settings;
             this.clusterSettings = this.clusterSettings;
             let i: number = 0;
-            this.nodes = new Array(geometryGraph.Count);
-            for (let v: Node in allNodes) {
-                this.nodes[i] = new FiNode(i, v);
-                v.AlgorithmData = new FiNode(i, v);
-                i++;
+            for (const gn of this.graph.shallowNodes()) {
+                const fiNode = new FiNode(i++, gn)
+                new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
             }
             
-            this.clusterEdges.Clear();
-            this.edges.Clear();
-            for (let e: Edge in this.graph.Edges) {
-                if ((e.Source instanceof  ((Cluster || e.Target) instanceof  Cluster))) {
-                    this.clusterEdges.Add(e);
+            for (const e of this.graph.edges()) {
+                if (e.Source instanceof GeomGraph || e.Target instanceof  GeomGraph) {
+                    continue;
                 }
                 else {
-                    this.edges.Add(new FiEdge(e));
+                    const fiEdge= new FiEdge(e)
+                    new AlgorithmData(e.edge, fiEdge)
                 }
-                
-                for (let l in e.Labels) {
-                    l.OuterPoints = null;
-                }
-                
-                l.InnerPoints = null;
             }
-            
+            this.edges = Array.from(this.graph.edges())
+            this.nodes = Array.from(this.graph.shallowNodes()).map(gn=>AlgorithmData.getAlgData(gn.node).data as FiNode)
             this.SetLockNodeWeights();
             this.components = new Array<FiNode[]>();
             if (!this.settings.InterComponentForces) {
-                this.basicGraph = new BasicGraphOnEdges<FiEdge>(this.edges, this.nodes.Length);
-                for (let componentNodes in ConnectedComponentCalculator.GetComponents(this.basicGraph)) {
-                    let vs = new Array(componentNodes.Count());
+                this.basicGraph = mkGraphOnEdgesN(this.edges, this.nodes.length);
+                for (const componentNodes of getConnectedComponents(this.basicGraph)) {
+                    let vs = new Array(componentNodes.length);
                     let vi: number = 0;
                     for (let v: number in componentNodes) {
                         vs[vi++] = this.nodes[v];
                     }
                     
-                    this.components.Add(vs);
+                    this.components.push(vs)
                 }
                 
             }
             else {
-                this.components.Add(this.nodes);
+                this.components.push(this.nodes);
             }
             
-            this.horizontalSolver = new AxisSolver(true, this.nodes, new, [);
+            this.horizontalSolver =  new AxisSolver(true, this.nodes, [this.graph], settings.AvoidOverlaps,
+                                              settings.MinConstraintLevel, this.clusterSettings) 
+                                              /*{
+                                                  OverlapRemovalParameters =
+                                                      new OverlapRemovalParameters {
+                                                          AllowDeferToVertical = true,
+                   // use "ProportionalOverlap" mode only when iterative apply forces layout is being used.
+                   // it is not necessary otherwise.
+                                                          ConsiderProportionalOverlap = settings.ApplyForces
+                                                      }
+                                              };*/
             geometryGraph.RootCluster;
             this.settings.AvoidOverlaps;
             this.settings.MinConstraintLevel;
@@ -709,3 +711,4 @@ import { IGeomGraph } from "../initialLayout/iGeomGraph";
         }
         
     }
+

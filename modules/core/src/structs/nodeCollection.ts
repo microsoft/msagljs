@@ -100,7 +100,7 @@ export class NodeCollection {
     return count
   }
 
-  // returns the edges of shallow nodes
+  /**  returns the edges of shallow nodes */
   get edges(): IterableIterator<Edge> {
     return this._edges()
   }
