@@ -15,6 +15,7 @@ import { GetConnectedComponents as getConnectedComponents } from "../../math/gra
 import { OverlapRemovalParameters } from "../../math/geometry/overlapRemoval/overlapRemovalParameters";
 import { RectangularClusterBoundary } from "../../math/geometry/overlapRemoval/rectangularClusterBoundary";
 import { VerticalSeparationConstraint } from "./verticalSeparationConstraint";
+import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraints";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -137,7 +138,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 if (c instanceof  VerticalSeparationConstraint) {
                     this.verticalSolver.AddStructuralConstraint(c);
                 }
-                else if ((c instanceof  HorizontalSeparationConstraint)) {
+                else if (c instanceof  HorizontalSeparationConstraint) {
                     this.horizontalSolver.AddStructuralConstraint(c);
                 }
                 else {
