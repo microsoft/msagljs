@@ -1,6 +1,9 @@
 ///  <summary>
 ///  A constraint must provide a method to find a feasible starting configuration,
 ///  and a method to satisfy the constraint by moving the affected nodes as little as possible
+
+import {GeomNode} from '../core'
+
 ///  </summary>
 export interface IConstraint {
   ///  <summary>
@@ -12,7 +15,7 @@ export interface IConstraint {
   ///  <summary>
   ///  Get the list of nodes involved in the constraint
   ///  </summary>
-  Nodes: Iterable<Node>
+  Nodes: Iterable<GeomNode>
 
   ///  <summary>
   ///  Constraints are applied according to a schedule.
