@@ -344,3 +344,14 @@ test('default mdsSettings are preserved', () => {
   const ns = MdsLayoutSettings.fromJSON(newJSON)
   expect(ns != null).toBe(true)
 })
+
+test('some mdsSettings are preserved', () => {
+  const s = new MdsLayoutSettings()
+  s.Exponent = -3
+  const sJSON = s.toJSON()
+  const str = JSON.stringify(sJSON)
+  const newJSON = JSON.parse(str)
+  const ns = MdsLayoutSettings.fromJSON(newJSON)
+  expect(ns != null).toBe(true)
+  expect(s.Exponent).toBe(-3)
+})
