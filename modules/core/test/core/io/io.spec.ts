@@ -20,7 +20,7 @@ import {CommonLayoutSettings} from '../../../src/layout/layered/commonLayoutSett
 import {EdgeRoutingSettings} from '../../../src/routing/EdgeRoutingSettings'
 import {BundlingSettings} from '../../../src/routing/BundlingSettings'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
-import {MdsLayoutSettings} from '../../../src/layout/mds/MDSLayoutSettings'
+import {MdsLayoutSettings} from '../../../src/layout/mds/mDSLayoutSettings'
 
 test('point', () => {
   const p = new Point(1, 2)
