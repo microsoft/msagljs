@@ -229,6 +229,14 @@ export class Graph extends Node {
       }
     }
   }
+  *allSuccessorsDepthFirst(): IterableIterator<Node> {
+    for (const n of this.shallowNodes) {
+      if (n instanceof Graph) {
+        yield* n.allSuccessorsDepthFirst()
+      }
+      yield n
+    }
+  }
 }
 
 export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node[]> {

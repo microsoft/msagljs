@@ -293,6 +293,14 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     super(graph)
     this.rrect = new RRect({left: 0, right: -1, top: 20, bottom: 0, radX: this.radX, radY: this.radY})
   }
+  get subgraphsDepthFirst(): IterableIterator<IGeomGraph> {
+    return this.getSubgraphsDepthFirst()
+  }
+  *getSubgraphsDepthFirst(): IterableIterator<IGeomGraph> {
+    for (const n of this.graph.allSuccessorsDepthFirst()) {
+      if (n instanceof Graph) yield GeomGraph.getGeom(n)
+    }
+  }
   get uniformMargins() {
     return Math.max(this.margins.left, this.margins.right, this.margins.right, this.margins.bottom)
   }
