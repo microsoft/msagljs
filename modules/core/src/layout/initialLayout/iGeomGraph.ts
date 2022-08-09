@@ -3,6 +3,7 @@ import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rec
 import {GeomNode} from '../core'
 
 export interface IGeomGraph {
+  subgraphsDepthFirst: IterableIterator<IGeomGraph>
   uniformMargins: number
   edges()
   shallowNodes(): Iterable<GeomNode>

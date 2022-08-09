@@ -12,6 +12,8 @@ import { AxisSolver } from "./axisSolver";
 import { IGeomGraph } from "../initialLayout/iGeomGraph";
 import { AlgorithmData } from "../../structs/algorithmData";
 import { GetConnectedComponents as getConnectedComponents } from "../../math/graphAlgorithms/ConnectedComponentCalculator";
+import { OverlapRemovalParameters } from "../../math/geometry/overlapRemoval/overlapRemovalParameters";
+import { RectangularClusterBoundary } from "../../math/geometry/overlapRemoval/rectangularClusterBoundary";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -52,7 +54,7 @@ import { GetConnectedComponents as getConnectedComponents } from "../../math/gra
         
         verticalSolver: AxisSolver;
         
-        clusterSettings: (g:GeomGraph)=> any;
+        clusterSettings: (g:IGeomGraph)=> any;
         
         clusterEdges: Array<Edge> = new Array<Edge>();
         
@@ -106,35 +108,21 @@ import { GetConnectedComponents as getConnectedComponents } from "../../math/gra
             
             this.horizontalSolver =  new AxisSolver(true, this.nodes, [this.graph], settings.AvoidOverlaps,
                                               settings.MinConstraintLevel, this.clusterSettings) 
-                                              /*{
-                                                  OverlapRemovalParameters =
-                                                      new OverlapRemovalParameters {
-                                                          AllowDeferToVertical = true,
-                   // use "ProportionalOverlap" mode only when iterative apply forces layout is being used.
-                   // it is not necessary otherwise.
-                                                          ConsiderProportionalOverlap = settings.ApplyForces
-                                                      }
-                                              };*/
-            geometryGraph.RootCluster;
-            this.settings.AvoidOverlaps;
-            this.settings.MinConstraintLevel;
-            this.clusterSettings;
-            OverlapRemovalParameters = [][
-                    AllowDeferToVertical=true,
-                    ConsiderProportionalOverlap=settings.ApplyForces];
-            
-            this.verticalSolver = new AxisSolver(false, this.nodes, new, [);
-            geometryGraph.RootCluster;
-            this.settings.AvoidOverlaps;
-            this.settings.MinConstraintLevel;
-            this.clusterSettings;
+let orp=this.horizontalSolver.OverlapRemovalParameters =OverlapRemovalParameters.constructorEmpty()
+orp.AllowDeferToVertical=true
+orp.ConsiderProportionalOverlap=this.settings.applyForces
+                                              
+            this.verticalSolver= new AxisSolver(false,this.nodes, [this.graph],
+                this.settings.AvoidOverlaps, this.settings.minConstraintLevel, this.clusterSettings)
             this.SetupConstraints();
-            geometryGraph.RootCluster.ComputeWeight();
-            for (let c: Cluster in geometryGraph.RootCluster.AllClustersDepthFirst().Where(() => {  }, (c.RectangularBoundary == null))) {
+            computeWeight(geometryGraph);
+            for (const c of this.graph.subgraphsDepthFirst){
+                if(c.RectangularBoundary == null) {
                 c.RectangularBoundary = new RectangularClusterBoundary();
+                }
             }
             
-            CurrentConstraintLevel = initialConstraintLevel;
+            this.CurrentConstraintLevel = initialConstraintLevel;
         }
         
         SetupConstraints() {
@@ -143,9 +131,9 @@ import { GetConnectedComponents as getConnectedComponents } from "../../math/gra
                 this.AddConstraintLevel(2);
             }
             
-            for (let c: IConstraint in this.settings.StructuralConstraints) {
+            for (const c of this.settings.StructuralConstraints) {
                 this.AddConstraintLevel(c.Level);
-                if ((c instanceof  VerticalSeparationConstraint)) {
+                if (c instanceof  VerticalSeparationConstraint) {
                     this.verticalSolver.AddStructuralConstraint(c);
                 }
                 else if ((c instanceof  HorizontalSeparationConstraint)) {
@@ -711,4 +699,8 @@ import { GetConnectedComponents as getConnectedComponents } from "../../math/gra
         }
         
     }
+
+function computeWeight(geometryGraph: IGeomGraph) {
+    throw new Error("Function not implemented.");
+}
 
