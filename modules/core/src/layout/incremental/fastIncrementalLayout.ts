@@ -14,6 +14,7 @@ import { AlgorithmData } from "../../structs/algorithmData";
 import { GetConnectedComponents as getConnectedComponents } from "../../math/graphAlgorithms/ConnectedComponentCalculator";
 import { OverlapRemovalParameters } from "../../math/geometry/overlapRemoval/overlapRemovalParameters";
 import { RectangularClusterBoundary } from "../../math/geometry/overlapRemoval/rectangularClusterBoundary";
+import { VerticalSeparationConstraint } from "./verticalSeparationConstraint";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
