@@ -137,7 +137,7 @@ export class ConstraintGenerator {
   ///  <returns>The created node.</returns>
   public AddNode(
     initialCluster: OverlapRemovalCluster,
-    userData: Object,
+    userData: any,
     position: number,
     positionP: number,
     size: number,
@@ -169,7 +169,7 @@ export class ConstraintGenerator {
   ///
   public AddClusterOOBBBB(
     parentCluster: OverlapRemovalCluster,
-    userData: Object,
+    userData: any,
     openBorderInfo: BorderInfo,
     closeBorderInfo: BorderInfo,
     openBorderInfoP: BorderInfo,
@@ -195,7 +195,7 @@ export class ConstraintGenerator {
   ///
   public AddCluster(
     parentCluster: OverlapRemovalCluster,
-    userData: Object,
+    userData: any,
     minimumSize: number,
     minimumSizeP: number,
     openBorderInfo: BorderInfo,
@@ -293,7 +293,7 @@ export class ConstraintGenerator {
     }
 
     const solverSolution: Solution = solver.SolvePar(parameters.SolverParameters)
-    for (const cluster: OverlapRemovalCluster of this.clusterHierarchies) {
+    for (const cluster of this.clusterHierarchies) {
       cluster.UpdateFromVariable()
       //  "recursively" processes all child clusters
     }
