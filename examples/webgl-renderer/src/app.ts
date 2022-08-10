@@ -9,7 +9,12 @@ import {DrawingObject} from 'msagl-js/drawing'
 
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 
-const renderer = new Renderer(document.getElementById('viewer'), './worker.js')
+/// Debug on main thread
+// const renderer = new Renderer(document.getElementById('viewer'), null)
+/// Test worker with local build
+// const renderer = new Renderer(document.getElementById('viewer'), './worker.js')
+/// Test published version
+const renderer = new Renderer(document.getElementById('viewer'), 'https://unpkg.com/@msagl/renderer@latest/dist/worker.min.js')
 renderer.addControl(new SearchControl())
 
 function updateRender(graph: Graph, settings?: LayoutOptions | null): Promise<void>

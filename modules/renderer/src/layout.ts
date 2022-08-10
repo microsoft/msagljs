@@ -24,7 +24,12 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
     layoutWorker = null
   }
   if (!layoutWorker) {
-    layoutWorker = new Worker(workerUrl)
+    // Resolve relative URL
+    workerUrl = new URL(workerUrl, location.href).href
+    // Worker cannot be constructed directly cross-origin
+    const content = `importScripts( "${workerUrl}" )`
+    const blobUrl = URL.createObjectURL(new Blob([content], {type: 'text/javascript'}))
+    layoutWorker = new Worker(blobUrl)
   }
 
   return new Promise((resolve, reject) => {
