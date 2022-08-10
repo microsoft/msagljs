@@ -25,6 +25,13 @@ export class FiEdge implements IEdge {
   public get target(): number {
     return this.targetFiNode.index
   }
+  private _length = 1
+  public get length() {
+    return this._length
+  }
+  public set length(value) {
+    this._length = value
+  }
 
   vector(): Point {
     return this.sourceFiNode.mNode.center.sub(this.targetFiNode.mNode.center)
