@@ -5,8 +5,8 @@
   "description": "Public demo for msagl-js",
   "main": "index.js",
   "scripts": {
-    "start": "esbuild ./src/app.js ./src/worker --sourcemap --servedir=. --outdir=. --bundle",
-    "build": "rm -rf dist && esbuild ./src/app.js --outfile=dist/app.js --bundle --minify && cp index.html spinner.gif dist"
+    "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
+    "build": "rm -rf dist && esbuild ./src/app.ts --outfile=dist/app.js --bundle --minify && cp index.html spinner.gif dist"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",
