@@ -1,5 +1,6 @@
 import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
+import {closeDistEps} from '../../../utils/compare'
 
 export class MultipoleCoefficients {
   z0: Complex
@@ -126,8 +127,7 @@ export class MultipoleCoefficients {
   }
 }
 
-export class Complex {
-  // todo:remove export !!!! testing only TODO
+class Complex {
   public constructor(re: number, im: number) {
     this.re = re
     this.im = im
