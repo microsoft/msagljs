@@ -277,6 +277,10 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     return g
   }
 
+  get Clusters(): IterableIterator<IGeomGraph> {
+    return this.subgraphs()
+  }
+
   *subgraphs(): IterableIterator<GeomGraph> {
     for (const g of this.graph.subgraphs()) {
       yield <GeomGraph>GeomObject.getGeom(g)

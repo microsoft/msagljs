@@ -6,7 +6,7 @@ import {AlgorithmData} from '../core/algorithmData'
 ///  </summary>
 
 export class FiEdge implements IEdge {
-  private mEdge: GeomEdge
+  mEdge: GeomEdge
 
   public sourceFiNode: FiNode
 

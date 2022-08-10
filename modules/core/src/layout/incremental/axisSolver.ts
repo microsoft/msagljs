@@ -2,7 +2,6 @@
 ///  Solver for structural separation constraints or non-overlap constraints of a single axis.
 ///  Wrapper round all the ProjectionSolver stuff.
 
-import {getFileInfo} from 'prettier'
 import {Point, Rectangle} from '../../math/geometry'
 import {BorderInfo} from '../../math/geometry/overlapRemoval/borderInfo'
 import {ConstraintGenerator} from '../../math/geometry/overlapRemoval/constraintGenerator'

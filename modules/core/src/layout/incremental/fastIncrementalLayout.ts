@@ -16,11 +16,15 @@ import { OverlapRemovalParameters } from "../../math/geometry/overlapRemoval/ove
 import { RectangularClusterBoundary } from "../../math/geometry/overlapRemoval/rectangularClusterBoundary";
 import { VerticalSeparationConstraint } from "./verticalSeparationConstraint";
 import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraints";
+import { Assert } from "../../utils/assert";
+import { EdgeConstraintGenerator } from "./edgeConstraintsGenerator";
+import { LockPosition } from "./lockPosition";
+import { Feasibility } from "./feasibility";
     ///  <summary>
     ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
     ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
     ///  
-    ///  Note that in debug mode lots of numerical checking is applied, which slows things down considerably.  So, run in Release mode unless you're actually debugging!
+    ///  Note that of debug mode lots of numerical checking is applied, which slows things down considerably.  So, run of Release mode unless you're actually debugging!
     ///  </summary>
     export class FastIncrementalLayout extends Algorithm {
         
@@ -33,7 +37,7 @@ import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraint
         edges: Array<FiEdge> = new Array<FiEdge>();
         
         ///  <summary>
-        ///  Returns the derivative of the cost function calculated in the most recent iteration.
+        ///  Returns the derivative of the cost function calculated of the most recent iteration.
         ///  It's a volatile float so that we can potentially access it from other threads safely,
         ///  for example during test.
         ///  </summary>
@@ -79,7 +83,7 @@ import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraint
             }
             
             for (const e of this.graph.edges()) {
-                if (e.Source instanceof GeomGraph || e.Target instanceof  GeomGraph) {
+                if (e.source instanceof GeomGraph || e.target instanceof  GeomGraph) {
                     continue;
                 }
                 else {
@@ -87,7 +91,7 @@ import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraint
                     new AlgorithmData(e.edge, fiEdge)
                 }
             }
-            this.edges = Array.from(this.graph.edges())
+            this.edges = Array.from(this.graph.edges()).map(gn=>AlgorithmData.getAlgData(gn.edge).data as FiEdge)
             this.nodes = Array.from(this.graph.shallowNodes()).map(gn=>AlgorithmData.getAlgData(gn.node).data as FiNode)
             this.SetLockNodeWeights();
             this.components = new Array<FiNode[]>();
@@ -96,7 +100,7 @@ import { HorizontalSeparationConstraint } from "./horizontalSeparationConstraint
                 for (const componentNodes of getConnectedComponents(this.basicGraph)) {
                     let vs = new Array(componentNodes.length);
                     let vi: number = 0;
-                    for (let v: number in componentNodes) {
+                    for (let v of componentNodes) {
                         vs[vi++] = this.nodes[v];
                     }
                     
@@ -147,13 +151,13 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 
             }
             
-            EdgeConstraintGenerator.GenerateEdgeConstraints(this.graph.Edges, this.settings.IdealEdgeLength, this.horizontalSolver, this.verticalSolver);
+            EdgeConstraintGenerator.GenerateEdgeConstraints(this.graph.edges(), this.settings.IdealEdgeLength, this.horizontalSolver, this.verticalSolver);
         }
         
         currentConstraintLevel: number;
         
         ///  <summary>
-        ///  Controls which constraints are applied in CalculateLayout.  Setter enforces feasibility at that level.
+        ///  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
         ///  </summary>
          get CurrentConstraintLevel(): number {
             return this.currentConstraintLevel;
@@ -162,9 +166,13 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             this.currentConstraintLevel = value;
             this.horizontalSolver.ConstraintLevel = value;
             this.verticalSolver.ConstraintLevel = value;
-            Feasibility.Enforce(this.settings, value, this.nodes, this.horizontalSolver.structuralConstraints, this.verticalSolver.structuralConstraints, new, [);
-            this.graph.RootCluster;
-            this.clusterSettings;
+            Feasibility.Enforce(this.settings, value, this.nodes, this.horizontalSolver.structuralConstraints, this.verticalSolver.structuralConstraints, [this.graph],
+            
+            /*
+  Feasibility.Enforce(settings, value, nodes, horizontalSolver.structuralConstraints,
+                                    verticalSolver.structuralConstraints, new[] {graph.RootCluster}, clusterSettings);
+            */
+            this.clusterSettings)
             this.settings.Unconverge();
         }
         
@@ -174,7 +182,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         ///  </summary>
         ///  <param name="c"></param>
         AddConstraint(c: IConstraint) {
-            if (!this.constraints.ContainsKey(c.Level)) {
+            if (!this.constraints.has(c.Level)) {
                 this.constraints[c.Level] = new Array<IConstraint>();
             }
             
@@ -182,85 +190,75 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         }
         
         ///  <summary>
-        ///  Check for constraint level in dictionary, if it doesn't exist add the list at that level.
+        ///  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
         ///  </summary>
         ///  <param name="level"></param>
         AddConstraintLevel(level: number) {
-            if (!this.constraints.ContainsKey(level)) {
+            if (!this.constraints.has(level)) {
                 this.constraints[level] = new Array<IConstraint>();
             }
             
         }
         
          SetLockNodeWeights() {
-            for (let l: LockPosition in this.settings.locks) {
+            for (let l: LockPosition of this.settings.locks) {
                 l.SetLockNodeWeight();
             }
             
         }
         
          ResetNodePositions() {
-            for (let v: FiNode in this.nodes) {
+            for (let v: FiNode of this.nodes) {
                 v.ResetBounds();
             }
             
-            for (let e in this.edges) {
-                for (let l in e.mEdge.Labels) {
-                    l.OuterPoints = null;
-                    l.InnerPoints = null;
-                }
-                
-            }
+            
             
         }
         
         AddRepulsiveForce(v: FiNode, repulsion: Point) {
             //  scale repulsion
-            v.force = (10 
-                        * (this.settings.RepulsiveForceConstant * repulsion));
+            v.force = repulsion.mul(10 * this.settings.RepulsiveForceConstant)
         }
         
         AddLogSpringForces(e: FiEdge, duv: Point, d: number) {
-            let f: number = (0.0007 
-                        * (this.settings.AttractiveForceConstant 
-                        * (l * Math.Log(((l + 0.1) 
-                            / (d + 0.1))))));
-            let l: number = duv.Length;
-            e.source.force = (e.source.force 
-                        + (f * duv));
-            e.target.force = (e.target.force 
-                        - (f * duv));
+            const l = duv.length
+            const f = 0.0007*this.settings.AttractiveForceConstant*l*Math.log((l + 0.1)/(d + 0.1));
+            e.sourceFiNode.force = e.sourceFiNode.force.add( duv.mul(f));
+            e.targetFiNode.force = e.targetFiNode.force.sub( duv.mul(f));
         }
         
         AddSquaredSpringForces(e: FiEdge, duv: Point, d: number) {
-            let f: number = (this.settings.AttractiveForceConstant 
-                        * ((l - d) 
-                        / d2));
-            let l: number = duv.Length;
-            let d2: number = ((d * d) 
-                        + 0.1);
-            e.source.force = (e.source.force 
-                        + (f * duv));
-            e.target.force = (e.target.force 
-                        - (f * duv));
+            /*
+  double l = duv.Length,
+                   d2 = d*d + 0.1,
+                   f = settings.AttractiveForceConstant*(l - d)/d2;
+            e.source.force += f*duv;
+            e.target.force -= f*duv;
+            */
+            let l: number = duv.length;
+            let d2: number = ((d * d) + 0.1)
+            let f = this.settings.AttractiveForceConstant*(l - d)/d2;
+            e.sourceFiNode.force = e.sourceFiNode.force.add(duv.mul(f)) 
+            e.targetFiNode.force = e.targetFiNode.force.sub(duv.mul(f)) 
+            
         }
         
         AddSpringForces(e: FiEdge) {
             let duv: Point;
             if (this.settings.RespectEdgePorts) {
-                let sourceLocation = e.source.Center;
-                let targetLocation = e.target.Center;
-                let sourceFloatingPort = (<FloatingPort>(e.mEdge.SourcePort));
-                if ((sourceFloatingPort != null)) {
-                    sourceLocation = sourceFloatingPort.Location;
+                let sourceLocation = e.sourceFiNode.Center;
+                let targetLocation = e.targetFiNode.Center;
+                let sourcePort = e.mEdge.sourcePort;
+                if ((sourcePort instanceof FloatingPort)) {
+                    sourceLocation = sourcePort.Location;
+                }
+                const targetPort = e.mEdge.targetPort
+                if (targetPort instanceof FloatingPort) {
+                    targetLocation = targetPort.Location;
                 }
                 
-                let targetFloatingPort = (<FloatingPort>(e.mEdge.TargetPort));
-                if ((targetFloatingPort != null)) {
-                    targetLocation = targetFloatingPort.Location;
-                }
-                
-                duv = (sourceLocation - targetLocation);
+                duv = sourceLocation.sub(targetLocation)
             }
             else {
                 duv = e.vector();
@@ -283,32 +281,32 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         }
         
         ComputeRepulsiveForces(vs: FiNode[]) {
-            let n: number = vs.Length;
+            let n: number = vs.length;
             if (((n > 16) 
                         && this.settings.ApproximateRepulsion)) {
-                let ps = new Array(vs.Length);
-                //  before calculating forces we perturb each center by a small vector in a unique
-                //  but deterministic direction (by walking around a circle in n steps) - this allows
+                let ps = new Array(vs.length);
+                //  before calculating forces we perturb each center by a small vector of a unique
+                //  but deterministic direction (by walking around a circle of n steps) - this allows
                 //  the KD-tree to decompose even when some nodes are at exactly the same position
                 let angleDelta: number = (2 
                             * (Math.PI / n));
                 let angle: number = 0;
                 for (let i: number = 0; (i < n); i++) {
-                    ps[i] = new KDTree.Particle((vs[i].Center + (1E-05 * new Point(Math.Cos(angle), Math.Sin(angle)))));
+                    ps[i] = new kdTree.Particle((vs[i].Center + (1E-05 * new Point(Math.cos(angle), Math.sin(angle)))));
                     angle = (angle + angleDelta);
                 }
                 
-                let kdTree = new KDTree(ps, 8);
+                let kdTree = new kdTree(ps, 8);
                 kdTree.ComputeForces(5);
-                for (let i: number = 0; (i < vs.Length); i++) {
+                for (let i: number = 0; (i < vs.length); i++) {
                     this.AddRepulsiveForce(vs[i], ps[i].force);
                 }
                 
             }
             else {
-                for (let u: FiNode in vs) {
+                for (let u: FiNode of vs) {
                     let fu = new Point();
-                    for (let v: FiNode in vs) {
+                    for (let v: FiNode of vs) {
                         if ((u != v)) {
                             fu = (fu + MultipoleCoefficients.Force(u.Center, v.Center));
                         }
@@ -330,14 +328,14 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             //  SetBarycenter is recursive.
             root.SetBarycenter();
             //  The cluster edges draw the barycenters of the connected clusters together
-            for (let e in this.clusterEdges) {
+            for (let e of this.clusterEdges) {
                 //  foreach cluster keep a force vector.  Replace ForEachNode calls below with a simple
                 //  addition to this force vector.  Traverse top down, tallying up force vectors of children
                 //  to be the sum of their parents.
-                let c1 = (<Cluster>(e.Source));
-                let c2 = (<Cluster>(e.Target));
-                let n1 = (<FiNode>(e.Source.AlgorithmData));
-                let n2 = (<FiNode>(e.Target.AlgorithmData));
+                let c1 = (<Cluster>(e.source));
+                let c2 = (<Cluster>(e.target));
+                let n1 = (<FiNode>(e.source.AlgorithmData));
+                let n2 = (<FiNode>(e.target.AlgorithmData));
                 let center1: Point = c1.Barycenter;
                 // TODO: Warning!!!, inline IF is not supported ?
                 (c1 != null);
@@ -349,8 +347,8 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 let duv: Point = (center1 - center2);
                 let f: number = (1E-08 
                             * (this.settings.AttractiveInterClusterForceConstant 
-                            * (l * Math.Log((l + 0.1)))));
-                let l: number = duv.Length;
+                            * (l * Math.log((l + 0.1)))));
+                let l: number = duv.length;
                 if ((c1 != null)) {
                     let fv = (<FiNode>(v.AlgorithmData));
                     fv.force = (fv.force 
@@ -377,7 +375,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 
             }
             
-            for (let c: Cluster in root.AllClustersDepthFirst()) {
+            for (let c: Cluster of root.AllClustersDepthFirst()) {
                 if ((c != root)) {
                     c.ForEachNode(() => {  }, FastIncrementalLayout.AddGravityForce(c.Barycenter, this.settings.ClusterGravity, (<FiNode>(v.AlgorithmData))));
                 }
@@ -391,32 +389,32 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         ///  </summary>
         ComputeForces() {
             if ((this.components != null)) {
-                this.components.ForEach(ComputeRepulsiveForces);
+                this.components.forEach(ComputeRepulsiveForces);
             }
             else {
                 this.ComputeRepulsiveForces(this.nodes);
             }
             
-            this.edges.ForEach(AddSpringForces);
-            for (let c in this.components) {
+            this.edges.forEach(AddSpringForces);
+            for (let c of this.components) {
                 let origin = new Point();
-                for (let i: number = 0; (i < c.Length); i++) {
+                for (let i: number = 0; (i < c.length); i++) {
                     origin = (origin + c[i].Center);
                 }
                 
-                (<number>(c.Length));
+                (<number>(c.length));
                 let maxForce: number = double.NegativeInfinity;
-                for (let i: number = 0; (i < c.Length); i++) {
+                for (let i: number = 0; (i < c.length); i++) {
                     let v: FiNode = c[i];
                     FastIncrementalLayout.AddGravityForce(origin, this.settings.GravityConstant, v);
-                    if ((v.force.Length > maxForce)) {
-                        maxForce = v.force.Length;
+                    if ((v.force.length > maxForce)) {
+                        maxForce = v.force.length;
                     }
                     
                 }
                 
                 if ((maxForce > 100)) {
-                    for (let i: number = 0; (i < c.Length); i++) {
+                    for (let i: number = 0; (i < c.length); i++) {
                         c[i].force = (c[i].force * (100 / maxForce));
                     }
                     
@@ -431,15 +429,15 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         
         SatisfyConstraints() {
             for (let i: number = 0; (i < this.settings.ProjectionIterations); i++) {
-                for (let level in this.constraints.Keys) {
+                for (let level of this.constraints.keys) {
                     if ((level > this.CurrentConstraintLevel)) {
                         break;
                     }
                     
-                    for (let c in this.constraints[level]) {
+                    for (let c of this.constraints[level]) {
                         c.Project();
                         //  c.Project operates only on MSAGL nodes, so need to update the local FiNode.Centers
-                        for (let v in c.Nodes) {
+                        for (let v of c.Nodes) {
                             (<FiNode>(v.AlgorithmData)).Center = v.Center;
                         }
                         
@@ -447,10 +445,10 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                     
                 }
                 
-                for (let l: LockPosition in this.settings.locks) {
+                for (let l: LockPosition of this.settings.locks) {
                     l.Project();
-                    //  again, project operates only on MSAGL nodes, we'll also update FiNode.PreviousPosition since we don't want any inertia in this case
-                    for (let v in l.Nodes) {
+                    //  again, project operates only on MSAGL nodes, we'll also update FiNode.PreviousPosition since we don't want any inertia of this case
+                    for (let v of l.Nodes) {
                         let fiNode: FiNode = (<FiNode>(v.AlgorithmData));
                         //  the locks should have had their AlgorithmData updated, but if (for some reason)
                         //  the locks list is out of date we don't want to null ref here.
@@ -492,7 +490,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             this.UpdateStepSize(energy0);
             this.SolveSeparationConstraints();
             let displacementSquared: number = 0;
-            for (let i: number = 0; (i < this.nodes.Length); i++) {
+            for (let i: number = 0; (i < this.nodes.length); i++) {
                 let v: FiNode = this.nodes[i];
                 displacementSquared = (displacementSquared + (v.Center - v.previousCenter).LengthSquared);
             }
@@ -505,16 +503,16 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 //  Increasing the padding effectively increases the size of the rectangle, so it will lead to more overlaps,
                 //  and therefore tighter packing once the overlap is removed and therefore more apparent "columnarity".
                 //  We don't want to drastically change the shape of the rectangles, just increase them ever so slightly so that
-                //  there is a bit more space in the horizontal than vertical direction, thus reducing the likelihood that
+                //  there is a bit more space of the horizontal than vertical direction, thus reducing the likelihood that
                 //  the vertical constraint generation will detect spurious overlaps, which should allow the nodes to slide
-                //  smoothly around each other.  ConGen padding args are:  First pad is in direction of the constraints being
-                //  generated, second pad is in the perpendicular direction.
+                //  smoothly around each other.  ConGen padding args are:  First pad is of direction of the constraints being
+                //  generated, second pad is of the perpendicular direction.
                 let dblVpad: number = this.settings.NodeSeparation;
                 let dblHpad: number = (dblVpad + Feasibility.Pad);
-                let dblCVpad: number = this.settings.ClusterMargin;
+                let dblCVpad: number = this.settings.clusterMargin;
                 let dblCHpad: number = (dblCVpad + Feasibility.Pad);
                 //  The centers are our desired positions, but we need to find a feasible configuration
-                for (let v: FiNode in this.nodes) {
+                for (let v: FiNode of this.nodes) {
                     v.desiredPosition = v.Center;
                 }
                 
@@ -528,7 +526,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 this.verticalSolver.Solve();
                 //  If we have multiple locks (hence multiple high-weight nodes), there can still be some
                 //  movement of the locked variables - so update all lock positions.
-                for (let l: LockPosition in this.settings.locks.Where(() => {  }, !l.Sticky)) {
+                for (let l: LockPosition of this.settings.locks.Where(() => {  }, !l.Sticky)) {
                     l.Bounds = l.node.BoundingBox;
                 }
                 
@@ -544,18 +542,18 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             }
             
             let lEnergy: number = 0;
-            for (let v: FiNode in this.nodes) {
-                lEnergy = (lEnergy + v.force.LengthSquared);
+            for (let v: FiNode of this.nodes) {
+                lEnergy = (lEnergy + v.force.lengthSquared);
                 let dx: Point = (v.Center - v.previousCenter);
                 v.previousCenter = v.Center;
                 dx = (dx * this.settings.Friction);
                 let a: Point = ((this.stepSize 
                             * (alpha * v.force)) 
                             * -1);
-                Debug.Assert(!number.IsNaN(a.X), "!double.IsNaN(a.X)");
-                Debug.Assert(!number.IsNaN(a.Y), "!double.IsNaN(a.Y)");
-                Debug.Assert(!number.IsInfinity(a.X), "!double.IsInfinity(a.X)");
-                Debug.Assert(!number.IsInfinity(a.Y), "!double.IsInfinity(a.Y)");
+                Assert.assert(!Number.isNaN(a.x), "!double.IsNaN(a.X)");
+                Assert.assert(!Number.isNaN(a.y), "!double.IsNaN(a.Y)");
+                Assert.assert(!Number.isFinite(a.x), "!double.IsInfinity(a.X)");
+                Assert.assert(!Number.isFinite(a.y), "!double.IsInfinity(a.Y)");
                 dx = (dx + a);
                 v.stayWeight;
                 v.Center = (v.Center + dx);
@@ -566,16 +564,16 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         }
         
         ResetForceVectors() {
-            for (let v in this.nodes) {
+            for (let v of this.nodes) {
                 v.force = new Point();
             }
             
         }
         
         ///  <summary>
-        ///  Adapt StepSize based on change in energy.  
-        ///  Five sequential improvements in energy mean we increase the stepsize.
-        ///  Any increase in energy means we reduce the stepsize.
+        ///  Adapt StepSize based on change of energy.  
+        ///  Five sequential improvements of energy mean we increase the stepsize.
+        ///  Any increase of energy means we reduce the stepsize.
         ///  </summary>
         ///  <param name="energy0"></param>
         UpdateStepSize(energy0: number) {
@@ -643,7 +641,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
     ///  <summary>
     ///  Apply a small number of iterations of the layout.  
     ///  The idea of incremental layout is that settings.minorIterations should be a small number (e.g. 3) and 
-    ///  CalculateLayout should be invoked in a loop, e.g.:
+    ///  CalculateLayout should be invoked of a loop, e.g.:
     ///  
     ///  while(settings.RemainingIterations > 0) {
     ///     fastIncrementalLayout.CalculateLayout();
@@ -683,7 +681,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
     ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
     ///  </summary>
     FinalizeClusterBoundaries() {
-        for (let c in graph.RootCluster.AllClustersDepthFirst()) {
+        for (let c of graph.RootCluster.AllClustersDepthFirst()) {
             if ((c == graph.RootCluster)) {
                 // TODO: Warning!!! continue If
             }

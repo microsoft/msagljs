@@ -3,12 +3,25 @@ import {Rectangle} from '../../math/geometry'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomGraph, GeomNode} from '../core'
 import {EdgeConstraints} from '../edgeConstraints'
-import {LayoutSettings} from '../layered/SugiyamaLayoutSettings'
+import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {FastIncrementalLayout} from './fastIncrementalLayout'
 import {IConstraint} from './iConstraint'
 import {LockPosition} from './lockPosition'
 
-export class FastIncrementalLayoutSettings extends LayoutSettings {
+export class FastIncrementalLayoutSettings {
+  commonSettings: CommonLayoutSettings = new CommonLayoutSettings()
+  get PackingAspectRatio() {
+    return this.commonSettings.PackingAspectRatio
+  }
+  set PackingAspectRatio(value: number) {
+    this.commonSettings.PackingAspectRatio = value
+  }
+  get NodeSeparation() {
+    return this.commonSettings.NodeSeparation
+  }
+  set NodeSeparation(value: number) {
+    this.commonSettings.NodeSeparation = value
+  }
   ///  <summary>
   ///  Stop after maxIterations completed
   ///  </summary>
@@ -263,7 +276,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <param name="graph">The graph upon which layout is performed</param>
   ///  <param name="initialConstraintLevel"></param>
   ///  <param name="clusterSettings"></param>
-  public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => LayoutSettings) {
+  public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => any) {
     this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel, clusterSettings)
     this.ResetLayout()
   }
@@ -289,7 +302,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
     this.IncrementalRunGF(graph, () => this)
   }
 
-  private SetupIncrementalRun(graph: GeomGraph, clusterSettings: (g: GeomGraph) => LayoutSettings) {
+  private SetupIncrementalRun(graph: GeomGraph, clusterSettings: (g: GeomGraph) => any) {
     if (!this.IsInitialized) {
       this.InitializeLayout(graph, this.MaxConstraintLevel, clusterSettings)
     } else if (this.IsDone) {
@@ -301,7 +314,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///  Run the FastIncrementalLayout instance incrementally
   ///  </summary>
-  public IncrementalRunGF(graph: GeomGraph, clusterSettings: (a: GeomGraph) => LayoutSettings) {
+  public IncrementalRunGF(graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
     this.SetupIncrementalRun(graph, clusterSettings)
     this.algorithm.run()
     // graph.UpdateBoundingBox()
@@ -310,7 +323,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  <summary>
   ///
   ///  </summary>
-  public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph, clusterSettings: (a: GeomGraph) => LayoutSettings) {
+  public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
     if (cancelToken != null) {
       cancelToken.throwIfCanceled()
     }
@@ -325,7 +338,7 @@ export class FastIncrementalLayoutSettings extends LayoutSettings {
   ///  Clones the object
   ///  </summary>
   ///  <returns></returns>
-  Clone(): LayoutSettings {
+  Clone(): FastIncrementalLayoutSettings {
     return FastIncrementalLayoutSettings.ctorClone(this)
   }
 
