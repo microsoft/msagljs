@@ -274,10 +274,8 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         }
         
         static AddGravityForce(origin: Point, gravity: number, v: FiNode) {
-            //  compute and add gravity
-            v.force = (v.force - (0.0001 
-                        * (gravity 
-                        * (origin - v.Center))));
+            //  compute and add gravity  v.force -= 0.0001*gravity*(origin - v.Center);
+            v.force = v.force.sub(origin.sub(v.Center).mul(gravity*0.0001))
         }
         
         ComputeRepulsiveForces(vs: FiNode[]) {
@@ -288,8 +286,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 //  before calculating forces we perturb each center by a small vector of a unique
                 //  but deterministic direction (by walking around a circle of n steps) - this allows
                 //  the KD-tree to decompose even when some nodes are at exactly the same position
-                let angleDelta: number = (2 
-                            * (Math.PI / n));
+                let angleDelta: number = 2 * (Math.PI / n)
                 let angle: number = 0;
                 for (let i: number = 0; (i < n); i++) {
                     ps[i] = new kdTree.Particle((vs[i].Center + (1E-05 * new Point(Math.cos(angle), Math.sin(angle)))));

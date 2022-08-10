@@ -1,5 +1,7 @@
 import { Queue } from "queue-typescript";
 import { Point, Size } from "../../../math/geometry";
+import { Disc } from "./disc";
+import { MultipoleCoefficients } from "./multipoleCoefficients";
 
 enum Dim {
         
