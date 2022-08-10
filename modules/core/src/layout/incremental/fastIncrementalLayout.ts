@@ -265,10 +265,10 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             }
             
             if (this.settings.LogScaleEdgeForces) {
-                this.AddLogSpringForces(e, duv, e.mEdge.Length);
+                this.AddLogSpringForces(e, duv, e.length);
             }
             else {
-                this.AddSquaredSpringForces(e, duv, e.mEdge.Length);
+                this.AddSquaredSpringForces(e, duv, e.length);
             }
             
         }
