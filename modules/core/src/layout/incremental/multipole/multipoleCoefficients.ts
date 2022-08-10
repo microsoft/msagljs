@@ -31,6 +31,7 @@ export class MultipoleCoefficients {
     for (let i = 0; i < r.p; i++) {
       r.a[i] = add(m1a[i], m2a[i])
     }
+    return r
   }
 
   static factorial(n: number): number {
