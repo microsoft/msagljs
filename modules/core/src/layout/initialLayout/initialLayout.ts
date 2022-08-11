@@ -67,7 +67,7 @@ export class InitialLayout extends Algorithm {
         this.LayoutComponent(component)
       }
 
-      this.graph.boundingBox = MdsGraphLayout.PackGraphs(components, this.settings)
+      this.graph.boundingBox = MdsGraphLayout.PackGraphs(components, this.settings.commonSettings)
 
       // for (let c of this.graph.subgraphs()) {
       //     let copy = (<GraphConnectedComponents.AlgorithmDataNodeWrap>(c.AlgorithmData));

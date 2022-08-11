@@ -153,7 +153,7 @@ class LeafKdNode extends KdNode {
   }
 }
 
-class Particle {
+export class Particle {
   force: Point
 
   point: Point
