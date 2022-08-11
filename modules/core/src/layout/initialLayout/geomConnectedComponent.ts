@@ -1,5 +1,5 @@
 import {Point, Rectangle} from '../../math/geometry'
-import {GeomNode, Node} from '../..'
+import {GeomEdge, GeomGraph, GeomNode, Graph, Node} from '../..'
 import {IGeomGraph} from './iGeomGraph'
 
 export class GeomConnectedComponent implements IGeomGraph {
@@ -8,12 +8,22 @@ export class GeomConnectedComponent implements IGeomGraph {
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
   }
-  uniformMargins: number
-  edges() {
-    throw new Error('Method not implemented.')
+  get Clusters(): IterableIterator<IGeomGraph> {
+    return this.clusters()
   }
-  shallowNodes(): Iterable<GeomNode> {
-    throw new Error('Method not implemented.')
+  *clusters(): IterableIterator<IGeomGraph> {
+    for (const n of this.topNodes) if (n instanceof Graph) yield GeomGraph.getGeom(n)
+  }
+  subgraphsDepthFirst: IterableIterator<IGeomGraph>
+  uniformMargins: number;
+  *edges(): IterableIterator<GeomEdge> {
+    for (const n of this.topNodes) {
+      for (const e of n.outEdges) yield GeomEdge.getGeom(e) as GeomEdge
+      for (const e of n.selfEdges) yield GeomEdge.getGeom(e) as GeomEdge
+    }
+  }
+  *shallowNodes(): IterableIterator<GeomNode> {
+    for (const n of this.topNodes) yield GeomNode.getGeom(n) as GeomNode
   }
   pumpTheBoxToTheGraphWithMargins(): Rectangle {
     throw new Error('Method not implemented.')
