@@ -128,7 +128,7 @@ export class FastIncrementalLayoutSettings {
     this.decay = value
   }
 
-  friction = 0.8
+  private friction = 0.8
 
   ///  <summary>
   ///  Friction isn't really friction so much as a scaling of velocity to improve convergence.  0.8 seems to work well.
