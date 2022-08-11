@@ -386,13 +386,13 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         ///  </summary>
         ComputeForces() {
             if ((this.components != null)) {
-                this.components.forEach(ComputeRepulsiveForces);
+                this.components.forEach(this.ComputeRepulsiveForces);
             }
             else {
                 this.ComputeRepulsiveForces(this.nodes);
             }
             
-            this.edges.forEach(AddSpringForces);
+            this.edges.forEach(this.AddSpringForces);
             for (let c of this.components) {
                 let origin = new Point();
                 for (let i: number = 0; (i < c.length); i++) {
@@ -489,7 +489,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             let displacementSquared: number = 0;
             for (let i: number = 0; (i < this.nodes.length); i++) {
                 let v: FiNode = this.nodes[i];
-                displacementSquared = (displacementSquared + (v.Center - v.previousCenter).LengthSquared);
+                displacementSquared += v.Center.sub(v.previousCenter).lengthSquared
             }
             
             return displacementSquared;
@@ -523,8 +523,9 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
                 this.verticalSolver.Solve();
                 //  If we have multiple locks (hence multiple high-weight nodes), there can still be some
                 //  movement of the locked variables - so update all lock positions.
-                for (let l: LockPosition of this.settings.locks.Where(() => {  }, !l.Sticky)) {
-                    l.Bounds = l.node.BoundingBox;
+                for (const l of this.settings.locks) {
+                    if (!l.Sticky)
+                      l.Bounds = l.node.boundingBox;
                 }
                 
             }
@@ -541,19 +542,17 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
             let lEnergy: number = 0;
             for (let v: FiNode of this.nodes) {
                 lEnergy = (lEnergy + v.force.lengthSquared);
-                let dx: Point = (v.Center - v.previousCenter);
+                let dx: Point = v.Center.sub(v.previousCenter).mul(this.settings.Friction)
+                let a: Point = v.force.mul(-this.stepSize*alpha)
                 v.previousCenter = v.Center;
-                dx = (dx * this.settings.Friction);
-                let a: Point = ((this.stepSize 
-                            * (alpha * v.force)) 
-                            * -1);
+                           
                 Assert.assert(!Number.isNaN(a.x), "!double.IsNaN(a.X)");
                 Assert.assert(!Number.isNaN(a.y), "!double.IsNaN(a.Y)");
                 Assert.assert(!Number.isFinite(a.x), "!double.IsInfinity(a.X)");
                 Assert.assert(!Number.isFinite(a.y), "!double.IsInfinity(a.Y)");
-                dx = (dx + a);
-                v.stayWeight;
-                v.Center = (v.Center + dx);
+                dx = (dx.add(a));
+                dx = dx.div(v.stayWeight)
+                v.Center = (v.Center.add(dx))
             }
             
             this.SatisfyConstraints();
@@ -562,7 +561,7 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         
         ResetForceVectors() {
             for (let v of this.nodes) {
-                v.force = new Point();
+                v.force = new Point(0, 0);
             }
             
         }
@@ -574,64 +573,69 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
         ///  </summary>
         ///  <param name="energy0"></param>
         UpdateStepSize(energy0: number) {
-            if ((this.energy < energy0)) {
-                this.progress = 0;
-                this.settings.Decay;
+            if (this.energy < energy0) {
+                if (++this.progress >= 3) {
+                    this.progress = 0;
+                    this.stepSize /= this.settings.Decay;
+                }
             }
-            
+            else {
+                this.progress = 0;
+                this.stepSize *= this.settings.Decay;
+            }
         }
-    }
-}
+    
+
 
     
     RungeKuttaIntegration(): number {
-        let y0 = new Array(nodes.Length);
-        let k1 = new Array(nodes.Length);
-        let k2 = new Array(nodes.Length);
-        let k3 = new Array(nodes.Length);
-        let k4 = new Array(nodes.Length);
-        let energy0: number = energy;
-        SatisfyConstraints();
-        for (let i: number = 0; (i < nodes.Length); i++) {
-            nodes[i].previousCenter = nodes[i].Center;
-            y0[i] = nodes[i].Center;
+        let y0 = new Array<Point>(this.nodes.length);
+        let k1 = new Array<Point>(this.nodes.length);
+        let k2 = new Array<Point>(this.nodes.length);
+        let k3 = new Array<Point>(this.nodes.length);
+        let k4 = new Array<Point>(this.nodes.length);
+        let energy0: number = this.energy;
+        this.SatisfyConstraints();
+        for (let i: number = 0; (i < this.nodes.length); i++) {
+            this.nodes[i].previousCenter = this.nodes[i].Center;
+            y0[i] = this.nodes[i].Center;
         }
         
-        const let alpha: number = 3;
-        ComputeDescentDirection(alpha);
-        for (let i: number = 0; (i < nodes.Length); i++) {
-            k1[i] = (nodes[i].Center - nodes[i].previousCenter);
-            nodes[i].Center = (y0[i] + (0.5 * k1[i]));
+        let alpha: number = 3;
+        this.ComputeDescentDirection(alpha);
+        for (let i: number = 0; (i < this.nodes.length); i++) {
+            k1[i] = (this.nodes[i].Center.sub(this.nodes[i].previousCenter))
+            this.nodes[i].Center = y0[i].add(k1[i].mul(0.5));
         }
         
-        ComputeDescentDirection(alpha);
-        for (let i: number = 0; (i < nodes.Length); i++) {
-            k2[i] = (nodes[i].Center - nodes[i].previousCenter);
-            nodes[i].previousCenter = y0[i];
-            nodes[i].Center = (y0[i] + (0.5 * k2[i]));
+        this.ComputeDescentDirection(alpha);
+        for (let i: number = 0; (i < this.nodes.length); i++) {
+            k2[i] = (this.nodes[i].Center - this.nodes[i].previousCenter);
+            this.nodes[i].previousCenter = y0[i];
+            this.nodes[i].Center = (y0[i] + (0.5 * k2[i]));
         }
         
-        ComputeDescentDirection(alpha);
-        for (let i: number = 0; (i < nodes.Length); i++) {
-            k3[i] = (nodes[i].Center - nodes[i].previousCenter);
-            nodes[i].previousCenter = y0[i];
-            nodes[i].Center = (y0[i] + k3[i]);
+        this.ComputeDescentDirection(alpha);
+        for (let i: number = 0; (i < this.nodes.length); i++) {
+            k3[i] = (this.nodes[i].Center - this.nodes[i].previousCenter);
+            this.nodes[i].previousCenter = y0[i];
+            this.nodes[i].Center = (y0[i] + k3[i]);
         }
         
-        energy = (<number>(ComputeDescentDirection(alpha)));
-        for (let i: number = 0; (i < nodes.Length); i++) {
-            k4[i] = (nodes[i].Center - nodes[i].previousCenter);
-            nodes[i].previousCenter = y0[i];
+        this.energy = (<number>(this.ComputeDescentDirection(alpha)));
+        for (let i: number = 0; (i < this.nodes.length); i++) {
+            k4[i] = (this.nodes[i].Center - this.nodes[i].previousCenter);
+            this.nodes[i].previousCenter = y0[i];
             let dx: Point = ((k1[i] 
                         + ((2 * k2[i]) 
                         + ((2 * k3[i]) 
                         + k4[i]))) 
                         / 6);
-            nodes[i].Center = (y0[i] + dx);
+            this.nodes[i].Center = (y0[i] + dx);
         }
         
-        UpdateStepSize(energy0);
-        SolveSeparationConstraints();
+        this.UpdateStepSize(energy0);
+        this.SolveSeparationConstraints();
         return this.nodes.Sum(() => {  }, (v.Center - v.previousCenter).LengthSquared);
     }
     
@@ -648,29 +652,29 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
     ///  In the verletIntegration step above, the RemainingIterations is used to control damping.
     ///  </summary>
     protected /* override */ run() {
-        settings.Converged = false;
-        settings.EdgeRoutesUpToDate = false;
+        this.settings.Converged = false;
+        this.settings.EdgeRoutesUpToDate = false;
         0;
-        stepSize = settings.InitialStepSize;
-        energy = float.MaxValue;
-        progress = 0;
-        this.StartListenToLocalProgress(settings.MinorIterations);
-        for (let i: number = 0; (i < settings.MinorIterations); i++) {
-            let d2: number = RungeKuttaIntegration();
+        this.stepSize = this.settings.InitialStepSize;
+        this.energy = float.MaxValue;
+        this.progress = 0;
+        this.StartListenToLocalProgress(this.settings.MinorIterations);
+        for (let i: number = 0; (i < this.settings.MinorIterations); i++) {
+            let d2: number = this.RungeKuttaIntegration();
             // TODO: Warning!!!, inline IF is not supported ?
-            settings.RungeKuttaIntegration;
-            VerletIntegration();
-            if (((d2 < settings.DisplacementThreshold) 
-                        || (settings.Iterations > settings.MaxIterations))) {
-                settings.Converged = true;
+            this.settings.RungeKuttaIntegration;
+            this.VerletIntegration();
+            if (((d2 < this.settings.DisplacementThreshold) 
+                        || (this.settings.Iterations > this.settings.MaxIterations))) {
+                this.settings.Converged = true;
                 this.ProgressComplete();
                 break;
             }
             
-            ProgressStep();
+            this.ProgressStep();
         }
         
-        FinalizeClusterBoundaries();
+        this.FinalizeClusterBoundaries();
     }
     
     ///  <summary>
@@ -678,15 +682,15 @@ orp.ConsiderProportionalOverlap=this.settings.applyForces
     ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
     ///  </summary>
     FinalizeClusterBoundaries() {
-        for (let c of graph.RootCluster.AllClustersDepthFirst()) {
-            if ((c == graph.RootCluster)) {
+        for (let c of this.graph.RootCluster.AllClustersDepthFirst()) {
+            if ((c == this.graph.RootCluster)) {
                 // TODO: Warning!!! continue If
             }
             
             if ((!this.NeedSolve() 
-                        && settings.UpdateClusterBoundariesFromChildren)) {
+                        && this.settings.UpdateClusterBoundariesFromChildren)) {
                 //  if we are not using the solver (e.g. when constraintLevel == 0) then we need to get the cluster bounds manually
-                c.CalculateBoundsFromChildren(this.settings.ClusterMargin);
+                c.CalculateBoundsFromChildren(this.settings.clusterMargin);
             }
             else {
                 c.BoundingBox = c.RectangularBoundary.Rect;
