@@ -5,7 +5,8 @@ import {FiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
-import {GeomGraph} from '../core'
+import {GeomGraph, GeomNode} from '../core'
+import {Node} from '../../structs/node'
 import {FloatingPort} from '../core/floatingPort'
 import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
 import {AxisSolver} from './axisSolver'
@@ -20,8 +21,10 @@ import {Assert} from '../../utils/assert'
 import {EdgeConstraintGenerator} from './edgeConstraintsGenerator'
 import {LockPosition} from './lockPosition'
 import {Feasibility} from './feasibility'
-import { KDTree, Particle } from './multipole/kdTree'
-import { MultipoleCoefficients } from './multipole/multipoleCoefficients'
+import {KDTree, Particle} from './multipole/kdTree'
+import {MultipoleCoefficients} from './multipole/multipoleCoefficients'
+import {Graph} from '../../structs/graph'
+import {GeomObject} from '../core/geomObject'
 ///  <summary>
 ///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
 ///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -29,15 +32,16 @@ import { MultipoleCoefficients } from './multipole/multipoleCoefficients'
 ///  Note that of debug mode lots of numerical checking is applied, which slows things down considerably.  So, run of Release mode unless you're actually debugging!
 ///  </summary>
 export class FastIncrementalLayout extends Algorithm {
-    
- basicGraph: BasicGraphOnEdges<FiEdge>
+  basicGraph: BasicGraphOnEdges<FiEdge>
 
   components: Array<FiNode[]>
 
-  constraints: Map<number, Array<IConstraint>> = new Map<number, Array<IConstraint>>()
+  constraints = new Map<number, Array<IConstraint>>()
 
-  edges: Array<FiEdge> = new Array<FiEdge>()
+  edges = new Array<FiEdge>()
 
+  barycenters: Map<IGeomGraph, Point> = new Map<IGeomGraph, Point>()
+  weight: Map<IGeomGraph, number> = new Map<IGeomGraph, number>()
   ///  <summary>
   ///  Returns the derivative of the cost function calculated of the most recent iteration.
   ///  It's a volatile float so that we can potentially access it from other threads safely,
@@ -191,11 +195,6 @@ export class FastIncrementalLayout extends Algorithm {
       this.horizontalSolver.structuralConstraints,
       this.verticalSolver.structuralConstraints,
       [this.graph],
-
-      /*
-  Feasibility.Enforce(settings, value, nodes, horizontalSolver.structuralConstraints,
-                                    verticalSolver.structuralConstraints, new[] {graph.RootCluster}, clusterSettings);
-            */
       this.clusterSettings,
     )
     this.settings.Unconverge()
@@ -225,13 +224,13 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   SetLockNodeWeights() {
-    for (let l: LockPosition of this.settings.locks) {
+    for (let l of this.settings.locks) {
       l.SetLockNodeWeight()
     }
   }
 
   ResetNodePositions() {
-    for (let v: FiNode of this.nodes) {
+    for (let v of this.nodes) {
       v.ResetBounds()
     }
   }
@@ -304,8 +303,8 @@ export class FastIncrementalLayout extends Algorithm {
       let angleDelta: number = 2 * (Math.PI / n)
       let angle: number = 0
       for (let i: number = 0; i < n; i++) {
-        ps[i] = new Particle(vs[i].Center.add( new Point(Math.cos(angle), Math.sin(angle)).mul(1e-5 *)))
-        angle = angle + angleDelta
+        ps[i] = new Particle(vs[i].Center.add(new Point(Math.cos(angle), Math.sin(angle)).mul(1e-5)))
+        angle += angleDelta
       }
 
       let kdTree = new KDTree(ps, 8)
@@ -314,9 +313,9 @@ export class FastIncrementalLayout extends Algorithm {
         this.AddRepulsiveForce(vs[i], ps[i].force)
       }
     } else {
-      for (let u: FiNode of vs) {
-        let fu = new Point(0,0)
-        for (let v: FiNode of vs) {
+      for (let u of vs) {
+        let fu = new Point(0, 0)
+        for (let v of vs) {
           if (u != v) {
             fu = fu.add(MultipoleCoefficients.Force(u.Center, v.Center))
           }
@@ -327,55 +326,84 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
+  SetBarycenter(root: IGeomGraph): Point {
+    const w = this.barycenters.get(root)
+    if (w != undefined) return w
+    let baricenter = new Point(0, 0)
+    //  If these are empty then Weight is 0 and barycenter becomes NaN.
+    //  If there are no child clusters with nodes, then Weight stays 0.
+    if (root.shallowNodeCount || hasSomeClusters(root)) {
+      let weight = this.weight.get(root)
+      if (weight == undefined) {
+        weight = computeWeight(root)
+      }
+
+      if (weight != null) {
+        for (let v of root.shallowNodes()) {
+          if (v instanceof GeomNode) {
+            baricenter = baricenter.add(v.center)
+          } else {
+            baricenter = baricenter.add(this.SetBarycenter(v).mul(this.weight.get(v)))
+          }
+        }
+
+        this.barycenters.set(root, baricenter.div(weight))
+      }
+    } else {
+      this.barycenters.set(root, baricenter)
+    }
+
+    return baricenter
+  }
   AddClusterForces(root: IGeomGraph) {
     if (root == null) {
       return
     }
 
     //  SetBarycenter is recursive.
-    root.SetBarycenter()
+    this.SetBarycenter(root)
     //  The cluster edges draw the barycenters of the connected clusters together
     for (let e of this.clusterEdges) {
       //  foreach cluster keep a force vector.  Replace ForEachNode calls below with a simple
       //  addition to this force vector.  Traverse top down, tallying up force vectors of children
       //  to be the sum of their parents.
-      let c1 = <Cluster>e.source
-      let c2 = <Cluster>e.target
-      let n1 = <FiNode>e.source.AlgorithmData
-      let n2 = <FiNode>e.target.AlgorithmData
-      let center1: Point = c1.Barycenter
-      // TODO: Warning!!!, inline IF is not supported ?
-      c1 != null
-      n1.Center
-      let center2: Point = c2.Barycenter
-      // TODO: Warning!!!, inline IF is not supported ?
-      c2 != null
-      n2.Center
-      let duv: Point = center1 - center2
-      let f: number = 1e-8 * (this.settings.AttractiveInterClusterForceConstant * (l * Math.log(l + 0.1)))
+      const gn1 = GeomObject.getGeom(e.source) as GeomNode
+      const gn2 = GeomObject.getGeom(e.target) as GeomNode
+      let n1 = <FiNode>AlgorithmData.getAlgData(e.source).data
+      let n2 = <FiNode>AlgorithmData.getAlgData(e.target).data
+      const c1_is_cluster = gn1.hasOwnProperty('shallowNodes')
+      let center1: Point = c1_is_cluster ? this.barycenters.get(gn1 as unknown as IGeomGraph) : gn1.center
+      const c2_is_cluster = gn2.hasOwnProperty('shallowNodes')
+      let center2: Point = c2_is_cluster ? this.barycenters.get(gn2 as unknown as IGeomGraph) : gn2.center
+      let duv: Point = center1.sub(center2)
       let l: number = duv.length
-      if (c1 != null) {
-        let fv = <FiNode>v.AlgorithmData
-        fv.force = fv.force + f * duv
-        // Warning!!! Lambda constructs are not supported
-        c1.ForEachNode(() => {})
+      let f: number = 1e-8 * (this.settings.AttractiveInterClusterForceConstant * (l * Math.log(l + 0.1)))
+      duv = duv.mul(f)
+      if (c1_is_cluster) {
+        const ig = gn1 as unknown as IGeomGraph
+        for (const v of ig.shallowNodes()) {
+          let fv = <FiNode>AlgorithmData.getAlgData(v.node).data
+          fv.force = fv.force.add(duv)
+        }
       } else {
-        n1.force = n1.force + f * duv
+        n1.force = n1.force.add(duv)
       }
-
-      if (c2 != null) {
-        let fv = <FiNode>v.AlgorithmData
-        fv.force = fv.force - f * duv
-        // Warning!!! Lambda constructs are not supported
-        c2.ForEachNode(() => {})
+      if (c2_is_cluster) {
+        const ig = gn2 as unknown as IGeomGraph
+        for (const v of ig.shallowNodes()) {
+          let fv = <FiNode>AlgorithmData.getAlgData(v.node).data
+          fv.force = fv.force.sub(duv)
+        }
       } else {
-        n2.force = n2.force - f * duv
+        n2.force = n2.force.sub(duv)
       }
     }
 
-    for (let c: Cluster of root.AllClustersDepthFirst()) {
-      if (c != root) {
-        c.ForEachNode(() => {}, FastIncrementalLayout.AddGravityForce(c.Barycenter, this.settings.ClusterGravity, <FiNode>v.AlgorithmData))
+    for (let c of root.subgraphsDepthFirst) {
+       for (const v of c.shallowNodes()) {
+        FastIncrementalLayout.AddGravityForce(this.barycenters.get(c), this.settings.ClusterGravity, getFiNode(v));
+       }
+        
       }
     }
   }
@@ -669,4 +697,13 @@ export class FastIncrementalLayout extends Algorithm {
       //c.RaiseLayoutDoneEvent();
     }
   }
+}
+function computeWeight(geometryGraph: IGeomGraph) {
+  return geometryGraph.deepNodeCount
+}
+function hasSomeClusters(g: IGeomGraph): boolean {
+  for (const f of g.Clusters) {
+    return true
+  }
+  return false
 }

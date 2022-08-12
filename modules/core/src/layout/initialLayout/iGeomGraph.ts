@@ -3,6 +3,7 @@ import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rec
 import {GeomEdge, GeomNode} from '../core'
 
 export interface IGeomGraph {
+  calculateBoundsFromChildren(clusterMargin: number)
   Clusters: IterableIterator<IGeomGraph>
   subgraphsDepthFirst: IterableIterator<IGeomGraph>
   uniformMargins: number
@@ -10,6 +11,7 @@ export interface IGeomGraph {
   shallowNodes(): IterableIterator<GeomNode>
   pumpTheBoxToTheGraphWithMargins(): Rectangle
   shallowNodeCount: number
+  deepNodeCount: number
   translate(delta: Point)
   boundingBox: Rectangle
   RectangularBoundary: RectangularClusterBoundary

@@ -297,6 +297,11 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     super(graph)
     this.rrect = new RRect({left: 0, right: -1, top: 20, bottom: 0, radX: this.radX, radY: this.radY})
   }
+  get deepNodeCount(): number {
+    let n = 0
+    for (const v of this.graph.deepNodes) n++
+    return n
+  }
   get subgraphsDepthFirst(): IterableIterator<IGeomGraph> {
     return this.getSubgraphsDepthFirst()
   }

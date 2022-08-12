@@ -3,8 +3,12 @@
 
 import {Point} from '../../math/geometry'
 import {OverlapRemovalNode} from '../../math/geometry/overlapRemoval/overlapRemovalNode'
+import {AlgorithmData} from '../../structs/algorithmData'
 import {GeomNode} from '../core'
 
+export function getFiNode(filNode: GeomNode) {
+  return <FiNode>AlgorithmData.getAlgData(filNode.node).data
+}
 ///  </summary>
 export class FiNode {
   desiredPosition: Point
