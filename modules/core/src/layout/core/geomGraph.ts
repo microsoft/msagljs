@@ -11,6 +11,7 @@ import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
+import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
@@ -36,7 +37,7 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode implements IGeomGraph {
-  RectangularBoundary: any;
+  RectangularBoundary: RectangularClusterBoundary;
   *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
     for (const n of this.graph.allSuccessorsWidthFirst()) {
       yield GeomNode.getGeom(n) as GeomNode

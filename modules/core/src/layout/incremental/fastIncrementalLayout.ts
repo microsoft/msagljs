@@ -1,7 +1,7 @@
 import {Algorithm} from '../../utils/algorithm'
 import {BasicGraphOnEdges, mkGraphOnEdgesN} from '../../structs/basicGraphOnEdges'
 import {FiEdge} from './fiEdge'
-import {FiNode} from './fiNode'
+import {FiNode, getFiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
@@ -87,7 +87,7 @@ export class FastIncrementalLayout extends Algorithm {
     this.graph = geometryGraph
     this.settings = this.settings
     this.clusterSettings = this.clusterSettings
-    let i: number = 0
+    let i = 0
     for (const gn of this.graph.shallowNodes()) {
       const fiNode = new FiNode(i++, gn)
       new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
@@ -108,9 +108,9 @@ export class FastIncrementalLayout extends Algorithm {
     if (!this.settings.InterComponentForces) {
       this.basicGraph = mkGraphOnEdgesN(this.edges, this.nodes.length)
       for (const componentNodes of getConnectedComponents(this.basicGraph)) {
-        let vs = new Array(componentNodes.length)
-        let vi: number = 0
-        for (let v of componentNodes) {
+        const vs = new Array(componentNodes.length)
+        let vi = 0
+        for (const v of componentNodes) {
           vs[vi++] = this.nodes[v]
         }
 
@@ -128,7 +128,7 @@ export class FastIncrementalLayout extends Algorithm {
       settings.MinConstraintLevel,
       this.clusterSettings,
     )
-    let orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
+    const orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
     orp.AllowDeferToVertical = true
     orp.ConsiderProportionalOverlap = this.settings.applyForces
 
@@ -224,13 +224,13 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   SetLockNodeWeights() {
-    for (let l of this.settings.locks) {
+    for (const l of this.settings.locks) {
       l.SetLockNodeWeight()
     }
   }
 
   ResetNodePositions() {
-    for (let v of this.nodes) {
+    for (const v of this.nodes) {
       v.ResetBounds()
     }
   }
@@ -255,9 +255,9 @@ export class FastIncrementalLayout extends Algorithm {
             e.source.force += f*duv;
             e.target.force -= f*duv;
             */
-    let l: number = duv.length
-    let d2: number = d * d + 0.1
-    let f = (this.settings.AttractiveForceConstant * (l - d)) / d2
+    const l: number = duv.length
+    const d2: number = d * d + 0.1
+    const f = (this.settings.AttractiveForceConstant * (l - d)) / d2
     e.sourceFiNode.force = e.sourceFiNode.force.add(duv.mul(f))
     e.targetFiNode.force = e.targetFiNode.force.sub(duv.mul(f))
   }
@@ -267,7 +267,7 @@ export class FastIncrementalLayout extends Algorithm {
     if (this.settings.RespectEdgePorts) {
       let sourceLocation = e.sourceFiNode.Center
       let targetLocation = e.targetFiNode.Center
-      let sourcePort = e.mEdge.sourcePort
+      const sourcePort = e.mEdge.sourcePort
       if (sourcePort instanceof FloatingPort) {
         sourceLocation = sourcePort.Location
       }
@@ -294,28 +294,28 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   ComputeRepulsiveForces(vs: FiNode[]) {
-    let n: number = vs.length
+    const n: number = vs.length
     if (n > 16 && this.settings.ApproximateRepulsion) {
-      let ps = new Array(vs.length)
+      const ps = new Array(vs.length)
       //  before calculating forces we perturb each center by a small vector of a unique
       //  but deterministic direction (by walking around a circle of n steps) - this allows
       //  the KD-tree to decompose even when some nodes are at exactly the same position
-      let angleDelta: number = 2 * (Math.PI / n)
-      let angle: number = 0
-      for (let i: number = 0; i < n; i++) {
+      const angleDelta: number = 2 * (Math.PI / n)
+      let angle = 0
+      for (let i = 0; i < n; i++) {
         ps[i] = new Particle(vs[i].Center.add(new Point(Math.cos(angle), Math.sin(angle)).mul(1e-5)))
         angle += angleDelta
       }
 
-      let kdTree = new KDTree(ps, 8)
+      const kdTree = new KDTree(ps, 8)
       kdTree.ComputeForces(5)
-      for (let i: number = 0; i < vs.length; i++) {
+      for (let i = 0; i < vs.length; i++) {
         this.AddRepulsiveForce(vs[i], ps[i].force)
       }
     } else {
-      for (let u of vs) {
+      for (const u of vs) {
         let fu = new Point(0, 0)
-        for (let v of vs) {
+        for (const v of vs) {
           if (u != v) {
             fu = fu.add(MultipoleCoefficients.Force(u.Center, v.Center))
           }
@@ -339,7 +339,7 @@ export class FastIncrementalLayout extends Algorithm {
       }
 
       if (weight != null) {
-        for (let v of root.shallowNodes()) {
+        for (const v of root.shallowNodes()) {
           if (v instanceof GeomNode) {
             baricenter = baricenter.add(v.center)
           } else {
@@ -363,26 +363,26 @@ export class FastIncrementalLayout extends Algorithm {
     //  SetBarycenter is recursive.
     this.SetBarycenter(root)
     //  The cluster edges draw the barycenters of the connected clusters together
-    for (let e of this.clusterEdges) {
+    for (const e of this.clusterEdges) {
       //  foreach cluster keep a force vector.  Replace ForEachNode calls below with a simple
       //  addition to this force vector.  Traverse top down, tallying up force vectors of children
       //  to be the sum of their parents.
       const gn1 = GeomObject.getGeom(e.source) as GeomNode
       const gn2 = GeomObject.getGeom(e.target) as GeomNode
-      let n1 = <FiNode>AlgorithmData.getAlgData(e.source).data
-      let n2 = <FiNode>AlgorithmData.getAlgData(e.target).data
+      const n1 = <FiNode>AlgorithmData.getAlgData(e.source).data
+      const n2 = <FiNode>AlgorithmData.getAlgData(e.target).data
       const c1_is_cluster = gn1.hasOwnProperty('shallowNodes')
-      let center1: Point = c1_is_cluster ? this.barycenters.get(gn1 as unknown as IGeomGraph) : gn1.center
+      const center1: Point = c1_is_cluster ? this.barycenters.get(gn1 as unknown as IGeomGraph) : gn1.center
       const c2_is_cluster = gn2.hasOwnProperty('shallowNodes')
-      let center2: Point = c2_is_cluster ? this.barycenters.get(gn2 as unknown as IGeomGraph) : gn2.center
+      const center2: Point = c2_is_cluster ? this.barycenters.get(gn2 as unknown as IGeomGraph) : gn2.center
       let duv: Point = center1.sub(center2)
-      let l: number = duv.length
-      let f: number = 1e-8 * (this.settings.AttractiveInterClusterForceConstant * (l * Math.log(l + 0.1)))
+      const l: number = duv.length
+      const f: number = 1e-8 * (this.settings.AttractiveInterClusterForceConstant * (l * Math.log(l + 0.1)))
       duv = duv.mul(f)
       if (c1_is_cluster) {
         const ig = gn1 as unknown as IGeomGraph
         for (const v of ig.shallowNodes()) {
-          let fv = <FiNode>AlgorithmData.getAlgData(v.node).data
+          const fv = <FiNode>AlgorithmData.getAlgData(v.node).data
           fv.force = fv.force.add(duv)
         }
       } else {
@@ -391,7 +391,7 @@ export class FastIncrementalLayout extends Algorithm {
       if (c2_is_cluster) {
         const ig = gn2 as unknown as IGeomGraph
         for (const v of ig.shallowNodes()) {
-          let fv = <FiNode>AlgorithmData.getAlgData(v.node).data
+          const fv = <FiNode>AlgorithmData.getAlgData(v.node).data
           fv.force = fv.force.sub(duv)
         }
       } else {
@@ -399,11 +399,9 @@ export class FastIncrementalLayout extends Algorithm {
       }
     }
 
-    for (let c of root.subgraphsDepthFirst) {
-       for (const v of c.shallowNodes()) {
-        FastIncrementalLayout.AddGravityForce(this.barycenters.get(c), this.settings.ClusterGravity, getFiNode(v));
-       }
-        
+    for (const c of root.subgraphsDepthFirst) {
+      for (const v of c.shallowNodes()) {
+        FastIncrementalLayout.AddGravityForce(this.barycenters.get(c), this.settings.ClusterGravity, getFiNode(v))
       }
     }
   }
@@ -419,16 +417,15 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     this.edges.forEach(this.AddSpringForces)
-    for (let c of this.components) {
-      let origin = new Point()
-      for (let i: number = 0; i < c.length; i++) {
-        origin = origin + c[i].Center
+    for (const c of this.components) {
+      let origin = new Point(0, 0)
+      for (let i = 0; i < c.length; i++) {
+        origin = origin.add(c[i].Center)
       }
-
-      <number>c.length
-      let maxForce: number = double.NegativeInfinity
-      for (let i: number = 0; i < c.length; i++) {
-        let v: FiNode = c[i]
+      origin = origin.div(c.length)
+      let maxForce: number = Number.NEGATIVE_INFINITY
+      for (let i = 0; i < c.length; i++) {
+        const v: FiNode = c[i]
         FastIncrementalLayout.AddGravityForce(origin, this.settings.GravityConstant, v)
         if (v.force.length > maxForce) {
           maxForce = v.force.length
@@ -436,38 +433,39 @@ export class FastIncrementalLayout extends Algorithm {
       }
 
       if (maxForce > 100) {
-        for (let i: number = 0; i < c.length; i++) {
-          c[i].force = c[i].force * (100 / maxForce)
+        for (let i = 0; i < c.length; i++) {
+          c[i].force = c[i].force.mul(100 / maxForce)
         }
       }
     }
 
     //  This is the only place where ComputeForces (and hence verletIntegration) considers clusters.
     //  It's just adding a "gravity" force on nodes inside each cluster towards the barycenter of the cluster.
-    this.AddClusterForces(this.graph.RootCluster)
+    this.AddClusterForces(this.graph)
   }
 
   SatisfyConstraints() {
-    for (let i: number = 0; i < this.settings.ProjectionIterations; i++) {
-      for (let level of this.constraints.keys) {
+    for (let i = 0; i < this.settings.ProjectionIterations; i++) {
+      for (const level of this.constraints.keys()) {
         if (level > this.CurrentConstraintLevel) {
           break
         }
 
-        for (let c of this.constraints[level]) {
+        for (const c of this.constraints.get(level)) {
           c.Project()
           //  c.Project operates only on MSAGL nodes, so need to update the local FiNode.Centers
-          for (let v of c.Nodes) {
-            ;(<FiNode>v.AlgorithmData).Center = v.Center
+          for (const v of c.Nodes) {
+            const fiNode = getFiNode(v)
+            fiNode.Center = v.center
           }
         }
       }
 
-      for (let l: LockPosition of this.settings.locks) {
+      for (const l of this.settings.locks) {
         l.Project()
         //  again, project operates only on MSAGL nodes, we'll also update FiNode.PreviousPosition since we don't want any inertia of this case
-        for (let v of l.Nodes) {
-          let fiNode: FiNode = <FiNode>v.AlgorithmData
+        for (const v of l.Nodes) {
+          const fiNode: FiNode = <FiNode>v.AlgorithmData
           //  the locks should have had their AlgorithmData updated, but if (for some reason)
           //  the locks list is out of date we don't want to null ref here.
           if (fiNode != null && v.AlgorithmData != null) {
@@ -498,13 +496,13 @@ export class FastIncrementalLayout extends Algorithm {
   ///  </summary>
   VerletIntegration(): number {
     //  The following sets the Centers of all nodes to a (not necessarily feasible) configuration that reduces the cost (forces)
-    let energy0: number = this.energy
+    const energy0: number = this.energy
     this.energy = <number>this.ComputeDescentDirection(1)
     this.UpdateStepSize(energy0)
     this.SolveSeparationConstraints()
-    let displacementSquared: number = 0
-    for (let i: number = 0; i < this.nodes.length; i++) {
-      let v: FiNode = this.nodes[i]
+    let displacementSquared = 0
+    for (let i = 0; i < this.nodes.length; i++) {
+      const v: FiNode = this.nodes[i]
       displacementSquared += v.Center.sub(v.previousCenter).lengthSquared
     }
 
@@ -520,12 +518,12 @@ export class FastIncrementalLayout extends Algorithm {
       //  the vertical constraint generation will detect spurious overlaps, which should allow the nodes to slide
       //  smoothly around each other.  ConGen padding args are:  First pad is of direction of the constraints being
       //  generated, second pad is of the perpendicular direction.
-      let dblVpad: number = this.settings.NodeSeparation
-      let dblHpad: number = dblVpad + Feasibility.Pad
-      let dblCVpad: number = this.settings.clusterMargin
-      let dblCHpad: number = dblCVpad + Feasibility.Pad
+      const dblVpad: number = this.settings.NodeSeparation
+      const dblHpad: number = dblVpad + Feasibility.Pad
+      const dblCVpad: number = this.settings.clusterMargin
+      const dblCHpad: number = dblCVpad + Feasibility.Pad
       //  The centers are our desired positions, but we need to find a feasible configuration
-      for (let v: FiNode of this.nodes) {
+      for (const v: FiNode of this.nodes) {
         v.desiredPosition = v.Center
       }
 
@@ -552,11 +550,11 @@ export class FastIncrementalLayout extends Algorithm {
       this.ComputeForces()
     }
 
-    let lEnergy: number = 0
-    for (let v: FiNode of this.nodes) {
+    let lEnergy = 0
+    for (const v: FiNode of this.nodes) {
       lEnergy = lEnergy + v.force.lengthSquared
       let dx: Point = v.Center.sub(v.previousCenter).mul(this.settings.Friction)
-      let a: Point = v.force.mul(-this.stepSize * alpha)
+      const a: Point = v.force.mul(-this.stepSize * alpha)
       v.previousCenter = v.Center
 
       Assert.assert(!Number.isNaN(a.x), '!double.IsNaN(a.X)')
@@ -573,7 +571,7 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   ResetForceVectors() {
-    for (let v of this.nodes) {
+    for (const v of this.nodes) {
       v.force = new Point(0, 0)
     }
   }
@@ -597,45 +595,45 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   RungeKuttaIntegration(): number {
-    let y0 = new Array<Point>(this.nodes.length)
-    let k1 = new Array<Point>(this.nodes.length)
-    let k2 = new Array<Point>(this.nodes.length)
-    let k3 = new Array<Point>(this.nodes.length)
-    let k4 = new Array<Point>(this.nodes.length)
-    let energy0: number = this.energy
+    const y0 = new Array<Point>(this.nodes.length)
+    const k1 = new Array<Point>(this.nodes.length)
+    const k2 = new Array<Point>(this.nodes.length)
+    const k3 = new Array<Point>(this.nodes.length)
+    const k4 = new Array<Point>(this.nodes.length)
+    const energy0: number = this.energy
     this.SatisfyConstraints()
-    for (let i: number = 0; i < this.nodes.length; i++) {
+    for (let i = 0; i < this.nodes.length; i++) {
       this.nodes[i].previousCenter = this.nodes[i].Center
       y0[i] = this.nodes[i].Center
     }
 
-    let alpha: number = 3
+    const alpha = 3
     this.ComputeDescentDirection(alpha)
-    for (let i: number = 0; i < this.nodes.length; i++) {
+    for (let i = 0; i < this.nodes.length; i++) {
       k1[i] = this.nodes[i].Center.sub(this.nodes[i].previousCenter)
       this.nodes[i].Center = y0[i].add(k1[i].mul(0.5))
     }
 
     this.ComputeDescentDirection(alpha)
-    for (let i: number = 0; i < this.nodes.length; i++) {
+    for (let i = 0; i < this.nodes.length; i++) {
       k2[i] = this.nodes[i].Center.sub(this.nodes[i].previousCenter)
       this.nodes[i].previousCenter = y0[i]
       this.nodes[i].Center = y0[i].add(k2[i].mul(0.5))
     }
 
     this.ComputeDescentDirection(alpha)
-    for (let i: number = 0; i < this.nodes.length; i++) {
+    for (let i = 0; i < this.nodes.length; i++) {
       k3[i] = this.nodes[i].Center.sub(this.nodes[i].previousCenter)
       this.nodes[i].previousCenter = y0[i]
       this.nodes[i].Center = y0[i].add(k3[i])
     }
 
     this.energy = <number>this.ComputeDescentDirection(alpha)
-    for (let i: number = 0; i < this.nodes.length; i++) {
+    for (let i = 0; i < this.nodes.length; i++) {
       k4[i] = this.nodes[i].Center.sub(this.nodes[i].previousCenter)
       this.nodes[i].previousCenter = y0[i]
       /* (k1[i] + 2.0*k2[i] + 2.0*k3[i] + k4[i])/6.0;*/
-      let dx: Point = k1[i].add(k2[i].mul(2).add(k3[i].mul(2)).add(k4[i])).div(6)
+      const dx: Point = k1[i].add(k2[i].mul(2).add(k3[i].mul(2)).add(k4[i])).div(6)
       this.nodes[i].Center = y0[i].add(dx)
     }
 
@@ -664,8 +662,8 @@ export class FastIncrementalLayout extends Algorithm {
     this.energy = Number.MAX_VALUE
     this.progress = 0
     //this.StartListenToLocalProgress(this.settings.MinorIterations);
-    for (let i: number = 0; i < this.settings.MinorIterations; i++) {
-      let d2: number = this.RungeKuttaIntegration()
+    for (let i = 0; i < this.settings.MinorIterations; i++) {
+      const d2: number = this.RungeKuttaIntegration()
       // TODO: Warning!!!, inline IF is not supported ?
       this.settings.RungeKuttaIntegration
       this.VerletIntegration()
@@ -686,7 +684,7 @@ export class FastIncrementalLayout extends Algorithm {
   ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
   ///  </summary>
   FinalizeClusterBoundaries() {
-    for (let c of this.graph.subgraphsDepthFirst) {
+    for (const c of this.graph.subgraphsDepthFirst) {
       if (!this.NeedSolve() && this.settings.UpdateClusterBoundariesFromChildren) {
         //  if we are not using the solver (e.g. when constraintLevel == 0) then we need to get the cluster bounds manually
         c.calculateBoundsFromChildren(this.settings.clusterMargin)
