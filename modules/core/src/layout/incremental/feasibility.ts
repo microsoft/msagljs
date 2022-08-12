@@ -34,7 +34,7 @@ export class Feasibility {
     horizontalConstraints: Array<IConstraint>,
     verticalConstraints: Array<IConstraint>,
     clusterHierarchies: Iterable<IGeomGraph>,
-    clusterSettings: (g: GeomGraph) => any,
+    clusterSettings: (g: IGeomGraph) => any,
   ) {
     for (const l of settings.locks) {
       l.Project()

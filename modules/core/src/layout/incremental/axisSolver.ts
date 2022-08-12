@@ -14,7 +14,7 @@ import {AlgorithmData} from '../../structs/algorithmData'
 import {Assert} from '../../utils/assert'
 import {GeomNode} from '../core'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
-import {FiNode} from './fiNode'
+import {FiNode, getFiNode} from './fiNode'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {IConstraint} from './iConstraint'
 import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
@@ -449,7 +449,4 @@ export class AxisSolver {
     rect2.padHeight(dblPaddingY / 2 - dblEpsilon)
     Assert.assert(!rect1.intersects(rect2))
   }
-}
-function getFiNode(filNode: GeomNode) {
-  return <FiNode>AlgorithmData.getAlgData(filNode.node).data
 }
