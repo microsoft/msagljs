@@ -4,14 +4,17 @@
 
 import {LinkedListNode} from '@esfx/collections'
 import {Rectangle} from '../../math/geometry'
+import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Graph} from '../../structs/graph'
+import {Assert} from '../../utils/assert'
 import {GeomGraph, GeomNode} from '../core'
-import {FiNode} from './fiNode'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
+import {FiNode, getFiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
 ///  </summary>
 export class LockPosition implements IConstraint {
-  private weight = 1000000
+  private weight = 1e6
 
   node: GeomNode
 
@@ -79,20 +82,18 @@ export class LockPosition implements IConstraint {
     const deltaLength: number = delta.length
     let displacement: number = deltaLength
     const isCluster = this.node instanceof GeomGraph
-    if (isCluster != null) {
-      for (const c of (this.node as GeomGraph).subgraphs()) {
+    if (isCluster) {
+      const gg = this.node as GeomGraph
+      for (const c of gg.subgraphsDepthFirst) {
         for (const v of c.shallowNodes()) {
           v.translate(delta)
           displacement += deltaLength
         }
-
-        if (c == this.node) {
-          ;(this.node as GeomGraph).boundingBox = this.Bounds
-        } else {
-          const r = c.boundingBox
-          c.boundingBox = Rectangle.mkPP(r.leftBottom.add(delta), r.rightTop.add(delta))
-        }
+        Assert.assert((c as unknown as GeomNode) != gg)
+        const r = c.boundingBox
+        c.boundingBox = Rectangle.mkPP(r.leftBottom.add(delta), r.rightTop.add(delta))
       }
+      gg.boundingBox = this.Bounds
     } else {
       this.node.boundingBox = this.Bounds
     }
@@ -110,7 +111,7 @@ export class LockPosition implements IConstraint {
 
   ///  <summary>
   ///  Sets the weight of the node (the FINode actually) to the weight required by this lock.
-  ///  If the node is a Cluster then:
+  ///  If the node is a IGeomGraph then:
   ///   - its boundaries are locked
   ///   - all of its descendant nodes have their lock weight set
   ///   - all of its descendant clusters are set to generate fixed constraints (so they don't get squashed)
@@ -118,13 +119,14 @@ export class LockPosition implements IConstraint {
   ///  (so that this node can move freely inside its ancestors
   ///  </summary>
   SetLockNodeWeight() {
-    const cluster: Cluster = <Cluster>this.node
-    if (cluster != null) {
+    const isCluster = this.node.hasOwnProperty('shallowNodes')
+    if (isCluster) {
+      const cluster = this.node as unknown as IGeomGraph
       const cb: RectangularClusterBoundary = cluster.RectangularBoundary
       cb.Lock(this.Bounds.left, this.Bounds.right, this.Bounds.top, this.Bounds.bottom)
-      for (const c in cluster.AllClustersDepthFirst()) {
+      for (const c of cluster.subgraphsDepthFirst) {
         c.RectangularBoundary.GenerateFixedConstraints = true
-        for (const child in c.Nodes) {
+        for (const child of c.shallowNodes()) {
           LockPosition.SetFINodeWeight(child, this.weight)
         }
       }
@@ -132,12 +134,11 @@ export class LockPosition implements IConstraint {
       LockPosition.SetFINodeWeight(this.node, this.weight)
     }
 
-    for (const ancestor: Cluster in this.node.AllClusterAncestors) {
+    for (const ancestor of this.node.getAncestors()) {
       if (ancestor.RectangularBoundary != null) {
         ancestor.RectangularBoundary.GenerateFixedConstraints = false
+        ancestor.RectangularBoundary.RestoreDefaultMargin()
       }
-
-      ancestor.UnsetInitialLayoutState()
     }
   }
 
@@ -145,12 +146,13 @@ export class LockPosition implements IConstraint {
   ///  Reverses the changes made by SetLockNodeWeight
   ///  </summary>
   RestoreNodeWeight() {
-    const cluster: Cluster = <Cluster>this.node
-    if (cluster != null) {
+    const isCluster = this.node.hasOwnProperty('shallowNodes')
+    if (isCluster) {
+      const cluster = this.node as unknown as IGeomGraph
       cluster.RectangularBoundary.Unlock()
-      for (const c in cluster.AllClustersDepthFirst()) {
+      for (const c of cluster.subgraphsDepthFirst) {
         c.RectangularBoundary.GenerateFixedConstraints = c.RectangularBoundary.GenerateFixedConstraintsDefault
-        for (const child in c.Nodes) {
+        for (const child of c.shallowNodes()) {
           LockPosition.SetFINodeWeight(child, 1)
         }
       }
@@ -158,33 +160,34 @@ export class LockPosition implements IConstraint {
       LockPosition.SetFINodeWeight(this.node, 1)
     }
 
-    let parent: Cluster = this.node.ClusterParent
+    let parent = this.node.parent as GeomGraph
     while (parent != null) {
       if (parent.RectangularBoundary != null) {
         parent.RectangularBoundary.GenerateFixedConstraints = parent.RectangularBoundary.GenerateFixedConstraintsDefault
       }
 
-      parent = parent.ClusterParent
+      parent = parent.parent as GeomGraph
     }
   }
 
   private static SetFINodeWeight(child: GeomNode, weight: number) {
-    const v = <FiNode>child.AlgorithmData
+    const v = getFiNode(child)
     if (v != null) {
-      v.stayWeight = this.weight
+      v.stayWeight = weight
     }
   }
 
   ///  <summary>
   ///  Get the list of nodes involved in the constraint
   ///  </summary>
-  public get Nodes(): IEnumerable<GeomNode> {
-    const nodes = new List<GeomNode>()
-    const cluster = <Cluster>this.node
-    if (cluster != null) {
-      cluster.ForEachNode(nodes.Add)
+  public get Nodes(): Iterable<GeomNode> {
+    const nodes = new Array<GeomNode>()
+    const isCluster = this.node.hasOwnProperty('shallowNodes')
+    if (isCluster) {
+      const cluster = this.node as GeomGraph
+      for (const n of cluster.shallowNodes()) nodes.push(n)
     } else {
-      nodes.Add(this.node)
+      nodes.push(this.node)
     }
 
     return nodes
