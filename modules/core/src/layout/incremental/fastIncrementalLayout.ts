@@ -465,10 +465,10 @@ export class FastIncrementalLayout extends Algorithm {
         l.Project()
         //  again, project operates only on MSAGL nodes, we'll also update FiNode.PreviousPosition since we don't want any inertia of this case
         for (const v of l.Nodes) {
-          const fiNode: FiNode = <FiNode>v.AlgorithmData
+          const fiNode: FiNode = getFiNode(v)
           //  the locks should have had their AlgorithmData updated, but if (for some reason)
           //  the locks list is out of date we don't want to null ref here.
-          if (fiNode != null && v.AlgorithmData != null) {
+          if (fiNode != null) {
             fiNode.ResetBounds()
           }
         }
@@ -523,16 +523,16 @@ export class FastIncrementalLayout extends Algorithm {
       const dblCVpad: number = this.settings.clusterMargin
       const dblCHpad: number = dblCVpad + Feasibility.Pad
       //  The centers are our desired positions, but we need to find a feasible configuration
-      for (const v: FiNode of this.nodes) {
+      for (const v of this.nodes) {
         v.desiredPosition = v.Center
       }
 
       //  Set up horizontal non-overlap constraints based on the (feasible) starting configuration
-      this.horizontalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, () => {}, v.previousCenter)
+      this.horizontalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.previousCenter)
       this.horizontalSolver.SetDesiredPositions()
       this.horizontalSolver.Solve()
       //  generate y constraints
-      this.verticalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, () => {}, v.Center)
+      this.verticalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
       this.verticalSolver.SetDesiredPositions()
       this.verticalSolver.Solve()
       //  If we have multiple locks (hence multiple high-weight nodes), there can still be some
@@ -551,7 +551,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     let lEnergy = 0
-    for (const v: FiNode of this.nodes) {
+    for (const v of this.nodes) {
       lEnergy = lEnergy + v.force.lengthSquared
       let dx: Point = v.Center.sub(v.previousCenter).mul(this.settings.Friction)
       const a: Point = v.force.mul(-this.stepSize * alpha)
