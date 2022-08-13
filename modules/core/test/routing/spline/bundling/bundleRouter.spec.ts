@@ -309,7 +309,7 @@ function round(center: Point): Point {
   return new Point(Math.floor(center.x), Math.floor(center.y))
 }
 function isConsistent(g: GeomGraph): boolean {
-  const children = Array.from(g.shallowNodes())
+  const children = Array.from(g.shallowNodes)
   for (const sg of children) {
     if (!g.boundingBox.containsRect(sg.boundingBox)) {
       return false

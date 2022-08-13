@@ -1,7 +1,7 @@
 ﻿import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
-import { IGeomGraph } from '../initialLayout/iGeomGraph'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {SingleSourceDistances} from './SingleSourceDistances'
 // An algorithm for computing the distances between a selected set of nodes and all nodes.
 export class PivotDistances extends Algorithm {
@@ -27,7 +27,7 @@ export class PivotDistances extends Algorithm {
   // Executes the algorithm.
   run() {
     this.result = new Array(this.pivotArray.length)
-    const nodes = Array.from(this.graph.shallowNodes())
+    const nodes = Array.from(this.graph.shallowNodes)
     const min = new Array(this.graph.shallowNodeCount).fill(Number.POSITIVE_INFINITY)
 
     let pivot = nodes[0]

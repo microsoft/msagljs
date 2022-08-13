@@ -313,7 +313,7 @@ export class GeometryGraphEditor {
   }
 
   UpdateGraphBoundingBoxWithCheck_() {
-    for (const node of this.graph.shallowNodes()) {
+    for (const node of this.graph.shallowNodes) {
       // shallow or deep?
       this.UpdateGraphBoundingBoxWithCheck(node)
     }
@@ -726,7 +726,7 @@ export class GeometryGraphEditor {
       const uAction = new UndoRedoAction(geometryGraph)
       this.UndoRedoActionsList.AddAction(uAction)
       const r = Rectangle.mkEmpty()
-      for (const n of geometryGraph.shallowNodes()) {
+      for (const n of geometryGraph.shallowNodes) {
         r.addRecSelf(n.boundingBox)
       }
 

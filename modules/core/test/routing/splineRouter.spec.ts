@@ -522,7 +522,7 @@ test('data_social', () => {
   }
   dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
-  for (const n of gg.shallowNodes()) {
+  for (const n of gg.shallowNodes) {
     n.boundaryCurve = CurveFactory.mkCircle(n.boundingBox.diagonal / 2, new Point(0, 0))
   }
   initRandom(0)

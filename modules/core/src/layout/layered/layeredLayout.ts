@@ -78,7 +78,7 @@ export class LayeredLayout extends Algorithm {
     this.originalGraph = originalGraph
     this.sugiyamaSettings = settings
     //enumerate the nodes - maps node indices to strings
-    const nodeArray = Array.from(originalGraph.shallowNodes())
+    const nodeArray = Array.from(originalGraph.shallowNodes)
     this.nodeIdToIndex = new Map<string, number>()
 
     let index = 0
@@ -1071,7 +1071,7 @@ function preRunTransform(geomGraph: GeomGraph, m: PlaneTransformation) {
   }
 
   const matrixInverse = m.inverse()
-  for (const n of geomGraph.shallowNodes()) {
+  for (const n of geomGraph.shallowNodes) {
     n.transform(matrixInverse)
   }
 
@@ -1090,7 +1090,7 @@ function preRunTransform(geomGraph: GeomGraph, m: PlaneTransformation) {
 
 function postRunTransform(geometryGraph: GeomGraph, transform: PlaneTransformation) {
   if (transform.isIdentity()) return
-  for (const n of geometryGraph.shallowNodes()) {
+  for (const n of geometryGraph.shallowNodes) {
     n.transform(transform)
   }
 

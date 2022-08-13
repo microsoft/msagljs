@@ -85,7 +85,7 @@ export class LockPosition implements IConstraint {
     if (isCluster) {
       const gg = this.node as GeomGraph
       for (const c of gg.subgraphsDepthFirst) {
-        for (const v of c.shallowNodes()) {
+        for (const v of c.shallowNodes) {
           v.translate(delta)
           displacement += deltaLength
         }
@@ -126,7 +126,7 @@ export class LockPosition implements IConstraint {
       cb.Lock(this.Bounds.left, this.Bounds.right, this.Bounds.top, this.Bounds.bottom)
       for (const c of cluster.subgraphsDepthFirst) {
         c.RectangularBoundary.GenerateFixedConstraints = true
-        for (const child of c.shallowNodes()) {
+        for (const child of c.shallowNodes) {
           LockPosition.SetFINodeWeight(child, this.weight)
         }
       }
@@ -152,7 +152,7 @@ export class LockPosition implements IConstraint {
       cluster.RectangularBoundary.Unlock()
       for (const c of cluster.subgraphsDepthFirst) {
         c.RectangularBoundary.GenerateFixedConstraints = c.RectangularBoundary.GenerateFixedConstraintsDefault
-        for (const child of c.shallowNodes()) {
+        for (const child of c.shallowNodes) {
           LockPosition.SetFINodeWeight(child, 1)
         }
       }
@@ -185,7 +185,7 @@ export class LockPosition implements IConstraint {
     const isCluster = this.node.hasOwnProperty('shallowNodes')
     if (isCluster) {
       const cluster = this.node as GeomGraph
-      for (const n of cluster.shallowNodes()) nodes.push(n)
+      for (const n of cluster.shallowNodes) nodes.push(n)
     } else {
       nodes.push(this.node)
     }

@@ -22,7 +22,7 @@ export class GeomConnectedComponent implements IGeomGraph {
       for (const e of n.selfEdges) yield GeomEdge.getGeom(e) as GeomEdge
     }
   }
-  *shallowNodes(): IterableIterator<GeomNode> {
+  *shallowNodes: IterableIterator<GeomNode> {
     for (const n of this.topNodes) yield GeomNode.getGeom(n) as GeomNode
   }
   pumpTheBoxToTheGraphWithMargins(): Rectangle {

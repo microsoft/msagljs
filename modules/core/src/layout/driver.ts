@@ -44,7 +44,7 @@ import {EdgeLabelPlacement} from './edgeLabelPlacement'
 export function enforceLayoutSettings(geomGraph: GeomGraph, ss: any) {
   if (!geomGraph.layoutSettings) geomGraph.layoutSettings = ss
 
-  for (const n of geomGraph.shallowNodes()) {
+  for (const n of geomGraph.shallowNodes) {
     if (n instanceof GeomGraph) {
       enforceLayoutSettings(<GeomGraph>n, geomGraph.layoutSettings)
     }
@@ -178,7 +178,7 @@ export function layoutGeomGraphDetailed(
   }
 
   function layoutShallowSubgraphs(geomG: GeomGraph) {
-    for (const n of geomG.shallowNodes()) {
+    for (const n of geomG.shallowNodes) {
       if (n instanceof GeomGraph) {
         const g = <GeomGraph>n
         layoutGeomGraphDetailed(g, cancelToken, layoutEngine, edgeRouter, packing)

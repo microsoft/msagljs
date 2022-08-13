@@ -247,7 +247,7 @@ export class AxisSolver {
     rb.olapCluster.TranslateChildren = rb.GenerateFixedConstraints
     //  Note: Incremental.IGeomGraph always creates child Array<IGeomGraph|Node> so we don't have to check for null here.
     //  Add our child nodes.
-    for (const filNode of incClus.shallowNodes()) {
+    for (const filNode of incClus.shallowNodes) {
       this.AddOlapNode(generator, rb.olapCluster, getFiNode(filNode), nodeCenter)
     }
 
@@ -347,7 +347,7 @@ export class AxisSolver {
     const dblEpsilon = 0.0001
     //  First verify that all nodes are within the cluster.
     const clusRect: Rectangle = incCluster.RectangularBoundary.rectangle
-    for (const v of incCluster.shallowNodes()) {
+    for (const v of incCluster.shallowNodes) {
       const iiFilNode: FiNode = getFiNode(v)
       const iiNodeRect: Rectangle = iiFilNode.mNode.boundaryCurve.boundingBox
       if (this.IsHorizontal) {
@@ -368,7 +368,7 @@ export class AxisSolver {
         }
 
         //  Make sure the node doesn't intersect any following nodes, or any clusters.
-        for (const u of incCluster.shallowNodes()) {
+        for (const u of incCluster.shallowNodes) {
           if (u == v) {
             continue
           }
