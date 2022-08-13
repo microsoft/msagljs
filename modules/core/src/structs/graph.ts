@@ -95,7 +95,9 @@ export class Graph extends Node {
     return e
   }
 
-  /** iterates over the node of the current graph but not entering the subgraphs */
+  /** Iterates over the nodes of the current graph but not entering the subgraphs.
+   *  Yields the top subgraphs among the nodes as well
+   */
   get shallowNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesShallow
   }

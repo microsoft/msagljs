@@ -5,14 +5,13 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {Edge, GeomNode} from '../..'
 import {Algorithm} from '../../utils/algorithm'
 import {GeomGraph} from '../core'
-import {LayoutSettings, SugiyamaLayoutSettings} from '../layered/SugiyamaLayoutSettings'
-import {addRange, insertRange} from '../../utils/setOperations'
+import {insertRange} from '../../utils/setOperations'
 export class Relayout extends Algorithm {
   graph: GeomGraph
 
   modifiedNodes: Iterable<GeomNode>
 
-  clusterSettings: (g: GeomGraph) => LayoutSettings
+  clusterSettings: (g: GeomGraph) => any
 
   ancestorsOfModifiedNodes: Set<GeomGraph>
 
@@ -33,7 +32,7 @@ export class Relayout extends Algorithm {
     graph: GeomGraph,
     modifiedNodes: Iterable<GeomNode>,
     addedNodes: Iterable<GeomNode>,
-    clusterSettings: (gg: GeomGraph) => LayoutSettings,
+    clusterSettings: (gg: GeomGraph) => any,
   ) {
     super(null)
     if (addedNodes == null) return

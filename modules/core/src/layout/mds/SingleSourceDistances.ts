@@ -3,7 +3,7 @@ import {Algorithm} from '../../utils/algorithm'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph} from '../core/geomGraph'
 import {GeomNode} from '../core/geomNode'
-import { IGeomGraph } from '../initialLayout/iGeomGraph'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 // Provides functionality for computing distances in a graph.
 export class SingleSourceDistances extends Algorithm {
   private graph: IGeomGraph
@@ -33,7 +33,7 @@ export class SingleSourceDistances extends Algorithm {
   run() {
     const q = new GenericBinaryHeapPriorityQueue<GeomNode>((a, b) => a - b)
     const d: Map<GeomNode, number> = new Map<GeomNode, number>()
-    for (const node of this.graph.shallowNodes()) {
+    for (const node of this.graph.shallowNodes) {
       const dist = node === this.source ? 0 : Number.POSITIVE_INFINITY
       q.Enqueue(node, dist)
       d.set(node, dist)
@@ -66,7 +66,7 @@ export class SingleSourceDistances extends Algorithm {
     }
     this.result = new Array(this.graph.shallowNodeCount)
     let i = 0
-    for (const v of this.graph.shallowNodes()) {
+    for (const v of this.graph.shallowNodes) {
       const dist = d.get(v)
       if (dist !== undefined) {
         this.result[i++] = dist

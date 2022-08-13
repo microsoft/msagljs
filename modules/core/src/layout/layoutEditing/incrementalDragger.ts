@@ -50,7 +50,7 @@ export class IncrementalDragger {
     let gg = GeomGraph.getGeom(this.pushingNodesArray[0].node.parent as Graph)
     let pushingArray = this.pushingNodesArray
     do {
-      this.listOfPushers.push(new BumperPusher(gg.shallowNodes(), this.nodeSeparation, pushingArray))
+      this.listOfPushers.push(new BumperPusher(gg.shallowNodes, this.nodeSeparation, pushingArray))
       if (gg.graph.parent) {
         gg = GeomGraph.getGeom(gg.graph.parent as Graph)
         pushingArray = [gg]

@@ -1,5 +1,5 @@
 import {Point} from '../../math/geometry'
-import {FiNode} from './fiNode'
+import {FiNode, getFiNode} from './fiNode'
 import {IEdge} from '../../structs/iedge'
 import {GeomEdge} from '../core'
 import {AlgorithmData} from '../../structs/algorithmData'
@@ -14,8 +14,8 @@ export class FiEdge implements IEdge {
 
   public constructor(mEdge: GeomEdge) {
     this.mEdge = mEdge
-    this.sourceFiNode = <FiNode>(<unknown>AlgorithmData.getAlgData(this.mEdge.source.node).data)
-    this.targetFiNode = <FiNode>(<unknown>AlgorithmData.getAlgData(this.mEdge.target.node).data)
+    this.sourceFiNode = getFiNode(this.mEdge.source)
+    this.targetFiNode = getFiNode(this.mEdge.target)
   }
 
   public get source(): number {

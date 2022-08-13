@@ -914,7 +914,7 @@ export class SplineRouter extends Algorithm {
   //    '/tmp/vg.svg',
   //    this.visGraph,
   //    Array.from(new Set<Polyline>(Array.from(this.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve))),
-  //    Array.from(this.geomGraph.shallowNodes())
+  //    Array.from(this.geomGraph.shallowNodes)
   //      .map((n) => n.boundaryCurve)
   //      .concat(Array.from(this.root.Descendants()).map((d) => d.BoundaryCurve)),
   //    null,

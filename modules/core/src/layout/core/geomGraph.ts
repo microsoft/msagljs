@@ -49,7 +49,7 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
   /** Calculate bounding box from children, not updating the bounding boxes recursively. */
   calculateBoundsFromChildren() {
     const bb = Rectangle.mkEmpty()
-    for (const n of this.shallowNodes()) {
+    for (const n of this.shallowNodes) {
       bb.addRecSelf(n.boundingBoxWithPadding)
     }
     bb.padEverywhere(this.margins)
@@ -148,7 +148,7 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
   transform(matrix: PlaneTransformation) {
     if (matrix.isIdentity()) return
 
-    for (const n of this.shallowNodes()) {
+    for (const n of this.shallowNodes) {
       n.transform(matrix)
     }
     for (const e of this.edges()) {
@@ -213,7 +213,7 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
       }
     }
 
-    for (const n of this.shallowNodes()) {
+    for (const n of this.shallowNodes) {
       if (n.underCollapsedGraph() || !n.boundingBox) continue
       t.b.addRecSelf(n.boundingBox)
     }
@@ -253,7 +253,11 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     throw new Error()
   }
 
-  *shallowNodes(): IterableIterator<GeomNode> {
+  get shallowNodes(): IterableIterator<GeomNode> {
+    return this.shallowNodes_()
+  }
+
+  *shallowNodes_(): IterableIterator<GeomNode> {
     for (const n of this.graph.shallowNodes) yield GeomObject.getGeom(n) as GeomNode
   }
 

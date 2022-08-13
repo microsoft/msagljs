@@ -3,7 +3,7 @@ import {Algorithm} from '../../utils/algorithm'
 import {SingleSourceDistances} from './SingleSourceDistances'
 
 import {GeomEdge} from '../core/geomEdge'
-import { IGeomGraph } from '../initialLayout/iGeomGraph'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 // Algorithm for computing the distance between every pair of nodes in a graph.
 export class AllPairsDistances extends Algorithm {
   private graph: IGeomGraph
@@ -30,7 +30,7 @@ export class AllPairsDistances extends Algorithm {
   run() {
     this.result = new Array<number[]>(this.graph.shallowNodeCount)
     let i = 0
-    for (const source of this.graph.shallowNodes()) {
+    for (const source of this.graph.shallowNodes) {
       const distances: SingleSourceDistances = new SingleSourceDistances(this.graph, source, this.length)
       distances.run()
       this.Result[i++] = distances.Result
@@ -66,9 +66,9 @@ export class AllPairsDistances extends Algorithm {
     }
     l /= graph.edgeCount // average of lengths
     let i = 0
-    for (const u of graph.shallowNodes()) {
+    for (const u of graph.shallowNodes) {
       let j = 0
-      for (const v of graph.shallowNodes()) {
+      for (const v of graph.shallowNodes) {
         if (i !== j) {
           const duv: number = u.center.sub(v.center).length
           const Duv: number = l * D[i][j]

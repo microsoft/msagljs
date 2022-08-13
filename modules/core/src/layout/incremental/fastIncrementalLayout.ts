@@ -81,14 +81,14 @@ export class FastIncrementalLayout extends Algorithm {
     geometryGraph: IGeomGraph,
     settings: FastIncrementalLayoutSettings,
     initialConstraintLevel: number,
-    clusterSettings: (g: GeomGraph) => any,
+    clusterSettings: (g: IGeomGraph) => any,
   ) {
     super(null)
     this.graph = geometryGraph
-    this.settings = this.settings
-    this.clusterSettings = this.clusterSettings
+    this.settings = settings
+    this.clusterSettings = clusterSettings
     let i = 0
-    for (const gn of this.graph.shallowNodes()) {
+    for (const gn of this.graph.deepNodes) {
       const fiNode = new FiNode(i++, gn)
       new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
     }
@@ -102,7 +102,7 @@ export class FastIncrementalLayout extends Algorithm {
       }
     }
     this.edges = Array.from(this.graph.edges()).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
-    this.nodes = Array.from(this.graph.shallowNodes()).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
+    this.nodes = Array.from(this.graph.shallowNodes).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
     this.SetLockNodeWeights()
     this.components = new Array<FiNode[]>()
     if (!this.settings.InterComponentForces) {
@@ -339,7 +339,7 @@ export class FastIncrementalLayout extends Algorithm {
       }
 
       if (weight != null) {
-        for (const v of root.shallowNodes()) {
+        for (const v of root.shallowNodes) {
           if (v instanceof GeomNode) {
             baricenter = baricenter.add(v.center)
           } else {
@@ -381,7 +381,7 @@ export class FastIncrementalLayout extends Algorithm {
       duv = duv.mul(f)
       if (c1_is_cluster) {
         const ig = gn1 as unknown as IGeomGraph
-        for (const v of ig.shallowNodes()) {
+        for (const v of ig.shallowNodes) {
           const fv = <FiNode>AlgorithmData.getAlgData(v.node).data
           fv.force = fv.force.add(duv)
         }
@@ -390,7 +390,7 @@ export class FastIncrementalLayout extends Algorithm {
       }
       if (c2_is_cluster) {
         const ig = gn2 as unknown as IGeomGraph
-        for (const v of ig.shallowNodes()) {
+        for (const v of ig.shallowNodes) {
           const fv = <FiNode>AlgorithmData.getAlgData(v.node).data
           fv.force = fv.force.sub(duv)
         }
@@ -400,7 +400,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     for (const c of root.subgraphsDepthFirst) {
-      for (const v of c.shallowNodes()) {
+      for (const v of c.shallowNodes) {
         FastIncrementalLayout.AddGravityForce(this.barycenters.get(c), this.settings.ClusterGravity, getFiNode(v))
       }
     }

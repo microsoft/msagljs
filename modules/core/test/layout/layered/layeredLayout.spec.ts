@@ -155,7 +155,7 @@ test('disconnected comps', () => {
   const ll = new LayeredLayout(g, ss, new CancelToken())
   ll.run()
   const strB = new StringBuilder()
-  for (const n of g.shallowNodes()) {
+  for (const n of g.shallowNodes) {
     const s = n.id + ', center = ' + n.center
     strB.AppendLine(s)
   }
@@ -515,7 +515,7 @@ xtest('layout all gv files', () => {
 })
 
 function duplicateDisconnected(g: GeomGraph, suffix: string) {
-  const nodes: GeomNode[] = Array.from(g.shallowNodes())
+  const nodes: GeomNode[] = Array.from(g.shallowNodes)
   const edges: GeomEdge[] = Array.from(g.edges())
   for (const n of nodes) {
     setNode(g, n.node.id + suffix, 10, 10)

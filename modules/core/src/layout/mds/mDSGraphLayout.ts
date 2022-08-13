@@ -43,7 +43,7 @@ export class MdsGraphLayout extends Algorithm {
   static ScaleToAverageEdgeLength(g: IGeomGraph, x: number[], y: number[], length: (e: GeomEdge) => number) {
     const index = new Map<GeomNode, number>()
     let c = 0
-    for (const node of g.shallowNodes()) {
+    for (const node of g.shallowNodes) {
       index.set(node, c)
       c++
     }
@@ -115,7 +115,7 @@ export class MdsGraphLayout extends Algorithm {
     }
 
     let index = 0
-    for (const node of this.graph.shallowNodes()) {
+    for (const node of this.graph.shallowNodes) {
       if (node.boundingBox) {
         node.center = new Point(arrays.x[index] * this.settings.ScaleX, arrays.y[index] * this.settings.ScaleY)
       }
@@ -123,7 +123,7 @@ export class MdsGraphLayout extends Algorithm {
     }
 
     if (this.settings.RemoveOverlaps) {
-      GTreeOverlapRemoval.RemoveOverlaps(Array.from(this.graph.shallowNodes()), this.settings.NodeSeparation)
+      GTreeOverlapRemoval.RemoveOverlaps(Array.from(this.graph.shallowNodes), this.settings.NodeSeparation)
     }
 
     this.graph.boundingBox = this.graph.pumpTheBoxToTheGraphWithMargins()
