@@ -14,6 +14,6 @@ export interface IViewerObject {
   /**  raised when the entity is unmarked for dragging*/
   UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
 }
-export function getDrawingObject(ivo: IViewerObject): DrawingObject {
+export function getViewerObject(ivo: IViewerObject): DrawingObject {
   return DrawingObject.getDrawingObj(ivo.entity)
 }
