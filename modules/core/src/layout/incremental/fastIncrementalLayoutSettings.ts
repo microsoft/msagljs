@@ -602,10 +602,8 @@ export class FastIncrementalLayoutSettings {
     this.clusterGravity = value
   }
 
-  ///  <summary>
-  ///  Settings for calculation of ideal edge length
-  ///  </summary>
-  IdealEdgeLength: EdgeConstraints
+  /**   Settings for calculation of ideal edge length*/
+  IdealEdgeLength: EdgeConstraints = new EdgeConstraints()
   updateClusterBoundaries = true
 
   ///  <summary>

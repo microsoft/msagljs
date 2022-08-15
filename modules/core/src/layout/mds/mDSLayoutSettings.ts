@@ -39,7 +39,6 @@ export class MdsLayoutSettings {
 
     if (s._callIterationsWithMajorizationThreshold)
       ret._callIterationsWithMajorizationThreshold = s._callIterationsWithMajorizationThreshold
-    if (s.edgeConstraints) ret.edgeConstraints = EdgeConstraints.fromJSON(s.edgeConstraints)
 
     return ret
   }
@@ -61,7 +60,6 @@ export class MdsLayoutSettings {
 
     if (this._callIterationsWithMajorizationThreshold != 3000)
       ret._callIterationsWithMajorizationThreshold = this._callIterationsWithMajorizationThreshold
-    if (this.edgeConstraints != null) ret.edgeConstraints = this.edgeConstraints.toJSON()
     return ret
   }
   get NodeSeparation() {
@@ -153,15 +151,6 @@ export class MdsLayoutSettings {
   }
   set RotationAngle(value: number) {
     this.rotationAngle = value % 360
-  }
-
-  edgeConstraints: EdgeConstraints
-  // Settings for calculation of ideal edge length
-  get IdealEdgeLength(): EdgeConstraints {
-    return this.edgeConstraints
-  }
-  set IdealEdgeLength(value: EdgeConstraints) {
-    this.edgeConstraints = value
   }
 
   adjustScale = false

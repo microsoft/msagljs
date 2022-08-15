@@ -8,6 +8,11 @@ export class GeomConnectedComponent implements IGeomGraph {
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
   }
+  calculateBoundsFromChildren(clusterMargin: number) {
+    throw new Error('Method not implemented.')
+  }
+  deepNodes: IterableIterator<GeomNode>
+  deepNodeCount: number
   get Clusters(): IterableIterator<IGeomGraph> {
     return this.clusters()
   }
@@ -22,7 +27,10 @@ export class GeomConnectedComponent implements IGeomGraph {
       for (const e of n.selfEdges) yield GeomEdge.getGeom(e) as GeomEdge
     }
   }
-  *shallowNodes: IterableIterator<GeomNode> {
+  get shallowNodes(): IterableIterator<GeomNode> {
+    return this.shallowNodes_()
+  }
+  *shallowNodes_(): IterableIterator<GeomNode> {
     for (const n of this.topNodes) yield GeomNode.getGeom(n) as GeomNode
   }
   pumpTheBoxToTheGraphWithMargins(): Rectangle {

@@ -3,7 +3,7 @@
     "target": "es2018",
     "moduleResolution": "node",
     "allowJs": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "lib": ["dom", "es2018"],
     "importHelpers": true,
     "noEmit": true,

@@ -22,7 +22,7 @@ abstract class KdNode {
     return l < v.med.Radius + this.med.Radius
   }
 
-  abstract computeMultipoleCoefficients(precision: number)
+  abstract computeMultipoleCoefficients(precision: number): void
 }
 
 class InternalKdNode extends KdNode {
@@ -109,8 +109,8 @@ class LeafKdNode extends KdNode {
     const nLeft = n / 2
     const nRight = n - nLeft
 
-    const leftParticles: Array<Array<Particle>> = [new Particle[nLeft](), new Particle[nLeft]()]
-    const rightParticles: Array<Array<Particle>> = [new Particle[nRight](), new Particle[nRight]()]
+    const leftParticles: Array<Array<Particle>> = [new Array<Particle>(nLeft), new Array<Particle>(nLeft)]
+    const rightParticles: Array<Array<Particle>> = [new Array<Particle>(nRight), new Array<Particle>(nRight)]
     let rCtr = 0
     let lCtr = 0
     for (let i = 0; i < n; i++) {

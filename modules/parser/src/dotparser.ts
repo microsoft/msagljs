@@ -524,7 +524,7 @@ class DotParser {
   }
 
   getEntitiesSubg(o: Subgraph, graph: Graph, directed: boolean): Entity[] {
-    let ret = []
+    let ret: Array<Entity> = []
     for (const ch of o.children) {
       if (ch.type === 'edge_stmt') {
         for (let i = 0; i < ch.edge_list.length - 1; i++) {
@@ -539,7 +539,7 @@ class DotParser {
           graph.addNode(subg)
           const sdg = new DrawingGraph(subg)
           this.parseUnderGraph(ch.children, subg, directed, true)
-          ret.push(sdg)
+          ret.push(sdg.graph)
         } else {
           ret = ret.concat(this.getEntitiesSubg(ch, graph, directed))
         }
