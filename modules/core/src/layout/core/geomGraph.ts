@@ -186,7 +186,7 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
   // Fields which are set by Msagl
   // return the center of the curve bounding box
   get center() {
-    return this.boundingBox ? this.boundingBox.center : new Point(0, 0)
+    return this.boundingBox || this.boundingBox.isEmpty ? this.boundingBox.center : new Point(0, 0)
   }
 
   set center(value: Point) {

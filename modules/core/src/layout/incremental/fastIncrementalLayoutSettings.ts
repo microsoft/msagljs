@@ -573,7 +573,7 @@ export class FastIncrementalLayoutSettings {
     ret.gravity = previousSettings.gravity
     ret.interComponentForces = previousSettings.interComponentForces
     ret.applyForces = previousSettings.applyForces
-    ret.IdealEdgeLength = previousSettings.IdealEdgeLength
+    ret.edgeConstrains = previousSettings.edgeConstrains
     ret.AvoidOverlaps = previousSettings.AvoidOverlaps
     ret.RespectEdgePorts = previousSettings.RespectEdgePorts
     ret.RouteEdges = previousSettings.RouteEdges
@@ -603,7 +603,7 @@ export class FastIncrementalLayoutSettings {
   }
 
   /**   Settings for calculation of ideal edge length*/
-  IdealEdgeLength: EdgeConstraints = new EdgeConstraints()
+  edgeConstrains: EdgeConstraints = new EdgeConstraints()
   updateClusterBoundaries = true
 
   ///  <summary>

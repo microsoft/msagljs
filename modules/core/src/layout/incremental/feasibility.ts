@@ -55,7 +55,7 @@ export class Feasibility {
       hsSolver.structuralConstraints = horizontalConstraints
       hsSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty()
       hsSolver.OverlapRemovalParameters.AllowDeferToVertical = true
-      hsSolver.OverlapRemovalParameters.ConsiderProportionalOverlap = settings.IdealEdgeLength.Direction != Direction.None
+      hsSolver.OverlapRemovalParameters.ConsiderProportionalOverlap = settings.edgeConstrains.Direction != Direction.None
       hsSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
       hsSolver.SetDesiredPositions()
       hsSolver.Solve()
@@ -114,6 +114,7 @@ export class Feasibility {
   // }
   private static ResetPositions(nodes: Iterable<FiNode>) {
     for (const v of nodes) {
+      if (v.mNode instanceof GeomGraph) continue
       v.desiredPosition = v.mNode.center
       v.previousCenter = v.mNode.center
     }
