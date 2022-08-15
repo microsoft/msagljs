@@ -207,10 +207,10 @@ export class FastIncrementalLayout extends Algorithm {
   ///  <param name="c"></param>
   AddConstraint(c: IConstraint) {
     if (!this.constraints.has(c.Level)) {
-      this.constraints[c.Level] = new Array<IConstraint>()
+      this.constraints.set(c.Level, new Array<IConstraint>())
     }
 
-    this.constraints[c.Level].Add(c)
+    this.constraints.get(c.Level).push(c)
   }
 
   ///  <summary>
@@ -219,7 +219,7 @@ export class FastIncrementalLayout extends Algorithm {
   ///  <param name="level"></param>
   AddConstraintLevel(level: number) {
     if (!this.constraints.has(level)) {
-      this.constraints[level] = new Array<IConstraint>()
+      this.constraints.set(level, new Array<IConstraint>())
     }
   }
 

@@ -17,6 +17,7 @@ test('fil', () => {
   if (dg == null) return null
   const gg = createGeometry(dg, measureTextSize)
   const filSettings = new FastIncrementalLayoutSettings()
+  filSettings.AvoidOverlaps = true
   const fil = new FastIncrementalLayout(gg, filSettings, 2, () => filSettings)
   fil.run()
   new SvgDebugWriter('/tmp/fil.svg').writeGeomGraph(gg)

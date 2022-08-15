@@ -232,12 +232,24 @@ export class EdgeLabelPlacement extends Algorithm {
   }
 
   static CurvePoints(curve: ICurve, granularity: number) {
-    const points = []
+    const points: Array<[number, Point]> = []
     const delta = curve.end.sub(curve.start).lengthSquared / (granularity * granularity)
     EdgeLabelPlacement.SubdivideCurveSegment(points, curve, delta, curve.parStart, curve.parEnd)
 
-    points.sort(comparePointsXY)
+    points.sort(EdgeLabelPlacement.compareByArgument)
     return points
+  }
+
+  static compareByArgument(x: [number, Point], y: [number, Point]): number {
+    if (x[0] < y[0]) {
+      return -1
+    }
+
+    if (x[0] > y[0]) {
+      return 1
+    }
+
+    return 0
   }
 
   static SubdivideCurveSegment(list: Array<[number, Point]>, curve: ICurve, delta2: number, start: number, end: number) {
