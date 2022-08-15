@@ -135,7 +135,7 @@ export class InitialLayout extends Algorithm {
       keys.add(c.Level)
     }
     keys.add(0)
-    if (this.settings.IdealEdgeLength.Direction != Direction.None) {
+    if (this.settings.edgeConstrains.Direction != Direction.None) {
       keys.add(1)
     }
     if (this.settings.AvoidOverlaps && component.shallowNodeCount < 2000) {

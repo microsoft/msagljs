@@ -6,7 +6,6 @@ import {IConstraint} from './iConstraint'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
 import {GeomGraph, GeomNode} from '../core'
-import {Node} from '../../structs/node'
 import {FloatingPort} from '../core/floatingPort'
 import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
 import {AxisSolver} from './axisSolver'
@@ -19,18 +18,16 @@ import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {Assert} from '../../utils/assert'
 import {EdgeConstraintGenerator} from './edgeConstraintsGenerator'
-import {LockPosition} from './lockPosition'
 import {Feasibility} from './feasibility'
 import {KDTree, Particle} from './multipole/kdTree'
 import {MultipoleCoefficients} from './multipole/multipoleCoefficients'
-import {Graph} from '../../structs/graph'
 import {GeomObject} from '../core/geomObject'
-///  <summary>
-///  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
-///  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
-///
-///  Note that of debug mode lots of numerical checking is applied, which slows things down considerably.  So, run of Release mode unless you're actually debugging!
-///  </summary>
+import {Graph} from '../../structs/graph'
+/** 
+  Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
+  It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
+
+*/
 export class FastIncrementalLayout extends Algorithm {
   basicGraph: BasicGraphOnEdges<FiEdge>
 
@@ -40,22 +37,17 @@ export class FastIncrementalLayout extends Algorithm {
 
   edges = new Array<FiEdge>()
 
-  barycenters: Map<IGeomGraph, Point> = new Map<IGeomGraph, Point>()
-  weight: Map<IGeomGraph, number> = new Map<IGeomGraph, number>()
-  ///  <summary>
-  ///  Returns the derivative of the cost function calculated of the most recent iteration.
-  ///  It's a volatile float so that we can potentially access it from other threads safely,
-  ///  for example during test.
-  ///  </summary>
+  clustersInfo = new Map<IGeomGraph, {barycenter?: Point; weight?: number}>()
+
+  /**  Holds the derivative of the cost function calculated of the most recent iteration.*/
   energy: number
 
   graph: IGeomGraph
 
   horizontalSolver: AxisSolver
 
-  ///  <summary>
   ///  Construct a graph by adding nodes and edges to these lists
-  ///  </summary>
+
   nodes: FiNode[]
 
   progress: number
@@ -70,9 +62,8 @@ export class FastIncrementalLayout extends Algorithm {
 
   clusterEdges: Array<Edge> = new Array<Edge>()
 
-  ///  <summary>
   ///  Create the graph data structures.
-  ///  </summary>
+
   ///  <param name="geometryGraph"></param>
   ///  <param name="settings">The settings for the algorithm.</param>
   ///  <param name="initialConstraintLevel">initialize at this constraint level</param>
@@ -141,7 +132,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.clusterSettings,
     )
     this.SetupConstraints()
-    computeWeight(geometryGraph)
+    this.computeWeight(geometryGraph)
     for (const c of this.graph.subgraphsDepthFirst) {
       if (c.RectangularBoundary == null) {
         c.RectangularBoundary = new RectangularClusterBoundary()
@@ -170,7 +161,7 @@ export class FastIncrementalLayout extends Algorithm {
 
     EdgeConstraintGenerator.GenerateEdgeConstraints(
       this.graph.edges(),
-      this.settings.IdealEdgeLength,
+      this.settings.edgeConstrains,
       this.horizontalSolver,
       this.verticalSolver,
     )
@@ -178,9 +169,8 @@ export class FastIncrementalLayout extends Algorithm {
 
   currentConstraintLevel: number
 
-  ///  <summary>
   ///  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
-  ///  </summary>
+
   get CurrentConstraintLevel(): number {
     return this.currentConstraintLevel
   }
@@ -200,10 +190,9 @@ export class FastIncrementalLayout extends Algorithm {
     this.settings.Unconverge()
   }
 
-  ///  <summary>
   ///  Add constraint to constraints lists.  Warning, no check that dictionary alread holds a list for the level.
   ///  Make sure you call AddConstraintLevel first (perf).
-  ///  </summary>
+
   ///  <param name="c"></param>
   AddConstraint(c: IConstraint) {
     if (!this.constraints.has(c.Level)) {
@@ -213,9 +202,8 @@ export class FastIncrementalLayout extends Algorithm {
     this.constraints.get(c.Level).push(c)
   }
 
-  ///  <summary>
   ///  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
-  ///  </summary>
+
   ///  <param name="level"></param>
   AddConstraintLevel(level: number) {
     if (!this.constraints.has(level)) {
@@ -327,33 +315,46 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   SetBarycenter(root: IGeomGraph): Point {
-    const w = this.barycenters.get(root)
-    if (w != undefined) return w
-    let baricenter = new Point(0, 0)
+    const w = this.clustersInfo.get(root)
+    if (w != undefined) return w.barycenter
+    let center = new Point(0, 0)
     //  If these are empty then Weight is 0 and barycenter becomes NaN.
     //  If there are no child clusters with nodes, then Weight stays 0.
     if (root.shallowNodeCount || hasSomeClusters(root)) {
-      let weight = this.weight.get(root)
-      if (weight == undefined) {
-        weight = computeWeight(root)
+      const clusterInfo = this.clustersInfo.get(root)
+
+      if (clusterInfo == undefined || clusterInfo.weight == undefined) {
+        this.computeWeight(root)
       }
 
-      if (weight != null) {
+      if (clusterInfo.weight != null) {
         for (const v of root.shallowNodes) {
           if (v instanceof GeomNode) {
-            baricenter = baricenter.add(v.center)
+            center = center.add(v.center)
           } else {
-            baricenter = baricenter.add(this.SetBarycenter(v).mul(this.weight.get(v)))
+            center = center.add(this.SetBarycenter(v).mul(this.clustersInfo.get(v).weight))
           }
         }
 
-        this.barycenters.set(root, baricenter.div(weight))
+        this.clustersInfo.get(root).barycenter = center = center.div(clusterInfo.weight)
       }
     } else {
-      this.barycenters.set(root, baricenter)
+      this.clustersInfo.get(root).barycenter = center
     }
 
-    return baricenter
+    return center
+  }
+  computeWeight(root: IGeomGraph): number {
+    let w = 0
+    for (const n of root.shallowNodes) {
+      if (n.entity instanceof Graph) {
+        w += this.computeWeight(n as unknown as IGeomGraph)
+      } else {
+        w++
+      }
+    }
+    this.clustersInfo.set(root, {weight: w})
+    return w
   }
   AddClusterForces(root: IGeomGraph) {
     if (root == null) {
@@ -372,9 +373,9 @@ export class FastIncrementalLayout extends Algorithm {
       const n1 = <FiNode>AlgorithmData.getAlgData(e.source).data
       const n2 = <FiNode>AlgorithmData.getAlgData(e.target).data
       const c1_is_cluster = gn1.hasOwnProperty('shallowNodes')
-      const center1: Point = c1_is_cluster ? this.barycenters.get(gn1 as unknown as IGeomGraph) : gn1.center
+      const center1: Point = c1_is_cluster ? this.clustersInfo.get(gn1 as unknown as IGeomGraph).barycenter : gn1.center
       const c2_is_cluster = gn2.hasOwnProperty('shallowNodes')
-      const center2: Point = c2_is_cluster ? this.barycenters.get(gn2 as unknown as IGeomGraph) : gn2.center
+      const center2: Point = c2_is_cluster ? this.clustersInfo.get(gn2 as unknown as IGeomGraph).barycenter : gn2.center
       let duv: Point = center1.sub(center2)
       const l: number = duv.length
       const f: number = 1e-8 * (this.settings.AttractiveInterClusterForceConstant * (l * Math.log(l + 0.1)))
@@ -400,15 +401,15 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     for (const c of root.subgraphsDepthFirst) {
+      const cCenter = this.clustersInfo.get(c).barycenter
       for (const v of c.shallowNodes) {
-        FastIncrementalLayout.AddGravityForce(this.barycenters.get(c), this.settings.ClusterGravity, getFiNode(v))
+        FastIncrementalLayout.AddGravityForce(cCenter, this.settings.ClusterGravity, getFiNode(v))
       }
     }
   }
 
-  ///  <summary>
   ///  Aggregate all the forces affecting each node
-  ///  </summary>
+
   ComputeForces() {
     if (this.components != null) {
       this.components.forEach(this.ComputeRepulsiveForces)
@@ -476,16 +477,14 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  <summary>
   ///  Checks if solvers need to be applied, i.e. if there are user constraints or
   ///  generated constraints (such as non-overlap) that need satisfying
-  ///  </summary>
+
   ///  <returns></returns>
   NeedSolve(): boolean {
     return this.horizontalSolver.NeedSolve || this.verticalSolver.NeedSolve
   }
 
-  ///  <summary>
   ///  Force directed layout is basically an iterative approach to solving a bunch of differential equations.
   ///  Different integration schemes are possible for applying the forces iteratively.  Euler is the simplest:
   ///   v_(i+1) = v_i + a dt
@@ -493,7 +492,7 @@ export class FastIncrementalLayout extends Algorithm {
   ///
   ///  Verlet is much more stable (and not really much more complicated):
   ///   x_(i+1) = x_i + (x_i - x_(i-1)) + a dt dt
-  ///  </summary>
+
   VerletIntegration(): number {
     //  The following sets the Centers of all nodes to a (not necessarily feasible) configuration that reduces the cost (forces)
     const energy0: number = this.energy
@@ -576,11 +575,10 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  <summary>
   ///  Adapt StepSize based on change of energy.
   ///  Five sequential improvements of energy mean we increase the stepsize.
   ///  Any increase of energy means we reduce the stepsize.
-  ///  </summary>
+
   ///  <param name="energy0"></param>
   UpdateStepSize(energy0: number) {
     if (this.energy < energy0) {
@@ -642,7 +640,6 @@ export class FastIncrementalLayout extends Algorithm {
     return this.nodes.reduce((prevSum, v) => v.Center.sub(v.previousCenter).lengthSquared + prevSum, 0)
   }
 
-  ///  <summary>
   ///  Apply a small number of iterations of the layout.
   ///  The idea of incremental layout is that settings.minorIterations should be a small number (e.g. 3) and
   ///  CalculateLayout should be invoked of a loop, e.g.:
@@ -653,7 +650,7 @@ export class FastIncrementalLayout extends Algorithm {
   ///  }
   ///
   ///  In the verletIntegration step above, the RemainingIterations is used to control damping.
-  ///  </summary>
+
   run() {
     this.settings.Converged = false
     this.settings.EdgeRoutesUpToDate = false
@@ -679,10 +676,9 @@ export class FastIncrementalLayout extends Algorithm {
     this.FinalizeClusterBoundaries()
   }
 
-  ///  <summary>
   ///  Simply does a depth first traversal of the cluster hierarchies fitting Rectangles to the contents of the cluster
   ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
-  ///  </summary>
+
   FinalizeClusterBoundaries() {
     for (const c of this.graph.subgraphsDepthFirst) {
       if (!this.NeedSolve() && this.settings.UpdateClusterBoundariesFromChildren) {
@@ -695,9 +691,6 @@ export class FastIncrementalLayout extends Algorithm {
       //c.RaiseLayoutDoneEvent();
     }
   }
-}
-function computeWeight(geometryGraph: IGeomGraph) {
-  return geometryGraph.deepNodeCount
 }
 function hasSomeClusters(g: IGeomGraph): boolean {
   for (const f of g.Clusters) {
