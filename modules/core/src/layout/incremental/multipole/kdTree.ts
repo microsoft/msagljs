@@ -70,14 +70,14 @@ class LeafKdNode extends KdNode {
     super()
     Assert.assert(particles[0].length == particles[1].length)
     this.particles = particles
-    this.ComputeMED()
+    this.ComputeMinimumEnclosingDisc()
   }
 
   computeMultipoleCoefficients(precision: number) {
     this.multipoleCoefficients = MultipoleCoefficients.constructorNPA(precision, this.med.Center, this.ps)
   }
 
-  ComputeMED(): Disc {
+  ComputeMinimumEnclosingDisc(): Disc {
     const n: number = this.Size()
     this.ps = new Array(n)
     for (let i = 0; i < n; i++) {
@@ -138,7 +138,7 @@ class LeafKdNode extends KdNode {
     Assert.assert(rCtr == nRight)
     const parentMED: Disc = this.med
     this.particles = leftParticles
-    this.ComputeMED()
+    this.ComputeMinimumEnclosingDisc()
     t.rightSibling = new LeafKdNode(rightParticles)
     return new InternalKdNode(parentMED, this, t.rightSibling)
   }
