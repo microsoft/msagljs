@@ -14,7 +14,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   dg.createGeometry(measureTextSize)
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
-test('fil', () => {
+xtest('fil', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   if (dg == null) return null
   const gg = createGeometry(dg, measureTextSize)
@@ -25,7 +25,7 @@ test('fil', () => {
   new SvgDebugWriter('/tmp/fil.svg').writeGeomGraph(gg)
 })
 
-test('fil', () => {
+test('initialfil', () => {
   const graph: Graph = new Graph()
   const nodes = []
   for (let i = 0; i < 50; i++) {

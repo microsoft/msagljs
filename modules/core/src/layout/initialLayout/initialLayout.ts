@@ -23,7 +23,7 @@ export class InitialLayout extends Algorithm {
   ///  <summary>
   ///  Set to true if the graph specified is a single connected component with no clusters
   ///  </summary>
-  SingleComponent: boolean
+  SingleComponent = false
 
   ///  <summary>
   ///  Static layout of graph by gradually adding constraints.

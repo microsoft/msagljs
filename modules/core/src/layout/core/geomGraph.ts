@@ -171,15 +171,10 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     return new GeomEdge(structEdge)
   }
 
-  MinimalWidth = 0
-  MinimalHeight = 0
   pumpTheBoxToTheGraphWithMargins(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
-    this.pumpTheBoxToTheGraph(t)
+    pumpTheBoxToTheGraph(this, t)
     t.b.padEverywhere(this.margins)
-    if (this.MinimalWidth > 0) t.b.width = Math.max(t.b.width, this.MinimalWidth)
-    if (this.MinimalHeight > 0) t.b.height = Math.max(t.b.height, this.MinimalHeight)
-
     return t.b
   }
 
@@ -194,31 +189,6 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     const del = value.sub(this.center)
     const t = new PlaneTransformation(1, 0, del.x, 0, 1, del.y)
     this.transform(t)
-  }
-
-  private pumpTheBoxToTheGraph(t: {b: Rectangle}) {
-    //Assert.assert(this.graph.isEmpty() === false)
-    for (const e of this.edges()) {
-      if (e.underCollapsedGraph()) continue
-      if (!(e.source.node.isDescendantOf(this.graph) && e.target.node.isDescendantOf(this.graph))) {
-        continue
-      }
-      if (e.curve != null) {
-        const cb = e.curve.boundingBox
-        // cb.pad(e.lineWidth)
-        t.b.addRecSelf(cb)
-      }
-      if (e.label != null) {
-        t.b.addRecSelf(e.label.boundingBox)
-      }
-    }
-
-    for (const n of this.shallowNodes) {
-      if (n.underCollapsedGraph() || !n.boundingBox) continue
-      t.b.addRecSelf(n.boundingBox)
-    }
-
-    this.addLabelToGraphBB(t.b)
   }
 
   get left() {
@@ -367,5 +337,28 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     const bb = this.boundingBox
     const m = new PlaneTransformation(1, 0, -bb.left, 0, -1, bb.top)
     this.transform(m)
+  }
+}
+
+export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
+  for (const e of igraph.edges()) {
+    if (e.underCollapsedGraph()) continue
+
+    if (e.curve != null) {
+      const cb = e.curve.boundingBox
+      // cb.pad(e.lineWidth)
+      t.b.addRecSelf(cb)
+      if (e.label != null) {
+        t.b.addRecSelf(e.label.boundingBox)
+      }
+    }
+  }
+
+  for (const n of igraph.shallowNodes) {
+    if (n.underCollapsedGraph() || !n.boundingBox) continue
+    t.b.addRecSelf(n.boundingBox)
+  }
+  if (igraph instanceof GeomGraph) {
+    igraph.addLabelToGraphBB(t.b)
   }
 }
