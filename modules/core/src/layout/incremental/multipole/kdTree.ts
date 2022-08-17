@@ -2,6 +2,7 @@ import {Queue} from 'queue-typescript'
 import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
 import {Disc} from './disc'
+import {MinimumEnclosingDisc} from './minimumEnclosingDisc'
 import {MultipoleCoefficients} from './multipoleCoefficients'
 
 enum Dim {
@@ -83,7 +84,7 @@ class LeafKdNode extends KdNode {
       this.ps[i] = this.particles[0][i].point
     }
 
-    return
+    return MinimumEnclosingDisc.LinearComputation(this.ps)
   }
 
   private Min(d: Dim): number {
@@ -194,7 +195,7 @@ export class KDTree {
   ///  <param name="particles"></param>
   ///  <param name="bucketSize"></param>
   public constructor(particles: Particle[], bucketSize: number) {
-    this.particles = this.particles
+    this.particles = particles
     const ps = new Array<Array<Particle>>()
     ps.push(this.particlesBy(Dim.Horizontal))
     ps.push(this.particlesBy(Dim.Vertical))

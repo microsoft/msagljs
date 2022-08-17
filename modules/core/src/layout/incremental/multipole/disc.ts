@@ -90,13 +90,14 @@ export class Disc {
   ///  </summary>
   ///  <param name="firstBoundaryPoint"></param>
   ///  <param name="secondBoundaryPoint"></param>
-  static constructorPP(firstBoundaryPoint: Point, secondBoundaryPoint: Point) {
+  static constructorPP(firstBoundaryPoint: Point, secondBoundaryPoint: Point): Disc {
     const d = new Disc()
     d.c = Disc.midPoint(firstBoundaryPoint, secondBoundaryPoint)
     d.r2 = d.Distance2(firstBoundaryPoint)
     d.r = Math.sqrt(d.r2)
     Assert.assert(d.OnBoundary(firstBoundaryPoint))
     Assert.assert(d.OnBoundary(secondBoundaryPoint))
+    return d
   }
 
   ///  <summary>

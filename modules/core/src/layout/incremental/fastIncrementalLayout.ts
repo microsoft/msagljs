@@ -412,7 +412,7 @@ export class FastIncrementalLayout extends Algorithm {
 
   ComputeForces() {
     if (this.components != null) {
-      this.components.forEach(this.ComputeRepulsiveForces)
+      for (const c of this.components) this.ComputeRepulsiveForces(c)
     } else {
       this.ComputeRepulsiveForces(this.nodes)
     }
@@ -654,16 +654,14 @@ export class FastIncrementalLayout extends Algorithm {
   run() {
     this.settings.Converged = false
     this.settings.EdgeRoutesUpToDate = false
-    0
-    this.stepSize = this.settings.InitialStepSize
-    this.energy = Number.MAX_VALUE
-    this.progress = 0
+    if (this.settings.Iterations++ == 0) {
+      this.stepSize = this.settings.InitialStepSize
+      this.energy = Number.MAX_VALUE
+      this.progress = 0
+    }
     //this.StartListenToLocalProgress(this.settings.MinorIterations);
     for (let i = 0; i < this.settings.MinorIterations; i++) {
-      const d2: number = this.RungeKuttaIntegration()
-      // TODO: Warning!!!, inline IF is not supported ?
-      this.settings.RungeKuttaIntegration
-      this.VerletIntegration()
+      const d2: number = this.settings.RungeKuttaIntegration ? this.RungeKuttaIntegration() : this.VerletIntegration()
       if (d2 < this.settings.DisplacementThreshold || this.settings.Iterations > this.settings.MaxIterations) {
         this.settings.Converged = true
         //      this.ProgressComplete();
