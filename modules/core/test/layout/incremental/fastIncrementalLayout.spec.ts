@@ -25,7 +25,7 @@ xtest('fil', () => {
   new SvgDebugWriter('/tmp/fil.svg').writeGeomGraph(gg)
 })
 
-xtest('initialfil', () => {
+test('initialfil', () => {
   const graph: Graph = new Graph()
   const nodes = []
   for (let i = 0; i < 50; i++) {
