@@ -85,7 +85,7 @@ export class MoveToFront {
       const lnext: LinkedListNode<number> = lnode.next
       const p: number = lnode.value
       if (!md.contains(this.ps[p])) {
-        const _b: Array<number> = new Array<number>()
+        const _b: Array<number> = Array.from(b)
         _b.push(p)
         Assert.assert(!this.collinear3(_b), 'Collinear points on boundary of minimal enclosing disc')
         md = this.mtf_md(lnode, _b)
