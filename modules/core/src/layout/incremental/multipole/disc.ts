@@ -2,59 +2,46 @@ import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
 
 export class Disc {
-  ///  <summary>
-  ///  disc centre
-  ///  </summary>
-  c: Point
+  //  disc centre
 
-  ///  <summary>
-  ///  disc centre
-  ///  </summary>
-  public get Center(): Point {
+  private c: Point
+
+  /**   disc centre*/
+  get Center(): Point {
     return this.c
   }
 
-  ///  <summary>
-  ///  radius
-  ///  </summary>
-  r: number
+  //  radius
 
-  ///  <summary>
-  ///  Radius of disc
-  ///  </summary>
-  public get Radius(): number {
+  private r: number
+
+  /**   Radius of disc */
+  get Radius(): number {
     return this.r
   }
 
-  r2: number
+  private r2: number
 
-  ///  <summary>
-  ///  squared distance from the centre of this disc to point
-  ///  </summary>
-  ///  <param name="point"></param>
-  ///  <returns></returns>
-  public Distance2(point: Point): number {
+  //  squared distance from the centre of this disc to point
+
+  //  <returns></returns>
+  Distance2(point: Point): number {
     const dy: number = this.c.y - point.y
     const dx: number = this.c.x - point.x
     return dx * dx + dy * dy
   }
 
-  ///  <summary>
-  ///  Test if point is contained in this disc
-  ///  </summary>
-  ///  <param name="point"></param>
-  ///  <returns></returns>
-  public Contains(point: Point): boolean {
+  //  Test if point is contained in this disc
+
+  //  <returns></returns>
+  Contains(point: Point): boolean {
     return this.Distance2(point) - 1e-7 <= this.r2
   }
 
-  ///  <summary>
-  ///  test if all specified points (apart from the except list) are contained in this disc
-  ///  </summary>
-  ///  <param name="points">points to test for containment</param>
-  ///  <param name="except">short list of exclusions</param>
-  ///  <returns>true if all points are contained in the disc</returns>
-  public ContainsPN(points: Point[], except: number[]): boolean {
+  //  test if all specified points (apart from the except list) are contained in this disc
+
+  //  <returns>true if all points are contained in the disc</returns>
+  ContainsPN(points: Point[], except: number[]): boolean {
     for (let i = 0; i < points.length; i++) {
       if (except.findIndex((j) => j == i) == -1 && !this.Contains(points[i])) {
         return false
@@ -64,10 +51,8 @@ export class Disc {
     return true
   }
 
-  ///  <summary>
-  ///  create a zero radius disc centred at center
-  ///  </summary>
-  ///  <param name="center">center of disc</param>
+  //  create a zero radius disc centred at center
+
   static constructorP(center: Point) {
     const r = new Disc()
     r.c = center
@@ -76,20 +61,14 @@ export class Disc {
     return r
   }
 
-  ///  <summary>
-  ///  find the point mid-way between two points
-  ///  </summary>
-  ///  <param name="startPoint"></param>
-  ///  <param name="endPoint"></param>
+  //  find the point mid-way between two points
+
   static midPoint(startPoint: Point, endPoint: Point): Point {
     return new Point((endPoint.x + startPoint.x) / 2, (endPoint.y + startPoint.y) / 2)
   }
 
-  ///  <summary>
-  ///  Create the smallest possible disc with the specified points on the boundary
-  ///  </summary>
-  ///  <param name="firstBoundaryPoint"></param>
-  ///  <param name="secondBoundaryPoint"></param>
+  //  Create the smallest possible disc with the specified points on the boundary
+
   static constructorPP(firstBoundaryPoint: Point, secondBoundaryPoint: Point): Disc {
     const d = new Disc()
     d.c = Disc.midPoint(firstBoundaryPoint, secondBoundaryPoint)
@@ -100,23 +79,17 @@ export class Disc {
     return d
   }
 
-  ///  <summary>
-  ///  test if a point lies on (within a small delta of) the boundary of this disc
-  ///  </summary>
-  ///  <param name="point"></param>
-  ///  <returns></returns>
-  public OnBoundary(point: Point): boolean {
+  //  test if a point lies on (within a small delta of) the boundary of this disc
+
+  //  <returns></returns>
+  OnBoundary(point: Point): boolean {
     const d: number = this.Distance2(point)
     return Math.abs(d - this.r2) / (d + this.r2) < 1e-5
   }
 
-  ///  <summary>
-  ///  computes the centre of the disc with the 3 specified points on the boundary
-  ///  </summary>
-  ///  <param name="p1"></param>
-  ///  <param name="p2"></param>
-  ///  <param name="p3"></param>
-  ///  <returns></returns>
+  //  computes the centre of the disc with the 3 specified points on the boundary
+
+  //  <returns></returns>
   static centre(p1: Point, p2: Point, p3: Point): Point {
     /* double ma, mb;
             ma = (p2.Y - p1.Y) / (p2.X - p1.X);
@@ -140,35 +113,28 @@ export class Disc {
     const mb = (p3.y - p2.y) / (p3.x - p2.x)
     Assert.assert(mb != ma)
     //  collinear points not allowed
-    const c = {x: 0, y: 0}
-    c.x = (ma * (mb * (p1.y - p3.y)) + (mb * (p1.x + p2.x) - ma * (p2.x + p3.x))) / (2 * (mb - ma))
+    const x = (ma * (mb * (p1.y - p3.y)) + (mb * (p1.x + p2.x) - ma * (p2.x + p3.x))) / (2 * (mb - ma))
+    let y: number
     if (Math.abs(ma) > Math.abs(mb)) {
-      c.y = (p1.y + p2.y) / 2 - (c.x - (p1.x + p2.x) / 2) / ma
+      y = (p1.y + p2.y) / 2 - (x - (p1.x + p2.x) / 2) / ma
     } else {
-      c.y = (p2.y + p3.y) / 2 - (c.x - (p2.x + p3.x) / 2) / mb
+      y = (p2.y + p3.y) / 2 - (x - (p2.x + p3.x) / 2) / mb
     }
 
-    return new Point(c.x, c.y)
+    return new Point(x, y)
   }
 
-  ///  <summary>
-  ///  if the area of the triangle formed by the 3 points is 0 then the points are collinear
-  ///  </summary>
-  ///  <param name="p1"></param>
-  ///  <param name="p2"></param>
-  ///  <param name="p3"></param>
-  ///  <returns></returns>
-  public static Collinear(p1: Point, p2: Point, p3: Point): boolean {
+  //  if the area of the triangle formed by the 3 points is 0 then the points are collinear
+
+  //  <returns></returns>
+  static Collinear(p1: Point, p2: Point, p3: Point): boolean {
     return p1.x * (p2.y - p3.y) + (p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) == 0
   }
 
   static count = 0
-  ///  <summary>
-  ///  Create a disc with the specified points on the boundary
-  ///  </summary>
-  ///  <param name="p1"></param>
-  ///  <param name="p2"></param>
-  ///  <param name="p3"></param>
+
+  //  Create a disc with the specified points on the boundary
+
   static constructorPPP(p1: Point, p2: Point, p3: Point) {
     Disc.count++
     const d = new Disc()
