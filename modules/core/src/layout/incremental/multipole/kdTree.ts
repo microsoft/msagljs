@@ -107,7 +107,7 @@ class LeafKdNode extends KdNode {
     const splitDirection: Dim = this.Dimension(Dim.Horizontal) > this.Dimension(Dim.Vertical) ? Dim.Horizontal : Dim.Vertical
     const nonSplitDirection: Dim = splitDirection == Dim.Horizontal ? Dim.Vertical : Dim.Horizontal
     const n = this.Size()
-    const nLeft = n / 2
+    const nLeft = n >> 1
     const nRight = n - nLeft
 
     const leftParticles: Array<Array<Particle>> = [new Array<Particle>(nLeft), new Array<Particle>(nLeft)]
@@ -200,14 +200,13 @@ export class KDTree {
     ps.push(this.particlesBy(Dim.Horizontal))
     ps.push(this.particlesBy(Dim.Vertical))
     this.leaves = new Array<LeafKdNode>()
-    let r: LeafKdNode
     let l: LeafKdNode = new LeafKdNode(ps)
     this.leaves.push(l)
-    const t = {rightSibling: r}
+    const t: {rightSibling: LeafKdNode} = {rightSibling: null}
     this.root = l.Split(t)
     this.leaves.push(t.rightSibling)
     const splitQueue = new SplitQueue(bucketSize)
-    splitQueue.EnqueueLL(l, r)
+    splitQueue.EnqueueLL(l, t.rightSibling)
     while (splitQueue.length > 0) {
       l = splitQueue.dequeue()
       l.Split(t)
@@ -233,10 +232,9 @@ export class KDTree {
             p.force = p.force.sub(v.multipoleCoefficients.ApproximateForce(p.point))
           }
         } else {
-          const leaf = <LeafKdNode>v
-          if (leaf != null) {
+          if (v instanceof LeafKdNode) {
             for (const p of l.particles[0]) {
-              for (const q of leaf.particles[0]) {
+              for (const q of v.particles[0]) {
                 if (p != q) {
                   p.force = p.force.add(MultipoleCoefficients.Force(p.point, q.point))
                 }
