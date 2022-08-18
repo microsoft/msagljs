@@ -118,6 +118,22 @@ export class Disc {
   ///  <param name="p3"></param>
   ///  <returns></returns>
   static centre(p1: Point, p2: Point, p3: Point): Point {
+    /* double ma, mb;
+            ma = (p2.Y - p1.Y) / (p2.X - p1.X);
+            mb = (p3.Y - p2.Y) / (p3.X - p2.X);
+            Debug.Assert(mb != ma); // collinear points not allowed
+            Point c = new Point();
+            c.X = ma * mb * (p1.Y - p3.Y) + mb * (p1.X + p2.X) - ma * (p2.X + p3.X);
+            c.X /= 2.0 * (mb - ma);
+            if (Math.Abs(ma) > Math.Abs(mb))
+            {
+                c.Y = (p1.Y + p2.Y) / 2.0 - (c.X - (p1.X + p2.X) / 2.0) / ma;
+            }
+            else
+            {
+                c.Y = (p2.Y + p3.Y) / 2.0 - (c.X - (p2.X + p3.X) / 2.0) / mb;
+            }
+            return c;*/
     Assert.assert(p2.x != p1.x)
     Assert.assert(p3.x != p2.x)
     const ma = (p2.y - p1.y) / (p2.x - p1.x)
@@ -125,8 +141,7 @@ export class Disc {
     Assert.assert(mb != ma)
     //  collinear points not allowed
     const c = {x: 0, y: 0}
-    c.x = ma * (mb * (p1.y - p3.y)) + (mb * (p1.x + p2.x) - ma * (p2.x + p3.x))
-    2 * (mb - ma)
+    c.x = (ma * (mb * (p1.y - p3.y)) + (mb * (p1.x + p2.x) - ma * (p2.x + p3.x))) / (2 * (mb - ma))
     if (Math.abs(ma) > Math.abs(mb)) {
       c.y = (p1.y + p2.y) / 2 - (c.x - (p1.x + p2.x) / 2) / ma
     } else {
@@ -147,6 +162,7 @@ export class Disc {
     return p1.x * (p2.y - p3.y) + (p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)) == 0
   }
 
+  static count = 0
   ///  <summary>
   ///  Create a disc with the specified points on the boundary
   ///  </summary>
@@ -154,17 +170,19 @@ export class Disc {
   ///  <param name="p2"></param>
   ///  <param name="p3"></param>
   static constructorPPP(p1: Point, p2: Point, p3: Point) {
+    Disc.count++
     const d = new Disc()
     if (Disc.Collinear(p1, p2, p3)) {
-      const UR: Point = new Point(Math.max(p1.x, Math.max(p2.x, p3.x)), Math.max(p1.y, Math.max(p2.y, p3.y)))
       const LL: Point = new Point(Math.min(p1.x, Math.min(p2.x, p3.x)), Math.min(p1.y, Math.max(p2.y, p3.y)))
+      const UR: Point = new Point(Math.max(p1.x, Math.max(p2.x, p3.x)), Math.max(p1.y, Math.max(p2.y, p3.y)))
       d.c = Disc.midPoint(LL, UR)
       d.r2 = d.Distance2(UR)
       d.r = Math.sqrt(d.r2)
     } else {
-      const dx13: number = p3.x - p1.x
       const dx12: number = p2.x - p1.x
       const dx23: number = p3.x - p2.x
+      const dx13: number = p3.x - p1.x
+
       if (dx12 != 0) {
         if (dx23 != 0) {
           d.c = Disc.centre(p1, p2, p3)

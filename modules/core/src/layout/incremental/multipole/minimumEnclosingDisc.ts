@@ -1,5 +1,5 @@
-///  implementation of the "MoveToFront" method for computing the minimum enclosing disc of a collection of points.
-///  Runs in time linear in the number of points.  After Welzl'1991.
+//  implementation of the "MoveToFront" method for computing the minimum enclosing disc of a collection of points.
+//  Runs in time linear in the number of points.  After Welzl'1991.
 
 import {LinkedList, LinkedListNode} from '@esfx/collections'
 import {Point} from '../../../math/geometry'
@@ -43,17 +43,17 @@ export class MoveToFront {
 
   ps: Point[]
 
-  ///  minimum enclosing disc
+  //  minimum enclosing disc
 
   public disc: Disc
 
-  ///  list of 2 or 3 points lying on the boundary
+  //  list of 2 or 3 points lying on the boundary
 
   public boundary: Array<number>
 
-  ///  Constructs the minimum enclosing disc for the specified points
+  //  Constructs the minimum enclosing disc for the specified points
 
-  ///  <param name="ps"></param>
+  //  <param name="ps"></param>
   public constructor(ps: Point[]) {
     this.ps = ps
     this.L = new LinkedList<number>()
@@ -100,22 +100,22 @@ export class MoveToFront {
   }
 }
 
-///  static methods for obtaining a minimum enclosing disc of a collection of points
+/** static methods for obtaining a minimum enclosing disc of a collection of points */
 
 export class MinimumEnclosingDisc {
-  ///  linear-time computation using the move-to-front heuristic by Welzl
+  //  linear-time computation using the move-to-front heuristic by Welzl
 
-  ///  <param name="points">points that must be enclosed</param>
-  ///  <returns>Smallest disc that encloses all the points</returns>
+  //  <param name="points">points that must be enclosed</param>
+  //  <returns>Smallest disc that encloses all the points</returns>
   public static LinearComputation(points: Point[]): Disc {
     const m: MoveToFront = new MoveToFront(points)
     return m.disc
   }
 
-  ///  Computing the minimum enclosing disc the slow stupid way.  Just for testing purposes.
+  //  Computing the minimum enclosing disc the slow stupid way.  Just for testing purposes.
 
-  ///  <param name="points"></param>
-  ///  <returns>Smallest disc that encloses all the points</returns>
+  //  <param name="points"></param>
+  //  <returns>Smallest disc that encloses all the points</returns>
   public static SlowComputation(points: Point[]): Disc {
     const n: number = points.length
     let mc: Disc = null
