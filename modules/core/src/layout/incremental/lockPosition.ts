@@ -5,11 +5,10 @@
 import {LinkedListNode} from '@esfx/collections'
 import {Rectangle} from '../../math/geometry'
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
-import {Graph} from '../../structs/graph'
 import {Assert} from '../../utils/assert'
 import {GeomGraph, GeomNode} from '../core'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
-import {FiNode, getFiNode} from './fiNode'
+import {getFiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
 ///  </summary>
@@ -19,15 +18,13 @@ export class LockPosition implements IConstraint {
   node: GeomNode
 
   listNode: LinkedListNode<LockPosition>
+  rectangularBoundary: (g: IGeomGraph) => RectangularClusterBoundary
 
-  ///  <summary>
-  ///  Makes a constraint preserve the nodes' bounding box with a very large weight
-  ///  </summary>
-  ///  <param name="node"></param>
-  ///  <param name="bounds"></param>
-  constructor(node: GeomNode, bounds: Rectangle) {
+  /**   Makes a constraint preserve the nodes' bounding box with a very large weight*/
+  constructor(node: GeomNode, bounds: Rectangle, rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary) {
     this.node = node
     this.Bounds = bounds
+    this.rectangularBoundary = rectBoundary
   }
 
   ///  <summary>
@@ -36,8 +33,8 @@ export class LockPosition implements IConstraint {
   ///  <param name="node"></param>
   ///  <param name="bounds"></param>
   ///  <param name="weight"></param>
-  static constructorNRN(node: GeomNode, bounds: Rectangle, weight: number) {
-    const l = new LockPosition(node, bounds)
+  static constructorNRN(node: GeomNode, bounds: Rectangle, weight: number, rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary) {
+    const l = new LockPosition(node, bounds, rectBoundary)
     l.Weight = weight
     return l
   }
@@ -122,10 +119,10 @@ export class LockPosition implements IConstraint {
     const isCluster = this.node.hasOwnProperty('shallowNodes')
     if (isCluster) {
       const cluster = this.node as unknown as IGeomGraph
-      const cb: RectangularClusterBoundary = cluster.RectangularBoundary
+      const cb: RectangularClusterBoundary = this.rectangularBoundary(cluster)
       cb.Lock(this.Bounds.left, this.Bounds.right, this.Bounds.top, this.Bounds.bottom)
       for (const c of cluster.subgraphsDepthFirst) {
-        c.RectangularBoundary.GenerateFixedConstraints = true
+        this.rectangularBoundary(c).GenerateFixedConstraints = true
         for (const child of c.shallowNodes) {
           LockPosition.SetFINodeWeight(child, this.weight)
         }
@@ -135,9 +132,10 @@ export class LockPosition implements IConstraint {
     }
 
     for (const ancestor of this.node.getAncestors()) {
-      if (ancestor.RectangularBoundary != null) {
-        ancestor.RectangularBoundary.GenerateFixedConstraints = false
-        ancestor.RectangularBoundary.RestoreDefaultMargin()
+      const rb = this.rectangularBoundary(ancestor)
+      if (rb != null) {
+        rb.GenerateFixedConstraints = false
+        rb.RestoreDefaultMargin()
       }
     }
   }
@@ -149,9 +147,10 @@ export class LockPosition implements IConstraint {
     const isCluster = this.node.hasOwnProperty('shallowNodes')
     if (isCluster) {
       const cluster = this.node as unknown as IGeomGraph
-      cluster.RectangularBoundary.Unlock()
+      this.rectangularBoundary(cluster).Unlock()
       for (const c of cluster.subgraphsDepthFirst) {
-        c.RectangularBoundary.GenerateFixedConstraints = c.RectangularBoundary.GenerateFixedConstraintsDefault
+        const rb = this.rectangularBoundary(c)
+        rb.GenerateFixedConstraints = rb.GenerateFixedConstraintsDefault
         for (const child of c.shallowNodes) {
           LockPosition.SetFINodeWeight(child, 1)
         }
@@ -162,8 +161,9 @@ export class LockPosition implements IConstraint {
 
     let parent = this.node.parent as GeomGraph
     while (parent != null) {
-      if (parent.RectangularBoundary != null) {
-        parent.RectangularBoundary.GenerateFixedConstraints = parent.RectangularBoundary.GenerateFixedConstraintsDefault
+      const rb = this.rectangularBoundary(parent)
+      if (rb != null) {
+        rb.GenerateFixedConstraints = rb.GenerateFixedConstraintsDefault
       }
 
       parent = parent.parent as GeomGraph
