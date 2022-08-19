@@ -84,7 +84,7 @@ class LeafKdNode extends KdNode {
       this.ps[i] = this.particles[0][i].point
     }
 
-    return MinimumEnclosingDisc.LinearComputation(this.ps)
+    return (this.med = MinimumEnclosingDisc.LinearComputation(this.ps))
   }
 
   private Min(d: Dim): number {

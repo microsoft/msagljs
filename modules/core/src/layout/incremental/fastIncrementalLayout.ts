@@ -417,7 +417,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.ComputeRepulsiveForces(this.nodes)
     }
 
-    this.edges.forEach(this.AddSpringForces)
+    this.edges.forEach((e) => this.AddSpringForces(e))
     for (const c of this.components) {
       let origin = new Point(0, 0)
       for (let i = 0; i < c.length; i++) {
@@ -558,8 +558,8 @@ export class FastIncrementalLayout extends Algorithm {
 
       Assert.assert(!Number.isNaN(a.x), '!double.IsNaN(a.X)')
       Assert.assert(!Number.isNaN(a.y), '!double.IsNaN(a.Y)')
-      Assert.assert(!Number.isFinite(a.x), '!double.IsInfinity(a.X)')
-      Assert.assert(!Number.isFinite(a.y), '!double.IsInfinity(a.Y)')
+      Assert.assert(Number.isFinite(a.x), '!double.IsInfinity(a.X)')
+      Assert.assert(Number.isFinite(a.y), '!double.IsInfinity(a.Y)')
       dx = dx.add(a)
       dx = dx.div(v.stayWeight)
       v.Center = v.Center.add(dx)
