@@ -39,6 +39,10 @@ export class AxisSolver {
   private clusterHierarchies: Iterable<IGeomGraph>
 
   private clusterSettings: (gg: IGeomGraph) => any
+  rectBoundary: (
+    ///  Wrapper round all the ProjectionSolver stuff.
+    gg: IGeomGraph,
+  ) => RectangularClusterBoundary
 
   ///  <summary>
   ///  Do we even need to do a solve?
@@ -63,6 +67,7 @@ export class AxisSolver {
     avoidOverlaps: boolean,
     constraintLevel: number,
     clusterSettings: (gg: IGeomGraph) => any,
+    rectBoundary: (gg: IGeomGraph) => RectangularClusterBoundary,
   ) {
     this.IsHorizontal = isHorizontal
     this.nodes = nodes
@@ -70,6 +75,7 @@ export class AxisSolver {
     this.avoidOverlaps = avoidOverlaps
     this.ConstraintLevel = constraintLevel
     this.clusterSettings = clusterSettings
+    this.rectBoundary = rectBoundary
   }
 
   ///  <summary>
@@ -209,7 +215,7 @@ export class AxisSolver {
     //  If !isHorizontal this overwrites the Olap members of the Incremental.Clusters and Msagl.Nodes.
     //  First create the olapCluster for the current incCluster.  If olapParentCluster is null, then
     //  incCluster is the root of a new hierarchy.
-    const rb: RectangularClusterBoundary = incClus.RectangularBoundary // todo - this is not defined!!!!
+    const rb: RectangularClusterBoundary = this.rectBoundary(incClus)
     if (this.IsHorizontal) {
       rb.olapCluster = generator.AddCluster(
         olapParentCluster,
@@ -299,7 +305,7 @@ export class AxisSolver {
 
   private UpdateOlapClusters(incClusters: Iterable<IGeomGraph>) {
     for (const incClus of incClusters) {
-      const rb: RectangularClusterBoundary = incClus.RectangularBoundary
+      const rb: RectangularClusterBoundary = this.rectBoundary(incClus)
       //  Because two heavily-weighted nodes can force each other to move, we have to update
       //  any BorderInfos that are IsFixedPosition to reflect this possible movement; for example,
       //  a fixed border and a node being dragged will both have heavy weights.
@@ -346,7 +352,7 @@ export class AxisSolver {
   private DebugVerifyClusters(generator: ConstraintGenerator, incCluster: IGeomGraph, root: IGeomGraph) {
     const dblEpsilon = 0.0001
     //  First verify that all nodes are within the cluster.
-    const clusRect: Rectangle = incCluster.RectangularBoundary.rectangle
+    const clusRect: Rectangle = this.rectBoundary(incCluster).rectangle
     for (const v of incCluster.shallowNodes) {
       const iiFilNode: FiNode = getFiNode(v)
       const iiNodeRect: Rectangle = iiFilNode.mNode.boundaryCurve.boundingBox
@@ -382,7 +388,7 @@ export class AxisSolver {
         for (const incClusComp of incCluster.Clusters) {
           AxisSolver.DebugVerifyRectsDisjoint(
             iiNodeRect,
-            incClusComp.RectangularBoundary.rectangle,
+            this.rectBoundary(incClusComp).rectangle,
             generator.PaddingP,
             generator.Padding,
             dblEpsilon,
@@ -396,7 +402,7 @@ export class AxisSolver {
     //  endfor iiNode
     //  Now verify the clusters are contained and don't overlap.
     for (const iiIncClus of incCluster.Clusters) {
-      const iiClusRect: Rectangle = iiIncClus.RectangularBoundary.rectangle
+      const iiClusRect: Rectangle = this.rectBoundary(iiIncClus).rectangle
       if (this.IsHorizontal) {
         //  Don't check containment for the root ClusterHierarchy as there is no border for it.
         if (incCluster != root) {
@@ -423,7 +429,7 @@ export class AxisSolver {
             // TODO: Warning!!! continue If
           }
 
-          const jjClusRect: Rectangle = jjIncClus.RectangularBoundary.rectangle
+          const jjClusRect: Rectangle = this.rectBoundary(jjIncClus).rectangle
           AxisSolver.DebugVerifyRectsDisjoint(iiClusRect, jjClusRect, generator.PaddingP, generator.Padding, dblEpsilon)
         }
       }

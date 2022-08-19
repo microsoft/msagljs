@@ -222,7 +222,7 @@ export class FastIncrementalLayoutSettings {
   ///  <param name="bounds"></param>
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLockNR(node: GeomNode, bounds: Rectangle): LockPosition {
-    const lp: LockPosition = new LockPosition(node, bounds)
+    const lp: LockPosition = new LockPosition(node, bounds, (g) => this.algorithm.getRB(g))
     lp.listNode = this.locks.push(lp)
     return lp
   }
@@ -238,7 +238,7 @@ export class FastIncrementalLayoutSettings {
   ///  <param name="weight">stay weight of lock</param>
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLock(node: GeomNode, bounds: Rectangle, weight: number): LockPosition {
-    const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight)
+    const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight, (g) => this.algorithm.getRB(g))
     lp.listNode = this.locks.push(lp)
     return lp
   }

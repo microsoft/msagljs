@@ -50,14 +50,6 @@ export class InitialLayout extends Algorithm {
       this.componentCount = 1
       this.LayoutComponent(this.graph)
     } else {
-      for (const c of this.graph.subgraphs()) {
-        if (c.RectangularBoundary == null) {
-          continue
-        }
-
-        c.RectangularBoundary.GenerateFixedConstraints = false
-      }
-
       const components = Array.from(this.graph.graph.getClusteredConnectedComponents()).map(
         (topNodes) => new GeomConnectedComponent(topNodes),
       )

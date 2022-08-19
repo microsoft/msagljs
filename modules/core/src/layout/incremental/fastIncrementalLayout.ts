@@ -131,6 +131,7 @@ export class FastIncrementalLayout extends Algorithm {
       settings.AvoidOverlaps,
       settings.MinConstraintLevel,
       this.clusterSettings,
+      (g) => this.getRB(g),
     )
     const orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
     orp.AllowDeferToVertical = true
@@ -143,6 +144,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.settings.AvoidOverlaps,
       this.settings.minConstraintLevel,
       this.clusterSettings,
+      (g) => this.getRB(g),
     )
     this.SetupConstraints()
     this.computeWeight(geometryGraph)
@@ -199,6 +201,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.verticalSolver.structuralConstraints,
       [this.graph],
       this.clusterSettings,
+      (g) => this.getRB(g),
     )
     this.settings.Unconverge()
   }
