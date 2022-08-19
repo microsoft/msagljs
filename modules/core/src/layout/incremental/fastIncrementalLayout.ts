@@ -37,7 +37,7 @@ export class FastIncrementalLayout extends Algorithm {
 
   edges = new Array<FiEdge>()
 
-  clustersInfo = new Map<IGeomGraph, {barycenter?: Point; weight?: number}>()
+  clustersInfo = new Map<IGeomGraph, {barycenter?: Point; weight?: number; rectBoundary?: RectangularClusterBoundary}>()
 
   /**  Holds the derivative of the cost function calculated of the most recent iteration.*/
   energy: number
@@ -61,6 +61,19 @@ export class FastIncrementalLayout extends Algorithm {
   clusterSettings: (g: IGeomGraph) => any
 
   clusterEdges: Array<Edge> = new Array<Edge>()
+
+  getRB(g: IGeomGraph): RectangularClusterBoundary | undefined {
+    const t = this.clustersInfo.get(g)
+    return t ? t.rectBoundary : undefined
+  }
+
+  setRB(g: IGeomGraph, rb: RectangularClusterBoundary) {
+    const t = this.clustersInfo.get(g)
+    if (t == null) {
+      this.clustersInfo.set(g, {})
+    }
+    t.rectBoundary = rb
+  }
 
   ///  Create the graph data structures.
 
@@ -134,8 +147,8 @@ export class FastIncrementalLayout extends Algorithm {
     this.SetupConstraints()
     this.computeWeight(geometryGraph)
     for (const c of this.graph.subgraphsDepthFirst) {
-      if (c.RectangularBoundary == null) {
-        c.RectangularBoundary = new RectangularClusterBoundary()
+      if (this.getRB(c) == null) {
+        this.setRB(c, new RectangularClusterBoundary())
       }
     }
 
@@ -683,7 +696,7 @@ export class FastIncrementalLayout extends Algorithm {
         //  if we are not using the solver (e.g. when constraintLevel == 0) then we need to get the cluster bounds manually
         c.calculateBoundsFromChildren(this.settings.clusterMargin)
       } else {
-        c.boundingBox = c.RectangularBoundary.Rect
+        c.boundingBox = this.getRB(c).Rect
       }
 
       //c.RaiseLayoutDoneEvent();
@@ -691,7 +704,8 @@ export class FastIncrementalLayout extends Algorithm {
   }
 }
 function hasSomeClusters(g: IGeomGraph): boolean {
-  for (const f of g.Clusters) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for (const _ of g.Clusters) {
     return true
   }
   return false

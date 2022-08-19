@@ -1,5 +1,4 @@
 import {Direction} from '../../math/geometry'
-import {Edge} from '../../structs/edge'
 import {Algorithm} from '../../utils/algorithm'
 import {GeomGraph, MdsLayoutSettings} from '../../'
 import {FastIncrementalLayout} from '../incremental/fastIncrementalLayout'

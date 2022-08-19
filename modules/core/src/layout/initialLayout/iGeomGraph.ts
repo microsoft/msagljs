@@ -1,5 +1,4 @@
 import {Point, Rectangle} from '../../math/geometry'
-import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {GeomEdge, GeomNode} from '../core'
 
 export interface IGeomGraph {
@@ -15,5 +14,4 @@ export interface IGeomGraph {
   deepNodeCount: number
   translate(delta: Point): void
   boundingBox: Rectangle
-  RectangularBoundary: RectangularClusterBoundary
 }

@@ -209,7 +209,7 @@ export class AxisSolver {
     //  If !isHorizontal this overwrites the Olap members of the Incremental.Clusters and Msagl.Nodes.
     //  First create the olapCluster for the current incCluster.  If olapParentCluster is null, then
     //  incCluster is the root of a new hierarchy.
-    const rb: RectangularClusterBoundary = incClus.RectangularBoundary
+    const rb: RectangularClusterBoundary = incClus.RectangularBoundary // todo - this is not defined!!!!
     if (this.IsHorizontal) {
       rb.olapCluster = generator.AddCluster(
         olapParentCluster,
