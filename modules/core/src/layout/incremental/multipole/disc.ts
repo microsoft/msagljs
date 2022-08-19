@@ -91,30 +91,14 @@ export class Disc {
 
   //  <returns></returns>
   static centre(p1: Point, p2: Point, p3: Point): Point {
-    /* double ma, mb;
-            ma = (p2.Y - p1.Y) / (p2.X - p1.X);
-            mb = (p3.Y - p2.Y) / (p3.X - p2.X);
-            Debug.Assert(mb != ma); // collinear points not allowed
-            Point c = new Point();
-            c.X = ma * mb * (p1.Y - p3.Y) + mb * (p1.X + p2.X) - ma * (p2.X + p3.X);
-            c.X /= 2.0 * (mb - ma);
-            if (Math.Abs(ma) > Math.Abs(mb))
-            {
-                c.Y = (p1.Y + p2.Y) / 2.0 - (c.X - (p1.X + p2.X) / 2.0) / ma;
-            }
-            else
-            {
-                c.Y = (p2.Y + p3.Y) / 2.0 - (c.X - (p2.X + p3.X) / 2.0) / mb;
-            }
-            return c;*/
     Assert.assert(p2.x != p1.x)
     Assert.assert(p3.x != p2.x)
     const ma = (p2.y - p1.y) / (p2.x - p1.x)
     const mb = (p3.y - p2.y) / (p3.x - p2.x)
     Assert.assert(mb != ma)
     //  collinear points not allowed
-    const x = (ma * (mb * (p1.y - p3.y)) + (mb * (p1.x + p2.x) - ma * (p2.x + p3.x))) / (2 * (mb - ma))
     let y: number
+    const x = (ma * mb * (p1.y - p3.y) + mb * (p1.x + p2.x) - ma * (p2.x + p3.x)) / (2 * (mb - ma))
     if (Math.abs(ma) > Math.abs(mb)) {
       y = (p1.y + p2.y) / 2 - (x - (p1.x + p2.x) / 2) / ma
     } else {
