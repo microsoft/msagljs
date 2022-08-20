@@ -35,7 +35,8 @@ export class FastIncrementalLayout extends Algorithm {
 
   constraints = new Map<number, Array<IConstraint>>()
 
-  edges = new Array<FiEdge>()
+  edges: Array<FiEdge>
+  nodes: Array<FiNode>
 
   clustersInfo = new Map<IGeomGraph, {barycenter?: Point; weight?: number; rectBoundary?: RectangularClusterBoundary}>()
 
@@ -45,10 +46,6 @@ export class FastIncrementalLayout extends Algorithm {
   graph: IGeomGraph
 
   horizontalSolver: AxisSolver
-
-  ///  Construct a graph by adding nodes and edges to these lists
-
-  nodes: FiNode[]
 
   progress: number
 
@@ -91,20 +88,7 @@ export class FastIncrementalLayout extends Algorithm {
     this.graph = geometryGraph
     this.settings = settings
     this.clusterSettings = clusterSettings
-    let i = 0
-    for (const gn of this.graph.deepNodes) {
-      const fiNode = new FiNode(i++, gn)
-      new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
-    }
-
-    for (const e of this.graph.edges()) {
-      if (e.source instanceof GeomGraph || e.target instanceof GeomGraph) {
-        continue
-      } else {
-        const fiEdge = new FiEdge(e)
-        new AlgorithmData(e.edge, fiEdge)
-      }
-    }
+    this.initFiNodesEdges()
     this.edges = Array.from(this.graph.edges()).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
     this.nodes = Array.from(this.graph.shallowNodes).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
     this.SetLockNodeWeights()
@@ -155,6 +139,22 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     this.CurrentConstraintLevel = initialConstraintLevel
+  }
+  initFiNodesEdges() {
+    let i = 0
+    for (const gn of this.graph.deepNodes) {
+      const fiNode = new FiNode(i++, gn)
+      new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
+    }
+
+    for (const e of this.graph.edges()) {
+      if (e.source instanceof GeomGraph || e.target instanceof GeomGraph) {
+        continue
+      } else {
+        const fiEdge = new FiEdge(e)
+        new AlgorithmData(e.edge, fiEdge)
+      }
+    }
   }
 
   SetupConstraints() {
@@ -304,7 +304,7 @@ export class FastIncrementalLayout extends Algorithm {
       //  before calculating forces we perturb each center by a small vector of a unique
       //  but deterministic direction (by walking around a circle of n steps) - this allows
       //  the KD-tree to decompose even when some nodes are at exactly the same position
-      const angleDelta: number = 2 * (Math.PI / n)
+      const angleDelta = 2 * (Math.PI / n)
       let angle = 0
       for (let i = 0; i < n; i++) {
         ps[i] = new Particle(vs[i].Center.add(new Point(Math.cos(angle), Math.sin(angle)).mul(1e-5)))
@@ -369,7 +369,11 @@ export class FastIncrementalLayout extends Algorithm {
         w++
       }
     }
-    this.clustersInfo.set(root, {weight: w})
+    let info = this.clustersInfo.get(root)
+    if (info == null) {
+      this.clustersInfo.set(root, (info = {}))
+    }
+    info.weight = w
     return w
   }
   AddClusterForces(root: IGeomGraph) {
@@ -512,7 +516,7 @@ export class FastIncrementalLayout extends Algorithm {
   VerletIntegration(): number {
     //  The following sets the Centers of all nodes to a (not necessarily feasible) configuration that reduces the cost (forces)
     const energy0: number = this.energy
-    this.energy = <number>this.ComputeDescentDirection(1)
+    this.energy = this.ComputeDescentDirection(1)
     this.UpdateStepSize(energy0)
     this.SolveSeparationConstraints()
     let displacementSquared = 0
@@ -677,7 +681,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
     //this.StartListenToLocalProgress(this.settings.MinorIterations);
     for (let i = 0; i < this.settings.MinorIterations; i++) {
-      const d2: number = this.settings.RungeKuttaIntegration ? this.RungeKuttaIntegration() : this.VerletIntegration()
+      const d2 = this.settings.RungeKuttaIntegration ? this.RungeKuttaIntegration() : this.VerletIntegration()
       if (d2 < this.settings.DisplacementThreshold || this.settings.Iterations > this.settings.MaxIterations) {
         this.settings.Converged = true
         //      this.ProgressComplete();
