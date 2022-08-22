@@ -137,6 +137,9 @@ export class FastIncrementalLayout extends Algorithm {
         this.setRB(c, new RectangularClusterBoundary())
       }
     }
+    if (this.getRB(this.graph) == null) {
+      this.setRB(this.graph, new RectangularClusterBoundary())
+    }
 
     this.CurrentConstraintLevel = initialConstraintLevel
   }
