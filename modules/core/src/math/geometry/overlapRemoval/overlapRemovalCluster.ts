@@ -174,10 +174,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   ClusterPaddingP: number
 
   get Name(): string {
-    return 'Clus_' + 'Root'
-    // TODO: Warning!!!, inline IF is not supported ?
-    this.IsRootCluster
-    this.LeftBorderNode.UserData + ('-' + this.RightBorderNode.UserData)
+    return this.IsRootCluster ? 'Clus_' + 'Root' : this.LeftBorderNode.UserData + ('-' + this.RightBorderNode.UserData)
   }
 
   //  VERBOSE
@@ -198,7 +195,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   ///  the root cluster "infinite" means we don't have to generate the constraints for nodes and clusters
   ///  in the root, which may be numerous.
   ///  </summary>
-  IsRootCluster: boolean
+  get IsRootCluster(): boolean
   ParentCluster: OverlapRemovalCluster
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
@@ -408,10 +405,9 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     }
 
     //  Top/Bottom are considered the secondary (Perpendicular) axis here.
-    const leftBorderWidth: number = OverlapRemovalCluster.DefaultBorderWidth
-    const rightBorderWidth: number = OverlapRemovalCluster.DefaultBorderWidth
+    const t = {leftBorderWidth: OverlapRemovalCluster.DefaultBorderWidth, rightBorderWidth: OverlapRemovalCluster.DefaultBorderWidth}
     if (!this.IsRootCluster) {
-      this.CalculateBorderWidths(solver, events, boundaryRect, /* out */ leftBorderWidth, /* out */ rightBorderWidth)
+      this.CalculateBorderWidths(solver, events, boundaryRect, t)
       //   this.#if(VERBOSE)
       //   System.Diagnostics.Debug.WriteLine(
       //     ' {0} After CalculateBorderWidths: p {1:F5} s {2:F5} pP {3:F5} sP {4:F5}',
@@ -427,7 +423,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     this.GenerateFromEvents(solver, parameters, events, isHorizontal)
     if (!this.IsRootCluster) {
       //  Non-fixed borders are moved later by SqueezeNonFixedBorderPositions().
-      this.AdjustFixedBorderPositions(solver, leftBorderWidth, rightBorderWidth, isHorizontal)
+      this.AdjustFixedBorderPositions(solver, t.leftBorderWidth, t.rightBorderWidth, isHorizontal)
     }
 
     return true
@@ -453,7 +449,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  If a child cluster is empty, it will have zero size and no way to set its position.
         //  That includes clusters containing nothing but empty clusters.  We skip those here.
         if (!cluster.IsInSolver) {
-          // TODO: Warning!!! continue If
+          continue
         }
       } else {
         //  Not a cluster; just have it add its variable to the solver.
@@ -521,15 +517,14 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     solver: Solver,
     events: Array<Event>,
     boundaryRect: Rectangle,
-    /* out */ leftBorderWidth: number,
-    /* out */ rightBorderWidth: number,
+    t: {leftBorderWidth: number; rightBorderWidth: number},
   ) {
     //  Cluster-level padding (the space around the borders) complicates this.  Margin
     //  is added only at the inside edge of the cluster; for example, as space for a
     //  title of the cluster to be printed.  We just use the margin as the boundary node
     //  sizes.  Margin is separate from padding; padding is always added.
-    leftBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
-    rightBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
+    t.leftBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
+    t.rightBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
     //  @@DCR "Precalculate Cluster Sizes": at this point we could solve them to get the "real" cluster
     //  size (as above, this may be requested by solver being null on input so we create our own above).
     //  Now calculate our position (as midpoints) and size.  This will be used in the parentCluster's
@@ -555,8 +550,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     //  outer borders of the outer nodes, regardless of whether the perpendicular borders are
     //  fixed-position; this ensures that the scan line will correctly see their open and close.
     //  Left/Open...
-    this.LeftBorderNode.Position = boundaryRect.left + leftBorderWidth / 2
-    this.LeftBorderNode.Size = leftBorderWidth
+    this.LeftBorderNode.Position = boundaryRect.left + t.leftBorderWidth / 2
+    this.LeftBorderNode.Size = t.leftBorderWidth
     this.LeftBorderNode.Weight = this.OpenBorderInfo.Weight
     this.LeftBorderNode.PositionP = this.PositionP
     this.LeftBorderNode.SizeP = this.SizeP
@@ -565,8 +560,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     //  Note:  The Left/Right, Open/Close terminology here is inconsistent with GenerateFromEvents
     //   since here Open is in the primary axis and in GenerateFromEvents it's in the secondary/P axis.
     //  Right/Close...
-    this.RightBorderNode.Position = boundaryRect.right - rightBorderWidth / 2
-    this.RightBorderNode.Size = rightBorderWidth
+    this.RightBorderNode.Position = boundaryRect.right - t.rightBorderWidth / 2
+    this.RightBorderNode.Size = t.rightBorderWidth
     this.RightBorderNode.Weight = this.CloseBorderInfo.Weight
     this.RightBorderNode.PositionP = this.PositionP
     this.RightBorderNode.SizeP = this.SizeP
@@ -798,10 +793,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //     currentNode.CloseP + (this.NodePaddingP - leftNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
         //   'LeftNeighbors: unexpected close/open overlap',
         // )
-        const p: number = this.ClusterPadding
-        // TODO: Warning!!!, inline IF is not supported ?
-        leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode
-        this.NodePadding
+        const p: number =
+          leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
         let separation: number = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
         if (this.TranslateChildren) {
           separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
