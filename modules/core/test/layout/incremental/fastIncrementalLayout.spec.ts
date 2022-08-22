@@ -155,6 +155,8 @@ test('initialfil', () => {
   filSettings.AvoidOverlaps = true
   const fil = new FastIncrementalLayout(gg, filSettings, 0, () => null)
   fil.run()
+
+  new SvgDebugWriter('/tmp/filAfterInitial.svg').writeGeomGraph(gg)
   const ir = new InitialLayout(gg, filSettings)
   ir.run()
 
