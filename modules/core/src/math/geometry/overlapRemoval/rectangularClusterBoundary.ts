@@ -103,9 +103,9 @@ export class RectangularClusterBoundary {
   ///  When this is set, the OverlapRemovalCluster will generate equality constraints rather than inequalities
   ///  to keep its children within its bounds.
   ///  </summary>
-  GenerateFixedConstraints: boolean
+  GenerateFixedConstraints = false
 
-  generateFixedConstraintsDefault: boolean
+  generateFixedConstraintsDefault = false
 
   ///  <summary>
   ///  The default value that GenerateFixedConstraints will be reverted to when a lock is released

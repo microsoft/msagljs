@@ -174,7 +174,6 @@ export class OverlapRemovalNode {
     if (this.Variable) {
       if (Math.abs(this.Position - this.Variable.ActualPos) > 1) {
         console.log()
-        throw new Error('debug')
       }
       this.Position = this.Variable.ActualPos
       //  Currently we don't use this anymore.

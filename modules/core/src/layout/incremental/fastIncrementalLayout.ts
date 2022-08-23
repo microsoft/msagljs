@@ -111,7 +111,7 @@ export class FastIncrementalLayout extends Algorithm {
     this.horizontalSolver = new AxisSolver(
       true,
       this.nodes,
-      [this.graph],
+      Array.from(this.graph.Clusters),
       settings.AvoidOverlaps,
       settings.MinConstraintLevel,
       this.clusterSettings,
@@ -124,7 +124,7 @@ export class FastIncrementalLayout extends Algorithm {
     this.verticalSolver = new AxisSolver(
       false,
       this.nodes,
-      [this.graph],
+      Array.from(this.graph.Clusters),
       this.settings.AvoidOverlaps,
       this.settings.minConstraintLevel,
       this.clusterSettings,
@@ -202,7 +202,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.nodes,
       this.horizontalSolver.structuralConstraints,
       this.verticalSolver.structuralConstraints,
-      [this.graph],
+      Array.from(this.graph.Clusters),
       this.clusterSettings,
       (g) => this.getRB(g),
     )
