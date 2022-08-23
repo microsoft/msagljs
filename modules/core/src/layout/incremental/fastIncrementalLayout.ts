@@ -141,7 +141,7 @@ export class FastIncrementalLayout extends Algorithm {
       this.setRB(this.graph, new RectangularClusterBoundary())
     }
 
-    this.CurrentConstraintLevel = initialConstraintLevel
+    this.setCurrentConstraintLevel(initialConstraintLevel)
   }
   initFiNodesEdges() {
     let i = 0
@@ -189,10 +189,10 @@ export class FastIncrementalLayout extends Algorithm {
 
   ///  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
 
-  get CurrentConstraintLevel(): number {
+  getCurrentConstraintLevel(): number {
     return this.currentConstraintLevel
   }
-  set CurrentConstraintLevel(value: number) {
+  setCurrentConstraintLevel(value: number) {
     this.currentConstraintLevel = value
     this.horizontalSolver.ConstraintLevel = value
     this.verticalSolver.ConstraintLevel = value
@@ -471,7 +471,7 @@ export class FastIncrementalLayout extends Algorithm {
   SatisfyConstraints() {
     for (let i = 0; i < this.settings.ProjectionIterations; i++) {
       for (const level of this.constraints.keys()) {
-        if (level > this.CurrentConstraintLevel) {
+        if (level > this.getCurrentConstraintLevel()) {
           break
         }
 

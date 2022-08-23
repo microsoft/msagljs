@@ -153,11 +153,8 @@ test('initialfil', () => {
   filSettings.maxIterations = 10
   filSettings.minorIterations = 20
   filSettings.AvoidOverlaps = true
-  const fil = new FastIncrementalLayout(gg, filSettings, 0, () => null)
-  fil.run()
-
-  new SvgDebugWriter('/tmp/filAfterInitial.svg').writeGeomGraph(gg)
   const ir = new InitialLayout(gg, filSettings)
+  expect(noOverlaps(gg)).toBe(true)
   ir.run()
 
   routeEdges(gg, Array.from(gg.deepEdges), null)
@@ -180,3 +177,15 @@ test('initialfil', () => {
 
   new SvgDebugWriter('/tmp/fil2.svg').writeGeomGraph(gg)
 })
+function noOverlaps(gg: GeomGraph): any {
+  const arr = Array.from(gg.shallowNodes)
+  for (let i = 0; i < arr.length; i++) {
+    const n = arr[i]
+    for (let j = i + 1; j < arr.length; j++) {
+      if (n.boundingBox.intersects(arr[j].boundingBox)) {
+        return false
+      }
+    }
+  }
+  return true
+}

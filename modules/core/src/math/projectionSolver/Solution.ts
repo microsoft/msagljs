@@ -6,32 +6,32 @@ export class Solution {
   // The only failure condition is if there are one or more unsatisfiable constraints, such as cycles
   // or mutually exclusive equality constraints.
 
-  NumberOfUnsatisfiableConstraints: number
+  NumberOfUnsatisfiableConstraints = 0
 
   // The number of times the outer Project/Split loop was run.
 
-  OuterProjectIterations: number
+  OuterProjectIterations = 0
 
   // The number of times Project iterated internally; divide by OuterProjectIterations to get the average
   // inner iterations per outer iteration; see also MinInnerProjectIterations and MaxInnerProjectIterations.
 
-  InnerProjectIterationsTotal: number
+  InnerProjectIterationsTotal = 0
 
   // The minimum number of times Project iterated internally for any outer Project iterations.
 
-  MinInnerProjectIterations: number
+  MinInnerProjectIterations = 0
 
   // The maximum number of times Project iterated internally for any outer Project iterations.
 
-  MaxInnerProjectIterations: number
+  MaxInnerProjectIterations = 0
 
   // The maximum depth of a constraint tree.
 
-  MaxConstraintTreeDepth: number
+  MaxConstraintTreeDepth = 0
 
   // The final value of the goal function.
 
-  GoalFunctionValue: number
+  GoalFunctionValue = 0
 
   // Whether Solve() used the full Qpsc (Quadratic Programming for Separation Constraints) algorithm,
   // either by default or because UsedParameters.ForceQpsc was set.
@@ -40,16 +40,16 @@ export class Solution {
 
   // If true, the function ended due to TimeLimit being exceeded.
 
-  TimeLimitExceeded: boolean
+  TimeLimitExceeded = false
 
   // If true, the function ended due to OuterProjectIterationsLimit being exceeded.
 
-  OuterProjectIterationsLimitExceeded: boolean
+  OuterProjectIterationsLimitExceeded = false
 
   // If true, a call to Project ended early due to InnerProjectIterationsLimit being exceeded.
   // The result may be nonfeasible.
 
-  InnerProjectIterationsLimitExceeded: boolean
+  InnerProjectIterationsLimitExceeded = false
 
   // Indicates whether one or more execution limits were exceeded.
 

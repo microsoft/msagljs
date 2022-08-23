@@ -90,7 +90,7 @@ export class FastIncrementalLayoutSettings {
   ///  <summary>
   ///  RungaKutta integration potentially gives smoother increments, but is more expensive
   ///  </summary>
-  RungeKuttaIntegration: boolean
+  RungeKuttaIntegration = false
 
   initialStepSize = 1.4
 
@@ -531,15 +531,15 @@ export class FastIncrementalLayoutSettings {
   ///  obtain an untangled unconstrained layout, then 1 to introduce structural constraints and finally 2 to beautify.
   ///  Running only at level 2 will most likely leave the graph stuck in a tangled local minimum.
   ///  </summary>
-  public get CurrentConstraintLevel(): number {
+  public getCurrentConstraintLevel(): number {
     if (this.algorithm == null) {
       return 0
     }
 
-    return this.algorithm.CurrentConstraintLevel
+    return this.algorithm.getCurrentConstraintLevel()
   }
-  public set CurrentConstraintLevel(value: number) {
-    this.algorithm.CurrentConstraintLevel = value
+  public setCurrentConstraintLevel(value: number) {
+    this.algorithm.setCurrentConstraintLevel(value)
   }
 
   attractiveInterClusterForceConstant = 1
