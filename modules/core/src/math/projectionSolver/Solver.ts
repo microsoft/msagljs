@@ -312,7 +312,7 @@ export class Solver {
     if (this.solverParams.OuterProjectIterationsLimit < 0) {
       // If this came in 0, it stays that way, and there is no limit.  Otherwise, set it to a value
       // reflecting the expectation of convergence roughly log-linearly in the number of variables.
-      this.solverParams.OuterProjectIterationsLimit = 100 * (<number>Math.log2(this.numberOfVariables) + 1)
+      this.solverParams.OuterProjectIterationsLimit = 100 * (Math.floor(Math.log2(this.numberOfVariables)) + 1)
     }
 
     if (this.solverParams.InnerProjectIterationsLimit < 0) {
@@ -320,7 +320,8 @@ export class Solver {
       // any pass, each constraint may be violated (most likely this happens only on the first pass),
       // and add some extra based upon constraint count.  Now that we split and retry on unsatisfied
       // constraints, assume that any constraint may be seen twice on a pass.
-      this.solverParams.InnerProjectIterationsLimit = this.numberOfConstraints * 2 + 100 * (<number>Math.log2(this.numberOfConstraints) + 1)
+      this.solverParams.InnerProjectIterationsLimit =
+        this.numberOfConstraints * 2 + 100 * (Math.max(0, Math.floor(Math.log2(this.numberOfConstraints))) + 1)
     }
 
     // ReSolving can be done for updated constraints.
@@ -335,7 +336,7 @@ export class Solver {
     //
     // If no constraints have been loaded, there's nothing to do.  Two distinct variables
     // are required to create a constraint, so this also ensures a minimum number of variables.
-    if (0 === this.numberOfConstraints) {
+    if (this.numberOfConstraints === 0) {
       // For Qpsc, we may have neighbours but no constraints.
       if (!this.IsQpsc) {
         return <Solution>this.solverSolution.Clone()
