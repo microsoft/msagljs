@@ -98,12 +98,12 @@ export class InitialLayout extends Algorithm {
         }
 
         if (level > this.settings.MinConstraintLevel) {
-          fil.CurrentConstraintLevel = level
+          fil.setCurrentConstraintLevel(level)
         }
 
-        for (; !this.settings.IsDone; ) {
+        do {
           fil.run()
-        }
+        } while (!this.settings.IsDone)
       }
     }
 

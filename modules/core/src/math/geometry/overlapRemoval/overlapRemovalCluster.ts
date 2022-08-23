@@ -195,7 +195,9 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   ///  the root cluster "infinite" means we don't have to generate the constraints for nodes and clusters
   ///  in the root, which may be numerous.
   ///  </summary>
-  get IsRootCluster(): boolean
+  get IsRootCluster(): boolean {
+    return this.ParentCluster == null
+  }
   ParentCluster: OverlapRemovalCluster
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
