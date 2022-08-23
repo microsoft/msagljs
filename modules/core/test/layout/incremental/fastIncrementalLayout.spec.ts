@@ -154,8 +154,8 @@ test('initialfil', () => {
   filSettings.minorIterations = 20
   filSettings.AvoidOverlaps = true
   const ir = new InitialLayout(gg, filSettings)
-  expect(noOverlaps(gg)).toBe(true)
   ir.run()
+  expect(noOverlaps(gg)).toBe(true)
 
   routeEdges(gg, Array.from(gg.deepEdges), null)
   new SvgDebugWriter('/tmp/fil1.svg').writeGeomGraph(gg)

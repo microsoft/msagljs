@@ -485,9 +485,9 @@ export class Block {
     const a = this.Scale / variable.Scale
     const b = variable.OffsetInBlock / variable.Scale
     const aw = a * variable.Weight
-    this.sumAd = this.sumAd + aw * variable.DesiredPos
-    this.sumAb = this.sumAb + aw * b
-    this.sumA2 = this.sumA2 + aw * a
+    this.sumAd += aw * variable.DesiredPos
+    this.sumAb += aw * b
+    this.sumA2 += aw * a
   }
 
   UpdateReferencePosFromSums() {

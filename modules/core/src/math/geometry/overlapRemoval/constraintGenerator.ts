@@ -75,7 +75,7 @@ export class ConstraintGenerator {
   //  one encountered gets all the neighbours).  This sequence is shared with Clusters,
   //  which are derived from Node; each Cluster consumes 3 IDs, one for the cluster
   //  itself and one for each of its fake border nodes.
-  nextNodeId: number
+  nextNodeId = 0
 
   ///  <summary>
   ///  As passed to ctor; if this is true, we are doing horizontal (x) constraint generation,
@@ -107,7 +107,7 @@ export class ConstraintGenerator {
     this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
     this.clusterHierarchies.push(OverlapRemovalCluster.constructorNOANN(0, null, 0, this.Padding, this.PaddingP))
-    this.nextNodeId = this.nextNodeId + OverlapRemovalCluster.NumInternalNodes
+    this.nextNodeId += OverlapRemovalCluster.NumInternalNodes
   }
 
   ///  <summary>
