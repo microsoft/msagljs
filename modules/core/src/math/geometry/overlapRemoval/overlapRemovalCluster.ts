@@ -54,6 +54,7 @@ import {OverlapRemovalParameters} from './overlapRemovalParameters'
 import {String} from 'typescript-string-operations'
 import {Assert} from '../../../utils/assert'
 import {ScanLine} from './scanLine'
+import {compareBooleans, compareNumbers} from '../../../utils/compare'
 
 //  For iterative recursion (though we do not expect deeply nested clusters).
 class ClusterItem {
@@ -329,7 +330,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     while (stack.length > 0) {
       //  Keep the cluster on the stack until we're done with its children.
       const item = stack.top
-      const prevStackCount: number = stack.length
+      const prevStackCount = stack.length
       if (!item.ChildrenHaveBeenPushed) {
         item.ChildrenHaveBeenPushed = true
         for (const childCluster of item.Cluster.Clusters) {
@@ -372,8 +373,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       return
     }
 
-    const leftBorderDesiredPos: number = this.LeftBorderNode.Position
-    const rightBorderDesiredPos: number = this.RightBorderNode.Position
+    const leftBorderDesiredPos = this.LeftBorderNode.Position
+    const rightBorderDesiredPos = this.RightBorderNode.Position
     if (!this.OpenBorderInfo.IsFixedPosition) {
       this.LeftBorderNode.Variable.DesiredPos = rightBorderDesiredPos
     }
@@ -433,16 +434,17 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   CreateEvents(solver: Solver, /* ref */ boundaryRect: Rectangle): Array<Event> {
     const events = new Array<Event>()
-    const cNodes: number = this.nodeList.length
+    const cNodes = this.nodeList.length
     //  cache for perf
-    const leftBorderWidth: number = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
-    const rightBorderWidth: number = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
-    const openBorderWidth: number = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfoP.InnerMargin)
-    const closeBorderWidth: number = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfoP.InnerMargin)
+    const leftBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
+    const rightBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
+    const openBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfoP.InnerMargin)
+    const closeBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfoP.InnerMargin)
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
       const node: OverlapRemovalNode = this.nodeList[nodeIndex]
-      const cluster = <OverlapRemovalCluster>node
-      if (cluster != null) {
+      const isCluster = node instanceof OverlapRemovalCluster
+      if (isCluster) {
+        const cluster = node as OverlapRemovalCluster
         //  Child Clusters have already "recursively" been processed before the current cluster,
         //  so we just need to check to see if it had any events.  If so, then it has created its
         //  two fake nodes (and their variables) along the primary axis, but these are only put
@@ -463,12 +465,12 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       this.AddEvents(node, events)
       //  Update our boundaries if this node goes past any of them.
       if (!this.IsRootCluster) {
-        const pad: number = node.Size / 2 + this.ClusterPadding
-        const padP: number = node.SizeP / 2 + this.ClusterPaddingP
-        const newLeft: number = node.Position - (pad - leftBorderWidth)
-        const newRight: number = node.Position + (pad + rightBorderWidth)
-        const newBottom: number = node.PositionP - (padP - openBorderWidth)
-        const newTop: number = node.PositionP + (padP + closeBorderWidth)
+        const pad = node.Size / 2 + this.ClusterPadding
+        const padP = node.SizeP / 2 + this.ClusterPaddingP
+        const newLeft = node.Position - (pad - leftBorderWidth)
+        const newRight = node.Position + (pad + rightBorderWidth)
+        const newBottom = node.PositionP - (padP - openBorderWidth)
+        const newTop = node.PositionP + (padP + closeBorderWidth)
         boundaryRect.left = Math.min(boundaryRect.left, newLeft)
         boundaryRect.right = Math.max(boundaryRect.right, newRight)
         boundaryRect.bottom = Math.min(boundaryRect.bottom, newBottom)
@@ -490,12 +492,12 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  Force the cluster borders to the full minimum sizes if any were specified.
       //  Without the full cluster boundaries being available at constraint generation time, Tuvalu was
       //  getting unresolved overlaps when dragging an external node over the corner of a cluster boundary.
-      const padMinSize: number = this.MinimumSize - boundaryRect.width
+      const padMinSize = this.MinimumSize - boundaryRect.width
       if (padMinSize > 0) {
         boundaryRect.padWidth(padMinSize / 2)
       }
 
-      const padMinSizeP: number = this.MinimumSizeP - boundaryRect.height
+      const padMinSizeP = this.MinimumSizeP - boundaryRect.height
       if (padMinSizeP > 0) {
         boundaryRect.padHeight(padMinSizeP / 2)
       }
@@ -649,8 +651,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //    so we need to accommodate the case described above, where the Solver opened up space
         //    between the fixed border and the outermost nodes (it will never *reduce* this distance
         //    of course).  This means we adjust both border position and our overall node size.
-        const curTopOuterBorder: number = this.PositionP - this.SizeP / 2
-        const curBottomOuterBorder: number = this.PositionP + this.SizeP / 2
+        const curTopOuterBorder = this.PositionP - this.SizeP / 2
+        const curBottomOuterBorder = this.PositionP + this.SizeP / 2
         if (this.OpenBorderInfoP.IsFixedPosition) {
           if (isHorizontal) {
             //  Don't change SizeP.
@@ -695,7 +697,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   GenerateFromEvents(solver: Solver, parameters: OverlapRemovalParameters, events: Array<Event>, isHorizontal: boolean) {
     //  First, sort the events on the perpendicular coordinate of the event
     //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
-    events.sort()
+    events.sort((a, b) => OverlapRemovalCluster.compareEvents(a, b))
     // this.#if(VERBOSE)
     // System.Diagnostics.Debug.WriteLine('Events:')
     // for (const evt: Event in events) {
@@ -718,8 +720,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  Use counts for indexing for performance (rather than foreach, and hoist the count-control
         //  variable out of the loop so .length isn't checked on each iteration, since we know it's
         //  not going to be changed).
-        const numLeftNeighbors: number = currentNode.LeftNeighbors.length
-        const numRightNeighbors: number = currentNode.RightNeighbors.length
+        const numLeftNeighbors = currentNode.LeftNeighbors.length
+        const numRightNeighbors = currentNode.RightNeighbors.length
         //  If there is currently a non-overlap constraint between any two nodes across the
         //  two neighbour lists we've just created, we can remove them because they will be
         //  transitively enforced by the constraints we'll create for the current node.
@@ -778,7 +780,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       const currentLeftNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(currentNode)
       const currentRightNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(currentNode)
       //  LeftNeighbors must end before the current node...
-      const cLeftNeighbours: number = currentNode.LeftNeighbors.length
+      const cLeftNeighbours = currentNode.LeftNeighbors.length
       for (let ii = 0; ii < cLeftNeighbours; ii++) {
         //  Keep track of the original Node; it may be the base of a Cluster, in which
         //  case it will have the active neighbours list, not leftNeighborNode (which will
@@ -795,9 +797,9 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //     currentNode.CloseP + (this.NodePaddingP - leftNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
         //   'LeftNeighbors: unexpected close/open overlap',
         // )
-        const p: number =
+        const p =
           leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
-        let separation: number = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
+        let separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
         if (this.TranslateChildren) {
           separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
         }
@@ -806,7 +808,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       }
 
       //  ... and RightNeighbors must start after the current node.
-      const cRightNeighbours: number = currentNode.RightNeighbors.length
+      const cRightNeighbours = currentNode.RightNeighbors.length
       for (let ii = 0; ii < cRightNeighbours; ii++) {
         //  Keep original node, which may be a cluster; see comments in LeftNeighbors above.
         const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[ii]
@@ -821,7 +823,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         // )
         const p =
           currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
-        let separation: number = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
+        let separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
         if (this.TranslateChildren) {
           separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
         }
@@ -839,6 +841,23 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     }
 
     //  endforeach Event
+  }
+  static compareEvents(a: Event, b: Event): number {
+    let cmp = 0
+    // Use a range so that rounding inaccuracy will give consistent results.
+    if (Math.abs(a.Position - b.Position) > OverlapRemovalGlobalConfiguration.EventComparisonEpsilon) {
+      cmp = compareNumbers(a.Position, b.Position)
+    }
+    if (cmp === 0) {
+      // Sub-order by IsRendered (false precedes true, which is what we want).
+      cmp = compareBooleans(a.IsForOpen, b.IsForOpen)
+
+      if (cmp === 0) {
+        // Sub-order by node id
+        cmp = compareNumbers(a.Node.Id, b.Node.Id)
+      }
+    }
+    return cmp
   }
 
   GetLeftNeighbours(
@@ -894,7 +913,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     isHorizontal: boolean,
   ): boolean {
     //  Sanity check to be sure that the borders are past all other nodes.
-    const overlap: number = OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePadding)
+    const overlap = OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePadding)
     if (overlap <= 0) {
       //  This is the first node encountered on this neighbour-traversal that did not
       //  overlap within the required padding. Add it to the list and we're done with
@@ -922,7 +941,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  each direction.  @@DCR: consider adding weights to the defer-to-vertical calculation;
         //  this would allow two nodes to pop up/down if they're being squeezed, rather than
         //  force apart the borders (which happens regardless of their weight).
-        const overlapP: number = OverlapRemovalCluster.OverlapP(currentNode, nextNode, this.NodePaddingP)
+        const overlapP = OverlapRemovalCluster.OverlapP(currentNode, nextNode, this.NodePaddingP)
         const isOverlapping: boolean = parameters.ConsiderProportionalOverlap
           ? overlap / (currentNode.Size + nextNode.Size) > overlapP / (currentNode.SizeP + nextNode.SizeP)
           : overlap > overlapP
@@ -1003,14 +1022,14 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  the inner edge (only), we must take our size as the difference between the outer borders of
       //  the border variables.  This leaves our single Node as having the size necessary to accommodate
       //  the internal padding when external nodes/clusters have their constraints to it formed.
-      const clusterLeft: number = this.LeftBorderNode.Position - this.LeftBorderNode.Size / 2
-      const clusterRight: number = this.RightBorderNode.Position + this.RightBorderNode.Size / 2
+      const clusterLeft = this.LeftBorderNode.Position - this.LeftBorderNode.Size / 2
+      const clusterRight = this.RightBorderNode.Position + this.RightBorderNode.Size / 2
       this.Size = clusterRight - clusterLeft
       this.Position = clusterLeft + this.Size / 2
     }
 
     //  Update our child nodes.
-    const cNodes: number = this.nodeList.length
+    const cNodes = this.nodeList.length
     //  cache for perf
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
       const node: OverlapRemovalNode = this.nodeList[nodeIndex]
