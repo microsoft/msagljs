@@ -28,7 +28,7 @@ export class BlockVector {
       this.Vector[block.VectorIndex] === block,
       'Inconsistent block.VectorIndex',
     )*/
-    const swapBlock: Block = this.Vector[this.Vector.length - 1]
+    const swapBlock = this.Vector[this.Vector.length - 1]
     this.Vector[block.VectorIndex] = swapBlock
     swapBlock.VectorIndex = block.VectorIndex
     this.Vector.pop()

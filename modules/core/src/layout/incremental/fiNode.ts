@@ -80,14 +80,8 @@ export class FiNode {
 
   SetVariableDesiredPos(horizontal: boolean) {
     if (horizontal) {
-      if (Math.abs(this.mOlapNodeX.Variable.DesiredPos - this.desiredPosition.x) > 2) {
-        console.log()
-      }
       this.mOlapNodeX.Variable.DesiredPos = this.desiredPosition.x
     } else {
-      if (Math.abs(this.mOlapNodeY.Variable.DesiredPos - this.desiredPosition.y) > 2) {
-        console.log()
-      }
       this.mOlapNodeY.Variable.DesiredPos = this.desiredPosition.y
     }
   }

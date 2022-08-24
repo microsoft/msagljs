@@ -172,9 +172,6 @@ export class OverlapRemovalNode {
     //  If the Variable is null then we were already updated from an earlier cluster in
     //  another hierarchy.
     if (this.Variable) {
-      if (Math.abs(this.Position - this.Variable.ActualPos) > 1) {
-        console.log()
-      }
       this.Position = this.Variable.ActualPos
       //  Currently we don't use this anymore.
       this.Variable = null

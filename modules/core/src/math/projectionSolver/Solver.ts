@@ -509,8 +509,7 @@ export class Solver {
       // Don't check the return of Project; defer the termination check to SplitBlocks.
       // This also examines limits post-Project; because it happens pre-SplitBlocks it ensures
       // a feasible stopping state.
-      let violationsFound: boolean
-      if (!this.RunProject(/* out */ violationsFound)) {
+      if (!this.RunProject()) {
         return
       }
 
@@ -521,9 +520,9 @@ export class Solver {
     }
   }
 
-  private RunProject(/* out */ violationsFound: boolean): boolean {
+  private RunProject(): boolean {
     this.solverSolution.OuterProjectIterations++
-    violationsFound = this.Project()
+    this.Project()
     // Examine limits post-Project but pre-SplitBlocks to ensure a feasible stopping state.
     return !this.CheckForLimitsExceeded()
   }
@@ -559,17 +558,15 @@ export class Solver {
     this.solverSolution.GoalFunctionValue = 0
     const numBlocks: number = this.allBlocks.Count
     // cache for perf
-    for (let ii = 0; ii < numBlocks; ii++) {
-      const block: Block = this.allBlocks.item(ii)
+    for (let i = 0; i < numBlocks; i++) {
+      const block: Block = this.allBlocks.item(i)
       const numVars: number = block.Variables.length
-      for (let jj = 0; jj < numVars; jj++) {
-        const variable = block.Variables[jj]
+      for (let j = 0; j < numVars; j++) {
+        const variable = block.Variables[j]
         // (x'Ax)/2
-        this.solverSolution.GoalFunctionValue =
-          this.solverSolution.GoalFunctionValue + variable.Weight * (variable.ActualPos * variable.ActualPos)
+        this.solverSolution.GoalFunctionValue += variable.Weight * (variable.ActualPos * variable.ActualPos)
         // +bx
-        this.solverSolution.GoalFunctionValue =
-          this.solverSolution.GoalFunctionValue - 2 * (variable.Weight * (variable.DesiredPos * variable.ActualPos))
+        this.solverSolution.GoalFunctionValue -= 2 * (variable.Weight * (variable.DesiredPos * variable.ActualPos))
       }
     }
   }
@@ -597,7 +594,6 @@ export class Solver {
     // this.VerifyConstraintsAreFeasible()
     // Iterations
     let foundSplit = false
-    const foundViolation = false
     for (;;) {
       //
       // Calculate initial step movement.  We assume there will be some movement needed
@@ -605,7 +601,7 @@ export class Solver {
       // of the goal-function value; if it is sufficiently close to the previous iteration's
       // result and the previous iteration did not split or encounter a violation, we're done.
       //
-      if (!qpsc.PreProject() && !foundSplit && !foundViolation) {
+      if (!qpsc.PreProject() && !foundSplit) {
         break
       }
 
@@ -617,7 +613,7 @@ export class Solver {
       foundSplit = this.SplitBlocks()
       // Examine limits post-Project to ensure a feasible stopping state.  We don't test for
       // termination due to "no violations found" here, deferring that to the next iteration's PreProject().
-      if (!this.RunProject(/* out */ foundViolation)) {
+      if (!this.RunProject()) {
         break
       }
 
@@ -626,7 +622,7 @@ export class Solver {
       // done by split/project.  If this returns false then it means that movement was zero and
       // we're done if there was no split or constraint violation.
       //
-      if (!qpsc.PostProject() && !foundSplit && !foundViolation) {
+      if (!qpsc.PostProject() && !foundSplit) {
         break
       }
     }
@@ -638,8 +634,7 @@ export class Solver {
   private QpscMakeFeasible(): boolean {
     // Start off with one Project pass so the initial Qpsc state is feasible (not in violation
     // of constraints).  If this takes more than the max allowable time, we're done.
-    let foundViolation: boolean
-    return this.RunProject(/* out */ foundViolation)
+    return this.RunProject()
   }
 
   private ReinitializeBlocks() {
@@ -782,7 +777,7 @@ export class Solver {
       // number of vars into the block with the greater number.
       blockTo = violatedConstraint.Right.Block
       blockFrom = violatedConstraint.Left.Block
-      distance = distance * -1
+      distance = -distance
     }
 
     // Move all vars from blockFrom to blockTo, and adjust their offsets by dist as
@@ -791,9 +786,9 @@ export class Solver {
     // is therefore also moved if it was in blockFrom.
     const numVars = blockFrom.Variables.length
     // iteration is faster than foreach for Array<>s
-    for (let ii = 0; ii < numVars; ii++) {
-      const variable = blockFrom.Variables[ii]
-      variable.OffsetInBlock = variable.OffsetInBlock + distance
+    for (let i = 0; i < numVars; i++) {
+      const variable = blockFrom.Variables[i]
+      variable.OffsetInBlock += distance
       blockTo.AddVariable(variable)
     }
 
@@ -816,8 +811,8 @@ export class Solver {
     const newBlocks = new Array<Block>()
     const numBlocks: number = this.allBlocks.Count
     // Cache for perf
-    for (let ii = 0; ii < numBlocks; ii++) {
-      const block = this.allBlocks.item(ii)
+    for (let i = 0; i < numBlocks; i++) {
+      const block = this.allBlocks.item(i)
       /*Assert.assert(
         0 !== block.Variables.length,
         'block must have nonzero variable count',
