@@ -712,135 +712,80 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       if (evt.IsForOpen) {
         //  Insert the current node into the scan line.
         scanLine.Insert(currentNode)
-
-        //  Find the nodes that are currently open to either side of it and are either overlapping
-        //  nodes or the first non-overlapping node in that direction.
         currentNode.LeftNeighbors = this.GetLeftNeighbours(parameters, scanLine, currentNode, isHorizontal)
         currentNode.RightNeighbors = this.GetRightNeighbours(parameters, scanLine, currentNode, isHorizontal)
-        //  Use counts for indexing for performance (rather than foreach, and hoist the count-control
-        //  variable out of the loop so .length isn't checked on each iteration, since we know it's
-        //  not going to be changed).
         const numLeftNeighbors = currentNode.LeftNeighbors.length
         const numRightNeighbors = currentNode.RightNeighbors.length
-        //  If there is currently a non-overlap constraint between any two nodes across the
-        //  two neighbour lists we've just created, we can remove them because they will be
-        //  transitively enforced by the constraints we'll create for the current node.
-        //  I.OverlapRemovalNode., we can remove the specification for the constraint
-        //       leftNeighborNode + gap + padding <= rightNeighborNode
-        //  because it is implied by the constraints we'll create for
-        //       leftNeighborNode + gap + padding <= node
-        //       node + gap + padding <= rightNeighborNode
-        //  We must also add the current node as a neighbour in the appropriate direction.
-        //  @@PERF: Array<T>.Remove is a sequential search so averages 1/2 the size of the
-        //  lists. We currently don't expect the neighbour lists to be very large or Remove
-        //  to be a frequent operation, and using HashSets would incur the GetEnumerator overhead
-        //  on the outer and inner loops; but .Remove creates an inner-inner loop so do some
-        //  timing runs to compare performance.
-        //  @@PERF:  handles the case where we are node c and have added node b as a lnbour
-        //  and node d as rnbour, where those nodes are already nbours.  But it does not handle
-        //  the case where we add node b and node a as lnbours, and node b already has node a
-        //  as an lnbour.  To do this I think we'd just want to skip adding the node-a lnbour,
-        //  but that forms a new inner loop (iterating all lnbours before adding a new one)
-        //  unless we develop different storage for nbours.
-        for (let ii = 0; ii < numLeftNeighbors; ii++) {
-          const leftNeighborNode: OverlapRemovalNode = currentNode.LeftNeighbors[ii]
-          for (let jj = 0; jj < numRightNeighbors; jj++) {
+
+        for (let i = 0; i < numLeftNeighbors; i++) {
+          const leftNeighborNode = currentNode.LeftNeighbors[i]
+          for (let j = 0; j < numRightNeighbors; j++) {
             //  TODOunit: test this
-            const nodeToRemove: OverlapRemovalNode = currentNode.RightNeighbors[jj]
+            const nodeToRemove = currentNode.RightNeighbors[j]
             removeFromArray(leftNeighborNode.RightNeighbors, nodeToRemove)
           }
 
           leftNeighborNode.RightNeighbors.push(currentNode)
         }
 
-        for (let ii = 0; ii < numRightNeighbors; ii++) {
+        for (let i = 0; i < numRightNeighbors; i++) {
           //  TODOunit: test this
-          const rightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[ii]
-          for (let jj = 0; jj < numLeftNeighbors; jj++) {
-            const nodeToRemove: OverlapRemovalNode = currentNode.LeftNeighbors[jj]
+          const rightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[i]
+          for (let j = 0; j < numLeftNeighbors; j++) {
+            const nodeToRemove: OverlapRemovalNode = currentNode.LeftNeighbors[j]
             removeFromArray(rightNeighborNode.LeftNeighbors, nodeToRemove)
           }
 
           rightNeighborNode.LeftNeighbors.push(currentNode)
         }
-      }
-
-      //  endif evt.IsForOpen
-      //  This is a close event, so generate the constraints and remove the closing node
-      //  from its neighbours lists.  If we're closing we should have left neighbours so
-      //  this is null then we've likely got some sort of internal calculation error.
-      if (currentNode.LeftNeighbors == null) {
-        // Debug.Assert(currentNode.LeftNeighbors != null, 'LeftNeighbors should not be null for a Close event')
-        continue
-      }
-
-      //  currentNode is the current node; if it's a cluster, translate it to the node that
-      //  should be involved in the constraint (if it's the left neighbour then use its
-      //  right border as the constraint variable, and vice-versa).
-      const currentLeftNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(currentNode)
-      const currentRightNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(currentNode)
-      //  LeftNeighbors must end before the current node...
-      const cLeftNeighbours = currentNode.LeftNeighbors.length
-      for (let ii = 0; ii < cLeftNeighbours; ii++) {
-        //  Keep track of the original Node; it may be the base of a Cluster, in which
-        //  case it will have the active neighbours list, not leftNeighborNode (which will
-        //  be the left border "fake Node").
-        const origLeftNeighborNode: OverlapRemovalNode = currentNode.LeftNeighbors[ii]
-        removeFromArray(origLeftNeighborNode.RightNeighbors, currentNode)
-        const leftNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(origLeftNeighborNode)
-        //Debug.Assert(leftNeighborNode.OpenP == origLeftNeighborNode.OpenP, 'leftNeighborNode.OpenP must == origLeftNeighborNode.OpenP')
-        //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
-        //  We are closing the node here so use an alternative to OverlapP for additional
-        //  consistency verification.  Allow a little rounding error.
-        // Debug.Assert(
-        //   isHorizontal ||
-        //     currentNode.CloseP + (this.NodePaddingP - leftNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
-        //   'LeftNeighbors: unexpected close/open overlap',
-        // )
-        const p =
-          leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
-        let separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
-        if (this.TranslateChildren) {
-          separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
+      } else {
+        if (currentNode.LeftNeighbors == null) {
+          continue
         }
 
-        const cst: Constraint = solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
-      }
+        const currentLeftNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(currentNode)
+        const currentRightNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(currentNode)
+        const cLeftNeighbours = currentNode.LeftNeighbors.length
+        for (let i = 0; i < cLeftNeighbours; i++) {
+          const origLeftNeighborNode: OverlapRemovalNode = currentNode.LeftNeighbors[i]
+          removeFromArray(origLeftNeighborNode.RightNeighbors, currentNode)
+          const leftNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(origLeftNeighborNode)
+          const p =
+            leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
+          let separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
+          if (this.TranslateChildren) {
+            separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
+          }
 
-      //  ... and RightNeighbors must start after the current node.
-      const cRightNeighbours = currentNode.RightNeighbors.length
-      for (let ii = 0; ii < cRightNeighbours; ii++) {
-        //  Keep original node, which may be a cluster; see comments in LeftNeighbors above.
-        const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[ii]
-        removeFromArray(origRightNeighborNode.LeftNeighbors, currentNode)
-        const rightNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(origRightNeighborNode)
-        //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
-        //  Allow a little rounding error.
-        // Debug.Assert(
-        //   isHorizontal ||
-        //     currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
-        //   'RightNeighbors: unexpected close/open overlap',
-        // )
-        const p =
-          currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
-        let separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
-        if (this.TranslateChildren) {
-          separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
+          const cst: Constraint = solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
         }
 
-        const cst: Constraint = solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
+        const cRightNeighbours = currentNode.RightNeighbors.length
+        for (let i = 0; i < cRightNeighbours; i++) {
+          //  Keep original node, which may be a cluster; see comments in LeftNeighbors above.
+          const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[i]
+          removeFromArray(origRightNeighborNode.LeftNeighbors, currentNode)
+          const rightNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(origRightNeighborNode)
+          //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
+          //  Allow a little rounding error.
+          // Debug.Assert(
+          //   isHorizontal ||
+          //     currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
+          //   'RightNeighbors: unexpected close/open overlap',
+          // )
+          const p =
+            currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
+          let separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
+          if (this.TranslateChildren) {
+            separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
+          }
+
+          const cst: Constraint = solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
+        }
+
+        scanLine.Remove(currentNode)
       }
-
-      //  Note:  although currentNode is closed, there may still be open nodes in its
-      //  Neighbour lists; these will subsequently be processed (and removed from
-      //  currentNode.*Neighbour) when those Neighbors are closed.
-      scanLine.Remove(currentNode)
-
-      //  @@PERF:  Set Node.Left/RightNeighbors null to let the GC know we're not using them
-      //  anymore, unless we can reasonably assume a short lifetime for the ConstraintGenerator.
     }
-
-    //  endforeach Event
   }
   static compareEvents(a: Event, b: Event): number {
     let cmp = 0

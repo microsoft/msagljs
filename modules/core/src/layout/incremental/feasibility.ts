@@ -43,11 +43,11 @@ export class Feasibility {
     }
 
     Feasibility.ResetPositions(nodes)
-    const dblVpad: number = settings.NodeSeparation + Feasibility.Pad
-    const dblHpad: number = settings.NodeSeparation
-    const dblCVpad: number = settings.clusterMargin + Feasibility.Pad
-    const dblCHpad: number = settings.clusterMargin
-    for (let level: number = settings.MinConstraintLevel; level <= currentConstraintLevel; level++) {
+    const dblVpad = settings.NodeSeparation + Feasibility.Pad
+    const dblHpad = settings.NodeSeparation
+    const dblCVpad = settings.clusterMargin + Feasibility.Pad
+    const dblCHpad = settings.clusterMargin
+    for (let level = settings.MinConstraintLevel; level <= currentConstraintLevel; level++) {
       //  to obtain a feasible solution when equality constraints are present we need to be extra careful
       //  but the solution below is a little bit crummy, is not currently optimized when there are no
       //  equality constraints and we do not really have any scenarios involving equality constraints at
