@@ -149,34 +149,38 @@ test('initialfil', () => {
   for (const n of gg.shallowNodes) {
     n.center = ps[i++]
   }
-  const filSettings = new FastIncrementalLayoutSettings()
-  filSettings.maxIterations = 10
-  filSettings.minorIterations = 20
-  filSettings.AvoidOverlaps = true
-  const ir = new InitialLayout(gg, filSettings)
+  const settings = new FastIncrementalLayoutSettings()
+  settings.maxIterations = 10
+  settings.minorIterations = 20
+  settings.AvoidOverlaps = true
+  const ir = new InitialLayout(gg, settings)
   ir.run()
   expect(noOverlaps(gg)).toBe(true)
 
   routeEdges(gg, Array.from(gg.deepEdges), null)
   new SvgDebugWriter('/tmp/fil1.svg').writeGeomGraph(gg)
+  const bb = gg.pumpTheBoxToTheGraphWithMargins()
+  const a = Point.middle(bb.leftTop, bb.center)
+  const b = Point.middle(bb.rightBottom, bb.center)
+  const smallRect = Rectangle.mkPP(a, b)
+
   const n = new Node('diamond')
   const gn = new GeomNode(n)
-  gn.boundaryCurve = CurveFactory.CreateDiamond(200, 200, new Point(350, 230))
+
+  gn.boundaryCurve = CurveFactory.CreateDiamond(smallRect.width / 2, smallRect.height / 2, smallRect.center)
   graph.addNode(n)
   let e = new Edge(n, nodes[42])
   new GeomEdge(e)
   e = new Edge(n, nodes[6])
   new GeomEdge(e)
-  const settings = new FastIncrementalLayoutSettings()
   settings.algorithm = new FastIncrementalLayout(gg, settings, settings.maxConstraintLevel, () => settings)
   settings.Unconverge()
-  settings.CreateLockNR(gn, Rectangle.mkPP(new Point(200, 400), new Point(500, 100)))
+  settings.CreateLockNR(gn, smallRect)
   do {
     settings.IncrementalRunG(gg)
   } while (!settings.Converged)
   expect(noOverlaps(gg)).toBe(true)
   routeEdges(gg, Array.from(gg.deepEdges), null)
-
   new SvgDebugWriter('/tmp/fil2.svg').writeGeomGraph(gg)
 })
 function noOverlaps(gg: GeomGraph): any {
