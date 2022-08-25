@@ -163,8 +163,10 @@ test('initialfil', () => {
   const gn = new GeomNode(n)
   gn.boundaryCurve = CurveFactory.CreateDiamond(200, 200, new Point(350, 230))
   graph.addNode(n)
-  new Edge(n, nodes[42])
-  new Edge(n, nodes[6])
+  let e = new Edge(n, nodes[42])
+  new GeomEdge(e)
+  e = new Edge(n, nodes[6])
+  new GeomEdge(e)
   const settings = new FastIncrementalLayoutSettings()
   settings.algorithm = new FastIncrementalLayout(gg, settings, settings.maxConstraintLevel, () => settings)
   settings.Unconverge()
@@ -172,7 +174,7 @@ test('initialfil', () => {
   do {
     settings.IncrementalRunG(gg)
   } while (!settings.Converged)
-
+  expect(noOverlaps(gg)).toBe(true)
   routeEdges(gg, Array.from(gg.deepEdges), null)
 
   new SvgDebugWriter('/tmp/fil2.svg').writeGeomGraph(gg)
