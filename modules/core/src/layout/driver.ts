@@ -15,6 +15,8 @@ import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
 import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
+import {FastIncrementalLayoutSettings} from './incremental/fastIncrementalLayoutSettings'
+import {InitialLayout} from './initialLayout/initialLayout'
 
 // function routeEdges(
 //  geomG: GeomGraph,
@@ -81,8 +83,10 @@ function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
   } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
     const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
     pivotMds.run()
-  } else {
-    throw Error('not implemented')
+  } else if (geomGraph.layoutSettings instanceof FastIncrementalLayoutSettings) {
+    var layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
+    layout.SingleComponent = true
+    layout.run()
   }
 }
 
