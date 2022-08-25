@@ -5,7 +5,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {FastIncrementalLayout} from '../../../src/layout/incremental/fastIncrementalLayout'
 import {FastIncrementalLayoutSettings} from '../../../src/layout/incremental/fastIncrementalLayoutSettings'
 import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
-import {Edge, Graph, Node, routeEdges} from '../../../src'
+import {Edge, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
 import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
@@ -14,7 +14,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   dg.createGeometry(measureTextSize)
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
-xtest('fil', () => {
+xtest('filclust', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   if (dg == null) return null
   const gg = createGeometry(dg, measureTextSize)
@@ -24,59 +24,22 @@ xtest('fil', () => {
   fil.run()
   new SvgDebugWriter('/tmp/fil.svg').writeGeomGraph(gg)
 })
-/*
-{Microsoft.Msagl.Core.Geometry.Point[50]}
-(-2.5548934049371894,-41.066780678733323)
-(-146.08406196610687,-142.43934738567162)
-(-89.3767649290301,-54.503330308978221)
-(-56.975681507276363,-18.38338430407951)
-(-13.703599739733072,-19.403466520743073)
-(17.109849530586065,-40.048336087784818)
-(35.320818206415076,-54.476081368272105)
-(43.894678676614618,-50.083094941018324)
-(62.46301257870789,-1.8318596820908484)
-(57.346005908955249,-4.3263955868003992)
-(43.0790079918823,-17.937669380316848)
-(26.474378226762841,-18.375644085660202)
-(5.2225689495901317,0.97413653728011518)
-(-3.149393879289716,29.197679023045986)
-(-24.285917545044313,16.207928147182997)
-(-33.991375847726218,0.35696546702698129)
-(-26.355182070346373,-3.0136124108114224)
-(-13.995652875008027,-8.73354188222661)
-(11.709417996382843,-9.7955036952414716)
-(40.01416633668795,-13.06514500699091)
-(41.367380352691939,-22.628810243036128)
-(15.171773486859173,-65.810587974435435)
-(8.4748256006203846,-49.156262057171737)
-(5.9402415228782113,-31.288231560079403)
-(11.163695419105338,-36.6594337382309)
-(0.93732006699374892,47.540059432703913)
-(-14.35616455940702,36.054686435867382)
-(-8.3938589416006781,31.285425907853444)
-(-7.8868523502620054,48.6630849706616)
-(-13.414549882951434,64.2343891507968)
-(-39.531199234973109,20.017695745296955)
-(-31.838198578609564,11.779642995079719)
-(0.55416423089582523,13.400884149708986)
-(18.226978304327581,15.288478270193018)
-(32.155762113442009,16.928749724276997)
-(32.547054661294951,-0.24286122461860771)
-(6.8160796522575851,-27.497441842652087)
-(9.5996616950518643,-22.760748584587397)
-(-5.386361271772218,-0.80740348182907873)
-(-34.952581126221133,8.9561588817440612)
-(-51.784149420466015,5.7577687132954996)
-(-59.951168881077315,3.1939402457064112)
-(-40.255221274000121,50.29181346737554)
-(-41.910089978141322,55.227822809689272)
-(-42.609233989371319,44.106275374004355)
-(-16.842607726227111,34.19950230768675)
-(14.933149686171703,15.079937173539374)
-(57.673203264122,13.835860713046639)
-(91.230834567669859,49.975038014045175)
-(146.6053688143212,139.14462463658308)
-*/
+
+test('clust', () => {
+  const graph = parseDotGraph('graphvis/clust.gv')
+  const dg = DrawingGraph.getDrawingGraph(graph)
+
+  if (dg == null) return null
+  const gg = createGeometry(dg, measureTextSize)
+  const settings = new FastIncrementalLayoutSettings()
+  settings.maxIterations = 10
+  settings.minorIterations = 20
+  settings.AvoidOverlaps = true
+  gg.layoutSettings = settings
+  for (const subg of gg.subgraphs()) subg.layoutSettings = settings
+  layoutGeomGraph(gg, null)
+  new SvgDebugWriter('/tmp/fil_clust.svg').writeGeomGraph(gg)
+})
 test('initialfil', () => {
   const graph: Graph = new Graph()
   const nodes = []
@@ -153,8 +116,10 @@ test('initialfil', () => {
   settings.maxIterations = 10
   settings.minorIterations = 20
   settings.AvoidOverlaps = true
-  const ir = new InitialLayout(gg, settings)
-  ir.run()
+  const initialLayout = new InitialLayout(gg, settings)
+
+  initialLayout.SingleComponent = true
+  initialLayout.run()
   expect(noOverlaps(gg)).toBe(true)
 
   routeEdges(gg, Array.from(gg.deepEdges), null)
@@ -183,6 +148,7 @@ test('initialfil', () => {
   routeEdges(gg, Array.from(gg.deepEdges), null)
   new SvgDebugWriter('/tmp/fil2.svg').writeGeomGraph(gg)
 })
+
 function noOverlaps(gg: GeomGraph): any {
   const arr = Array.from(gg.shallowNodes)
   for (let i = 0; i < arr.length; i++) {
