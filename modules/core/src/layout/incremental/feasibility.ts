@@ -132,7 +132,6 @@ export class Feasibility {
   // }
   private static ResetPositions(nodes: Iterable<FiNode>) {
     for (const v of nodes) {
-      if (v.mNode instanceof GeomGraph) continue
       v.desiredPosition = v.mNode.center
       v.previousCenter = v.mNode.center
     }

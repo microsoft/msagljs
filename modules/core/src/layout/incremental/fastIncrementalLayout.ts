@@ -137,9 +137,9 @@ export class FastIncrementalLayout extends Algorithm {
         this.setRB(c, new RectangularClusterBoundary())
       }
     }
-    if (this.getRB(this.graph) == null) {
-      this.setRB(this.graph, new RectangularClusterBoundary())
-    }
+    // if (this.getRB(this.graph) == null) {
+    //   this.setRB(this.graph, new RectangularClusterBoundary())
+    // }
 
     this.setCurrentConstraintLevel(initialConstraintLevel)
   }
@@ -151,12 +151,12 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     for (const e of this.graph.edges()) {
-      if (e.source instanceof GeomGraph || e.target instanceof GeomGraph) {
-        continue
-      } else {
-        const fiEdge = new FiEdge(e)
-        new AlgorithmData(e.edge, fiEdge)
-      }
+      // if (e.source instanceof GeomGraph || e.target instanceof GeomGraph) {
+      // continue
+      //} else {
+      const fiEdge = new FiEdge(e)
+      new AlgorithmData(e.edge, fiEdge)
+      //}
     }
   }
 
