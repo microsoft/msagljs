@@ -4,7 +4,7 @@ import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../core/geomEdge'
 import {GeomGraph, optimalPackingRunner} from '../core/geomGraph'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
-import { IGeomGraph } from '../initialLayout/iGeomGraph'
+import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {MdsGraphLayout} from './mDSGraphLayout'
 import {MdsLayoutSettings} from './mDSLayoutSettings'
 
