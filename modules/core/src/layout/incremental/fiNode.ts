@@ -13,7 +13,7 @@ export function getFiNode(filNode: GeomNode) {
 export class FiNode {
   desiredPosition: Point
 
-  force: Point
+  force = new Point(0, 0)
 
   index: number
 
