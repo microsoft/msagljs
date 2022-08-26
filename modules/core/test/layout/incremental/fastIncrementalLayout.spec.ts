@@ -5,7 +5,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {FastIncrementalLayout} from '../../../src/layout/incremental/fastIncrementalLayout'
 import {FastIncrementalLayoutSettings} from '../../../src/layout/incremental/fastIncrementalLayoutSettings'
 import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
-import {Edge, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
+import {Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
 import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
@@ -40,6 +40,22 @@ test('clust', () => {
   for (const subg of gg.subgraphs()) subg.layoutSettings = settings
   layoutGeomGraph(gg, null)
   new SvgDebugWriter('/tmp/fil_clust.svg').writeGeomGraph(gg)
+})
+
+test('smlred', () => {
+  const graph = parseDotGraph('graphvis/smlred.gv')
+  const dg = DrawingGraph.getDrawingGraph(graph)
+
+  if (dg == null) return null
+  const gg = createGeometry(dg, measureTextSize)
+  const settings = new FastIncrementalLayoutSettings()
+  settings.maxIterations = 10
+  settings.minorIterations = 20
+  settings.AvoidOverlaps = true
+  gg.layoutSettings = settings
+  for (const subg of gg.subgraphs()) subg.layoutSettings = settings
+  layoutGeomGraph(gg, null)
+  new SvgDebugWriter('/tmp/sml_red.svg').writeGeomGraph(gg)
 })
 
 test('initialfil', () => {

@@ -4,7 +4,6 @@ import {IGeomGraph} from './iGeomGraph'
 import {pumpTheBoxToTheGraph} from '../core/geomGraph'
 
 export class GeomConnectedComponent implements IGeomGraph {
-  bbox: Rectangle
   RectangularBoundary: any
   topNodes: Node[]
   constructor(topNodes: Node[]) {
@@ -62,14 +61,14 @@ export class GeomConnectedComponent implements IGeomGraph {
   pumpTheBoxToTheGraphWithMargins(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
     pumpTheBoxToTheGraph(this, t)
-    return t.b
+    return (this.boundingBox = t.b)
   }
   get shallowNodeCount(): number {
     return this.topNodes.length
   }
 
   translate(delta: Point) {
-    if (this.bbox) this.bbox.center = this.bbox.center.add(delta)
+    if (this.boundingBox) this.boundingBox.center = this.boundingBox.center.add(delta)
 
     for (const n of this.topNodes) {
       const gn = GeomNode.getGeom(n) as GeomNode

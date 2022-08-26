@@ -138,9 +138,9 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.isEmpty()) {
     return
   }
-  initRandom(randomSeed)
   if (geomG.parent == null) {
-    // go over the edges only once here
+    // go over some intitial settings only on the top level
+    initRandom(randomSeed)
     requireLabelPositioning(geomG)
   }
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
@@ -160,13 +160,12 @@ export function layoutGeomGraphDetailed(
   })
 
   removedEdges.forEach((e) => e.add())
-  geomG.boundingBox = geomG.pumpTheBoxToTheGraphWithMargins()
   //the final touches
   if (geomG.graph.parent == null) {
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG, edgesToRoute)
-    geomG.boundingBox = geomG.pumpTheBoxToTheGraphWithMargins()
+    geomG.pumpTheBoxToTheGraphWithMargins()
 
     if (flipToScreenCoords) {
       geomG.FlipYAndMoveLeftTopToOrigin()
@@ -187,8 +186,7 @@ export function layoutGeomGraphDetailed(
   function layoutShallowSubgraphs(geomG: GeomGraph) {
     for (const n of geomG.shallowNodes) {
       if (n instanceof GeomGraph) {
-        const g = <GeomGraph>n
-        layoutGeomGraphDetailed(g, cancelToken, layoutEngine, edgeRouter, packing)
+        layoutGeomGraphDetailed(n, cancelToken, layoutEngine, edgeRouter, packing)
       }
     }
   }

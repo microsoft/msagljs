@@ -11,6 +11,7 @@ import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
+import {Assert} from '../../utils/assert'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
@@ -168,12 +169,12 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     const structEdge = this.graph.setEdge(s, t)
     return new GeomEdge(structEdge)
   }
-
+  /** sets the bounding box and the bounary curve as well */
   pumpTheBoxToTheGraphWithMargins(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
     pumpTheBoxToTheGraph(this, t)
     t.b.padEverywhere(this.margins)
-    return t.b
+    return (this.boundingBox = t.b)
   }
 
   // Fields which are set by Msagl

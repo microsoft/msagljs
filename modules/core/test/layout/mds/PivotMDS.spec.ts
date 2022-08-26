@@ -32,9 +32,9 @@ test('graph with subgraphs', () => {
   outputGraph(<GeomGraph>GeomObject.getGeom(dg.graph), 'clustMDS')
 })
 
-test('compound', () => {
-  const dg = runMDSLayout('graphvis/compound.gv')
-  outputGraph(<GeomGraph>GeomObject.getGeom(dg.graph), 'compound.pivot.svg')
+test('smlred', () => {
+  const dg = runMDSLayout('graphvis/smlred.gv')
+  outputGraph(<GeomGraph>GeomObject.getGeom(dg.graph), 'smlred.pivot.svg')
 })
 test('no randomness', () => {
   const dg = runMDSLayout('graphvis/pack.gv')

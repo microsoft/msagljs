@@ -35,7 +35,7 @@ export class MdsLayoutSettings {
 
     if (s.rotationAngle) ret.rotationAngle = s.rotationAngle
 
-    if (s.removeOverlaps != undefined) ret.removeOverlaps = s.removeOverlaps
+    if (s.removeOverlaps != undefined) ret._removeOverlaps = s.removeOverlaps
 
     if (s._callIterationsWithMajorizationThreshold)
       ret._callIterationsWithMajorizationThreshold = s._callIterationsWithMajorizationThreshold
@@ -56,7 +56,7 @@ export class MdsLayoutSettings {
 
     if (this.rotationAngle != 0) ret.rotationAngle = this.rotationAngle
 
-    if (!this.removeOverlaps) ret.removeOverlaps = this.removeOverlaps
+    if (!this._removeOverlaps) ret.removeOverlaps = this._removeOverlaps
 
     if (this._callIterationsWithMajorizationThreshold != 3000)
       ret._callIterationsWithMajorizationThreshold = this._callIterationsWithMajorizationThreshold
@@ -91,17 +91,17 @@ export class MdsLayoutSettings {
 
   private rotationAngle = 0
 
-  removeOverlaps = true
+  private _removeOverlaps = true
 
   //
   _callIterationsWithMajorizationThreshold = 3000
 
   // remove overlaps between node boundaries
-  get RemoveOverlaps(): boolean {
-    return this.removeOverlaps
+  get removeOverlaps(): boolean {
+    return this._removeOverlaps
   }
-  set RemoveOverlaps(value: boolean) {
-    this.removeOverlaps = value
+  set removeOverlaps(value: boolean) {
+    this._removeOverlaps = value
   }
 
   // Number of pivots in Landmark Scaling (between 3 and number of objects).

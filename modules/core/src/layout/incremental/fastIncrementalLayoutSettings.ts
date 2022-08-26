@@ -1,5 +1,6 @@
 import {LinkedList} from '@esfx/collections'
 import {Rectangle} from '../../math/geometry'
+import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomGraph, GeomNode} from '../core'
 import {EdgeConstraints} from '../edgeConstraints'
@@ -9,6 +10,12 @@ import {IConstraint} from './iConstraint'
 import {LockPosition} from './lockPosition'
 
 export class FastIncrementalLayoutSettings {
+  get edgeRoutingSettings() {
+    return this.commonSettings.edgeRoutingSettings
+  }
+  set edgeRoutingSettings(value: EdgeRoutingSettings) {
+    this.commonSettings.edgeRoutingSettings = value
+  }
   commonSettings: CommonLayoutSettings = new CommonLayoutSettings()
   get PackingAspectRatio() {
     return this.commonSettings.PackingAspectRatio
