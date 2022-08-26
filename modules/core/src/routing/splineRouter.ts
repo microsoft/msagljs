@@ -47,7 +47,7 @@ import {Polygon} from './visibility/Polygon'
 import {PointPairMap} from '../utils/pointPairMap'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {ShapeCreator} from './ShapeCreator'
-import {getEdgeRoutingSettingsFromAncestors} from '../layout/driver'
+import {getEdgeRoutingSettingsFromAncestorsOrDefault} from '../layout/driver'
 import {PointPair} from '../math/geometry/pointPair'
 import {MultiEdgeRouter} from './MultiEdgeRouter'
 import {BundleRouter} from './spline/bundling/BundleRouter'
@@ -1205,8 +1205,7 @@ export class SplineRouter extends Algorithm {
   }
 }
 export function routeSplines(gg: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken): void {
-  const ers = gg.layoutSettings ? gg.layoutSettings.edgeRoutingSettings : getEdgeRoutingSettingsFromAncestors(gg)
-  //const ers = gg.layoutSettings.edgeRoutingSettings
+  const ers = getEdgeRoutingSettingsFromAncestorsOrDefault(gg)
   const sr = new SplineRouter(gg, edgesToRoute, ers.Padding, ers.PolylinePadding, ers.coneAngle, ers.bundlingSettings, cancelToken)
   sr.run()
 }

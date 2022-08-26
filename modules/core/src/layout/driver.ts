@@ -84,7 +84,7 @@ function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
     const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
     pivotMds.run()
   } else if (geomGraph.layoutSettings instanceof FastIncrementalLayoutSettings) {
-    var layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
+    const layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
     layout.SingleComponent = true
     layout.run()
   }
@@ -95,7 +95,7 @@ export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken =
   layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
 }
 
-export function getEdgeRoutingSettingsFromAncestors(geomGraph: GeomGraph): EdgeRoutingSettings {
+export function getEdgeRoutingSettingsFromAncestorsOrDefault(geomGraph: GeomGraph): EdgeRoutingSettings {
   do {
     if (geomGraph.layoutSettings && geomGraph.layoutSettings.edgeRoutingSettings) {
       return geomGraph.layoutSettings.edgeRoutingSettings
@@ -113,7 +113,7 @@ export function getEdgeRoutingSettingsFromAncestors(geomGraph: GeomGraph): EdgeR
 }
 
 export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) {
-  const ers: EdgeRoutingSettings = getEdgeRoutingSettingsFromAncestors(geomGraph)
+  const ers: EdgeRoutingSettings = getEdgeRoutingSettingsFromAncestorsOrDefault(geomGraph)
   if (ers.EdgeRoutingMode === EdgeRoutingMode.Rectilinear) {
     routeRectilinearEdges(geomGraph, edgesToRoute, cancelToken)
   } else if (ers.EdgeRoutingMode === EdgeRoutingMode.Spline || ers.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
@@ -139,7 +139,10 @@ export function layoutGeomGraphDetailed(
     return
   }
   initRandom(randomSeed)
-  requireLabelPositioning(geomG)
+  if (geomG.parent == null) {
+    // go over the edges only once here
+    requireLabelPositioning(geomG)
+  }
   const removedEdges = removeEdgesLeadingOutOfGraphOrCollapsingToSelfEdges()
 
   layoutShallowSubgraphs(geomG)
