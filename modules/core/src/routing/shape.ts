@@ -6,6 +6,7 @@ import {Rectangle} from '../math/geometry/rectangle'
 export class Shape {
   private parents: Set<Shape> = new Set<Shape>()
   private children: Set<Shape> = new Set<Shape>()
+  id: number
 
   public get Parents(): Array<Shape> {
     return Array.from(this.parents.values())
@@ -49,14 +50,14 @@ export class Shape {
     return new Shape(null)
   }
 
-  // Constructor taking the ID and the curve of the shape.
-
+  static debugCount = 0
+  /**  Constructor taking the curve of the shape.*/
   public constructor(boundaryCurve: ICurve = null) {
+    this.id = Shape.debugCount++
     this.BoundaryCurve = boundaryCurve
   }
 
-  // A group is a shape that has children.
-
+  /**  A group is a shape that has children.*/
   public get IsGroup(): boolean {
     return this.children.size > 0
   }

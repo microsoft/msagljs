@@ -693,25 +693,10 @@ export class FastIncrementalLayout extends Algorithm {
 
       this.ProgressStep()
     }
-
-    this.FinalizeClusterBoundaries()
   }
 
   ///  Simply does a depth first traversal of the cluster hierarchies fitting Rectangles to the contents of the cluster
   ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
-
-  FinalizeClusterBoundaries() {
-    for (const c of this.graph.subgraphsDepthFirst) {
-      if (!this.NeedSolve() && this.settings.UpdateClusterBoundariesFromChildren) {
-        //  if we are not using the solver (e.g. when constraintLevel == 0) then we need to get the cluster bounds manually
-        c.calculateBoundsFromChildren(this.settings.clusterMargin)
-      } else {
-        c.boundingBox = this.getRB(c).Rect
-      }
-
-      //c.RaiseLayoutDoneEvent();
-    }
-  }
 }
 function hasSomeClusters(g: IGeomGraph): boolean {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

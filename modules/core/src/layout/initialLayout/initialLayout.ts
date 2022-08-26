@@ -81,6 +81,9 @@ export class InitialLayout extends Algorithm {
         //  run PivotMDS with a largish Scale so that the layout comes back oversized.
         //  subsequent incremental iterations do a better job of untangling when they're pulling it in
         //  rather than pushing it apart.
+        const mdsSettings = new MdsLayoutSettings()
+        mdsSettings.removeOverlaps = false
+        mdsSettings.IterationsWithMajorization = 0
         const pivotMDS = new PivotMDS(component, null, () => 1, new MdsLayoutSettings())
         pivotMDS.run()
       }
@@ -107,6 +110,7 @@ export class InitialLayout extends Algorithm {
       }
     }
 
+    component.pumpTheBoxToTheGraphWithMargins()
     //  Pad the graph with margins so the packing will be spaced out.
     component.uniformMargins = this.settings.NodeSeparation
     //  Zero the graph

@@ -122,7 +122,7 @@ export class ShapeCreator {
 function getShapesUnderGraph(graph: GeomGraph, nodesToShapes: Map<GeomNode, Shape>) {
   for (const n of graph.shallowNodes) {
     if (n instanceof GeomGraph) {
-      const nShape = ShapeCreator.CreateShapeWithClusterBoundaryPort(<GeomGraph>n)
+      const nShape = ShapeCreator.CreateShapeWithClusterBoundaryPort(n)
       nodesToShapes.set(n, nShape)
       const ng = <GeomGraph>n
       if (!ng.isCollapsed) {
