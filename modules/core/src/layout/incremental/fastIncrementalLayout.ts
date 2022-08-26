@@ -38,7 +38,7 @@ export class FastIncrementalLayout extends Algorithm {
   edges: Array<FiEdge>
   nodes: Array<FiNode>
 
-  clustersInfo = new Map<IGeomGraph, {barycenter?: Point; weight?: number; rectBoundary?: RectangularClusterBoundary}>()
+  clustersInfo = new Map<IGeomGraph, {barycenter: Point; weight?: number; rectBoundary?: RectangularClusterBoundary}>()
 
   /**  Holds the derivative of the cost function calculated of the most recent iteration.*/
   energy: number
@@ -67,7 +67,7 @@ export class FastIncrementalLayout extends Algorithm {
   setRB(g: IGeomGraph, rb: RectangularClusterBoundary) {
     const t = this.clustersInfo.get(g)
     if (t == null) {
-      this.clustersInfo.set(g, {})
+      this.clustersInfo.set(g, {barycenter: new Point(0, 0)})
     }
     t.rectBoundary = rb
   }
@@ -374,7 +374,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
     let info = this.clustersInfo.get(root)
     if (info == null) {
-      this.clustersInfo.set(root, (info = {}))
+      this.clustersInfo.set(root, (info = {barycenter: new Point(0, 0)}))
     }
     info.weight = w
     return w
