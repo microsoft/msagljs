@@ -1,4 +1,4 @@
-import {GeomGraph} from '../core/GeomGraph'
+import {GeomGraph} from '../core/geomGraph'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class ClustersCollapseExpandUndoRedoAction extends UndoRedoAction {
