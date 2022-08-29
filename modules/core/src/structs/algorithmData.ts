@@ -1,14 +1,14 @@
 import {Attribute} from './attribute'
+import {AttributeRegistry} from './attributeRegister'
 import {Entity} from './entity'
 
 export class AlgorithmData extends Attribute {
-  static attachIndex = 4
   constructor(entity: Entity, data: any = null) {
-    super(entity, AlgorithmData.attachIndex)
+    super(entity, AttributeRegistry.AlgorithmDataIndex)
     this.data = data
   }
   static getAlgData(attrCont: Entity): AlgorithmData {
-    return attrCont.getAttr(AlgorithmData.attachIndex)
+    return attrCont.getAttr(AttributeRegistry.AlgorithmDataIndex)
   }
   data: any
 }

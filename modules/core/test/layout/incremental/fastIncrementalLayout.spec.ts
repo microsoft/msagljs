@@ -8,6 +8,7 @@ import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
 import {Edge, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
 import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
+import {sortedList} from '../sortedBySizeListOfgvFiles'
 
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)
@@ -178,3 +179,22 @@ function noOverlaps(gg: GeomGraph): any {
   }
   return true
 }
+
+test('layout 0-50 gv files with MDS', () => {
+  const path = 'graphvis/'
+  let i = 0
+  for (const f of sortedList) {
+    if (f.match('big(.*).gv')) continue // the parser bug
+    if (++i > 50) return
+    let dg: DrawingGraph
+    try {
+      //      dg = runMDSLayout(join(path, f))
+    } catch (Error) {
+      console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
+      expect(1).toBe(0)
+    }
+    if (dg != null) {
+      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+    }
+  }
+})
