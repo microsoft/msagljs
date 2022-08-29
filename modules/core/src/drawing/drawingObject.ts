@@ -8,6 +8,7 @@ import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
 import {Attr} from 'dotparser'
 import {Attribute} from '../structs/attribute'
+import {AttributeRegistry} from '../structs/attributeRegister'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject extends Attribute {
   static copyValidFields(source: DrawingObject, target: DrawingObject) {
@@ -166,7 +167,6 @@ export abstract class DrawingObject extends Attribute {
   }
   measuredTextSize: Size
   /** the index of the DrawingObject in the list of attributes of Entity */
-  static attachIndex = 1
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
 
   // not all attributes can be used in derived classes
@@ -274,7 +274,7 @@ export abstract class DrawingObject extends Attribute {
   clusterRank: any
 
   constructor(entity: Entity) {
-    super(entity, DrawingObject.attachIndex)
+    super(entity, AttributeRegistry.DrawingObjectIndex)
     this.fontname = DrawingObject.defaultLabelFontName
     this.fontsize = DrawingObject.defaultLabelFontSize
   }
@@ -283,7 +283,7 @@ export abstract class DrawingObject extends Attribute {
     if (attrCont == null) {
       return null
     } else {
-      return attrCont.getAttr(DrawingObject.attachIndex) // the attribute at 0 is for geometry, at 1 is for drawing
+      return attrCont.getAttr(AttributeRegistry.DrawingObjectIndex)
     }
   }
 }

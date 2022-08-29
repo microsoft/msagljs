@@ -17,6 +17,7 @@ import {
   Rectangle,
   Size,
   CurveFactory,
+  AttributeRegistry,
 } from 'msagl-js'
 import {DrawingEdge, DrawingObject, DrawingNode, Color, StyleEnum, ShapeEnum} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
@@ -24,11 +25,10 @@ import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 import {default as svgPanZoom} from 'panzoom'
 class SvgObject {
-  static attachIndex = 2
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity
   bind() {
-    if (this.entity) this.entity.setAttr(SvgObject.attachIndex, this)
+    if (this.entity) this.entity.setAttr(AttributeRegistry.SvgObjectIndex, this)
   }
 
   constructor(attrCont: Entity, svgData: any) {
@@ -38,7 +38,7 @@ class SvgObject {
   }
 
   static getGeom(attrCont: Entity): GeomObject {
-    return attrCont.getAttr(SvgObject.attachIndex)
+    return attrCont.getAttr(AttributeRegistry.SvgObjectIndex)
   }
   svgData: any
 }
@@ -68,7 +68,7 @@ export class SvgCreator {
   /** It cleans the current SVG content
    * and creates the new one corresponding to the graph
    * */
-  setGraph(graph: Graph) {
+  setGraph(graph: Graph): void {
     this.clearContainer()
     this.graph = graph
     this.svg = createAndBindWithGraph(this.graph, 'svg')

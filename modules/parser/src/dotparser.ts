@@ -34,6 +34,7 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
+import {AttributeRegistry} from '../../core/src/structs/attributeRegister'
 // import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
@@ -766,12 +767,12 @@ function removeEmptySubgraphs(graph: Graph) {
 
 function createGeomForSubgraphs(graph: Graph) {
   for (const sg of graph.subgraphs()) {
-    if (GeomGraph.getGeom(sg) == null && sg.hasSomeAttrOnIndex(GeomObject.attachIndex)) {
+    if (GeomGraph.getGeom(sg) == null && sg.hasSomeAttrOnIndex(AttributeRegistry.GeomObjectIndex)) {
       new GeomGraph(sg)
     }
   }
 
-  if (GeomGraph.getGeom(graph) == null && graph.hasSomeAttrOnIndex(GeomGraph.attachIndex)) {
+  if (GeomGraph.getGeom(graph) == null && graph.hasSomeAttrOnIndex(AttributeRegistry.GeomObjectIndex)) {
     new GeomGraph(graph)
   }
 }

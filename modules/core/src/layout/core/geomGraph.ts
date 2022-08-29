@@ -63,7 +63,7 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
   }
 
   static getGeom(attrCont: Graph): GeomGraph {
-    return <GeomGraph>attrCont.getAttr(GeomObject.attachIndex)
+    return <GeomGraph>GeomObject.getGeom(attrCont)
   }
   private rrect: RRect
 
