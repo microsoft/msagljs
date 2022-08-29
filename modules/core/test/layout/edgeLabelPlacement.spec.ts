@@ -7,8 +7,7 @@ import {parseDotGraph} from '../utils/testUtils'
 
 test('fsm', () => {
   const dg = runLayout('graphvis/fsm.gv')
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/fsm_with_labels.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/fsm_with_labels.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 function runLayout(fname: string): DrawingGraph {

@@ -107,8 +107,7 @@ export function runMDSLayoutNoSubgraphs(fname: string, edgeRoutingMode: EdgeRout
 }
 
 export function outputGraph(g: GeomGraph, name: string) {
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + name + '.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/' + name + '.svg', g)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -536,8 +536,7 @@ test('data_social', () => {
     // edgesToRoute.map((e) => <GeomEdge>GeomObject.getGeom(e)),
   )
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/social_bug.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/social_bug.svg', gg)
 })
 test('spline router self edge', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
@@ -551,8 +550,7 @@ test('spline router self edge', () => {
   g.translate(n.center.neg())
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/self.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/self.svg', g)
 })
 
 test('one edge', () => {
@@ -568,8 +566,7 @@ test('one edge', () => {
   g.translate(a.center.neg())
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/one_edge_sr.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/one_edge_sr.svg', g)
 })
 
 test('one edge with obstacle', () => {
@@ -586,8 +583,7 @@ test('one edge with obstacle', () => {
   g.setEdge('a', 'c')
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/one_edge_with_obstacle.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/one_edge_with_obstacle.svg', g)
 })
 test('clust_', () => {
   let dg: DrawingGraph
@@ -599,8 +595,7 @@ test('clust_', () => {
     expect(1).toBe(0)
   }
   if (dg != null) {
-    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/clust_.svg')
-    t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+    // SvgDebugWriter.writeGeomGraph('/tmp/clust_.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   }
 })
 
@@ -621,8 +616,7 @@ xtest('random circles', () => {
       g.transform(new PlaneTransformation(5, 0, 0, 0, 5, 0))
       const sr = SplineRouter.mk2(g, new EdgeRoutingSettings())
       sr.run()
-      const svgDebugWriter = new SvgDebugWriter('/tmp/circleRand' + nodeCount + 'seed' + seed + '.svg')
-      svgDebugWriter.writeGeomGraph(g)
+      // SvgDebugWriter.writeGeomGraph('/tmp/circleRand' + nodeCount + 'seed' + seed + '.svg', g)
     }
 })
 
@@ -642,8 +636,7 @@ test('layout 50-100 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/splines' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/splines' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -664,8 +657,7 @@ test('layout 0-50 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/splinesPivot' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/splinesPivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -686,8 +678,7 @@ test('one edge with two obstacles', () => {
   g.setEdge('a', 'd')
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/one_edge_with_two_obstacles.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/one_edge_with_two_obstacles.svg', g)
 })
 
 test('edges with three obstacles', () => {
@@ -712,8 +703,7 @@ test('edges with three obstacles', () => {
 
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edges_with_three_obstacles.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/edges_with_three_obstacles.svg', g)
 })
 
 test('two edges with obstacle', () => {
@@ -731,8 +721,7 @@ test('two edges with obstacle', () => {
   g.setEdge('a', 'b')
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/two_edges_with_obstacle.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/two_edges_with_obstacle.svg', g)
 })
 function checkEdges(gg: GeomGraph) {
   for (const n of gg.deepNodesIt()) {
@@ -781,14 +770,12 @@ test('edge to a parent', () => {
   {
     const sr = new SplineRouter(gg, Array.from(gg.deepEdges))
     sr.run()
-    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent.svg')
-    t.writeGeomGraph(gg)
+    // SvgDebugWriter.writeGeomGraph('/tmp/edge_to_parent.svg', gg)
   }
   {
     const sr = new SplineRouter(gg, Array.from(gg.deepEdges))
     sr.BundlingSettings = new BundlingSettings()
     sr.run()
-    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/edge_to_parent_bundl.svg')
-    t.writeGeomGraph(gg)
+    // SvgDebugWriter.writeGeomGraph('/tmp/edge_to_parent_bundl.svg', gg)
   }
 })

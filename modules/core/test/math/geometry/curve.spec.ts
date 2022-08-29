@@ -130,7 +130,7 @@ function intersectTwoRoundedRects(rr: Curve, rr0: Curve, i: number): void {
   // )
   // xxD.push(DebugCurve.mkDebugCurveI(rr))
   // xxD.push(DebugCurve.mkDebugCurveI(rr0))
-  // const svgW = new SvgDebugWriter('/tmp/rr' + i + '.svg')
+  // const svgW = // SvgDebugWriter.writeGeomGraph('/tmp/rr' + i + '.svg',
   // svgW.writeDebugCurves(xxD)
   // svgW.close()
   expect(xx.length % 2).toBe(0)

@@ -18,7 +18,9 @@ export class SvgDebugWriter {
   // Here we import the File System module of node
   // private fs = require('fs')
   //private xmlw = require('xml-writer')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   xw: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ws: any
   arrowAngle = 25
 
@@ -245,7 +247,12 @@ export class SvgDebugWriter {
     w.close()
   }
 
-  writeGeomGraph(g: GeomGraph) {
+  static writeGeomGraph(fileName: string, g: GeomGraph) {
+    const t = new SvgDebugWriter(fileName)
+    t.writeGeomGraph_(g)
+  }
+
+  private writeGeomGraph_(g: GeomGraph) {
     const r = g.pumpTheBoxToTheGraphWithMargins()
 
     this.open(r)

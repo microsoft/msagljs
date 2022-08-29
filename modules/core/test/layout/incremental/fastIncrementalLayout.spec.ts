@@ -23,7 +23,7 @@ xtest('filclust', () => {
   filSettings.AvoidOverlaps = true
   const fil = new FastIncrementalLayout(gg, filSettings, 2, () => filSettings)
   fil.run()
-  new SvgDebugWriter('/tmp/fil.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fil.svg', gg)
 })
 
 test('clust', () => {
@@ -39,7 +39,7 @@ test('clust', () => {
   gg.layoutSettings = settings
   for (const subg of gg.subgraphs()) subg.layoutSettings = settings
   layoutGeomGraph(gg, null)
-  new SvgDebugWriter('/tmp/fil_clust.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fil_clust.svg', gg)
 })
 
 test('smlred', () => {
@@ -55,7 +55,7 @@ test('smlred', () => {
   gg.layoutSettings = settings
   for (const subg of gg.subgraphs()) subg.layoutSettings = settings
   layoutGeomGraph(gg, null)
-  new SvgDebugWriter('/tmp/sml_red.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/sml_red.svg', gg)
 })
 
 test('initialfil', () => {
@@ -141,7 +141,7 @@ test('initialfil', () => {
   expect(noOverlaps(gg)).toBe(true)
 
   routeEdges(gg, Array.from(gg.deepEdges), null)
-  new SvgDebugWriter('/tmp/fil1.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fil1.svg', gg)
   const bb = gg.pumpTheBoxToTheGraphWithMargins()
   const a = Point.middle(bb.leftTop, bb.center)
   const b = Point.middle(bb.rightBottom, bb.center)
@@ -164,7 +164,7 @@ test('initialfil', () => {
   } while (!settings.Converged)
   expect(noOverlaps(gg)).toBe(true)
   routeEdges(gg, Array.from(gg.deepEdges), null)
-  new SvgDebugWriter('/tmp/fil2.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fil2.svg', gg)
 })
 
 function noOverlaps(gg: GeomGraph): any {

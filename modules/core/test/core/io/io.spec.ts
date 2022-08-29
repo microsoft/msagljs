@@ -133,8 +133,7 @@ xtest('graph ldbxtried.gv', () => {
   for (let i = 0; i < 32; i++) random()
   const router = new SplineRouter(gg, edges, /*tightPadding*/ 3)
   router.run()
-  const w = new SvgDebugWriter('/tmp/ldbug.svg')
-  w.writeGeomGraph(GeomGraph.getGeom(g))
+  // SvgDebugWriter.writeGeomGraph('/tmp/ldbug.svg', GeomGraph.getGeom(g))
 })
 
 test('graph smlred', () => {
@@ -172,7 +171,7 @@ test('graph fsm', () => {
   }
 
   expect(labelsNow).toBe(labelsWas)
-  //  new SvgDebugWriter('/tmp/fsm_recovered.svg').writeGeomGraph(GeomGraph.getGeom(graph))
+  //  // SvgDebugWriter.writeGeomGraph('/tmp/fsm_recovered.svg').writeGeomGraph(GeomGraph.getGeom(graph),
 })
 
 test('graph a.gv', () => {
@@ -264,7 +263,7 @@ test('graph style', () => {
   const dg = DrawingGraph.getDrawingObj(newG) as DrawingGraph
   dg.createGeometry()
   layoutGeomGraph(GeomGraph.getGeom(newG))
-  new SvgDebugWriter('/tmp/style.svg').writeGeomGraph(GeomGraph.getGeom(newG))
+  // SvgDebugWriter.writeGeomGraph('/tmp/style.svg', GeomGraph.getGeom(newG))
 })
 
 test('layout is loaded', () => {

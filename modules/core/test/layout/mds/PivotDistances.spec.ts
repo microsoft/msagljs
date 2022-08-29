@@ -35,5 +35,5 @@ test('MDSGraphLayout - lay out a flat graph, no subgraphs', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   const gg = dg.createGeometry(labelRectFunc)
   layoutGraphWithMds(gg, null)
-  new SvgDebugWriter('/tmp/abstractMDS.svg').writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/abstractMDS.svg', gg)
 })

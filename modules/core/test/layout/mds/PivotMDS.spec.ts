@@ -69,8 +69,7 @@ test('layout 0-50 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pivot' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -90,8 +89,7 @@ test('layout 50-100 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pivot' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -111,8 +109,7 @@ test('layout 100-150 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pivot' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -128,8 +125,7 @@ xtest('layout 150-200 gv files with MDS', () => {
     try {
       dg = runMDSLayout(join(path, f))
       if (dg != null) {
-        const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pivot' + f + '.svg')
-        t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+        // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
       }
     } catch (Error) {
       console.log(f + ' error:' + Error.message)
@@ -153,8 +149,7 @@ xtest('layout 200-250 gv files with MDS', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pivot' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -174,8 +169,8 @@ xtest('layout from 250 and up  gv files with MDS', () => {
   //    expect(1).toBe(0)
   //  }
   //  if (dg != null) {
-  //    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + '_pivot.svg')
-  //    t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  //    // SvgDebugWriter.writeGeomGraph('/tmp/' + f + '_pivot.svg',
+  //    GeomObject.getGeom(dg.graph) as GeomGraph)
   //  }
   // }
 })

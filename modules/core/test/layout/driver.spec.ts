@@ -10,8 +10,7 @@ test('layoutGeomGraph', () => {
   dg.createGeometry((s) => testUtils.measureTextSize(s, {}))
   const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
   layoutGeomGraph(geomGraph, null)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/test_layoutGeomGraph.svg')
-  t.writeGeomGraph(geomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/test_layoutGeomGraph.svg', geomGraph)
 })
 
 test('ldbxtried', () => {
@@ -20,6 +19,5 @@ test('ldbxtried', () => {
   dg.createGeometry((s) => testUtils.measureTextSize(s, {}))
   const geomGraph = <GeomGraph>GeomGraph.getGeom(dg.graph)
   layoutGeomGraph(geomGraph, null)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/ldbxtried.svg')
-  t.writeGeomGraph(geomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/ldbxtried.svg', geomGraph)
 })

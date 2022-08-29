@@ -65,8 +65,7 @@ test('self on node', () => {
   for (const e of g.edges()) {
     expect(e.curve == null).toBe(false)
   }
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/self.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/self.svg', g)
 })
 
 test('layered layout glued graph', () => {
@@ -165,8 +164,7 @@ test('disconnected comps', () => {
   }
 
   // console.log(strB.ToString())
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/disconnected.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/disconnected.svg', g)
 })
 function color(i: number) {
   if (i == 0) {
@@ -185,8 +183,7 @@ test('margins', () => {
   gg.margins = {left: 100, right: 10, top: 170, bottom: 50}
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph(    '/tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg',    GeomObject.getGeom(dg.graph) as GeomGraph,  )
   const g = GeomObject.getGeom(dg.graph) as GeomGraph
   const dc = Array.from(g.deepEdges)
     .map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.curve))
@@ -200,8 +197,7 @@ test('undirected pach', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/undir_pack.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/undir_pack.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('austin', () => {
@@ -234,43 +230,37 @@ xtest('austin', () => {
   for (const e of gg.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/gameOfThrones.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('clust.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/clust.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/clust_.gv.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/clust_.gv.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('clust5.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/clust5.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/clust5_.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/clust5_.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('b56.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/b56.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/b56.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/b56.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('smlred.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/smlred.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/smlredLayered.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('b51.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/b51.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/b51Layered.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/b51Layered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('arrowhead size default', () => {
@@ -280,8 +270,7 @@ test('arrowhead size default', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/longArrows.svg')
-  t.writeGeomGraph(<GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('/tmp/longArrows.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('arrowhead size per edge', () => {
@@ -298,8 +287,7 @@ test('arrowhead size per edge', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/arrowheadLength.svg')
-  t.writeGeomGraph(geomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/arrowheadLength.svg', geomGraph)
 })
 
 test('graphvis/ER.gv', () => {
@@ -312,40 +300,34 @@ test('b.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/b.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/btest.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/btest.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 test('b7.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/b.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/b7test.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/b7test.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 xtest('fsm.gv with Brand', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/fsm.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/fsmbrandes.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fsmbrandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   // console.log(qualityMetric(GeomObject.getGeom(dg.graph) as GeomGraph))
 })
 test('fsm.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/fsm.gv', ss)
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/fsmNetworkSimplex.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fsmNetworkSimplex.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('b100', () => {
   const dg = runLayout('graphvis/b100.gv')
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/b100.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/b100.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 test('pmpipe.gv', () => {
   const dg = runLayout('graphvis/pmpipe.gv')
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pmpipe.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/pmpipe.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('layered layout empty graph', () => {
@@ -384,8 +366,7 @@ test('layered layout nodes only', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(g, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/nodes_only.svg')
-  t.writeGeomGraph(g)
+  // SvgDebugWriter.writeGeomGraph('/tmp/nodes_only.svg', g)
 })
 
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
@@ -427,8 +408,7 @@ test('root', () => {
   const fname = 'graphvis/root.gv'
   const dg = runLayout(fname)
   if (dg != null) {
-    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + 'root.svg')
-    t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+    // SvgDebugWriter.writeGeomGraph('/tmp/' + 'root.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   }
 })
 
@@ -460,8 +440,7 @@ test('brandes', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + 'brandes.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/' + f + 'brandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -481,8 +460,7 @@ test('layout first 75 gv files from list', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -492,8 +470,7 @@ test('shapes', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pgram.svg')
-  t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('/tmp/pgram.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('layout all gv files', () => {
@@ -507,8 +484,7 @@ xtest('layout all gv files', () => {
       const fname = join(path, f)
       const dg = runLayout(fname)
       if (dg != null) {
-        const t: SvgDebugWriter = new SvgDebugWriter('/tmp/all' + f + '.svg')
-        t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+        // SvgDebugWriter.writeGeomGraph('/tmp/all' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
       }
     }
   })

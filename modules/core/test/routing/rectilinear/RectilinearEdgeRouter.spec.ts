@@ -11,8 +11,7 @@ import {generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from 
 test('empty graph', () => {
   const gg = new GeomGraph(new Graph('graph'))
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/emptyrectr.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/emptyrectr.svg', gg)
 })
 
 test('two nodes', () => {
@@ -29,8 +28,7 @@ test('two nodes', () => {
   const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/tworectr.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/tworectr.svg', gg)
 })
 
 test('three nodes', () => {
@@ -47,8 +45,7 @@ test('three nodes', () => {
   const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/threerectr.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/threerectr.svg', gg)
 })
 
 test('pbi', () => {
@@ -239,8 +236,7 @@ test('pbi', () => {
 
   routeRectilinearEdges(gg, null, null, 25, 3)
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/pbi.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/pbi.svg', gg)
 
   function makeEdges() {
     addGeomEdge(n9, n18)
@@ -282,8 +278,7 @@ test('four nodes', () => {
   const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/fourrectr.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/fourrectr.svg', gg)
 })
 
 function addNode(gg: GeomGraph, id: string, c: ICurve): Node {
@@ -318,8 +313,7 @@ test('6 nodes', () => {
   const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
   rr.run()
 
-  const t: SvgDebugWriter = new SvgDebugWriter('/tmp/sixrectr.svg')
-  t.writeGeomGraph(gg)
+  // SvgDebugWriter.writeGeomGraph('/tmp/sixrectr.svg', gg)
 
   function getNode(i: number) {
     const n = addNode(gg, coords[i].id, CurveFactory.mkRectangleWithRoundedCorners(20, 10, 1, 1, new Point(coords[i].x, coords[i].y)))
@@ -353,8 +347,7 @@ test('first 50 dot files', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/' + f + 'rect.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/' + f + 'rect.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
     if (i > 50) return
   }
@@ -366,8 +359,7 @@ test('random rect', () => {
       const gg: GeomGraph = generateRandomGeomGraph(seed, nodeCount)
       const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 3)
       rr.run()
-      const svgDebugWriter = new SvgDebugWriter('/tmp/rand' + nodeCount + 'seed' + seed + '.svg')
-      svgDebugWriter.writeGeomGraph(gg)
+      // SvgDebugWriter.writeGeomGraph('/tmp/rand' + nodeCount + 'seed' + seed + '.svg', gg)
     }
 })
 
@@ -388,8 +380,7 @@ test('layout 100-150 gv files with MDS rect', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      const t: SvgDebugWriter = new SvgDebugWriter('/tmp/rect' + f + '.svg')
-      t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('/tmp/rect' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -404,7 +395,6 @@ test('abstract rect', () => {
     expect(1).toBe(0)
   }
   if (dg != null) {
-    const t: SvgDebugWriter = new SvgDebugWriter('/tmp/rect' + 'abstract' + '.svg')
-    t.writeGeomGraph(GeomObject.getGeom(dg.graph) as GeomGraph)
+    // SvgDebugWriter.writeGeomGraph('/tmp/rect' + 'abstract' + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   }
 })
