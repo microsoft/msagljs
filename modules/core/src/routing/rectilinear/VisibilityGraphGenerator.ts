@@ -9,7 +9,7 @@ import {Point} from '../../math/geometry/point'
 import {Polyline} from '../../math/geometry/polyline'
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {Rectangle} from '../../math/geometry/rectangle'
-import {RBNode} from '../../structs/RBTree/rbNode'
+import {RBNode} from '../../math/RBTree/rbNode'
 
 import {SweepEvent} from '../spline/coneSpanner/SweepEvent'
 

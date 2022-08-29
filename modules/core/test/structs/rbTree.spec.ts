@@ -1,6 +1,6 @@
-import {RBColor} from '../../src/structs/RBTree/rbColor'
-import {RBNode} from '../../src/structs/RBTree/rbNode'
-import {RBTree} from '../../src/structs/RBTree/rbTree'
+import {RBColor} from '../../src/math/RBTree/rbColor'
+import {RBNode} from '../../src/math/RBTree/rbNode'
+import {RBTree} from '../../src/math/RBTree/rbTree'
 import {randomInt} from '../../src/utils/random'
 
 export class RbTreeUtils {

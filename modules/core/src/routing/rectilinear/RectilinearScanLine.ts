@@ -1,7 +1,7 @@
 import {Direction} from '../../math/geometry/direction'
 import {Point} from '../../math/geometry/point'
-import {RBNode} from '../../structs/RBTree/rbNode'
-import {RBTree} from '../../structs/RBTree/rbTree'
+import {RBNode} from '../../math/RBTree/rbNode'
+import {RBTree} from '../../math/RBTree/rbTree'
 
 import {compareBooleans, compareNumbers} from '../../utils/compare'
 import {BasicObstacleSide, LowObstacleSide} from './BasicObstacleSide'

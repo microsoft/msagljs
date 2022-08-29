@@ -1,6 +1,6 @@
 import {String} from 'typescript-string-operations'
 import {Point} from '../..'
-import {RBNode} from '../../structs/RBTree/rbNode'
+import {RBNode} from '../../math/RBTree/rbNode'
 import {Tangent} from './Tangent'
 export class Diagonal {
   toString(): string {

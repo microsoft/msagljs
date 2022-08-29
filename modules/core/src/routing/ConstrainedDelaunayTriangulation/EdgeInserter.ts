@@ -1,4 +1,4 @@
-﻿import {RBTree} from '../../structs/RBTree/rbTree'
+﻿import {RBTree} from '../../math/RBTree/rbTree'
 import {CdtEdge} from './CdtEdge'
 import {CdtFrontElement} from './CdtFrontElement'
 import {CdtSite} from './CdtSite'

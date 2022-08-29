@@ -1,4 +1,4 @@
-import {RBTree} from '../../../structs/RBTree/rbTree'
+import {RBTree} from '../../RBTree/rbTree'
 import {OverlapRemovalNode} from './overlapRemovalNode'
 export class ScanLine {
   //  This is the data structure that allows fast insert/remove of nodes as well as

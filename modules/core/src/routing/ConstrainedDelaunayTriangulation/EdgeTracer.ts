@@ -1,6 +1,6 @@
 ﻿import {Point} from '../../math/geometry/point'
-import {RBNode} from '../../structs/RBTree/rbNode'
-import {RBTree} from '../../structs/RBTree/rbTree'
+import {RBNode} from '../../math/RBTree/rbNode'
+import {RBTree} from '../../math/RBTree/rbTree'
 
 import {RealNumberSpan} from '../../utils/RealNumberSpan'
 import {CdtEdge} from './CdtEdge'

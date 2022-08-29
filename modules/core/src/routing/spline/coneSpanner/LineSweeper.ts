@@ -5,8 +5,8 @@ import {Polyline, GeomConstants, ICurve, CurveFactory, LineSegment} from '../../
 import {DebugCurve} from '../../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../../math/geometry/point'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-import {RBNode} from '../../../structs/RBTree/rbNode'
-import {RBTree} from '../../../structs/RBTree/rbTree'
+import {RBNode} from '../../../math/RBTree/rbNode'
+import {RBTree} from '../../../math/RBTree/rbTree'
 
 import {closeDistEps} from '../../../utils/compare'
 import {PointSet} from '../../../utils/PointSet'

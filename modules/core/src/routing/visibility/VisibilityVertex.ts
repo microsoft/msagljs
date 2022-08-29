@@ -1,6 +1,6 @@
-import {RBNode} from '../../structs/RBTree/rbNode'
+import {RBNode} from '../../math/RBTree/rbNode'
 import {Point} from './../../math/geometry/point'
-import {RBTree} from './../../structs/RBTree/rbTree'
+import {RBTree} from '../../math/RBTree/rbTree'
 import {VisibilityEdge} from './VisibilityEdge'
 export class VisibilityVertex {
   point: Point

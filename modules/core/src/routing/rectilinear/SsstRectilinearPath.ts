@@ -4,7 +4,7 @@ import {Point} from '../../math/geometry/point'
 import {CompassVector} from '../../math/geometry/compassVector'
 import {Direction} from '../../math/geometry/direction'
 import {GenericBinaryHeapPriorityQueue} from '../../structs/genericBinaryHeapPriorityQueue'
-import {RBTree} from '../../structs/RBTree/rbTree'
+import {RBTree} from '../../math/RBTree/rbTree'
 
 import {closeDistEps, compareNumbers} from '../../utils/compare'
 import {VisibilityEdge} from '../visibility/VisibilityEdge'

@@ -3,7 +3,7 @@
 import {Point} from '../../../math/geometry/point'
 import {GeomConstants} from '../../../math/geometry/geomConstants'
 import {GenericBinaryHeapPriorityQueue} from '../../../structs/genericBinaryHeapPriorityQueue'
-import {RBTree} from '../../../structs/RBTree/rbTree'
+import {RBTree} from '../../../math/RBTree/rbTree'
 
 import {closeDistEps, compareNumbers} from '../../../utils/compare'
 import {LinkedPoint} from './LinkedPoint'

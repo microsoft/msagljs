@@ -3,8 +3,8 @@
 // are just intersecting rays, we only care about the X (H scan) or Y (V scan) coordinate.
 
 import {Point} from '../../math/geometry/point'
-import {RBNode} from '../../structs/RBTree/rbNode'
-import {RBTree} from '../../structs/RBTree/rbTree'
+import {RBNode} from '../../math/RBTree/rbNode'
+import {RBTree} from '../../math/RBTree/rbTree'
 
 import {BasicReflectionEvent} from './basicReflectionEvent'
 import {ScanDirection} from './ScanDirection'

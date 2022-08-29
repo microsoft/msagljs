@@ -16,7 +16,7 @@
 import {Direction} from '../../math/geometry/direction'
 import {Point} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
-import {RBNode} from '../../structs/RBTree/rbNode'
+import {RBNode} from '../../math/RBTree/rbNode'
 
 import {comparePointsYFirst} from '../../utils/compare'
 import {PointSet} from '../../utils/PointSet'
