@@ -59,7 +59,20 @@ function createSettingsIfNeeded(geomGraph: GeomGraph) {
   }
 }
 
+export function getSettingsFromAncestor(geomGraph: GeomGraph): any {
+  let p = geomGraph.parent as GeomGraph
+  while (p) {
+    if (p.layoutSettings) {
+      return p.layoutSettings
+    }
+    p = p.parent as GeomGraph
+  }
+  return null
+}
+
 function figureOutSettings(geomGraph: GeomGraph): any {
+  const settings = getSettingsFromAncestor(geomGraph)
+  if (settings) return settings
   const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
   if (tooLargeForLayered) {
     return new MdsLayoutSettings()
@@ -256,7 +269,7 @@ function getConnectedComponents(parentGeomGraph: GeomGraph): GeomGraph[] {
     const g = new Graph(parentGraph.id + i++)
     g.parent = parentGraph
     const geomG = new GeomGraph(g)
-    geomG.layoutSettings = parentGeomGraph.layoutSettings
+    geomG.layoutSettings = parentGeomGraph.layoutSettings ?? figureOutSettings(parentGeomGraph)
     for (const n of comp) {
       n.parent = g
       g.addNode(n) // this changes the parent - should be restored to graph

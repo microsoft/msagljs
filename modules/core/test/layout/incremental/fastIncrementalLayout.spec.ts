@@ -5,10 +5,12 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {FastIncrementalLayout} from '../../../src/layout/incremental/fastIncrementalLayout'
 import {FastIncrementalLayoutSettings} from '../../../src/layout/incremental/fastIncrementalLayoutSettings'
 import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
-import {Edge, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
-import {parseDotGraph, measureTextSize} from '../../utils/testUtils'
+import {Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
+import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
 import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
 import {sortedList} from '../sortedBySizeListOfgvFiles'
+import {join} from 'path'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)
@@ -180,21 +182,61 @@ function noOverlaps(gg: GeomGraph): any {
   return true
 }
 
-test('layout 0-50 gv files with MDS', () => {
+test('layout 0-50 gv files with fil', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 50) return
+    if (i != 40) continue
     let dg: DrawingGraph
     try {
-      //      dg = runMDSLayout(join(path, f))
+      dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
     } catch (Error) {
       console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
       expect(1).toBe(0)
     }
     if (dg != null) {
-      // SvgDebugWriter.writeGeomGraph('/tmp/pivot' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      SvgDebugWriter.writeGeomGraph('/tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+    }
+  }
+})
+
+test('layout 100-150 gv files with fil', () => {
+  const path = 'graphvis/'
+  let i = 0
+  for (const f of sortedList) {
+    if (f.match('big(.*).gv')) continue // the parser bug
+    if (++i > 150) return
+    if (i < 100) continue
+    let dg: DrawingGraph
+    try {
+      dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
+    } catch (Error) {
+      console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
+      expect(1).toBe(0)
+    }
+    if (dg != null) {
+      SvgDebugWriter.writeGeomGraph('/tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+    }
+  }
+})
+test('layout 150-250 gv files with fil', () => {
+  const path = 'graphvis/'
+  let i = 0
+  for (const f of sortedList) {
+    if (f.match('big(.*).gv')) continue // the parser bug
+    if (++i > 250) return
+    if (i < 150) continue
+    let dg: DrawingGraph
+    try {
+      dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
+    } catch (Error) {
+      console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
+      expect(1).toBe(0)
+    }
+    if (dg != null) {
+      SvgDebugWriter.writeGeomGraph('/tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })

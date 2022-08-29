@@ -14,6 +14,7 @@ import {
   Size,
   Node,
   Edge,
+  layoutGeomGraph,
 } from '../../src'
 import {SvgDebugWriter} from './svgDebugWriter'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
@@ -27,6 +28,9 @@ import {initRandom, randomInt} from '../../src/utils/random'
 import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
+import {FastIncrementalLayout} from '../../src/layout/incremental/fastIncrementalLayout'
+import {FastIncrementalLayoutSettings} from '../../src/layout/incremental/fastIncrementalLayoutSettings'
+import {layoutGraph} from '../../../renderer/src/layout'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
@@ -103,6 +107,22 @@ export function runMDSLayoutNoSubgraphs(fname: string, edgeRoutingMode: EdgeRout
   settings.edgeRoutingSettings.EdgeRoutingMode = edgeRoutingMode
   gg.layoutSettings = settings
   layoutGraphWithMds(gg, null)
+  return dg
+}
+
+export function runFastIncLayout(fname: string, edgeRoutingMode: EdgeRoutingMode): DrawingGraph {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
+  if (dg == null) return null
+
+  dg.createGeometry(measureTextSize)
+  const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
+  const settings = new FastIncrementalLayoutSettings()
+  settings.maxIterations = 10
+  settings.minorIterations = 20
+  settings.AvoidOverlaps = true
+  settings.edgeRoutingSettings.EdgeRoutingMode = edgeRoutingMode
+  gg.layoutSettings = settings
+  layoutGeomGraph(gg, null)
   return dg
 }
 

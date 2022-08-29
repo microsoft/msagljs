@@ -10,9 +10,7 @@ import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overl
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Solution} from '../../math/projectionSolver/Solution'
 import {Solver} from '../../math/projectionSolver/Solver'
-import {AlgorithmData} from '../../structs/algorithmData'
 import {Assert} from '../../utils/assert'
-import {GeomNode} from '../core'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {FiNode, getFiNode} from './fiNode'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
@@ -36,9 +34,6 @@ export class AxisSolver {
 
   private nodes: Iterable<FiNode>
 
-  private clusterHierarchies: Iterable<IGeomGraph>
-
-  private clusterSettings: (gg: IGeomGraph) => any
   rectBoundary: (
     ///  Wrapper round all the ProjectionSolver stuff.
     gg: IGeomGraph,
@@ -71,10 +66,8 @@ export class AxisSolver {
   ) {
     this.IsHorizontal = isHorizontal
     this.nodes = nodes
-    this.clusterHierarchies = clusterHierarchies
     this.avoidOverlaps = avoidOverlaps
     this.ConstraintLevel = constraintLevel
-    this.clusterSettings = clusterSettings
     this.rectBoundary = rectBoundary
   }
 
@@ -112,13 +105,6 @@ export class AxisSolver {
       filNode.SetOlapNode(this.IsHorizontal, null)
     }
 
-    //  Calculate horizontal non-Overlap constraints.
-    if (this.avoidOverlaps && this.clusterHierarchies != null) {
-      for (const c of this.clusterHierarchies) {
-        this.AddOlapClusters(this.cg, null, c, nodeCenter)
-      }
-    }
-
     for (const filNode of this.nodes) {
       if (filNode.getOlapNode(this.IsHorizontal) == null) {
         this.AddOlapNode(this.cg, this.cg.DefaultClusterHierarchy, filNode, nodeCenter)
@@ -143,20 +129,11 @@ export class AxisSolver {
     //  We do just one solve over all the cluster constraints for the whole hierarchy.
     //  It returns a list of lists of unsatisfiable constraints, or NULL.
     const solution: Solution = this.cg.Solve(this.solver, null, false)
-    //  Update the positions.
-    if (this.avoidOverlaps && this.clusterHierarchies != null) {
-      for (const c of this.clusterHierarchies) {
-        //  Don't update the root cluster of the hierarachy as it doesn't have borders.
-        this.UpdateOlapClusters(c.Clusters)
-      }
-    }
-
     for (const v of this.nodes) {
       //  Set the position from the constraint solution on this axis.
       v.UpdatePos(this.IsHorizontal)
     }
 
-    this.DebugVerifyClusterHierarchy(solution)
     return solution
   }
 
@@ -200,69 +177,6 @@ export class AxisSolver {
     }
   }
 
-  private AddOlapClusters(
-    generator: ConstraintGenerator,
-    olapParentCluster: OverlapRemovalCluster,
-    incClus: IGeomGraph,
-    nodeCenter: (fi: FiNode) => Point,
-  ) {
-    const settings: any = this.clusterSettings(incClus)
-    const nodeSeparationH: number = settings.NodeSeparation
-    const nodeSeparationV: number = settings.NodeSeparation + 0.0001
-    const innerPaddingH: number = settings.ClusterMargin
-    const innerPaddingV: number = settings.ClusterMargin + 0.0001
-    //  Creates the OverlapRemoval (Olap) IGeomGraph/Node objects for our FastIncrementalLayout (FIL) objects.
-    //  If !isHorizontal this overwrites the Olap members of the Incremental.Clusters and Msagl.Nodes.
-    //  First create the olapCluster for the current incCluster.  If olapParentCluster is null, then
-    //  incCluster is the root of a new hierarchy.
-    const rb: RectangularClusterBoundary = this.rectBoundary(incClus)
-    if (this.IsHorizontal) {
-      rb.olapCluster = generator.AddCluster(
-        olapParentCluster,
-        incClus,
-        rb.MinWidth,
-        rb.MinHeight,
-        rb.LeftBorderInfo,
-        rb.RightBorderInfo,
-        rb.BottomBorderInfo,
-        rb.TopBorderInfo,
-      )
-      rb.olapCluster.NodePadding = nodeSeparationH
-      rb.olapCluster.NodePaddingP = nodeSeparationV
-      rb.olapCluster.ClusterPadding = innerPaddingH
-      rb.olapCluster.ClusterPaddingP = innerPaddingV
-    } else {
-      const postXLeftBorderInfo = new BorderInfo(rb.LeftBorderInfo.InnerMargin, rb.Rect.left, rb.LeftBorderInfo.Weight)
-      const postXRightBorderInfo = new BorderInfo(rb.RightBorderInfo.InnerMargin, rb.Rect.right, rb.RightBorderInfo.Weight)
-      rb.olapCluster = generator.AddCluster(
-        olapParentCluster,
-        incClus,
-        rb.MinHeight,
-        rb.MinWidth,
-        rb.BottomBorderInfo,
-        rb.TopBorderInfo,
-        postXLeftBorderInfo,
-        postXRightBorderInfo,
-      )
-      rb.olapCluster.NodePadding = nodeSeparationV
-      rb.olapCluster.NodePaddingP = nodeSeparationH
-      rb.olapCluster.ClusterPadding = innerPaddingV
-      rb.olapCluster.ClusterPaddingP = innerPaddingH
-    }
-
-    rb.olapCluster.TranslateChildren = rb.GenerateFixedConstraints
-    //  Note: Incremental.IGeomGraph always creates child Array<IGeomGraph|Node> so we don't have to check for null here.
-    //  Add our child nodes.
-    for (const filNode of incClus.shallowNodes) {
-      this.AddOlapNode(generator, rb.olapCluster, getFiNode(filNode), nodeCenter)
-    }
-
-    //  Now recurse through all child clusters.
-    for (const incChildClus of incClus.Clusters) {
-      this.AddOlapClusters(generator, rb.olapCluster, incChildClus, nodeCenter)
-    }
-  }
-
   private AddOlapNode(
     generator: ConstraintGenerator,
     olapParentCluster: OverlapRemovalCluster,
@@ -301,158 +215,5 @@ export class AxisSolver {
         filNode.stayWeight,
       )
     }
-  }
-
-  private UpdateOlapClusters(incClusters: Iterable<IGeomGraph>) {
-    for (const incClus of incClusters) {
-      const rb: RectangularClusterBoundary = this.rectBoundary(incClus)
-      //  Because two heavily-weighted nodes can force each other to move, we have to update
-      //  any BorderInfos that are IsFixedPosition to reflect this possible movement; for example,
-      //  a fixed border and a node being dragged will both have heavy weights.
-      if (this.IsHorizontal) {
-        rb.rectangle.left = rb.olapCluster.Position - rb.olapCluster.Size / 2
-        rb.rectangle.right = rb.olapCluster.Position + rb.olapCluster.Size / 2
-        if (rb.LeftBorderInfo.IsFixedPosition) {
-          rb.LeftBorderInfo = new BorderInfo(rb.LeftBorderInfo.InnerMargin, rb.rectangle.left, rb.LeftBorderInfo.Weight)
-        }
-
-        if (rb.RightBorderInfo.IsFixedPosition) {
-          rb.RightBorderInfo = new BorderInfo(rb.RightBorderInfo.InnerMargin, rb.rectangle.right, rb.RightBorderInfo.Weight)
-        }
-      } else {
-        rb.rectangle.bottom = rb.olapCluster.Position - rb.olapCluster.Size / 2
-        rb.rectangle.top = rb.olapCluster.Position + rb.olapCluster.Size / 2
-        if (rb.TopBorderInfo.IsFixedPosition) {
-          rb.TopBorderInfo = new BorderInfo(rb.TopBorderInfo.InnerMargin, rb.rectangle.top, rb.TopBorderInfo.Weight)
-        }
-
-        if (rb.BottomBorderInfo.IsFixedPosition) {
-          rb.BottomBorderInfo = new BorderInfo(rb.BottomBorderInfo.InnerMargin, rb.rectangle.bottom, rb.BottomBorderInfo.Weight)
-        }
-      }
-
-      //  We don't use this anymore now that we've transferred the position and size
-      //  so clean it up as the Gen/Solver will be going out of scope.
-      rb.olapCluster = null
-      //  Recurse.
-      this.UpdateOlapClusters(incClus.Clusters)
-    }
-  }
-
-  private DebugVerifyClusterHierarchy(solution: Solution) {
-    if (this.avoidOverlaps && null != this.clusterHierarchies && 0 != solution.NumberOfUnsatisfiableConstraints) {
-      for (const c of this.clusterHierarchies) {
-        this.DebugVerifyClusters(this.cg, c, c)
-      }
-    }
-  }
-
-  //  This is initially called with Clusters that live at the root level; verify their nodes
-  //  are within their boundaries, then recurse.
-  private DebugVerifyClusters(generator: ConstraintGenerator, incCluster: IGeomGraph, root: IGeomGraph) {
-    const dblEpsilon = 0.0001
-    //  First verify that all nodes are within the cluster.
-    const clusRect: Rectangle = this.rectBoundary(incCluster).rectangle
-    for (const v of incCluster.shallowNodes) {
-      const iiFilNode: FiNode = getFiNode(v)
-      const iiNodeRect: Rectangle = iiFilNode.mNode.boundaryCurve.boundingBox
-      if (this.IsHorizontal) {
-        //  Don't check containment for the root ClusterHierarchy as there is no border for it.
-        if (incCluster != root) {
-          //  This is horizontal so we've not yet calculated the Y-axis stuff.  The only thing we
-          //  can do is verify we're within cluster X bounds.  If *Space is negative, there's overlap.
-          //  Generator primary axis is horizontal so use its Padding.
-          const dblLboundSpace: number = iiNodeRect.left - (clusRect.left - generator.Padding)
-          const dblRboundSpace: number = clusRect.right - (iiNodeRect.right - generator.Padding)
-          Assert.assert(dblLboundSpace >= dblEpsilon * -1 && dblRboundSpace >= dblEpsilon * -1, 'Node is not within parent IGeomGraph')
-        }
-      } else {
-        //  Don't check containment for the root ClusterHierarchy as there is no border for it.
-        if (incCluster != root) {
-          //  This is vertical so we've calculated the Y-axis stuff and horizontal is Perpendicular.
-          AxisSolver.DebugVerifyRectContains(clusRect, iiNodeRect, generator.PaddingP, generator.Padding, dblEpsilon)
-        }
-
-        //  Make sure the node doesn't intersect any following nodes, or any clusters.
-        for (const u of incCluster.shallowNodes) {
-          if (u == v) {
-            continue
-          }
-
-          const jjFilNode: FiNode = getFiNode(u)
-          const jjNodeRect: Rectangle = jjFilNode.mNode.boundaryCurve.boundingBox
-          //  We've already added the padding for the node so don't add it for the jjNode/IGeomGraph.
-          AxisSolver.DebugVerifyRectsDisjoint(iiNodeRect, jjNodeRect, generator.PaddingP, generator.Padding, dblEpsilon)
-        }
-
-        for (const incClusComp of incCluster.Clusters) {
-          AxisSolver.DebugVerifyRectsDisjoint(
-            iiNodeRect,
-            this.rectBoundary(incClusComp).rectangle,
-            generator.PaddingP,
-            generator.Padding,
-            dblEpsilon,
-          )
-        }
-      }
-
-      //  endif isHorizontal
-    }
-
-    //  endfor iiNode
-    //  Now verify the clusters are contained and don't overlap.
-    for (const iiIncClus of incCluster.Clusters) {
-      const iiClusRect: Rectangle = this.rectBoundary(iiIncClus).rectangle
-      if (this.IsHorizontal) {
-        //  Don't check containment for the root ClusterHierarchy as there is no border for it.
-        if (incCluster != root) {
-          //  This is horizontal so we've not yet calculated the Y-axis stuff.  The only thing we
-          //  can do is verify we're within cluster X bounds.  If *Space is negative, there's overlap.
-          //  Generator primary axis is horizontal so use its Padding.
-          const dblLboundSpace: number = iiClusRect.left - (clusRect.left - generator.Padding)
-          const dblRboundSpace: number = clusRect.right - (iiClusRect.right - generator.Padding)
-          Assert.assert(
-            dblLboundSpace >= dblEpsilon * -1 && dblRboundSpace >= dblEpsilon * -1,
-            'IGeomGraph is not within parent IGeomGraph',
-          )
-        }
-      } else {
-        //  Don't check containment for the root ClusterHierarchy as there is no border for it.
-        if (incCluster != root) {
-          //  This is vertical so we've calculated the Y-axis stuff and horizontal is Perpendicular.
-          AxisSolver.DebugVerifyRectContains(clusRect, iiClusRect, generator.PaddingP, generator.Padding, dblEpsilon)
-        }
-
-        //  Make sure the cluster doesn't intersect any following clusters.
-        for (const jjIncClus of incCluster.Clusters) {
-          if (jjIncClus == iiIncClus) {
-            // TODO: Warning!!! continue If
-          }
-
-          const jjClusRect: Rectangle = this.rectBoundary(jjIncClus).rectangle
-          AxisSolver.DebugVerifyRectsDisjoint(iiClusRect, jjClusRect, generator.PaddingP, generator.Padding, dblEpsilon)
-        }
-      }
-
-      //  endif isHorizontal
-      //  Now recurse.
-      this.DebugVerifyClusters(generator, iiIncClus, root)
-    }
-
-    //  endfor iiCluster
-  }
-
-  static DebugVerifyRectContains(rectOuter: Rectangle, rectInner: Rectangle, dblPaddingX: number, dblPaddingY: number, dblEpsilon: number) {
-    rectInner.padWidth(dblPaddingX / 2 - dblEpsilon)
-    rectInner.padHeight(dblPaddingY / 2 - dblEpsilon)
-    Assert.assert(rectOuter.containsRect(rectInner), 'Inner Node/IGeomGraph rectangle is not contained within outer IGeomGraph')
-  }
-
-  static DebugVerifyRectsDisjoint(rect1: Rectangle, rect2: Rectangle, dblPaddingX: number, dblPaddingY: number, dblEpsilon: number) {
-    rect1.padWidth(dblPaddingX / 2 - dblEpsilon)
-    rect1.padHeight(dblPaddingY / 2 - dblEpsilon)
-    rect2.padWidth(dblPaddingX / 2 - dblEpsilon)
-    rect2.padHeight(dblPaddingY / 2 - dblEpsilon)
-    Assert.assert(!rect1.intersects(rect2))
   }
 }

@@ -145,7 +145,7 @@ export class FastIncrementalLayout extends Algorithm {
   }
   initFiNodesEdges() {
     let i = 0
-    for (const gn of this.graph.deepNodes) {
+    for (const gn of this.graph.shallowNodes) {
       const fiNode = new FiNode(i++, gn)
       new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
     }
@@ -296,6 +296,7 @@ export class FastIncrementalLayout extends Algorithm {
   }
 
   static AddGravityForce(origin: Point, gravity: number, v: FiNode) {
+    if (v == null) return
     //  compute and add gravity  v.force -= 0.0001*gravity*(origin - v.Center);
     v.force = v.force.sub(origin.sub(v.Center).mul(gravity * 0.0001))
   }
