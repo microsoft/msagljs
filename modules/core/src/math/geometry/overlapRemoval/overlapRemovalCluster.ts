@@ -43,7 +43,6 @@
 //  This proceeds until we back up to the root cluster of the ClusterHierarchy.
 //
 
-import {Stack} from 'stack-typescript'
 import {Constraint} from '../../projectionSolver/Constraint'
 import {Solver} from '../../projectionSolver/Solver'
 import {Rectangle} from '../rectangle'
@@ -52,20 +51,8 @@ import {OverlapRemovalGlobalConfiguration} from './overlapRemovalGlobalConfigura
 import {OverlapRemovalNode} from './overlapRemovalNode'
 import {OverlapRemovalParameters} from './overlapRemovalParameters'
 import {String} from 'typescript-string-operations'
-import {Assert} from '../../../utils/assert'
 import {ScanLine} from './scanLine'
 import {compareBooleans, compareNumbers} from '../../../utils/compare'
-
-//  For iterative recursion (though we do not expect deeply nested clusters).
-class ClusterItem {
-  Cluster: OverlapRemovalCluster
-
-  ChildrenHaveBeenPushed: boolean
-
-  constructor(cluster: OverlapRemovalCluster) {
-    this.Cluster = cluster
-  }
-}
 
 class Event {
   IsForOpen: boolean
@@ -81,7 +68,6 @@ class Event {
   }
 }
 
-///  <summary>
 ///  A cluster is a structure that acts as a Node for Nodes and Clusters at a sibling level,
 ///  and can also contain other Clusters and/or Nodes.
 ///  </summary>
@@ -89,93 +75,80 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   //  Our internal Node list - some of which may be Clusters.
   nodeList: Array<OverlapRemovalNode> = new Array<OverlapRemovalNode>()
 
-  //  Our internal child Cluster list - duplicated from nodeList for iterative recursion perf.
-  clusterList: Array<OverlapRemovalCluster> = new Array<OverlapRemovalCluster>()
-
-  ///  <summary>
   ///  Empty clusters are ignored on positioning.
-  ///  </summary>
+
   public get IsEmpty(): boolean {
     return this.nodeList.length == 0
   }
 
-  ///  <summary>
   ///  If the following is true then constraints will be generated the prevent children coming
   ///  any closer to the cluster boundaries.  In effect, this means that the cluster and all
   ///  it's children will be translated together rather than being "compressed" if there are
   ///  overlaps with external nodes.
-  ///  </summary>
+
   //  AKA: "Bump Mode"
   TranslateChildren: boolean
 
   //  Our internal "fake nodes" as above; these are separate from the size calculations
   //  for the overall Cluster.
-  ///  <summary>
+
   ///  The internal Node containing the Variable to which left-border constraints are made.
-  ///  </summary>
+
   LeftBorderNode: OverlapRemovalNode
-  ///  <summary>
+
   ///  The internal Node containing the Variable to which right-border constraints are made.
-  ///  </summary>
+
   RightBorderNode: OverlapRemovalNode
 
   //  Indicates if the cluster's GenerateWorker placed anything into the solver.
   IsInSolver: boolean
-  ///  <summary>
+
   ///  Opening margin of this cluster (additional space inside the cluster border)
   ///  along the primary axis; on Left if horizontal, else on Top.
-  ///  </summary>
+
   OpenBorderInfo: BorderInfo
 
-  ///  <summary>
   ///  Closing margin of this cluster (additional space inside the cluster border)
   ///  along the primary axis; on Right if horizontal, else on Bottom.
-  ///  </summary>
+
   CloseBorderInfo: BorderInfo
 
-  ///  <summary>
   ///  Opening margin of this cluster (additional space inside the cluster border)
   ///  along the secondary (Perpendicular) axis; on Top if horizontal, else on Left.
-  ///  </summary>
+
   OpenBorderInfoP: BorderInfo
 
-  ///  <summary>
   ///  Closing margin of this cluster (additional space inside the cluster border)
   ///  along the secondary (Perpendicular) axis; on Bottom if horizontal, else on Right.
-  ///  </summary>
+
   CloseBorderInfoP: BorderInfo
-  ///  <summary>
+
   ///  Minimum size along the primary axis.
-  ///  </summary>
+
   MinimumSize: number
 
-  ///  <summary>
   ///  Minimum size along the perpendicular axis.
-  ///  </summary>
+
   MinimumSizeP: number
 
-  ///  <summary>
   ///  Padding of nodes within the cluster in the parallel direction.
-  ///  </summary>
+
   NodePadding: number
 
-  ///  <summary>
   ///  Padding of nodes within the cluster in the perpendicular direction.
-  ///  </summary>
+
   NodePaddingP: number
 
-  ///  <summary>
   ///  Padding outside the cluster in the parallel direction.
-  ///  </summary>
+
   ClusterPadding: number
 
-  ///  <summary>
   ///  Padding outside the cluster in the perpendicular direction.
-  ///  </summary>
+
   ClusterPaddingP: number
 
   get Name(): string {
-    return this.IsRootCluster ? 'Clus_' + 'Root' : this.LeftBorderNode.UserData + ('-' + this.RightBorderNode.UserData)
+    return this.UserData
   }
 
   //  VERBOSE
@@ -190,15 +163,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     return OverlapRemovalGlobalConfiguration.ClusterDefaultBorderWidth
   }
 
-  ///  <summary>
-  ///  The Root Cluster is a special case, functioning as the "infinite" root cluster of a hierarchy
-  ///  with no border nodes.  If a size is desired then create a single cluster in the root.  Leaving
-  ///  the root cluster "infinite" means we don't have to generate the constraints for nodes and clusters
-  ///  in the root, which may be numerous.
-  ///  </summary>
-  get IsRootCluster(): boolean {
-    return this.ParentCluster == null
-  }
   ParentCluster: OverlapRemovalCluster
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
@@ -258,31 +222,10 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     this.OpenBorderInfoP.EnsureWeight()
     this.CloseBorderInfoP = closeBorderInfoP
     this.CloseBorderInfoP.EnsureWeight()
-    this.CreateBorderNodes()
   }
 
-  CreateBorderNodes() {
-    if (!this.IsRootCluster) {
-      const strNodeIdR: string = null
-      const strNodeIdL: string = null
-      // #if((VERIFY || VERBOSE))
-      // strNodeIdL = ("L" + this.UserDataString);
-      // strNodeIdR = ("R" + this.UserDataString);
-      // #endif
-      // //  VERIFY || VERBOSE
-      this.LeftBorderNode = OverlapRemovalNode.constructorNA(this.Id + 1, strNodeIdL)
-      this.RightBorderNode = OverlapRemovalNode.constructorNA(this.Id + 2, strNodeIdR)
-    }
-  }
-
-  //  Enumerates only cluster children of this cluster.
-  get Clusters(): Iterable<OverlapRemovalCluster> {
-    return this.clusterList
-  }
-
-  ///  <summary>
   ///  Generate a string representation of the Cluster.
-  ///  </summary>
+
   ///  <returns>A string representation of the Cluster.</returns>
   toString(): string {
     //  Currently this is just the same as the base Node; all zero if we haven't
@@ -302,9 +245,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   //  add the fake border nodes to nodeList; the caller never sees them.
   AddNode(newNode: OverlapRemovalNode) {
     this.nodeList.push(newNode)
-    if (newNode instanceof OverlapRemovalCluster) {
-      this.clusterList.push(newNode)
-    }
   }
 
   //  Adds an open/close event pair for the node. paddingP is either cluster or node padding.
@@ -324,64 +264,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     return OverlapRemovalCluster.DefaultBorderWidth
   }
 
-  static ProcessClusterHierarchy(root: OverlapRemovalCluster, worker: (c: OverlapRemovalCluster) => void) {
-    const stack = new Stack<ClusterItem>()
-    stack.push(new ClusterItem(root))
-    while (stack.length > 0) {
-      //  Keep the cluster on the stack until we're done with its children.
-      const item = stack.top
-      const prevStackCount = stack.length
-      if (!item.ChildrenHaveBeenPushed) {
-        item.ChildrenHaveBeenPushed = true
-        for (const childCluster of item.Cluster.Clusters) {
-          stack.push(new ClusterItem(childCluster))
-        }
-
-        if (stack.length > prevStackCount) {
-          continue
-        }
-      }
-
-      //  endif !node.ChildrenHaveBeenPushed
-      //  No children to push so pop and process this cluster.
-      Assert.assert(stack.top == item, "stack.Peek() should be 'item'")
-      stack.pop()
-      worker(item.Cluster)
-    }
-  }
-
   Generate(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean) {
-    OverlapRemovalCluster.ProcessClusterHierarchy(
-      this,
-      (cluster) => (cluster.IsInSolver = cluster.GenerateWorker(solver, parameters, isHorizontal)),
-    )
-    OverlapRemovalCluster.ProcessClusterHierarchy(this, (cluster) => cluster.SqueezeNonFixedBorderPositions())
-  }
-
-  ///  <summary>
-  ///  If a border is not fixed swap its position with the opposite border to ensure
-  ///  cluster is tight to its contents.
-  ///  </summary>
-  SqueezeNonFixedBorderPositions() {
-    //  Here's an example of why this is necessary:  If we base the initial border position
-    //  on a child cluster's border and that child cluster is initially sparse, then its
-    //  size can shrink considerably; leaving the border of this cluster further out than
-    //  it needs to be (since we expand space between nodes but don't necessarily shrink it).
-    //  Squeezing causes constraints to be *minimally* enforced.  Note - this may introduce
-    //  a defer-to-vertical issue, so we special-case that section to ignore border nodes).
-    if (this.IsEmpty || this.IsRootCluster || !this.IsInSolver) {
-      return
-    }
-
-    const leftBorderDesiredPos = this.LeftBorderNode.Position
-    const rightBorderDesiredPos = this.RightBorderNode.Position
-    if (!this.OpenBorderInfo.IsFixedPosition) {
-      this.LeftBorderNode.Variable.DesiredPos = rightBorderDesiredPos
-    }
-
-    if (!this.CloseBorderInfo.IsFixedPosition) {
-      this.RightBorderNode.Variable.DesiredPos = leftBorderDesiredPos
-    }
+    this.IsInSolver = this.GenerateWorker(solver, parameters, isHorizontal)
   }
 
   //  Returns false if the cluster is empty; this handles nested clusters of empty clusters.
@@ -409,25 +293,8 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
     //  Top/Bottom are considered the secondary (Perpendicular) axis here.
     const t = {leftBorderWidth: OverlapRemovalCluster.DefaultBorderWidth, rightBorderWidth: OverlapRemovalCluster.DefaultBorderWidth}
-    if (!this.IsRootCluster) {
-      this.CalculateBorderWidths(solver, events, boundaryRect, t)
-      //   this.#if(VERBOSE)
-      //   System.Diagnostics.Debug.WriteLine(
-      //     ' {0} After CalculateBorderWidths: p {1:F5} s {2:F5} pP {3:F5} sP {4:F5}',
-      //     this.Name,
-      //     this.Size,
-      //     this.Position,
-      //     this.Size,
-      //     this.SizeP,
-      //   )
-      //   this.#endif
-    }
 
     this.GenerateFromEvents(solver, parameters, events, isHorizontal)
-    if (!this.IsRootCluster) {
-      //  Non-fixed borders are moved later by SqueezeNonFixedBorderPositions().
-      this.AdjustFixedBorderPositions(solver, t.leftBorderWidth, t.rightBorderWidth, isHorizontal)
-    }
 
     return true
   }
@@ -435,11 +302,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   CreateEvents(solver: Solver, /* ref */ boundaryRect: Rectangle): Array<Event> {
     const events = new Array<Event>()
     const cNodes = this.nodeList.length
-    //  cache for perf
-    const leftBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
-    const rightBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
-    const openBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfoP.InnerMargin)
-    const closeBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfoP.InnerMargin)
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
       const node: OverlapRemovalNode = this.nodeList[nodeIndex]
       const isCluster = node instanceof OverlapRemovalCluster
@@ -464,54 +326,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  perpendicularly to the direction we're generating the constraints in.
       this.AddEvents(node, events)
       //  Update our boundaries if this node goes past any of them.
-      if (!this.IsRootCluster) {
-        const pad = node.Size / 2 + this.ClusterPadding
-        const padP = node.SizeP / 2 + this.ClusterPaddingP
-        const newLeft = node.Position - (pad - leftBorderWidth)
-        const newRight = node.Position + (pad + rightBorderWidth)
-        const newBottom = node.PositionP - (padP - openBorderWidth)
-        const newTop = node.PositionP + (padP + closeBorderWidth)
-        boundaryRect.left = Math.min(boundaryRect.left, newLeft)
-        boundaryRect.right = Math.max(boundaryRect.right, newRight)
-        boundaryRect.bottom = Math.min(boundaryRect.bottom, newBottom)
-        boundaryRect.top = Math.max(boundaryRect.top, newTop)
-        // this.#if(VERBOSE)
-        // System.Diagnostics.Debug.WriteLine(
-        //   ' {0} BoundaryRect after AddEvents: L/R T/B {1:F5}/{2:F5} {3:F5}/{4:F5}',
-        //   this.Name,
-        //   boundaryRect.left,
-        //   boundaryRect.right,
-        //   boundaryRect.top,
-        //   boundaryRect.bottom,
-        // )
-        // this.#endif
-      }
-    }
-
-    if (!this.IsRootCluster) {
-      //  Force the cluster borders to the full minimum sizes if any were specified.
-      //  Without the full cluster boundaries being available at constraint generation time, Tuvalu was
-      //  getting unresolved overlaps when dragging an external node over the corner of a cluster boundary.
-      const padMinSize = this.MinimumSize - boundaryRect.width
-      if (padMinSize > 0) {
-        boundaryRect.padWidth(padMinSize / 2)
-      }
-
-      const padMinSizeP = this.MinimumSizeP - boundaryRect.height
-      if (padMinSizeP > 0) {
-        boundaryRect.padHeight(padMinSizeP / 2)
-      }
-
-      //   this.#if(VERBOSE)
-      //   System.Diagnostics.Debug.WriteLine(
-      //     ' {0} BoundaryRect after CreateEvents: L/R T/B {1:F5}/{2:F5} {3:F5}/{4:F5}',
-      //     this.Name,
-      //     boundaryRect.left,
-      //     boundaryRect.right,
-      //     boundaryRect.top,
-      //     boundaryRect.bottom,
-      //   )
-      //   this.#endif
     }
 
     return events
@@ -607,7 +421,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     //  otherwise, because the Horizontal cluster span may be larger than is calculated simply from
     //  variable positions, some variables may not have appropriate constraints generated.
     if (this.MinimumSize > 0) {
-      const cst: Constraint = solver.AddConstraint(
+      solver.AddConstraint(
         this.LeftBorderNode.Variable,
         this.RightBorderNode.Variable,
         this.MinimumSize - (leftBorderWidth / 2 - rightBorderWidth / 2),
@@ -757,7 +571,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
             separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
           }
 
-          const cst: Constraint = solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
+          solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
         }
 
         const cRightNeighbours = currentNode.RightNeighbors.length
@@ -943,45 +757,9 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   //  Overrides Node.UpdateFromVariable.
   UpdateFromVariable() {
-    OverlapRemovalCluster.ProcessClusterHierarchy(this, (cluster) => cluster.UpdateFromVariableWorker())
-  }
-
-  UpdateFromVariableWorker() {
-    //  The root cluster has no "position" and thus no border variables.
-    if (!this.IsRootCluster) {
-      //  If empty, we had nothing to do.  We're also empty if we had child clusters
-      //  that were empty; in that case we check that we don't have our Variables created.
-      if (this.IsEmpty || this.LeftBorderNode.Variable == null) {
-        return
-      }
-
-      //  We put the fake border Nodes right up against the outer true Nodes (plus padding) initially,
-      //  and then moved them to the midpoint (subsequently, the caller may have updated their position
-      //  to the barycenter of the cluster, OverlapRemovalNode.g. FastIncrementalLayout).  Because the algorithm
-      //  guarantees a minimal solution, the borders are in their optimal position now (including
-      //  padding from their outer nodes).
-      this.LeftBorderNode.UpdateFromVariable()
-      this.RightBorderNode.UpdateFromVariable()
-      //  Now update our position and size from those nodes, accounting for possibly different widths
-      //  of the border variables (due to cluster margin specifications). Because the margins apply at
-      //  the inner edge (only), we must take our size as the difference between the outer borders of
-      //  the border variables.  This leaves our single Node as having the size necessary to accommodate
-      //  the internal padding when external nodes/clusters have their constraints to it formed.
-      const clusterLeft = this.LeftBorderNode.Position - this.LeftBorderNode.Size / 2
-      const clusterRight = this.RightBorderNode.Position + this.RightBorderNode.Size / 2
-      this.Size = clusterRight - clusterLeft
-      this.Position = clusterLeft + this.Size / 2
-    }
-
-    //  Update our child nodes.
     const cNodes = this.nodeList.length
-    //  cache for perf
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
-      const node: OverlapRemovalNode = this.nodeList[nodeIndex]
-      //  Child Clusters have already "recursively" been processed before the current cluster.
-      if (!(node instanceof OverlapRemovalCluster)) {
-        node.UpdateFromVariable()
-      }
+      this.nodeList[nodeIndex].UpdateFromVariable()
     }
   }
 }

@@ -224,7 +224,7 @@ export class ConstraintGenerator {
     } else {
       //  @@DCR: Enforce that Clusters live in only one hierarchy - they can have only one parent, so add a
       //           Cluster.parentCluster to enforce this.
-      parentCluster.AddNode(newCluster)
+      // parentCluster.AddNode(newCluster)
     }
 
     return newCluster
