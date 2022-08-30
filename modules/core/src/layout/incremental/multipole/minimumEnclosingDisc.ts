@@ -53,7 +53,6 @@ export class MoveToFront {
 
   //  Constructs the minimum enclosing disc for the specified points
 
-  //  <param name="ps"></param>
   public constructor(ps: Point[]) {
     this.ps = ps
     this.L = new LinkedList<number>()
@@ -105,7 +104,6 @@ export class MoveToFront {
 export class MinimumEnclosingDisc {
   //  linear-time computation using the move-to-front heuristic by Welzl
 
-  //  <param name="points">points that must be enclosed</param>
   //  <returns>Smallest disc that encloses all the points</returns>
   public static LinearComputation(points: Point[]): Disc {
     const m: MoveToFront = new MoveToFront(points)
@@ -114,7 +112,6 @@ export class MinimumEnclosingDisc {
 
   //  Computing the minimum enclosing disc the slow stupid way.  Just for testing purposes.
 
-  //  <param name="points"></param>
   //  <returns>Smallest disc that encloses all the points</returns>
   public static SlowComputation(points: Point[]): Disc {
     const n: number = points.length

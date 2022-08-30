@@ -74,10 +74,6 @@ export class FastIncrementalLayout extends Algorithm {
 
   ///  Create the graph data structures.
 
-  ///  <param name="geometryGraph"></param>
-  ///  <param name="settings">The settings for the algorithm.</param>
-  ///  <param name="initialConstraintLevel">initialize at this constraint level</param>
-  ///  <param name="clusterSettings">settings by cluster</param>
   constructor(
     geometryGraph: IGeomGraph,
     settings: FastIncrementalLayoutSettings,
@@ -212,7 +208,6 @@ export class FastIncrementalLayout extends Algorithm {
   ///  Add constraint to constraints lists.  Warning, no check that dictionary alread holds a list for the level.
   ///  Make sure you call AddConstraintLevel first (perf).
 
-  ///  <param name="c"></param>
   AddConstraint(c: IConstraint) {
     if (!this.constraints.has(c.Level)) {
       this.constraints.set(c.Level, new Array<IConstraint>())
@@ -223,7 +218,6 @@ export class FastIncrementalLayout extends Algorithm {
 
   ///  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
 
-  ///  <param name="level"></param>
   AddConstraintLevel(level: number) {
     if (!this.constraints.has(level)) {
       this.constraints.set(level, new Array<IConstraint>())
@@ -603,7 +597,6 @@ export class FastIncrementalLayout extends Algorithm {
   ///  Five sequential improvements of energy mean we increase the stepsize.
   ///  Any increase of energy means we reduce the stepsize.
 
-  ///  <param name="energy0"></param>
   UpdateStepSize(energy0: number) {
     if (this.energy < energy0) {
       if (++this.progress >= 3) {

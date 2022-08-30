@@ -29,8 +29,7 @@ export class ObjectUnderMouseCursorChangedEventArgs extends EventArgs {
   ///  <summary>
   ///  constructor
   ///  </summary>
-  ///  <param name="oldObject"></param>
-  ///  <param name="newObject"></param>
+
   public constructor(oldObject: IViewerObject, newObject: IViewerObject) {
     super()
     this.OldObject = oldObject

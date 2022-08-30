@@ -154,7 +154,7 @@ export class OverlapRemovalNode {
   ///  <summary>
   ///  Create the backing Variable for this Node in the solver.
   ///  </summary>
-  ///  <param name="solver"></param>
+
   public CreateVariable(solver: Solver) {
     //  Due to multiple hierarchies, we must check to see if the variable has been created yet;
     //  we share one Node (and its single Variable) across all clusters it's a member of.

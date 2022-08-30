@@ -168,7 +168,7 @@ export class Particle {
   ///  <summary>
   ///  Create particle at point
   ///  </summary>
-  ///  <param name="point"></param>
+
   public constructor(point: Point) {
     this.point = point
     this.force = new Point(0, 0)
@@ -192,8 +192,7 @@ export class KDTree {
   ///  <summary>
   ///  Create a KDTree over the specified particles, with the leaf partitions each containing bucketSize particles.
   ///  </summary>
-  ///  <param name="particles"></param>
-  ///  <param name="bucketSize"></param>
+
   public constructor(particles: Particle[], bucketSize: number) {
     this.particles = particles
     const ps = new Array<Array<Particle>>()
@@ -218,7 +217,7 @@ export class KDTree {
   ///  <summary>
   ///  Compute forces between particles using multipole approximations.
   ///  </summary>
-  ///  <param name="precision"></param>
+
   public ComputeForces(precision: number) {
     this.root.computeMultipoleCoefficients(precision)
     for (const l of this.leaves) {

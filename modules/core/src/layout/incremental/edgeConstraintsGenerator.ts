@@ -48,10 +48,7 @@ export class EdgeConstraintGenerator {
   ///  to require these edges to be downward pointing.  Also checks for cycles, and edges involved
   ///  of a cycle receive no VerticalSeparationConstraint, but can optionally receive a circle constraint.
   ///  </summary>
-  ///  <param name="edges"></param>
-  ///  <param name="settings"></param>
-  ///  <param name="horizontalSolver"></param>
-  ///  <param name="verticalSolver"></param>
+
   static GenerateEdgeConstraints(
     edges: Iterable<GeomEdge>,
     settings: EdgeConstraints,

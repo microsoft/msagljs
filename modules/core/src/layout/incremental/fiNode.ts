@@ -91,7 +91,7 @@ export class FiNode {
   ///  <summary>
   ///  Update the current X or Y coordinate of the node center from the result of a solve
   ///  </summary>
-  ///  <param name="horizontal"></param>
+
   UpdatePos(horizontal: boolean) {
     if (horizontal) {
       this.Center = new Point(this.getOlapNode(true).Position, this.previousCenter.y)

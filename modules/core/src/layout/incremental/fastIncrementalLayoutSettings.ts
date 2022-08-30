@@ -225,8 +225,7 @@ export class FastIncrementalLayoutSettings {
   ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
   ///  constant time.
   ///  </summary>
-  ///  <param name="node"></param>
-  ///  <param name="bounds"></param>
+
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLockNR(node: GeomNode, bounds: Rectangle): LockPosition {
     const lp: LockPosition = new LockPosition(node, bounds, (g) => this.algorithm.getRB(g))
@@ -240,9 +239,7 @@ export class FastIncrementalLayoutSettings {
   ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
   ///  constant time.
   ///  </summary>
-  ///  <param name="node"></param>
-  ///  <param name="bounds"></param>
-  ///  <param name="weight">stay weight of lock</param>
+
   ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLock(node: GeomNode, bounds: Rectangle, weight: number): LockPosition {
     const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight, (g) => this.algorithm.getRB(g))
@@ -280,9 +277,7 @@ export class FastIncrementalLayoutSettings {
   ///  <summary>
   ///  Initialize the layout algorithm
   ///  </summary>
-  ///  <param name="graph">The graph upon which layout is performed</param>
-  ///  <param name="initialConstraintLevel"></param>
-  ///  <param name="clusterSettings"></param>
+
   public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => any) {
     this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel, clusterSettings)
     this.ResetLayout()
@@ -564,7 +559,7 @@ export class FastIncrementalLayoutSettings {
   ///  <summary>
   ///  Shallow copy the settings
   ///  </summary>
-  ///  <param name="previousSettings"></param>
+
   public static ctorClone(previousSettings: FastIncrementalLayoutSettings): FastIncrementalLayoutSettings {
     const ret = new FastIncrementalLayoutSettings()
     ret.maxIterations = previousSettings.maxIterations

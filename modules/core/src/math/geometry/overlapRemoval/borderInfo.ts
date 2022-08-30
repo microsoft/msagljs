@@ -71,7 +71,7 @@ export class BorderInfo {
   ///  <summary>
   ///  Sets the border to fixed (resistant to movement).
   ///  </summary>
-  ///  <param name="position">desired position</param>
+
   ///  <param name="weight">coefficient of allowed movement relative to other terms; higher
   ///          weight is more resistant to movement.  High-weight borders can still move each other
   ///          due to constraint satisfaction of intervening clusters/variables.</param>
@@ -91,7 +91,7 @@ export class BorderInfo {
   ///  <summary>
   ///  Constructor taking only a margin-width value.
   ///  </summary>
-  /// <param name="innerMargin"></param>
+
   public static constructorN(innerMargin: number): BorderInfo {
     return new BorderInfo(innerMargin, BorderInfo.NoFixedPosition, BorderInfo.DefaultFreeWeight)
   }
@@ -99,9 +99,7 @@ export class BorderInfo {
   ///  <summary>
   ///  Constructor taking values for margin, fixed position, and weight.
   ///  </summary>
-  ///  <param name="innerMargin"></param>
-  ///  <param name="fixedPosition"></param>
-  ///  <param name="weight"></param>
+
   public constructor(innerMargin: number, fixedPosition: number, weight: number) {
     this.InnerMargin = innerMargin
     this.FixedPosition = fixedPosition
@@ -134,7 +132,7 @@ export class BorderInfo {
   ///  <summary>
   ///  Compare objects based upon data members.
   ///  </summary>
-  ///  <param name="obj">Object to be compared to the current object.</param>
+
   ///  <returns></returns>
   Equals(obj: any): boolean {
     if (!(obj instanceof BorderInfo)) {

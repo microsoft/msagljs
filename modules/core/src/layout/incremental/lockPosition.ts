@@ -30,9 +30,7 @@ export class LockPosition implements IConstraint {
   ///  <summary>
   ///  Makes a constraint to preserve the nodes' position with the specified weight
   ///  </summary>
-  ///  <param name="node"></param>
-  ///  <param name="bounds"></param>
-  ///  <param name="weight"></param>
+
   static constructorNRN(node: GeomNode, bounds: Rectangle, weight: number, rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary) {
     const l = new LockPosition(node, bounds, rectBoundary)
     l.Weight = weight

@@ -21,8 +21,6 @@ export interface IViewer {
   ///  creates a visual element for the node, and the corresponding geometry node is created according
   ///  to the size of the visual element
 
-  ///  <param name="drawingNode">usually the drawing node has a label, and the visual element is created accordingly</param>
-  ///  <param name="center">the node center location</param>
   ///  <param name="visualElement">if this value is not null then is should be a visual for the label, and the node width and height
   ///  will be taken from this visual</param>
   ///  <returns>new IViewerNode</returns>
@@ -30,7 +28,6 @@ export interface IViewer {
 
   ///  creates a default visual element for the node
 
-  ///  <param name="drawingNode"></param>
   ///  <returns></returns>
   CreateIViewerNode(drawingNode: Node): IViewerNode
 
@@ -64,7 +61,6 @@ export interface IViewer {
 
   ///  forcing redraw of the object
 
-  ///  <param name="objectToInvalidate"></param>
   Invalidate(objectToInvalidate: IViewerObject)
 
   ///  invalidates everything
@@ -81,7 +77,6 @@ export interface IViewer {
 
   ///  maps a point in screen coordinates to the point in the graph surface
 
-  ///  <param name="e"></param>
   ///  <returns></returns>
   //ScreenToSource(e: Msagl): Point;
 
@@ -99,7 +94,6 @@ export interface IViewer {
 
   ///  this method should be called on the end of the dragging
 
-  ///  <param name="changedObjects"></param>
   OnDragEnd(changedObjects: Iterable<IViewerObject>)
 
   ///  The scale dependent width of an edited curve that should be clearly visible.
@@ -118,7 +112,6 @@ export interface IViewer {
 
   ///  Pops up a pop up menu with a menu item for each couple, the string is the title and the delegate is the callback
 
-  ///  <param name="menuItems"></param>
   PopupMenus(menuItems: Array<[string, () => void]>)
 
   ///  The radius of the circle drawn around a polyline corner
@@ -131,17 +124,14 @@ export interface IViewer {
 
   ///  prepare to draw the rubber line
 
-  ///  <param name="startingPoint"></param>
   StartDrawingRubberLine(startingPoint: Point): void
 
   ///  draw the rubber line to the current mouse position
 
-  ///  <param name="args"></param>
   DrawRubberLine(args: any): void
 
   ///  draw rubber line to a given point
 
-  ///  <param name="point"></param>
   DrawRubberLine(point: Point): void
 
   ///  stop drawing the rubber line
@@ -150,33 +140,24 @@ export interface IViewer {
 
   ///  add an edge to the viewer graph
 
-  ///  <param name="edge"></param>
-  ///  <param name="registerForUndo"></param>
   ///  <returns></returns>
   AddEdge(edge: IViewerEdge, registerForUndo: boolean): void
 
   ///  drawing edge already has its geometry in place
 
-  ///  <param name="drawingEdge"></param>
   ///  <returns></returns>
   CreateEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge
 
   ///  adds a node to the viewer graph
 
-  ///  <param name="node"></param>
-  ///  <param name="registerForUndo"></param>
   AddNode(node: IViewerNode, registerForUndo: boolean): void
 
   ///  removes an edge from the graph
 
-  ///  <param name="edge"></param>
-  /// <param name="registerForUndo"></param>
   RemoveEdge(edge: IViewerEdge, registerForUndo: boolean): void
 
   ///  deletes node
 
-  ///  <param name="node"></param>
-  ///  <param name="registerForUndo"></param>
   RemoveNode(node: IViewerNode, registerForUndo: boolean): void
 
   ///  Routes the edge. The edge will not be not attached to the graph after the routing
@@ -194,12 +175,10 @@ export interface IViewer {
 
   ///  creates the port visual if it does not exist, and sets the port location
 
-  ///  <param name="portLocation"></param>
   SetSourcePortForEdgeRouting(portLocation: Point)
 
   ///  creates the port visual if it does not exist, and sets the port location
 
-  ///  <param name="portLocation"></param>
   SetTargetPortForEdgeRouting(portLocation: Point)
 
   ///  removes the port
@@ -212,7 +191,6 @@ export interface IViewer {
 
   ///
 
-  ///  <param name="edgeGeometry"></param>
   DrawRubberEdge(edgeGeometry: GeomEdge): void
 
   ///  stops drawing the rubber edge

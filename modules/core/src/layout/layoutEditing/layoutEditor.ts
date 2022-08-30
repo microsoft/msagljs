@@ -102,7 +102,7 @@
 //     ///  <summary>
 //     ///  Constructor
 //     ///  </summary>
-//     ///  <param name="viewerPar">the viewer that the editor communicates with</param>
+
 //      constructor (viewerPar: IViewer) {
 //         this.viewer = viewerPar;
 //         this.HookUpToViewerEvents();
@@ -396,7 +396,7 @@
 // ///  <summary>
 // ///
 // ///  </summary>
-// ///  <param name="viewerObject"></param>
+
 //  AttachLayoutChangeEvent(viewerObject: IViewerObject) {
 //     let drawingObject = getViewerObject(viewerObject)
 //     if (drawingObject != null) {
@@ -1373,8 +1373,7 @@
 // ///  <summary>
 // ///  Finds a corner to delete or insert
 // ///  </summary>
-// ///  <param name="point"></param>
-// ///  <param name="tolerance"></param>
+
 // ///  <returns>null if a corner is not found</returns>
 
 // //  AnalyzeInsertOrDeletePolylineCorner(point: Point, tolerance: number): [CornerSite, PolylineCornerType] {
@@ -1399,7 +1398,7 @@
 // // ///  <summary>
 // // ///  create a tight bounding box for the graph
 // // ///  </summary>
-// // ///  <param name="graphToFit"></param>
+
 // //  FitGraphBoundingBox(graphToFit: IViewerObject) {
 // //     if ((graphToFit != null)) {
 // //         this.geomGraphEditor.FitGraphBoundingBox(graphToFit, (<GeometryGraph>(graphToFit.DrawingObject.GeometryObject)));
@@ -1411,7 +1410,7 @@
 // // ///  <summary>
 // // ///
 // // ///  </summary>
-// // ///  <param name="node"></param>
+
 // //  RegisterNodeAdditionForUndo(node: IViewerNode) {
 // //     let undoAction = new AddNodeUndoAction(this.graph, this.viewer, node);
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(undoAction);
@@ -1420,7 +1419,7 @@
 // // ///  <summary>
 // // ///  registers the edge addition for undo
 // // ///  </summary>
-// // ///  <param name="edge"></param>
+
 // //  RegisterEdgeAdditionForUndo(edge: IViewerEdge) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new AddEdgeUndoAction(this.viewer, edge));
 // // }
@@ -1428,7 +1427,7 @@
 // // ///  <summary>
 // // ///
 // // ///  </summary>
-// // ///  <param name="edge"></param>
+
 // //  RegisterEdgeRemovalForUndo(edge: IViewerEdge) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new RemoveEdgeUndoAction(this.graph, this.viewer, edge));
 // // }
@@ -1436,7 +1435,7 @@
 // // ///  <summary>
 // // ///
 // // ///  </summary>
-// // ///  <param name="node"></param>
+
 // //  RegisterNodeForRemoval(node: IViewerNode) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new RemoveNodeUndoAction(this.viewer, node));
 // // }
@@ -1497,8 +1496,6 @@
 // // ///  <summary>
 // // ///  insert a polyline corner at the point befor the prevCorner
 // // ///  </summary>
-// // ///  <param name="point"></param>
-// // ///  <param name="previousCorner"></param>
 
 // //  InsertPolylineCorner(point: Point, previousCorner: CornerSite) {
 // //     this.geomGraphEditor.InsertSite(this.SelectedEdge.edge.GeometryEdge, point, previousCorner, this.SelectedEdge);
@@ -1513,7 +1510,7 @@
 // // ///  <summary>
 // // ///  delete the polyline corner, shortcut it.
 // // ///  </summary>
-// // ///  <param name="corner"></param>
+
 // //  DeleteCorner(corner: CornerSite) {
 // //     this.geomGraphEditor.DeleteSite(this.SelectedEdge.edge.GeometryEdge, corner, this.SelectedEdge);
 // //     this.viewer.Invalidate(this.SelectedEdge);
@@ -1654,7 +1651,7 @@
 // // ///  <summary>
 // // ///
 // // ///  </summary>
-// // ///  <param name="node"></param>
+
 // //  DetachNode(node: IViewerNode) {
 // //     if ((node == null)) {
 // //         return;

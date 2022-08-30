@@ -73,18 +73,12 @@ export class ConstraintGenerator {
   IsHorizontal: boolean
 
   ///  This form of the constructor uses default values for the padding parameters.
-  ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
 
   static constructorB(isHorizontal: boolean) {
     return ConstraintGenerator.constructorBNN(isHorizontal, ConstraintGenerator.DefaultPadding, ConstraintGenerator.DefaultPadding)
   }
 
   ///  This form of the constructor uses specifies the padding parameters.
-  ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
-  ///  <param name="padding">Padding outside nodes in the parallel direction</param>
-  ///  <param name="paddingP">Padding outside nodes in the perpendicular direction</param>
-  ///  <param name="clusterPadding">Padding outside clusters in the parallel direction</param>
-  ///  <param name="clusterPaddingP">Padding outside clusters in the perpendicular direction</param>
 
   public constructor(isHorizontal: boolean, padding: number, paddingP: number, clusterPadding: number, clusterPaddingP: number) {
     this.IsHorizontal = isHorizontal
@@ -98,8 +92,6 @@ export class ConstraintGenerator {
 
   ///  Alternate form of the constructor to allow overriding the default padding.
 
-  ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
-  ///  <param name="padding">Minimal space between node or cluster rectangles in the primary axis.</param>
   ///  <param name="paddingP">Minimal space between node or cluster rectangles in the secondary (Perpendicular) axis;
   ///                          used only when isHorizontal is true, to optimize the direction of movement.</param>
   static constructorBNN(isHorizontal: boolean, padding: number, paddingP: number) {
@@ -111,13 +103,10 @@ export class ConstraintGenerator {
   ///  <param name="initialCluster">The cluster this node is to be a member of.  It may not be null; pass
   ///                      DefaultClusterHierarchy to create a node at the lowest level.  Subsequently a node
   ///                      may be added to additional clusters, but only to one cluster per hierarchy.</param>
-  ///  <param name="userData">An object that is passed through.</param>
+
   ///  <param name="position">Position of the node in the primary axis; if isHorizontal, it contains horizontal
   ///                      position and size, else it contains vertical position and size.</param>
-  ///  <param name="size">Size of the node in the primary axis.</param>
-  ///  <param name="positionP">Position of the node in the secondary (Perpendicular) axis.</param>
-  ///  <param name="sizeP">Size of the node in the secondary (Perpendicular) axis.</param>
-  ///  <param name="weight">Weight of the node (indicates how freely it should move).</param>
+
   ///  <returns>The created node.</returns>
   public AddNode(
     initialCluster: OverlapRemovalCluster,
@@ -140,8 +129,6 @@ export class ConstraintGenerator {
 
   ///  Add a node to a cluster in another hierarchy (a node can be in only one cluster per hierarchy).
 
-  ///  <param name="cluster"></param>
-  ///  <param name="node"></param>
   //  @@DCR:  Keep a node->hierarchyParentsList hash and use cluster.parentCluster to traverse to the hierarchy root
   //             to verify the node is in one cluster per hierarchy.  This will require that the function be
   //             non-static, hence the rule suppression.
@@ -159,8 +146,6 @@ export class ConstraintGenerator {
   ///  Generate the necessary constraints to ensure there is no overlap (unless we're doing
   ///  a horizontal pass and deferring some movement, which would be smaller, to the vertical pass).
 
-  ///  <param name="solver">The solver to generate into.</param>
-  ///  <param name="parameters">Parameters to OverlapRemoval and ProjectionSolver.Solver.Solve().</param>
   public Generate(solver: Solver, parameters: OverlapRemovalParameters) {
     if (parameters == null) {
       parameters = OverlapRemovalParameters.constructorEmpty()
@@ -178,7 +163,7 @@ export class ConstraintGenerator {
 
   ///  <param name="solver">The solver to generate into and solve.  May be null, in which case one
   ///                      is created by the method.</param>
-  ///  <param name="parameters">Parameters to OverlapRemoval and ProjectionSolver.Solver.Solve().</param>
+
   ///  <param name="doGenerate">Generate constraints before solving; if false, solver is assumed to
   ///                      have already been populated by this.Generate().</param>
   ///  <returns>The set of OverlapRemoval.Constraints that were unsatisfiable, or NULL.</returns>

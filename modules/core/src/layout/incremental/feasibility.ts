@@ -94,10 +94,7 @@ export class Feasibility {
   /// // and then vertical overlap resolution of all nodes involved of horizontal equality
   /// // constraints
   /// // </summary>
-  /// // <param name="dblVpad"></param>
-  /// // <param name="dblHpad"></param>
-  /// // <param name="horizontalConstraints"></param>
-  /// // <param name="verticalConstraints"></param>
+
   // [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
   // static private void RemoveOverlapsOnEqualityConstraints(double dblVpad, double dblHpad, Array<IConstraint> horizontalConstraints, Array<IConstraint> verticalConstraints)
   // {

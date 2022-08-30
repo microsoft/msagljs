@@ -85,9 +85,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   ///  it's children will be translated together rather than being "compressed" if there are
   ///  overlaps with external nodes.
 
-  //  AKA: "Bump Mode"
-  TranslateChildren: boolean
-
   ///  Minimum size along the primary axis.
 
   MinimumSize: number
@@ -104,14 +101,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   NodePaddingP: number
 
-  ///  Padding outside the cluster in the parallel direction.
-
-  ClusterPadding: number
-
-  ///  Padding outside the cluster in the perpendicular direction.
-
-  ClusterPaddingP: number
-
   get Name(): string {
     return this.UserData
   }
@@ -125,26 +114,15 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
   static constructorNOANN(id: number, userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
-    return new OverlapRemovalCluster(id, userData, 0, 0, padding, paddingP, 0, 0)
+    return new OverlapRemovalCluster(id, userData, 0, 0, padding, paddingP)
   }
 
-  constructor(
-    id: number,
-    userData: any,
-    minSize: number,
-    minSizeP: number,
-    nodePadding: number,
-    nodePaddingP: number,
-    clusterPadding: number,
-    clusterPaddingP: number,
-  ) {
+  constructor(id: number, userData: any, minSize: number, minSizeP: number, nodePadding: number, nodePaddingP: number) {
     super(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
     this.MinimumSize = minSize
     this.MinimumSizeP = minSizeP
     this.NodePadding = nodePadding
     this.NodePaddingP = nodePaddingP
-    this.ClusterPadding = clusterPadding
-    this.ClusterPaddingP = clusterPaddingP
   }
 
   ///  Generate a string representation of the Cluster.
@@ -194,7 +172,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
     const events = this.CreateEvents(solver)
     //  If we added no events, we're either Fixed (so continue) or empty (so return).
-    if (events.length == 0 && !this.TranslateChildren) {
+    if (events.length == 0) {
       return
     }
 
@@ -276,11 +254,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           removeFromArray(origLeftNeighborNode.RightNeighbors, currentNode)
           const leftNeighborNode: OverlapRemovalNode = origLeftNeighborNode
           const p = this.NodePadding
-          let separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
-          if (this.TranslateChildren) {
-            separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
-          }
-
+          const separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
           solver.AddConstraint(leftNeighborNode.Variable, currentRightNode.Variable, separation)
         }
 
@@ -298,10 +272,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           //   'RightNeighbors: unexpected close/open overlap',
           // )
           const p = this.NodePadding
-          let separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
-          if (this.TranslateChildren) {
-            separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
-          }
+          const separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
 
           solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
         }
@@ -344,8 +315,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         }
       }
     }
-
-    //  endfor NextLeft
     return lstNeighbours
   }
 

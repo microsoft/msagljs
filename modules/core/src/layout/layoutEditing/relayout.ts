@@ -25,10 +25,7 @@ export class Relayout {
   ///  bottom-left point of their new boundaries are the same as the bottom-left of their old boundaries
   ///  (i.e. clusters are laid-out in place).
   ///  </summary>
-  ///  <param name="graph">The graph being operated on.</param>
-  ///  <param name="modifiedNodes">The nodes whose bounds are modified.</param>
-  ///  <param name="addedNodes">Nodes added to the graph - a new initial position will be found for these nodes close to their neighbors</param>
-  ///  <param name="clusterSettings">Settings to use for each cluster.</param>
+
   public constructor(
     graph: GeomGraph,
     modifiedNodes: Iterable<GeomNode>,
@@ -110,7 +107,7 @@ export class Relayout {
   // ///  <summary>
   // ///  Apply the appropriate layout to the specified cluster
   // ///  </summary>
-  // ///  <param name="cluster">the root of the cluster hierarchy to lay out</param>
+
   // ///  <returns>list of edges external to the cluster</returns>
   // LayoutCluster(cluster: GeomGraph) {
   //   ProgressStep()
@@ -159,8 +156,7 @@ export class Relayout {
   // ///  <summary>
   // ///  Generate orthogonal ordering constraints to preserve the left/right, above/below relative positions of nodes
   // ///  </summary>
-  // ///  <param name="nodes"></param>
-  // ///  <param name="settings"></param>
+
   // @Conditional('RelayoutOrthogonalOrderingConstraints')
   // GenerateOrthogonalOrderingConstraints(nodes: Iterable<GeomNode>, settings: FastIncrementalLayoutSettings) {
   //   let p: GeomNode = null
@@ -185,7 +181,7 @@ export class Relayout {
   // ///  <summary>
   // ///  Creates a shallow copy of the cluster into a GeomGraph
   // ///  </summary>
-  // ///  <param name="cluster">cluster to copy</param>
+
   // ///  <returns>cluster children and edges between children in a GeomGraph</returns>
   // static GetShallowCopyGraphUnderCluster(cluster: GeomGraph): GeomGraph {
   //   const originalToCopyNodeMap: Map<GeomNode, GeomNode> = InitialLayoutByCluster.ShallowNodeCopyDictionary(cluster)

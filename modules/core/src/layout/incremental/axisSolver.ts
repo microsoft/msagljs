@@ -49,12 +49,7 @@ export class AxisSolver {
   ///  <summary>
   ///  Have to reinstantiate if any of these parameters change
   ///  </summary>
-  ///  <param name="isHorizontal"></param>
-  ///  <param name="nodes"></param>
-  ///  <param name="clusterHierarchies"></param>
-  ///  <param name="avoidOverlaps"></param>
-  ///  <param name="constraintLevel"></param>
-  ///  <param name="clusterSettings"></param>
+
   constructor(
     isHorizontal: boolean,
     nodes: Iterable<FiNode>,
@@ -74,7 +69,7 @@ export class AxisSolver {
   ///  <summary>
   ///  Add the constraint to this axis
   ///  </summary>
-  ///  <param name="c"></param>
+
   AddStructuralConstraint(c: IConstraint) {
     this.structuralConstraints.push(c)
   }
@@ -86,11 +81,7 @@ export class AxisSolver {
   ///  <summary>
   ///  Create variables, generate non-overlap constraints.
   ///  </summary>
-  ///  <param name="hPad">horizontal node padding</param>
-  ///  <param name="vPad">vertical node padding</param>
-  ///  <param name="cHPad">horizontal cluster padding</param>
-  ///  <param name="cVPad">vertical cluster padding</param>
-  ///  <param name="nodeCenter"></param>
+
   Initialize(hPad: number, vPad: number, cHPad: number, cVPad: number, nodeCenter: (fi: FiNode) => Point) {
     //  For the Vertical ConstraintGenerator, Padding is vPad and PadddingP(erpendicular) is hPad.
     this.cg = new ConstraintGenerator(

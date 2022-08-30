@@ -223,7 +223,7 @@ export class RectangularClusterBoundary {
   ///  <summary>
   ///  Move the bounding box by delta
   ///  </summary>
-  ///  <param name="delta"></param>
+
   public TranslateRectangle(delta: Point) {
     this.rectangle.center = this.rectangle.center.add(delta)
   }
@@ -241,10 +241,7 @@ export class RectangularClusterBoundary {
   ///  <summary>
   ///  Creates a lock on all four borders
   ///  </summary>
-  ///  <param name="left"></param>
-  ///  <param name="right"></param>
-  ///  <param name="top"></param>
-  ///  <param name="bottom"></param>
+
   public Lock(left: number, right: number, top: number, bottom: number) {
     const weight = 10000
     this.LeftBorderInfo = new BorderInfo(this.LeftBorderInfo.InnerMargin, left, weight)

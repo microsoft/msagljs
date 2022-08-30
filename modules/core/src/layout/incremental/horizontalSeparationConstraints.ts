@@ -52,9 +52,7 @@ export class HorizontalSeparationConstraint implements IConstraint {
   ///  <summary>
   ///
   ///  </summary>
-  ///  <param name="u"></param>
-  ///  <param name="v"></param>
-  ///  <param name="separation"></param>
+
   static constructorNNN(u: GeomNode, v: GeomNode, separation: number) {
     return new HorizontalSeparationConstraint(u, v, separation, false)
   }
@@ -62,10 +60,7 @@ export class HorizontalSeparationConstraint implements IConstraint {
   ///  <summary>
   ///
   ///  </summary>
-  ///  <param name="u"></param>
-  ///  <param name="v"></param>
-  ///  <param name="separation"></param>
-  ///  <param name="equality"></param>
+
   public constructor(u: GeomNode, v: GeomNode, separation: number, equality: boolean) {
     this.equality = equality
     this.u = u

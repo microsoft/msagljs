@@ -36,7 +36,7 @@ export class OverlapRemovalParameters {
   ///  <summary>
   ///  Constructor taking solver parameters.
   ///  </summary>
-  ///  <param name="solverParameters"></param>
+
   public constructor(solverParameters: Parameters) {
     this.SolverParameters = solverParameters
     this.AllowDeferToVertical = true
@@ -45,8 +45,7 @@ export class OverlapRemovalParameters {
   ///  <summary>
   ///  Constructor taking OverlapRemoval parameter and solver parameters.
   ///  </summary>
-  ///  <param name="allowDeferToVertical"></param>
-  ///  <param name="solverParameters"></param>
+
   static constructorBP(allowDeferToVertical: boolean, solverParameters: Parameters): OverlapRemovalParameters {
     const p = OverlapRemovalParameters.constructorEmpty()
     p.AllowDeferToVertical = allowDeferToVertical
