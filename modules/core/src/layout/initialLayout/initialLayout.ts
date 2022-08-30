@@ -9,9 +9,9 @@ import {IGeomGraph} from './iGeomGraph'
 import {GeomConnectedComponent} from './geomConnectedComponent'
 import {LayoutAlgorithmHelpers} from './layoutAlgorithmHelpers'
 import {Assert} from '../../utils/assert'
-///  <summary>
-///  Methods for obtaining an initial layout of a graph using various means.
-///  </summary>
+
+//  Methods for obtaining an initial layout of a graph using various means.
+
 export class InitialLayout extends Algorithm {
   private graph: GeomGraph
 
@@ -19,19 +19,17 @@ export class InitialLayout extends Algorithm {
 
   private componentCount: number
 
-  ///  <summary>
-  ///  Set to true if the graph specified is a single connected component with no clusters
-  ///  </summary>
+  //  Set to true if the graph specified is a single connected component with no clusters
+
   SingleComponent = false
 
-  ///  <summary>
-  ///  Static layout of graph by gradually adding constraints.
-  ///  Uses PivotMds to find initial layout.
-  ///  Breaks the graph into connected components (nodes of the same cluster are considered
-  ///  connected whether or not there is an edge between them), then lays out each component
-  ///  individually.  Finally, a simple packing is applied.
-  ///  ratio as close as possible to the PackingAspectRatio property (not currently used).
-  ///  </summary>
+  //  Static layout of graph by gradually adding constraints.
+  //  Uses PivotMds to find initial layout.
+  //  Breaks the graph into connected components (nodes of the same cluster are considered
+  //  connected whether or not there is an edge between them), then lays out each component
+  //  individually.  Finally, a simple packing is applied.
+  //  ratio as close as possible to the PackingAspectRatio property (not currently used).
+
   public constructor(graph: GeomGraph, settings: FastIncrementalLayoutSettings) {
     super(null)
     this.graph = graph
@@ -42,9 +40,8 @@ export class InitialLayout extends Algorithm {
     this.settings.RespectEdgePorts = false
   }
 
-  ///  <summary>
-  ///  The actual layout process
-  ///  </summary>
+  //  The actual layout process
+
   run() {
     if (this.SingleComponent) {
       this.componentCount = 1
@@ -117,13 +114,12 @@ export class InitialLayout extends Algorithm {
     component.translate(component.boundingBox.leftBottom.mul(-1))
   }
 
-  ///  <summary>
-  ///  Get the distinct ConstraintLevels that need to be applied to layout.
-  ///  Used by InitialLayout.
-  ///  Will only include ConstraintLevel == 1 if there are structural constraints
-  ///  Will only include ConstraintLevel == 2 if AvoidOverlaps is on and there are fewer than 2000 nodes
-  ///  </summary>
-  ///  <returns>0, 1 or 2</returns>
+  //  Get the distinct ConstraintLevels that need to be applied to layout.
+  //  Used by InitialLayout.
+  //  Will only include ConstraintLevel == 1 if there are structural constraints
+  //  Will only include ConstraintLevel == 2 if AvoidOverlaps is on and there are fewer than 2000 nodes
+
+  //  <returns>0, 1 or 2</returns>
   GetConstraintLevels(component: IGeomGraph): Iterable<number> {
     const keys = new Set<number>()
     for (const c of this.settings.StructuralConstraints) {

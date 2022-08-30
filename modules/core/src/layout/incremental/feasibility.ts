@@ -9,25 +9,23 @@ import {FiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
 export class Feasibility {
-  ///  <summary>
-  ///  Very small extra padding used for VPad to ensure feasibility
-  ///  </summary>
+  //  Very small extra padding used for VPad to ensure feasibility
+
   static Pad = 0.0001
 
-  ///  <summary>
-  ///  Obtain a starting configuration that is feasible with respect to the structural
-  ///  constraints.  This is necessary to avoid e.g. cycles of the constraint graph;
-  ///  for example, dragging the root of a downward-pointing tree downward below other
-  ///  nodes of the tree can result of auto-generation of constraints generating some
-  ///  constraints with the root on the right-hand side, and the structural constraints
-  ///  have it on the left-hand side.
-  ///
-  ///  When AvoidOverlaps==true and we reach ConstraintLevel>=2 then we also need to remove
-  ///  overlaps... prior to this we need to force horizontal resolving of overlaps
-  ///  between *all* nodes involved of vertical equality constraints (i.e. no skipping),
-  ///  and then vertical overlap resolution of all nodes involved of horizontal equality
-  ///  constraints
-  ///  </summary>
+  //  Obtain a starting configuration that is feasible with respect to the structural
+  //  constraints.  This is necessary to avoid e.g. cycles of the constraint graph;
+  //  for example, dragging the root of a downward-pointing tree downward below other
+  //  nodes of the tree can result of auto-generation of constraints generating some
+  //  constraints with the root on the right-hand side, and the structural constraints
+  //  have it on the left-hand side.
+  //
+  //  When AvoidOverlaps==true and we reach ConstraintLevel>=2 then we also need to remove
+  //  overlaps... prior to this we need to force horizontal resolving of overlaps
+  //  between *all* nodes involved of vertical equality constraints (i.e. no skipping),
+  //  and then vertical overlap resolution of all nodes involved of horizontal equality
+  //  constraints
+
   static Enforce(
     settings: FastIncrementalLayoutSettings,
     currentConstraintLevel: number,
@@ -87,13 +85,11 @@ export class Feasibility {
     }
   }
 
-  /// // <summary>
-  /// // When AvoidOverlaps==true and we reach ConstraintLevel>=2 then we also need to remove
-  /// // overlaps... prior to this we need to force horizontal resolving of overlaps
-  /// // between *all* nodes involved of vertical equality constraints (i.e. no skipping),
-  /// // and then vertical overlap resolution of all nodes involved of horizontal equality
-  /// // constraints
-  /// // </summary>
+  // // When AvoidOverlaps==true and we reach ConstraintLevel>=2 then we also need to remove
+  // // overlaps... prior to this we need to force horizontal resolving of overlaps
+  // // between *all* nodes involved of vertical equality constraints (i.e. no skipping),
+  // // and then vertical overlap resolution of all nodes involved of horizontal equality
+  // // constraints
 
   // [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
   // static private void RemoveOverlapsOnEqualityConstraints(double dblVpad, double dblHpad, Array<IConstraint> horizontalConstraints, Array<IConstraint> verticalConstraints)

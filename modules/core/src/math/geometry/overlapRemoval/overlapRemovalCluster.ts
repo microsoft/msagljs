@@ -43,13 +43,10 @@
 //  This proceeds until we back up to the root cluster of the ClusterHierarchy.
 //
 
-import {Constraint} from '../../projectionSolver/Constraint'
 import {Solver} from '../../projectionSolver/Solver'
-import {BorderInfo} from './borderInfo'
 import {OverlapRemovalGlobalConfiguration} from './overlapRemovalGlobalConfiguration'
 import {OverlapRemovalNode} from './overlapRemovalNode'
 import {OverlapRemovalParameters} from './overlapRemovalParameters'
-import {String} from 'typescript-string-operations'
 import {ScanLine} from './scanLine'
 import {compareBooleans, compareNumbers} from '../../../utils/compare'
 
@@ -67,43 +64,39 @@ class Event {
   }
 }
 
-///  A cluster is a structure that acts as a Node for Nodes and Clusters at a sibling level,
-///  and can also contain other Clusters and/or Nodes.
-///  </summary>
-export class OverlapRemovalCluster extends OverlapRemovalNode {
+//  A cluster is a structure that acts as a Node for Nodes and Clusters at a sibling level,
+//  and can also contain other Clusters and/or Nodes.
+
+export class OverlapRemovalCluster {
   //  Our internal Node list - some of which may be Clusters.
   nodeList: Array<OverlapRemovalNode> = new Array<OverlapRemovalNode>()
 
-  ///  Empty clusters are ignored on positioning.
+  //  Empty clusters are ignored on positioning.
 
   public get IsEmpty(): boolean {
     return this.nodeList.length == 0
   }
 
-  ///  If the following is true then constraints will be generated the prevent children coming
-  ///  any closer to the cluster boundaries.  In effect, this means that the cluster and all
-  ///  it's children will be translated together rather than being "compressed" if there are
-  ///  overlaps with external nodes.
+  //  If the following is true then constraints will be generated the prevent children coming
+  //  any closer to the cluster boundaries.  In effect, this means that the cluster and all
+  //  it's children will be translated together rather than being "compressed" if there are
+  //  overlaps with external nodes.
 
-  ///  Minimum size along the primary axis.
+  //  Minimum size along the primary axis.
 
   MinimumSize: number
 
-  ///  Minimum size along the perpendicular axis.
+  //  Minimum size along the perpendicular axis.
 
   MinimumSizeP: number
 
-  ///  Padding of nodes within the cluster in the parallel direction.
+  //  Padding of nodes within the cluster in the parallel direction.
 
   NodePadding: number
 
-  ///  Padding of nodes within the cluster in the perpendicular direction.
+  //  Padding of nodes within the cluster in the perpendicular direction.
 
   NodePaddingP: number
-
-  get Name(): string {
-    return this.UserData
-  }
 
   //  The width (height) of the node along the primary axis, which should be fairly thin
   //  (along the secondary (perpendicular) axis, it is the full size of the cluster).
@@ -118,29 +111,14 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   }
 
   constructor(id: number, userData: any, minSize: number, minSizeP: number, nodePadding: number, nodePaddingP: number) {
-    super(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
+    //super(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
     this.MinimumSize = minSize
     this.MinimumSizeP = minSizeP
     this.NodePadding = nodePadding
     this.NodePaddingP = nodePaddingP
   }
 
-  ///  Generate a string representation of the Cluster.
-
-  ///  <returns>A string representation of the Cluster.</returns>
-  toString(): string {
-    //  Currently this is just the same as the base Node; all zero if we haven't
-    //  yet called Solve(), else the values at the last time we called Solve().
-    return String.Format(
-      "Cluster '{0}': id {1} p {2:F5} s {3:F5} pP {4:F5} sP {5:F5}",
-      this.UserDataString,
-      this.Id,
-      this.Position,
-      this.Size,
-      this.PositionP,
-      this.SizeP,
-    )
-  }
+  //  Generate a string representation of the Cluster.
 
   //  newNode may be a cluster in which case we add it to the cluster list.  We never call this to
   //  add the fake border nodes to nodeList; the caller never sees them.
@@ -153,16 +131,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     //  Add/subtract only half the padding so they meet in the middle of the padding.
     events.push(new Event(true, node, node.OpenP - this.NodePaddingP / 2))
     events.push(new Event(false, node, node.CloseP + this.NodePaddingP / 2))
-  }
-
-  //  This is internal rather than  so Test_OverlapRemoval can see it.
-  static CalcBorderWidth(margin: number): number {
-    //  Margin applies only to the inside edge.
-    if (margin > 0) {
-      return margin
-    }
-
-    return OverlapRemovalCluster.DefaultBorderWidth
   }
 
   Generate(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean) {
@@ -350,7 +318,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     isHorizontal: boolean,
   ): boolean {
     //  Sanity check to be sure that the borders are past all other nodes.
-    const overlap = OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePadding)
+    const overlap = OverlapRemovalNode.Overlap(currentNode, nextNode, this.NodePadding)
     if (overlap <= 0) {
       //  This is the first node encountered on this neighbour-traversal that did not
       //  overlap within the required padding. Add it to the list and we're done with
@@ -360,7 +328,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  on why this is necessary).
       if (
         !isHorizontal &&
-        OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance
+        OverlapRemovalNode.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance
       ) {
         return true
       }
@@ -378,7 +346,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
         //  each direction.  @@DCR: consider adding weights to the defer-to-vertical calculation;
         //  this would allow two nodes to pop up/down if they're being squeezed, rather than
         //  force apart the borders (which happens regardless of their weight).
-        const overlapP = OverlapRemovalCluster.OverlapP(currentNode, nextNode, this.NodePaddingP)
+        const overlapP = OverlapRemovalNode.OverlapP(currentNode, nextNode, this.NodePaddingP)
         const isOverlapping: boolean = parameters.ConsiderProportionalOverlap
           ? overlap / (currentNode.Size + nextNode.Size) > overlapP / (currentNode.SizeP + nextNode.SizeP)
           : overlap > overlapP
@@ -416,7 +384,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
       //  and possibly huge vertical movement.  There is a corresponding Assert during constraint
       //  generation when the node is Closed. We have to do this here rather than at runtime because
       //  doing it then may skip a Neighbour that replaced other Neighbors by transitivity.
-      if (OverlapRemovalCluster.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance) {
+      if (OverlapRemovalNode.Overlap(currentNode, nextNode, this.NodePaddingP) <= parameters.SolverParameters.GapTolerance) {
         return true
       }
     }

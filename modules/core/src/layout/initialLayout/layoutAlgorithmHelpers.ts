@@ -1,9 +1,7 @@
 export class LayoutAlgorithmHelpers {
-  ///  <summary>
-  ///  Linearly interpolates a result between the minResult and the maxResult based on the location of the value between the lowerThreshold and the upperThreshold.
-  ///  </summary>
+  //  Linearly interpolates a result between the minResult and the maxResult based on the location of the value between the lowerThreshold and the upperThreshold.
 
-  ///  <returns>The linearly interpolated result.  Between minResult and maxResult, inclusive.</returns>
+  //  <returns>The linearly interpolated result.  Between minResult and maxResult, inclusive.</returns>
   static LinearInterpolation(value: number, lowerThreshold: number, upperThreshold: number, minResult: number, maxResult: number): number {
     if (value < lowerThreshold) {
       return minResult
@@ -17,11 +15,9 @@ export class LayoutAlgorithmHelpers {
     return minResult + <number>(fraction * (maxResult - minResult))
   }
 
-  ///  <summary>
-  ///  Negatively linearly interpolates a result between the minResult and the maxResult based on the location of the value between the lowerThreshold and the upperThreshold.
-  ///  </summary>
+  //  Negatively linearly interpolates a result between the minResult and the maxResult based on the location of the value between the lowerThreshold and the upperThreshold.
 
-  ///  <returns>The linearly interpolated result.  Between minResult and maxResult, inclusive.</returns>
+  //  <returns>The linearly interpolated result.  Between minResult and maxResult, inclusive.</returns>
   static NegativeLinearInterpolation(
     value: number,
     lowerThreshold: number,

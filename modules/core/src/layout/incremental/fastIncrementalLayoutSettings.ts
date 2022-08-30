@@ -29,15 +29,14 @@ export class FastIncrementalLayoutSettings {
   set NodeSeparation(value: number) {
     this.commonSettings.NodeSeparation = value
   }
-  ///  <summary>
-  ///  Stop after maxIterations completed
-  ///  </summary>
+
+  //  Stop after maxIterations completed
+
   maxIterations = 100
   clusterMargin = 10
 
-  ///  <summary>
-  ///  Stop after maxIterations completed
-  ///  </summary>
+  //  Stop after maxIterations completed
+
   public get MaxIterations(): number {
     return this.maxIterations
   }
@@ -47,9 +46,8 @@ export class FastIncrementalLayoutSettings {
 
   minorIterations = 3
 
-  ///  <summary>
-  ///  Number of iterations in inner loop.
-  ///  </summary>
+  //  Number of iterations in inner loop.
+
   public get MinorIterations(): number {
     return this.minorIterations
   }
@@ -59,9 +57,8 @@ export class FastIncrementalLayoutSettings {
 
   iterations: number
 
-  ///  <summary>
-  ///  Number of iterations completed
-  ///  </summary>
+  //  Number of iterations completed
+
   public get Iterations(): number {
     return this.iterations
   }
@@ -71,9 +68,8 @@ export class FastIncrementalLayoutSettings {
 
   projectionIterations = 5
 
-  ///  <summary>
-  ///  number of times to project over all constraints at each layout iteration
-  ///  </summary>
+  //  number of times to project over all constraints at each layout iteration
+
   public get ProjectionIterations(): number {
     return this.projectionIterations
   }
@@ -83,10 +79,9 @@ export class FastIncrementalLayoutSettings {
 
   approximateRepulsion = true
 
-  ///  <summary>
-  ///  Rather than computing the exact repulsive force between all pairs of nodes (which would take O(n^2) time for n nodes)
-  ///  use a fast inexact technique (that takes O(n log n) time)
-  ///  </summary>
+  //  Rather than computing the exact repulsive force between all pairs of nodes (which would take O(n^2) time for n nodes)
+  //  use a fast inexact technique (that takes O(n log n) time)
+
   public get ApproximateRepulsion(): boolean {
     return this.approximateRepulsion
   }
@@ -94,18 +89,16 @@ export class FastIncrementalLayoutSettings {
     this.approximateRepulsion = value
   }
 
-  ///  <summary>
-  ///  RungaKutta integration potentially gives smoother increments, but is more expensive
-  ///  </summary>
+  //  RungaKutta integration potentially gives smoother increments, but is more expensive
+
   RungeKuttaIntegration = false
 
   initialStepSize = 1.4
 
-  ///  <summary>
-  ///  StepSize taken at each iteration (a coefficient of the force on each node) adapts depending on change in
-  ///  potential energy at each step.  With this scheme changing the InitialStepSize doesn't have much effect
-  ///  because if it is too large or too small it will be quickly updated by the algorithm anyway.
-  ///  </summary>
+  //  StepSize taken at each iteration (a coefficient of the force on each node) adapts depending on change in
+  //  potential energy at each step.  With this scheme changing the InitialStepSize doesn't have much effect
+  //  because if it is too large or too small it will be quickly updated by the algorithm anyway.
+
   public get InitialStepSize(): number {
     return this.initialStepSize
   }
@@ -121,9 +114,8 @@ export class FastIncrementalLayoutSettings {
 
   decay = 0.9
 
-  ///  <summary>
-  ///  FrictionalDecay isn't really friction so much as a scaling of velocity to improve convergence.  0.8 seems to work well.
-  ///  </summary>
+  //  FrictionalDecay isn't really friction so much as a scaling of velocity to improve convergence.  0.8 seems to work well.
+
   public get Decay(): number {
     return this.decay
   }
@@ -137,9 +129,8 @@ export class FastIncrementalLayoutSettings {
 
   private friction = 0.8
 
-  ///  <summary>
-  ///  Friction isn't really friction so much as a scaling of velocity to improve convergence.  0.8 seems to work well.
-  ///  </summary>
+  //  Friction isn't really friction so much as a scaling of velocity to improve convergence.  0.8 seems to work well.
+
   public get Friction(): number {
     return this.friction
   }
@@ -155,9 +146,8 @@ export class FastIncrementalLayoutSettings {
 
   repulsiveForceConstant = 1
 
-  ///  <summary>
-  ///  strength of repulsive force between each pair of nodes.  A setting of 1.0 should work OK.
-  ///  </summary>
+  //  strength of repulsive force between each pair of nodes.  A setting of 1.0 should work OK.
+
   public get RepulsiveForceConstant(): number {
     return this.repulsiveForceConstant
   }
@@ -167,9 +157,8 @@ export class FastIncrementalLayoutSettings {
 
   attractiveForceConstant = 1
 
-  ///  <summary>
-  ///  strength of attractive force between pairs of nodes joined by an edge.  A setting of 1.0 should work OK.
-  ///  </summary>
+  //  strength of attractive force between pairs of nodes joined by an edge.  A setting of 1.0 should work OK.
+
   public get AttractiveForceConstant(): number {
     return this.attractiveForceConstant
   }
@@ -179,10 +168,9 @@ export class FastIncrementalLayoutSettings {
 
   gravity = 1
 
-  ///  <summary>
-  ///  gravity is a constant force applied to all nodes attracting them to the Origin
-  ///  and keeping disconnected components from flying apart.  A setting of 1.0 should work OK.
-  ///  </summary>
+  //  gravity is a constant force applied to all nodes attracting them to the Origin
+  //  and keeping disconnected components from flying apart.  A setting of 1.0 should work OK.
+
   public get GravityConstant(): number {
     return this.gravity
   }
@@ -192,9 +180,8 @@ export class FastIncrementalLayoutSettings {
 
   interComponentForces = true
 
-  ///  <summary>
-  ///  If the following is false forces will not be considered between each component and each component will have its own gravity origin.
-  ///  </summary>
+  //  If the following is false forces will not be considered between each component and each component will have its own gravity origin.
+
   public get InterComponentForces(): boolean {
     return this.interComponentForces
   }
@@ -204,9 +191,8 @@ export class FastIncrementalLayoutSettings {
 
   applyForces = true
 
-  ///  <summary>
-  ///  If the following is false forces will not be applied, but constraints will still be satisfied.
-  ///  </summary>
+  //  If the following is false forces will not be applied, but constraints will still be satisfied.
+
   public get ApplyForces(): boolean {
     return this.applyForces
   }
@@ -218,38 +204,33 @@ export class FastIncrementalLayoutSettings {
 
   locks: LinkedList<LockPosition> = new LinkedList<LockPosition>()
 
-  ///  <summary>
-  ///  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
-  ///  for example, do interactive mouse
-  ///   dragging.
-  ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
-  ///  constant time.
-  ///  </summary>
+  //  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
+  //  for example, do interactive mouse
+  //   dragging.
+  //  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
+  //  constant time.
 
-  ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
+  //  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLockNR(node: GeomNode, bounds: Rectangle): LockPosition {
     const lp: LockPosition = new LockPosition(node, bounds, (g) => this.algorithm.getRB(g))
     lp.listNode = this.locks.push(lp)
     return lp
   }
 
-  ///  <summary>
-  ///  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
-  ///  for example, do interactive mouse dragging.
-  ///  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
-  ///  constant time.
-  ///  </summary>
+  //  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
+  //  for example, do interactive mouse dragging.
+  //  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
+  //  constant time.
 
-  ///  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
+  //  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
   public CreateLock(node: GeomNode, bounds: Rectangle, weight: number): LockPosition {
     const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight, (g) => this.algorithm.getRB(g))
     lp.listNode = this.locks.push(lp)
     return lp
   }
 
-  ///  <summary>
-  ///  restart layout, use e.g. after a mouse drag or non-structural change to the graph
-  ///  </summary>
+  //  restart layout, use e.g. after a mouse drag or non-structural change to the graph
+
   public ResetLayout() {
     this.Unconverge()
     if (this.algorithm != null) {
@@ -258,48 +239,41 @@ export class FastIncrementalLayoutSettings {
     }
   }
 
-  ///  <summary>
-  ///  reset iterations and convergence status
-  ///  </summary>
+  //  reset iterations and convergence status
+
   Unconverge() {
     this.iterations = 0
     // EdgeRoutesUpToDate = false;
     this.converged = false
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public InitializeLayoutGN(graph: GeomGraph, initialConstraintLevel: number) {
     this.InitializeLayout(graph, initialConstraintLevel, () => this)
   }
 
-  ///  <summary>
-  ///  Initialize the layout algorithm
-  ///  </summary>
+  //  Initialize the layout algorithm
 
   public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => any) {
     this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel, clusterSettings)
     this.ResetLayout()
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public Uninitialize() {
     this.algorithm = null
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get IsInitialized(): boolean {
     return this.algorithm != null
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public IncrementalRunG(graph: GeomGraph) {
     this.IncrementalRunGF(graph, () => this)
   }
@@ -313,18 +287,16 @@ export class FastIncrementalLayoutSettings {
     }
   }
 
-  ///  <summary>
-  ///  Run the FastIncrementalLayout instance incrementally
-  ///  </summary>
+  //  Run the FastIncrementalLayout instance incrementally
+
   public IncrementalRunGF(graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
     this.SetupIncrementalRun(graph, clusterSettings)
     this.algorithm.run()
     // graph.UpdateBoundingBox()
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
     if (cancelToken != null) {
       cancelToken.throwIfCanceled()
@@ -336,69 +308,61 @@ export class FastIncrementalLayoutSettings {
     // graph.UpdateBoundingBox()
   }
 
-  ///  <summary>
-  ///  Clones the object
-  ///  </summary>
-  ///  <returns></returns>
+  //  Clones the object
+
+  //  <returns></returns>
   Clone(): FastIncrementalLayoutSettings {
     return FastIncrementalLayoutSettings.ctorClone(this)
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get StructuralConstraints(): Iterable<IConstraint> {
     return this.structuralConstraints
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public AddStructuralConstraint(cc: IConstraint) {
     this.structuralConstraints.push(cc)
   }
 
   structuralConstraints: Array<IConstraint> = new Array<IConstraint>()
 
-  ///  <summary>
-  ///  Clear all constraints over the graph
-  ///  </summary>
+  //  Clear all constraints over the graph
+
   public ClearConstraints() {
     this.locks.clear()
     this.structuralConstraints = []
     //  clusterHierarchies.Clear();
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public ClearStructuralConstraints() {
     this.structuralConstraints = []
   }
 
-  ///  <summary>
-  ///  Avoid overlaps between nodes boundaries, and if there are any
-  ///  clusters, then between each cluster boundary and nodes that are not
-  ///  part of that cluster.
-  ///  </summary>
+  //  Avoid overlaps between nodes boundaries, and if there are any
+  //  clusters, then between each cluster boundary and nodes that are not
+  //  part of that cluster.
+
   AvoidOverlaps: boolean
-  ///  <summary>
-  ///  If edges have FloatingPorts then the layout will optimize edge lengths based on the port locations.
-  ///  If MultiLocationFloatingPorts are specified then the layout will choose the nearest pair of locations for each such edge.
-  ///  </summary>
+
+  //  If edges have FloatingPorts then the layout will optimize edge lengths based on the port locations.
+  //  If MultiLocationFloatingPorts are specified then the layout will choose the nearest pair of locations for each such edge.
+
   RespectEdgePorts: boolean
 
-  ///  <summary>
-  ///  Apply nice but expensive routing of edges once layout converges
-  ///  </summary>
+  //  Apply nice but expensive routing of edges once layout converges
+
   RouteEdges: boolean
 
   approximateRouting = true
 
-  ///  <summary>
-  ///  If RouteEdges is true then the following is checked to see whether to do optimal shortest path routing
-  ///  or use a sparse visibility graph spanner to do approximate---but much faster---shortest path routing
-  ///  </summary>
+  //  If RouteEdges is true then the following is checked to see whether to do optimal shortest path routing
+  //  or use a sparse visibility graph spanner to do approximate---but much faster---shortest path routing
+
   public get ApproximateRouting(): boolean {
     return this.approximateRouting
   }
@@ -408,14 +372,13 @@ export class FastIncrementalLayoutSettings {
 
   logScaleEdgeForces = true
 
-  ///  <summary>
-  ///  If true then attractive forces across edges are computed as:
-  ///  AttractiveForceConstant * actualLength * Math.Log((actualLength + epsilon) / (idealLength + epsilon))
-  ///  where epsilon is a small positive constant to avoid divide by zero or taking the log of zero.
-  ///  Note that LogScaleEdges can lead to ghost forces in highly constrained scenarios.
-  ///  If false then a the edge force is based on (actualLength - idealLength)^2, which works better with
-  ///  lots of constraints.
-  ///  </summary>
+  //  If true then attractive forces across edges are computed as:
+  //  AttractiveForceConstant * actualLength * Math.Log((actualLength + epsilon) / (idealLength + epsilon))
+  //  where epsilon is a small positive constant to avoid divide by zero or taking the log of zero.
+  //  Note that LogScaleEdges can lead to ghost forces in highly constrained scenarios.
+  //  If false then a the edge force is based on (actualLength - idealLength)^2, which works better with
+  //  lots of constraints.
+
   public get LogScaleEdgeForces(): boolean {
     return this.logScaleEdgeForces
   }
@@ -425,10 +388,9 @@ export class FastIncrementalLayoutSettings {
 
   displacementThreshold = 0.1
 
-  ///  <summary>
-  ///  If the amount of total squared displacement after a particular iteration falls below DisplacementThreshold then Converged is set to true.
-  ///  Make DisplacementThreshold larger if you want layout to finish sooner - but not necessarily make as much progress towards a good layout.
-  ///  </summary>
+  //  If the amount of total squared displacement after a particular iteration falls below DisplacementThreshold then Converged is set to true.
+  //  Make DisplacementThreshold larger if you want layout to finish sooner - but not necessarily make as much progress towards a good layout.
+
   public get DisplacementThreshold(): number {
     return this.displacementThreshold
   }
@@ -438,18 +400,17 @@ export class FastIncrementalLayoutSettings {
 
   converged: boolean
 
-  ///  <summary>
-  ///  Set to true if displacement from the last iteration was less than DisplacementThreshold.
-  ///  The caller should invoke FastIncrementalLayout.CalculateLayout() in a loop, e.g.:
-  ///
-  ///   while(!settings.Converged)
-  ///   {
-  ///     layout.CalculateLayout();
-  ///     redrawGraphOrHandleInteractionOrWhatever();
-  ///   }
-  ///
-  ///  RemainingIterations affects damping.
-  ///  </summary>
+  //  Set to true if displacement from the last iteration was less than DisplacementThreshold.
+  //  The caller should invoke FastIncrementalLayout.CalculateLayout() in a loop, e.g.:
+  //
+  //   while(!settings.Converged)
+  //   {
+  //     layout.CalculateLayout();
+  //     redrawGraphOrHandleInteractionOrWhatever();
+  //   }
+  //
+  //  RemainingIterations affects damping.
+
   public get Converged(): boolean {
     return this.converged
   }
@@ -457,9 +418,8 @@ export class FastIncrementalLayoutSettings {
     this.converged = value
   }
 
-  ///  <summary>
-  ///  Return iterations as a percentage of MaxIterations.  Useful for reporting progress, e.g. in a progress bar.
-  ///  </summary>
+  //  Return iterations as a percentage of MaxIterations.  Useful for reporting progress, e.g. in a progress bar.
+
   public get PercentDone(): number {
     if (this.Converged) {
       return 100
@@ -468,18 +428,16 @@ export class FastIncrementalLayoutSettings {
     }
   }
 
-  ///  <summary>
-  ///  Not quite the same as Converged:
-  ///  </summary>
+  //  Not quite the same as Converged:
+
   public get IsDone(): boolean {
     return this.Converged || this.iterations >= this.MaxIterations
   }
 
-  ///  <summary>
-  ///  Returns an estimate of the cost function calculated in the most recent iteration.
-  ///  It's a float because FastIncrementalLayout.Energy is a volatile float so it
-  ///  can be safely read from other threads
-  ///  </summary>
+  //  Returns an estimate of the cost function calculated in the most recent iteration.
+  //  It's a float because FastIncrementalLayout.Energy is a volatile float so it
+  //  can be safely read from other threads
+
   public get Energy(): number {
     if (this.algorithm != null) {
       return this.algorithm.energy
@@ -488,17 +446,15 @@ export class FastIncrementalLayoutSettings {
     return 0
   }
 
-  ///  <summary>
-  ///  When layout is in progress the following is false.
-  ///  When layout has converged, routes are populated and this is set to true to tell the UI that the routes can be drawn.
-  ///  </summary>
+  //  When layout is in progress the following is false.
+  //  When layout has converged, routes are populated and this is set to true to tell the UI that the routes can be drawn.
+
   EdgeRoutesUpToDate: boolean
 
   maxConstraintLevel = 2
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get MaxConstraintLevel(): number {
     return this.maxConstraintLevel
   }
@@ -513,9 +469,8 @@ export class FastIncrementalLayoutSettings {
 
   minConstraintLevel = 0
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get MinConstraintLevel(): number {
     return this.minConstraintLevel
   }
@@ -523,16 +478,15 @@ export class FastIncrementalLayoutSettings {
     this.minConstraintLevel = value
   }
 
-  ///  <summary>
-  ///  Constraint level ranges from Min to MaxConstraintLevel.
-  ///  0 = no constraints
-  ///  1 = only structural constraints
-  ///  2 = all constraints including non-overlap constraints
-  ///
-  ///  A typical run of FastIncrementalLayout will apply it at each constraint level, starting at 0 to
-  ///  obtain an untangled unconstrained layout, then 1 to introduce structural constraints and finally 2 to beautify.
-  ///  Running only at level 2 will most likely leave the graph stuck in a tangled local minimum.
-  ///  </summary>
+  //  Constraint level ranges from Min to MaxConstraintLevel.
+  //  0 = no constraints
+  //  1 = only structural constraints
+  //  2 = all constraints including non-overlap constraints
+  //
+  //  A typical run of FastIncrementalLayout will apply it at each constraint level, starting at 0 to
+  //  obtain an untangled unconstrained layout, then 1 to introduce structural constraints and finally 2 to beautify.
+  //  Running only at level 2 will most likely leave the graph stuck in a tangled local minimum.
+
   public getCurrentConstraintLevel(): number {
     if (this.algorithm == null) {
       return 0
@@ -546,9 +500,8 @@ export class FastIncrementalLayoutSettings {
 
   attractiveInterClusterForceConstant = 1
 
-  ///  <summary>
-  ///  Attractive strength of edges connected to clusters
-  ///  </summary>
+  //  Attractive strength of edges connected to clusters
+
   public get AttractiveInterClusterForceConstant(): number {
     return this.attractiveInterClusterForceConstant
   }
@@ -556,9 +509,7 @@ export class FastIncrementalLayoutSettings {
     this.attractiveInterClusterForceConstant = value
   }
 
-  ///  <summary>
-  ///  Shallow copy the settings
-  ///  </summary>
+  //  Shallow copy the settings
 
   public static ctorClone(previousSettings: FastIncrementalLayoutSettings): FastIncrementalLayoutSettings {
     const ret = new FastIncrementalLayoutSettings()
@@ -594,9 +545,8 @@ export class FastIncrementalLayoutSettings {
 
   clusterGravity = 1
 
-  ///  <summary>
-  ///  Controls how tightly members of clusters are pulled together
-  ///  </summary>
+  //  Controls how tightly members of clusters are pulled together
+
   public get ClusterGravity(): number {
     return this.clusterGravity
   }
@@ -608,10 +558,9 @@ export class FastIncrementalLayoutSettings {
   edgeConstrains: EdgeConstraints = new EdgeConstraints()
   updateClusterBoundaries = true
 
-  ///  <summary>
-  ///  Force groups to follow their constituent nodes,
-  ///  true by default.
-  ///  </summary>
+  //  Force groups to follow their constituent nodes,
+  //  true by default.
+
   public get UpdateClusterBoundariesFromChildren(): boolean {
     return this.updateClusterBoundaries
   }
@@ -619,10 +568,9 @@ export class FastIncrementalLayoutSettings {
     this.updateClusterBoundaries = value
   }
 
-  ///  <summary>
-  ///      creates the settings that seems working
-  ///  </summary>
-  ///  <returns></returns>
+  //      creates the settings that seems working
+
+  //  <returns></returns>
   public static CreateFastIncrementalLayoutSettings(): FastIncrementalLayoutSettings {
     const f = new FastIncrementalLayoutSettings()
     f.ApplyForces = false

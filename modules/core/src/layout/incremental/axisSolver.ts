@@ -1,6 +1,5 @@
-///  <summary>
-///  Solver for structural separation constraints or non-overlap constraints of a single axis.
-///  Wrapper round all the ProjectionSolver stuff.
+//  Solver for structural separation constraints or non-overlap constraints of a single axis.
+//  Wrapper round all the ProjectionSolver stuff.
 
 import {Point, Rectangle} from '../../math/geometry'
 import {BorderInfo} from '../../math/geometry/overlapRemoval/borderInfo'
@@ -17,15 +16,13 @@ import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {IConstraint} from './iConstraint'
 import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
 
-///  </summary>
 export class AxisSolver {
   structuralConstraints: Array<IConstraint> = new Array<IConstraint>()
 
   ConstraintLevel: number
 
-  ///  <summary>
-  ///  true means this AxisSolver works horizontally
-  ///  </summary>
+  //  true means this AxisSolver works horizontally
+
   IsHorizontal: boolean
 
   OverlapRemovalParameters: OverlapRemovalParameters
@@ -35,20 +32,17 @@ export class AxisSolver {
   private nodes: Iterable<FiNode>
 
   rectBoundary: (
-    ///  Wrapper round all the ProjectionSolver stuff.
+    //  Wrapper round all the ProjectionSolver stuff.
     gg: IGeomGraph,
   ) => RectangularClusterBoundary
 
-  ///  <summary>
-  ///  Do we even need to do a solve?
-  ///  </summary>
+  //  Do we even need to do a solve?
+
   get NeedSolve(): boolean {
     return (this.avoidOverlaps && this.ConstraintLevel >= 2) || (this.structuralConstraints.length > 0 && this.ConstraintLevel >= 1)
   }
 
-  ///  <summary>
-  ///  Have to reinstantiate if any of these parameters change
-  ///  </summary>
+  //  Have to reinstantiate if any of these parameters change
 
   constructor(
     isHorizontal: boolean,
@@ -66,9 +60,7 @@ export class AxisSolver {
     this.rectBoundary = rectBoundary
   }
 
-  ///  <summary>
-  ///  Add the constraint to this axis
-  ///  </summary>
+  //  Add the constraint to this axis
 
   AddStructuralConstraint(c: IConstraint) {
     this.structuralConstraints.push(c)
@@ -78,9 +70,7 @@ export class AxisSolver {
 
   cg: ConstraintGenerator
 
-  ///  <summary>
-  ///  Create variables, generate non-overlap constraints.
-  ///  </summary>
+  //  Create variables, generate non-overlap constraints.
 
   Initialize(hPad: number, vPad: number, cHPad: number, cVPad: number, nodeCenter: (fi: FiNode) => Point) {
     //  For the Vertical ConstraintGenerator, Padding is vPad and PadddingP(erpendicular) is hPad.
@@ -111,10 +101,9 @@ export class AxisSolver {
     this.AddStructuralConstraints()
   }
 
-  ///  <summary>
-  ///  Do it!
-  ///  </summary>
-  ///  <returns></returns>
+  //  Do it!
+
+  //  <returns></returns>
   Solve(): Solution {
     //  This updates the mOlapNode and clears the mOlapNode.Variable property.
     //  We do just one solve over all the cluster constraints for the whole hierarchy.
@@ -128,9 +117,8 @@ export class AxisSolver {
     return solution
   }
 
-  ///  <summary>
-  ///  Must be called before Solve if the caller has updated Variable Initial Positions
-  ///  </summary>
+  //  Must be called before Solve if the caller has updated Variable Initial Positions
+
   SetDesiredPositions() {
     for (const v of this.nodes) {
       v.SetVariableDesiredPos(this.IsHorizontal)

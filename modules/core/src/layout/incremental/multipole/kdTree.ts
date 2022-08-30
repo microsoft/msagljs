@@ -165,9 +165,7 @@ export class Particle {
     return d == Dim.Horizontal ? this.point.x : this.point.y
   }
 
-  ///  <summary>
-  ///  Create particle at point
-  ///  </summary>
+  //  Create particle at point
 
   public constructor(point: Point) {
     this.point = point
@@ -175,9 +173,8 @@ export class Particle {
   }
 }
 
-///  <summary>
-///  A KDTree recursively divides particles of a 2D space into a balanced tree structure by doing horizontal splits for wide bounding boxes and vertical splits for tall bounding boxes.
-///  </summary>
+//  A KDTree recursively divides particles of a 2D space into a balanced tree structure by doing horizontal splits for wide bounding boxes and vertical splits for tall bounding boxes.
+
 export class KDTree {
   particles: Particle[]
 
@@ -189,9 +186,7 @@ export class KDTree {
     return this.particles.map((t) => t).sort((a, b) => a.pos(d) - b.pos(d))
   }
 
-  ///  <summary>
-  ///  Create a KDTree over the specified particles, with the leaf partitions each containing bucketSize particles.
-  ///  </summary>
+  //  Create a KDTree over the specified particles, with the leaf partitions each containing bucketSize particles.
 
   public constructor(particles: Particle[], bucketSize: number) {
     this.particles = particles
@@ -214,9 +209,7 @@ export class KDTree {
     }
   }
 
-  ///  <summary>
-  ///  Compute forces between particles using multipole approximations.
-  ///  </summary>
+  //  Compute forces between particles using multipole approximations.
 
   public ComputeForces(precision: number) {
     this.root.computeMultipoleCoefficients(precision)
@@ -249,9 +242,7 @@ export class KDTree {
     }
   }
 
-  ///  <summary>
-  ///  Particles used of KDTree multipole force approximations
-  ///  </summary>
+  //  Particles used of KDTree multipole force approximations
 }
 class SplitQueue extends Queue<LeafKdNode> {
   B: number

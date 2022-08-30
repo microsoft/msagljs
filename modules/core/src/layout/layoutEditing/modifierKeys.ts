@@ -1,22 +1,21 @@
 export enum ModifierKeys {
-  /// <summary>
-  /// No modifiers are pressed.
-  /// </summary>
+  // No modifiers are pressed.
+
   None = 0,
-  /// <summary>
-  /// THE alt key
-  /// </summary>
+
+  // THE alt key
+
   Alt = 1,
-  /// <summary>
-  /// the control key
-  /// </summary>
+
+  // the control key
+
   Control = 2,
-  /// <summary>
-  /// the shift key
-  /// </summary>
+
+  // the shift key
+
   Shift = 4,
-  /// <summary>
-  /// the window logo key
-  /// </summary>
+
+  // the window logo key
+
   Windows = 8,
 }

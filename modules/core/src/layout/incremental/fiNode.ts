@@ -1,5 +1,4 @@
-///  <summary>
-///  Wrapper for GeomNode node to add force and velocity vectors
+//  Wrapper for GeomNode node to add force and velocity vectors
 
 import {Point} from '../../math/geometry'
 import {OverlapRemovalNode} from '../../math/geometry/overlapRemoval/overlapRemovalNode'
@@ -11,7 +10,7 @@ export function getFiNode(filNode: GeomNode): FiNode | null {
   if (algData == null) return null
   return <FiNode>AlgorithmData.getAlgData(filNode.node).data
 }
-///  </summary>
+
 export class FiNode {
   desiredPosition: Point
 
@@ -29,9 +28,8 @@ export class FiNode {
 
   private center: Point
 
-  ///  <summary>
-  ///  local cache of node center (which in the MSAGL node has to be computed from the bounding box)
-  ///  </summary>
+  //  local cache of node center (which in the MSAGL node has to be computed from the bounding box)
+
   get Center(): Point {
     return this.center
   }
@@ -40,11 +38,10 @@ export class FiNode {
     this.center = value
   }
 
-  ///  <summary>
-  ///  When mNode's bounds change we need to update our local
-  ///  previous and current center to MSAGL node center
-  ///  and update width and height
-  ///  </summary>
+  //  When mNode's bounds change we need to update our local
+  //  previous and current center to MSAGL node center
+  //  and update width and height
+
   ResetBounds() {
     this.previousCenter = this.mNode.center
     this.center = this.mNode.center
@@ -54,10 +51,9 @@ export class FiNode {
 
   stayWeight = 1
 
-  ///  <summary>
-  ///  We also keep a local copy of Width and Height since it doesn't change and we don't want to keep going back to
-  ///  mNode.BoundingBox
-  ///  </summary>
+  //  We also keep a local copy of Width and Height since it doesn't change and we don't want to keep going back to
+  //  mNode.BoundingBox
+
   Width: number
 
   Height: number
@@ -88,9 +84,7 @@ export class FiNode {
     }
   }
 
-  ///  <summary>
-  ///  Update the current X or Y coordinate of the node center from the result of a solve
-  ///  </summary>
+  //  Update the current X or Y coordinate of the node center from the result of a solve
 
   UpdatePos(horizontal: boolean) {
     if (horizontal) {

@@ -3,7 +3,6 @@ import {FiNode, getFiNode} from './fiNode'
 import {IEdge} from '../../structs/iedge'
 import {GeomEdge} from '../core'
 import {AlgorithmData} from '../../structs/algorithmData'
-///  </summary>
 
 export class FiEdge implements IEdge {
   mEdge: GeomEdge

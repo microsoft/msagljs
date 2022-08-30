@@ -1,6 +1,5 @@
-///  <summary>
-///  Fix the position of a node.
-///  Create locks using FastIncrementalLayoutSettings.CreateLock method.
+//  Fix the position of a node.
+//  Create locks using FastIncrementalLayoutSettings.CreateLock method.
 
 import {LinkedListNode} from '@esfx/collections'
 import {Rectangle} from '../../math/geometry'
@@ -11,7 +10,6 @@ import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {getFiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
-///  </summary>
 export class LockPosition implements IConstraint {
   private weight = 1e6
 
@@ -27,9 +25,7 @@ export class LockPosition implements IConstraint {
     this.rectangularBoundary = rectBoundary
   }
 
-  ///  <summary>
-  ///  Makes a constraint to preserve the nodes' position with the specified weight
-  ///  </summary>
+  //  Makes a constraint to preserve the nodes' position with the specified weight
 
   static constructorNRN(node: GeomNode, bounds: Rectangle, weight: number, rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary) {
     const l = new LockPosition(node, bounds, rectBoundary)
@@ -37,10 +33,9 @@ export class LockPosition implements IConstraint {
     return l
   }
 
-  ///  <summary>
-  ///  Set the weight for this lock constraint, i.e. if this constraint conflicts with some other constraint,
-  ///  projection of that constraint be biased by the weights of the nodes involved
-  ///  </summary>
+  //  Set the weight for this lock constraint, i.e. if this constraint conflicts with some other constraint,
+  //  projection of that constraint be biased by the weights of the nodes involved
+
   public get Weight(): number {
     return this.weight
   }
@@ -56,22 +51,20 @@ export class LockPosition implements IConstraint {
     this.weight = value
   }
 
-  ///  <summary>
-  ///  This assigns the new bounds and needs to be called after Solve() because
-  ///  multiple locked nodes may cause each other to move.
-  ///  </summary>
+  //  This assigns the new bounds and needs to be called after Solve() because
+  //  multiple locked nodes may cause each other to move.
+
   public Bounds: Rectangle
 
-  ///  <summary>
-  ///  By default locks are not sticky and their ideal Position gets updated when they are pushed by another node.
-  ///  Making them Sticky causes the locked node to spring back to its ideal Position when whatever was pushing it
-  ///  slides past.
-  ///  </summary>
+  //  By default locks are not sticky and their ideal Position gets updated when they are pushed by another node.
+  //  Making them Sticky causes the locked node to spring back to its ideal Position when whatever was pushing it
+  //  slides past.
+
   public Sticky: boolean
-  ///  <summary>
-  ///  Move node (or cluster + children) to lock position
-  ///  I use stay weight in "project" of any constraints involving the locked node
-  ///  </summary>
+
+  //  Move node (or cluster + children) to lock position
+  //  I use stay weight in "project" of any constraints involving the locked node
+
   public Project(): number {
     const delta = this.Bounds.leftBottom.sub(this.node.boundingBox.leftBottom)
     const deltaLength: number = delta.length
@@ -96,23 +89,21 @@ export class LockPosition implements IConstraint {
     return displacement
   }
 
-  ///  <summary>
-  ///  LockPosition is always applied (level 0)
-  ///  </summary>
-  ///  <returns>0</returns>
+  //  LockPosition is always applied (level 0)
+
+  //  <returns>0</returns>
   public get Level(): number {
     return 0
   }
 
-  ///  <summary>
-  ///  Sets the weight of the node (the FINode actually) to the weight required by this lock.
-  ///  If the node is a IGeomGraph then:
-  ///   - its boundaries are locked
-  ///   - all of its descendant nodes have their lock weight set
-  ///   - all of its descendant clusters are set to generate fixed constraints (so they don't get squashed)
-  ///  Then, the node (or clusters) parents (all the way to the root) have their borders set to generate unfixed constraints
-  ///  (so that this node can move freely inside its ancestors
-  ///  </summary>
+  //  Sets the weight of the node (the FINode actually) to the weight required by this lock.
+  //  If the node is a IGeomGraph then:
+  //   - its boundaries are locked
+  //   - all of its descendant nodes have their lock weight set
+  //   - all of its descendant clusters are set to generate fixed constraints (so they don't get squashed)
+  //  Then, the node (or clusters) parents (all the way to the root) have their borders set to generate unfixed constraints
+  //  (so that this node can move freely inside its ancestors
+
   SetLockNodeWeight() {
     const isCluster = this.node.hasOwnProperty('shallowNodes')
     if (isCluster) {
@@ -138,9 +129,8 @@ export class LockPosition implements IConstraint {
     }
   }
 
-  ///  <summary>
-  ///  Reverses the changes made by SetLockNodeWeight
-  ///  </summary>
+  //  Reverses the changes made by SetLockNodeWeight
+
   RestoreNodeWeight() {
     const isCluster = this.node.hasOwnProperty('shallowNodes')
     if (isCluster) {
@@ -175,9 +165,8 @@ export class LockPosition implements IConstraint {
     }
   }
 
-  ///  <summary>
-  ///  Get the list of nodes involved in the constraint
-  ///  </summary>
+  //  Get the list of nodes involved in the constraint
+
   public get Nodes(): Iterable<GeomNode> {
     const nodes = new Array<GeomNode>()
     const isCluster = this.node.hasOwnProperty('shallowNodes')

@@ -36,7 +36,7 @@ test('two edges', () => {
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
 
   sr.run()
-  //// SvgDebugWriter.writeGeomGraph('/tmp/bundle_two_edges_with_obstacle.svg',
+  /// SvgDebugWriter.writeGeomGraph('/tmp/bundle_two_edges_with_obstacle.svg',
   // g)
 })
 
@@ -112,7 +112,7 @@ xtest('brandom subgraphs 10_20', () => {
           const sr = new SplineRouter(g, edges)
           sr.run()
           //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
-          //// SvgDebugWriter.writeGeomGraph(g)
+          /// SvgDebugWriter.writeGeomGraph(g)
           //console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
           console.log('seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
@@ -232,7 +232,7 @@ test('fans', () => {
   const sr = new SplineRouter(g, Array.from(g.edges()))
   sr.run()
   // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/fan.svg',
-  //// SvgDebugWriter.writeGeomGraph(g)
+  /// SvgDebugWriter.writeGeomGraph(g)
 })
 
 xtest('brandom subgraphs 60_70', () => {
@@ -258,7 +258,7 @@ xtest('brandom subgraphs 60_70', () => {
           const sr = new SplineRouter(g, edges)
           sr.run()
           //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.svg',
-          //// SvgDebugWriter.writeGeomGraph(g)
+          /// SvgDebugWriter.writeGeomGraph(g)
           // console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
           console.log('seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
@@ -300,7 +300,7 @@ test('cut random graphs', () => {
   const sr = new SplineRouter(g, Array.from(g.deepEdges), 2, 4, Math.PI / 6, bs)
   sr.run()
   //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/cut.svg',
-  //// SvgDebugWriter.writeGeomGraph(g)
+  /// SvgDebugWriter.writeGeomGraph(g)
 })
 
 function round(center: Point): Point {

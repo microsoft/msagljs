@@ -1,28 +1,25 @@
 export enum MouseButtons {
-  /// <summary>
-  /// No button was pressed
-  /// </summary>
+  // No button was pressed
+
   None = 0,
-  /// <summary>
-  /// The left mouse button was pressed.
-  /// </summary>
+
+  // The left mouse button was pressed.
+
   Left = 1048576,
-  /// <summary>
-  /// The right mouse button was pressed.
-  /// </summary>
+
+  // The right mouse button was pressed.
+
   Right = 2097152,
 
-  /// <summary>
-  ///The middle mouse button was pressed.
-  /// </summary>
+  //The middle mouse button was pressed.
+
   Middle = 4194304,
 
-  /// <summary>
-  ///  The first XButton was pressed.
-  /// </summary>
+  //  The first XButton was pressed.
+
   XButton1 = 8388608,
-  /// <summary>
-  ///    The second XButton was pressed.
-  /// </summary>
+
+  //    The second XButton was pressed.
+
   XButton2 = 16777216,
 }

@@ -4,9 +4,8 @@ export class EventArgs {}
 export class ObjectUnderMouseCursorChangedEventArgs extends EventArgs {
   oldObject: IViewerObject
 
-  ///  <summary>
-  ///  The old object under the mouse
-  ///  </summary>
+  //  The old object under the mouse
+
   public get OldObject(): IViewerObject {
     return this.oldObject
   }
@@ -16,9 +15,8 @@ export class ObjectUnderMouseCursorChangedEventArgs extends EventArgs {
 
   newObject: IViewerObject
 
-  ///  <summary>
-  ///  the new object under the mouse
-  ///  </summary>
+  //  the new object under the mouse
+
   public get NewObject(): IViewerObject {
     return this.newObject
   }
@@ -26,9 +24,7 @@ export class ObjectUnderMouseCursorChangedEventArgs extends EventArgs {
     this.newObject = value
   }
 
-  ///  <summary>
-  ///  constructor
-  ///  </summary>
+  //  constructor
 
   public constructor(oldObject: IViewerObject, newObject: IViewerObject) {
     super()

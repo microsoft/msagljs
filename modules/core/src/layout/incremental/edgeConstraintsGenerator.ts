@@ -22,10 +22,9 @@ export class TNode {
   }
 }
 
-///  <summary>
-///  Create separation constraints between the source and target of edges not involved of cycles
-///  of order to better show flow
-///  </summary>
+//  Create separation constraints between the source and target of edges not involved of cycles
+//  of order to better show flow
+
 export class EdgeConstraintGenerator {
   settings: EdgeConstraints
 
@@ -43,11 +42,9 @@ export class EdgeConstraintGenerator {
 
   cyclicComponents: Array<Set<GeomNode>> = new Array<Set<GeomNode>>()
 
-  ///  <summary>
-  ///  Creates a VerticalSeparationConstraint for each edge of the given set to structural constraints,
-  ///  to require these edges to be downward pointing.  Also checks for cycles, and edges involved
-  ///  of a cycle receive no VerticalSeparationConstraint, but can optionally receive a circle constraint.
-  ///  </summary>
+  //  Creates a VerticalSeparationConstraint for each edge of the given set to structural constraints,
+  //  to require these edges to be downward pointing.  Also checks for cycles, and edges involved
+  //  of a cycle receive no VerticalSeparationConstraint, but can optionally receive a circle constraint.
 
   static GenerateEdgeConstraints(
     edges: Iterable<GeomEdge>,
@@ -137,9 +134,8 @@ export class EdgeConstraintGenerator {
     )
   }
 
-  ///  <summary>
-  ///  For each edge not involved of a cycle create a constraint
-  ///  </summary>
+  //  For each edge not involved of a cycle create a constraint
+
   public GenerateSeparationConstraints() {
     for (const e of this.edges) {
       let edgeInCycle = false

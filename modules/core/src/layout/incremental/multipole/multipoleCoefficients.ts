@@ -72,7 +72,7 @@ export class MultipoleCoefficients {
     return b
   }
 
-  ///  Compute kth multipole coefficient of a set of points ps around a centre z0
+  //  Compute kth multipole coefficient of a set of points ps around a centre z0
   private compute(k: number, ps: Point[]): Complex {
     const m: number = ps.length
     let ak: Complex = Complex.constructorN(0)
@@ -91,7 +91,7 @@ export class MultipoleCoefficients {
     return ak
   }
 
-  ///  Compute approximate force at point v due to potential energy moments
+  //  Compute approximate force at point v due to potential energy moments
   public ApproximateForce(v: Point): Point {
     const z: Complex = new Complex(v.x, v.y)
     const z_minus_z0: Complex = min(z, this.z0)
@@ -111,8 +111,8 @@ export class MultipoleCoefficients {
     return new Point(fz.re, -fz.im)
   }
 
-  ///  Force on point u due to point v.
-  ///  If v and u at the same position it returns a small vector to separate them
+  //  Force on point u due to point v.
+  //  If v and u at the same position it returns a small vector to separate them
   public static Force(u: Point, v: Point): Point {
     const duv: Point = v.sub(u)
     const l: number = duv.lengthSquared

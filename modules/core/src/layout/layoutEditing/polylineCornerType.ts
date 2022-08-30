@@ -1,10 +1,9 @@
 export enum PolylineCornerType {
-  /// <summary>
-  /// a corner to insert
-  /// </summary>
+  // a corner to insert
+
   PreviousCornerForInsertion,
-  /// <summary>
-  /// a corner to delete
-  /// </summary>
+
+  // a corner to delete
+
   CornerToDelete,
 }

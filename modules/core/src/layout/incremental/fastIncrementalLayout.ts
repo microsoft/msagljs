@@ -72,7 +72,7 @@ export class FastIncrementalLayout extends Algorithm {
     t.rectBoundary = rb
   }
 
-  ///  Create the graph data structures.
+  //  Create the graph data structures.
 
   constructor(
     geometryGraph: IGeomGraph,
@@ -183,7 +183,7 @@ export class FastIncrementalLayout extends Algorithm {
 
   currentConstraintLevel: number
 
-  ///  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
+  //  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
 
   getCurrentConstraintLevel(): number {
     return this.currentConstraintLevel
@@ -205,8 +205,8 @@ export class FastIncrementalLayout extends Algorithm {
     this.settings.Unconverge()
   }
 
-  ///  Add constraint to constraints lists.  Warning, no check that dictionary alread holds a list for the level.
-  ///  Make sure you call AddConstraintLevel first (perf).
+  //  Add constraint to constraints lists.  Warning, no check that dictionary alread holds a list for the level.
+  //  Make sure you call AddConstraintLevel first (perf).
 
   AddConstraint(c: IConstraint) {
     if (!this.constraints.has(c.Level)) {
@@ -216,7 +216,7 @@ export class FastIncrementalLayout extends Algorithm {
     this.constraints.get(c.Level).push(c)
   }
 
-  ///  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
+  //  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
 
   AddConstraintLevel(level: number) {
     if (!this.constraints.has(level)) {
@@ -426,7 +426,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  Aggregate all the forces affecting each node
+  //  Aggregate all the forces affecting each node
 
   ComputeForces() {
     if (this.components != null) {
@@ -495,21 +495,21 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  Checks if solvers need to be applied, i.e. if there are user constraints or
-  ///  generated constraints (such as non-overlap) that need satisfying
+  //  Checks if solvers need to be applied, i.e. if there are user constraints or
+  //  generated constraints (such as non-overlap) that need satisfying
 
-  ///  <returns></returns>
+  //  <returns></returns>
   NeedSolve(): boolean {
     return this.horizontalSolver.NeedSolve || this.verticalSolver.NeedSolve
   }
 
-  ///  Force directed layout is basically an iterative approach to solving a bunch of differential equations.
-  ///  Different integration schemes are possible for applying the forces iteratively.  Euler is the simplest:
-  ///   v_(i+1) = v_i + a dt
-  ///   x_(i+1) = x_i + v_(i+1) dt
-  ///
-  ///  Verlet is much more stable (and not really much more complicated):
-  ///   x_(i+1) = x_i + (x_i - x_(i-1)) + a dt dt
+  //  Force directed layout is basically an iterative approach to solving a bunch of differential equations.
+  //  Different integration schemes are possible for applying the forces iteratively.  Euler is the simplest:
+  //   v_(i+1) = v_i + a dt
+  //   x_(i+1) = x_i + v_(i+1) dt
+  //
+  //  Verlet is much more stable (and not really much more complicated):
+  //   x_(i+1) = x_i + (x_i - x_(i-1)) + a dt dt
 
   VerletIntegration(): number {
     //  The following sets the Centers of all nodes to a (not necessarily feasible) configuration that reduces the cost (forces)
@@ -593,9 +593,9 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  Adapt StepSize based on change of energy.
-  ///  Five sequential improvements of energy mean we increase the stepsize.
-  ///  Any increase of energy means we reduce the stepsize.
+  //  Adapt StepSize based on change of energy.
+  //  Five sequential improvements of energy mean we increase the stepsize.
+  //  Any increase of energy means we reduce the stepsize.
 
   UpdateStepSize(energy0: number) {
     if (this.energy < energy0) {
@@ -657,16 +657,16 @@ export class FastIncrementalLayout extends Algorithm {
     return this.nodes.reduce((prevSum, v) => v.Center.sub(v.previousCenter).lengthSquared + prevSum, 0)
   }
 
-  ///  Apply a small number of iterations of the layout.
-  ///  The idea of incremental layout is that settings.minorIterations should be a small number (e.g. 3) and
-  ///  CalculateLayout should be invoked of a loop, e.g.:
-  ///
-  ///  while(settings.RemainingIterations > 0) {
-  ///     fastIncrementalLayout.CalculateLayout();
-  ///     InvokeYourProcedureToRedrawTheGraphOrHandleInteractionEtc();
-  ///  }
-  ///
-  ///  In the verletIntegration step above, the RemainingIterations is used to control damping.
+  //  Apply a small number of iterations of the layout.
+  //  The idea of incremental layout is that settings.minorIterations should be a small number (e.g. 3) and
+  //  CalculateLayout should be invoked of a loop, e.g.:
+  //
+  //  while(settings.RemainingIterations > 0) {
+  //     fastIncrementalLayout.CalculateLayout();
+  //     InvokeYourProcedureToRedrawTheGraphOrHandleInteractionEtc();
+  //  }
+  //
+  //  In the verletIntegration step above, the RemainingIterations is used to control damping.
 
   run() {
     this.settings.Converged = false
@@ -689,8 +689,8 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  ///  Simply does a depth first traversal of the cluster hierarchies fitting Rectangles to the contents of the cluster
-  ///  or updating the cluster BoundingBox to the already calculated RectangularBoundary
+  //  Simply does a depth first traversal of the cluster hierarchies fitting Rectangles to the contents of the cluster
+  //  or updating the cluster BoundingBox to the already calculated RectangularBoundary
 }
 function hasSomeClusters(g: IGeomGraph): boolean {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

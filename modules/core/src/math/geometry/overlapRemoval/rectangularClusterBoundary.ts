@@ -1,9 +1,8 @@
-///  <summary>
-///  Clusters can (optionally) have a rectangular border which is respected by overlap avoidance.
-///  Currently, this is controlled by FastIncrementalLayoutSettings.RectangularClusters.
-///  If FastIncrementalLayoutSettings.RectangularClusters is true, then the
-///  FastIncrementalLayout constructor will create a RectangularBoundary in each cluster.
-///  Otherwise it will be null.
+//  Clusters can (optionally) have a rectangular border which is respected by overlap avoidance.
+//  Currently, this is controlled by FastIncrementalLayoutSettings.RectangularClusters.
+//  If FastIncrementalLayoutSettings.RectangularClusters is true, then the
+//  FastIncrementalLayout constructor will create a RectangularBoundary in each cluster.
+//  Otherwise it will be null.
 
 import {CurveFactory} from '..'
 import {ICurve} from '../icurve'
@@ -21,11 +20,9 @@ type Margin = {
   Bottom: number
 }
 
-///  </summary>
 export class RectangularClusterBoundary {
-  ///  <summary>
-  ///  Set margins to zero which also initializes other members.
-  ///  </summary>
+  //  Set margins to zero which also initializes other members.
+
   public constructor() {
     this.LeftBorderInfo = BorderInfo.constructorN(0)
     this.RightBorderInfo = BorderInfo.constructorN(0)
@@ -39,9 +36,9 @@ export class RectangularClusterBoundary {
   olapCluster: OverlapRemovalCluster
 
   //  For use with RectangularHull only, and only valid during verletIntegration()
-  ///  <summary>
-  ///  Left margin of this cluster (additional space inside the cluster border).
-  ///  </summary>
+
+  //  Left margin of this cluster (additional space inside the cluster border).
+
   public get LeftMargin(): number {
     return this.LeftBorderInfo.InnerMargin
   }
@@ -49,9 +46,8 @@ export class RectangularClusterBoundary {
     this.LeftBorderInfo = new BorderInfo(value, this.LeftBorderInfo.FixedPosition, this.LeftBorderInfo.Weight)
   }
 
-  ///  <summary>
-  ///  Right margin of this cluster (additional space inside the cluster border).
-  ///  </summary>
+  //  Right margin of this cluster (additional space inside the cluster border).
+
   public get RightMargin(): number {
     return this.RightBorderInfo.InnerMargin
   }
@@ -59,9 +55,8 @@ export class RectangularClusterBoundary {
     this.RightBorderInfo = new BorderInfo(value, this.RightBorderInfo.FixedPosition, this.RightBorderInfo.Weight)
   }
 
-  ///  <summary>
-  ///  Top margin of this cluster (additional space inside the cluster border).
-  ///  </summary>
+  //  Top margin of this cluster (additional space inside the cluster border).
+
   public get TopMargin(): number {
     return this.TopBorderInfo.InnerMargin
   }
@@ -69,9 +64,8 @@ export class RectangularClusterBoundary {
     this.TopBorderInfo = new BorderInfo(value, this.TopBorderInfo.FixedPosition, this.TopBorderInfo.Weight)
   }
 
-  ///  <summary>
-  ///  Bottom margin of this cluster (additional space inside the cluster border).
-  ///  </summary>
+  //  Bottom margin of this cluster (additional space inside the cluster border).
+
   public get BottomMargin(): number {
     return this.BottomBorderInfo.InnerMargin
   }
@@ -79,37 +73,31 @@ export class RectangularClusterBoundary {
     this.BottomBorderInfo = new BorderInfo(value, this.BottomBorderInfo.FixedPosition, this.BottomBorderInfo.Weight)
   }
 
-  ///  <summary>
-  ///  Information for the Left border of the cluster.
-  ///  </summary>
+  //  Information for the Left border of the cluster.
+
   LeftBorderInfo: BorderInfo
 
-  ///  <summary>
-  ///  Information for the Right border of the cluster.
-  ///  </summary>
+  //  Information for the Right border of the cluster.
+
   RightBorderInfo: BorderInfo
 
-  ///  <summary>
-  ///  Information for the Top border of the cluster.
-  ///  </summary>
+  //  Information for the Top border of the cluster.
+
   TopBorderInfo: BorderInfo
 
-  ///  <summary>
-  ///  Information for the Bottom border of the cluster.
-  ///  </summary>
+  //  Information for the Bottom border of the cluster.
+
   BottomBorderInfo: BorderInfo
 
-  ///  <summary>
-  ///  When this is set, the OverlapRemovalCluster will generate equality constraints rather than inequalities
-  ///  to keep its children within its bounds.
-  ///  </summary>
+  //  When this is set, the OverlapRemovalCluster will generate equality constraints rather than inequalities
+  //  to keep its children within its bounds.
+
   GenerateFixedConstraints = false
 
   generateFixedConstraintsDefault = false
 
-  ///  <summary>
-  ///  The default value that GenerateFixedConstraints will be reverted to when a lock is released
-  ///  </summary>
+  //  The default value that GenerateFixedConstraints will be reverted to when a lock is released
+
   public get GenerateFixedConstraintsDefault(): boolean {
     return this.generateFixedConstraintsDefault
   }
@@ -118,13 +106,12 @@ export class RectangularClusterBoundary {
     this.GenerateFixedConstraints = value
   }
 
-  ///  <summary>
-  ///  The rectangular hull of all the points of all the nodes in the cluster, as set by
-  ///  ProjectionSolver.Solve().
-  ///  Note: This rectangle may not originate at the barycenter.  Drawing uses only the results
-  ///  of this function; the barycenter is used only for gravity computations.
-  ///  </summary>
-  ///  <returns></returns>
+  //  The rectangular hull of all the points of all the nodes in the cluster, as set by
+  //  ProjectionSolver.Solve().
+  //  Note: This rectangle may not originate at the barycenter.  Drawing uses only the results
+  //  of this function; the barycenter is used only for gravity computations.
+
+  //  <returns></returns>
   public RectangularHull(): ICurve {
     // Debug.Assert((this.rectangle.Bottom <= this.rectangle.Top));
     if (this.RadiusX > 0 || this.RadiusY > 0) {
@@ -140,9 +127,8 @@ export class RectangularClusterBoundary {
     }
   }
 
-  ///  <summary>
-  ///  Will only return something useful if FastIncrementalLayoutSettings.AvoidOverlaps is true.
-  ///  </summary>
+  //  Will only return something useful if FastIncrementalLayoutSettings.AvoidOverlaps is true.
+
   public get Rect(): Rectangle {
     return this.rectangle
   }
@@ -156,37 +142,32 @@ export class RectangularClusterBoundary {
     return this.defaultMargin != null
   }
 
-  ///  <summary>
-  ///  The default margin stored by StoreDefaultMargin
-  ///  </summary>
+  //  The default margin stored by StoreDefaultMargin
+
   public get DefaultLeftMargin(): number {
     return this.defaultMargin.Left
   }
 
-  ///  <summary>
-  ///  The default margin stored by StoreDefaultMargin
-  ///  </summary>
+  //  The default margin stored by StoreDefaultMargin
+
   public get DefaultTopMargin(): number {
     return this.defaultMargin.Top
   }
 
-  ///  <summary>
-  ///  The default margin stored by StoreDefaultMargin
-  ///  </summary>
+  //  The default margin stored by StoreDefaultMargin
+
   public get DefaultRightMargin(): number {
     return this.defaultMargin.Right
   }
 
-  ///  <summary>
-  ///  The default margin stored by StoreDefaultMargin
-  ///  </summary>
+  //  The default margin stored by StoreDefaultMargin
+
   public get DefaultBottomMargin(): number {
     return this.defaultMargin.Bottom
   }
 
-  ///  <summary>
-  ///  store a the current margin as the default which we can revert to later with the RestoreDefaultMargin
-  ///  </summary>
+  //  store a the current margin as the default which we can revert to later with the RestoreDefaultMargin
+
   public StoreDefaultMargin() {
     this.defaultMargin = {
       Left: this.LeftMargin,
@@ -196,9 +177,8 @@ export class RectangularClusterBoundary {
     }
   }
 
-  ///  <summary>
-  ///  store a default margin which we can revert to later with the RestoreDefaultMargin
-  ///  </summary>
+  //  store a default margin which we can revert to later with the RestoreDefaultMargin
+
   public StoreDefaultMarginNNNN(left: number, right: number, bottom: number, top: number) {
     this.defaultMargin = {
       Left: left,
@@ -208,9 +188,8 @@ export class RectangularClusterBoundary {
     }
   }
 
-  ///  <summary>
-  ///  revert to a previously stored default margin
-  ///  </summary>
+  //  revert to a previously stored default margin
+
   public RestoreDefaultMargin() {
     if (this.defaultMargin != null) {
       this.LeftMargin = this.defaultMargin.Left
@@ -220,27 +199,21 @@ export class RectangularClusterBoundary {
     }
   }
 
-  ///  <summary>
-  ///  Move the bounding box by delta
-  ///  </summary>
+  //  Move the bounding box by delta
 
   public TranslateRectangle(delta: Point) {
     this.rectangle.center = this.rectangle.center.add(delta)
   }
 
-  ///  <summary>
-  ///  Radius on the X axis
-  ///  </summary>
+  //  Radius on the X axis
+
   RadiusX: number
 
-  ///  <summary>
-  ///  Radius on the Y axis
-  ///  </summary>
+  //  Radius on the Y axis
+
   RadiusY: number
 
-  ///  <summary>
-  ///  Creates a lock on all four borders
-  ///  </summary>
+  //  Creates a lock on all four borders
 
   public Lock(left: number, right: number, top: number, bottom: number) {
     const weight = 10000
@@ -250,9 +223,8 @@ export class RectangularClusterBoundary {
     this.BottomBorderInfo = new BorderInfo(this.BottomBorderInfo.InnerMargin, bottom, weight)
   }
 
-  ///  <summary>
-  ///  Releases the lock on all four borders
-  ///  </summary>
+  //  Releases the lock on all four borders
+
   public Unlock() {
     this.LeftBorderInfo = BorderInfo.constructorN(this.LeftBorderInfo.InnerMargin)
     this.RightBorderInfo = BorderInfo.constructorN(this.RightBorderInfo.InnerMargin)
@@ -260,12 +232,11 @@ export class RectangularClusterBoundary {
     this.BottomBorderInfo = BorderInfo.constructorN(this.BottomBorderInfo.InnerMargin)
   }
 
-  ///  <summary>
-  ///  boundary can shrink no more than this
-  ///  </summary>
+  //  boundary can shrink no more than this
+
   MinWidth: number
-  ///  <summary>
-  ///  boundary can shrink no more than this
-  ///  </summary>
+
+  //  boundary can shrink no more than this
+
   MinHeight: number
 }

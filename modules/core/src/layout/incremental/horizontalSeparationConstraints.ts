@@ -1,6 +1,5 @@
-///  <summary>
-///  A horizontal separation constraint requires a minimum separation between x coordinates of two nodes,
-///  i.e. u.X + separation less or equal v.X
+//  A horizontal separation constraint requires a minimum separation between x coordinates of two nodes,
+//  i.e. u.X + separation less or equal v.X
 
 import {Point} from '../../math/geometry'
 import {AlgorithmData} from '../../structs/algorithmData'
@@ -8,40 +7,35 @@ import {GeomNode} from '../core'
 import {FiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
-///  </summary>
 export class HorizontalSeparationConstraint implements IConstraint {
   equality: boolean
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get IsEquality(): boolean {
     return this.equality
   }
 
   private u: GeomNode
 
-  ///  <summary>
-  ///  Constrained to be vertically above the BottomNode
-  ///  </summary>
+  //  Constrained to be vertically above the BottomNode
+
   public get LeftNode(): GeomNode {
     return this.u
   }
 
   private v: GeomNode
 
-  ///  <summary>
-  ///  Constrained to be vertically below the TopNode
-  ///  </summary>
+  //  Constrained to be vertically below the TopNode
+
   public get RightNode(): GeomNode {
     return this.v
   }
 
   private separation: number
 
-  ///  <summary>
-  ///  We allow the separation of existing constraints to be modified by the user.
-  ///  </summary>
+  //  We allow the separation of existing constraints to be modified by the user.
+
   public get Separation(): number {
     return this.separation
   }
@@ -49,17 +43,13 @@ export class HorizontalSeparationConstraint implements IConstraint {
     this.separation = value
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
 
   static constructorNNN(u: GeomNode, v: GeomNode, separation: number) {
     return new HorizontalSeparationConstraint(u, v, separation, false)
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
 
   public constructor(u: GeomNode, v: GeomNode, separation: number, equality: boolean) {
     this.equality = equality
@@ -68,9 +58,8 @@ export class HorizontalSeparationConstraint implements IConstraint {
     this.separation = separation
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public /* virtual */ Project(): number {
     const uv: number = this.v.center.x - this.u.center.x
     const d: number = this.separation - uv
@@ -86,17 +75,15 @@ export class HorizontalSeparationConstraint implements IConstraint {
     }
   }
 
-  ///  <summary>
-  ///  HorizontalSeparationConstraint are usually structural and therefore default to level 0
-  ///  </summary>
-  ///  <returns>0</returns>
+  //  HorizontalSeparationConstraint are usually structural and therefore default to level 0
+
+  //  <returns>0</returns>
   public get Level(): number {
     return 0
   }
 
-  ///  <summary>
-  ///  Get the list of nodes involved in the constraint
-  ///  </summary>
+  //  Get the list of nodes involved in the constraint
+
   public get Nodes(): Iterable<GeomNode> {
     return [this.u, this.v]
   }

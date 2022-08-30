@@ -1,6 +1,5 @@
-///  <summary>
-///  A vertical separation constraint requires a minimum separation between y coordinates of two nodes,
-///  i.e. u.Y + separation less or equal v.Y
+//  A vertical separation constraint requires a minimum separation between y coordinates of two nodes,
+//  i.e. u.Y + separation less or equal v.Y
 
 import {Point} from '../../math/geometry'
 import {AlgorithmData} from '../../structs/algorithmData'
@@ -8,40 +7,35 @@ import {GeomNode} from '../core'
 import {FiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 
-///  </summary>
 export class VerticalSeparationConstraint implements IConstraint {
   equality = false
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
+
   public get IsEquality(): boolean {
     return this.equality
   }
 
   private u: GeomNode
 
-  ///  <summary>
-  ///  Constrained to be vertically above the BottomNode
-  ///  </summary>
+  //  Constrained to be vertically above the BottomNode
+
   public get TopNode(): GeomNode {
     return this.u
   }
 
   private v: GeomNode
 
-  ///  <summary>
-  ///  Constrained to be vertically below the TopNode
-  ///  </summary>
+  //  Constrained to be vertically below the TopNode
+
   public get BottomNode(): GeomNode {
     return this.v
   }
 
   private separation: number
 
-  ///  <summary>
-  ///  We allow the separation of existing constraints to be modified by the user.
-  ///  </summary>
+  //  We allow the separation of existing constraints to be modified by the user.
+
   public get Separation(): number {
     return this.separation
   }
@@ -49,18 +43,14 @@ export class VerticalSeparationConstraint implements IConstraint {
     this.separation = value
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
 
   static constructorNNN(u: GeomNode, v: GeomNode, separation: number) {
     const r = new VerticalSeparationConstraint(u, v, separation, false)
     return r
   }
 
-  ///  <summary>
-  ///
-  ///  </summary>
+  //
 
   public constructor(u: GeomNode, v: GeomNode, separation: number, equality: boolean) {
     this.equality = equality
@@ -85,17 +75,15 @@ export class VerticalSeparationConstraint implements IConstraint {
     }
   }
 
-  ///  <summary>
-  ///  VerticalSeparationConstraint are usually structural and therefore default to level 0
-  ///  </summary>
-  ///  <returns>0</returns>
+  //  VerticalSeparationConstraint are usually structural and therefore default to level 0
+
+  //  <returns>0</returns>
   public get Level(): number {
     return 0
   }
 
-  ///  <summary>
-  ///  Get the list of nodes involved in the constraint
-  ///  </summary>
+  //  Get the list of nodes involved in the constraint
+
   get Nodes(): Iterable<GeomNode> {
     return [this.u, this.v]
   }

@@ -3,33 +3,29 @@ import {Variable} from '../../projectionSolver/Variable'
 import {BorderInfo} from './borderInfo'
 import {String} from 'typescript-string-operations'
 
-///  <summary>
-///  A node essentially wraps the coordinates of a Variable for the Open and Close Events for
-///  that Variable.  It contains the list of left and right nodes which are immediate neighbours,
-///  where immediate is defined as overlapping or some subset of the closest non-overlapping
-///  Variables (currently this subset is the first one encountered on any event, since it is
-///  transitive; if there is a second non-overlapping node, then the first non-overlapping
-///  node will have a constraint on it).
-///  </summary>
+//  A node essentially wraps the coordinates of a Variable for the Open and Close Events for
+//  that Variable.  It contains the list of left and right nodes which are immediate neighbours,
+//  where immediate is defined as overlapping or some subset of the closest non-overlapping
+//  Variables (currently this subset is the first one encountered on any event, since it is
+//  transitive; if there is a second non-overlapping node, then the first non-overlapping
+//  node will have a constraint on it).
+
 export class OverlapRemovalNode {
-  ///  <summary>
-  ///  Passed through as a convenience to the caller; it is not used by OverlapRemoval directly
-  ///  (except in VERIFY/VERBOSE where it uses ToString()).  When Solve() is complete, the caller
-  ///  should copy the Node.Position property into whatever property the class specialization for this has.
-  ///  </summary>
+  //  Passed through as a convenience to the caller; it is not used by OverlapRemoval directly
+  //  (except in VERIFY/VERBOSE where it uses ToString()).  When Solve() is complete, the caller
+  //  should copy the Node.Position property into whatever property the class specialization for this has.
+
   UserData: any
 
-  ///  <summary>
-  ///  The string representing the user data object, or a null indicator string.
-  ///  </summary>
+  //  The string representing the user data object, or a null indicator string.
+
   protected get UserDataString(): string {
     return this.UserData == null ? '-0-' : this.UserData.ToString()
   }
 
-  ///  <summary>
-  ///  The Variable representing this Node (or Cluster border) in the ProjectionSolver passed to
-  ///  Generate().  Once Solve() is called, this is cleared out.
-  ///  </summary>
+  //  The Variable representing this Node (or Cluster border) in the ProjectionSolver passed to
+  //  Generate().  Once Solve() is called, this is cleared out.
+
   Variable: Variable
 
   //  Set and retrieved during Cluster.GenerateFromEvents.
@@ -44,64 +40,59 @@ export class OverlapRemovalNode {
   //  These track the (P)erpendicular coordinates to the Variable's coordinates.
   //  This is to order the Events, and for horizontal constraint generation, is
   //  also used to decide which direction resolves the overlap with minimal movement.
-  ///  <summary>
-  ///  The coordinate of the Node along the primary axis.  Updated by ConstraintGenerator.Solve().
-  ///  </summary>
+
+  //  The coordinate of the Node along the primary axis.  Updated by ConstraintGenerator.Solve().
+
   Position: number
 
-  ///  <summary>
-  ///  The coordinate of the Node along the secondary (Perpendicular) axis.
-  ///  </summary>
+  //  The coordinate of the Node along the secondary (Perpendicular) axis.
+
   PositionP: number
 
   //  Updated only for Clusters
-  ///  <summary>
-  ///  The size of the Node along the primary axis.
-  ///  </summary>
+
+  //  The size of the Node along the primary axis.
+
   Size: number
 
   //  Updated only for Clusters
-  ///  <summary>
-  ///  The size of the Node along the secondary (Perpendicular) axis.
-  ///  </summary>
+
+  //  The size of the Node along the secondary (Perpendicular) axis.
+
   SizeP: number
 
   //  Updated only for Clusters
-  ///  <summary>
-  ///  The opening border of the Node along the primary axis; Left if horizontal,
-  ///  Top if Vertical.
-  ///  </summary>
+
+  //  The opening border of the Node along the primary axis; Left if horizontal,
+  //  Top if Vertical.
+
   get Open(): number {
     return this.Position - this.Size / 2
   }
 
-  ///  <summary>
-  ///  The closing border of the Node along the primary axis; Right if horizontal,
-  ///  Bottom if Vertical.
-  ///  </summary>
+  //  The closing border of the Node along the primary axis; Right if horizontal,
+  //  Bottom if Vertical.
+
   public get Close(): number {
     return this.Position + this.Size / 2
   }
 
-  ///  <summary>
-  ///  The opening border of the Node along the secondary (Perpendicular) axis; Top if horizontal,
-  ///  Bottom if Vertical.
-  ///  </summary>
+  //  The opening border of the Node along the secondary (Perpendicular) axis; Top if horizontal,
+  //  Bottom if Vertical.
+
   public get OpenP(): number {
     return this.PositionP - this.SizeP / 2
   }
 
-  ///  <summary>
-  ///  The closing border of the Node along the secondary (Perpendicular) axis; Bottom if horizontal,
-  ///  Right if Vertical.
-  ///  </summary>
+  //  The closing border of the Node along the secondary (Perpendicular) axis; Bottom if horizontal,
+  //  Right if Vertical.
+
   public get CloseP(): number {
     return this.PositionP + this.SizeP / 2
   }
 
-  ///  <summary>
-  ///  The weight of the node along the primary axis.
-  ///  </summary>
+  //  The weight of the node along the primary axis.
+
   Weight: number
 
   //  This identifies the node for consistent-sorting purposes in the Event list.
@@ -151,9 +142,7 @@ export class OverlapRemovalNode {
     return (n1.SizeP + n2.SizeP) / 2 + (paddingP - Math.abs(n1.PositionP - n2.PositionP))
   }
 
-  ///  <summary>
-  ///  Create the backing Variable for this Node in the solver.
-  ///  </summary>
+  //  Create the backing Variable for this Node in the solver.
 
   public CreateVariable(solver: Solver) {
     //  Due to multiple hierarchies, we must check to see if the variable has been created yet;
@@ -185,10 +174,9 @@ export class OverlapRemovalNode {
     this.Variable.DesiredPos = newPosition
   }
 
-  ///  <summary>
-  ///  Generate a string representation of the Node.
-  ///  </summary>
-  ///  <returns>A string representation of the Node.</returns>
+  //  Generate a string representation of the Node.
+
+  //  <returns>A string representation of the Node.</returns>
   public /* override */ ToString(): string {
     return String.Format(
       "Nod '{0}': id {1} p {2:F5} s {3:F5} pP {4:F5} sP {5:F5}",

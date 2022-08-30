@@ -99,9 +99,7 @@
 //         this.interactiveEdgeRouter = value
 //     }
 
-//     ///  <summary>
-//     ///  Constructor
-//     ///  </summary>
+//     //  Constructor
 
 //      constructor (viewerPar: IViewer) {
 //         this.viewer = viewerPar;
@@ -140,9 +138,8 @@
 //         }
 //     }
 
-//     ///  <summary>
-//     ///  current graph of under editin
-//     ///  </summary>
+//     //  current graph of under editin
+
 //      get Graph(): Graph {
 //         return this.graph;
 //     }
@@ -155,9 +152,8 @@
 
 //     }
 
-//     ///  <summary>
-//     ///  the current selected edge
-//     ///  </summary>
+//     //  the current selected edge
+
 //      get SelectedEdge(): IViewerEdge {
 //         return this.selectedEdge
 //     }
@@ -165,10 +161,9 @@
 //         this.selectedEdge=value;
 //     }
 
-//     ///  <summary>
-//     ///  If the distance between the mouse down point and the mouse up point is greater than the threshold
-//     ///  then we have a mouse move. Otherwise we have a click.
-//     ///  </summary>
+//     //  If the distance between the mouse down point and the mouse up point is greater than the threshold
+//     //  then we have a mouse move. Otherwise we have a click.
+
 //      get MouseMoveThreshold(): number {
 //         return this.mouseMoveThreshold;
 //     }
@@ -176,9 +171,8 @@
 //         this.mouseMoveThreshold = value;
 //     }
 
-//     ///  <summary>
-//     ///  the delegate to decide if an entity is dragged or we just zoom of the viewer
-//     ///  </summary>
+//     //  the delegate to decide if an entity is dragged or we just zoom of the viewer
+
 //      private toggleEntityPredicate: MouseAndKeysAnalyzer;
 //     public get ToggleEntityPredicate(): MouseAndKeysAnalyzer {
 //         return this.toggleEntityPredicate;
@@ -202,9 +196,8 @@
 //         this.mouseDownScreenPoint = value
 //     }
 
-//     ///  <summary>
-//     ///  current pressed mouse buttons
-//     ///  </summary>
+//     //  current pressed mouse buttons
+
 //      get PressedMouseButtons(): MouseButtons {
 //        return this.mouseButtons
 //     }
@@ -212,9 +205,8 @@
 //         this.mouseButtons = value
 //     }
 
-//     ///  <summary>
-//     ///  a delegate to decorate a node for dragging
-//     ///  </summary>
+//     //  a delegate to decorate a node for dragging
+
 //      private decorateObjectForDragging: DelegateForIViewerObject;
 //     public get DecorateObjectForDragging(): DelegateForIViewerObject {
 //         return this.decorateObjectForDragging;
@@ -223,9 +215,8 @@
 //         this.decorateObjectForDragging = value;
 //     }
 
-//     ///  <summary>
-//     ///  a delegate decorate an edge for editing
-//     ///  </summary>
+//     //  a delegate decorate an edge for editing
+
 //      private decorateEdgeForDragging: DelegateForEdge;
 //     public get DecorateEdgeForDragging(): DelegateForEdge {
 //         return this.decorateEdgeForDragging;
@@ -234,9 +225,8 @@
 //         this.decorateEdgeForDragging = value;
 //     }
 
-//     ///  <summary>
-//     ///  a delegate decorate a label for editing
-//     ///  </summary>
+//     //  a delegate decorate a label for editing
+
 //      private decorateEdgeLabelForDragging: DelegateForIViewerObject;
 //     public get DecorateEdgeLabelForDragging(): DelegateForIViewerObject {
 //         return this.decorateEdgeLabelForDragging;
@@ -244,9 +234,9 @@
 //     public set DecorateEdgeLabelForDragging(value: DelegateForIViewerObject) {
 //         this.decorateEdgeLabelForDragging = value;
 //     }
-//     ///  <summary>
-//     ///  a delegate to remove node decorations
-//     ///  </summary>
+
+//     //  a delegate to remove node decorations
+
 //      private removeObjDraggingDecorations: DelegateForIViewerObject;
 //     public get RemoveObjDraggingDecorations(): DelegateForIViewerObject {
 //         return this.removeObjDraggingDecorations;
@@ -255,9 +245,8 @@
 //         this.removeObjDraggingDecorations = value;
 //     }
 
-//     ///  <summary>
-//     ///  a delegate to remove edge decorations
-//     ///  </summary>
+//     //  a delegate to remove edge decorations
+
 //      get RemoveEdgeDraggingDecorations(): DelegateForEdge {
 //         return this.removeEdgeDraggingDecorations;
 //     }
@@ -265,9 +254,8 @@
 //         this.removeEdgeDraggingDecorations = value;
 //     }
 
-//     ///  <summary>
-//     ///  The method analysing keys and mouse buttons to decide if we are inserting a node
-//     ///  </summary>
+//     //  The method analysing keys and mouse buttons to decide if we are inserting a node
+
 //      private nodeInsertPredicate: MouseAndKeysAnalyzer;
 //     public get NodeInsertPredicate(): MouseAndKeysAnalyzer {
 //         return this.nodeInsertPredicate;
@@ -312,23 +300,20 @@
 //         this.targetPort = value;
 //     }
 
-//     ///  <summary>
-//     ///  returns true if Undo is available
-//     ///  </summary>
+//     //  returns true if Undo is available
+
 //      get CanUndo(): boolean {
 //         return this.geomGraphEditor.CanUndo;
 //     }
 
-//     ///  <summary>
-//     ///  return true if Redo is available
-//     ///  </summary>
+//     //  return true if Redo is available
+
 //      get CanRedo(): boolean {
 //         return this.geomGraphEditor.CanRedo;
 //     }
 
-//     ///  <summary>
-//     ///  If set to true then we are of a mode for node insertion
-//     ///  </summary>
+//     //  If set to true then we are of a mode for node insertion
+
 //      get InsertingEdge(): boolean {
 //         if ((this.viewer == null)) {
 //             return false;
@@ -344,9 +329,8 @@
 //         this.viewer.InsertingEdge = value;
 //     }
 
-//     ///  <summary>
-//     ///  current undo action
-//     ///  </summary>
+//     //  current undo action
+
 //      get CurrentUndoAction(): UndoRedoAction {
 //         return this.geomGraphEditor.UndoMode ? this.geomGraphEditor.CurrentUndoAction : this.geomGraphEditor.CurrentRedoAction;
 //     }
@@ -372,9 +356,8 @@
 //     this.CleanObstacles();
 // }
 
-// ///  <summary>
-// ///
-// ///  </summary>
+// //
+
 //  CleanObstacles() {
 //     this.InteractiveEdgeRouter = null;
 //     this.looseObstaclesToTheirViewerNodes = null;
@@ -393,9 +376,7 @@
 
 // }
 
-// ///  <summary>
-// ///
-// ///  </summary>
+// //
 
 //  AttachLayoutChangeEvent(viewerObject: IViewerObject) {
 //     let drawingObject = getViewerObject(viewerObject)
@@ -539,9 +520,8 @@
 //     this.CurrentUndoAction.AddRestoreData(viewerObject.DrawingObject.GeometryObject, RestoreHelper.GetRestoreData(viewerObject.DrawingObject.GeometryObject));
 // }
 
-// ///  <summary>
-// ///  Unsubscibes from the viewer events
-// ///  </summary>
+// //  Unsubscibes from the viewer events
+
 //  DetouchFromViewerEvents() {
 //     this.viewer.MouseDown = (this.viewer.MouseDown - this.ViewerMouseDown);
 //     this.viewer.MouseMove = (this.viewer.MouseMove - this.ViewerMouseMove);
@@ -1095,8 +1075,6 @@
 //     DraggingMode.Default;
 // }
 
-// /// <summary>
-// /// </summary>
 //  static RouteEdgesRectilinearly(viewer: IViewer) {
 //     let geomGraph = viewer.Graph.GeometryGraph;
 //     let settings = viewer.Graph.LayoutAlgorithmSettings;
@@ -1322,9 +1300,7 @@
 //     return ret;
 // }
 
-// ///  <summary>
-// ///  Undoes the editing
-// ///  </summary>
+// //  Undoes the editing
 
 //  Undo() {
 //     if (this.geomGraphEditor.CanUndo) {
@@ -1342,9 +1318,8 @@
 
 // }
 
-// ///  <summary>
-// ///  Redoes the editing
-// ///  </summary>
+// //  Redoes the editing
+
 //  Redo() {
 //     if (this.geomGraphEditor.CanRedo) {
 //         this.geomGraphEditor.UndoMode = false;
@@ -1363,18 +1338,15 @@
 
 // }
 
-// ///  <summary>
-// ///  Clear the editor
-// ///  </summary>
+// //  Clear the editor
+
 //  Clear() {
 //     this.UnselectEverything();
 // }
 
-// ///  <summary>
-// ///  Finds a corner to delete or insert
-// ///  </summary>
+// //  Finds a corner to delete or insert
 
-// ///  <returns>null if a corner is not found</returns>
+// //  <returns>null if a corner is not found</returns>
 
 // //  AnalyzeInsertOrDeletePolylineCorner(point: Point, tolerance: number): [CornerSite, PolylineCornerType] {
 // //     if ((this.SelectedEdge == null)) {
@@ -1395,9 +1367,7 @@
 // //     return null;
 // // }
 
-// // ///  <summary>
-// // ///  create a tight bounding box for the graph
-// // ///  </summary>
+// // //  create a tight bounding box for the graph
 
 // //  FitGraphBoundingBox(graphToFit: IViewerObject) {
 // //     if ((graphToFit != null)) {
@@ -1407,34 +1377,26 @@
 
 // // }
 
-// // ///  <summary>
-// // ///
-// // ///  </summary>
+// // //
 
 // //  RegisterNodeAdditionForUndo(node: IViewerNode) {
 // //     let undoAction = new AddNodeUndoAction(this.graph, this.viewer, node);
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(undoAction);
 // // }
 
-// // ///  <summary>
-// // ///  registers the edge addition for undo
-// // ///  </summary>
+// // //  registers the edge addition for undo
 
 // //  RegisterEdgeAdditionForUndo(edge: IViewerEdge) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new AddEdgeUndoAction(this.viewer, edge));
 // // }
 
-// // ///  <summary>
-// // ///
-// // ///  </summary>
+// // //
 
 // //  RegisterEdgeRemovalForUndo(edge: IViewerEdge) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new RemoveEdgeUndoAction(this.graph, this.viewer, edge));
 // // }
 
-// // ///  <summary>
-// // ///
-// // ///  </summary>
+// // //
 
 // //  RegisterNodeForRemoval(node: IViewerNode) {
 // //     this.geomGraphEditor.InsertToListAndSetTheBoxBefore(new RemoveNodeUndoAction(this.viewer, node));
@@ -1469,9 +1431,8 @@
 
 // // }
 
-// // ///  <summary>
-// // ///  prepares for edge dragging
-// // ///  </summary>
+// // //  prepares for edge dragging
+
 // //  PrepareForEdgeDragging() {
 // //     if ((this.viewer.Graph == null)) {
 // //         return;
@@ -1493,9 +1454,7 @@
 
 // // }
 
-// // ///  <summary>
-// // ///  insert a polyline corner at the point befor the prevCorner
-// // ///  </summary>
+// // //  insert a polyline corner at the point befor the prevCorner
 
 // //  InsertPolylineCorner(point: Point, previousCorner: CornerSite) {
 // //     this.geomGraphEditor.InsertSite(this.SelectedEdge.edge.GeometryEdge, point, previousCorner, this.SelectedEdge);
@@ -1507,9 +1466,7 @@
 // //     this.viewer.Invalidate(this.SelectedEdge);
 // // }
 
-// // ///  <summary>
-// // ///  delete the polyline corner, shortcut it.
-// // ///  </summary>
+// // //  delete the polyline corner, shortcut it.
 
 // //  DeleteCorner(corner: CornerSite) {
 // //     this.geomGraphEditor.DeleteSite(this.SelectedEdge.edge.GeometryEdge, corner, this.SelectedEdge);
@@ -1648,9 +1605,7 @@
 // //     this.viewer.Invalidate(edge);
 // // }
 
-// // ///  <summary>
-// // ///
-// // ///  </summary>
+// // //
 
 // //  DetachNode(node: IViewerNode) {
 // //     if ((node == null)) {
