@@ -57,7 +57,7 @@ export class ConstraintGenerator {
     this.Padding = padding
     this.PaddingP = paddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(this.Padding, this.PaddingP)
+    this.clusterHierarchies = OverlapRemovalCluster.constructorNN(this.Padding, this.PaddingP)
   }
 
   //  Alternate form of the constructor to allow overriding the default padding.
@@ -80,7 +80,6 @@ export class ConstraintGenerator {
   //  <returns>The created node.</returns>
   public AddNode(
     initialCluster: OverlapRemovalCluster,
-    userData: any,
     position: number,
     positionP: number,
     size: number,
@@ -92,7 +91,7 @@ export class ConstraintGenerator {
     //  It might be worthwhile to add a check to avoid constraint generation in the case that there cannot
     //  be such an overlap on a line, or if the nodes are separated by some amount of distance.
     //Debug.Assert((null != initialCluster), "initialCluster must not be null");
-    const newNode = new OverlapRemovalNode(initialCluster.nodeList.length, userData, position, positionP, size, sizeP, weight)
+    const newNode = new OverlapRemovalNode(initialCluster.length, position, positionP, size, sizeP, weight)
     initialCluster.AddNode(newNode)
     return newNode
   }

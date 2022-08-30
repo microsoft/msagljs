@@ -49,13 +49,8 @@ export class OverlapRemovalNode {
 
   Size: number
 
-  //  Updated only for Clusters
-
   //  The size of the Node along the secondary (Perpendicular) axis.
-
   SizeP: number
-
-  //  Updated only for Clusters
 
   //  The opening border of the Node along the primary axis; Left if horizontal,
   //  Top if Vertical.
@@ -93,7 +88,7 @@ export class OverlapRemovalNode {
   Id: number
 
   //  This is the normal node ctor, from ConstraintGenerator.
-  constructor(id: number, userData: any, position: number, positionP: number, size: number, sizeP: number, weight: number) {
+  constructor(id: number, position: number, positionP: number, size: number, sizeP: number, weight: number) {
     if (weight <= 0) {
       throw new Error('weight')
     }
@@ -114,13 +109,6 @@ export class OverlapRemovalNode {
     this.Size = size
     this.SizeP = sizeP
     this.Weight = weight
-  }
-
-  //  This is the constructor for the "fake nodes" of a Cluster and its Borders.
-  //  We default to free border weight so the cluster borders can move freely during Solve().
-  //  The weight is overridden for the Cluster border nodes during Cluster.Generate.
-  static constructorNA(id: number, userData: any): OverlapRemovalNode {
-    return new OverlapRemovalNode(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
   }
 
   static Overlap(n1: OverlapRemovalNode, n2: OverlapRemovalNode, padding: number): number {

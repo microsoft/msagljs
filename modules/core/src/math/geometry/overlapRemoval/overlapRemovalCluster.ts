@@ -69,12 +69,9 @@ class Event {
 
 export class OverlapRemovalCluster {
   //  Our internal Node list - some of which may be Clusters.
-  nodeList: Array<OverlapRemovalNode> = new Array<OverlapRemovalNode>()
-
-  //  Empty clusters are ignored on positioning.
-
-  public get IsEmpty(): boolean {
-    return this.nodeList.length == 0
+  private nodeList: Array<OverlapRemovalNode> = new Array<OverlapRemovalNode>()
+  get length(): number {
+    return this.nodeList.length
   }
 
   //  Padding of nodes within the cluster in the parallel direction.
@@ -87,7 +84,7 @@ export class OverlapRemovalCluster {
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
-  static constructorNOANN(padding: number, paddingP: number): OverlapRemovalCluster {
+  static constructorNN(padding: number, paddingP: number): OverlapRemovalCluster {
     return new OverlapRemovalCluster(padding, paddingP)
   }
 
@@ -112,7 +109,7 @@ export class OverlapRemovalCluster {
   }
 
   Generate(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean) {
-    if (this.IsEmpty) {
+    if (this.length == 0) {
       return
     }
 
@@ -147,14 +144,6 @@ export class OverlapRemovalCluster {
     //  First, sort the events on the perpendicular coordinate of the event
     //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
     events.sort((a, b) => OverlapRemovalCluster.compareEvents(a, b))
-    // this.#if(VERBOSE)
-    // System.Diagnostics.Debug.WriteLine('Events:')
-    // for (const evt: Event in events) {
-    //   System.Diagnostics.Debug.WriteLine('    {0}', evt)
-    // }
-
-    // this.#endif
-    // //  VERBOSE
     const scanLine = new ScanLine()
     for (const evt of events) {
       const currentNode: OverlapRemovalNode = evt.Node
@@ -210,13 +199,6 @@ export class OverlapRemovalCluster {
           const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[i]
           removeFromArray(origRightNeighborNode.LeftNeighbors, currentNode)
           const rightNeighborNode: OverlapRemovalNode = origRightNeighborNode
-          //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
-          //  Allow a little rounding error.
-          // Debug.Assert(
-          //   isHorizontal ||
-          //     currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
-          //   'RightNeighbors: unexpected close/open overlap',
-          // )
           const p = this.NodePadding
           const separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
 
@@ -264,7 +246,6 @@ export class OverlapRemovalCluster {
     return lstNeighbours
   }
 
-  //  end GetLeftNeighbours
   GetRightNeighbours(
     parameters: OverlapRemovalParameters,
     scanLine: ScanLine,
@@ -282,11 +263,9 @@ export class OverlapRemovalCluster {
       }
     }
 
-    //  endfor NextLeft
     return lstNeighbours
   }
 
-  //  end GetRightNeighbours
   AddNeighbour(
     parameters: OverlapRemovalParameters,
     currentNode: OverlapRemovalNode,
@@ -380,6 +359,7 @@ export class OverlapRemovalCluster {
     }
   }
 }
+
 function removeFromArray<T>(arr: T[], OverlapRemovalNode: T) {
   const i = arr.findIndex((a: T) => a == OverlapRemovalNode)
   if (i >= 0) {

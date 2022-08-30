@@ -163,26 +163,10 @@ export class AxisSolver {
     //  We need to create a new Node of the Generator.
     if (this.IsHorizontal) {
       //  Add the Generator node with the X-axis coords primary, Y-axis secondary.
-      filNode.mOlapNodeX = generator.AddNode(
-        olapParentCluster,
-        filNode,
-        center.x,
-        center.y,
-        filNode.Width,
-        filNode.Height,
-        filNode.stayWeight,
-      )
+      filNode.mOlapNodeX = generator.AddNode(olapParentCluster, center.x, center.y, filNode.Width, filNode.Height, filNode.stayWeight)
     } else {
       //  Add the Generator node with the Y-axis coords primary, X-axis secondary.
-      filNode.mOlapNodeY = generator.AddNode(
-        olapParentCluster,
-        filNode,
-        center.y,
-        center.x,
-        filNode.Height,
-        filNode.Width,
-        filNode.stayWeight,
-      )
+      filNode.mOlapNodeY = generator.AddNode(olapParentCluster, center.y, center.x, filNode.Height, filNode.Width, filNode.stayWeight)
     }
   }
 }
