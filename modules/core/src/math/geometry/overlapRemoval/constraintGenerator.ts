@@ -106,7 +106,7 @@ export class ConstraintGenerator {
     this.ClusterPadding = clusterPadding
     this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies.push(OverlapRemovalCluster.constructorNOANN(0, null, 0, this.Padding, this.PaddingP))
+    this.clusterHierarchies.push(OverlapRemovalCluster.constructorNOANN(0, 0, this.Padding, this.PaddingP))
     this.nextNodeId += OverlapRemovalCluster.NumInternalNodes
   }
 
@@ -168,14 +168,13 @@ export class ConstraintGenerator {
   ///  <returns>The new Cluster.</returns>
   ///
   public AddClusterOOBBBB(
-    parentCluster: OverlapRemovalCluster,
     userData: any,
     openBorderInfo: BorderInfo,
     closeBorderInfo: BorderInfo,
     openBorderInfoP: BorderInfo,
     closeBorderInfoP: BorderInfo,
   ): OverlapRemovalCluster {
-    return this.AddCluster(parentCluster, userData, 0, 0, openBorderInfo, closeBorderInfo, openBorderInfoP, closeBorderInfoP)
+    return this.AddCluster(userData, 0, 0, openBorderInfo, closeBorderInfo, openBorderInfoP, closeBorderInfoP)
   }
 
   ///  <summary>
@@ -194,7 +193,6 @@ export class ConstraintGenerator {
   ///  <returns>The new Cluster.</returns>
   ///
   public AddCluster(
-    parentCluster: OverlapRemovalCluster,
     userData: any,
     minimumSize: number,
     minimumSizeP: number,
@@ -205,7 +203,6 @@ export class ConstraintGenerator {
   ): OverlapRemovalCluster {
     const newCluster = new OverlapRemovalCluster(
       this.nextNodeId,
-      parentCluster,
       userData,
       minimumSize,
       minimumSizeP,
@@ -219,13 +216,7 @@ export class ConstraintGenerator {
       closeBorderInfoP,
     )
     this.nextNodeId = this.nextNodeId + OverlapRemovalCluster.NumInternalNodes
-    if (parentCluster == null) {
-      this.clusterHierarchies.push(newCluster)
-    } else {
-      //  @@DCR: Enforce that Clusters live in only one hierarchy - they can have only one parent, so add a
-      //           Cluster.parentCluster to enforce this.
-      // parentCluster.AddNode(newCluster)
-    }
+    this.clusterHierarchies.push(newCluster)
 
     return newCluster
   }

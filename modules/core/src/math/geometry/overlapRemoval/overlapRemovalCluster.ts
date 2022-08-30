@@ -163,20 +163,11 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     return OverlapRemovalGlobalConfiguration.ClusterDefaultBorderWidth
   }
 
-  ParentCluster: OverlapRemovalCluster
-
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
-  static constructorNOANN(
-    id: number,
-    parentCluster: OverlapRemovalCluster,
-    userData: any,
-    padding: number,
-    paddingP: number,
-  ): OverlapRemovalCluster {
+  static constructorNOANN(id: number, userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
     return new OverlapRemovalCluster(
       id,
-      parentCluster,
       userData,
       0,
       0,
@@ -193,7 +184,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   constructor(
     id: number,
-    parentCluster: OverlapRemovalCluster,
     userData: any,
     minSize: number,
     minSizeP: number,
@@ -213,7 +203,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     this.NodePaddingP = nodePaddingP
     this.ClusterPadding = clusterPadding
     this.ClusterPaddingP = clusterPaddingP
-    this.ParentCluster = parentCluster
     this.OpenBorderInfo = openBorderInfo
     this.OpenBorderInfo.EnsureWeight()
     this.CloseBorderInfo = closeBorderInfo
@@ -304,23 +293,9 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     const cNodes = this.nodeList.length
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
       const node: OverlapRemovalNode = this.nodeList[nodeIndex]
-      const isCluster = node instanceof OverlapRemovalCluster
-      if (isCluster) {
-        const cluster = node as OverlapRemovalCluster
-        //  Child Clusters have already "recursively" been processed before the current cluster,
-        //  so we just need to check to see if it had any events.  If so, then it has created its
-        //  two fake nodes (and their variables) along the primary axis, but these are only put
-        //  into the event list at the nested level; at this level, we put Node underlying the
-        //  entire Cluster span (in both directions) into the event list.
-        //  If a child cluster is empty, it will have zero size and no way to set its position.
-        //  That includes clusters containing nothing but empty clusters.  We skip those here.
-        if (!cluster.IsInSolver) {
-          continue
-        }
-      } else {
-        //  Not a cluster; just have it add its variable to the solver.
-        node.CreateVariable(solver)
-      }
+
+      //  Not a cluster; just have it add its variable to the solver.
+      node.CreateVariable(solver)
 
       //  Now add the Node to the ScanLine event list.  Use paddingP because the scan line moves
       //  perpendicularly to the direction we're generating the constraints in.
