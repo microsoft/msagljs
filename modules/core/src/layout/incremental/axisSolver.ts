@@ -8,6 +8,7 @@ import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overl
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Solution} from '../../math/projectionSolver/Solution'
 import {Solver} from '../../math/projectionSolver/Solver'
+import {AttributeRegistry} from '../../structs/attributeRegister'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {FiNode} from './fiNode'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
@@ -123,8 +124,8 @@ export class AxisSolver {
     for (const c of this.structuralConstraints) {
       if (this.ConstraintLevel >= c.Level) {
         if (c instanceof HorizontalSeparationConstraint && this.IsHorizontal) {
-          let u: FiNode
-          let v: FiNode
+          const u = c.LeftNode.node.getAttr(AttributeRegistry.AlgorithmDataIndex) as FiNode
+          const v = c.RightNode.node.getAttr(AttributeRegistry.AlgorithmDataIndex) as FiNode
           this.solver.AddConstraintVVNB(
             u.getOlapNode(this.IsHorizontal).Variable,
             v.getOlapNode(this.IsHorizontal).Variable,
@@ -134,8 +135,8 @@ export class AxisSolver {
         }
 
         if (c instanceof VerticalSeparationConstraint && !this.IsHorizontal) {
-          let u: FiNode
-          let v: FiNode
+          const u: FiNode = c.TopNode.node.getAttr(AttributeRegistry.AlgorithmDataIndex) as FiNode
+          const v: FiNode = c.BottomNode.node.getAttr(AttributeRegistry.AlgorithmDataIndex) as FiNode
           this.solver.AddConstraintVVNB(
             u.getOlapNode(this.IsHorizontal).Variable,
             v.getOlapNode(this.IsHorizontal).Variable,
