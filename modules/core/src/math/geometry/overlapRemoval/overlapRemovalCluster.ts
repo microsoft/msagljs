@@ -100,29 +100,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   RightBorderNode: OverlapRemovalNode
 
-  //  Indicates if the cluster's GenerateWorker placed anything into the solver.
-  IsInSolver: boolean
-
-  ///  Opening margin of this cluster (additional space inside the cluster border)
-  ///  along the primary axis; on Left if horizontal, else on Top.
-
-  OpenBorderInfo: BorderInfo
-
-  ///  Closing margin of this cluster (additional space inside the cluster border)
-  ///  along the primary axis; on Right if horizontal, else on Bottom.
-
-  CloseBorderInfo: BorderInfo
-
-  ///  Opening margin of this cluster (additional space inside the cluster border)
-  ///  along the secondary (Perpendicular) axis; on Top if horizontal, else on Left.
-
-  OpenBorderInfoP: BorderInfo
-
-  ///  Closing margin of this cluster (additional space inside the cluster border)
-  ///  along the secondary (Perpendicular) axis; on Bottom if horizontal, else on Right.
-
-  CloseBorderInfoP: BorderInfo
-
   ///  Minimum size along the primary axis.
 
   MinimumSize: number
@@ -166,20 +143,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
   static constructorNOANN(id: number, userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
-    return new OverlapRemovalCluster(
-      id,
-      userData,
-      0,
-      0,
-      padding,
-      paddingP,
-      0,
-      0,
-      BorderInfo.constructorN(0),
-      BorderInfo.constructorN(0),
-      BorderInfo.constructorN(0),
-      BorderInfo.constructorN(0),
-    )
+    return new OverlapRemovalCluster(id, userData, 0, 0, padding, paddingP, 0, 0)
   }
 
   constructor(
@@ -191,10 +155,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     nodePaddingP: number,
     clusterPadding: number,
     clusterPaddingP: number,
-    openBorderInfo: BorderInfo,
-    closeBorderInfo: BorderInfo,
-    openBorderInfoP: BorderInfo,
-    closeBorderInfoP: BorderInfo,
   ) {
     super(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
     this.MinimumSize = minSize
@@ -203,14 +163,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     this.NodePaddingP = nodePaddingP
     this.ClusterPadding = clusterPadding
     this.ClusterPaddingP = clusterPaddingP
-    this.OpenBorderInfo = openBorderInfo
-    this.OpenBorderInfo.EnsureWeight()
-    this.CloseBorderInfo = closeBorderInfo
-    this.CloseBorderInfo.EnsureWeight()
-    this.OpenBorderInfoP = openBorderInfoP
-    this.OpenBorderInfoP.EnsureWeight()
-    this.CloseBorderInfoP = closeBorderInfoP
-    this.CloseBorderInfoP.EnsureWeight()
   }
 
   ///  Generate a string representation of the Cluster.
@@ -254,24 +206,10 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   }
 
   Generate(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean) {
-    this.IsInSolver = this.GenerateWorker(solver, parameters, isHorizontal)
-  }
-
-  //  Returns false if the cluster is empty; this handles nested clusters of empty clusters.
-  //  TODOunit: several of the test files cover this but add a specific test for it.
-  GenerateWorker(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean): boolean {
     if (this.IsEmpty) {
-      //  Nothing to generate.
       return false
     }
 
-    //  @@DCR "Precalculate Cluster Sizes": if we are solving per-cluster to calculate best sizes before
-    //  generating constraints, then solver would be passed in as null and we'd create one here.
-    //  Variables to calculate our boundaries.  Top and Bottom refer to the perpendicular direction;
-    //  for vertical, read Top <-> Left and Bottom <-> Right.
-
-    //  The list of open/close events, which will be sorted on the perpendicular coordinate of the event
-    //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
     const events = this.CreateEvents(solver)
     //  If we added no events, we're either Fixed (so continue) or empty (so return).
     if (events.length == 0 && !this.TranslateChildren) {
@@ -301,113 +239,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     return events
   }
 
-  AdjustFixedBorderPositions(solver: Solver, leftBorderWidth: number, rightBorderWidth: number, isHorizontal: boolean) {
-    //  Note:  Open == Left, Close == Right.
-    if (this.OpenBorderInfo.IsFixedPosition && this.CloseBorderInfo.IsFixedPosition) {
-      //  Both are fixed, so just move them to their specified positions.  For FixedPosition
-      //  the API is that it's the outer border edge, so add or subtract half the (left|right)BorderWidth
-      //  to set the position to the midpoint.  Since both borders are fixed, this provides a
-      //  limit to the size of the overall node.
-      this.LeftBorderNode.UpdateDesiredPosition(this.OpenBorderInfo.FixedPosition + leftBorderWidth / 2)
-      this.RightBorderNode.UpdateDesiredPosition(this.CloseBorderInfo.FixedPosition - rightBorderWidth / 2)
-      this.Size = this.CloseBorderInfo.FixedPosition - this.OpenBorderInfo.FixedPosition
-      this.Position = this.OpenBorderInfo.FixedPosition + this.Size / 2
-    } else if (this.OpenBorderInfo.IsFixedPosition || this.CloseBorderInfo.IsFixedPosition) {
-      //  One border is fixed and the other isn't.  We'll keep the same cluster size,
-      //  move the fixed border to its specified position, adjust our midpoint to reflect that,
-      //  and then move the unfixed border to be immediately adjacent to the fixed border; the
-      //  solver will cause it to be moved to the minimal position satisfying the constraints.
-      if (this.OpenBorderInfo.IsFixedPosition) {
-        //  FixedPosition is the outer border edge so add BorderWidth/2 to set it to the Left midpoint.
-        this.LeftBorderNode.UpdateDesiredPosition(this.OpenBorderInfo.FixedPosition + leftBorderWidth / 2)
-        this.Position = this.OpenBorderInfo.FixedPosition + this.Size / 2
-      } else {
-        //  FixedPosition is the outer border edge so subtract BorderWidth/2 to set it to the Right midpoint.
-        this.RightBorderNode.UpdateDesiredPosition(this.CloseBorderInfo.FixedPosition - rightBorderWidth / 2)
-        this.Position = this.CloseBorderInfo.FixedPosition - this.Size / 2
-      }
-    }
-
-    //  If we have a minimum size, generate constraints for it.  Although this may change the size
-    //  considerably, so may the movement of variables in the cluster, so we need no precalculation
-    //  of sizes or positions; but after the Horizontal pass, the caller must pass in the resultant
-    //  positions in the Horizontal (perpendicular) BorderInfos parameter to Vertical generation;
-    //  otherwise, because the Horizontal cluster span may be larger than is calculated simply from
-    //  variable positions, some variables may not have appropriate constraints generated.
-    if (this.MinimumSize > 0) {
-      solver.AddConstraint(
-        this.LeftBorderNode.Variable,
-        this.RightBorderNode.Variable,
-        this.MinimumSize - (leftBorderWidth / 2 - rightBorderWidth / 2),
-      )
-      //   Debug.Assert(cst != null, 'Minimum Cluster size: unexpected null cst')
-      //   this.#if(VERBOSE)
-      //   System.Diagnostics.Debug.WriteLine(' {0} MinClusterSizeCst {1} -> {2} g {3:F5}', 'H', cst.Left.Name, cst.Right.Name, cst.Gap)
-      //   // TODO: Warning!!!, inline IF is not supported ?
-      //   isHorizontal
-      //   ;('V')
-      //   this.#endif
-      //   //  VERBOSE
-    }
-
-    //  Now recalculate our perpendicular PositionP/SizeP if either perpendicular border is fixed,
-    //  since we know we're going to move things there.  We don't actually create variables for the
-    //  perpendicular axis on this pass, but we set the primary axis border nodes' perpendicular size
-    //  and position, thus creating "virtual" perpendicular borders used by the parent cluster's
-    //  Generate() and for its events in its GenerateFromEvents().  This must be done on both H and V
-    //  passes, because multiple heavyweight Fixed borders can push each other around on the horizontal
-    //  pass and leave excessive space between the fixed border and the outer nodes.  In that case the
-    //  Vertical pass can't get the true X border positions by evaluating our nodes' X positions; the
-    //  caller must pass this updated position in (the same thing it must do for nodes' X coordinates).
-    if (this.OpenBorderInfoP.IsFixedPosition || this.CloseBorderInfoP.IsFixedPosition) {
-      //  If both are fixed, we'll set to those positions and recalculate size.
-      //  Remember that FixedPosition API is the outer border edge so we don't need to adjust for border width.
-      if (this.OpenBorderInfoP.IsFixedPosition && this.CloseBorderInfoP.IsFixedPosition) {
-        this.SizeP = this.CloseBorderInfoP.FixedPosition - this.OpenBorderInfoP.FixedPosition
-        this.PositionP = this.OpenBorderInfoP.FixedPosition + this.SizeP / 2
-        if (this.SizeP < 0) {
-          //  Open border is to the right of close border; they'll move later, but we have to
-          //  make the size non-negative.  TODOunit: create a specific test for this (fixed LRTB)
-          this.SizeP = this.SizeP * -1
-        }
-      } else {
-        //  Only one is fixed, so we'll adjust in the appropriate direction as needed.
-        //  - If we're on the horizontal pass we'll preserve the above calculation of this.SizeP
-        //    and only shift things around to preserve the relative vertical starting positions;
-        //    running the Solver will change these positions.
-        //  - If we're on the vertical pass, we know the horizontal nodes are in their final positions,
-        //    so we need to accommodate the case described above, where the Solver opened up space
-        //    between the fixed border and the outermost nodes (it will never *reduce* this distance
-        //    of course).  This means we adjust both border position and our overall node size.
-        const curTopOuterBorder = this.PositionP - this.SizeP / 2
-        const curBottomOuterBorder = this.PositionP + this.SizeP / 2
-        if (this.OpenBorderInfoP.IsFixedPosition) {
-          if (isHorizontal) {
-            //  Don't change SizeP.
-            this.PositionP = this.PositionP + (this.OpenBorderInfoP.FixedPosition - curTopOuterBorder)
-          } else {
-            this.SizeP = curBottomOuterBorder - this.OpenBorderInfoP.FixedPosition
-            this.PositionP = this.OpenBorderInfoP.FixedPosition + this.SizeP / 2
-          }
-        } else if (isHorizontal) {
-          //  Don't change SizeP.
-          this.PositionP = this.PositionP + (this.CloseBorderInfoP.FixedPosition - curBottomOuterBorder)
-        } else {
-          this.SizeP = this.CloseBorderInfoP.FixedPosition - curTopOuterBorder
-          this.PositionP = curTopOuterBorder + this.SizeP / 2
-        }
-      }
-
-      //  endifelse both borders fixed or only one border is
-      //  Now update our fake border nodes' PositionP/SizeP to be consistent.
-      this.LeftBorderNode.PositionP = this.PositionP
-      this.LeftBorderNode.SizeP = this.SizeP
-      this.RightBorderNode.PositionP = this.PositionP
-      this.RightBorderNode.SizeP = this.SizeP
-    }
-  }
-
-  //  end Generate()
   //  Get the Node to use in generating constraints:
   //  - If the Node is not a Cluster, then use the Node.
   //  - Else if it is being operated on as the left neighbour, use its right border as the

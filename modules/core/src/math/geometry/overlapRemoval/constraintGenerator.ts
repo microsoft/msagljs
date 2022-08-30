@@ -167,14 +167,8 @@ export class ConstraintGenerator {
   ///  <param name="closeBorderInfoP">Same as CloseBorder, but in the secondary (Perpendicular) axis.</param>
   ///  <returns>The new Cluster.</returns>
   ///
-  public AddClusterOOBBBB(
-    userData: any,
-    openBorderInfo: BorderInfo,
-    closeBorderInfo: BorderInfo,
-    openBorderInfoP: BorderInfo,
-    closeBorderInfoP: BorderInfo,
-  ): OverlapRemovalCluster {
-    return this.AddCluster(userData, 0, 0, openBorderInfo, closeBorderInfo, openBorderInfoP, closeBorderInfoP)
+  public AddClusterOOBBBB(userData: any): OverlapRemovalCluster {
+    return this.AddCluster(userData, 0, 0)
   }
 
   ///  <summary>
@@ -192,15 +186,7 @@ export class ConstraintGenerator {
   ///  <param name="closeBorderInfoP">Same as CloseBorder, but in the secondary (Perpendicular) axis.</param>
   ///  <returns>The new Cluster.</returns>
   ///
-  public AddCluster(
-    userData: any,
-    minimumSize: number,
-    minimumSizeP: number,
-    openBorderInfo: BorderInfo,
-    closeBorderInfo: BorderInfo,
-    openBorderInfoP: BorderInfo,
-    closeBorderInfoP: BorderInfo,
-  ): OverlapRemovalCluster {
+  public AddCluster(userData: any, minimumSize: number, minimumSizeP: number): OverlapRemovalCluster {
     const newCluster = new OverlapRemovalCluster(
       this.nextNodeId,
       userData,
@@ -210,10 +196,6 @@ export class ConstraintGenerator {
       this.PaddingP,
       this.ClusterPadding,
       this.ClusterPaddingP,
-      openBorderInfo,
-      closeBorderInfo,
-      openBorderInfoP,
-      closeBorderInfoP,
     )
     this.nextNodeId = this.nextNodeId + OverlapRemovalCluster.NumInternalNodes
     this.clusterHierarchies.push(newCluster)
