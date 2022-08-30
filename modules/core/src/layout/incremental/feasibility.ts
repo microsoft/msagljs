@@ -41,8 +41,6 @@ export class Feasibility {
     Feasibility.ResetPositions(nodes)
     const dblVpad = settings.NodeSeparation + Feasibility.Pad
     const dblHpad = settings.NodeSeparation
-    const dblCVpad = settings.clusterMargin + Feasibility.Pad
-    const dblCHpad = settings.clusterMargin
     for (let level = settings.MinConstraintLevel; level <= currentConstraintLevel; level++) {
       //  to obtain a feasible solution when equality constraints are present we need to be extra careful
       //  but the solution below is a little bit crummy, is not currently optimized when there are no
@@ -54,13 +52,13 @@ export class Feasibility {
       hsSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty()
       hsSolver.OverlapRemovalParameters.AllowDeferToVertical = true
       hsSolver.OverlapRemovalParameters.ConsiderProportionalOverlap = settings.edgeConstrains.Direction != Direction.None
-      hsSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
+      hsSolver.Initialize(dblHpad, dblVpad, (v) => v.Center)
       hsSolver.SetDesiredPositions()
       hsSolver.Solve()
       Feasibility.ResetPositions(nodes)
       const vsSolver = new AxisSolver(false, nodes, clusterHierarchies, level >= 2 && settings.AvoidOverlaps, level, rectBoundary)
       vsSolver.structuralConstraints = verticalConstraints
-      vsSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
+      vsSolver.Initialize(dblHpad, dblVpad, (v) => v.Center)
       vsSolver.SetDesiredPositions()
       vsSolver.Solve()
       Feasibility.ResetPositions(nodes)

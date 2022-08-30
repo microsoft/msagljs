@@ -5,7 +5,7 @@ import {FiNode, getFiNode} from './fiNode'
 import {IConstraint} from './iConstraint'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
-import {GeomGraph, GeomNode} from '../core'
+import {GeomNode} from '../core'
 import {FloatingPort} from '../core/floatingPort'
 import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
 import {AxisSolver} from './axisSolver'
@@ -526,19 +526,17 @@ export class FastIncrementalLayout extends Algorithm {
       //  generated, second pad is of the perpendicular direction.
       const dblVpad: number = this.settings.NodeSeparation
       const dblHpad: number = dblVpad + Feasibility.Pad
-      const dblCVpad: number = this.settings.clusterMargin
-      const dblCHpad: number = dblCVpad + Feasibility.Pad
       //  The centers are our desired positions, but we need to find a feasible configuration
       for (const v of this.nodes) {
         v.desiredPosition = v.Center
       }
 
       //  Set up horizontal non-overlap constraints based on the (feasible) starting configuration
-      this.horizontalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.previousCenter)
+      this.horizontalSolver.Initialize(dblHpad, dblVpad, (v) => v.previousCenter)
       this.horizontalSolver.SetDesiredPositions()
       this.horizontalSolver.Solve()
       //  generate y constraints
-      this.verticalSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
+      this.verticalSolver.Initialize(dblHpad, dblVpad, (v) => v.Center)
       this.verticalSolver.SetDesiredPositions()
       this.verticalSolver.Solve()
       //  If we have multiple locks (hence multiple high-weight nodes), there can still be some

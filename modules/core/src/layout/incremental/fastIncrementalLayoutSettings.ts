@@ -229,6 +229,9 @@ export class FastIncrementalLayoutSettings {
     return lp
   }
 
+  constructor() {
+    this.commonSettings.NodeSeparation *= 2
+  }
   //  restart layout, use e.g. after a mouse drag or non-structural change to the graph
 
   public ResetLayout() {

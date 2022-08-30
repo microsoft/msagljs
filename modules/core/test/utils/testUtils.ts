@@ -9,7 +9,6 @@ import {
   ICurve,
   CurveFactory,
   GeomNode,
-  GeomLabel,
   Graph,
   Size,
   Node,
@@ -28,9 +27,7 @@ import {initRandom, randomInt} from '../../src/utils/random'
 import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
-import {FastIncrementalLayout} from '../../src/layout/incremental/fastIncrementalLayout'
 import {FastIncrementalLayoutSettings} from '../../src/layout/incremental/fastIncrementalLayoutSettings'
-import {layoutGraph} from '../../../renderer/src/layout'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {

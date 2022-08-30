@@ -1,17 +1,15 @@
 //  Solver for structural separation constraints or non-overlap constraints of a single axis.
 //  Wrapper round all the ProjectionSolver stuff.
 
-import {Point, Rectangle} from '../../math/geometry'
-import {BorderInfo} from '../../math/geometry/overlapRemoval/borderInfo'
+import {Point} from '../../math/geometry'
 import {ConstraintGenerator} from '../../math/geometry/overlapRemoval/constraintGenerator'
 import {OverlapRemovalCluster} from '../../math/geometry/overlapRemoval/overlapRemovalCluster'
 import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overlapRemovalParameters'
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Solution} from '../../math/projectionSolver/Solution'
 import {Solver} from '../../math/projectionSolver/Solver'
-import {Assert} from '../../utils/assert'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
-import {FiNode, getFiNode} from './fiNode'
+import {FiNode} from './fiNode'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {IConstraint} from './iConstraint'
 import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
@@ -71,7 +69,7 @@ export class AxisSolver {
 
   //  Create variables, generate non-overlap constraints.
 
-  Initialize(hPad: number, vPad: number, cHPad: number, cVPad: number, nodeCenter: (fi: FiNode) => Point) {
+  Initialize(hPad: number, vPad: number, nodeCenter: (fi: FiNode) => Point) {
     //  For the Vertical ConstraintGenerator, Padding is vPad and PadddingP(erpendicular) is hPad.
     this.cg = new ConstraintGenerator(this.IsHorizontal, this.IsHorizontal ? hPad : vPad, this.IsHorizontal ? vPad : hPad)
     this.solver = new Solver()
