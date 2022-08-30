@@ -221,7 +221,7 @@ test('layout 100-150 gv files with fil', () => {
     }
   }
 })
-xtest('layout 150-250 gv files with fil', () => {
+test('layout 150-250 gv files with fil', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {

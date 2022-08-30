@@ -185,7 +185,7 @@ export class AxisSolver {
   ) {
     //  If the node already has an mOlapNode, it's already of a cluster (in a different
     //  hierarchy); we just add it to the new cluster.
-    if (null != filNode.getOlapNode(this.IsHorizontal)) {
+    if (filNode.getOlapNode(this.IsHorizontal)) {
       generator.AddNodeToCluster(olapParentCluster, filNode.getOlapNode(this.IsHorizontal))
       return
     }

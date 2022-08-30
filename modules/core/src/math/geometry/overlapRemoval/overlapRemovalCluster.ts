@@ -45,7 +45,6 @@
 
 import {Constraint} from '../../projectionSolver/Constraint'
 import {Solver} from '../../projectionSolver/Solver'
-import {Rectangle} from '../rectangle'
 import {BorderInfo} from './borderInfo'
 import {OverlapRemovalGlobalConfiguration} from './overlapRemovalGlobalConfiguration'
 import {OverlapRemovalNode} from './overlapRemovalNode'

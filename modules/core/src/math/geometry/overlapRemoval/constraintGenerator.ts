@@ -1,4 +1,3 @@
-///  <summary>
 ///  ConstraintGenerator is the driving class for overlap removal.  The caller
 ///  adds variables (so it is similar to ProjectionSolver in that way, and in
 ///  fact the variables added here are passed to the ProjectionSolver to solve
@@ -6,12 +5,10 @@
 
 import {Solution} from '../../projectionSolver/Solution'
 import {Solver} from '../../projectionSolver/Solver'
-import {BorderInfo} from './borderInfo'
 import {OverlapRemovalCluster} from './overlapRemovalCluster'
 import {OverlapRemovalNode} from './overlapRemovalNode'
 import {OverlapRemovalParameters} from './overlapRemovalParameters'
 
-///  </summary>
 export class ConstraintGenerator {
   //  A ClusterHierarchy is simply a Cluster (there is no ClusterHierarchy class).
   //  This contains always at least one hierarchy, the DefaultClusterHierarchy, which is
@@ -24,49 +21,42 @@ export class ConstraintGenerator {
   //  We only generate constraints between objects in the same ClusterHierarchy.  Because we
   //  enumerate all ClusterHierarchies and recurse into each one, each Hierarchy is completely
   //  unaware of the others.  Hierarchies added via AddCluster can be sparse.
-  ///  <summary>
+
   ///  Read-only enumeration of the ClusterHierarchies; new cluster hierarchies are created
   ///  by calling AddCluster
-  ///  </summary>
-  public get ClusterHierarchies(): Iterable<OverlapRemovalCluster> {
-    return this.clusterHierarchies
-  }
 
-  clusterHierarchies: Array<OverlapRemovalCluster> = new Array<OverlapRemovalCluster>()
+  clusterHierarchies: OverlapRemovalCluster
 
-  ///  <summary>
   ///  The initial, default ClusterHierarchy; a "flat" graph (with no user-defined clusters)
   ///  lives entirely in this cluster.
-  ///  </summary>
+
   public get DefaultClusterHierarchy(): OverlapRemovalCluster {
-    return this.clusterHierarchies[0]
+    return this.clusterHierarchies
   }
 
   //  This is the padding in the relevant direction, and the perpendicular padding that is
   //  used if we are doing horizontal constraints (for the "amount of movement" comparisons).
   //  It also includes fixed-border specifications.
-  ///  <summary>
+
   ///  Padding in the direction of the primary axis.
-  ///  </summary>
+
   Padding: number
-  ///  <summary>
+
   ///  Padding in the secondary (Perpendicular) axis.
-  ///  </summary>
+
   PaddingP: number
 
-  ///  <summary>
   ///  Padding outside clusters in the parallel direction.
-  ///  </summary>
+
   ClusterPadding: number
 
-  ///  <summary>
   ///  Padding outside clusters in the perpendicular direction.
-  ///  </summary>
+
   ClusterPaddingP: number
-  ///  <summary>
+
   ///  Default padding value that is used (in both axes) if no padding is specified when
   ///  calling the ConstraintGenerator constructor.
-  ///  </summary>
+
   public static get DefaultPadding(): number {
     return 7
   }
@@ -77,28 +67,25 @@ export class ConstraintGenerator {
   //  itself and one for each of its fake border nodes.
   nextNodeId = 0
 
-  ///  <summary>
   ///  As passed to ctor; if this is true, we are doing horizontal (x) constraint generation,
   ///  and must therefore consider whether a smaller vertical movement would remove the overlap.
-  ///  </summary>
+
   IsHorizontal: boolean
 
-  ///  <summary>
   ///  This form of the constructor uses default values for the padding parameters.
   ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
-  ///  </summary>
+
   static constructorB(isHorizontal: boolean) {
     return ConstraintGenerator.constructorBNN(isHorizontal, ConstraintGenerator.DefaultPadding, ConstraintGenerator.DefaultPadding)
   }
 
-  ///  <summary>
   ///  This form of the constructor uses specifies the padding parameters.
   ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
   ///  <param name="padding">Padding outside nodes in the parallel direction</param>
   ///  <param name="paddingP">Padding outside nodes in the perpendicular direction</param>
   ///  <param name="clusterPadding">Padding outside clusters in the parallel direction</param>
   ///  <param name="clusterPaddingP">Padding outside clusters in the perpendicular direction</param>
-  ///  </summary>
+
   public constructor(isHorizontal: boolean, padding: number, paddingP: number, clusterPadding: number, clusterPaddingP: number) {
     this.IsHorizontal = isHorizontal
     this.Padding = padding
@@ -106,13 +93,12 @@ export class ConstraintGenerator {
     this.ClusterPadding = clusterPadding
     this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies.push(OverlapRemovalCluster.constructorNOANN(0, 0, this.Padding, this.PaddingP))
+    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(0, 0, this.Padding, this.PaddingP)
     this.nextNodeId += OverlapRemovalCluster.NumInternalNodes
   }
 
-  ///  <summary>
   ///  Alternate form of the constructor to allow overriding the default padding.
-  ///  </summary>
+
   ///  <param name="isHorizontal">Whether to generate horizontal or vertical constraints</param>
   ///  <param name="padding">Minimal space between node or cluster rectangles in the primary axis.</param>
   ///  <param name="paddingP">Minimal space between node or cluster rectangles in the secondary (Perpendicular) axis;
@@ -121,9 +107,8 @@ export class ConstraintGenerator {
     return new ConstraintGenerator(isHorizontal, padding, paddingP, padding, paddingP)
   }
 
-  ///  <summary>
   ///  Add a new variable to the ConstraintGenerator.
-  ///  </summary>
+
   ///  <param name="initialCluster">The cluster this node is to be a member of.  It may not be null; pass
   ///                      DefaultClusterHierarchy to create a node at the lowest level.  Subsequently a node
   ///                      may be added to additional clusters, but only to one cluster per hierarchy.</param>
@@ -154,58 +139,8 @@ export class ConstraintGenerator {
     return nodNew
   }
 
-  ///  <summary>
-  ///  Creates a new cluster with no minimum size within the specified parent cluster.  Clusters allow creating a subset of
-  ///  nodes that must be within a distinct rectangle.
-  ///  </summary>
-  ///  <param name="parentCluster">The cluster this cluster is to be a member of; if null, this is the root of a
-  ///                              new hierarchy, otherwise must be non-NULL (perhaps DefaultClusterHierarchy).</param>
-  ///  <param name="userData">An object that is passed through.</param>
-  ///  <param name="openBorderInfo">Information about the Left (if isHorizontal, else Top) border.</param>
-  ///  <param name="closeBorderInfo">Information about the Right (if isHorizontal, else Bottom) border.</param>
-  ///  <param name="openBorderInfoP">Same as OpenBorder, but in the secondary (Perpendicular) axis.</param>
-  ///  <param name="closeBorderInfoP">Same as CloseBorder, but in the secondary (Perpendicular) axis.</param>
-  ///  <returns>The new Cluster.</returns>
-  ///
-  public AddClusterOOBBBB(userData: any): OverlapRemovalCluster {
-    return this.AddCluster(userData, 0, 0)
-  }
-
-  ///  <summary>
-  ///  Creates a new cluster with a minimum size within the specified parent cluster.  Clusters allow creating a subset of
-  ///  nodes that must be within a distinct rectangle.
-  ///  </summary>
-  ///  <param name="parentCluster">The cluster this cluster is to be a member of; if null, this is the root of a
-  ///                              new hierarchy, otherwise must be non-NULL (perhaps DefaultClusterHierarchy).</param>
-  ///  <param name="userData">An object that is passed through.</param>
-  ///  <param name="minimumSize">Minimum cluster size along the primary axis.</param>
-  ///  <param name="minimumSizeP">Minimum cluster size along the perpendicular axis.</param>
-  ///  <param name="openBorderInfo">Information about the Left (if isHorizontal, else Top) border.</param>
-  ///  <param name="closeBorderInfo">Information about the Right (if isHorizontal, else Bottom) border.</param>
-  ///  <param name="openBorderInfoP">Same as OpenBorder, but in the secondary (Perpendicular) axis.</param>
-  ///  <param name="closeBorderInfoP">Same as CloseBorder, but in the secondary (Perpendicular) axis.</param>
-  ///  <returns>The new Cluster.</returns>
-  ///
-  public AddCluster(userData: any, minimumSize: number, minimumSizeP: number): OverlapRemovalCluster {
-    const newCluster = new OverlapRemovalCluster(
-      this.nextNodeId,
-      userData,
-      minimumSize,
-      minimumSizeP,
-      this.Padding,
-      this.PaddingP,
-      this.ClusterPadding,
-      this.ClusterPaddingP,
-    )
-    this.nextNodeId = this.nextNodeId + OverlapRemovalCluster.NumInternalNodes
-    this.clusterHierarchies.push(newCluster)
-
-    return newCluster
-  }
-
-  ///  <summary>
   ///  Add a node to a cluster in another hierarchy (a node can be in only one cluster per hierarchy).
-  ///  </summary>
+
   ///  <param name="cluster"></param>
   ///  <param name="node"></param>
   //  @@DCR:  Keep a node->hierarchyParentsList hash and use cluster.parentCluster to traverse to the hierarchy root
@@ -222,10 +157,9 @@ export class ConstraintGenerator {
     cluster.AddNode(node)
   }
 
-  ///  <summary>
   ///  Generate the necessary constraints to ensure there is no overlap (unless we're doing
   ///  a horizontal pass and deferring some movement, which would be smaller, to the vertical pass).
-  ///  </summary>
+
   ///  <param name="solver">The solver to generate into.</param>
   ///  <param name="parameters">Parameters to OverlapRemoval and ProjectionSolver.Solver.Solve().</param>
   public Generate(solver: Solver, parameters: OverlapRemovalParameters) {
@@ -233,9 +167,7 @@ export class ConstraintGenerator {
       parameters = OverlapRemovalParameters.constructorEmpty()
     }
 
-    for (const cluster of this.clusterHierarchies) {
-      cluster.Generate(solver, parameters, this.IsHorizontal)
-    }
+    this.clusterHierarchies.Generate(solver, parameters, this.IsHorizontal)
 
     //  For Clusters we reposition their "fake border" variables between the constraint-generation
     //  and solving phases, so we need to tell the solver to do this.
@@ -243,9 +175,8 @@ export class ConstraintGenerator {
     //  @@PERF: Not needed if no clusters were created.
   }
 
-  ///  <summary>
   ///  Generates and solves the constraints.
-  ///  </summary>
+
   ///  <param name="solver">The solver to generate into and solve.  May be null, in which case one
   ///                      is created by the method.</param>
   ///  <param name="parameters">Parameters to OverlapRemoval and ProjectionSolver.Solver.Solve().</param>
@@ -266,10 +197,7 @@ export class ConstraintGenerator {
     }
 
     const solverSolution: Solution = solver.SolvePar(parameters.SolverParameters)
-    for (const cluster of this.clusterHierarchies) {
-      cluster.UpdateFromVariable()
-      //  "recursively" processes all child clusters
-    }
+    this.clusterHierarchies.UpdateFromVariable()
 
     return solverSolution
   }
