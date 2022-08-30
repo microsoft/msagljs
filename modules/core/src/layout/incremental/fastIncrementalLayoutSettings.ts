@@ -350,7 +350,7 @@ export class FastIncrementalLayoutSettings {
   //  clusters, then between each cluster boundary and nodes that are not
   //  part of that cluster.
 
-  AvoidOverlaps: boolean
+  AvoidOverlaps = true
 
   //  If edges have FloatingPorts then the layout will optimize edge lengths based on the port locations.
   //  If MultiLocationFloatingPorts are specified then the layout will choose the nearest pair of locations for each such edge.

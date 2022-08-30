@@ -120,6 +120,9 @@ function getSettings(): LayoutOptions {
     case 'mds':
       opts.layoutType = 'MDS'
       break
+    case 'fd':
+      opts.layoutType = 'FD'
+      break
     default:
       break
   }

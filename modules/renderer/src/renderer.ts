@@ -1,5 +1,4 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
-import {PolygonLayer} from '@deck.gl/layers/typed'
 import {TileLayer} from '@deck.gl/geo-layers/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
@@ -23,7 +22,7 @@ export interface IRendererControl {
 }
 
 export type LayoutOptions = {
-  layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS'
+  layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS' | 'FD'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
 }

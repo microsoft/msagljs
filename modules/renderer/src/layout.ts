@@ -8,12 +8,14 @@ import {
   EdgeRoutingMode,
   routeEdges,
   LayerDirectionEnum,
+  FastIncrementalLayoutSettings,
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
 import {parseJSON, graphToJSON} from '@msagl/parser'
 
 import type {LayoutOptions} from './renderer'
+import {} from '../../core/src/layout/incremental/fastIncrementalLayoutSettings'
 
 let layoutWorker: Worker = null
 let layoutInProgress = false
@@ -138,7 +140,9 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     case 'MDS':
       layoutSettings = new MdsLayoutSettings()
       break
-
+    case 'FD':
+      layoutSettings = new FastIncrementalLayoutSettings()
+      break
     default: {
       // figure out if the graph is too large for the layered layout
       const tooLargeForLayered = subgraph.graph.shallowNodeCount > 2000 || subgraph.graph.nodeCollection.edgeCount > 4000

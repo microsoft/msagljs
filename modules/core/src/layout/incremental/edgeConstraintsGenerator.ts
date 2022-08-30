@@ -42,10 +42,12 @@ export class EdgeConstraintGenerator {
 
   cyclicComponents: Array<Set<GeomNode>> = new Array<Set<GeomNode>>()
 
+  /** 
   //  Creates a VerticalSeparationConstraint for each edge of the given set to structural constraints,
   //  to require these edges to be downward pointing.  Also checks for cycles, and edges involved
   //  of a cycle receive no VerticalSeparationConstraint, but can optionally receive a circle constraint.
-
+  This is not tested
+*/
   static GenerateEdgeConstraints(
     edges: Iterable<GeomEdge>,
     settings: EdgeConstraints,
