@@ -5,7 +5,7 @@ import {GeomObject} from '../../../src/layout/core/geomObject'
 import {FastIncrementalLayout} from '../../../src/layout/incremental/fastIncrementalLayout'
 import {FastIncrementalLayoutSettings} from '../../../src/layout/incremental/fastIncrementalLayoutSettings'
 import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
-import {Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
+import {AttributeRegistry, Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
 import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
 import {sortedList} from '../sortedBySizeListOfgvFiles'
@@ -178,6 +178,9 @@ function noOverlaps(gg: GeomGraph): any {
         return false
       }
     }
+    if (n instanceof GeomGraph) {
+      if (!noOverlaps(n)) return false
+    }
   }
   return true
 }
@@ -188,10 +191,10 @@ test('layout 0-50 gv files with fil', () => {
   for (const f of sortedList) {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 50) return
-    if (i != 40) continue
     let dg: DrawingGraph
     try {
       dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
+      expect(noOverlaps(dg.graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph)).toBe(true)
     } catch (Error) {
       console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
       expect(1).toBe(0)
@@ -221,7 +224,7 @@ test('layout 100-150 gv files with fil', () => {
     }
   }
 })
-test('layout 150-250 gv files with fil', () => {
+xtest('layout 150-250 gv files with fil', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {

@@ -94,7 +94,6 @@ export class ConstraintGenerator {
     this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
     this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(0, 0, this.Padding, this.PaddingP)
-    this.nextNodeId += OverlapRemovalCluster.NumInternalNodes
   }
 
   ///  Alternate form of the constructor to allow overriding the default padding.

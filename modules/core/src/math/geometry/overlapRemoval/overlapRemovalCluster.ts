@@ -88,17 +88,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
   //  AKA: "Bump Mode"
   TranslateChildren: boolean
 
-  //  Our internal "fake nodes" as above; these are separate from the size calculations
-  //  for the overall Cluster.
-
-  ///  The internal Node containing the Variable to which left-border constraints are made.
-
-  LeftBorderNode: OverlapRemovalNode
-
-  ///  The internal Node containing the Variable to which right-border constraints are made.
-
-  RightBorderNode: OverlapRemovalNode
-
   ///  Minimum size along the primary axis.
 
   MinimumSize: number
@@ -125,12 +114,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   get Name(): string {
     return this.UserData
-  }
-
-  //  VERBOSE
-  //  The number of node IDs used by a Cluster - for the cluster itself and its fake nodes.
-  static get NumInternalNodes(): number {
-    return 3
   }
 
   //  The width (height) of the node along the primary axis, which should be fairly thin
@@ -206,18 +189,16 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
 
   Generate(solver: Solver, parameters: OverlapRemovalParameters, isHorizontal: boolean) {
     if (this.IsEmpty) {
-      return false
+      return
     }
 
     const events = this.CreateEvents(solver)
     //  If we added no events, we're either Fixed (so continue) or empty (so return).
     if (events.length == 0 && !this.TranslateChildren) {
-      return false
+      return
     }
 
     this.GenerateFromEvents(solver, parameters, events, isHorizontal)
-
-    return true
   }
 
   CreateEvents(solver: Solver): Array<Event> {
@@ -236,20 +217,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     }
 
     return events
-  }
-
-  //  Get the Node to use in generating constraints:
-  //  - If the Node is not a Cluster, then use the Node.
-  //  - Else if it is being operated on as the left neighbour, use its right border as the
-  //    variable FROM which we create the constraint.
-  //  - Else it is being operated on as the right neighbour, so use its left border as the
-  //    variable TO which we create the constraint.
-  static GetLeftConstraintNode(node: OverlapRemovalNode): OverlapRemovalNode {
-    return node instanceof OverlapRemovalCluster ? node.RightBorderNode : node
-  }
-
-  static GetRightConstraintNode(node: OverlapRemovalNode): OverlapRemovalNode {
-    return node instanceof OverlapRemovalCluster ? node.LeftBorderNode : node
   }
 
   GenerateFromEvents(solver: Solver, parameters: OverlapRemovalParameters, events: Array<Event>, isHorizontal: boolean) {
@@ -301,15 +268,14 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           continue
         }
 
-        const currentLeftNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(currentNode)
-        const currentRightNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(currentNode)
+        const currentLeftNode: OverlapRemovalNode = currentNode
+        const currentRightNode: OverlapRemovalNode = currentNode
         const cLeftNeighbours = currentNode.LeftNeighbors.length
         for (let i = 0; i < cLeftNeighbours; i++) {
           const origLeftNeighborNode: OverlapRemovalNode = currentNode.LeftNeighbors[i]
           removeFromArray(origLeftNeighborNode.RightNeighbors, currentNode)
-          const leftNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetLeftConstraintNode(origLeftNeighborNode)
-          const p =
-            leftNeighborNode == this.LeftBorderNode || currentRightNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
+          const leftNeighborNode: OverlapRemovalNode = origLeftNeighborNode
+          const p = this.NodePadding
           let separation = (leftNeighborNode.Size + currentRightNode.Size) / 2 + p
           if (this.TranslateChildren) {
             separation = Math.max(separation, currentRightNode.Position - leftNeighborNode.Position)
@@ -323,7 +289,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           //  Keep original node, which may be a cluster; see comments in LeftNeighbors above.
           const origRightNeighborNode: OverlapRemovalNode = currentNode.RightNeighbors[i]
           removeFromArray(origRightNeighborNode.LeftNeighbors, currentNode)
-          const rightNeighborNode: OverlapRemovalNode = OverlapRemovalCluster.GetRightConstraintNode(origRightNeighborNode)
+          const rightNeighborNode: OverlapRemovalNode = origRightNeighborNode
           //  This assert verifies we match the Solver.ViolationTolerance check in AddNeighbor.
           //  Allow a little rounding error.
           // Debug.Assert(
@@ -331,14 +297,13 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           //     currentNode.CloseP + (this.NodePaddingP - rightNeighborNode.OpenP) > parameters.SolverParameters.GapTolerance - 1e-6,
           //   'RightNeighbors: unexpected close/open overlap',
           // )
-          const p =
-            currentLeftNode == this.LeftBorderNode || rightNeighborNode == this.RightBorderNode ? this.ClusterPadding : this.NodePadding
+          const p = this.NodePadding
           let separation = (currentLeftNode.Size + rightNeighborNode.Size) / 2 + p
           if (this.TranslateChildren) {
             separation = Math.max(separation, rightNeighborNode.Position - currentLeftNode.Position)
           }
 
-          const cst: Constraint = solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
+          solver.AddConstraint(currentLeftNode.Variable, rightNeighborNode.Variable, separation)
         }
 
         scanLine.Remove(currentNode)
@@ -450,12 +415,7 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
           : overlap > overlapP
         if (isOverlapping) {
           //  Don't skip if either of these is a border node.
-          if (
-            currentNode != this.LeftBorderNode &&
-            currentNode != this.RightBorderNode &&
-            nextNode != this.LeftBorderNode &&
-            nextNode != this.RightBorderNode
-          ) {
+          {
             //  Moving in the horizontal direction requires more movement than in the vertical
             //  direction to remove the overlap, so skip this node on horizontal constraint
             //  generation and we'll pick it up on vertical constraint generation.  Return true
@@ -476,8 +436,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
             return true
           }
         }
-
-        //  endif Overlap is greater than OverlapP
       }
 
       //  endif AllowDeferToVertical
