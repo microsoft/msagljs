@@ -270,25 +270,20 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     //  Variables to calculate our boundaries.  Top and Bottom refer to the perpendicular direction;
     //  for vertical, read Top <-> Left and Bottom <-> Right.
 
-    const boundaryRect = new Rectangle({left: Number.MAX_VALUE, right: Number.MIN_VALUE, bottom: Number.MAX_VALUE, top: Number.MIN_VALUE})
-
     //  The list of open/close events, which will be sorted on the perpendicular coordinate of the event
     //  (OverlapRemovalNode.g. for horizontal constraint generation, order on vertical position).
-    const events = this.CreateEvents(solver, /* ref */ boundaryRect)
+    const events = this.CreateEvents(solver)
     //  If we added no events, we're either Fixed (so continue) or empty (so return).
     if (events.length == 0 && !this.TranslateChildren) {
       return false
     }
-
-    //  Top/Bottom are considered the secondary (Perpendicular) axis here.
-    const t = {leftBorderWidth: OverlapRemovalCluster.DefaultBorderWidth, rightBorderWidth: OverlapRemovalCluster.DefaultBorderWidth}
 
     this.GenerateFromEvents(solver, parameters, events, isHorizontal)
 
     return true
   }
 
-  CreateEvents(solver: Solver, /* ref */ boundaryRect: Rectangle): Array<Event> {
+  CreateEvents(solver: Solver): Array<Event> {
     const events = new Array<Event>()
     const cNodes = this.nodeList.length
     for (let nodeIndex = 0; nodeIndex < cNodes; nodeIndex++) {
@@ -304,62 +299,6 @@ export class OverlapRemovalCluster extends OverlapRemovalNode {
     }
 
     return events
-  }
-
-  CalculateBorderWidths(
-    solver: Solver,
-    events: Array<Event>,
-    boundaryRect: Rectangle,
-    t: {leftBorderWidth: number; rightBorderWidth: number},
-  ) {
-    //  Cluster-level padding (the space around the borders) complicates this.  Margin
-    //  is added only at the inside edge of the cluster; for example, as space for a
-    //  title of the cluster to be printed.  We just use the margin as the boundary node
-    //  sizes.  Margin is separate from padding; padding is always added.
-    t.leftBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.OpenBorderInfo.InnerMargin)
-    t.rightBorderWidth = OverlapRemovalCluster.CalcBorderWidth(this.CloseBorderInfo.InnerMargin)
-    //  @@DCR "Precalculate Cluster Sizes": at this point we could solve them to get the "real" cluster
-    //  size (as above, this may be requested by solver being null on input so we create our own above).
-    //  Now calculate our position (as midpoints) and size.  This will be used in the parentCluster's
-    //  Generate() operation.  We want to get to the outside border of the border, so subtract the
-    //  border width.  We've added pre-border padding above.  Note: This is done before checking
-    //  for fixed positions, because we want the constraint generation to see them in the correct
-    //  relative positions - border midpoints are always outside the outermost node midpoints, so that
-    //  constraints will be generated in the correct direction (it would be bad if, for example, a Left
-    //  border was the rhs of a constraint with a node inside the cluster; it should always be an lhs
-    //  to any node in the cluster, and having it as an rhs will probably generate a cycle).  We adjust
-    //  to fixed positions below after GenerateFromEvents.
-    this.Size = boundaryRect.width
-    this.Position = boundaryRect.center.x
-    //  The final perpendicular positions may be modified below, after GenerateFromEvents; they
-    //  will be used by a parent cluster's Generate after we return if this is a recursive call.
-    //  We don't do it here because we are doing the variables internal to this cluster, based
-    //  upon their current positions, so this would get confused if we moved the P coordinates here.
-    this.SizeP = boundaryRect.height
-    this.PositionP = boundaryRect.center.y
-    //  Now create the two "fake nodes" for the borders and add them to the event list line and solver.
-    //  This constraint will never be deferred, since there is no overlap in the secondary axis but is
-    //  in the primary axis.  In the perpendicular direction, we want them to be the size of the
-    //  outer borders of the outer nodes, regardless of whether the perpendicular borders are
-    //  fixed-position; this ensures that the scan line will correctly see their open and close.
-    //  Left/Open...
-    this.LeftBorderNode.Position = boundaryRect.left + t.leftBorderWidth / 2
-    this.LeftBorderNode.Size = t.leftBorderWidth
-    this.LeftBorderNode.Weight = this.OpenBorderInfo.Weight
-    this.LeftBorderNode.PositionP = this.PositionP
-    this.LeftBorderNode.SizeP = this.SizeP
-    this.LeftBorderNode.CreateVariable(solver)
-    this.AddEvents(this.LeftBorderNode, events)
-    //  Note:  The Left/Right, Open/Close terminology here is inconsistent with GenerateFromEvents
-    //   since here Open is in the primary axis and in GenerateFromEvents it's in the secondary/P axis.
-    //  Right/Close...
-    this.RightBorderNode.Position = boundaryRect.right - t.rightBorderWidth / 2
-    this.RightBorderNode.Size = t.rightBorderWidth
-    this.RightBorderNode.Weight = this.CloseBorderInfo.Weight
-    this.RightBorderNode.PositionP = this.PositionP
-    this.RightBorderNode.SizeP = this.SizeP
-    this.RightBorderNode.CreateVariable(solver)
-    this.AddEvents(this.RightBorderNode, events)
   }
 
   AdjustFixedBorderPositions(solver: Solver, leftBorderWidth: number, rightBorderWidth: number, isHorizontal: boolean) {
