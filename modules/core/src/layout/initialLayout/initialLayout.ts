@@ -85,12 +85,7 @@ export class InitialLayout extends Algorithm {
         pivotMDS.run()
       }
 
-      const fil: FastIncrementalLayout = new FastIncrementalLayout(
-        component,
-        this.settings,
-        this.settings.MinConstraintLevel,
-        () => this.settings,
-      )
+      const fil: FastIncrementalLayout = new FastIncrementalLayout(component, this.settings, this.settings.MinConstraintLevel)
       Assert.assert(this.settings.Iterations == 0)
       for (const level of this.GetConstraintLevels(component)) {
         if (level > this.settings.MaxConstraintLevel) {

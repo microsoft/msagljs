@@ -44,11 +44,11 @@ export class ScanSegment extends SegmentBase {
     this.GroupBoundaryPointAndCrossingsList = gbcList
   }
 
-  /* override */ get Start(): Point {
+  get Start(): Point {
     return this.startPoint
   }
 
-  /* override */ get End(): Point {
+  get End(): Point {
     return this.endPoint
   }
 

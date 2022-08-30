@@ -23,7 +23,7 @@ xtest('filclust', () => {
   const gg = createGeometry(dg, measureTextSize)
   const filSettings = new FastIncrementalLayoutSettings()
   filSettings.AvoidOverlaps = true
-  const fil = new FastIncrementalLayout(gg, filSettings, 2, () => filSettings)
+  const fil = new FastIncrementalLayout(gg, filSettings, 2)
   fil.run()
   // SvgDebugWriter.writeGeomGraph('/tmp/fil.svg', gg)
 })
@@ -158,7 +158,7 @@ test('initialfil', () => {
   new GeomEdge(e)
   e = new Edge(n, nodes[6])
   new GeomEdge(e)
-  settings.algorithm = new FastIncrementalLayout(gg, settings, settings.maxConstraintLevel, () => settings)
+  settings.algorithm = new FastIncrementalLayout(gg, settings, settings.maxConstraintLevel)
   settings.Unconverge()
   settings.CreateLockNR(gn, smallRect)
   do {
@@ -185,12 +185,13 @@ function noOverlaps(gg: GeomGraph): any {
   return true
 }
 
-test('layout 0-50 gv files with fil', () => {
+test('layout0-50 gv files with fil', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 50) return
+    // if (i != 40) continue
     let dg: DrawingGraph
     try {
       dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
@@ -205,7 +206,7 @@ test('layout 0-50 gv files with fil', () => {
   }
 })
 
-test('layout 100-150 gv files with fil', () => {
+test('layout100-150 gv files with fil', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {

@@ -77,19 +77,6 @@ export class OverlapRemovalCluster {
     return this.nodeList.length == 0
   }
 
-  //  If the following is true then constraints will be generated the prevent children coming
-  //  any closer to the cluster boundaries.  In effect, this means that the cluster and all
-  //  it's children will be translated together rather than being "compressed" if there are
-  //  overlaps with external nodes.
-
-  //  Minimum size along the primary axis.
-
-  MinimumSize: number
-
-  //  Minimum size along the perpendicular axis.
-
-  MinimumSizeP: number
-
   //  Padding of nodes within the cluster in the parallel direction.
 
   NodePadding: number
@@ -100,13 +87,11 @@ export class OverlapRemovalCluster {
 
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
-  static constructorNOANN(userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
-    return new OverlapRemovalCluster(userData, 0, 0, padding, paddingP)
+  static constructorNOANN(padding: number, paddingP: number): OverlapRemovalCluster {
+    return new OverlapRemovalCluster(padding, paddingP)
   }
 
-  constructor(userData: any, minSize: number, minSizeP: number, nodePadding: number, nodePaddingP: number) {
-    this.MinimumSize = minSize
-    this.MinimumSizeP = minSizeP
+  constructor(nodePadding: number, nodePaddingP: number) {
     this.NodePadding = nodePadding
     this.NodePaddingP = nodePaddingP
   }

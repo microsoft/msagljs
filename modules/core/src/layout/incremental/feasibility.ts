@@ -1,7 +1,6 @@
 import {Direction} from '../../math/geometry'
 import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overlapRemovalParameters'
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
-import {GeomGraph} from '../core'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {AxisSolver} from './axisSolver'
 import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
@@ -33,7 +32,6 @@ export class Feasibility {
     horizontalConstraints: Array<IConstraint>,
     verticalConstraints: Array<IConstraint>,
     clusterHierarchies: Iterable<IGeomGraph>,
-    clusterSettings: (g: IGeomGraph) => any,
     rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary,
   ) {
     for (const l of settings.locks) {
@@ -51,15 +49,7 @@ export class Feasibility {
       //  equality constraints and we do not really have any scenarios involving equality constraints at
       //  the moment, and also the fact that it turns off DeferToVertical causes it to resolve too
       //  many overlaps horizontally, so let's skip it for now.
-      const hsSolver = new AxisSolver(
-        true,
-        nodes,
-        clusterHierarchies,
-        level >= 2 && settings.AvoidOverlaps,
-        level,
-        clusterSettings,
-        rectBoundary,
-      )
+      const hsSolver = new AxisSolver(true, nodes, clusterHierarchies, level >= 2 && settings.AvoidOverlaps, level, rectBoundary)
       hsSolver.structuralConstraints = horizontalConstraints
       hsSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty()
       hsSolver.OverlapRemovalParameters.AllowDeferToVertical = true
@@ -68,15 +58,7 @@ export class Feasibility {
       hsSolver.SetDesiredPositions()
       hsSolver.Solve()
       Feasibility.ResetPositions(nodes)
-      const vsSolver = new AxisSolver(
-        false,
-        nodes,
-        clusterHierarchies,
-        level >= 2 && settings.AvoidOverlaps,
-        level,
-        clusterSettings,
-        rectBoundary,
-      )
+      const vsSolver = new AxisSolver(false, nodes, clusterHierarchies, level >= 2 && settings.AvoidOverlaps, level, rectBoundary)
       vsSolver.structuralConstraints = verticalConstraints
       vsSolver.Initialize(dblHpad, dblVpad, dblCHpad, dblCVpad, (v) => v.Center)
       vsSolver.SetDesiredPositions()

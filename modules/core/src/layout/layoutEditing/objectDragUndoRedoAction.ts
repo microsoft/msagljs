@@ -15,7 +15,7 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
 
   //  Undoes the editing
 
-  public /* override */ Undo() {
+  public Undo() {
     super.Undo()
     this.ClearAffectedObjects()
     const restDictionary = this.CloneRestoreDictionary()

@@ -50,7 +50,6 @@ export class AxisSolver {
     clusterHierarchies: Iterable<IGeomGraph>,
     avoidOverlaps: boolean,
     constraintLevel: number,
-    clusterSettings: (gg: IGeomGraph) => any,
     rectBoundary: (gg: IGeomGraph) => RectangularClusterBoundary,
   ) {
     this.IsHorizontal = isHorizontal
@@ -74,13 +73,7 @@ export class AxisSolver {
 
   Initialize(hPad: number, vPad: number, cHPad: number, cVPad: number, nodeCenter: (fi: FiNode) => Point) {
     //  For the Vertical ConstraintGenerator, Padding is vPad and PadddingP(erpendicular) is hPad.
-    this.cg = new ConstraintGenerator(
-      this.IsHorizontal,
-      this.IsHorizontal ? hPad : vPad,
-      this.IsHorizontal ? vPad : hPad,
-      this.IsHorizontal ? cHPad : cVPad,
-      this.IsHorizontal ? cVPad : cHPad,
-    )
+    this.cg = new ConstraintGenerator(this.IsHorizontal, this.IsHorizontal ? hPad : vPad, this.IsHorizontal ? vPad : hPad)
     this.solver = new Solver()
     for (const filNode of this.nodes) {
       filNode.SetOlapNode(this.IsHorizontal, null)

@@ -34,10 +34,10 @@ export class FloatingPort extends Port {
 
   // the port's curve
 
-  public get /* override */ Curve(): ICurve {
+  public get Curve(): ICurve {
     return this.curve
   }
-  public set /* override */ Curve(value: ICurve) {
+  public set Curve(value: ICurve) {
     this.curve = value
   }
 }

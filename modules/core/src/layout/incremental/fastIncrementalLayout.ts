@@ -55,8 +55,6 @@ export class FastIncrementalLayout extends Algorithm {
 
   verticalSolver: AxisSolver
 
-  clusterSettings: (g: IGeomGraph) => any
-
   clusterEdges: Array<Edge> = new Array<Edge>()
 
   getRB(g: IGeomGraph): RectangularClusterBoundary | undefined {
@@ -74,16 +72,10 @@ export class FastIncrementalLayout extends Algorithm {
 
   //  Create the graph data structures.
 
-  constructor(
-    geometryGraph: IGeomGraph,
-    settings: FastIncrementalLayoutSettings,
-    initialConstraintLevel: number,
-    clusterSettings: (g: IGeomGraph) => any,
-  ) {
+  constructor(geometryGraph: IGeomGraph, settings: FastIncrementalLayoutSettings, initialConstraintLevel: number) {
     super(null)
     this.graph = geometryGraph
     this.settings = settings
-    this.clusterSettings = clusterSettings
     this.initFiNodesEdges()
     this.edges = Array.from(this.graph.edges()).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
     this.nodes = Array.from(this.graph.shallowNodes).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
@@ -110,7 +102,6 @@ export class FastIncrementalLayout extends Algorithm {
       Array.from(this.graph.Clusters),
       settings.AvoidOverlaps,
       settings.MinConstraintLevel,
-      this.clusterSettings,
       (g) => this.getRB(g),
     )
     const orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
@@ -123,7 +114,6 @@ export class FastIncrementalLayout extends Algorithm {
       Array.from(this.graph.Clusters),
       this.settings.AvoidOverlaps,
       this.settings.minConstraintLevel,
-      this.clusterSettings,
       (g) => this.getRB(g),
     )
     this.SetupConstraints()
@@ -199,7 +189,6 @@ export class FastIncrementalLayout extends Algorithm {
       this.horizontalSolver.structuralConstraints,
       this.verticalSolver.structuralConstraints,
       Array.from(this.graph.Clusters),
-      this.clusterSettings,
       (g) => this.getRB(g),
     )
     this.settings.Unconverge()

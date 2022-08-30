@@ -250,13 +250,13 @@ export class FastIncrementalLayoutSettings {
   //
 
   public InitializeLayoutGN(graph: GeomGraph, initialConstraintLevel: number) {
-    this.InitializeLayout(graph, initialConstraintLevel, () => this)
+    this.InitializeLayout(graph, initialConstraintLevel)
   }
 
   //  Initialize the layout algorithm
 
-  public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number, clusterSettings: (a: GeomGraph) => any) {
-    this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel, clusterSettings)
+  public InitializeLayout(graph: GeomGraph, initialConstraintLevel: number) {
+    this.algorithm = new FastIncrementalLayout(graph, this, initialConstraintLevel)
     this.ResetLayout()
   }
 
@@ -275,12 +275,12 @@ export class FastIncrementalLayoutSettings {
   //
 
   public IncrementalRunG(graph: GeomGraph) {
-    this.IncrementalRunGF(graph, () => this)
+    this.IncrementalRunGF(graph)
   }
 
-  private SetupIncrementalRun(graph: GeomGraph, clusterSettings: (g: GeomGraph) => any) {
+  private SetupIncrementalRun(graph: GeomGraph) {
     if (!this.IsInitialized) {
-      this.InitializeLayout(graph, this.MaxConstraintLevel, clusterSettings)
+      this.InitializeLayout(graph, this.MaxConstraintLevel)
     } else if (this.IsDone) {
       //  If we were already done from last time but we are doing more work then something has changed.
       this.ResetLayout()
@@ -289,20 +289,20 @@ export class FastIncrementalLayoutSettings {
 
   //  Run the FastIncrementalLayout instance incrementally
 
-  public IncrementalRunGF(graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
-    this.SetupIncrementalRun(graph, clusterSettings)
+  public IncrementalRunGF(graph: GeomGraph) {
+    this.SetupIncrementalRun(graph)
     this.algorithm.run()
     // graph.UpdateBoundingBox()
   }
 
   //
 
-  public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph, clusterSettings: (a: GeomGraph) => any) {
+  public IncrementalRun(cancelToken: CancelToken, graph: GeomGraph) {
     if (cancelToken != null) {
       cancelToken.throwIfCanceled()
     }
 
-    this.SetupIncrementalRun(graph, clusterSettings)
+    this.SetupIncrementalRun(graph)
     this.algorithm.cancelToken = cancelToken
     this.algorithm.run()
     // graph.UpdateBoundingBox()

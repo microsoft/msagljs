@@ -46,48 +46,18 @@ export class ConstraintGenerator {
 
   PaddingP: number
 
-  //  Padding outside clusters in the parallel direction.
-
-  ClusterPadding: number
-
-  //  Padding outside clusters in the perpendicular direction.
-
-  ClusterPaddingP: number
-
-  //  Default padding value that is used (in both axes) if no padding is specified when
-  //  calling the ConstraintGenerator constructor.
-
-  public static get DefaultPadding(): number {
-    return
-  }
-
-  //  An identifier to avoid duplicates in the ScanLine tree (otherwise the first
-  //  one encountered gets all the neighbours).  This sequence is shared with Clusters,
-  //  which are derived from Node; each Cluster consumes 3 IDs, one for the cluster
-  //  itself and one for each of its fake border nodes.
-  nextNodeId = 0
-
   //  As passed to ctor; if this is true, we are doing horizontal (x) constraint generation,
   //  and must therefore consider whether a smaller vertical movement would remove the overlap.
 
   IsHorizontal: boolean
 
-  //  This form of the constructor uses default values for the padding parameters.
-
-  static constructorB(isHorizontal: boolean) {
-    return ConstraintGenerator.constructorBNN(isHorizontal, ConstraintGenerator.DefaultPadding, ConstraintGenerator.DefaultPadding)
-  }
-
   //  This form of the constructor uses specifies the padding parameters.
-
-  public constructor(isHorizontal: boolean, padding: number, paddingP: number, clusterPadding: number, clusterPaddingP: number) {
+  public constructor(isHorizontal: boolean, padding: number, paddingP: number) {
     this.IsHorizontal = isHorizontal
     this.Padding = padding
     this.PaddingP = paddingP
-    this.ClusterPadding = clusterPadding
-    this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(0, this.Padding, this.PaddingP)
+    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(this.Padding, this.PaddingP)
   }
 
   //  Alternate form of the constructor to allow overriding the default padding.
@@ -95,7 +65,7 @@ export class ConstraintGenerator {
   //  <param name="paddingP">Minimal space between node or cluster rectangles in the secondary (Perpendicular) axis;
   //                          used only when isHorizontal is true, to optimize the direction of movement.</param>
   static constructorBNN(isHorizontal: boolean, padding: number, paddingP: number) {
-    return new ConstraintGenerator(isHorizontal, padding, paddingP, padding, paddingP)
+    return new ConstraintGenerator(isHorizontal, padding, paddingP)
   }
 
   //  Add a new variable to the ConstraintGenerator.
@@ -122,7 +92,7 @@ export class ConstraintGenerator {
     //  It might be worthwhile to add a check to avoid constraint generation in the case that there cannot
     //  be such an overlap on a line, or if the nodes are separated by some amount of distance.
     //Debug.Assert((null != initialCluster), "initialCluster must not be null");
-    const newNode = new OverlapRemovalNode(this.nextNodeId++, userData, position, positionP, size, sizeP, weight)
+    const newNode = new OverlapRemovalNode(initialCluster.nodeList.length, userData, position, positionP, size, sizeP, weight)
     initialCluster.AddNode(newNode)
     return newNode
   }

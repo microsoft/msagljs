@@ -61,13 +61,13 @@ export class RelativeFloatingPort extends FloatingPort {
 
   // Get the location = CenterDelegate() + LocationOffset
 
-  public get /* override */ Location(): Point {
+  public get Location(): Point {
     return this.CenterDelegate().add(this.LocationOffset)
   }
 
   // Get the curve from the node's BoundaryCurve
 
-  public get /* override */ Curve(): ICurve {
+  public get Curve(): ICurve {
     return this.CurveDelegate()
   }
 }

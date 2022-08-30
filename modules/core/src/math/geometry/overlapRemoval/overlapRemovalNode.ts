@@ -15,13 +15,7 @@ export class OverlapRemovalNode {
   //  (except in VERIFY/VERBOSE where it uses ToString()).  When Solve() is complete, the caller
   //  should copy the Node.Position property into whatever property the class specialization for this has.
 
-  UserData: any
-
   //  The string representing the user data object, or a null indicator string.
-
-  protected get UserDataString(): string {
-    return this.UserData == null ? '-0-' : this.UserData.ToString()
-  }
 
   //  The Variable representing this Node (or Cluster border) in the ProjectionSolver passed to
   //  Generate().  Once Solve() is called, this is cleared out.
@@ -115,7 +109,6 @@ export class OverlapRemovalNode {
     }
 
     this.Id = id
-    this.UserData = userData
     this.Position = position
     this.PositionP = positionP
     this.Size = size
@@ -174,32 +167,15 @@ export class OverlapRemovalNode {
     this.Variable.DesiredPos = newPosition
   }
 
-  //  Generate a string representation of the Node.
-
-  //  <returns>A string representation of the Node.</returns>
-  public /* override */ ToString(): string {
-    return String.Format(
-      "Nod '{0}': id {1} p {2:F5} s {3:F5} pP {4:F5} sP {5:F5}",
-      this.UserDataString,
-      this.Id,
-      this.Position,
-      this.Size,
-      this.PositionP,
-      this.SizeP,
-    )
+  public ToString(): string {
+    return this.Position.toString()
   }
 
   public compareTo(other: OverlapRemovalNode): number {
-    let cmp: number = this.Position - other.Position
-    if (cmp == 0) {
-      cmp = this.Id - other.Id
+    const cmp: number = this.Position - other.Position
+    if (cmp === 0) {
+      return this.Id - other.Id
     }
-
     return cmp
-  }
-
-  //  Omitting any of the following violates rule: OverrideMethodsOnComparableTypes.
-  public /* override */ Equals(obj: OverlapRemovalNode): boolean {
-    return this.compareTo(obj) == 0
   }
 }
