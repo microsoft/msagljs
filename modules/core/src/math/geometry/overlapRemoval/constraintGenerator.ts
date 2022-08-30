@@ -58,7 +58,7 @@ export class ConstraintGenerator {
   //  calling the ConstraintGenerator constructor.
 
   public static get DefaultPadding(): number {
-    return 7
+    return
   }
 
   //  An identifier to avoid duplicates in the ScanLine tree (otherwise the first
@@ -87,7 +87,7 @@ export class ConstraintGenerator {
     this.ClusterPadding = clusterPadding
     this.ClusterPaddingP = clusterPaddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(0, 0, this.Padding, this.PaddingP)
+    this.clusterHierarchies = OverlapRemovalCluster.constructorNOANN(0, this.Padding, this.PaddingP)
   }
 
   //  Alternate form of the constructor to allow overriding the default padding.
@@ -125,22 +125,6 @@ export class ConstraintGenerator {
     const newNode = new OverlapRemovalNode(this.nextNodeId++, userData, position, positionP, size, sizeP, weight)
     initialCluster.AddNode(newNode)
     return newNode
-  }
-
-  //  Add a node to a cluster in another hierarchy (a node can be in only one cluster per hierarchy).
-
-  //  @@DCR:  Keep a node->hierarchyParentsList hash and use cluster.parentCluster to traverse to the hierarchy root
-  //             to verify the node is in one cluster per hierarchy.  This will require that the function be
-  //             non-static, hence the rule suppression.
-  //@System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")
-  public AddNodeToCluster(cluster: OverlapRemovalCluster, node: OverlapRemovalNode) {
-    //  Node derives from Cluster so make sure we don't have this - the only way to create
-    //  cluster hierarchies is by AddCluster.
-    if (node instanceof OverlapRemovalCluster) {
-      throw new Error("Argument 'node' must not be a Cluster")
-    }
-
-    cluster.AddNode(node)
   }
 
   //  Generate the necessary constraints to ensure there is no overlap (unless we're doing

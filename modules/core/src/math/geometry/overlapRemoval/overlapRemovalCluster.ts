@@ -98,20 +98,13 @@ export class OverlapRemovalCluster {
 
   NodePaddingP: number
 
-  //  The width (height) of the node along the primary axis, which should be fairly thin
-  //  (along the secondary (perpendicular) axis, it is the full size of the cluster).
-  static get DefaultBorderWidth(): number {
-    return OverlapRemovalGlobalConfiguration.ClusterDefaultBorderWidth
-  }
-
   //  Zero cluster margins. This ctor is currently used only by the generator's DefaultClusterHierarchy,
   //  which by default is created with non-fixed borders and no margins.
-  static constructorNOANN(id: number, userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
-    return new OverlapRemovalCluster(id, userData, 0, 0, padding, paddingP)
+  static constructorNOANN(userData: any, padding: number, paddingP: number): OverlapRemovalCluster {
+    return new OverlapRemovalCluster(userData, 0, 0, padding, paddingP)
   }
 
-  constructor(id: number, userData: any, minSize: number, minSizeP: number, nodePadding: number, nodePaddingP: number) {
-    //super(id, userData, 0, 0, 0, 0, BorderInfo.DefaultFreeWeight)
+  constructor(userData: any, minSize: number, minSizeP: number, nodePadding: number, nodePaddingP: number) {
     this.MinimumSize = minSize
     this.MinimumSizeP = minSizeP
     this.NodePadding = nodePadding
