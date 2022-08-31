@@ -33,6 +33,6 @@ export class FiEdge implements IEdge {
   }
 
   vector(): Point {
-    return this.sourceFiNode.mNode.center.sub(this.targetFiNode.mNode.center)
+    return this.sourceFiNode.geomNode.center.sub(this.targetFiNode.geomNode.center)
   }
 }

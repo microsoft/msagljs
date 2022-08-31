@@ -18,11 +18,11 @@ export class FiNode {
 
   index: number
 
-  mNode: GeomNode
+  geomNode: GeomNode
 
-  mOlapNodeX: OverlapRemovalNode
+  xOlapNode: OverlapRemovalNode
 
-  mOlapNodeY: OverlapRemovalNode
+  yOlapNode: OverlapRemovalNode
 
   previousCenter: Point
 
@@ -34,7 +34,7 @@ export class FiNode {
     return this.center
   }
   set Center(value: Point) {
-    this.mNode.center = value
+    this.geomNode.center = value
     this.center = value
   }
 
@@ -43,10 +43,10 @@ export class FiNode {
   //  and update width and height
 
   ResetBounds() {
-    this.previousCenter = this.mNode.center
-    this.center = this.mNode.center
-    this.Width = this.mNode.width
-    this.Height = this.mNode.height
+    this.previousCenter = this.geomNode.center
+    this.center = this.geomNode.center
+    this.Width = this.geomNode.width
+    this.Height = this.geomNode.height
   }
 
   stayWeight = 1
@@ -60,27 +60,27 @@ export class FiNode {
 
   public constructor(index: number, mNode: GeomNode) {
     this.index = index
-    this.mNode = mNode
+    this.geomNode = mNode
     this.ResetBounds()
   }
 
   getOlapNode(horizontal: boolean): OverlapRemovalNode {
-    return horizontal ? this.mOlapNodeX : this.mOlapNodeY
+    return horizontal ? this.xOlapNode : this.yOlapNode
   }
 
   SetOlapNode(horizontal: boolean, olapNode: OverlapRemovalNode) {
     if (horizontal) {
-      this.mOlapNodeX = olapNode
+      this.xOlapNode = olapNode
     } else {
-      this.mOlapNodeY = olapNode
+      this.yOlapNode = olapNode
     }
   }
 
   SetVariableDesiredPos(horizontal: boolean) {
     if (horizontal) {
-      this.mOlapNodeX.Variable.DesiredPos = this.desiredPosition.x
+      this.xOlapNode.Variable.DesiredPos = this.desiredPosition.x
     } else {
-      this.mOlapNodeY.Variable.DesiredPos = this.desiredPosition.y
+      this.yOlapNode.Variable.DesiredPos = this.desiredPosition.y
     }
   }
 
@@ -95,6 +95,6 @@ export class FiNode {
   }
 
   public ToString(): string {
-    return 'FINode(' + (this.index + ('):' + this.mNode))
+    return 'FINode(' + (this.index + ('):' + this.geomNode))
   }
 }

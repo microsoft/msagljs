@@ -958,9 +958,6 @@ function createNewGeomObj(entity: Entity): GeomObject {
   }
   throw new Error('unsupported type ' + entity)
 }
-function* graphAttrList(graph: Graph): IterableIterator<Attr> {
-  throw new Error('Function not implemented.')
-}
 function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
   const dg = DrawingGraph.getDrawingObj(graph) as DrawingGraph
   if (dg == null) return

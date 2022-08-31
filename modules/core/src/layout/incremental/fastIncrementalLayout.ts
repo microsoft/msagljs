@@ -96,33 +96,14 @@ export class FastIncrementalLayout extends Algorithm {
       this.components.push(this.nodes)
     }
 
-    this.horizontalSolver = new AxisSolver(
-      true,
-      this.nodes,
-      Array.from(this.graph.Clusters),
-      settings.AvoidOverlaps,
-      settings.MinConstraintLevel,
-      (g) => this.getRB(g),
-    )
+    this.horizontalSolver = new AxisSolver(true, this.nodes, settings.AvoidOverlaps, settings.MinConstraintLevel)
     const orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
     orp.AllowDeferToVertical = true
     orp.ConsiderProportionalOverlap = this.settings.applyForces
 
-    this.verticalSolver = new AxisSolver(
-      false,
-      this.nodes,
-      Array.from(this.graph.Clusters),
-      this.settings.AvoidOverlaps,
-      this.settings.minConstraintLevel,
-      (g) => this.getRB(g),
-    )
+    this.verticalSolver = new AxisSolver(false, this.nodes, this.settings.AvoidOverlaps, this.settings.minConstraintLevel)
     this.SetupConstraints()
     this.computeWeight(geometryGraph)
-    for (const c of this.graph.subgraphsDepthFirst) {
-      if (this.getRB(c) == null) {
-        this.setRB(c, new RectangularClusterBoundary())
-      }
-    }
     // if (this.getRB(this.graph) == null) {
     //   this.setRB(this.graph, new RectangularClusterBoundary())
     // }
@@ -188,8 +169,6 @@ export class FastIncrementalLayout extends Algorithm {
       this.nodes,
       this.horizontalSolver.structuralConstraints,
       this.verticalSolver.structuralConstraints,
-      Array.from(this.graph.Clusters),
-      (g) => this.getRB(g),
     )
     this.settings.Unconverge()
   }

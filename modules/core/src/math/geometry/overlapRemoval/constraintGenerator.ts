@@ -25,13 +25,13 @@ export class ConstraintGenerator {
   //  Read-only enumeration of the ClusterHierarchies; new cluster hierarchies are created
   //  by calling AddCluster
 
-  clusterHierarchies: OverlapRemovalCluster
+  nodeHandler: OverlapRemovalCluster
 
   //  The initial, default ClusterHierarchy; a "flat" graph (with no user-defined clusters)
   //  lives entirely in this cluster.
 
   public get DefaultClusterHierarchy(): OverlapRemovalCluster {
-    return this.clusterHierarchies
+    return this.nodeHandler
   }
 
   //  This is the padding in the relevant direction, and the perpendicular padding that is
@@ -57,7 +57,7 @@ export class ConstraintGenerator {
     this.Padding = padding
     this.PaddingP = paddingP
     //  Create the DefaultClusterHierarchy.
-    this.clusterHierarchies = OverlapRemovalCluster.constructorNN(this.Padding, this.PaddingP)
+    this.nodeHandler = OverlapRemovalCluster.constructorNN(this.Padding, this.PaddingP)
   }
 
   //  Alternate form of the constructor to allow overriding the default padding.
@@ -104,7 +104,7 @@ export class ConstraintGenerator {
       parameters = OverlapRemovalParameters.constructorEmpty()
     }
 
-    this.clusterHierarchies.Generate(solver, parameters, this.IsHorizontal)
+    this.nodeHandler.Generate(solver, parameters, this.IsHorizontal)
   }
 
   //  Generates and solves the constraints.
@@ -129,7 +129,7 @@ export class ConstraintGenerator {
     }
 
     const solverSolution: Solution = solver.SolvePar(parameters.SolverParameters)
-    this.clusterHierarchies.UpdateFromVariable()
+    this.nodeHandler.UpdateFromVariable()
 
     return solverSolution
   }

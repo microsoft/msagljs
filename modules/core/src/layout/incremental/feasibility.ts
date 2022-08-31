@@ -31,8 +31,6 @@ export class Feasibility {
     nodes: Iterable<FiNode>,
     horizontalConstraints: Array<IConstraint>,
     verticalConstraints: Array<IConstraint>,
-    clusterHierarchies: Iterable<IGeomGraph>,
-    rectBoundary: (g: IGeomGraph) => RectangularClusterBoundary,
   ) {
     for (const l of settings.locks) {
       l.Project()
@@ -47,7 +45,7 @@ export class Feasibility {
       //  equality constraints and we do not really have any scenarios involving equality constraints at
       //  the moment, and also the fact that it turns off DeferToVertical causes it to resolve too
       //  many overlaps horizontally, so let's skip it for now.
-      const hsSolver = new AxisSolver(true, nodes, clusterHierarchies, level >= 2 && settings.AvoidOverlaps, level, rectBoundary)
+      const hsSolver = new AxisSolver(true, nodes, level >= 2 && settings.AvoidOverlaps, level)
       hsSolver.structuralConstraints = horizontalConstraints
       hsSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty()
       hsSolver.OverlapRemovalParameters.AllowDeferToVertical = true
@@ -56,7 +54,7 @@ export class Feasibility {
       hsSolver.SetDesiredPositions()
       hsSolver.Solve()
       Feasibility.ResetPositions(nodes)
-      const vsSolver = new AxisSolver(false, nodes, clusterHierarchies, level >= 2 && settings.AvoidOverlaps, level, rectBoundary)
+      const vsSolver = new AxisSolver(false, nodes, level >= 2 && settings.AvoidOverlaps, level)
       vsSolver.structuralConstraints = verticalConstraints
       vsSolver.Initialize(dblHpad, dblVpad, (v) => v.Center)
       vsSolver.SetDesiredPositions()
@@ -105,8 +103,8 @@ export class Feasibility {
   // }
   private static ResetPositions(nodes: Iterable<FiNode>) {
     for (const v of nodes) {
-      v.desiredPosition = v.mNode.center
-      v.previousCenter = v.mNode.center
+      v.desiredPosition = v.geomNode.center
+      v.previousCenter = v.geomNode.center
     }
   }
 }

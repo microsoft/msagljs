@@ -5,11 +5,10 @@ import {Point} from '../../math/geometry'
 import {ConstraintGenerator} from '../../math/geometry/overlapRemoval/constraintGenerator'
 import {OverlapRemovalCluster} from '../../math/geometry/overlapRemoval/overlapRemovalCluster'
 import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overlapRemovalParameters'
-import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Solution} from '../../math/projectionSolver/Solution'
 import {Solver} from '../../math/projectionSolver/Solver'
 import {AttributeRegistry} from '../../structs/attributeRegister'
-import {IGeomGraph} from '../initialLayout/iGeomGraph'
+import {GeomGraph} from '../core'
 import {FiNode} from './fiNode'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {IConstraint} from './iConstraint'
@@ -30,11 +29,6 @@ export class AxisSolver {
 
   private nodes: Iterable<FiNode>
 
-  rectBoundary: (
-    //  Wrapper round all the ProjectionSolver stuff.
-    gg: IGeomGraph,
-  ) => RectangularClusterBoundary
-
   //  Do we even need to do a solve?
 
   get NeedSolve(): boolean {
@@ -43,19 +37,11 @@ export class AxisSolver {
 
   //  Have to reinstantiate if any of these parameters change
 
-  constructor(
-    isHorizontal: boolean,
-    nodes: Iterable<FiNode>,
-    clusterHierarchies: Iterable<IGeomGraph>,
-    avoidOverlaps: boolean,
-    constraintLevel: number,
-    rectBoundary: (gg: IGeomGraph) => RectangularClusterBoundary,
-  ) {
+  constructor(isHorizontal: boolean, nodes: Iterable<FiNode>, avoidOverlaps: boolean, constraintLevel: number) {
     this.IsHorizontal = isHorizontal
     this.nodes = nodes
     this.avoidOverlaps = avoidOverlaps
     this.ConstraintLevel = constraintLevel
-    this.rectBoundary = rectBoundary
   }
 
   //  Add the constraint to this axis
@@ -161,13 +147,22 @@ export class AxisSolver {
     }
 
     const center = nodeCenter(filNode)
-    //  We need to create a new Node of the Generator.
+    const isCluster = filNode.geomNode instanceof GeomGraph
+    const clusterPad = isCluster ? 20 : 0
+    //  Add the Generator node with the X-axis coords primary, Y-axis secondary.
+
     if (this.IsHorizontal) {
-      //  Add the Generator node with the X-axis coords primary, Y-axis secondary.
-      filNode.mOlapNodeX = generator.AddNode(olapParentCluster, center.x, center.y, filNode.Width, filNode.Height, filNode.stayWeight)
+      filNode.xOlapNode = generator.AddNode(
+        olapParentCluster,
+        center.x,
+        center.y,
+        filNode.Width + clusterPad,
+        filNode.Height + clusterPad,
+        filNode.stayWeight,
+      )
     } else {
       //  Add the Generator node with the Y-axis coords primary, X-axis secondary.
-      filNode.mOlapNodeY = generator.AddNode(olapParentCluster, center.y, center.x, filNode.Height, filNode.Width, filNode.stayWeight)
+      filNode.yOlapNode = generator.AddNode(olapParentCluster, center.y, center.x, filNode.Height, filNode.Width, filNode.stayWeight)
     }
   }
 }

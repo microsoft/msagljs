@@ -1,7 +1,5 @@
 import {Solver} from '../../projectionSolver/Solver'
 import {Variable} from '../../projectionSolver/Variable'
-import {BorderInfo} from './borderInfo'
-import {String} from 'typescript-string-operations'
 
 //  A node essentially wraps the coordinates of a Variable for the Open and Close Events for
 //  that Variable.  It contains the list of left and right nodes which are immediate neighbours,
@@ -137,7 +135,6 @@ export class OverlapRemovalNode {
     }
   }
 
-  //  Overridden by Cluster.  Called after Solve(); sets the Node position to that of its Variable.
   UpdateFromVariable() {
     //  If the Variable is null then we were already updated from an earlier cluster in
     //  another hierarchy.
