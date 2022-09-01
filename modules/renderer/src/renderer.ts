@@ -1,5 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
 import {TileLayer} from '@deck.gl/geo-layers/typed'
+import {ClipExtension} from '@deck.gl/extensions/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
@@ -243,6 +244,9 @@ export default class Renderer extends EventSource {
         }
         return {nodes, edges}
       },
+      parameters: {
+        depthTest: false,
+      },
       // For debugging
       // onClick: ({sourceLayer}) => {
       //   // @ts-ignore
@@ -251,8 +255,8 @@ export default class Renderer extends EventSource {
       autoHighlight: true,
       onHover: ({object, sourceLayer}) => {
         if (!this._highlightedNodeId) {
-          if (sourceLayer.id.endsWith('nodes')) {
-            this._highlight(object?.id)
+          if (sourceLayer.id.endsWith('nodes') && object && !(object instanceof GeomGraph)) {
+            this._highlight(object.id)
           } else {
             this._highlight(null)
           }
@@ -282,19 +286,6 @@ export default class Renderer extends EventSource {
           //   lineWidthUnits: 'pixels',
           // }),
 
-          new EdgeLayer({
-            id: id + 'edges',
-            data: data.edges,
-            clipBounds: rect,
-            getWidth: 1,
-            getDepth: this._graphHighlighter.edgeDepth,
-            resolution: 2 ** (tile.index.z - 2),
-            fontFamily: fontSettings.fontFamily,
-            fontWeight: fontSettings.fontWeight,
-            lineHeight: fontSettings.lineHeight,
-            getTextSize: fontSettings.fontSize,
-          }),
-
           new NodeLayer({
             id: id + 'nodes',
             data: data.nodes,
@@ -307,6 +298,23 @@ export default class Renderer extends EventSource {
             lineHeight: fontSettings.lineHeight,
             getTextSize: fontSettings.fontSize,
             pickable: true,
+            // @ts-ignore
+            clipBounds: [left, top, right, bottom],
+            clipByInstance: false,
+            extensions: [new ClipExtension()],
+          }),
+
+          new EdgeLayer({
+            id: id + 'edges',
+            data: data.edges,
+            clipBounds: rect,
+            getWidth: 1,
+            getDepth: this._graphHighlighter.edgeDepth,
+            resolution: 2 ** (tile.index.z - 2),
+            fontFamily: fontSettings.fontFamily,
+            fontWeight: fontSettings.fontWeight,
+            lineHeight: fontSettings.lineHeight,
+            getTextSize: fontSettings.fontSize,
           }),
         ]
       },

@@ -76,7 +76,7 @@ function getCornerRadius(n: GeomNode): number {
 function getNodeColor(e: GeomNode): [number, number, number, number] {
   const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(e.node)
   if (drawingNode) {
-    const color = drawingNode.color
+    const color = drawingNode.pencolor
     if (color) return [color.R, color.G, color.B, color.A]
   }
   return [0, 0, 0, 255]
