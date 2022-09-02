@@ -2,7 +2,6 @@ import {Point, Rectangle} from '../../math/geometry'
 import {GeomEdge, GeomNode} from '../core'
 
 export interface IGeomGraph {
-  calculateBoundsFromChildren(clusterMargin: number): void
   Clusters: IterableIterator<IGeomGraph>
   subgraphsDepthFirst: IterableIterator<IGeomGraph>
   uniformMargins: number

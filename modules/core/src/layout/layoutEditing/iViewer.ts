@@ -61,11 +61,11 @@ export interface IViewer {
 
   //  forcing redraw of the object
 
-  Invalidate(objectToInvalidate: IViewerObject)
+  Invalidate(objectToInvalidate: IViewerObject): void
 
   //  invalidates everything
 
-  Invalidate()
+  InvalidateAll(): void
 
   //  is raised after the graph is changed
 
@@ -94,7 +94,7 @@ export interface IViewer {
 
   //  this method should be called on the end of the dragging
 
-  OnDragEnd(changedObjects: Iterable<IViewerObject>)
+  OnDragEnd(changedObjects: Iterable<IViewerObject>): void
 
   //  The scale dependent width of an edited curve that should be clearly visible.
   //  Used in the default entity editing.
@@ -112,7 +112,7 @@ export interface IViewer {
 
   //  Pops up a pop up menu with a menu item for each couple, the string is the title and the delegate is the callback
 
-  PopupMenus(menuItems: Array<[string, () => void]>)
+  PopupMenus(menuItems: Array<[string, () => void]>): void
 
   //  The radius of the circle drawn around a polyline corner
 
@@ -136,7 +136,7 @@ export interface IViewer {
 
   //  stop drawing the rubber line
 
-  StopDrawingRubberLine()
+  StopDrawingRubberLine(): void
 
   //  add an edge to the viewer graph
 
@@ -175,19 +175,19 @@ export interface IViewer {
 
   //  creates the port visual if it does not exist, and sets the port location
 
-  SetSourcePortForEdgeRouting(portLocation: Point)
+  SetSourcePortForEdgeRouting(portLocation: Point): void
 
   //  creates the port visual if it does not exist, and sets the port location
 
-  SetTargetPortForEdgeRouting(portLocation: Point)
+  SetTargetPortForEdgeRouting(portLocation: Point): void
 
   //  removes the port
 
-  RemoveSourcePortEdgeRouting()
+  RemoveSourcePortEdgeRouting(): void
 
   //  removes the port
 
-  RemoveTargetPortEdgeRouting()
+  RemoveTargetPortEdgeRouting(): void
 
   //
 

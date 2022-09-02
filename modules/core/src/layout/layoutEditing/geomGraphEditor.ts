@@ -539,7 +539,7 @@ export class GeometryGraphEditor {
   }
 
   static Middle(iCurve: ICurve): Point {
-    return iCurve[iCurve.parStart + 0.5 * (iCurve.parEnd - iCurve.parStart)]
+    return iCurve.value(0.5 * iCurve.parStart + 0.5 * iCurve.parEnd)
   }
 
   static *GetMultiEdges(node: GeomNode): IterableIterator<Array<GeomEdge>> {

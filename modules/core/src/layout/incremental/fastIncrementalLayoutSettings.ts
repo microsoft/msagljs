@@ -1,13 +1,8 @@
-import {LinkedList} from '@esfx/collections'
-import {Rectangle} from '../../math/geometry'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CancelToken} from '../../utils/cancelToken'
-import {GeomGraph, GeomNode} from '../core'
-import {EdgeConstraints} from '../edgeConstraints'
+import {GeomGraph} from '../core'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {FastIncrementalLayout} from './fastIncrementalLayout'
-import {IConstraint} from './iConstraint'
-import {LockPosition} from './lockPosition'
 
 export class FastIncrementalLayoutSettings {
   get edgeRoutingSettings() {
@@ -202,33 +197,6 @@ export class FastIncrementalLayoutSettings {
 
   algorithm: FastIncrementalLayout
 
-  locks: LinkedList<LockPosition> = new LinkedList<LockPosition>()
-
-  //  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
-  //  for example, do interactive mouse
-  //   dragging.
-  //  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
-  //  constant time.
-
-  //  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
-  public CreateLockNR(node: GeomNode, bounds: Rectangle): LockPosition {
-    const lp: LockPosition = new LockPosition(node, bounds, (g) => this.algorithm.getRB(g))
-    lp.listNode = this.locks.push(lp)
-    return lp
-  }
-
-  //  Add a LockPosition for each node whose position you want to keep fixed.  LockPosition allows you to,
-  //  for example, do interactive mouse dragging.
-  //  We return the LinkedListNode which you can store together with your local GeomNode object so that a RemoveLock operation can be performed in
-  //  constant time.
-
-  //  <returns>LinkedListNode which you should hang on to if you want to call RemoveLock later on.</returns>
-  public CreateLock(node: GeomNode, bounds: Rectangle, weight: number): LockPosition {
-    const lp: LockPosition = LockPosition.constructorNRN(node, bounds, weight, (g) => this.algorithm.getRB(g))
-    lp.listNode = this.locks.push(lp)
-    return lp
-  }
-
   constructor() {
     this.commonSettings.NodeSeparation *= 2
   }
@@ -238,19 +206,14 @@ export class FastIncrementalLayoutSettings {
     this.Unconverge()
     if (this.algorithm != null) {
       this.algorithm.ResetNodePositions()
-      this.algorithm.SetLockNodeWeights()
     }
   }
 
-  //  reset iterations and convergence status
-
+  /**   reset iterations and convergence status*/
   Unconverge() {
     this.iterations = 0
-    // EdgeRoutesUpToDate = false;
     this.converged = false
   }
-
-  //
 
   public InitializeLayoutGN(graph: GeomGraph, initialConstraintLevel: number) {
     this.InitializeLayout(graph, initialConstraintLevel)
@@ -311,39 +274,8 @@ export class FastIncrementalLayoutSettings {
     // graph.UpdateBoundingBox()
   }
 
-  //  Clones the object
-
-  //  <returns></returns>
   Clone(): FastIncrementalLayoutSettings {
     return FastIncrementalLayoutSettings.ctorClone(this)
-  }
-
-  //
-
-  public get StructuralConstraints(): Iterable<IConstraint> {
-    return this.structuralConstraints
-  }
-
-  //
-
-  public AddStructuralConstraint(cc: IConstraint) {
-    this.structuralConstraints.push(cc)
-  }
-
-  structuralConstraints: Array<IConstraint> = new Array<IConstraint>()
-
-  //  Clear all constraints over the graph
-
-  public ClearConstraints() {
-    this.locks.clear()
-    this.structuralConstraints = []
-    //  clusterHierarchies.Clear();
-  }
-
-  //
-
-  public ClearStructuralConstraints() {
-    this.structuralConstraints = []
   }
 
   //  Avoid overlaps between nodes boundaries, and if there are any
@@ -529,7 +461,6 @@ export class FastIncrementalLayoutSettings {
     ret.gravity = previousSettings.gravity
     ret.interComponentForces = previousSettings.interComponentForces
     ret.applyForces = previousSettings.applyForces
-    ret.edgeConstrains = previousSettings.edgeConstrains
     ret.AvoidOverlaps = previousSettings.AvoidOverlaps
     ret.RespectEdgePorts = previousSettings.RespectEdgePorts
     ret.RouteEdges = previousSettings.RouteEdges
@@ -555,20 +486,6 @@ export class FastIncrementalLayoutSettings {
   }
   public set ClusterGravity(value: number) {
     this.clusterGravity = value
-  }
-
-  /**   Settings for calculation of ideal edge length*/
-  edgeConstrains: EdgeConstraints = new EdgeConstraints()
-  updateClusterBoundaries = true
-
-  //  Force groups to follow their constituent nodes,
-  //  true by default.
-
-  public get UpdateClusterBoundariesFromChildren(): boolean {
-    return this.updateClusterBoundaries
-  }
-  public set UpdateClusterBoundariesFromChildren(value: boolean) {
-    this.updateClusterBoundaries = value
   }
 
   //      creates the settings that seems working
@@ -600,7 +517,6 @@ export class FastIncrementalLayoutSettings {
     f.RespectEdgePorts = false
     f.RouteEdges = false
     f.RungeKuttaIntegration = true
-    f.UpdateClusterBoundariesFromChildren = true
     f.NodeSeparation = 20
     return f
   }

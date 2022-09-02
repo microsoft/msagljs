@@ -113,21 +113,14 @@ export class InitialLayout extends Algorithm {
     component.translate(component.boundingBox.leftBottom.mul(-1))
   }
 
-  //  Get the distinct ConstraintLevels that need to be applied to layout.
-  //  Used by InitialLayout.
-  //  Will only include ConstraintLevel == 1 if there are structural constraints
-  //  Will only include ConstraintLevel == 2 if AvoidOverlaps is on and there are fewer than 2000 nodes
-
-  //  <returns>0, 1 or 2</returns>
+  /** returns 0, 1 or 2:
+   *   Get the distinct ConstraintLevels that need to be applied to layout.
+    Used by InitialLayout.
+   Will only include ConstraintLevel == 2 if AvoidOverlaps is on and there are fewer than 2000 nodes
+   */
   GetConstraintLevels(component: IGeomGraph): Iterable<number> {
     const keys = new Set<number>()
-    for (const c of this.settings.StructuralConstraints) {
-      keys.add(c.Level)
-    }
     keys.add(0)
-    if (this.settings.edgeConstrains.Direction != Direction.None) {
-      keys.add(1)
-    }
     if (this.settings.AvoidOverlaps && component.shallowNodeCount < 2000) {
       keys.add(2)
     }

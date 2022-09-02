@@ -9,9 +9,6 @@ export class GeomConnectedComponent implements IGeomGraph {
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
   }
-  calculateBoundsFromChildren(clusterMargin: number) {
-    throw new Error('Method not implemented.')
-  }
   get deepNodes(): IterableIterator<GeomNode> {
     return this.deepNodes_()
   }

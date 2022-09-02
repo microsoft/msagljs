@@ -2,7 +2,6 @@ import {Algorithm} from '../../utils/algorithm'
 import {BasicGraphOnEdges, mkGraphOnEdgesN} from '../../structs/basicGraphOnEdges'
 import {FiEdge} from './fiEdge'
 import {FiNode, getFiNode} from './fiNode'
-import {IConstraint} from './iConstraint'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
 import {GeomNode} from '../core'
@@ -11,18 +10,13 @@ import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {AlgorithmData} from '../../structs/algorithmData'
 import {GetConnectedComponents as getConnectedComponents} from '../../math/graphAlgorithms/ConnectedComponentCalculator'
-import {OverlapRemovalParameters} from '../../math/geometry/overlapRemoval/overlapRemovalParameters'
 import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
-import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
-import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {Assert} from '../../utils/assert'
-import {EdgeConstraintGenerator} from './edgeConstraintsGenerator'
 
 import {KDTree, Particle} from './multipole/kdTree'
 import {MultipoleCoefficients} from './multipole/multipoleCoefficients'
 import {GeomObject} from '../core/geomObject'
 import {Graph} from '../../structs/graph'
-import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 /** 
   Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
   It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -32,8 +26,6 @@ export class FastIncrementalLayout extends Algorithm {
   basicGraph: BasicGraphOnEdges<FiEdge>
 
   components: Array<FiNode[]>
-
-  constraints = new Map<number, Array<IConstraint>>()
 
   edges: Array<FiEdge>
   nodes: Array<FiNode>
@@ -75,7 +67,6 @@ export class FastIncrementalLayout extends Algorithm {
     this.initFiNodesEdges()
     this.edges = Array.from(this.graph.edges()).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
     this.nodes = Array.from(this.graph.shallowNodes).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
-    this.SetLockNodeWeights()
     this.components = new Array<FiNode[]>()
     if (!this.settings.InterComponentForces) {
       this.basicGraph = mkGraphOnEdgesN(this.edges, this.nodes.length)
@@ -116,26 +107,6 @@ export class FastIncrementalLayout extends Algorithm {
     }
   }
 
-  SetupConstraints() {
-    this.AddConstraintLevel(0)
-    if (this.settings.AvoidOverlaps) {
-      this.AddConstraintLevel(2)
-    }
-
-    for (const c of this.settings.StructuralConstraints) {
-      this.AddConstraintLevel(c.Level)
-      if (c instanceof VerticalSeparationConstraint) {
-        throw new Error() //this.verticalSolver.AddStructuralConstraint(c)
-      } else if (c instanceof HorizontalSeparationConstraint) {
-        throw new Error() //this.horizontalSolver.AddStructuralConstraint(c)
-      } else {
-        this.AddConstraint(c)
-      }
-    }
-
-    EdgeConstraintGenerator.GenerateEdgeConstraints(this.graph.edges(), this.settings.edgeConstrains)
-  }
-
   currentConstraintLevel: number
 
   //  Controls which constraints are applied of CalculateLayout.  Setter enforces feasibility at that level.
@@ -151,27 +122,7 @@ export class FastIncrementalLayout extends Algorithm {
   //  Add constraint to constraints lists.  Warning, no check that dictionary alread holds a list for the level.
   //  Make sure you call AddConstraintLevel first (perf).
 
-  AddConstraint(c: IConstraint) {
-    if (!this.constraints.has(c.Level)) {
-      this.constraints.set(c.Level, new Array<IConstraint>())
-    }
-
-    this.constraints.get(c.Level).push(c)
-  }
-
   //  Check for constraint level of dictionary, if it doesn't exist add the list at that level.
-
-  AddConstraintLevel(level: number) {
-    if (!this.constraints.has(level)) {
-      this.constraints.set(level, new Array<IConstraint>())
-    }
-  }
-
-  SetLockNodeWeights() {
-    for (const l of this.settings.locks) {
-      l.SetLockNodeWeight()
-    }
-  }
 
   ResetNodePositions() {
     for (const v of this.nodes) {
@@ -406,38 +357,6 @@ export class FastIncrementalLayout extends Algorithm {
     this.AddClusterForces(this.graph)
   }
 
-  SatisfyConstraints() {
-    for (let i = 0; i < this.settings.ProjectionIterations; i++) {
-      for (const level of this.constraints.keys()) {
-        if (level > this.getCurrentConstraintLevel()) {
-          break
-        }
-
-        for (const c of this.constraints.get(level)) {
-          c.Project()
-          //  c.Project operates only on MSAGL nodes, so need to update the local FiNode.Centers
-          for (const v of c.Nodes) {
-            const fiNode = getFiNode(v)
-            fiNode.Center = v.center
-          }
-        }
-      }
-
-      for (const l of this.settings.locks) {
-        l.Project()
-        //  again, project operates only on MSAGL nodes, we'll also update FiNode.PreviousPosition since we don't want any inertia of this case
-        for (const v of l.Nodes) {
-          const fiNode: FiNode = getFiNode(v)
-          //  the locks should have had their AlgorithmData updated, but if (for some reason)
-          //  the locks list is out of date we don't want to null ref here.
-          if (fiNode != null) {
-            fiNode.ResetBounds()
-          }
-        }
-      }
-    }
-  }
-
   //  Checks if solvers need to be applied, i.e. if there are user constraints or
   //  generated constraints (such as non-overlap) that need satisfying
 
@@ -487,7 +406,6 @@ export class FastIncrementalLayout extends Algorithm {
       v.Center = v.Center.add(dx)
     }
 
-    this.SatisfyConstraints()
     return lEnergy
   }
 
@@ -520,7 +438,6 @@ export class FastIncrementalLayout extends Algorithm {
     const k3 = new Array<Point>(this.nodes.length)
     const k4 = new Array<Point>(this.nodes.length)
     const energy0: number = this.energy
-    this.SatisfyConstraints()
     for (let i = 0; i < this.nodes.length; i++) {
       this.nodes[i].previousCenter = this.nodes[i].Center
       y0[i] = this.nodes[i].Center

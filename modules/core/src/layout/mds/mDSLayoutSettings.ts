@@ -1,5 +1,4 @@
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
-import {EdgeConstraints, EdgeConstraintsJSON} from '../edgeConstraints'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 export type MdsLayoutSettingsJSON = {
   pivotNumber?: number
@@ -17,7 +16,6 @@ export type MdsLayoutSettingsJSON = {
   removeOverlaps?: boolean
 
   _callIterationsWithMajorizationThreshold?: number
-  edgeConstraints?: EdgeConstraintsJSON
 }
 /** Settings for multi-dimensional scaling */
 export class MdsLayoutSettings {
