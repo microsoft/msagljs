@@ -10,7 +10,6 @@ import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {AlgorithmData} from '../../structs/algorithmData'
 import {GetConnectedComponents as getConnectedComponents} from '../../math/graphAlgorithms/ConnectedComponentCalculator'
-import {RectangularClusterBoundary} from '../../math/geometry/overlapRemoval/rectangularClusterBoundary'
 import {Assert} from '../../utils/assert'
 
 import {KDTree, Particle} from './multipole/kdTree'
@@ -30,7 +29,7 @@ export class FastIncrementalLayout extends Algorithm {
   edges: Array<FiEdge>
   nodes: Array<FiNode>
 
-  clustersInfo = new Map<IGeomGraph, {barycenter: Point; weight?: number; rectBoundary?: RectangularClusterBoundary}>()
+  clustersInfo = new Map<IGeomGraph, {barycenter: Point; weight?: number}>()
 
   /**  Holds the derivative of the cost function calculated of the most recent iteration.*/
   energy: number
@@ -44,19 +43,6 @@ export class FastIncrementalLayout extends Algorithm {
   stepSize: number
 
   clusterEdges: Array<Edge> = new Array<Edge>()
-
-  getRB(g: IGeomGraph): RectangularClusterBoundary | undefined {
-    const t = this.clustersInfo.get(g)
-    return t ? t.rectBoundary : undefined
-  }
-
-  setRB(g: IGeomGraph, rb: RectangularClusterBoundary) {
-    const t = this.clustersInfo.get(g)
-    if (t == null) {
-      this.clustersInfo.set(g, {barycenter: new Point(0, 0)})
-    }
-    t.rectBoundary = rb
-  }
 
   //  Create the graph data structures.
 

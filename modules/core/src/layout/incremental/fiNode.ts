@@ -1,7 +1,6 @@
 //  Wrapper for GeomNode node to add force and velocity vectors
 
 import {Point} from '../../math/geometry'
-import {OverlapRemovalNode} from '../../math/geometry/overlapRemoval/overlapRemovalNode'
 import {AlgorithmData} from '../../structs/algorithmData'
 import {GeomNode} from '../core'
 
@@ -19,10 +18,6 @@ export class FiNode {
   index: number
 
   geomNode: GeomNode
-
-  xOlapNode: OverlapRemovalNode
-
-  yOlapNode: OverlapRemovalNode
 
   previousCenter: Point
 
@@ -64,35 +59,7 @@ export class FiNode {
     this.ResetBounds()
   }
 
-  getOlapNode(horizontal: boolean): OverlapRemovalNode {
-    return horizontal ? this.xOlapNode : this.yOlapNode
-  }
-
-  SetOlapNode(horizontal: boolean, olapNode: OverlapRemovalNode) {
-    if (horizontal) {
-      this.xOlapNode = olapNode
-    } else {
-      this.yOlapNode = olapNode
-    }
-  }
-
-  SetVariableDesiredPos(horizontal: boolean) {
-    if (horizontal) {
-      this.xOlapNode.Variable.DesiredPos = this.desiredPosition.x
-    } else {
-      this.yOlapNode.Variable.DesiredPos = this.desiredPosition.y
-    }
-  }
-
   //  Update the current X or Y coordinate of the node center from the result of a solve
-
-  UpdatePos(horizontal: boolean) {
-    if (horizontal) {
-      this.Center = new Point(this.getOlapNode(true).Position, this.previousCenter.y)
-    } else {
-      this.Center = new Point(this.Center.x, this.getOlapNode(false).Position)
-    }
-  }
 
   public ToString(): string {
     return 'FINode(' + (this.index + ('):' + this.geomNode))
