@@ -8,7 +8,6 @@ import {Edge} from '../../structs/edge'
 import {GeomNode} from '../core'
 import {FloatingPort} from '../core/floatingPort'
 import {FastIncrementalLayoutSettings} from './fastIncrementalLayoutSettings'
-import {AxisSolver} from './axisSolver'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {AlgorithmData} from '../../structs/algorithmData'
 import {GetConnectedComponents as getConnectedComponents} from '../../math/graphAlgorithms/ConnectedComponentCalculator'
@@ -18,11 +17,12 @@ import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
 import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
 import {Assert} from '../../utils/assert'
 import {EdgeConstraintGenerator} from './edgeConstraintsGenerator'
-import {Feasibility} from './feasibility'
+
 import {KDTree, Particle} from './multipole/kdTree'
 import {MultipoleCoefficients} from './multipole/multipoleCoefficients'
 import {GeomObject} from '../core/geomObject'
 import {Graph} from '../../structs/graph'
+import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 /** 
   Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
   It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
@@ -45,15 +45,11 @@ export class FastIncrementalLayout extends Algorithm {
 
   graph: IGeomGraph
 
-  horizontalSolver: AxisSolver
-
   progress: number
 
   settings: FastIncrementalLayoutSettings
 
   stepSize: number
-
-  verticalSolver: AxisSolver
 
   clusterEdges: Array<Edge> = new Array<Edge>()
 
@@ -96,13 +92,6 @@ export class FastIncrementalLayout extends Algorithm {
       this.components.push(this.nodes)
     }
 
-    this.horizontalSolver = new AxisSolver(true, this.nodes, settings.AvoidOverlaps, settings.MinConstraintLevel)
-    const orp = (this.horizontalSolver.OverlapRemovalParameters = OverlapRemovalParameters.constructorEmpty())
-    orp.AllowDeferToVertical = true
-    orp.ConsiderProportionalOverlap = this.settings.applyForces
-
-    this.verticalSolver = new AxisSolver(false, this.nodes, this.settings.AvoidOverlaps, this.settings.minConstraintLevel)
-    this.SetupConstraints()
     this.computeWeight(geometryGraph)
     // if (this.getRB(this.graph) == null) {
     //   this.setRB(this.graph, new RectangularClusterBoundary())
@@ -136,20 +125,15 @@ export class FastIncrementalLayout extends Algorithm {
     for (const c of this.settings.StructuralConstraints) {
       this.AddConstraintLevel(c.Level)
       if (c instanceof VerticalSeparationConstraint) {
-        this.verticalSolver.AddStructuralConstraint(c)
+        throw new Error() //this.verticalSolver.AddStructuralConstraint(c)
       } else if (c instanceof HorizontalSeparationConstraint) {
-        this.horizontalSolver.AddStructuralConstraint(c)
+        throw new Error() //this.horizontalSolver.AddStructuralConstraint(c)
       } else {
         this.AddConstraint(c)
       }
     }
 
-    EdgeConstraintGenerator.GenerateEdgeConstraints(
-      this.graph.edges(),
-      this.settings.edgeConstrains,
-      this.horizontalSolver,
-      this.verticalSolver,
-    )
+    EdgeConstraintGenerator.GenerateEdgeConstraints(this.graph.edges(), this.settings.edgeConstrains)
   }
 
   currentConstraintLevel: number
@@ -161,15 +145,6 @@ export class FastIncrementalLayout extends Algorithm {
   }
   setCurrentConstraintLevel(value: number) {
     this.currentConstraintLevel = value
-    this.horizontalSolver.ConstraintLevel = value
-    this.verticalSolver.ConstraintLevel = value
-    Feasibility.Enforce(
-      this.settings,
-      value,
-      this.nodes,
-      this.horizontalSolver.structuralConstraints,
-      this.verticalSolver.structuralConstraints,
-    )
     this.settings.Unconverge()
   }
 
@@ -466,11 +441,6 @@ export class FastIncrementalLayout extends Algorithm {
   //  Checks if solvers need to be applied, i.e. if there are user constraints or
   //  generated constraints (such as non-overlap) that need satisfying
 
-  //  <returns></returns>
-  NeedSolve(): boolean {
-    return this.horizontalSolver.NeedSolve || this.verticalSolver.NeedSolve
-  }
-
   //  Force directed layout is basically an iterative approach to solving a bunch of differential equations.
   //  Different integration schemes are possible for applying the forces iteratively.  Euler is the simplest:
   //   v_(i+1) = v_i + a dt
@@ -484,7 +454,7 @@ export class FastIncrementalLayout extends Algorithm {
     const energy0: number = this.energy
     this.energy = this.ComputeDescentDirection(1)
     this.UpdateStepSize(energy0)
-    this.SolveSeparationConstraints()
+
     let displacementSquared = 0
     for (let i = 0; i < this.nodes.length; i++) {
       const v: FiNode = this.nodes[i]
@@ -492,38 +462,6 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     return displacementSquared
-  }
-
-  SolveSeparationConstraints() {
-    if (this.NeedSolve()) {
-      //  Increasing the padding effectively increases the size of the rectangle, so it will lead to more overlaps,
-      //  and therefore tighter packing once the overlap is removed and therefore more apparent "columnarity".
-      //  We don't want to drastically change the shape of the rectangles, just increase them ever so slightly so that
-      //  there is a bit more space of the horizontal than vertical direction, thus reducing the likelihood that
-      //  the vertical constraint generation will detect spurious overlaps, which should allow the nodes to slide
-      //  smoothly around each other.  ConGen padding args are:  First pad is of direction of the constraints being
-      //  generated, second pad is of the perpendicular direction.
-      const dblVpad: number = this.settings.NodeSeparation
-      const dblHpad: number = dblVpad + Feasibility.Pad
-      //  The centers are our desired positions, but we need to find a feasible configuration
-      for (const v of this.nodes) {
-        v.desiredPosition = v.Center
-      }
-
-      //  Set up horizontal non-overlap constraints based on the (feasible) starting configuration
-      this.horizontalSolver.Initialize(dblHpad, dblVpad, (v) => v.previousCenter)
-      this.horizontalSolver.SetDesiredPositions()
-      this.horizontalSolver.Solve()
-      //  generate y constraints
-      this.verticalSolver.Initialize(dblHpad, dblVpad, (v) => v.Center)
-      this.verticalSolver.SetDesiredPositions()
-      this.verticalSolver.Solve()
-      //  If we have multiple locks (hence multiple high-weight nodes), there can still be some
-      //  movement of the locked variables - so update all lock positions.
-      for (const l of this.settings.locks) {
-        if (!l.Sticky) l.Bounds = l.node.boundingBox
-      }
-    }
   }
 
   ComputeDescentDirection(alpha: number): number {
@@ -619,7 +557,7 @@ export class FastIncrementalLayout extends Algorithm {
     }
 
     this.UpdateStepSize(energy0)
-    this.SolveSeparationConstraints()
+
     return this.nodes.reduce((prevSum, v) => v.Center.sub(v.previousCenter).lengthSquared + prevSum, 0)
   }
 

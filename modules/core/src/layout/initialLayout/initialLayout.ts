@@ -9,6 +9,7 @@ import {IGeomGraph} from './iGeomGraph'
 import {GeomConnectedComponent} from './geomConnectedComponent'
 import {LayoutAlgorithmHelpers} from './layoutAlgorithmHelpers'
 import {Assert} from '../../utils/assert'
+import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 
 //  Methods for obtaining an initial layout of a graph using various means.
 
@@ -99,6 +100,9 @@ export class InitialLayout extends Algorithm {
         do {
           fil.run()
         } while (!this.settings.IsDone)
+      }
+      if (this.settings.AvoidOverlaps) {
+        GTreeOverlapRemoval.RemoveOverlaps(Array.from(this.graph.shallowNodes), this.settings.NodeSeparation)
       }
     }
 

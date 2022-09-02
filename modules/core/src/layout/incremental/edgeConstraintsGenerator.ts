@@ -2,9 +2,6 @@ import {LinkedList, LinkedListNode} from '@esfx/collections'
 import {Direction} from '../../math/geometry'
 import {GeomNode, GeomEdge} from '../core'
 import {EdgeConstraints} from '../edgeConstraints'
-import {AxisSolver} from './axisSolver'
-import {HorizontalSeparationConstraint} from './horizontalSeparationConstraints'
-import {VerticalSeparationConstraint} from './verticalSeparationConstraint'
 
 export class TNode {
   stackNode: LinkedListNode<TNode>
@@ -36,10 +33,6 @@ export class EdgeConstraintGenerator {
 
   component: Array<TNode>
 
-  horizontalSolver: AxisSolver
-
-  verticalSolver: AxisSolver
-
   cyclicComponents: Array<Set<GeomNode>> = new Array<Set<GeomNode>>()
 
   /** 
@@ -48,26 +41,19 @@ export class EdgeConstraintGenerator {
   //  of a cycle receive no VerticalSeparationConstraint, but can optionally receive a circle constraint.
   This is not tested
 */
-  static GenerateEdgeConstraints(
-    edges: Iterable<GeomEdge>,
-    settings: EdgeConstraints,
-    horizontalSolver: AxisSolver,
-    verticalSolver: AxisSolver,
-  ) {
+  static GenerateEdgeConstraints(edges: Iterable<GeomEdge>, settings: EdgeConstraints) {
     if (settings.Direction == Direction.None) {
       return
     }
 
-    const g: EdgeConstraintGenerator = new EdgeConstraintGenerator(edges, settings, horizontalSolver, verticalSolver)
+    const g: EdgeConstraintGenerator = new EdgeConstraintGenerator(edges, settings)
     g.GenerateSeparationConstraints()
   }
 
-  constructor(edges: Iterable<GeomEdge>, settings: EdgeConstraints, horizontalSolver: AxisSolver, verticalSolver: AxisSolver) {
+  constructor(edges: Iterable<GeomEdge>, settings: EdgeConstraints) {
     //  filter out self edges
     this.edges = Array.from(this.edges).filter((e) => e.source != e.target)
     this.settings = settings
-    this.horizontalSolver = horizontalSolver
-    this.verticalSolver = verticalSolver
     for (const e of this.edges) {
       const v: TNode = this.CreateTNode(e.target)
       const u: TNode = this.CreateTNode(e.source)
@@ -113,27 +99,19 @@ export class EdgeConstraintGenerator {
   private addConstraint: (u: GeomNode, v: GeomNode) => void
 
   private AddSConstraint(u: GeomNode, v: GeomNode) {
-    this.verticalSolver.AddStructuralConstraint(
-      VerticalSeparationConstraint.constructorNNN(u, v, (u.height + v.height) / 2 + this.settings.Separation),
-    )
+    throw new Error()
   }
 
   private AddNConstraint(u: GeomNode, v: GeomNode) {
-    this.verticalSolver.AddStructuralConstraint(
-      VerticalSeparationConstraint.constructorNNN(v, u, (u.height + v.height) / 2 + this.settings.Separation),
-    )
+    throw new Error()
   }
 
   private AddEConstraint(u: GeomNode, v: GeomNode) {
-    this.horizontalSolver.AddStructuralConstraint(
-      HorizontalSeparationConstraint.constructorNNN(v, u, (u.width + v.width) / 2 + this.settings.Separation),
-    )
+    throw new Error()
   }
 
   private AddWConstraint(u: GeomNode, v: GeomNode) {
-    this.horizontalSolver.AddStructuralConstraint(
-      HorizontalSeparationConstraint.constructorNNN(u, v, (u.width + v.width) / 2 + this.settings.Separation),
-    )
+    throw new Error()
   }
 
   //  For each edge not involved of a cycle create a constraint
