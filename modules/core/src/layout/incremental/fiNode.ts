@@ -7,7 +7,7 @@ import {GeomNode} from '../core'
 export function getFiNode(filNode: GeomNode): FiNode | null {
   const algData = AlgorithmData.getAlgData(filNode.node)
   if (algData == null) return null
-  return <FiNode>AlgorithmData.getAlgData(filNode.node).data
+  return <FiNode>algData.data
 }
 
 export class FiNode {
