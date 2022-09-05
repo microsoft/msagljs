@@ -11,6 +11,9 @@ type RoundedRectRadii = {
 }
 
 export class CurveFactory {
+  static mkEllipse(rx: number, ry: number, center: Point): ICurve {
+    return Ellipse.mkFullEllipseNNP(rx, ry, center)
+  }
   static createParallelogram(width: number, height: number, center: Point): ICurve {
     const h = height / 2
     const w = width / 2

@@ -106,6 +106,7 @@ export class DrawingGraph extends DrawingNode {
         curve = CurveFactory.CreateDiamond(width, height, center)
         break
       case ShapeEnum.ellipse:
+        curve = CurveFactory.mkEllipse(width / 1.6, height / 1.6, center)
         break
       case ShapeEnum.record:
       case ShapeEnum.box:
