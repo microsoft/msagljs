@@ -101,7 +101,9 @@ export class Graph extends Node {
   get shallowNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesShallow
   }
-  /** iterates over all the nodes of including the subgraphs */
+  /** Iterates over all the nodes of including the subgraphs.
+   * The iteration happens in the breadth first pattern.
+   */
   get deepNodes(): IterableIterator<Node> {
     return this.nodeCollection.nodesDeep()
   }
