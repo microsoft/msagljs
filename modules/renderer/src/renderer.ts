@@ -14,7 +14,7 @@ import EventSource, {Event} from './event-source'
 import TextMeasurer from './text-measurer'
 import {deepEqual} from './utils'
 
-import GraphHighlighter from './layers/graph-highlighter'
+import GraphHighlighter, {nodeDepthModuleVs} from './layers/graph-highlighter'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -242,6 +242,7 @@ export default class Renderer extends EventSource {
             edges.push(obj)
           }
         }
+        nodes.sort((a, b) => depth(a) - depth(b))
         return {nodes, edges}
       },
       parameters: {
@@ -335,4 +336,13 @@ export default class Renderer extends EventSource {
     this.zoomTo(geomGraph.boundingBox)
     console.timeEnd('initial render')
   }
+}
+function depth(a: GeomNode) {
+  let d = 0
+  let p = a.node.parent
+  while (p) {
+    d++
+    p = p.parent
+  }
+  return d
 }
