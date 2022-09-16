@@ -54,6 +54,7 @@ export class Rectangle implements IRectangle<Point> {
     this.top_ = t.top
     this.bottom = t.bottom
   }
+
   add_rect(rectangle: IRectangle<Point>): IRectangle<Point> {
     return this.addRec(rectangle as unknown as Rectangle)
   }
@@ -131,6 +132,7 @@ export class Rectangle implements IRectangle<Point> {
   }
   set left(value: number) {
     this.left_ = value
+    this.onUpdated()
   }
 
   get right() {
@@ -138,6 +140,7 @@ export class Rectangle implements IRectangle<Point> {
   }
   set right(value: number) {
     this.right_ = value
+    this.onUpdated()
   }
 
   get top() {
@@ -145,6 +148,7 @@ export class Rectangle implements IRectangle<Point> {
   }
   set top(value: number) {
     this.top_ = value
+    this.onUpdated()
   }
 
   get bottom() {
@@ -152,6 +156,7 @@ export class Rectangle implements IRectangle<Point> {
   }
   set bottom(value: number) {
     this.bottom_ = value
+    this.onUpdated()
   }
 
   get leftBottom() {
@@ -185,6 +190,9 @@ export class Rectangle implements IRectangle<Point> {
     this.right_ = value.x
     this.bottom = value.y
   }
+
+  /* eslint-disable  @typescript-eslint/no-empty-function */
+  protected onUpdated(): void {}
 
   // create a box of two points
   static mkPP(point0: Point, point1: Point) {
