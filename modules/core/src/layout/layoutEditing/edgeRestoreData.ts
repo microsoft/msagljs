@@ -1,9 +1,8 @@
 import {Point, Curve, Polyline, ICurve} from '../../math/geometry'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
 import {GeomEdge} from '../core'
-import {RestoreData} from './restoreData'
 
-export class EdgeRestoreData implements RestoreData {
+export class EdgeRestoreData {
   labelCenter: Point
   underlyingPolyline: SmoothedPolyline
   curve_: ICurve

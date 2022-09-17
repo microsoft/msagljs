@@ -1,7 +1,6 @@
 import {Point} from '../../math/geometry'
-import {RestoreData} from './restoreData'
 
-export class LabelRestoreData implements RestoreData {
+export class LabelRestoreData {
   private center: Point
 
   public get Center(): Point {
@@ -14,5 +13,4 @@ export class LabelRestoreData implements RestoreData {
   public constructor(centerP: Point) {
     this.center = centerP
   }
-  Action: () => void
 }

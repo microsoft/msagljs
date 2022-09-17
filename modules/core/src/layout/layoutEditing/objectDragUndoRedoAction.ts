@@ -3,7 +3,6 @@ import {GeomObject} from '../core/geomObject'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {LabelRestoreData} from './labelRestoreData'
 import {NodeRestoreData} from './nodeRestoreData'
-import {RestoreData} from './restoreData'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class ObjectDragUndoRedoAction extends UndoRedoAction {
@@ -59,8 +58,8 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
     }
   }
 
-  CloneRestoreDictionary(): Map<GeomObject, RestoreData> {
-    return new Map<GeomObject, RestoreData>(this.restoreDataDictionary)
+  CloneRestoreDictionary(): Map<GeomObject, any> {
+    return new Map<GeomObject, any>(this.restoreDataDictionary)
   }
 
   Redo() {

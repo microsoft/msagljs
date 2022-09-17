@@ -1,12 +1,9 @@
 import {ICurve} from '../../math/geometry'
-import {RestoreData} from './restoreData'
 
-export class NodeRestoreData implements RestoreData {
+export class NodeRestoreData {
   constructor(boundaryCurve: ICurve) {
     this.boundaryCurve = boundaryCurve
   }
-
-  Action: () => void
 
   private boundaryCurve: ICurve
 
