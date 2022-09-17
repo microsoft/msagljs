@@ -1,11 +1,11 @@
 // the interface for undo objects
 
 import {Rectangle} from '../../math/geometry'
+import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {GeomGraph} from '../core'
 import {GeomObject} from '../core/geomObject'
 import {IViewerObject} from './iViewerObject'
-import {RestoreData} from './restoreData'
 
 export class UndoRedoAction {
   // the set of the objects that the viewer has to invalidate
@@ -79,11 +79,10 @@ export class UndoRedoAction {
     this.prev = value
   }
 
-  protected restoreDataDictionary: Map<GeomObject, RestoreData> = new Map<GeomObject, RestoreData>()
+  protected restoreDataDictionary: Map<Entity, any> = new Map<Entity, any>()
 
-  AddRestoreData(msaglObject: GeomObject, restoreData: RestoreData) {
-    // do nothing at the moment
-    // this.restoreDataDictionary.set(msaglObject, restoreData)
+  AddRestoreData(entity: Entity, restoreData: any) {
+    this.restoreDataDictionary.set(entity, restoreData)
   }
 
   private static GetParentGraph(geomObj: GeomObject): GeomGraph {
@@ -97,13 +96,13 @@ export class UndoRedoAction {
     } while (true)
   }
 
-  GetRestoreData(msaglObject: GeomObject): RestoreData {
-    return this.restoreDataDictionary.get(msaglObject)
+  GetRestoreData(entity: Entity): any {
+    return this.restoreDataDictionary.get(entity)
   }
 
   // enumerates over all edited objects
 
-  get EditedObjects(): IterableIterator<GeomObject> {
+  get EditedObjects(): IterableIterator<Entity> {
     return this.restoreDataDictionary.keys()
   }
 

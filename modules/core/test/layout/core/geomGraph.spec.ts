@@ -1,4 +1,4 @@
-import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, GeomEdge, Graph, Node} from '../../../src'
+import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, GeomEdge, Graph, Node, GeomGraph} from '../../../src'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
@@ -21,6 +21,11 @@ test('subgraphs', () => {
   expect(node_of_aIndex < aaIndex)
 })
 
+test('empty subgraphs', () => {
+  const g = GeomGraph.mk('graph', new Size(20, 30))
+
+  expect(g.shallowNodeCount).toBe(0)
+})
 test('geom subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
