@@ -866,7 +866,7 @@ CreateOrUpdateCurvePort(t: number, geomNode: GeomNode, port: Port): Port {
     
 }
 
-CreateFloatingPort(geomNode: GeomNode, /* ref */location: Point): FloatingPort {
+CreateFloatingPort(geomNode: GeomNode, location: Point): FloatingPort {
     return new FloatingPort(geomNode.boundaryCurve, location);
 }
 
@@ -877,21 +877,21 @@ SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, node:{node:
         let curve:ICurve = viewerNode.entity.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve;
         if (LayoutEditor.PointIsInside(mousePosition, curve)) {
             node.node = viewerNode;
-            this.SetPortForMousePositionInsideOfNode(mousePosition, node.node, port.port);
+            this.SetPortForMousePositionInsideOfNode(mousePosition, node.node, port);
             return;
         }
 
-        let p: number = curve.ClosestParameter(mousePosition);
-        let d: number = (curve[p] - mousePosition).Length;
+        let p: number = curve.closestParameter(mousePosition);
+        let d: number = curve.value(p).sub( mousePosition).length;
         if ((d < dist)) {
             par = p;
             dist = d;
-            node = viewerNode;
+            node.node = viewerNode;
         }
 
     }
 
-    port = this.CreateOrUpdateCurvePort(par, (<Node>(node.DrawingObject)).GeomNode, port);
+    port.port = this.CreateOrUpdateCurvePort(par, geomObjFromIViewerObj(node.node) as GeomNode, port);
 }
 
 *GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): IterableIterator<IViewerNode> {
@@ -905,72 +905,67 @@ SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, node:{node:
 InitLooseObstaclesToViewerNodeMap() {
     this.looseObstaclesToTheirViewerNodes = new Map<Polyline, Array<IViewerNode>>();
     for (let viewerNode: IViewerNode of this.ViewerNodes()) {
-        let loosePoly: Polyline = this.InteractiveEdgeRouter.GetHitLoosePolyline(LayoutEditor.GeomNode(viewerNode).center);
-        let loosePolyNodes: Array<IViewerNode>;
-        if (!this.looseObstaclesToTheirViewerNodes.TryGetValue(loosePoly, /* out */loosePolyNodes)) {
-            loosePolyNodes = new Array<IViewerNode>();
+        let loosePoly: Polyline = this.InteractiveEdgeRouter.GetHitLoosePolyline((geomObjFromIViewerObj(viewerNode) as GeomNode).center);
+        let loosePolyNodes: Array<IViewerNode> = this.looseObstaclesToTheirViewerNodes.get(loosePoly)
+        if(loosePolyNodes == undefined) {
+            this.looseObstaclesToTheirViewerNodes.set(loosePoly, loosePolyNodes = new Array<IViewerNode>());
+            
         }
 
-        this.looseObstaclesToTheirViewerNodes[loosePoly] = new Array<IViewerNode>();
-        loosePolyNodes.Add(viewerNode);
+        
+        loosePolyNodes.push(viewerNode);
     }
 
 }
 
 SetPortForMousePositionInsideOfNode(mousePosition: Point, node: IViewerNode, port:{port: Port}) {
-    let geomNode: GeomNode = LayoutEditor.GeomNode(node);
+    let geomNode: GeomNode = geomObjFromIViewerObj(node) as GeomNode;
     let t = {portParameter:0}
     if (this.NeedToCreateBoundaryPort(mousePosition, node, t)) {
-        port.port = this.CreateOrUpdateCurvePort(t.portParameter, geomNode, port);
+        port.port = this.CreateOrUpdateCurvePort(t.portParameter, geomNode, port.port);
     }
     else {
-        port.port = this.CreateFloatingPort(geomNode, /* ref */mousePosition);
+        port.port = this.CreateFloatingPort(geomNode, mousePosition);
     }
 
 }
 
-static GeomNode(node: IViewerNode): GeomNode {
-    let geomNode: GeomNode = (<Node>(node.DrawingObject)).GeomNode;
-    return geomNode;
-}
 
 static PointIsInside(point: Point, iCurve: ICurve): boolean {
     return (Curve.PointRelativeToCurveLocation(point, iCurve) == PointLocation.Inside);
 }
 
 NeedToCreateBoundaryPort(mousePoint: Point, node: IViewerNode, t:{portParameter: number}): boolean {
-    let drawingNode = (<Node>(node.DrawingObject));
-    let curve: ICurve = drawingNode.GeomNode.BoundaryCurve;
-    portParameter = curve.closestParameter(mousePoint);
-    let pointOnCurve: Point = curve[portParameter];
-    let length: number = (mousePoint - pointOnCurve).Length;
+    let drawingNode = node.entity.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingNode
+    let curve: ICurve = (geomObjFromIViewerObj(node) as GeomNode).boundaryCurve;
+    t.portParameter = curve.closestParameter(mousePoint);
+    let pointOnCurve: Point = curve.value(t.portParameter)
+    let length: number = (mousePoint.sub(pointOnCurve)).length;
     if ((length
                 <= ((this.viewer.UnderlyingPolylineCircleRadius * 2)
-                + (drawingNode.Attr.LineWidth / 2)))) {
-        this.TryToSnapToTheSegmentEnd(/* ref */portParameter, curve, pointOnCurve);
+                + (drawingNode.penwidth / 2)))) {
+        this.TryToSnapToTheSegmentEnd(t, curve, pointOnCurve);
         return true;
     }
 
     return false;
 }
 
-TryToSnapToTheSegmentEnd(/* ref */portParameter: number, curve: ICurve, pointOnCurve: Point) {
-    let c = (<Curve>(curve));
-    if ((c != null)) {
-        let seg: ICurve;
-        let segPar: number;
-        c.GetSegmentAndParameter(portParameter, /* out */segPar, /* out */seg);
+TryToSnapToTheSegmentEnd( t:{portParameter: number}, c: ICurve, pointOnCurve: Point) {
+    if ((c instanceof Curve)) {
+        const sipar=c.getSegIndexParam(t.portParameter);
+        const segPar = sipar.par
+        const seg = c.segs[sipar.segIndex]
         if (((segPar - seg.parStart)
                     < (seg.parEnd - segPar))) {
-            if (((seg.start - pointOnCurve).Length
+            if (((seg.start.sub(pointOnCurve)).length
                         < (this.viewer.UnderlyingPolylineCircleRadius * 2))) {
-                portParameter = (portParameter
-                            - (segPar - seg.parStart));
+                t.portParameter -=  (segPar - seg.parStart)
             }
-            else if (((seg.end - pointOnCurve).Length
-                        < (this.viewer.UnderlyingPolylineCircleRadius * 2))) {
-                portParameter = (portParameter
-                            + (seg.parEnd - segPar));
+            else if (seg.end.sub( pointOnCurve).length
+                        < (this.viewer.UnderlyingPolylineCircleRadius * 2)) {
+                t.portParameter +=
+                            + (seg.parEnd - segPar);
             }
 
         }
