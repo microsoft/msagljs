@@ -1,7 +1,7 @@
 /** represents the set of functions to handle an event */
 export class EventHandler {
-  forEach(arg0: (a: any) => any) {
-    this.actions.forEach((a) => a(arg0, null))
+  forEach(action: (a: any) => any) {
+    this.actions.forEach((a) => a(action, null))
   }
   private actions: Set<(a: any, b: any) => void>
   subscribe(f: (a: any, b: any) => void) {
