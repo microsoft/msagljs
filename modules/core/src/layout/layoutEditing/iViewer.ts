@@ -6,12 +6,15 @@ import {Edge} from '../../structs/edge'
 import {Graph} from '../../structs/graph'
 import {GeomEdge} from '../core'
 import {EventHandler} from './eventHandler'
+import {IMsaglMouseEventArgs} from './IMsaglMouseEventArgs'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerGraph} from './iViewerGraph'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {ModifierKeys} from './modifierKeys'
 export interface IViewer {
+  /** maps a point in the screen coordinates to the point in the graph coordinates*/
+  ScreenToSource(e: IMsaglMouseEventArgs): Point
   IncrementalDraggingModeAlways: boolean
 
   //  the scale to screen
@@ -75,7 +78,7 @@ export interface IViewer {
 
   ModifierKeys: ModifierKeys
 
-  //  maps a point in screen coordinates to the point in the graph surface
+  //
 
   //  <returns></returns>
   //ScreenToSource(e: Msagl): Point;
