@@ -1,3 +1,5 @@
+import { DrawingNode } from "../../drawing/drawingNode";
+import { DrawingObject } from "../../drawing/drawingObject";
 import { Polyline, Point, Curve, Rectangle, LineSegment, ICurve, PointLocation } from "../../math/geometry";
 import { CornerSite } from "../../math/geometry/cornerSite";
 import { PlaneTransformation } from "../../math/geometry/planeTransformation";
@@ -22,6 +24,7 @@ import { layoutGeomGraph } from "../driver";
 import { EdgeLabelPlacement } from "../edgeLabelPlacement";
 import { EdgeRestoreData } from "./edgeRestoreData";
 import { GeometryGraphEditor } from "./geomGraphEditor";
+import { IMsaglMouseEventArgs } from "./IMsaglMouseEventArgs";
 import { IViewer } from "./iViewer";
 import { IViewerEdge } from "./iViewerEdge";
 import { IViewerNode } from "./iViewerNode";
@@ -39,7 +42,6 @@ type MouseAndKeysAnalyzer = ( modifierKeys:ModifierKeys,  mouseButtons:MouseButt
 function getViewerObj(entity:Entity) :IViewerObject {
     return entity.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
 }
-
 function getRestoreData(entity: Entity): any {
     if (entity instanceof Graph) return null
     if (entity instanceof Node)
@@ -508,61 +510,42 @@ ReportBeforeChange(viewerObject: IViewerObject) {
 //  Unsubscibes from the viewer events
 
  DetouchFromViewerEvents() {
-    this.viewer.MouseDown = (this.viewer.MouseDown - this.ViewerMouseDown);
-    this.viewer.MouseMove = (this.viewer.MouseMove - this.ViewerMouseMove);
-    this.viewer.MouseUp = (this.viewer.MouseUp - this.ViewerMouseUp);
-    this.viewer.GraphChanged = (this.viewer.GraphChanged - this.ViewerGraphChanged);
-    this.viewer.ViewChangeEvent = (this.viewer.ViewChangeEvent - this.ViewChangeEventHandler);
-    this.geomGraphEditor.ChangeInUndoRedoList = (this.geomGraphEditor.ChangeInUndoRedoList - this.LayoutEditorChangeInUndoRedoList);
+    this.viewer.MouseDown.unsubscribe( this.ViewerMouseDown);
+    this.viewer.MouseMove.unsubscribe( this.ViewerMouseMove);
+    this.viewer.MouseUp.unsubscribe ( this.ViewerMouseUp);
+    this.viewer.GraphChanged.unsubscribe (this.ViewerGraphChanged);
+    this.viewer.ViewChangeEvent.unsubscribe (this.ViewChangeEventHandler);
+    this.geomGraphEditor.ChangeInUndoRedoList.unsubscribe  ( this.LayoutEditorChangeInUndoRedoList);
 }
 
 LayoutEditorChangeInUndoRedoList(sender: Object, e: EventArgs) {
-    if ((ChangeInUndoRedoList != null)) {
-        ChangeInUndoRedoList(this, null);
+    if ((this.geomGraphEditor.ChangeInUndoRedoList != null)) {
+        this.geomGraphEditor.ChangeInUndoRedoList.raise(this, null);
     }
 
 }
 
 TheDefaultObjectDecorator(obj: IViewerObject) {
-    let node = (<IViewerNode>(obj));
-    if ((node != null)) {
-        let drawingNode = node.node;
-        let w = drawingNode.Attr.LineWidth;
-        if (!this.decoratorRemovalsDict.ContainsKey(node)) {
-            drawingNode.Attr.LineWidth = w;
-        }
-
-        drawingNode.Attr.LineWidth = (<number>(Math.max(this.viewer.LineThicknessForEditing, (w * 2))));
-    }
-    else {
-        let edge = (<IViewerEdge>(obj));
-        if ((edge != null)) {
-            let drawingEdge = edge.edge;
-            let w = drawingEdge.Attr.LineWidth;
-            if (!this.decoratorRemovalsDict.ContainsKey(edge)) {
-                drawingEdge.Attr.LineWidth = w;
-            }
-
-            drawingEdge.Attr.LineWidth = (<number>(Math.max(this.viewer.LineThicknessForEditing, (w * 2))));
-        }
-
-    }
-
-    this.viewer.Invalidate(obj);
+        const drawingObj = DrawingNode.getDrawingObj(obj.entity);
+        const w = drawingObj.penwidth
+        if (!this.decoratorRemovalsDict.has(obj))
+        this.decoratorRemovalsDict.set(obj, ()=> DrawingObject.getDrawingObj(obj.entity).penwidth = w)
+        drawingObj.penwidth = Math.max(this.viewer.LineThicknessForEditing, (w * 2))
+      this.viewer.Invalidate(obj);
 }
 
 TheDefaultObjectDecoratorRemover(obj: IViewerObject) {
-    let decoratorRemover: ()=>void;
-    if (this.decoratorRemovalsDict.TryGetValue(obj, /* out */decoratorRemover)) {
+    const decoratorRemover= this.decoratorRemovalsDict.get(obj)
+    if (decoratorRemover) {
         decoratorRemover();
-        this.decoratorRemovalsDict.Remove(obj);
+        this.decoratorRemovalsDict.delete(obj);
         this.viewer.Invalidate(obj);
     }
 
-    let node = (<IViewerNode>(obj));
-    if ((node != null)) {
-        for (let edge of LayoutEditor.Edges(node)) {
-            this.RemoveObjDraggingDecorations(edge);
+    const ent=obj.entity
+    if (ent instanceof Node) {
+        for (const edge of ent.edges) {
+            this.RemoveObjDraggingDecorations(edge.getAttr(AttributeRegistry.ViewerIndex));
         }
 
     }
@@ -587,7 +570,7 @@ static MiddleButtonIsPressed(mouseButtons: MouseButtons): boolean {
                 == MouseButtons.Middle);
 }
 
-MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: MsaglMouseEventArgs): boolean {
+MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: IMsaglMouseEventArgs): boolean {
     let x: number = e.X;
     let y: number = e.Y;
     let dx: number = ((this.MouseDownScreenPoint.x - x)
@@ -603,21 +586,20 @@ AnalyzeLeftMouseButtonClick() {
     let modifierKeyIsPressed: boolean = this.ModifierKeyIsPressed();
     let obj: IViewerObject = this.viewer.ObjectUnderMouseCursor;
     if ((obj != null)) {
-        let editableEdge = (<IViewerEdge>(obj));
-        if ((editableEdge != null)) {
-            let drawingEdge = (<Edge>(editableEdge.DrawingObject));
-            if ((drawingEdge != null)) {
-                let geomEdge = drawingEdge.GeometryEdge;
-                if (((geomEdge != null)
-                            && this.viewer.LayoutEditingEnabled)) {
-                    if ((geomEdge.UnderlyingPolyline == null)) {
-                        geomEdge.UnderlyingPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge);
+        let editableObj = obj.entity
+        if (editableObj instanceof Edge) {
+            
+            let geomEdge = editableObj.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge;
+                if ((geomEdge != null)
+                            && this.viewer.LayoutEditingEnabled) {
+                    if ((geomEdge.underlyingPolyline == null)) {
+                        geomEdge.underlyingPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge);
                     }
 
-                    this.SwitchToEdgeEditing(editableEdge);
+                    this.SwitchToEdgeEditing(obj as IViewerEdge);
                 }
 
-            }
+            
 
         }
         else {
@@ -639,30 +621,22 @@ AnalyzeLeftMouseButtonClick() {
 
 }
 
-static CreateUnderlyingPolyline(geomEdge: Core.Layout.Edge): SmoothedPolyline {
+static CreateUnderlyingPolyline(geomEdge: GeomEdge): SmoothedPolyline {
     let ret = SmoothedPolyline.mkFromPoints(LayoutEditor.CurvePoints(geomEdge));
     return ret;
 }
 
-static CurvePoints(geomEdge: Core.Layout.Edge): IEnumerable<Point> {
-    yield;
-    return geomEdge.Source.Center;
-    let curve = (<Curve>(geomEdge.Curve));
-    if ((curve != null)) {
-        if ((curve.Segments.Count > 0)) {
-            yield;
-        }
-
-        return curve.start;
-        for (let i: number = 0; (i < curve.Segments.Count); i++) {
-            yield;
-        }
-
-        return curve.Segments[i].End;
-    }
-
-    yield;
-    return geomEdge.Target.Center;
+static *CurvePoints(geomEdge: GeomEdge): IterableIterator<Point> {
+    yield  geomEdge.source.center;
+            var isCurve = geomEdge.curve instanceof Curve;
+            if(isCurve!=null) {
+                const curve = geomEdge.curve as Curve;
+                if (curve.segs.length > 0)
+                    yield  curve.start;
+                for (let i = 0; i < curve.segs.length; i++)
+                    yield  curve.segs[i].end;
+            }
+            yield  geomEdge.target.center;
 }
 
 //         static void SetCoefficientsCorrecty(SmoothedPolyline ret, ICurve curve) {
@@ -678,6 +652,8 @@ ModifierKeyIsPressed(): boolean {
 
 SwitchToEdgeEditing(edge: IViewerEdge) {
     this.UnselectEverything();
+    throw new Error('not implemented')
+    /*
     let editableEdge = (<IEditableObject>(edge));
     if ((editableEdge == null)) {
         return;
@@ -687,25 +663,20 @@ SwitchToEdgeEditing(edge: IViewerEdge) {
     editableEdge.SelectedForEditing = true;
     edge.RadiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius;
     this.DecorateEdgeForDragging(edge);
-    this.viewer.Invalidate(edge);
+    this.viewer.Invalidate(edge);*/
 }
 
-ViewerNodes(): IEnumerable<IViewerNode> {
-    for (let o: IViewerObject of this.viewer.Entities) {
-        let n = (<IViewerNode>(o));
-        if ((n != null)) {
-            yield;
-        }
-
-        return n;
+*ViewerNodes(): IterableIterator<IViewerNode> {
+    for (let o of this.viewer.Entities) {
+        if (o.entity instanceof Node)
+            yield o.entity.getAttr(AttributeRegistry.ViewerIndex)
     }
-
 }
 
 SelectObjectForDragging(obj: IViewerObject) {
     if ((obj.MarkedForDragging == false)) {
         obj.MarkedForDragging = true;
-        this.dragGroup.Insert(obj);
+        this.dragGroup.add(obj);
         this.DecorateObjectForDragging(obj);
     }
 
@@ -713,7 +684,7 @@ SelectObjectForDragging(obj: IViewerObject) {
 
 UnselectObjectForDragging(obj: IViewerObject) {
     this.UnselectWithoutRemovingFromDragGroup(obj);
-    this.dragGroup.Remove(obj);
+    this.dragGroup.delete(obj);
 }
 
 UnselectWithoutRemovingFromDragGroup(obj: IViewerObject) {
@@ -733,7 +704,7 @@ UnselectEverything() {
 
 UnselectEdge() {
     if ((this.SelectedEdge != null)) {
-        (<IEditableObject>(this.SelectedEdge)).SelectedForEditing = false;
+        this.SelectedEdge.SelectedForEditing = false;
         this.removeEdgeDraggingDecorations(this.SelectedEdge);
         this.viewer.Invalidate(this.SelectedEdge);
         this.SelectedEdge = null;
@@ -741,25 +712,13 @@ UnselectEdge() {
 
 }
 
-static Edges(node: IViewerNode): IEnumerable<IViewerEdge> {
-    for (let edge: IViewerEdge of node.SelfEdges) {
-        yield;
+static *Edges(node: IViewerNode): IterableIterator<IViewerEdge> {
+    for (let edge of (node.entity as Node).edges) {
+       yield edge.getAttr(AttributeRegistry.ViewerIndex)
     }
-
-    return edge;
-    for (let edge: IViewerEdge of node.OutEdges) {
-        yield;
-    }
-
-    return edge;
-    for (let edge: IViewerEdge of node.InEdges) {
-        yield;
-    }
-
-    return edge;
 }
 
-ViewerMouseDown(sender: Object, e: MsaglMouseEventArgs) {
+ViewerMouseDown(sender: Object, e: IMsaglMouseEventArgs) {
     if ((!this.viewer.LayoutEditingEnabled
                 || (this.viewer.Graph == null))) {
         return;
@@ -771,7 +730,7 @@ ViewerMouseDown(sender: Object, e: MsaglMouseEventArgs) {
     if (e.LeftButtonIsPressed) {
         this.LeftMouseButtonWasPressed = true;
         if (!this.InsertingEdge) {
-            if (!(this.viewer.ObjectUnderMouseCursor instanceof  IViewerEdge)) {
+            if (!(this.viewer.ObjectUnderMouseCursor.hasOwnProperty('edge'))) {
                 this.ActiveDraggedObject = this.viewer.ObjectUnderMouseCursor;
             }
 
@@ -799,8 +758,9 @@ ViewerMouseDown(sender: Object, e: MsaglMouseEventArgs) {
     }
 
 }
+    
 
-ViewerMouseMove(sender: Object, e: MsaglMouseEventArgs) {
+ViewerMouseMove(sender: Object, e: IMsaglMouseEventArgs) {
     if (this.viewer.LayoutEditingEnabled) {
         if (e.LeftButtonIsPressed) {
             if (((this.ActiveDraggedObject != null)
@@ -823,7 +783,7 @@ ViewerMouseMove(sender: Object, e: MsaglMouseEventArgs) {
 
 }
 
-SetDraggingFlag(e: MsaglMouseEventArgs) {
+SetDraggingFlag(e: IMsaglMouseEventArgs) {
     if ((!this.Dragging
                 && this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e))) {
         this.Dragging = true;
@@ -831,7 +791,7 @@ SetDraggingFlag(e: MsaglMouseEventArgs) {
 
 }
 
-TrySetNodePort(e: MsaglMouseEventArgs, /* ref */node: IViewerNode, /* ref */port: Port, /* out */loosePolyline: Polyline): boolean {
+TrySetNodePort(e: IMsaglMouseEventArgs, /* ref */node: IViewerNode, /* ref */port: Port, /* out */loosePolyline: Polyline): boolean {
     Debug.Assert(this.InsertingEdge);
     let mousePosition: Point = this.viewer.ScreenToSource(e);
     loosePolyline = null;
@@ -922,7 +882,7 @@ SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, /* ref */no
     port = this.CreateOrUpdateCurvePort(par, (<Node>(node.DrawingObject)).GeometryNode, port);
 }
 
-GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): IEnumerable<IViewerNode> {
+GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): IterableIterator<IViewerNode> {
     if ((this.looseObstaclesToTheirViewerNodes == null)) {
         this.InitLooseObstaclesToViewerNodeMap();
     }
@@ -1009,13 +969,13 @@ TryToSnapToTheSegmentEnd(/* ref */portParameter: number, curve: ICurve, pointOnC
 
 _lastDragPoint: Point;
 
-DragSomeObjects(e: MsaglMouseEventArgs) {
+DragSomeObjects(e: IMsaglMouseEventArgs) {
     if (!this.Dragging) {
         if (this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
             this.Dragging = true;
             // first time we are of Dragging mode
             if ((this.PolylineVertex != null)) {
-                this.geomGraphEditor.PrepareForEdgeCornerDragging((<Core.Layout.Edge>(this.SelectedEdge.DrawingObject.GeometryObject)), this.PolylineVertex);
+                this.geomGraphEditor.PrepareForEdgeCornerDragging((<GeomEdge>(this.SelectedEdge.DrawingObject.GeometryObject)), this.PolylineVertex);
             }
             else if ((this.ActiveDraggedObject != null)) {
                 this.UnselectEdge();
@@ -1068,7 +1028,7 @@ GetDraggingMode(): DraggingMode {
     labelPlacer.run();
 }
 
-DraggedGeomObjects(): IEnumerable<GeometryObject> {
+DraggedGeomObjects(): IterableIterator<GeometryObject> {
     // restrict the dragged elements to be under the same cluster
     let activeObjCluster: Graph = LayoutEditor.GetActiveObjectCluster(this.ActiveDraggedObject);
     for (let draggObj: IViewerObject of this.dragGroup) {
@@ -1089,7 +1049,7 @@ static GetActiveObjectCluster(viewerObject: IViewerObject): Graph {
     null;
 }
 
-ViewerMouseUp(sender: Object, args: MsaglMouseEventArgs) {
+ViewerMouseUp(sender: Object, args: IMsaglMouseEventArgs) {
     if (args.Handled) {
         return;
     }
@@ -1100,7 +1060,7 @@ ViewerMouseUp(sender: Object, args: MsaglMouseEventArgs) {
 
 }
 
-HandleMouseUpOnLayoutEnabled(args: MsaglMouseEventArgs) {
+HandleMouseUpOnLayoutEnabled(args: IMsaglMouseEventArgs) {
     let click: boolean = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args);
     if ((click && this.LeftMouseButtonWasPressed)) {
         if ((this.viewer.ObjectUnderMouseCursor != null)) {
@@ -1175,7 +1135,7 @@ InsertEdgeOnMouseUp() {
 
 AddEdge() {
     let drawingEdge = new Edge((<Node>(this.SourceOfInsertedEdge.DrawingObject)), (<Node>(this.TargetOfInsertedEdge.DrawingObject)), ConnectionToGraph.Disconnected, this.EdgeAttr.Clone());
-    let geomEdge = new Core.Layout.Edge(LayoutEditor.GeometryNode(this.SourceOfInsertedEdge), LayoutEditor.GeometryNode(this.TargetOfInsertedEdge));
+    let geomEdge = new GeomEdge(LayoutEditor.GeometryNode(this.SourceOfInsertedEdge), LayoutEditor.GeometryNode(this.TargetOfInsertedEdge));
     drawingEdge.GeometryEdge = geomEdge;
     drawingEdge.SourcePort = this.SourcePort;
     drawingEdge.TargetPort = this.TargetPort;
@@ -1194,7 +1154,7 @@ FinishRoutingEdge() {
     (this.EdgeAttr.ArrowheadAtTarget == ArrowStyle.None);
     new Arrowhead();
     if ((this.TargetOfInsertedEdge != this.SourceOfInsertedEdge)) {
-        InteractiveEdgeRouter.TryToRemoveInflectionsAndCollinearSegments(GeomEdge.SmoothedPolyline);
+        InteractiveEdgeRouter.TryToRemoveInflectionsAndCollinearsegs(GeomEdge.SmoothedPolyline);
         InteractiveEdgeRouter.SmoothCorners(GeomEdge.SmoothedPolyline);
         GeomEdge.Curve = GeomEdge.SmoothedPolyline.CreateCurve();
         Arrowheads.TrimSplineAndCalculateArrowheads(GeomEdge, LayoutEditor.GeometryNode(this.SourceOfInsertedEdge).BoundaryCurve, LayoutEditor.GeometryNode(this.TargetOfInsertedEdge).BoundaryCurve, GeomEdge.Curve, true);
@@ -1208,12 +1168,12 @@ FinishRoutingEdge() {
 }
 
 static CreateEdgeGeometryForSelfEdge(geometryGraph: GeometryObject, node: GeometryNode): GeomEdge {
-    let tempEdge = new Core.Layout.Edge(node, node);
+    let tempEdge = new GeomEdge(node, node);
     StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(tempEdge);
     return tempEdge.GeomEdge;
 }
 
-SelectEntitiesForDraggingWithRectangle(args: MsaglMouseEventArgs) {
+SelectEntitiesForDraggingWithRectangle(args: IMsaglMouseEventArgs) {
     let rect = new Rectangle(this.mouseDownGraphPoint, this.viewer.ScreenToSource(args));
     for (let node: IViewerNode of this.ViewerNodes()) {
         if (rect.intersects(node.Node.BoundingBox)) {
@@ -1225,7 +1185,7 @@ SelectEntitiesForDraggingWithRectangle(args: MsaglMouseEventArgs) {
     args.Handled = true;
 }
 
-ProcessRightClickOnSelectedEdge(e: MsaglMouseEventArgs) {
+ProcessRightClickOnSelectedEdge(e: IMsaglMouseEventArgs) {
     this.mouseRightButtonDownPoint = viewer.ScreenToSource(e);
     this.cornerInfo = this.AnalyzeInsertOrDeletePolylineCorner(this.mouseRightButtonDownPoint, this.SelectedEdge.RadiusOfPolylineCorner);
     if ((this.cornerInfo == null)) {
@@ -1243,7 +1203,7 @@ ProcessRightClickOnSelectedEdge(e: MsaglMouseEventArgs) {
 
 }
 
-CheckIfDraggingPolylineVertex(e: MsaglMouseEventArgs) {
+CheckIfDraggingPolylineVertex(e: IMsaglMouseEventArgs) {
     if (((this.SelectedEdge != null)
                 && (this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline != null))) {
         let site: CornerSite = this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline.HeadSite;
@@ -1268,7 +1228,7 @@ MouseScreenPointIsCloseEnoughToVertex(point: Point, radius: number): boolean {
     return ((point - this.mouseDownGraphPoint).Length < radius);
 }
 
-static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
+static GetPressedButtons(e: IMsaglMouseEventArgs): MouseButtons {
     let ret = MouseButtons.None;
     if (e.LeftButtonIsPressed) {
         ret = (ret | MouseButtons.Left);
@@ -1393,7 +1353,7 @@ static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
 // //                 || (mode == EdgeRoutingMode.RectilinearToCenter));
 // // }
 
-// // EnumerateNodeBoundaryCurves(): IEnumerable<ICurve> {
+// // EnumerateNodeBoundaryCurves(): IterableIterator<ICurve> {
 // //     return from;
 // //     vn;
 // //     this.ViewerNodes();
@@ -1468,7 +1428,7 @@ static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
 // //                 this.SelectedEdge]);
 // // }
 
-// // HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e: MsaglMouseEventArgs) {
+// // HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e: IMsaglMouseEventArgs) {
 // //     let oldNode: IViewerNode = this.SourceOfInsertedEdge;
 // //     if (this.TrySetNodePort(e, /* ref */this.sourceOfInsertedEdge, /* ref */this.sourcePort, /* out */this.sourceLoosePolyline)) {
 // //         this.viewer.SetSourcePortForEdgeRouting(this.sourcePort.Location);
@@ -1479,40 +1439,40 @@ static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
 
 // // }
 
-// // MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: MsaglMouseEventArgs) {
-// //     if ((this.SourcePort != null)) {
-// //         this.SetDraggingFlag(e);
-// //         if (this.Dragging) {
-// //             let loosePolyline: Polyline;
-// //             if (this.TrySetNodePort(e, /* ref */this.targetOfInsertedEdge, /* ref */this.targetPort, /* out */loosePolyline)) {
-// //                 this.viewer.SetTargetPortForEdgeRouting(this.targetPort.Location);
-// //                 if (this.DraggingStraightLine()) {
-// //                     this.viewer.DrawRubberLine(this.TargetPort.Location);
-// //                 }
-// //                 else {
-// //                     this.DrawEdgeInteractivelyToPort(this.TargetPort, loosePolyline);
-// //                 }
+MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: IMsaglMouseEventArgs) {
+    if ((this.SourcePort != null)) {
+        this.SetDraggingFlag(e);
+        if (this.Dragging) {
+            let loosePolyline: Polyline;
+            if (this.TrySetNodePort(e, /* ref */this.targetOfInsertedEdge, /* ref */this.targetPort, /* out */loosePolyline)) {
+                this.viewer.SetTargetPortForEdgeRouting(this.targetPort.Location);
+                if (this.DraggingStraightLine()) {
+                    this.viewer.DrawRubberLine(this.TargetPort.Location);
+                }
+                else {
+                    this.DrawEdgeInteractivelyToPort(this.TargetPort, loosePolyline);
+                }
 
-// //             }
-// //             else {
-// //                 this.viewer.RemoveTargetPortEdgeRouting();
-// //                 if (this.DraggingStraightLine()) {
-// //                     this.viewer.DrawRubberLine(e);
-// //                 }
-// //                 else {
-// //                     this.DrawEdgeInteractivelyToLocation(e);
-// //                 }
+            }
+            else {
+                this.viewer.RemoveTargetPortEdgeRouting();
+                if (this.DraggingStraightLine()) {
+                    this.viewer.DrawRubberLine(e);
+                }
+                else {
+                    this.DrawEdgeInteractivelyToLocation(e);
+                }
 
-// //             }
+            }
 
-// //         }
+        }
 
-// //         e.Handled = true;
-// //     }
+        e.Handled = true;
+    }
 
-// // }
+}
 
-// // MouseMoveLiveSelectObjectsForDragging(e: MsaglMouseEventArgs) {
+// // MouseMoveLiveSelectObjectsForDragging(e: IMsaglMouseEventArgs) {
 // //     this.UnselectEverything();
 // //     if ((this.ToggleEntityPredicate(this.viewer.ModifierKeys, this.PressedMouseButtons, true)
 // //                 && ((this.viewer.ModifierKeys & ModifierKeys.Shift)
@@ -1522,7 +1482,7 @@ static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
 
 // // }
 
-// // DrawEdgeInteractivelyToLocation(e: MsaglMouseEventArgs) {
+// // DrawEdgeInteractivelyToLocation(e: IMsaglMouseEventArgs) {
 // //     this.DrawEdgeInteractivelyToLocation(this.viewer.ScreenToSource(e));
 // // }
 
@@ -1542,14 +1502,14 @@ static GetPressedButtons(e: MsaglMouseEventArgs): MouseButtons {
 // //     this.viewer.DrawRubberEdge(GeomEdge=this.CalculateEdgeInteractively(targetPortParameter,portLoosePolylineUnknown);
 // // }
 
-// // DraggingStraightLine(): boolean {
-// //     if ((this.viewer.Graph == null)) {
-// //         return true;
-// //     }
+ DraggingStraightLine(): boolean {
+    if ((this.viewer.Graph == null)) {
+        return true;
+    }
 
-// //     return ((InteractiveEdgeRouter != null)
-// //                 && InteractiveEdgeRouter.OverlapsDetected);
-// // }
+    return ((InteractiveEdgeRouter != null)
+                && InteractiveEdgeRouter.OverlapsDetected);
+}
 
 // // CalculateEdgeInteractively(targetPortParameter: Port, portLoosePolyline: Polyline): GeomEdge {
 // //     if ((InteractiveEdgeRouter.SourcePort == null)) {
