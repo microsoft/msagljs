@@ -1108,8 +1108,9 @@ export class LayoutEditor {
     // e.Handled = true;
     // let edgeRemoveCouple = new [string, ()=>void>("Remove edge", () =] {  }, viewer.RemoveEdge(this.SelectedEdge, true));
     // if ((this.cornerInfo.Item2 == PolylineCornerType.PreviousCornerForInsertion)) {
-    //     viewer.PopupMenus(new [string, ()=>void]("Insert polyline corner", this.InsertPolylineCorner), edgeRemoveCouple);
+    //     viewer.PopupMenus(new [string, ()=>void]("Insert polyline corner",  this.InsertPolylineCorner), edgeRemoveCouple);
     // }
+    //
     // else if ((this.cornerInfo.Item2 == PolylineCornerType.CornerToDelete)) {
     //     viewer.PopupMenus(new [string, ()=>void]("Delete polyline corner", this.DeleteCorner), edgeRemoveCouple);
     // }
