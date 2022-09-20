@@ -205,10 +205,10 @@ export class SplineRouter extends Algorithm {
     if (
       this.BundlingSettings == null &&
       this.geomGraph.layoutSettings &&
-      this.geomGraph.layoutSettings.edgeRoutingSettings &&
-      this.geomGraph.layoutSettings.edgeRoutingSettings.bundlingSettings
+      this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings &&
+      this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings
     ) {
-      this.BundlingSettings = this.geomGraph.layoutSettings.edgeRoutingSettings.bundlingSettings
+      this.BundlingSettings = this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings
     }
 
     this.Initialize(obstacles, this.coneAngle)

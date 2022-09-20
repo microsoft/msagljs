@@ -17,6 +17,7 @@ import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
 import {FastIncrementalLayoutSettings} from './incremental/fastIncrementalLayoutSettings'
 import {InitialLayout} from './initialLayout/initialLayout'
+import {ILayoutSettings} from './layered/ILayoutSettings'
 
 // function routeEdges(
 //  geomG: GeomGraph,
@@ -43,7 +44,7 @@ import {InitialLayout} from './initialLayout/initialLayout'
 //  }
 // }
 
-export function enforceLayoutSettings(geomGraph: GeomGraph, ss: any) {
+export function enforceLayoutSettings(geomGraph: GeomGraph, ss: ILayoutSettings) {
   if (!geomGraph.layoutSettings) geomGraph.layoutSettings = ss
 
   for (const n of geomGraph.shallowNodes) {
@@ -110,8 +111,8 @@ export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken =
 
 export function getEdgeRoutingSettingsFromAncestorsOrDefault(geomGraph: GeomGraph): EdgeRoutingSettings {
   do {
-    if (geomGraph.layoutSettings && geomGraph.layoutSettings.edgeRoutingSettings) {
-      return geomGraph.layoutSettings.edgeRoutingSettings
+    if (geomGraph.layoutSettings && geomGraph.layoutSettings.commonSettings.edgeRoutingSettings) {
+      return geomGraph.layoutSettings.commonSettings.edgeRoutingSettings
     }
     const parent = geomGraph.graph.parent
     if (parent) {

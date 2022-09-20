@@ -6,6 +6,7 @@ import {closeDistEps} from '../../utils/compare'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {CommonLayoutSettings, CommonLayoutSettingsJSON} from './commonLayoutSettings'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
+import {ILayoutSettings} from './ILayoutSettings'
 export enum SnapToGridByY {
   None,
   Top,
@@ -33,16 +34,16 @@ export type SugiyamaLayoutSettingsJSON = {
 }
 
 /** Settings for layered layout: it specifies if the direction of the layers, distance between the layers, etc*/
-export class SugiyamaLayoutSettings {
-  commonLayoutSettings: CommonLayoutSettings = new CommonLayoutSettings()
+export class SugiyamaLayoutSettings implements ILayoutSettings {
+  commonSettings: CommonLayoutSettings = new CommonLayoutSettings()
   get NodeSeparation(): number {
-    return this.commonLayoutSettings.NodeSeparation
+    return this.commonSettings.NodeSeparation
   }
   get edgeRoutingSettings() {
-    return this.commonLayoutSettings.edgeRoutingSettings
+    return this.commonSettings.edgeRoutingSettings
   }
   set edgeRoutingSettings(value: EdgeRoutingSettings) {
-    this.commonLayoutSettings.edgeRoutingSettings = value
+    this.commonSettings.edgeRoutingSettings = value
   }
   toJSON(): SugiyamaLayoutSettingsJSON {
     const r: SugiyamaLayoutSettingsJSON = {}
@@ -62,7 +63,7 @@ export class SugiyamaLayoutSettings {
     if (this.transform) r.transform = this.transform.elements
     if (this.GridSizeByY) r.GridSizeByY = this.GridSizeByY
     if (this.GridSizeByX) r.GridSizeByX = this.GridSizeByX
-    r.commonLayoutSettings = this.commonLayoutSettings.toJSON()
+    r.commonLayoutSettings = this.commonSettings.toJSON()
 
     return r
   }
@@ -92,7 +93,7 @@ export class SugiyamaLayoutSettings {
       )
     if (s.GridSizeByY) r.GridSizeByY = s.GridSizeByY
     if (s.GridSizeByX) r.GridSizeByX = s.GridSizeByX
-    if (s.commonLayoutSettings) r.commonLayoutSettings = CommonLayoutSettings.fromJSON(s.commonLayoutSettings)
+    if (s.commonLayoutSettings) r.commonSettings = CommonLayoutSettings.fromJSON(s.commonLayoutSettings)
     return r
   }
 
@@ -128,7 +129,7 @@ export class SugiyamaLayoutSettings {
   GridSizeByX = 0
 
   constructor() {
-    this.commonLayoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
+    this.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
   }
 
   transformIsRotation(ang: number): boolean {

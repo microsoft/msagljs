@@ -1,5 +1,6 @@
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
+import {ILayoutSettings} from '../layered/ILayoutSettings'
 export type MdsLayoutSettingsJSON = {
   pivotNumber?: number
 
@@ -18,7 +19,7 @@ export type MdsLayoutSettingsJSON = {
   _callIterationsWithMajorizationThreshold?: number
 }
 /** Settings for multi-dimensional scaling */
-export class MdsLayoutSettings {
+export class MdsLayoutSettings implements ILayoutSettings {
   static fromJSON(s: MdsLayoutSettingsJSON): MdsLayoutSettings {
     const ret = new MdsLayoutSettings()
     if (s.pivotNumber) ret.pivotNumber = s.pivotNumber
@@ -61,17 +62,17 @@ export class MdsLayoutSettings {
     return ret
   }
   get NodeSeparation() {
-    return this.layoutSettings.NodeSeparation
+    return this.commonSettings.NodeSeparation
   }
   set NodeSeparation(value: number) {
-    this.layoutSettings.NodeSeparation = value
+    this.commonSettings.NodeSeparation = value
   }
-  layoutSettings = new CommonLayoutSettings()
+  commonSettings = new CommonLayoutSettings()
   get edgeRoutingSettings() {
-    return this.layoutSettings.edgeRoutingSettings
+    return this.commonSettings.edgeRoutingSettings
   }
   set edgeRoutingSettings(value: EdgeRoutingSettings) {
-    this.layoutSettings.edgeRoutingSettings = value
+    this.commonSettings.edgeRoutingSettings = value
   }
 
   // the setting of Multi-Dimensional Scaling layout
