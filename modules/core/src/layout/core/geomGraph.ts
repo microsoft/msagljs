@@ -12,6 +12,7 @@ import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {Assert} from '../../utils/assert'
+import {ILayoutSettings} from '../layered/ILayoutSettings'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
@@ -106,20 +107,20 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
   isEmpty(): boolean {
     return this.graph.isEmpty()
   }
-  setSettingsRecursively(ls: CommonLayoutSettings) {
+  setSettingsRecursively(ls: ILayoutSettings) {
     this.layoutSettings = ls
     for (const n of this.deepNodes) {
       const gg = <GeomGraph>n
       gg.layoutSettings = ls
     }
   }
-  private _layoutSettings: any
-  get layoutSettings(): any {
+  private _layoutSettings: ILayoutSettings
+  get layoutSettings(): ILayoutSettings {
     return this._layoutSettings
   }
 
   // recursively sets the same settings for subgraphs
-  set layoutSettings(value: any) {
+  set layoutSettings(value: ILayoutSettings) {
     this._layoutSettings = value
   }
 

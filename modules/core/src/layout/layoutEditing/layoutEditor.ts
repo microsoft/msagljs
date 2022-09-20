@@ -21,7 +21,7 @@ import { Port } from "../core/port";
 import { layoutGeomGraph } from "../driver";
 import { EdgeLabelPlacement } from "../edgeLabelPlacement";
 import { EdgeRestoreData } from "./edgeRestoreData";
-import { GeometryGraphEditor } from "./geomGraphEditor";
+import { DraggingMode, GeometryGraphEditor } from "./geomGraphEditor";
 import { IMsaglMouseEventArgs } from "./IMsaglMouseEventArgs";
 import { IViewer } from "./iViewer";
 import { IViewerEdge } from "./iViewerEdge";
@@ -982,7 +982,7 @@ DragSomeObjects(e: IMsaglMouseEventArgs) {
             this.Dragging = true;
             // first time we are of Dragging mode
             if ((this.PolylineVertex != null)) {
-                this.geomGraphEditor.PrepareForEdgeCornerDragging((<GeomEdge>(this.SelectedEdge.DrawingObject.GeometryObject)), this.PolylineVertex);
+                this.geomGraphEditor.PrepareForEdgeCornerDragging(<GeomEdge>geomObjFromIViewerObj(this.SelectedEdge), this.PolylineVertex);
             }
             else if ((this.ActiveDraggedObject != null)) {
                 this.UnselectEdge();
@@ -1004,13 +1004,13 @@ DragSomeObjects(e: IMsaglMouseEventArgs) {
     }
 
     let currentDragPoint = this.viewer.ScreenToSource(e);
-    this.geomGraphEditor.Drag((currentDragPoint - this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint);
+    this.geomGraphEditor.Drag((currentDragPoint.sub(this._lastDragPoint)), this.GetDraggingMode(), this._lastDragPoint);
     for (let affectedObject of this.CurrentUndoAction.affectedObjects) {
         this.viewer.Invalidate(affectedObject);
     }
 
     if (this.geomGraphEditor.GraphBoundingBoxGetsExtended) {
-        this.viewer.Invalidate();
+        this.viewer.InvalidateAll();
     }
 
     e.Handled = true;
@@ -1021,16 +1021,15 @@ GetDraggingMode(): DraggingMode {
     let incremental: boolean = (((this.viewer.ModifierKeys & ModifierKeys.Shift)
                 == ModifierKeys.Shift)
                 || this.viewer.IncrementalDraggingModeAlways);
-    return DraggingMode.Incremental;
-    // TODO: Warning!!!, inline IF is not supported ?
-    incremental;
-    DraggingMode.Default;
+    return incremental? DraggingMode.Incremental:
+                        DraggingMode.Default;
 }
 
  static RouteEdgesRectilinearly(viewer: IViewer) {
-    let geomGraph = viewer.Graph.GeometryGraph;
-    let settings = viewer.Graph.LayoutAlgorithmSettings;
-    RectilinearInteractiveEditor.CreatePortsAndRouteEdges((settings.NodeSeparation / 3), 1, geomGraph.Nodes, geomGraph.Edges, settings.EdgeRoutingSettings.EdgeRoutingMode, true, settings.EdgeRoutingSettings.BendPenalty);
+    let geomGraph = viewer.Graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph;
+    let settings = geomGraph.layoutSettings
+    RectilinearInteractiveEditor.CreatePortsAndRouteEdges((settings.NodeSeparation / 3), 1, geomGraph.deepNodes, geomGraph.deepEdges, settings.EdgeRoutingSettings.EdgeRoutingMode, true, 
+       settings.EdgeRoutingSettings.);
     let labelPlacer = new EdgeLabelPlacement(geomGraph);
     labelPlacer.run();
 }

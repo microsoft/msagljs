@@ -302,37 +302,37 @@ test('layout settings same rank', () => {
 })
 test('commonLayoutSetting are preserved', () => {
   const ss = new SugiyamaLayoutSettings()
-  ss.commonLayoutSettings.NodeSeparation = 100
-  ss.commonLayoutSettings.edgeRoutingSettings.ConeAngle = 22
+  ss.commonSettings.NodeSeparation = 100
+  ss.commonSettings.edgeRoutingSettings.ConeAngle = 22
   const ssj = ss.toJSON()
   const str = JSON.stringify(ssj)
   const json = JSON.parse(str)
   const nss = SugiyamaLayoutSettings.fromJSON(json)
-  expect(nss.commonLayoutSettings.NodeSeparation).toBe(100)
-  expect(nss.commonLayoutSettings.edgeRoutingSettings.ConeAngle).toBe(22)
-  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings == null).toBe(true)
+  expect(nss.commonSettings.NodeSeparation).toBe(100)
+  expect(nss.commonSettings.edgeRoutingSettings.ConeAngle).toBe(22)
+  expect(nss.commonSettings.edgeRoutingSettings.bundlingSettings == null).toBe(true)
 })
 
 test('default bundling Sugiyama are preserved', () => {
   const ss = new SugiyamaLayoutSettings()
-  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
+  ss.commonSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
   const ssj = ss.toJSON()
   const str = JSON.stringify(ssj)
   const json = JSON.parse(str)
   const nss = SugiyamaLayoutSettings.fromJSON(json)
-  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
+  expect(nss.commonSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
 })
 
 test('changed bundling Sugiyama are preserved', () => {
   const ss = new SugiyamaLayoutSettings()
-  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
-  ss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius = 10000
+  ss.commonSettings.edgeRoutingSettings.bundlingSettings = new BundlingSettings()
+  ss.commonSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius = 10000
   const ssj = ss.toJSON()
   const str = JSON.stringify(ssj)
   const json = JSON.parse(str)
   const nss = SugiyamaLayoutSettings.fromJSON(json)
-  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
-  expect(nss.commonLayoutSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius).toBe(10000)
+  expect(nss.commonSettings.edgeRoutingSettings.bundlingSettings != null).toBe(true)
+  expect(nss.commonSettings.edgeRoutingSettings.bundlingSettings.MaxHubRadius).toBe(10000)
 })
 
 test('default mdsSettings are preserved', () => {

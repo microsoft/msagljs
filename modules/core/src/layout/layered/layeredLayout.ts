@@ -34,19 +34,19 @@ import {BasicGraphOnEdges} from '../../structs/basicGraphOnEdges'
 import {XLayoutGraph} from './xLayoutGraph'
 import {Rectangle} from '../../math/geometry/rectangle'
 import {NetworkSimplex} from './layering/NetworkSimplex'
-import {GeomConstants} from '../../math/geometry/geomConstants'
 import {Routing} from './routing'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
+import {ILayoutSettings} from './ILayoutSettings'
 function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
 }
 
 export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null, flipToScreenCoords = true) {
-  const ss: CommonLayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
+  const ss: ILayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
   enforceLayoutSettings(geomGraph, ss)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner, flipToScreenCoords)
 }
@@ -119,7 +119,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   runPostLayering() {
-    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.commonLayoutSettings.edgeRoutingSettings
+    const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.commonSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
     if (mode === EdgeRoutingMode.SugiyamaSplines) {

@@ -27,7 +27,7 @@ import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
 import {UndoRedoAction} from './undoRedoAction'
 import {UndoRedoActionsList} from './undoRedoActionsList'
 
-enum DraggingMode {
+export enum DraggingMode {
   Incremental,
   Default,
 }
