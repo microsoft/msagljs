@@ -374,7 +374,7 @@ export class LayoutEditor {
         if (((this.graph != null)
                     && GeomGraph.getGeom(this.graph)!= null)) {
             this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
-            this.AttachInvalidateEventsToGeometryObjects();
+            this.AttachInvalidateEventsToGeomObjects();
         }
 
     }
@@ -398,7 +398,7 @@ export class LayoutEditor {
     this.viewer.RemoveTargetPortEdgeRouting();
 }
 
-AttachInvalidateEventsToGeometryObjects() {
+AttachInvalidateEventsToGeomObjects() {
     for (let entity of this.viewer.Entities) {
         this.AttachLayoutChangeEvent(entity);
     }
@@ -1028,31 +1028,29 @@ GetDraggingMode(): DraggingMode {
  static RouteEdgesRectilinearly(viewer: IViewer) {
     let geomGraph = viewer.Graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph;
     let settings = geomGraph.layoutSettings
-    RectilinearInteractiveEditor.CreatePortsAndRouteEdges((settings.NodeSeparation / 3), 1, geomGraph.deepNodes, geomGraph.deepEdges, settings.EdgeRoutingSettings.EdgeRoutingMode, true, 
-       settings.EdgeRoutingSettings.);
-    let labelPlacer = new EdgeLabelPlacement(geomGraph);
+    RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
+        (settings.commonSettings.NodeSeparation / 3), 
+        1, geomGraph.deepNodes, geomGraph.deepEdges, settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode)
+       
+    let labelPlacer = EdgeLabelPlacement.constructorG(geomGraph);
     labelPlacer.run();
 }
 
-DraggedGeomObjects(): IterableIterator<GeometryObject> {
+*DraggedGeomObjects(): IterableIterator<GeomObject> {
     // restrict the dragged elements to be under the same cluster
     let activeObjCluster: Graph = LayoutEditor.GetActiveObjectCluster(this.ActiveDraggedObject);
-    for (let draggObj: IViewerObject of this.dragGroup) {
+    for (let draggObj of this.dragGroup) {
         if ((LayoutEditor.GetActiveObjectCluster(draggObj) == activeObjCluster)) {
-            yield;
+            yield GeomObject.getGeom(draggObj.entity)
         }
 
     }
 
-    return draggObj.DrawingObject.GeometryObject;
 }
 
 static GetActiveObjectCluster(viewerObject: IViewerObject): Graph {
-    let node = (<GeomNode>(viewerObject.DrawingObject.GeometryObject));
-    return node.ClusterParent;
-    // TODO: Warning!!!, inline IF is not supported ?
-    (node != null);
-    null;
+    return viewerObject.entity.parent as Graph
+    
 }
 
 ViewerMouseUp(sender: Object, args: IMsaglMouseEventArgs) {
@@ -1173,7 +1171,7 @@ FinishRoutingEdge() {
     this.viewer.RemoveTargetPortEdgeRouting();
 }
 
-static CreateEdgeGeometryForSelfEdge(geometryGraph: GeometryObject, node: GeomNode): GeomEdge {
+static CreateEdgeGeometryForSelfEdge(geometryGraph: GeomObject, node: GeomNode): GeomEdge {
     let tempEdge = new GeomEdge(node, node);
     StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(tempEdge);
     return tempEdge.GeomEdge;
@@ -1323,7 +1321,7 @@ static GetPressedButtons(e: IMsaglMouseEventArgs): MouseButtons {
 
 // //  FitGraphBoundingBox(graphToFit: IViewerObject) {
 // //     if ((graphToFit != null)) {
-// //         this.geomGraphEditor.FitGraphBoundingBox(graphToFit, (<GeometryGraph>(graphToFit.DrawingObject.GeometryObject)));
+// //         this.geomGraphEditor.FitGraphBoundingBox(graphToFit, (<GeometryGraph>(graphToFit.DrawingObject.GeomObject)));
 // //         this.viewer.Invalidate();
 // //     }
 
