@@ -8,7 +8,7 @@ import {GetConnectedComponents} from '../math/graphAlgorithms/ConnectedComponent
 import {BasicGraphOnEdges, mkGraphOnEdgesN} from '../structs/basicGraphOnEdges'
 import {IntPair} from '../utils/IntPair'
 import {BundlingSettings} from './BundlingSettings'
-import {InteractiveEdgeRouter} from './InteractiveEdgeRouter'
+import {InteractiveEdgeRouter} from './interactiveEdgeRouter'
 import {PreGraph} from './PreGraph'
 import {Shape} from './shape'
 import {BundleRouter} from './spline/bundling/BundleRouter'

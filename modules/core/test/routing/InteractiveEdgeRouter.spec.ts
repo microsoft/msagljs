@@ -1,6 +1,6 @@
 import {Point} from '../../src'
 import {Polyline} from '../../src/math/geometry'
-import {InteractiveEdgeRouter} from '../../src/routing/InteractiveEdgeRouter'
+import {InteractiveEdgeRouter} from '../../src/routing/interactiveEdgeRouter'
 
 test('RemoveCollinearVertices from polyline', () => {
   const a = new Point(0, 0)

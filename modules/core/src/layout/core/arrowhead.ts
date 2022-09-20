@@ -157,9 +157,7 @@ export class Arrowhead {
     return success
   }
 
-  // Creates a spline between two nodes big enough to draw arrowheads
-  // <
-
+  /** Creates a spline between two nodes big enough to draw arrowheads */
   static createBigEnoughSpline(edge: GeomEdge) {
     const a = edge.source.center
     let b = edge.target.center
@@ -191,7 +189,7 @@ export class Arrowhead {
     Arrowhead.createEdgeCurveWithNoTrimming(edge, a, b)
   }
 
-  // this method should never be called!
+  // this method should never be called: it is a super emergency measure
   static createEdgeCurveWithNoTrimming(edge: GeomEdge, a: Point, b: Point) {
     const ab = b.sub(a).normalize()
 

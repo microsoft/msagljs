@@ -12,7 +12,7 @@ import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {Assert} from '../../utils/assert'
-import {ILayoutSettings} from '../layered/ILayoutSettings'
+import {ILayoutSettings} from '../layered/iLayoutSettings'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {

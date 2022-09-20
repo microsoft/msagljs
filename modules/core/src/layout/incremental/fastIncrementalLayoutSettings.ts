@@ -2,7 +2,7 @@ import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomGraph} from '../core'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
-import {ILayoutSettings} from '../layered/ILayoutSettings'
+import {ILayoutSettings} from '../layered/iLayoutSettings'
 import {FastIncrementalLayout} from './fastIncrementalLayout'
 
 export class FastIncrementalLayoutSettings implements ILayoutSettings {

@@ -1,6 +1,6 @@
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
-import {ILayoutSettings} from '../layered/ILayoutSettings'
+import {ILayoutSettings} from '../layered/iLayoutSettings'
 export type MdsLayoutSettingsJSON = {
   pivotNumber?: number
 

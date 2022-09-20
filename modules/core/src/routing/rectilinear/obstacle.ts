@@ -8,7 +8,7 @@ import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {Rectangle} from '../../math/geometry/rectangle'
 
 import {substractSets} from '../../utils/setOperations'
-import {InteractiveEdgeRouter} from '../InteractiveEdgeRouter'
+import {InteractiveEdgeRouter} from '../interactiveEdgeRouter'
 import {InteractiveObstacleCalculator} from '../interactiveObstacleCalculator'
 import {Shape} from '../shape'
 import {LowObstacleSide, HighObstacleSide} from './BasicObstacleSide'
