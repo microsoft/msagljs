@@ -20,7 +20,7 @@ import {
   setsAreEqual,
 } from '../../../utils/setOperations'
 import {BundlingSettings} from '../../BundlingSettings'
-import {InteractiveEdgeRouter} from '../../InteractiveEdgeRouter'
+import {InteractiveEdgeRouter} from '../../interactiveEdgeRouter'
 import {CostCalculator} from './CostCalculator'
 import {HubRadiiCalculator} from './HubRadiiCalculator'
 import {MetroGraphData} from './MetroGraphData'

@@ -17,7 +17,7 @@ import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
 import {FastIncrementalLayoutSettings} from './incremental/fastIncrementalLayoutSettings'
 import {InitialLayout} from './initialLayout/initialLayout'
-import {ILayoutSettings} from './layered/ILayoutSettings'
+import {ILayoutSettings} from './layered/iLayoutSettings'
 
 // function routeEdges(
 //  geomG: GeomGraph,
