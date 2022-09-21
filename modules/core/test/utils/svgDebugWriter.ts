@@ -19,7 +19,6 @@ beforeAll(() => {
   const dir = 'tmp'
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, {recursive: true})
-    console.log('dir created')
   }
 })
 
