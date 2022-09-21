@@ -1,6 +1,6 @@
 import {Point, Curve, Polyline, ICurve} from '../../math/geometry'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
-import {GeomEdge} from '../core'
+import {GeomEdge} from 'msagl-js'
 
 export class EdgeRestoreData {
   labelCenter: Point

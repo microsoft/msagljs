@@ -1,12 +1,12 @@
 import {Point, Rectangle, Polyline, Curve} from '../../math/geometry'
 import {SplineRouter} from '../../routing/splineRouter'
 import {Graph} from '../../structs/graph'
-import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph} from '../core/geomGraph'
-import {GeomNode} from '../core/geomNode'
-import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
+import {GeomEdge} from 'msagl-js'
+import {GeomGraph} from 'msagl-js'
+import {GeomNode} from 'msagl-js'
 import {BumperPusher} from './bumperPusher'
 import {LabelFixture} from './labelFixture'
+import {ILayoutSettings} from 'msagl-js'
 
 export class IncrementalDragger {
   geomGraph_: GeomGraph
@@ -20,7 +20,7 @@ export class IncrementalDragger {
 
   nodeSeparation: number
 
-  layoutSettings: CommonLayoutSettings
+  layoutSettings: ILayoutSettings
 
   listOfPushers = new Array<BumperPusher>()
 
@@ -97,10 +97,10 @@ export class IncrementalDragger {
     const router = new SplineRouter(
       this.geomGraph_,
       this.changedEdges,
-      this.layoutSettings.edgeRoutingSettings.Padding,
-      this.layoutSettings.edgeRoutingSettings.PolylinePadding,
-      this.layoutSettings.edgeRoutingSettings.ConeAngle,
-      this.layoutSettings.edgeRoutingSettings.bundlingSettings,
+      this.layoutSettings.commonSettings.edgeRoutingSettings.Padding,
+      this.layoutSettings.commonSettings.edgeRoutingSettings.PolylinePadding,
+      this.layoutSettings.commonSettings.edgeRoutingSettings.ConeAngle,
+      this.layoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings,
     )
     router.run()
     this.PositionLabels(this.changedEdges)

@@ -3,8 +3,8 @@
 import {Rectangle} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
-import {GeomGraph} from '../core'
-import {GeomObject} from '../core/geomObject'
+import {GeomGraph} from 'msagl-js'
+import {GeomObject} from 'msagl-js'
 import {IViewerObject} from './iViewerObject'
 
 export class UndoRedoAction {

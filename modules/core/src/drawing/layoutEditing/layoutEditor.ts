@@ -15,14 +15,13 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Node} from '../../structs/node'
 import {Assert} from '../../utils/assert'
-import {GeomEdge, GeomGraph, GeomNode} from '../core'
-import {Arrowhead} from '../core/arrowhead'
-import {CurvePort} from '../core/curvePort'
-import {FloatingPort} from '../core/floatingPort'
-import {GeomObject} from '../core/geomObject'
-import {Port} from '../core/port'
-import {layoutGeomGraph} from '../driver'
-import {EdgeLabelPlacement} from '../edgeLabelPlacement'
+import {GeomEdge, GeomGraph, GeomNode, Arrowhead, CurvePort} from 'msagl-js'
+
+import {FloatingPort} from 'msagl-js'
+import {GeomObject} from 'msagl-js'
+import {Port} from 'msagl-js'
+import {layoutGeomGraph} from 'msagl-js'
+import {EdgeLabelPlacement} from 'msagl-js'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
 import {IMsaglMouseEventArgs} from './iMsaglMouseEventArgs'
@@ -411,7 +410,7 @@ export class LayoutEditor {
     const drawingObject = getViewerDrawingObject(viewerObject)
     if (drawingObject != null) {
       const geom = GeomObject.getGeom(drawingObject.entity)
-      if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a, b) => this.ReportBeforeChange(viewerObject))
+      if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a: any, b: any) => this.ReportBeforeChange(viewerObject))
       if (geom instanceof GeomGraph) {
         const iViewerNode = <IViewerNode>viewerObject
         iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged)

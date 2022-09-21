@@ -1,23 +1,29 @@
 //      the editor of a graph layout
 import {SortedMap} from '@esfx/collections-sortedmap'
-import {Point, Curve, LineSegment, Rectangle, ICurve} from '../../math/geometry'
-import {CornerSite} from '../../math/geometry/cornerSite'
-import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
-import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
-import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
-import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
-import {SplineRouter} from '../../routing/splineRouter'
-import {StraightLineEdges} from '../../routing/StraightLineEdges'
-import {GeomLabel, GeomNode} from '../core'
-import {Arrowhead} from '../core/arrowhead'
-import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph} from '../core/geomGraph'
-import {GeomObject} from '../core/geomObject'
-import {EdgeLabelPlacement} from '../edgeLabelPlacement'
-import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
+import {
+  Point,
+  Curve,
+  LineSegment,
+  Rectangle,
+  ICurve,
+  CornerSite,
+  IntersectionInfo,
+  SmoothedPolyline,
+  EdgeRoutingMode,
+  RectilinearInteractiveEditor,
+  SplineRouter,
+  StraightLineEdges,
+  GeomLabel,
+  GeomNode,
+} from 'msagl-js'
+import {Arrowhead} from 'msagl-js'
+import {GeomEdge} from 'msagl-js'
+import {GeomGraph} from 'msagl-js'
+import {GeomObject} from 'msagl-js'
+import {EdgeLabelPlacement} from 'msagl-js'
 import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
-import {EventHandler} from './eventHandler'
+import {EventHandler} from 'msagl-js'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
@@ -26,6 +32,7 @@ import {SiteInsertUndoAction} from './siteInsertUndoAction'
 import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
 import {UndoRedoAction} from './undoRedoAction'
 import {UndoRedoActionsList} from './undoRedoActionsList'
+import {ILayoutSettings} from 'msagl-js'
 
 export enum DraggingMode {
   Incremental,
@@ -38,7 +45,7 @@ export class GeometryGraphEditor {
 
   graph: GeomGraph
 
-  layoutSettings: CommonLayoutSettings
+  layoutSettings: ILayoutSettings
 
   objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
@@ -89,15 +96,15 @@ export class GeometryGraphEditor {
     this.RaiseChangeInUndoList()
   }
 
-  public get LayoutSettings(): CommonLayoutSettings {
+  public get LayoutSettings(): ILayoutSettings {
     return this.layoutSettings
   }
-  public set LayoutSettings(value: CommonLayoutSettings) {
+  public set LayoutSettings(value: ILayoutSettings) {
     this.layoutSettings = value
   }
 
   protected get EdgeRoutingMode(): EdgeRoutingMode {
-    return this.LayoutSettings.edgeRoutingSettings.EdgeRoutingMode
+    return this.LayoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode
   }
 
   //      The edge data of the edge selected for editing
@@ -188,11 +195,11 @@ export class GeometryGraphEditor {
     }
 
     RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
-      this.LayoutSettings.NodeSeparation / 3,
+      this.LayoutSettings.commonSettings.NodeSeparation / 3,
       1,
       this.graph.deepNodes,
       this.graph.deepEdges,
-      this.LayoutSettings.edgeRoutingSettings.EdgeRoutingMode,
+      this.LayoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode,
     )
     EdgeLabelPlacement.constructorG(this.graph).run()
 
@@ -281,10 +288,10 @@ export class GeometryGraphEditor {
   RunSplineRouterAndPutLabels() {
     const router = SplineRouter.mk5(
       this.graph,
-      this.LayoutSettings.edgeRoutingSettings.Padding,
-      this.LayoutSettings.edgeRoutingSettings.PolylinePadding,
-      this.LayoutSettings.edgeRoutingSettings.ConeAngle,
-      this.LayoutSettings.edgeRoutingSettings.bundlingSettings,
+      this.LayoutSettings.commonSettings.edgeRoutingSettings.Padding,
+      this.LayoutSettings.commonSettings.edgeRoutingSettings.PolylinePadding,
+      this.LayoutSettings.commonSettings.edgeRoutingSettings.ConeAngle,
+      this.LayoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings,
     )
     router.run()
     const elp = EdgeLabelPlacement.constructorG(this.graph)
@@ -457,7 +464,7 @@ export class GeometryGraphEditor {
       }
     }
 
-    GeometryGraphEditor.CalculateOffsetsForMultiedges(node, this.LayoutSettings.NodeSeparation)
+    GeometryGraphEditor.CalculateOffsetsForMultiedges(node, this.LayoutSettings.commonSettings.NodeSeparation)
     if (node instanceof GeomGraph) {
       for (const n of node.allSuccessorsWidthFirst()) {
         this.AssignEdgesOfNodeToEdgeDragSets(n)
