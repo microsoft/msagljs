@@ -4,11 +4,11 @@ import {
   MdsLayoutSettings,
   SugiyamaLayoutSettings,
   Graph,
-  LayoutSettings,
   EdgeRoutingMode,
   routeEdges,
   LayerDirectionEnum,
   FastIncrementalLayoutSettings,
+  ILayoutSettings,
 } from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
@@ -102,7 +102,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   return graph
 }
 
-function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: LayoutOptions): LayoutSettings {
+function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: LayoutOptions): ILayoutSettings {
   // directed is true iff the dot starts with keyword 'digraph'
   let directed = false
   for (const e of subgraph.edges()) {
@@ -176,16 +176,18 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
 }
 
 function diffLayoutSettings(
-  oldSettings: LayoutSettings | null,
-  newSettings: LayoutSettings,
+  oldSettings: ILayoutSettings | null,
+  newSettings: ILayoutSettings,
 ): {
   layoutChanged: boolean
   routingChanged: boolean
 } {
   if (!oldSettings) return {layoutChanged: true, routingChanged: true}
 
-  const routingChanged = oldSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.edgeRoutingSettings.EdgeRoutingMode
-  const specialCaseSugiamaRelayout = routingChanged && newSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines
+  const routingChanged =
+    oldSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode
+  const specialCaseSugiamaRelayout =
+    routingChanged && newSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines
 
   const layerDirectionChange =
     oldSettings instanceof SugiyamaLayoutSettings &&

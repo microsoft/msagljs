@@ -5,7 +5,6 @@ import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
 import {SugiyamaLayoutSettings} from './layered/sugiyamaLayoutSettings'
-import {CommonLayoutSettings} from './commonLayoutSettings'
 import {GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
 import {PivotMDS} from './mds/pivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
@@ -17,7 +16,7 @@ import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
 import {FastIncrementalLayoutSettings} from './incremental/fastIncrementalLayoutSettings'
 import {InitialLayout} from './initialLayout/initialLayout'
-import {ILayoutSettings} from './layered/iLayoutSettings'
+import {ILayoutSettings} from './iLayoutSettings'
 
 // function routeEdges(
 //  geomG: GeomGraph,

@@ -39,7 +39,7 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
-import {ILayoutSettings} from './iLayoutSettings'
+import {ILayoutSettings} from '../iLayoutSettings'
 function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
