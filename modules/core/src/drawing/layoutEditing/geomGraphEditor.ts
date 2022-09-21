@@ -1,29 +1,21 @@
 //      the editor of a graph layout
 import {SortedMap} from '@esfx/collections-sortedmap'
-import {
-  Point,
-  Curve,
-  LineSegment,
-  Rectangle,
-  ICurve,
-  CornerSite,
-  IntersectionInfo,
-  SmoothedPolyline,
-  EdgeRoutingMode,
-  RectilinearInteractiveEditor,
-  SplineRouter,
-  StraightLineEdges,
-  GeomLabel,
-  GeomNode,
-} from 'msagl-js'
-import {Arrowhead} from 'msagl-js'
-import {GeomEdge} from 'msagl-js'
-import {GeomGraph} from 'msagl-js'
-import {GeomObject} from 'msagl-js'
-import {EdgeLabelPlacement} from 'msagl-js'
+import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from '../../layout/core'
+import {Arrowhead} from '../../layout/core/arrowhead'
+
+import {EventHandler, GeomObject} from '../../layout/core/geomObject'
+import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
+import {ILayoutSettings} from '../../layout/iLayoutSettings'
+import {Point, Curve, LineSegment, Rectangle, ICurve} from '../../math/geometry'
+import {CornerSite} from '../../math/geometry/cornerSite'
+import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
+import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
+import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
+import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
+import {SplineRouter} from '../../routing/splineRouter'
+import {StraightLineEdges} from '../../routing/StraightLineEdges'
 import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
-import {EventHandler} from 'msagl-js'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
@@ -32,7 +24,6 @@ import {SiteInsertUndoAction} from './siteInsertUndoAction'
 import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
 import {UndoRedoAction} from './undoRedoAction'
 import {UndoRedoActionsList} from './undoRedoActionsList'
-import {ILayoutSettings} from 'msagl-js'
 
 export enum DraggingMode {
   Incremental,

@@ -1,12 +1,11 @@
+import {GeomGraph, GeomNode, GeomEdge} from '../../layout/core'
+import {ILayoutSettings} from '../../layout/iLayoutSettings'
 import {Point, Rectangle, Polyline, Curve} from '../../math/geometry'
 import {SplineRouter} from '../../routing/splineRouter'
 import {Graph} from '../../structs/graph'
-import {GeomEdge} from 'msagl-js'
-import {GeomGraph} from 'msagl-js'
-import {GeomNode} from 'msagl-js'
+
 import {BumperPusher} from './bumperPusher'
 import {LabelFixture} from './labelFixture'
-import {ILayoutSettings} from 'msagl-js'
 
 export class IncrementalDragger {
   geomGraph_: GeomGraph

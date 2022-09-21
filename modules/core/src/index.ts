@@ -1,13 +1,8 @@
-import {CurvePort} from './layout/core/curvePort'
-import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
-import {PlaneTransformation} from './math/geometry/planeTransformation'
-import {Edge} from './structs/edge'
-export {EventHandler}
+
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge} from './layout/core'
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
-export {CommonLayoutSettings as LayoutSettings} from './layout/commonLayoutSettings'
 export {CancelToken} from './utils/cancelToken'
 export {CurveFactory, interpolateICurve, Point, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
 export {LayerDirectionEnum} from './layout/layered/layerDirectionEnum'
@@ -19,8 +14,7 @@ export {
   layoutIsCalculated,
   geometryIsCreated,
 } from './layout/driver'
-export {CurvePort}
-export {Edge}
+export {Edge} from './structs/edge'
 export {Graph} from './structs/graph'
 export {Node} from './structs/node'
 export {MdsLayoutSettings} from './layout/mds/mDSLayoutSettings'
@@ -43,13 +37,4 @@ export {Entity} from './structs/entity'
 export {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from './math/geometry/icurve'
 export {AttributeRegistry} from './structs/attributeRegister'
 export {FastIncrementalLayoutSettings} from './layout/incremental/fastIncrementalLayoutSettings'
-export {FloatingPort} from './layout/core/floatingPort'
-export {Port} from './layout/core/port'
-export {EdgeLabelPlacement} from './layout/edgeLabelPlacement'
-export {CornerSite} from './math/geometry/cornerSite'
-export {IntersectionInfo} from './math/geometry/intersectionInfo'
-export {SmoothedPolyline} from './math/geometry/smoothedPolyline'
-export {RectilinearInteractiveEditor} from './routing/rectilinear/RectilinearInteractiveEditor'
-export {StraightLineEdges} from './routing/StraightLineEdges'
 export {ILayoutSettings}
-export {PlaneTransformation}

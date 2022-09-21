@@ -1,5 +1,6 @@
+import {GeomEdge, GeomGraph} from '../../layout/core'
 import {Graph} from '../../structs/graph'
-import {GeomEdge, GeomGraph} from 'msagl-js'
+
 import {EdgeRestoreData} from './edgeRestoreData'
 import {UndoRedoAction} from './undoRedoAction'
 

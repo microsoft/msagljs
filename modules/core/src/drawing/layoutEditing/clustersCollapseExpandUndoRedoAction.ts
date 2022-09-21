@@ -1,4 +1,4 @@
-import {GeomGraph} from 'msagl-js'
+import {GeomGraph} from '../../layout/core'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class ClustersCollapseExpandUndoRedoAction extends UndoRedoAction {

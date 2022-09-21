@@ -1,10 +1,11 @@
 // the interface for undo objects
 
+import {GeomGraph} from '../../layout/core'
+import {GeomObject} from '../../layout/core/geomObject'
 import {Rectangle} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
-import {GeomGraph} from 'msagl-js'
-import {GeomObject} from 'msagl-js'
+
 import {IViewerObject} from './iViewerObject'
 
 export class UndoRedoAction {
