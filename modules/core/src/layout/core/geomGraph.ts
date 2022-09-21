@@ -6,13 +6,11 @@ import {GeomEdge} from './geomEdge'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
-import {CommonLayoutSettings} from '../layered/commonLayoutSettings'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
 import {Curve, ICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
-import {Assert} from '../../utils/assert'
-import {ILayoutSettings} from '../layered/iLayoutSettings'
+import {ILayoutSettings} from '../iLayoutSettings'
 
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {

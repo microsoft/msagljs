@@ -4,7 +4,7 @@ import {LayerDirectionEnum} from './layerDirectionEnum'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {closeDistEps} from '../../utils/compare'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
-import {CommonLayoutSettings, CommonLayoutSettingsJSON} from './commonLayoutSettings'
+import {CommonLayoutSettings, CommonLayoutSettingsJSON} from '../commonLayoutSettings'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {ILayoutSettings} from './iLayoutSettings'
 export enum SnapToGridByY {

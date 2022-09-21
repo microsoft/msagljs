@@ -1,7 +1,7 @@
 import {Point} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {Graph} from '../../structs/graph'
-import {GeomEdge, GeomGraph} from '../core'
+import {GeomEdge, GeomGraph} from 'msagl-js'
 import {GeometryGraphEditor} from './geomGraphEditor'
 import {UndoRedoAction} from './undoRedoAction'
 
@@ -68,7 +68,7 @@ export class SiteInsertUndoAction extends UndoRedoAction {
   public constructor(edgeToEdit: GeomEdge) {
     super(GeomGraph.getGeom(edgeToEdit.edge.parent as Graph))
     this.editedEdge = edgeToEdit
-    this.AddRestoreData(this.editedEdge, null) // RestoreHelper.GetRestoreData(this.editedEdge))
+    this.AddRestoreData(this.editedEdge.edge, null) // RestoreHelper.GetRestoreData(this.editedEdge))
   }
 
   //  undoes the editing

@@ -1,9 +1,25 @@
 import {Attribute} from '../../structs/attribute'
 import {AttributeRegistry} from '../../structs/attributeRegister'
 import {Entity} from '../../structs/entity'
-import {EventHandler} from '../layoutEditing/eventHandler'
 import {Rectangle} from './../../math/geometry/rectangle'
 import {GeomLabel} from './geomLabel'
+/** represents the set of functions to handle an event */
+export class EventHandler {
+  forEach(action: (a: any) => any) {
+    this.actions.forEach((a) => a(action, null))
+  }
+  private actions: Set<(a: any, b: any) => void>
+  subscribe(f: (a: any, b: any) => void) {
+    this.actions.add(f)
+  }
+  unsubscribe(f: (a: any, b: any) => void) {
+    this.actions.delete(f)
+  }
+  raise(a: any, b: any) {
+    this.actions.forEach((f) => f(a, b))
+  }
+}
+
 export abstract class GeomObject extends Attribute {
   abstract boundingBox: Rectangle
   BeforeLayoutChangeEvent: EventHandler

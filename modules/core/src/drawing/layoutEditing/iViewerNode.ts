@@ -1,6 +1,5 @@
 import {IViewerObject} from './iViewerObject'
-import {Node} from '../../structs/node'
-import {EventHandler} from './eventHandler'
+import {Node, EventHandler} from 'msagl-js'
 export interface IViewerNode extends IViewerObject {
   node: Node
   IsCollapsedChanged: EventHandler

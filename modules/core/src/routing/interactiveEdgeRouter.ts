@@ -629,7 +629,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   // smoothing the corners of the polyline
 
-  SmoothCorners(edgePolyline: SmoothedPolyline) {
+  SmoothenCorners(edgePolyline: SmoothedPolyline) {
     let a: CornerSite = edgePolyline.headSite
     let corner: {b: CornerSite; c: CornerSite} = {b: null, c: null}
     // the corner other end
@@ -958,7 +958,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   SmoothCornersAndReturnCurve(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     t.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
     if (smooth) {
-      this.SmoothCorners(t.smoothedPolyline)
+      this.SmoothenCorners(t.smoothedPolyline)
     }
 
     return t.smoothedPolyline.createCurve()

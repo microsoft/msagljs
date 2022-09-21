@@ -5,7 +5,7 @@ import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {Algorithm} from '../../utils/algorithm'
 import {PolyIntEdge} from './polyIntEdge'
 import {SugiyamaLayoutSettings, SnapToGridByY} from './sugiyamaLayoutSettings'
-import {CommonLayoutSettings} from './commonLayoutSettings'
+import {CommonLayoutSettings} from '../commonLayoutSettings'
 
 import {IEdge} from '../../structs/iedge'
 import {CycleRemoval} from './CycleRemoval'

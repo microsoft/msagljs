@@ -1,5 +1,5 @@
 import {Graph} from '../../structs/graph'
-import {GeomEdge, GeomGraph} from '../core'
+import {GeomEdge, GeomGraph} from 'msagl-js'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {UndoRedoAction} from './undoRedoAction'
 
@@ -26,7 +26,7 @@ export class EdgeDragUndoRedoAction extends UndoRedoAction {
   }
 
   Restore() {
-    const erd = <EdgeRestoreData>this.GetRestoreData(this.editedEdge)
+    const erd = <EdgeRestoreData>this.GetRestoreData(this.editedEdge.edge)
     this.editedEdge.curve = erd.Curve
     this.editedEdge.underlyingPolyline = erd.UnderlyingPolyline
     if (this.editedEdge.sourceArrowhead != null) {

@@ -10,7 +10,6 @@ import {EdgeRoutingMode} from '../EdgeRoutingMode'
 import {RelativeShape} from '../RelativeShape'
 import {Shape} from '../shape'
 import {RectilinearEdgeRouter} from './RectilinearEdgeRouter'
-import {SsstRectilinearPath} from './SsstRectilinearPath'
 
 export class RectilinearInteractiveEditor {
   static CreatePortsAndRouteEdges(

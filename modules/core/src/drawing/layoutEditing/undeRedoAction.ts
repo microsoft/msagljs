@@ -1,9 +1,11 @@
 import {Rectangle} from '../../math/geometry'
-import {GeomGraph} from '../core'
-import {GeomObject} from '../core/geomObject'
+import {GeomGraph} from 'msagl-js'
+import {GeomObject} from 'msagl-js'
 import {IViewerObject} from './iViewerObject'
-import {RestoreData} from './restoreData'
-
+import {EdgeRestoreData} from './edgeRestoreData'
+import {LabelRestoreData} from './labelRestoreData'
+import {NodeRestoreData} from './nodeRestoreData'
+type RestoreData = LabelRestoreData | NodeRestoreData | EdgeRestoreData
 export class UndoRedoAction {
   affectedObjects: Set<IViewerObject> = new Set<IViewerObject>()
 

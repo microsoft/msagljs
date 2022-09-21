@@ -1,4 +1,4 @@
-import {EdgeRoutingSettings, EdgeRoutingSettingsJSON} from '../../routing/EdgeRoutingSettings'
+import {EdgeRoutingSettings, EdgeRoutingSettingsJSON} from '../routing/EdgeRoutingSettings'
 export type CommonLayoutSettingsJSON = {
   nodeSeparation?: number
   packingAspectRatio?: number
