@@ -1,4 +1,4 @@
-import {DrawingGraph, DrawingNode} from 'msagl-js/drawing'
+import {DrawingGraph} from 'msagl-js/drawing'
 
 import {layoutGraph} from './layout'
 import {Graph} from 'msagl-js'
