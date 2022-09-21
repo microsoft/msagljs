@@ -5,9 +5,9 @@ import {Point, Rectangle} from '../../math/geometry'
 import {RectangleNode} from '../../math/geometry/RTree/RectangleNode'
 import {RTree} from '../../math/geometry/RTree/rTree'
 import {createRectangleNodeOnData} from '../../math/geometry/RTree/RectangleNode'
-import {GeomNode} from 'msagl-js'
+
 import {insertRange} from '../../utils/setOperations'
-import {GeomGraph} from 'msagl-js'
+import {GeomNode, GeomGraph} from '../../layout/core'
 
 export class BumperPusher {
   separation: number

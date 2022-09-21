@@ -1,5 +1,6 @@
-import {GeomNode, GeomEdge, GeomLabel, GeomGraph, Entity} from 'msagl-js'
-import {GeomObject} from 'msagl-js'
+import {GeomGraph, GeomNode, GeomEdge, GeomLabel} from '../../layout/core'
+import {GeomObject} from '../../layout/core/geomObject'
+import {Entity} from '../../structs/entity'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {LabelRestoreData} from './labelRestoreData'
 import {NodeRestoreData} from './nodeRestoreData'
@@ -23,7 +24,7 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
     }
   }
 
-  static RestoreOnKevValue(kv: [Entity, LabelRestoreData | NodeRestoreData | EdgeRestoreData | LabelRestoreData]) {
+  static RestoreOnKevValue(kv: [Entity, LabelRestoreData | NodeRestoreData | EdgeRestoreData]) {
     const geomObj = GeomObject.getGeom(kv[0])
     if (geomObj instanceof GeomNode) {
       geomObj.boundaryCurve = (kv[1] as NodeRestoreData).BoundaryCurve

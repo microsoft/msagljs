@@ -1,7 +1,8 @@
+import {GeomEdge, GeomGraph} from '../../layout/core'
 import {Point} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {Graph} from '../../structs/graph'
-import {GeomEdge, GeomGraph} from 'msagl-js'
+
 import {GeometryGraphEditor} from './geomGraphEditor'
 import {UndoRedoAction} from './undoRedoAction'
 
