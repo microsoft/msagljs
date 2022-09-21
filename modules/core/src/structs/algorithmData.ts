@@ -1,5 +1,5 @@
 import {Attribute} from './attribute'
-import {AttributeRegistry} from './attributeRegister'
+import {AttributeRegistry} from './attributeRegistry'
 import {Entity} from './entity'
 
 export class AlgorithmData extends Attribute {

@@ -5,7 +5,7 @@ import {PN} from '../../src/math/geometry/parallelogramNode'
 import {Polyline} from '../../src/math/geometry/polyline'
 
 export function writeLeavesToSvg(nl0: PN, nl1: PN): void {
-  const w = new SvgDebugWriter('/tmp/goDeeper.svg')
+  const w = new SvgDebugWriter('./tmp/goDeeper.svg')
   const poly0 = new Polyline()
   for (const p of allVerticesOfParall(nl0.parallelogram)) {
     poly0.addPoint(p)

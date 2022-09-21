@@ -45,7 +45,7 @@ export class CdtSweeper extends Algorithm {
     this.triangles.add(firstTriangle)
     this.front.insert(new CdtFrontElement(p_1, firstTriangle.TriEdges.getItem(2)))
     this.front.insert(new CdtFrontElement(this.listOfSites[0], firstTriangle.TriEdges.getItem(1)))
-    //this.Show('/tmp/front.svg')
+    //this.Show('./tmp/front.svg')
   }
 
   run() {

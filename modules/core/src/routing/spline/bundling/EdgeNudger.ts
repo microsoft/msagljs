@@ -165,7 +165,7 @@ export class EdgeNudger extends Algorithm {
     //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Tan', u.BoundaryCurve))
     //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Plum', v.BoundaryCurve))
     //  dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'DarkOrange', w.BoundaryCurve))
-    //  SvgDebugWriter.dumpDebugCurves('/tmp/hubs' + EdgeNudger.debCount + '.svg', dc)
+    //  SvgDebugWriter.dumpDebugCurves('./tmp/hubs' + EdgeNudger.debCount + '.svg', dc)
     // }
   }
 

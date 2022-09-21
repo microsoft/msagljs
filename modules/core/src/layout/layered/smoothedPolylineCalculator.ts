@@ -745,7 +745,7 @@ export class SmoothedPolylineCalculator {
       const nc = n.boundaryCurve
 
       if (Curve.CurvesIntersect(nc, curve)) {
-        //  SvgDebugWriter.dumpICurves('/tmp/cross.svg', [nc, curve])
+        //  SvgDebugWriter.dumpICurves('./tmp/cross.svg', [nc, curve])
         return false
       }
     }
@@ -812,7 +812,7 @@ export class SmoothedPolylineCalculator {
     do {
       seg = Curve.createBezierSeg(k, k, a, b, c)
       // SvgDebugWriter.dumpDebugCurves(
-      //  '/tmp/' + ++SmoothedPolylineCalculator.count + 'sm.svg',
+      //  './tmp/' + ++SmoothedPolylineCalculator.count + 'sm.svg',
       //  this.getDebugCurvesForCorner(a, b, c),
       // )
       b.previouisBezierCoefficient = k

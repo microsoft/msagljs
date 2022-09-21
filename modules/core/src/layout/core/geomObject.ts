@@ -1,14 +1,14 @@
 import {Attribute} from '../../structs/attribute'
-import {AttributeRegistry} from '../../structs/attributeRegister'
+import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Rectangle} from './../../math/geometry/rectangle'
 import {GeomLabel} from './geomLabel'
-/** represents the set of functions to handle an event */
+/** represents a set of functions to handle an event */
 export class EventHandler {
   forEach(action: (a: any) => any) {
     this.actions.forEach((a) => a(action, null))
   }
-  private actions: Set<(a: any, b: any) => void>
+  private actions = new Set<(a: any, b: any) => void>()
   subscribe(f: (a: any, b: any) => void) {
     this.actions.add(f)
   }

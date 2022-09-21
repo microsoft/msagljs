@@ -911,7 +911,7 @@ export class SplineRouter extends Algorithm {
 
   // dumpSvg() {
   //  SplineRouter.ShowVisGraph(
-  //    '/tmp/vg.svg',
+  //    './tmp/vg.svg',
   //    this.visGraph,
   //    Array.from(new Set<Polyline>(Array.from(this.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve))),
   //    Array.from(this.geomGraph.shallowNodes)
@@ -991,7 +991,7 @@ export class SplineRouter extends Algorithm {
     tmpVisGraph = new VisibilityGraph()
     coneSpanner = ConeSpanner.mk(Array.from(obstacles), tmpVisGraph, this.coneAngle, portLocations, looseBoundary)
     coneSpanner.run()
-    // SplineRouter.ShowVisGraph('/tmp/splineRouter' + ++SplineRouter.debCount + '.svg', tmpVisGraph, Array.from(obstacles))
+    // SplineRouter.ShowVisGraph('./tmp/splineRouter' + ++SplineRouter.debCount + '.svg', tmpVisGraph, Array.from(obstacles))
 
     this.ProgressStep()
     for (const edge of tmpVisGraph.Edges) {

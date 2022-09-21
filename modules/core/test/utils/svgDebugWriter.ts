@@ -13,6 +13,16 @@ import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
 import {DrawingObject} from '../../src/drawing/drawingObject'
 import {DrawingEdge, DrawingNode} from '../../src/drawing'
 import {fontHeight} from './testUtils'
+
+// this function would be called by jest whenever it uses SvgDebugWriter
+beforeAll(() => {
+  const dir = 'tmp'
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, {recursive: true})
+    console.log('dir created')
+  }
+})
+
 // @ts-check
 export class SvgDebugWriter {
   // Here we import the File System module of node

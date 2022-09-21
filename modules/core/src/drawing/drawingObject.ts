@@ -8,7 +8,7 @@ import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
 import {Attr} from 'dotparser'
 import {Attribute} from '../structs/attribute'
-import {AttributeRegistry} from '../structs/attributeRegister'
+import {AttributeRegistry} from '../structs/attributeRegistry'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject extends Attribute {
   static copyValidFields(source: DrawingObject, target: DrawingObject) {

@@ -25,7 +25,7 @@ xtest('filclust', () => {
   filSettings.AvoidOverlaps = true
   const fil = new FastIncrementalLayout(gg, filSettings, 2)
   fil.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/fil.svg', gg)
+  // SvgDebugWriter.writeGeomGraph('./tmp/fil.svg', gg)
 })
 
 test('clust', () => {
@@ -41,7 +41,7 @@ test('clust', () => {
   gg.layoutSettings = settings
   for (const subg of gg.subgraphs()) subg.layoutSettings = settings
   layoutGeomGraph(gg, null)
-  // SvgDebugWriter.writeGeomGraph('/tmp/fil_clust.svg', gg)
+  // SvgDebugWriter.writeGeomGraph('./tmp/fil_clust.svg', gg)
 })
 
 test('smlred', () => {
@@ -57,7 +57,7 @@ test('smlred', () => {
   gg.layoutSettings = settings
   for (const subg of gg.subgraphs()) subg.layoutSettings = settings
   layoutGeomGraph(gg, null)
-  // SvgDebugWriter.writeGeomGraph('/tmp/sml_red.svg', gg)
+  // SvgDebugWriter.writeGeomGraph('./tmp/sml_red.svg', gg)
 })
 
 function noOverlaps(gg: GeomGraph): any {
@@ -92,7 +92,7 @@ test('layout0-50 gv files with fil', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('/tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      SvgDebugWriter.writeGeomGraph('./tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -112,7 +112,7 @@ test('layout100-150 gv files with fil', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('/tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -131,7 +131,7 @@ xtest('layout 150-250 gv files with fil', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('/tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })

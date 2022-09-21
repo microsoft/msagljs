@@ -1051,7 +1051,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     this.coneSideComparer.SetOperand(leftConeSide)
     rbNode = this.leftConeSides.find(leftConeSide)
     if (rbNode == null) {
-      //this.Show([CurveFactory.CreateDiamond(10, 10, vertexEvent.Site)], '/tmp/bug.svg')
+      //this.Show([CurveFactory.CreateDiamond(10, 10, vertexEvent.Site)], './tmp/bug.svg')
       const tmpZ = this.Z
       this.Z = Math.max(this.GetZP(leftConeSide.Start), this.PreviousZ)
       // we need to return to the past a little bit when the order was still correct

@@ -28,7 +28,7 @@ class SvgObject {
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity
   bind() {
-    if (this.entity) this.entity.setAttr(AttributeRegistry.SvgObjectIndex, this)
+    if (this.entity) this.entity.setAttr(AttributeRegistry.ViewerIndex, this)
   }
 
   constructor(attrCont: Entity, svgData: any) {
@@ -37,9 +37,6 @@ class SvgObject {
     this.bind()
   }
 
-  static getGeom(attrCont: Entity): GeomObject {
-    return attrCont.getAttr(AttributeRegistry.SvgObjectIndex)
-  }
   svgData: any
 }
 /** this class creates SVG content for a given Graph */

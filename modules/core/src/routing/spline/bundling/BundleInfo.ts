@@ -101,7 +101,7 @@ export class BundleInfo {
   }
 
   mkNameFromLRST(): string {
-    return '/tmp/leftRight' + this.SourceBase.Position.toString() + '_' + this.TargetBase.Position.toString() + '.svg'
+    return './tmp/leftRight' + this.SourceBase.Position.toString() + '_' + this.TargetBase.Position.toString() + '.svg'
   }
 
   SetRLParamsIfWidthIsFeasible(perp: Point, a: Point, b: Point): boolean {
@@ -191,7 +191,7 @@ export class BundleInfo {
     // ])
   }
   mkNameFromST(): string {
-    return '/tmp/mparam' + this.SourceBase.Position.toString() + '_' + this.TargetBase.Position.toString() + '.svg'
+    return './tmp/mparam' + this.SourceBase.Position.toString() + '_' + this.TargetBase.Position.toString() + '.svg'
   }
 
   TrimSegWithBoundaryCurves(ls: LineSegment, s: {par: number}, t: {par: number}): LineSegment {
@@ -229,7 +229,7 @@ export class BundleInfo {
     //   //Assert.assert(Point.closeDistEps(sourceX.x, this.SourceBase.Curve.value(sourceX.par1)))
     // //Assert.assert(Point.closeDistEps(targetX.x, this.TargetBase.Curve.value(targetX.par1)))
 
-    // SvgDebugWriter.dumpDebugCurves('/tmp/trim_result' + ls.start.toString() + ls.end.toString() + '.svg', [
+    // SvgDebugWriter.dumpDebugCurves('./tmp/trim_result' + ls.start.toString() + ls.end.toString() + '.svg', [
     //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', this.SourceBase.Curve),
     //  DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', this.TargetBase.Curve),
     //  DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Black', ls),

@@ -41,7 +41,7 @@ test('gtree on CDT', () => {
       }
     }
   }
-  CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, redCurves, null, [], '/tmp/mdsCdt.svg')
+  CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, redCurves, null, [], './tmp/mdsCdt.svg')
   const ret = MstOnDelaunayTriangulation.GetMstOnCdt(cdt, (e) => e.lowerSite.point.sub(e.upperSite.point).length)
   const l = []
   for (const s of cdt.PointsToSites.values()) {
@@ -54,7 +54,7 @@ test('gtree on CDT', () => {
     l.push(DebugCurve.mkDebugCurveTWCI(100, 0.2, 'red', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
   }
 
-  SvgDebugWriter.dumpDebugCurves('/tmp/mst.svg', l)
+  SvgDebugWriter.dumpDebugCurves('./tmp/mst.svg', l)
   //         LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
 })
 function runOnPoints(ps: Point[]) {

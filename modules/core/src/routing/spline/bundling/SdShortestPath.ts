@@ -195,7 +195,7 @@ export class SdShortestPath {
       }
     }
 
-    // SplineRouter.ShowVisGraph('/tmp/badVis.svg', this.VisibilityGraph, Array.from(this.ObstacleHierarchy.GetAllLeaves()), null, [
+    // SplineRouter.ShowVisGraph('./tmp/badVis.svg', this.VisibilityGraph, Array.from(this.ObstacleHierarchy.GetAllLeaves()), null, [
     //  LineSegment.mkPP(this.CurrentEdgeGeometry.sourcePort.Location, this.CurrentEdgeGeometry.targetPort.Location),
     // ])
     throw new Error()

@@ -1,4 +1,6 @@
+import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
+import {PlaneTransformation} from './math/geometry/planeTransformation'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge} from './layout/core'
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -35,6 +37,8 @@ export {Arrowhead} from './layout/core/arrowhead'
 export {setNewParent} from './structs/graph'
 export {Entity} from './structs/entity'
 export {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from './math/geometry/icurve'
-export {AttributeRegistry} from './structs/attributeRegister'
+export {AttributeRegistry} from './structs/attributeRegistry'
 export {FastIncrementalLayoutSettings} from './layout/incremental/fastIncrementalLayoutSettings'
 export {ILayoutSettings}
+export {EventHandler}
+export {PlaneTransformation}

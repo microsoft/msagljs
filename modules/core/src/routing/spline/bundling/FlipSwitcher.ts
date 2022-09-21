@@ -143,7 +143,7 @@ export class FlipSwitcher {
     //  const db = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', polyB)
     //  const bStart = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(4, polyB.start))
     //  const bEnd = DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Blue', CurveFactory.mkCircle(2, polyB.end))
-    //  SvgDebugWriter.dumpDebugCurves('/tmp/dadb_.svg', [da, db, aStart, aEnd, bStart, bEnd])
+    //  SvgDebugWriter.dumpDebugCurves('./tmp/dadb_.svg', [da, db, aStart, aEnd, bStart, bEnd])
     //  //   throw new Error()
     // }
 

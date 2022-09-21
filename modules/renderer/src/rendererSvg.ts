@@ -1,19 +1,17 @@
-import {DrawingGraph} from 'msagl-js/drawing'
-
+import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeys} from 'msagl-js/drawing'
 import {layoutGraph} from './layout'
-import {Graph} from 'msagl-js'
-
+import {Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point} from 'msagl-js'
 import {deepEqual} from './utils'
-
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
+import {IViewer} from 'msagl-js/drawing'
 
 /**
  * Renders an MSAGL graph with SVG
  */
-export class RendererSvg {
+export class RendererSvg implements IViewer {
   /** The default is true and the value is reset to true after each call to setGraph */
   needCreateGeometry = true
   /** The default is true and the value is reset to true after each call to setGraph */
@@ -95,4 +93,94 @@ export class RendererSvg {
   getSvg(): SVGAElement {
     return this._svgCreator ? this._svgCreator.svg : null
   }
+  // implementation of IViewer
+  ScreenToSource(e: IMsaglMouseEventArgs): Point {
+    throw new Error('Method not implemented.')
+  }
+  IncrementalDraggingModeAlways: boolean
+  CurrentScale: number
+  CreateIViewerNode(drawingNode: Node, center: Point, visualElement: any): IViewerNode
+  CreateIViewerNode(drawingNode: Node): IViewerNode
+  CreateIViewerNode(drawingNode: unknown, center?: unknown, visualElement?: unknown): IViewerNode {
+    throw new Error('Method not implemented.')
+  }
+  NeedToCalculateLayout: boolean
+  ViewChangeEvent: EventHandler
+  MouseDown: EventHandler = new EventHandler()
+  MouseMove: EventHandler
+  MouseUp: EventHandler
+  ObjectUnderMouseCursorChanged: EventHandler
+  ObjectUnderMouseCursor: IViewerObject
+  Invalidate(objectToInvalidate: IViewerObject): void {
+    throw new Error('Method not implemented.')
+  }
+  InvalidateAll(): void {
+    throw new Error('Method not implemented.')
+  }
+  GraphChanged: EventHandler
+  ModifierKeys: ModifierKeys
+  Entities: Iterable<IViewerObject>
+  DpiX: number
+  DpiY: number
+  OnDragEnd(changedObjects: Iterable<IViewerObject>): void {
+    throw new Error('Method not implemented.')
+  }
+  LineThicknessForEditing: number
+  LayoutEditingEnabled: boolean
+  InsertingEdge: boolean
+  PopupMenus(menuItems: [string, () => void][]): void {
+    throw new Error('Method not implemented.')
+  }
+  UnderlyingPolylineCircleRadius: number
+  Graph: Graph
+  StartDrawingRubberLine(startingPoint: Point): void {
+    throw new Error('Method not implemented.')
+  }
+  DrawRubberLine(args: any): void
+  DrawRubberLine(point: Point): void
+  DrawRubberLine(point: unknown): void {
+    throw new Error('Method not implemented.')
+  }
+  StopDrawingRubberLine(): void {
+    throw new Error('Method not implemented.')
+  }
+  AddEdge(edge: IViewerEdge, registerForUndo: boolean): void {
+    throw new Error('Method not implemented.')
+  }
+  CreateEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge {
+    throw new Error('Method not implemented.')
+  }
+  AddNode(node: IViewerNode, registerForUndo: boolean): void {
+    throw new Error('Method not implemented.')
+  }
+  RemoveEdge(edge: IViewerEdge, registerForUndo: boolean): void {
+    throw new Error('Method not implemented.')
+  }
+  RemoveNode(node: IViewerNode, registerForUndo: boolean): void {
+    throw new Error('Method not implemented.')
+  }
+  RouteEdge(drawingEdge: Edge): IViewerEdge {
+    throw new Error('Method not implemented.')
+  }
+  ViewerGraph: IViewerGraph
+  ArrowheadLength: number
+  SetSourcePortForEdgeRouting(portLocation: Point): void {
+    throw new Error('Method not implemented.')
+  }
+  SetTargetPortForEdgeRouting(portLocation: Point): void {
+    throw new Error('Method not implemented.')
+  }
+  RemoveSourcePortEdgeRouting(): void {
+    throw new Error('Method not implemented.')
+  }
+  RemoveTargetPortEdgeRouting(): void {
+    throw new Error('Method not implemented.')
+  }
+  DrawRubberEdge(edgeGeometry: GeomEdge): void {
+    throw new Error('Method not implemented.')
+  }
+  StopDrawingRubberEdge(): void {
+    throw new Error('Method not implemented.')
+  }
+  Transform: PlaneTransformation
 }

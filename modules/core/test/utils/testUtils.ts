@@ -124,7 +124,7 @@ export function runFastIncLayout(fname: string, edgeRoutingMode: EdgeRoutingMode
 }
 
 export function outputGraph(g: GeomGraph, name: string) {
-  // SvgDebugWriter.writeGeomGraph('/tmp/' + name + '.svg', g)
+  // SvgDebugWriter.writeGeomGraph('./tmp/' + name + '.svg', g)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

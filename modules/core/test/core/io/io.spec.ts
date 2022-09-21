@@ -133,7 +133,7 @@ xtest('graph ldbxtried.gv', () => {
   for (let i = 0; i < 32; i++) random()
   const router = new SplineRouter(gg, edges, /*tightPadding*/ 3)
   router.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/ldbug.svg', GeomGraph.getGeom(g))
+  // SvgDebugWriter.writeGeomGraph('./tmp/ldbug.svg', GeomGraph.getGeom(g))
 })
 
 test('graph smlred', () => {
@@ -171,7 +171,7 @@ test('graph fsm', () => {
   }
 
   expect(labelsNow).toBe(labelsWas)
-  //  // SvgDebugWriter.writeGeomGraph('/tmp/fsm_recovered.svg').writeGeomGraph(GeomGraph.getGeom(graph),
+  //  // SvgDebugWriter.writeGeomGraph('./tmp/fsm_recovered.svg').writeGeomGraph(GeomGraph.getGeom(graph),
 })
 
 test('graph a.gv', () => {
@@ -256,14 +256,14 @@ test('graph style', () => {
   const jsonOfG: JSONGraph = graphToJSON(g)
   //const content = JSON.stringify(jsonOfG, null, 2)
   const newG = parseJSONGraph(jsonOfG)
-  // const ws = fs.openSync('/tmp/style_out.JSON', 'w', 0o666)
+  // const ws = fs.openSync('./tmp/style_out.JSON', 'w', 0o666)
   // fs.writeFileSync(ws, content)
   // fs.close(ws)
   expect(newG != null).toBe(true)
   const dg = DrawingGraph.getDrawingObj(newG) as DrawingGraph
   dg.createGeometry()
   layoutGeomGraph(GeomGraph.getGeom(newG))
-  // SvgDebugWriter.writeGeomGraph('/tmp/style.svg', GeomGraph.getGeom(newG))
+  // SvgDebugWriter.writeGeomGraph('./tmp/style.svg', GeomGraph.getGeom(newG))
 })
 
 test('layout is loaded', () => {

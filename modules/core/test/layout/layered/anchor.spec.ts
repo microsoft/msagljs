@@ -62,7 +62,7 @@ test('anchor poly', () => {
   expect(poly == null).toBe(false)
   const anchorPolyDC = DebugCurve.mkDebugCurveTWCI(200, 2, 'Green', poly)
   const anchorBC = DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', n.boundaryCurve)
-  //SvgDebugWriter.dumpDebugCurves('/tmp/anchorBound.svg', [anchorPolyDC, anchorBC])
+  //SvgDebugWriter.dumpDebugCurves('./tmp/anchorBound.svg', [anchorPolyDC, anchorBC])
 })
 
 test('anchor poly padded', () => {
@@ -74,7 +74,7 @@ test('anchor poly padded', () => {
   anchor.padding = 8
   const poly = anchor.polygonalBoundary
   expect(poly == null).toBe(false)
-  //  SvgDebugWriter.dumpICurves('/tmp/anchorBoundPadded.svg', [poly, n.boundaryCurve])
+  //  SvgDebugWriter.dumpICurves('./tmp/anchorBoundPadded.svg', [poly, n.boundaryCurve])
   paddingIsCorrect(anchor)
 })
 
@@ -89,6 +89,6 @@ test('anchor poly cw padded', () => {
   anchor.padding = 8
   const poly = anchor.polygonalBoundary
   expect(poly == null).toBe(false)
-  SvgDebugWriter.dumpICurves('/tmp/anchorCwBounded.svg', [poly, n.boundaryCurve])
+  SvgDebugWriter.dumpICurves('./tmp/anchorCwBounded.svg', [poly, n.boundaryCurve])
   paddingIsCorrect(anchor)
 })

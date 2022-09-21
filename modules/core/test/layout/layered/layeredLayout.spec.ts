@@ -65,7 +65,7 @@ test('self on node', () => {
   for (const e of g.edges()) {
     expect(e.curve == null).toBe(false)
   }
-  // SvgDebugWriter.writeGeomGraph('/tmp/self.svg', g)
+  // SvgDebugWriter.writeGeomGraph('./tmp/self.svg', g)
 })
 
 test('layered layout glued graph', () => {
@@ -164,7 +164,7 @@ test('disconnected comps', () => {
   }
 
   // console.log(strB.ToString())
-  // SvgDebugWriter.writeGeomGraph('/tmp/disconnected.svg', g)
+  // SvgDebugWriter.writeGeomGraph('./tmp/disconnected.svg', g)
 })
 function color(i: number) {
   if (i == 0) {
@@ -183,12 +183,12 @@ test('margins', () => {
   gg.margins = {left: 100, right: 10, top: 170, bottom: 50}
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph(    '/tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg',    GeomObject.getGeom(dg.graph) as GeomGraph,  )
+  // SvgDebugWriter.writeGeomGraph(    './tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg',    GeomObject.getGeom(dg.graph) as GeomGraph,  )
   const g = GeomObject.getGeom(dg.graph) as GeomGraph
   const dc = Array.from(g.deepEdges)
     .map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.curve))
     .concat(Array.from(g.deepEdges).map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.boundingBox.perimeter())))
-  SvgDebugWriter.dumpDebugCurves('/tmp/arr.svg', dc)
+  SvgDebugWriter.dumpDebugCurves('./tmp/arr.svg', dc)
 })
 
 test('undirected pach', () => {
@@ -197,7 +197,7 @@ test('undirected pach', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/undir_pack.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/undir_pack.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('austin', () => {
@@ -230,37 +230,37 @@ xtest('austin', () => {
   for (const e of gg.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
-  // SvgDebugWriter.writeGeomGraph('/tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('clust.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/clust.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/clust_.gv.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/clust_.gv.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('clust5.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/clust5.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/clust5_.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/clust5_.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('b56.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/b56.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/b56.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/b56.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('smlred.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/smlred.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('b51.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/b51.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/b51Layered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/b51Layered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('arrowhead size default', () => {
@@ -270,7 +270,7 @@ test('arrowhead size default', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/longArrows.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/longArrows.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('arrowhead size per edge', () => {
@@ -287,7 +287,7 @@ test('arrowhead size per edge', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/arrowheadLength.svg', geomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/arrowheadLength.svg', geomGraph)
 })
 
 test('graphvis/ER.gv', () => {
@@ -300,34 +300,34 @@ test('b.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/b.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/btest.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/btest.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 test('b7.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/b.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/b7test.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/b7test.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 xtest('fsm.gv with Brand', () => {
   const ss = new SugiyamaLayoutSettings()
   ss.BrandesThreshold = 1
   const dg = runLayout('graphvis/fsm.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/fsmbrandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/fsmbrandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   // console.log(qualityMetric(GeomObject.getGeom(dg.graph) as GeomGraph))
 })
 test('fsm.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/fsm.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/fsmNetworkSimplex.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/fsmNetworkSimplex.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('b100', () => {
   const dg = runLayout('graphvis/b100.gv')
-  // SvgDebugWriter.writeGeomGraph('/tmp/b100.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/b100.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 test('pmpipe.gv', () => {
   const dg = runLayout('graphvis/pmpipe.gv')
-  // SvgDebugWriter.writeGeomGraph('/tmp/pmpipe.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/pmpipe.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('layered layout empty graph', () => {
@@ -366,7 +366,7 @@ test('layered layout nodes only', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(g, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/nodes_only.svg', g)
+  // SvgDebugWriter.writeGeomGraph('./tmp/nodes_only.svg', g)
 })
 
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
@@ -408,7 +408,7 @@ test('root', () => {
   const fname = 'graphvis/root.gv'
   const dg = runLayout(fname)
   if (dg != null) {
-    // SvgDebugWriter.writeGeomGraph('/tmp/' + 'root.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+    // SvgDebugWriter.writeGeomGraph('./tmp/' + 'root.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   }
 })
 
@@ -440,7 +440,7 @@ test('brandes', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      // SvgDebugWriter.writeGeomGraph('/tmp/' + f + 'brandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('./tmp/' + f + 'brandes.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -460,7 +460,7 @@ test('layout first 75 gv files from list', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      // SvgDebugWriter.writeGeomGraph('/tmp/' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      // SvgDebugWriter.writeGeomGraph('./tmp/' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })
@@ -470,7 +470,7 @@ test('shapes', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
   ll.run()
-  // SvgDebugWriter.writeGeomGraph('/tmp/pgram.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  // SvgDebugWriter.writeGeomGraph('./tmp/pgram.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 xtest('layout all gv files', () => {
@@ -484,7 +484,7 @@ xtest('layout all gv files', () => {
       const fname = join(path, f)
       const dg = runLayout(fname)
       if (dg != null) {
-        // SvgDebugWriter.writeGeomGraph('/tmp/all' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+        // SvgDebugWriter.writeGeomGraph('./tmp/all' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
       }
     }
   })
@@ -564,7 +564,7 @@ function testEdgeCurve(curve: ICurve, rect: Rectangle) {
     // const contains = rect.containsRectWithPadding(seg.boundingBox, rect.diagonal / 3)
     // if (!contains) {
     //   SvgDebugWriter.dumpDebugCurves(
-    //     '/tmp/clipfailCont.svg',
+    //     './tmp/clipfailCont.svg',
     //     [DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', curve), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', seg)].concat(
     //       tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())),
     //     ),
@@ -586,7 +586,7 @@ function testEdgeCurve(curve: ICurve, rect: Rectangle) {
 
     if (!canAssemble) {
       SvgDebugWriter.dumpDebugCurves(
-        '/tmp/clipfail.svg',
+        './tmp/clipfail.svg',
         [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', seg)]
           .concat(tiles.map((t) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', t.perimeter())))
           .concat(subSegs.map((s) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Green', s))),
@@ -607,7 +607,7 @@ function subsegsCoverPoint(p: Point, subSegs: ICurve[], eps: number): boolean {
     }
   }
   SvgDebugWriter.dumpDebugCurves(
-    '/tmp/subsecCoverFail.svg',
+    './tmp/subsecCoverFail.svg',
     [DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', CurveFactory.mkCircle(eps, p))].concat(
       subSegs.map((s) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Green', s)),
     ),

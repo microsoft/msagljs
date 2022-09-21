@@ -34,7 +34,7 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
-import {AttributeRegistry} from '../../core/src/structs/attributeRegister'
+import {AttributeRegistry} from 'msagl-js/src/structs/attributeRegistry'
 // import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {

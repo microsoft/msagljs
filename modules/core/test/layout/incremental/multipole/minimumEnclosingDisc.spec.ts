@@ -20,7 +20,7 @@ test('disc', () => {
   expect(discsAreClose(dSlow, dFast)).toBe(true)
 
   //   SvgDebugWriter.dumpICurves(
-  //     '/tmp/disc1.svg',
+  //     './tmp/disc1.svg',
   //     [CurveFactory.mkCircle(dSlow.Radius, dSlow.Center)].concat(ps.map((a) => CurveFactory.mkCircle(dSlow.Radius / 12, a))),
   //   )
 })

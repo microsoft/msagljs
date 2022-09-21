@@ -17,7 +17,7 @@ test('RectanglePackingTwoSquares', () => {
   expect(rectanglePacking.PackedWidth).toBe(2)
   expect(1).toBe(rectanglePacking.PackedHeight)
   expect(AreOverlapping(rectangles)).toBe(false)
-  ShowDebugView(rectangles, '/tmp/RectanglePackingTwoSquares.svg')
+  ShowDebugView(rectangles, './tmp/RectanglePackingTwoSquares.svg')
 })
 
 test('RectanglePackingNineSquares', () => {
@@ -31,7 +31,7 @@ test('RectanglePackingNineSquares', () => {
   expect(3).toBe(rectanglePacking.PackedWidth)
   expect(3).toBe(rectanglePacking.PackedHeight)
   expect(AreOverlapping(rectangles)).toBe(false)
-  ShowDebugView(rectangles, '/tmp/RectanglePackingNineSquares.svg')
+  ShowDebugView(rectangles, './tmp/RectanglePackingNineSquares.svg')
 })
 
 // Rect: 1x2 + two unit squares, should pack to 2x2"
@@ -45,7 +45,7 @@ test('RectanglePackingTallRectAndTwoSquares', () => {
   expect(2).toBe(rectanglePacking.PackedWidth)
   expect(2).toBe(rectanglePacking.PackedHeight)
   expect(AreOverlapping(rectangles)).toBe(false)
-  ShowDebugView(rectangles, '/tmp/RectanglePackingTallRectAndTwoSquares.svg')
+  ShowDebugView(rectangles, './tmp/RectanglePackingTallRectAndTwoSquares.svg')
 })
 
 function ShowDebugView(rectangles: Rectangle[], fn: string) {
@@ -73,7 +73,7 @@ test('SimpleRectanglesDifferentHeights', () => {
   expect(3 * scale).toBe(rectanglePacking.PackedWidth)
   expect(3 * scale).toBe(rectanglePacking.PackedHeight)
   expect(AreOverlapping(rectangles)).toBe(false)
-  ShowDebugView(rectangles, '/tmp/SimpleRectanglesDifferentHeights')
+  ShowDebugView(rectangles, './tmp/SimpleRectanglesDifferentHeights')
 })
 
 test('RandomRectangles', () => {
@@ -100,7 +100,7 @@ test('RandomRectangles', () => {
   const optimalAspectRatio: number = optimalRectanglePacking.PackedWidth / optimalRectanglePacking.PackedHeight
   expect(Math.abs(appoxAspectRatio - desiredAspectRatio) > Math.abs(optimalAspectRatio - desiredAspectRatio)).toBe(true)
   expect(AreOverlapping(rectangles)).toBe(false)
-  ShowDebugView(rectangles, '/tmp/RandomRectangles.svg')
+  ShowDebugView(rectangles, './tmp/RandomRectangles.svg')
 })
 
 test('PowerLawRandomRectangles', () => {
@@ -120,14 +120,14 @@ test('PowerLawRandomRectangles', () => {
   const maxWidth: number = Math.sqrt(area)
   const rectanglePacking: GreedyRectanglePacking = new GreedyRectanglePacking(rectangles, maxWidth)
   rectanglePacking.run()
-  ShowDebugView(rectangles, '/tmp/PowerLawRandomRectangles_1.svg')
+  ShowDebugView(rectangles, './tmp/PowerLawRandomRectangles_1.svg')
   const appoxAspectRatio: number = rectanglePacking.PackedWidth / rectanglePacking.PackedHeight
   expect(rectanglePacking.PackedWidth < maxWidth).toBe(true)
   expect(AreOverlapping(rectangles)).toBe(false)
   const optimalRectanglePacking: OptimalRectanglePacking = new OptimalRectanglePacking(rectangles, desiredAspectRatio)
   optimalRectanglePacking.run()
   const optimalAspectRatio: number = optimalRectanglePacking.PackedWidth / optimalRectanglePacking.PackedHeight
-  ShowDebugView(rectangles, '/tmp/PowerLawRandomRectangles_2.svg')
+  ShowDebugView(rectangles, './tmp/PowerLawRandomRectangles_2.svg')
   expect(Math.abs(appoxAspectRatio - desiredAspectRatio) > Math.abs(optimalAspectRatio - desiredAspectRatio)).toBe(true)
   expect(AreOverlapping(rectangles)).toBe(false)
 })

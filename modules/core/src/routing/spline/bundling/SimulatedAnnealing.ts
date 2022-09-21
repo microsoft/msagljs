@@ -112,7 +112,7 @@ export class SimulatedAnnealing {
         metroGraphData,
         null,
         null,
-        '/tmp/badcross.svg',
+        './tmp/badcross.svg',
         [
           DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', ls),
           DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', CurveFactory.mkCircle(2, u.Position)),
@@ -343,7 +343,7 @@ export class SimulatedAnnealing {
     const t: {touchedObstacles: Array<[Polyline, Point]>} = {touchedObstacles: []}
     const res: boolean = this.metroGraphData.looseIntersections.HubAvoidsObstaclesSPNBA(node, node.Position, idealR, t)
     if (!res) {
-      EdgeNudger.ShowHubs(this.metroGraphData, null, node, '/tmp/hubs.svg', [
+      EdgeNudger.ShowHubs(this.metroGraphData, null, node, './tmp/hubs.svg', [
         DebugCurve.mkDebugCurveTWCI(255, 1, 'Brown', Intersections.containingPoly),
         DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', CurveFactory.mkCircle(idealR, node.Position)),
       ])
@@ -377,7 +377,7 @@ export class SimulatedAnnealing {
         t,
       )
       if (!res) {
-        EdgeNudger.ShowHubs(this.metroGraphData, null, station, '/tmp/inside_forbid.svg', [
+        EdgeNudger.ShowHubs(this.metroGraphData, null, station, './tmp/inside_forbid.svg', [
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', LineSegment.mkPP(station.Position, adjStation.Position)),
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(2, station.Position)),
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(3, adjStation.Position)),

@@ -21,12 +21,12 @@ export interface IViewer {
 
   CurrentScale: number
 
-  //  creates a visual element for the node, and the corresponding geometry node is created according
-  //  to the size of the visual element
-
-  //  <param name="visualElement">if this value is not null then is should be a visual for the label, and the node width and height
-  //  will be taken from this visual</param>
-  //  <returns>new IViewerNode</returns>
+  /** Creates a visual element for the node, and the corresponding geometry node is created according
+   *  to the size of the visual element.
+   *  If this value is not null then is should be a visual for the label; the node width and the height
+   *  will be taken from this visual.
+   *  Returns IViewerNode
+   */
   CreateIViewerNode(drawingNode: Node, center: Point, visualElement: any): IViewerNode
 
   //  creates a default visual element for the node

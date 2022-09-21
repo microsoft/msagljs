@@ -15,7 +15,7 @@ test('trim edge no arrowheads', () => {
   const gab = new GeomEdge(ab)
   const curve = LineSegment.mkPP(ga.center, gb.center)
   Arrowhead.trimSplineAndCalculateArrowheads(gab, curve, true)
-  SvgDebugWriter.dumpICurves('/tmp/gab.svg', [gab.curve, ga.boundaryCurve, gb.boundaryCurve])
+  SvgDebugWriter.dumpICurves('./tmp/gab.svg', [gab.curve, ga.boundaryCurve, gb.boundaryCurve])
 })
 test('trim edge with arrowheads', () => {
   const a = new Node('a')
@@ -38,5 +38,5 @@ test('trim edge with arrowheads', () => {
   const g = new Graph()
   g.addEdge(ab)
   const gg = new GeomGraph(g)
-  // SvgDebugWriter.writeGeomGraph('/tmp/gg.svg', gg)
+  // SvgDebugWriter.writeGeomGraph('./tmp/gg.svg', gg)
 })

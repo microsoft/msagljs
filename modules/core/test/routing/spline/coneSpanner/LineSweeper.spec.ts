@@ -87,7 +87,7 @@ function RunOnRandom(i: number) {
   const dir = new Point(0, 1)
   LineSweeper.Sweep(new Array<Polyline>(), dir, Math.PI / 6, vg, PointSet.mk(ps), null)
   CheckVG(vg, ps, dir)
-  // SvgDebugWriter.dumpDebugCurves('/tmp/vg' + i + '.svg', getEdges())
+  // SvgDebugWriter.dumpDebugCurves('./tmp/vg' + i + '.svg', getEdges())
   // function getEdges(): DebugCurve[] {
   //  const ret = []
   //  for (const e of vg.Edges) {

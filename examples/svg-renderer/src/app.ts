@@ -8,9 +8,15 @@ import {RendererSvg} from '@msagl/renderer'
 import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 
 const viewer = document.getElementById('viewer')
+viewer.addEventListener('mousedown', mouseDownEventHandler)
+
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/smlred.gv'
 
 const svgRenderer = new RendererSvg(viewer)
+svgRenderer.MouseDown.subscribe((a: any, b: any) => {
+  console.log(a)
+  console.log(b)
+})
 const dotFileSelect = createDotGraphsSelect()
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
@@ -47,6 +53,10 @@ const jsonSaveDiv = document.getElementById('save-JSON')
 jsonSaveDiv.onclick = () => {
   const jsonString = svgRenderer.getJSONString()
   download(svgRenderer.graph.id + '.JSON', jsonString)
+}
+
+function mouseDownEventHandler(event: any) {
+  svgRenderer.MouseDown.raise(event, null)
 }
 
 function download(filename: string, text: string) {

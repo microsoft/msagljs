@@ -114,7 +114,7 @@ test('SmallTriangulation', () => {
     isolatedObstacles.map((s) => LineSegment.mkPP(s.A, s.B)),
     null,
     [],
-    '/tmp/smallTriangulationTest.svg',
+    './tmp/smallTriangulationTest.svg',
   )
 })
 
@@ -165,7 +165,7 @@ test('two holes and one isolated segment', () => {
     //  null,
     //  from(holes),
     //  from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
-    //  '/tmp/twoHoles' + i + '.svg',
+    //  './tmp/twoHoles' + i + '.svg',
     // )
   }
 })
@@ -203,7 +203,7 @@ test('three holes and two isolated segments', () => {
     //  null,
     //  from(holes),
     //  from(cut).select((c) => LineSegment.mkPP(c.A, c.B)),
-    //  '/tmp/threeHoles.svg',
+    //  './tmp/threeHoles.svg',
     // )
   }
 })
@@ -216,7 +216,7 @@ test('flat line', () => {
 
   const cdt = new Cdt(Array.from(corners), null, null)
   cdt.run()
-  CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, null, null, [], '/tmp/flatLine.svg')
+  CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, null, null, [], './tmp/flatLine.svg')
 })
 test('grid rotated', () => {
   for (let k = 0; k < 6; k++) {
@@ -230,6 +230,6 @@ test('grid rotated', () => {
     }
     const cdt = new Cdt(Array.from(corners), null, null)
     cdt.run()
-    CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, null, null, [], '/tmp/gridRotated' + k + '.svg')
+    CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, null, null, [], './tmp/gridRotated' + k + '.svg')
   }
 })

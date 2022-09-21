@@ -36,7 +36,7 @@ test('two edges', () => {
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
 
   sr.run()
-  /// SvgDebugWriter.writeGeomGraph('/tmp/bundle_two_edges_with_obstacle.svg',
+  /// SvgDebugWriter.writeGeomGraph('./tmp/bundle_two_edges_with_obstacle.svg',
   // g)
 })
 
@@ -57,13 +57,13 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
 test('smlred.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/smlred.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/smlredLayeredBundled.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/smlredLayeredBundled.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('shells.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/shells.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('/tmp/shellsBundled.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  // SvgDebugWriter.writeGeomGraph('./tmp/shellsBundled.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('random graphs', () => {
@@ -83,7 +83,7 @@ test('random graphs', () => {
           console.log('nodeCount=' + nodeCount + ' , seed=' + seed)
         }
 
-        // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/bundleRand' + nodeCount + 'seed' + seed + '.svg',
+        // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('./tmp/bundleRand' + nodeCount + 'seed' + seed + '.svg',
         //       // SvgDebugWriter.writeGeomGraph(g)
       }
     }
@@ -111,7 +111,7 @@ xtest('brandom subgraphs 10_20', () => {
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
-          //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
+          //const svgDebugWriter = new SvgDebugWriter('./tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
           /// SvgDebugWriter.writeGeomGraph(g)
           //console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
@@ -145,7 +145,7 @@ xtest('brandom subgraphs 40_50', () => {
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
-          //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
+          //const svgDebugWriter = new SvgDebugWriter('./tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
           // // SvgDebugWriter.writeGeomGraph(g)
           //console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
@@ -178,7 +178,7 @@ xtest('brandom subgraphs 50_60', () => {
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
-          //         //const svgDebugWriter = new SvgDebugWriter('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
+          //         //const svgDebugWriter = new SvgDebugWriter('./tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.
           //         //
           //console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
@@ -231,7 +231,7 @@ test('fans', () => {
   // todo : add a check that EdgeNudger create disjoint segments inside of the hub
   const sr = new SplineRouter(g, Array.from(g.edges()))
   sr.run()
-  // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/fan.svg',
+  // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('./tmp/fan.svg',
   /// SvgDebugWriter.writeGeomGraph(g)
 })
 
@@ -257,7 +257,7 @@ xtest('brandom subgraphs 60_70', () => {
           if (edges.length === 0) continue
           const sr = new SplineRouter(g, edges)
           sr.run()
-          //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.svg',
+          //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('./tmp/bundleSub_nodes_' + numberOfNodes + 'seed_' + seed + '.svg',
           /// SvgDebugWriter.writeGeomGraph(g)
           // console.log('passed seed = ' + seed + ', number_of_nodes = ' + numberOfNodes)
         } catch {
@@ -299,7 +299,7 @@ test('cut random graphs', () => {
   bs.StopAfterShortestPaths = false
   const sr = new SplineRouter(g, Array.from(g.deepEdges), 2, 4, Math.PI / 6, bs)
   sr.run()
-  //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('/tmp/cut.svg',
+  //const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('./tmp/cut.svg',
   /// SvgDebugWriter.writeGeomGraph(g)
 })
 

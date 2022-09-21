@@ -23,7 +23,7 @@ test('polylineAroundClosedCurve', () => {
   const c = CurveFactory.mkRectangleWithRoundedCorners(100, 50, 15, 15, new Point(0, 0))
   const pc = Curve.polylineAroundClosedCurve(c)
   expect(Point.closeDistEps(pc.boundingBox.center, c.boundingBox.center)).toBe(true)
-  SvgDebugWriter.dumpICurves('/tmp/polylineAroundClosedCurve.svg', [c, pc])
+  SvgDebugWriter.dumpICurves('./tmp/polylineAroundClosedCurve.svg', [c, pc])
 })
 
 test('adjustStartEndEndParametersToDomain', () => {
@@ -36,7 +36,7 @@ test('adjustStartEndEndParametersToDomain', () => {
 test('trimWithWrap', () => {
   const c = CurveFactory.mkRectangleWithRoundedCorners(100, 100, 5, 5, new Point(0, 0))
   const trimResult = c.trimWithWrap((c.parStart + c.parEnd) / 2, c.parStart * 0.6 + c.parEnd * 0.4)
-  SvgDebugWriter.dumpICurves('/tmp/trimWithWrap.svg', [trimResult])
+  SvgDebugWriter.dumpICurves('./tmp/trimWithWrap.svg', [trimResult])
 })
 
 test('tail', () => {
@@ -130,7 +130,7 @@ function intersectTwoRoundedRects(rr: Curve, rr0: Curve, i: number): void {
   // )
   // xxD.push(DebugCurve.mkDebugCurveI(rr))
   // xxD.push(DebugCurve.mkDebugCurveI(rr0))
-  // const svgW = // SvgDebugWriter.writeGeomGraph('/tmp/rr' + i + '.svg',
+  // const svgW = // SvgDebugWriter.writeGeomGraph('./tmp/rr' + i + '.svg',
   // svgW.writeDebugCurves(xxD)
   // svgW.close()
   expect(xx.length % 2).toBe(0)
@@ -210,7 +210,7 @@ test('clipWithRect', () => {
   const circle = CurveFactory.mkCircle(rect.width / 2 + 2, new Point(0, 0))
   let clip = Array.from(clipWithRectangle(circle, rect))
   SvgDebugWriter.dumpDebugCurves(
-    '/tmp/clip_1.svg',
+    './tmp/clip_1.svg',
     [DebugCurve.mkDebugCurveTWCI(100, 1, 'black', rect.perimeter()), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', circle)].concat(
       clip.map((c) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Green', c)),
     ),
@@ -220,7 +220,7 @@ test('clipWithRect', () => {
   //expect(clip.length).toBe(1)
   //expect(closeDistEps(clip[0].end.x, rect.right)).toBe(true)
   SvgDebugWriter.dumpDebugCurves(
-    '/tmp/clip0.svg',
+    './tmp/clip0.svg',
     [DebugCurve.mkDebugCurveTWCI(100, 1, 'black', rect.perimeter()), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', circle)].concat(
       clip.map((c) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Green', c)),
     ),
@@ -228,7 +228,7 @@ test('clipWithRect', () => {
   circle.translate(new Point(2, 0))
   clip = Array.from(clipWithRectangle(circle, rect))
   SvgDebugWriter.dumpDebugCurves(
-    '/tmp/clip1.svg',
+    './tmp/clip1.svg',
     [DebugCurve.mkDebugCurveTWCI(100, 1, 'black', rect.perimeter()), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', circle)].concat(
       clip.map((c) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Green', c)),
     ),
@@ -237,7 +237,7 @@ test('clipWithRect', () => {
   circle.translate(new Point(2, 0))
   clip = Array.from(clipWithRectangle(circle, rect))
   SvgDebugWriter.dumpDebugCurves(
-    '/tmp/clip2.svg',
+    './tmp/clip2.svg',
     [DebugCurve.mkDebugCurveTWCI(100, 1, 'black', rect.perimeter()), DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', circle)].concat(
       clip.map((c) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Green', c)),
     ),

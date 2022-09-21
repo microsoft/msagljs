@@ -219,7 +219,7 @@ export class BundleBasesCalculator {
         return intersectionInfo.par0
       }
     }
-    // SvgDebugWriter.dumpDebugCurves('/tmp/baseMiddle.svg', [
+    // SvgDebugWriter.dumpDebugCurves('./tmp/baseMiddle.svg', [
     //  DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', curve),
     //  DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(sPos, neighbPos)),
     // ])

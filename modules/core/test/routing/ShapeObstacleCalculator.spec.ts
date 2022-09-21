@@ -10,7 +10,7 @@ test('initialTightPolyline', () => {
   const shObstCalc = new ShapeObstacleCalculator(shape, 2, 4, new Map<Shape, TightLooseCouple>())
   const tightPolyline = shObstCalc.InitialTightPolyline(shape)
   expect(Array.from(tightPolyline).length).toBe(4)
-  SvgDebugWriter.dumpICurves('/tmp/initialTight.svg', [shape.BoundaryCurve, tightPolyline])
+  SvgDebugWriter.dumpICurves('./tmp/initialTight.svg', [shape.BoundaryCurve, tightPolyline])
 })
 
 test('calculate', () => {
@@ -54,7 +54,7 @@ test('overlap: two children', () => {
   //  dc.push(DebugCurve.mkDebugCurveCI('Blue', p.LooseShape.BoundaryCurve))
   // }
 
-  // SvgDebugWriter.dumpDebugCurves('/tmp/overlapSO.svg', dc)
+  // SvgDebugWriter.dumpDebugCurves('./tmp/overlapSO.svg', dc)
 })
 
 test('overlap: random', () => {
@@ -73,5 +73,5 @@ test('overlap: random', () => {
   // dc.push(DebugCurve.mkDebugCurveWCI(0.1, 'Blue', p.LooseShape.BoundaryCurve))
   // }
 
-  // SvgDebugWriter.dumpDebugCurves('/tmp/overlapRandom.svg', dc)
+  // SvgDebugWriter.dumpDebugCurves('./tmp/overlapRandom.svg', dc)
 })

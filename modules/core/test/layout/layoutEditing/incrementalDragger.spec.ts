@@ -24,7 +24,7 @@ test('incremental drag', () => {
   for (let i = 0; i < 5; i++) {
     dragger.Drag(delta)
     const jsonfOfG = graphToJSON(g)
-    const ws = fs.openSync('/tmp/drag' + i + '.JSON', 'w', 0o666)
+    const ws = fs.openSync('./tmp/drag' + i + '.JSON', 'w', 0o666)
     fs.writeFileSync(ws, JSON.stringify(jsonfOfG, null, 2))
     const shouldBeDelta = gNode.center.sub(gNodeCenter)
     gNodeCenter = gNode.center
