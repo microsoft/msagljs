@@ -148,6 +148,25 @@ In addition to the initially loaded graph, the page offers a list of
 graph samples and the option of loading a DOT or JSON graph from the
 local disk: You can view a DOT graph by drag-dropping its file into the
 folder icon at the left-upper corner of the page.
+To run examples locally, execute in the terminal command "npm run start" in the directory "examples/svg-renderer" or
+"examples/webgl-renderer". You will see a printout in a form
+"Local: http://127.0.0.1:8000/". Clicking on it should pop up a tab in your
+default Interned browser with the example running.
+
+## Build and test
+
+If you would like to build and run tests of MSAGL-JS please follow the following guide lines.
+These instructions are for Ubuntu. If your operation system is Windows you can install WSL,
+see https://learn.microsoft.com/en-us/windows/wsl/install.
+Install "node" with "npm".
+Install "nvm" as you may need to update the "Node" version.
+Install "yarn".
+Clone the repo directory: git clone https://github.com/microsoft/msagljs.git jagl.
+Change directory to jagl, or wherever you cloned msagljs.
+Run "yarn". You might get an error message that the node version is incorrect.
+To mediate this run : nvm install 16.17.0, or other required version.
+To build, run "npm run build".
+To run tests run "nmp run test".
 
 ## Contributing
 
