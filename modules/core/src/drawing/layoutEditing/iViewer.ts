@@ -78,12 +78,7 @@ export interface IViewer {
 
   ModifierKeys: ModifierKeys
 
-  //
-
-  //  <returns></returns>
-  //ScreenToSource(e: Msagl): Point;
-
-  //  gets all entities which can be dragged
+  //  gets all entities which can be manipulated by the viewer
 
   Entities: Iterable<IViewerObject>
 

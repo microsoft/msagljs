@@ -148,6 +148,7 @@ In addition to the initially loaded graph, the page offers a list of
 graph samples and the option of loading a DOT or JSON graph from the
 local disk: You can view a DOT graph by drag-dropping its file into the
 folder icon at the left-upper corner of the page.
+
 To run examples locally, execute in the terminal command "npm run start" in the directory "examples/svg-renderer" or
 "examples/webgl-renderer". You will see a printout in a form
 "Local: http://127.0.0.1:8000/". Clicking on it should pop up a tab in your
