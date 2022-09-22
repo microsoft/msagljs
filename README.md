@@ -156,14 +156,14 @@ default Interned browser with the example running.
 
 ## Build and test
 
-If you would like to build and run tests of MSAGL-JS please follow the following guide lines.
+If you would like to build and run the tests of MSAGL-JS please follow the following guide lines.
 
-These instructions are for Ubuntu, however, if your operation system is Windows you can install WSL and still use Ubuntu:
+These instructions are for Ubuntu, however, if your operation system is Windows, you can install WSL and still use Ubuntu:
 see https://learn.microsoft.com/en-us/windows/wsl/install.
 
 Install "node" with "npm".
 
-Install "nvm" as you may need to update the "Node" version.
+Install "nvm" as you may need to update the "node" version.
 
 Install "yarn".
 
@@ -172,7 +172,9 @@ Clone the repo directory: git clone https://github.com/microsoft/msagljs.git jag
 Change directory to jagl, or wherever you cloned msagljs.
 
 Run "yarn". You might get an error message that the node version is incorrect.
-To mediate this run : nvm install 16.17.0, or other required version.
+
+To mediate this run : nvm install 16.17.0, or other required version: you can check the available versions 
+by issuing the "nvm ls-remote" instruction.
 
 To build, run "npm run build".
 
