@@ -18,8 +18,19 @@ import {
   Size,
   CurveFactory,
   AttributeRegistry,
+  EventHandler,
 } from 'msagl-js'
-import {DrawingEdge, DrawingObject, DrawingNode, Color, StyleEnum, ShapeEnum} from 'msagl-js/drawing'
+import {
+  DrawingEdge,
+  DrawingObject,
+  DrawingNode,
+  Color,
+  StyleEnum,
+  ShapeEnum,
+  IViewerGraph,
+  IViewerNode,
+  IViewerEdge,
+} from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
@@ -31,13 +42,36 @@ class SvgObject {
     if (this.entity) this.entity.setAttr(AttributeRegistry.ViewerIndex, this)
   }
 
-  constructor(attrCont: Entity, svgData: any) {
+  constructor(attrCont: Entity, svgData: SVGElement) {
     this.entity = attrCont
     this.svgData = svgData
     this.bind()
   }
 
-  svgData: any
+  svgData: SVGElement
+  isVisible: boolean
+  MarkedForDragging: boolean
+  MarkedForDraggingEvent: (sender: any, eventParameters: any) => void
+  UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
+}
+
+class SvgGraph extends SvgObject implements IViewerGraph {
+  get graph(): Graph {
+    return this.entity as Graph
+  }
+}
+class SvgNode extends SvgObject implements IViewerNode {
+  get node(): Node {
+    return this.entity as Node
+  }
+  IsCollapsedChanged: EventHandler
+}
+class SvgEdge extends SvgObject implements IViewerEdge {
+  SelectedForEditing: boolean
+  get edge(): Edge {
+    return this.entity as Edge
+  }
+  IsCollapsedChanged: (node: IViewerNode) => void
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
@@ -121,7 +155,7 @@ export class SvgCreator {
   private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point): SVGElement | null {
     if (!arrowhead) return
 
-    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(edge, 'polygon'))
+    const path = <SVGPathElement>createAndBindWithGraph(edge, 'polygon')
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
@@ -173,7 +207,7 @@ export class SvgCreator {
     this.drawLabel(node, dn)
   }
   private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve) {
-    const path = <SVGPathElement>(<unknown>createAndBindWithGraph(node, 'path'))
+    const path = <SVGPathElement>createAndBindWithGraph(node, 'path')
     if (dn.styles.find((s) => s == StyleEnum.filled)) {
       const c = dn.fillColor ?? dn.color ?? DrawingNode.defaultFillColor
       path.setAttribute('fill', msaglToSvgColor(c))
@@ -215,7 +249,7 @@ export class SvgCreator {
 
   private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>(<unknown>createAndBindWithGraph(drawingObject.entity, 'text'))
+    const textEl = <SVGTextElement>createAndBindWithGraph(drawingObject.entity, 'text')
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
@@ -379,8 +413,26 @@ function getArrowheadPoints(start: Point, end: Point): Point[] {
   return [start.add(s), end, start.sub(s)]
 }
 
-function createAndBindWithGraph(entity: Entity, name: string) {
-  const svgNode = document.createElementNS(svgns, name)
-  new SvgObject(entity, svgNode)
-  return svgNode
+function createAndBindWithGraph(entity: Entity, name: string): SVGElement {
+  if (entity instanceof Graph) {
+    const svgNode = document.createElementNS(svgns, name)
+    new SvgGraph(entity, svgNode)
+    return svgNode
+  }
+  if (entity instanceof Node) {
+    const svgNode = document.createElementNS(svgns, name)
+    new SvgNode(entity, svgNode)
+    return svgNode
+  }
+  if (entity instanceof Edge) {
+    const svgNode = document.createElementNS(svgns, name)
+    new SvgEdge(entity, svgNode)
+    return svgNode
+  }
+
+  {
+    const svgNode = document.createElementNS(svgns, name)
+    new SvgObject(entity, svgNode)
+    return svgNode
+  }
 }
