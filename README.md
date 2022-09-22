@@ -176,7 +176,7 @@ To mediate this run : nvm install 16.17.0, or other required version.
 
 To build, run "npm run build".
 
-To run tests run "nmp run test".
+To run tests, run "npm run test".
 
 ## Contributing
 
