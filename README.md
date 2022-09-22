@@ -167,7 +167,7 @@ Install "nvm" as you may need to update the "node" version.
 
 Install "yarn".
 
-Clone the repo directory: git clone https://github.com/microsoft/msagljs.git jagl.
+Clone the repository: git clone https://github.com/microsoft/msagljs.git jagl.
 
 Change directory to jagl, or wherever you cloned msagljs.
 
