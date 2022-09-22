@@ -178,7 +178,7 @@ by issuing the "nvm ls-remote" instruction.
 
 To build, run "npm run build".
 
-To run tests, run "npm run test".
+To run tests, execute "npm run test".
 
 ## Contributing
 
