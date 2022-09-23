@@ -34,7 +34,7 @@ import {
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
-import {default as svgPanZoom} from 'panzoom'
+import {default as svgPanZoom, PanZoom} from 'panzoom'
 class SvgObject {
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity
@@ -75,6 +75,7 @@ class SvgEdge extends SvgObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  private panZoom: PanZoom
   getSvgString(): string {
     if (this.svg == null) return null
     return new XMLSerializer().serializeToString(this.svg)
@@ -117,8 +118,13 @@ export class SvgCreator {
     this.close()
 
     this.container.appendChild(this.svg)
-    svgPanZoom(this.svg)
+    this.panZoom = svgPanZoom(this.svg)
   }
+  /** gets transform from PanZoom */
+  getTransform(): {x: number; y: number; scale: number} {
+    return this.panZoom.getTransform()
+  }
+
   private drawEdge(edge: Edge) {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
     const edgeGroup = createAndBindWithGraph(edge, 'g')

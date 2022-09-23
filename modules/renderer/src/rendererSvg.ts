@@ -36,6 +36,12 @@ export class RendererSvg implements IViewer {
     container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, a))
     container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
+    this.MouseMove.subscribe(() => {
+      if (this == null || this._svgCreator == null) {
+        return null
+      }
+      console.log(this.Transform)
+    })
 
     this.layoutEditor = new LayoutEditor(this)
   }
@@ -189,5 +195,8 @@ export class RendererSvg implements IViewer {
   StopDrawingRubberEdge(): void {
     throw new Error('Method not implemented.')
   }
-  Transform: PlaneTransformation
+  get Transform(): PlaneTransformation {
+    const tr = this._svgCreator.getTransform()
+    return new PlaneTransformation(tr.scale, 0, tr.x, 0, tr.scale, tr.y)
+  }
 }
