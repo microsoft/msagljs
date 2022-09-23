@@ -32,6 +32,13 @@ export class RendererSvg implements IViewer {
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
+    container.addEventListener('mousedown', (a) => this.mouseDownEventHandler(a))
+    this.MouseDown.subscribe((a: any, b: any) => {
+      console.log(a)
+    })
+  }
+  mouseDownEventHandler(a: MouseEvent): any {
+    this.MouseDown.raise(a, null)
   }
 
   get graph(): Graph {
