@@ -723,7 +723,7 @@ export class LayoutEditor {
 
   ViewerMouseMove(sender: any, e: IMsaglMouseEventArgs) {
     console.log(sender)
-    console.log(e)
+    // console.log(e)
 
     if (this.viewer.LayoutEditingEnabled) {
       if (e.LeftButtonIsPressed) {
