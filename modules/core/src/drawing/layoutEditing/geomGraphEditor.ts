@@ -45,7 +45,12 @@ export class GeometryGraphEditor {
   undoMode = true
 
   incrementalDragger: IncrementalDragger
-  ChangeInUndoRedoList: EventHandler
+  /**
+   * Signals that there is a change  of the undo/redo list.
+   * There are four possibilities: Undo(Redo) becomes available (unavailable)
+   * */
+
+  ChangeInUndoRedoList: EventHandler = new EventHandler()
 
   get UndoRedoActionsList(): UndoRedoActionsList {
     return this.undoRedoActionsList
@@ -130,13 +135,6 @@ export class GeometryGraphEditor {
   set UndoMode(value: boolean) {
     this.undoMode = value
   }
-
-  /**
-   * Signals that there is a change  of the undo/redo list.
-   * There are four possibilities: Undo(Redo) becomes available (unavailable)
-   * */
-
-  // public /*event*/ ChangeInUndoRedoList: EventHandler;  // not sure what happens with events
 
   static DragLabel(label: GeomLabel, delta: Point) {
     label.positionCenter(label.center.add(delta))

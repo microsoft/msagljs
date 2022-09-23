@@ -6,12 +6,13 @@ import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
-import {IViewer} from 'msagl-js/drawing'
+import {IViewer, LayoutEditor} from 'msagl-js/drawing'
 
 /**
  * Renders an MSAGL graph with SVG
  */
 export class RendererSvg implements IViewer {
+  layoutEditor: LayoutEditor
   /** The default is true and the value is reset to true after each call to setGraph */
   needCreateGeometry = true
   /** The default is true and the value is reset to true after each call to setGraph */
@@ -32,13 +33,11 @@ export class RendererSvg implements IViewer {
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
-    container.addEventListener('mousedown', (a) => this.mouseDownEventHandler(a))
-    this.MouseDown.subscribe((a: any, b: any) => {
-      console.log(a)
-    })
-  }
-  mouseDownEventHandler(a: MouseEvent): any {
-    this.MouseDown.raise(a, null)
+    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, a))
+    container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
+    container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
+
+    this.layoutEditor = new LayoutEditor(this)
   }
 
   get graph(): Graph {
@@ -112,11 +111,13 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   NeedToCalculateLayout: boolean
-  ViewChangeEvent: EventHandler
+  ViewChangeEvent: EventHandler = new EventHandler()
   MouseDown: EventHandler = new EventHandler()
-  MouseMove: EventHandler
-  MouseUp: EventHandler
-  ObjectUnderMouseCursorChanged: EventHandler
+  MouseMove: EventHandler = new EventHandler()
+  MouseUp: EventHandler = new EventHandler()
+  GraphChanged: EventHandler = new EventHandler()
+
+  ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
   ObjectUnderMouseCursor: IViewerObject
   Invalidate(objectToInvalidate: IViewerObject): void {
     throw new Error('Method not implemented.')
@@ -124,7 +125,6 @@ export class RendererSvg implements IViewer {
   InvalidateAll(): void {
     throw new Error('Method not implemented.')
   }
-  GraphChanged: EventHandler
   ModifierKeys: ModifierKeys
   Entities: Iterable<IViewerObject>
   DpiX: number
