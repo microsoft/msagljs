@@ -35,6 +35,7 @@ import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 import {default as svgPanZoom, PanZoom} from 'panzoom'
+import {IntersectionCache} from 'msagl-js/src/routing/spline/bundling/IntersectionCache'
 class SvgObject {
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity
@@ -81,15 +82,14 @@ export class SvgCreator {
     return new XMLSerializer().serializeToString(this.svg)
   }
   static arrowAngle = 25
-  svg: any
+  svg: SVGElement
+  transformGroup: SVGSVGElement
   graph: Graph
   geomGraph: GeomGraph
-  transformRequired: boolean
   _textMeasurer = new TextMeasurer()
 
   private container: HTMLElement
-  public constructor(container: HTMLElement, transformRequired = false) {
-    this.transformRequired = transformRequired
+  public constructor(container: HTMLElement) {
     this.container = container
   }
 
@@ -103,19 +103,21 @@ export class SvgCreator {
   setGraph(graph: Graph): void {
     this.clearContainer()
     this.graph = graph
-    this.svg = createAndBindWithGraph(this.graph, 'svg')
+    this.svg = createAndBindWithGraph(this.graph, 'svg') as SVGSVGElement
     this.svg.setAttribute('style', 'border: 1px solid black')
-    this.geomGraph = <GeomGraph>GeomGraph.getGeom(this.graph)
-    if (!this.geomGraph) return null
-    this.geomGraph.boundingBox = null
+    this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
+    this.transformGroup = createAndBindWithGraph(null, 'g') as SVGSVGElement
+    this.svg.appendChild(this.transformGroup)
+
+    // After an y flip the top has moved to -top : need to translate to zero
+    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
     }
     for (const edge of this.graph.deepEdges) {
       this.drawEdge(edge)
     }
-    this.close()
 
     this.container.appendChild(this.svg)
     this.panZoom = svgPanZoom(this.svg)
@@ -140,7 +142,7 @@ export class SvgCreator {
       edgeGroup.appendChild(a)
     }
     this.DrawEdgeLabel(edge)
-    this.svg.appendChild(edgeGroup)
+    this.transformGroup.appendChild(edgeGroup)
   }
 
   private DrawEdgeLabel(edge: Edge) {
@@ -224,7 +226,7 @@ export class SvgCreator {
     path.setAttribute('stroke', msaglToSvgColor(dn.color))
     path.setAttribute('stroke-width', dn.penwidth.toString())
 
-    this.svg.appendChild(path)
+    this.transformGroup.appendChild(path)
   }
 
   private drawLabel(node: Node, dn: DrawingObject) {
@@ -246,7 +248,7 @@ export class SvgCreator {
           measuredTextSize,
           new Point(
             geomNode.boundaryCurve.boundingBox.center.x,
-            geomNode.boundaryCurve.boundingBox.bottom + measuredTextSize.height / 2 + drawingNode.LabelMargin,
+            geomNode.boundaryCurve.boundingBox.top - (measuredTextSize.height / 2 + drawingNode.LabelMargin),
           ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
@@ -261,10 +263,11 @@ export class SvgCreator {
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString() + 'px')
+    textEl.setAttribute('transform', 'scale(1,-1)')
 
     this.createTspans(drawingObject.labelText, textEl, fontSize, rect)
 
-    this.svg.appendChild(textEl)
+    this.transformGroup.appendChild(textEl)
   }
 
   createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
@@ -277,9 +280,9 @@ export class SvgCreator {
       tspan.setAttribute('text-anchor', 'middle')
       tspan.setAttribute('x', rect.center.x.toString())
       tspan.setAttribute('alignment-baseline', 'middle')
-      tspan.setAttribute('y', rect.center.y.toString())
+      tspan.setAttribute('y', (-rect.center.y).toString())
     } else {
-      let y = rect.bottom + 1
+      let y = rect.top - 1
       for (let i = 0; i < textLines.length; i++) {
         const tspan = document.createElementNS(svgns, 'tspan')
         textEl.appendChild(tspan)
@@ -287,23 +290,16 @@ export class SvgCreator {
         tspan.setAttribute('text-anchor', 'middle')
         tspan.setAttribute('x', rect.center.x.toString())
         tspan.setAttribute('alignment-baseline', 'hanging')
-        tspan.setAttribute('y', y.toString())
-        y += 1.21 * fontSize
+        tspan.setAttribute('y', (-y).toString())
+        y -= 1.21 * fontSize
       }
     }
   }
 
-  private close() {
-    if (this.transformRequired) {
-      throw new Error('not implemented')
-    }
-  }
   private open() {
-    this.svg.setAttribute('width', this.geomGraph.width)
-    this.svg.setAttribute('height', this.geomGraph.height)
-    if (this.transformRequired) {
-      throw new Error('not implemented')
-    }
+    this.svg.setAttribute('width', this.geomGraph.width.toString())
+    this.svg.setAttribute('height', this.geomGraph.height.toString())
+    this.geomGraph = GeomGraph.getGeom(this.graph)
   }
 }
 const svgns = 'http://www.w3.org/2000/svg'

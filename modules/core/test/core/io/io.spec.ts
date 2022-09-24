@@ -5,7 +5,6 @@ import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {measureTextSize, parseDotGraph, parseJSONFile} from '../../utils/testUtils'
 import {Graph as JSONGraph} from 'dotparser'
 import {GeomEdge, GeomGraph} from '../../../src/layout/core'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
@@ -115,11 +114,17 @@ test('polyline', () => {
   expect(poly.count).toBe(3)
 })
 
+function FlipYAndMoveLeftTopToOrigin(g: GeomGraph) {
+  const bb = g.boundingBox
+  const m = new PlaneTransformation(1, 0, -bb.left, 0, -1, bb.top)
+  g.transform(m)
+}
+
 xtest('graph ldbxtried.gv', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
 
   const gg = GeomGraph.getGeom(g)
-  gg.FlipYAndMoveLeftTopToOrigin()
+  FlipYAndMoveLeftTopToOrigin(gg)
 
   const edges = []
   for (const e of g.deepEdges) {
@@ -153,7 +158,7 @@ test('graph fsm', () => {
   const dg = DrawingGraph.getDrawingGraph(g)
   dg.createGeometry(measureTextSize)
   const geomGraph = GeomGraph.getGeom(g)
-  layoutGraphWithSugiayma(geomGraph, null, false)
+  layoutGraphWithSugiayma(geomGraph, null)
   let labelsWas = 0
   for (const e of geomGraph.deepEdges) {
     if (e.label) labelsWas++

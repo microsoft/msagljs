@@ -173,8 +173,6 @@ export class LayoutEditor {
     if (this.graph == null) {
       return
     }
-    console.log(sender)
-    console.log(e)
   }
 
   //  current graph of under editin
@@ -722,9 +720,6 @@ export class LayoutEditor {
   }
 
   ViewerMouseMove(sender: any, e: IMsaglMouseEventArgs) {
-    console.log(sender)
-    // console.log(e)
-
     if (this.viewer.LayoutEditingEnabled) {
       if (e.LeftButtonIsPressed) {
         if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {

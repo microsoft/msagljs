@@ -145,7 +145,6 @@ export function layoutGeomGraphDetailed(
   layoutEngine: (g: GeomGraph, cancelToken: CancelToken) => void,
   edgeRouter: (g: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) => void,
   packing: (g: GeomGraph, subGraphs: GeomGraph[]) => void,
-  flipToScreenCoords = true,
   randomSeed = 1,
 ) {
   if (geomG.graph.isEmpty()) {
@@ -179,10 +178,6 @@ export function layoutGeomGraphDetailed(
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG, edgesToRoute)
     geomG.pumpTheBoxToTheGraphWithMargins()
-
-    if (flipToScreenCoords) {
-      geomG.FlipYAndMoveLeftTopToOrigin()
-    }
   }
 
   // end of layoutGeomGraphDetailed body

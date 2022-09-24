@@ -48,7 +48,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
   const ss: SugiyamaLayoutSettings = (gg.layoutSettings = settings ?? new SugiyamaLayoutSettings())
   if (!ss.edgeRoutingSettings) ss.edgeRoutingSettings = new EdgeRoutingSettings()
   ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-  layoutGraphWithSugiayma(gg, null, false)
+  layoutGraphWithSugiayma(gg, null)
   const sr = SplineRouter.mk4(gg, 2, 4, Math.PI / 6)
   sr.run()
   return dg
@@ -97,7 +97,7 @@ xtest('brandom subgraphs 10_20', () => {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
-          layoutGraphWithMds(g, null, false)
+          layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
@@ -131,7 +131,7 @@ xtest('brandom subgraphs 40_50', () => {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
-          layoutGraphWithMds(g, null, false)
+          layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
@@ -164,7 +164,7 @@ xtest('brandom subgraphs 50_60', () => {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
-          layoutGraphWithMds(g, null, false)
+          layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)
@@ -243,7 +243,7 @@ xtest('brandom subgraphs 60_70', () => {
           const g = generateRandomGeomGraphWithSubgraphs(seed, numberOfNodes, (w, _h, p) => CurveFactory.mkCircle(w, p), numberOfNodes * 2)
           g.layoutSettings = new MdsLayoutSettings()
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
-          layoutGraphWithMds(g, null, false)
+          layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
           for (const n of g.deepNodesIt()) {
             n.center = round(n.center)

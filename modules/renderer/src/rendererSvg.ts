@@ -40,7 +40,7 @@ export class RendererSvg implements IViewer {
       if (this == null || this._svgCreator == null) {
         return null
       }
-      console.log(this.Transform)
+      //  console.log(this.Transform)
     })
 
     this.layoutEditor = new LayoutEditor(this)
@@ -102,7 +102,7 @@ export class RendererSvg implements IViewer {
     if (!this._graph) return
     return this._svgCreator.setGraph(this._graph)
   }
-  getSvg(): SVGAElement {
+  getSvg(): SVGElement {
     return this._svgCreator ? this._svgCreator.svg : null
   }
   // implementation of IViewer

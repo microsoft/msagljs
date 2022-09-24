@@ -45,10 +45,10 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   ll.run()
 }
 
-export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null, flipToScreenCoords = true) {
+export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null) {
   const ss: ILayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
   enforceLayoutSettings(geomGraph, ss)
-  layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner, flipToScreenCoords)
+  layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner)
 }
 
 export class LayeredLayout extends Algorithm {

@@ -330,12 +330,6 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
       }
     }
   }
-
-  FlipYAndMoveLeftTopToOrigin() {
-    const bb = this.boundingBox
-    const m = new PlaneTransformation(1, 0, -bb.left, 0, -1, bb.top)
-    this.transform(m)
-  }
 }
 
 export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {

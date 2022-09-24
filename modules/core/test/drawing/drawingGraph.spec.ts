@@ -82,11 +82,11 @@ import {measureTextSize, parseDotGraph} from '../utils/testUtils'
 // })
 // // done for SVG
 
-function layoutGeomGraph(geomGraph: GeomGraph, directed: boolean, flipToScreenCoords = true) {
+function layoutGeomGraph(geomGraph: GeomGraph, directed: boolean) {
   if (directed) {
-    layoutGraphWithSugiayma(geomGraph, null, flipToScreenCoords)
+    layoutGraphWithSugiayma(geomGraph, null)
   } else {
-    layoutGraphWithMds(geomGraph, null, flipToScreenCoords)
+    layoutGraphWithMds(geomGraph, null)
   }
 }
 xtest('clusters', () => {

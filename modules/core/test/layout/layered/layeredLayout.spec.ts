@@ -175,23 +175,8 @@ function color(i: number) {
   }
   return 'Black'
 }
-test('margins', () => {
-  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
-  createGeometry(dg, measureTextSize)
-  const ss = new SugiyamaLayoutSettings()
-  const gg = GeomGraph.getGeom(dg.graph)
-  gg.margins = {left: 100, right: 10, top: 170, bottom: 50}
-  const ll = new LayeredLayout(GeomObject.getGeom(dg.graph) as GeomGraph, ss, new CancelToken())
-  ll.run()
-  // SvgDebugWriter.writeGeomGraph(    './tmp/abstract_margins_' + gg.margins.left + '_' + gg.margins.top + '.svg',    GeomObject.getGeom(dg.graph) as GeomGraph,  )
-  const g = GeomObject.getGeom(dg.graph) as GeomGraph
-  const dc = Array.from(g.deepEdges)
-    .map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.curve))
-    .concat(Array.from(g.deepEdges).map((e, i) => DebugCurve.mkDebugCurveCI(color(i), e.boundingBox.perimeter())))
-  SvgDebugWriter.dumpDebugCurves('./tmp/arr.svg', dc)
-})
 
-test('undirected pach', () => {
+test('support undirected graphs', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/pack.gv'))
   createGeometry(dg, measureTextSize)
   const ss = new SugiyamaLayoutSettings()
