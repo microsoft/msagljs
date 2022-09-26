@@ -13,6 +13,7 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/m
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
+
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url)
@@ -126,6 +127,7 @@ function createDotGraphsSelect() {
     option.innerText = name
     dotFileSelect.appendChild(option)
   }
+  dotFileSelect.selectedIndex = -1
   return dotFileSelect
 }
 

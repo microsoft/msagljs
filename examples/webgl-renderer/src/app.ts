@@ -39,6 +39,7 @@ for (const name of SAMPLE_DOT) {
   option.innerText = name
   dotFileSelect.appendChild(option)
 }
+dotFileSelect.selectedIndex = -1
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
