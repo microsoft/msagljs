@@ -7,6 +7,16 @@ import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
+/** convert MouseEvent to the msagl internal representation */
+class MSAGLEventArgs implements IMsaglMouseEventArgs {
+  LeftButtonIsPressed = false
+  MiddleButtonIsPressed = false
+  RightButtonIsPressed = false
+  Handled = false
+  X: number
+  Y: number
+  Clicks = 0
+}
 
 /**
  * Renders an MSAGL graph with SVG
@@ -33,7 +43,7 @@ export class RendererSvg implements IViewer {
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
-    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, a))
+    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, this.toMsaglEvent(a)))
     container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
     this.MouseMove.subscribe(() => {
@@ -44,6 +54,24 @@ export class RendererSvg implements IViewer {
     })
 
     this.layoutEditor = new LayoutEditor(this)
+    this.LayoutEditingEnabled = true
+  }
+  toMsaglEvent(a: MouseEvent): IMsaglMouseEventArgs {
+    const ret = new MSAGLEventArgs()
+    switch (a.button) {
+      case 0:
+        ret.LeftButtonIsPressed = true
+        break
+      case 4:
+        ret.MiddleButtonIsPressed = true
+        break
+      case 2:
+        ret.RightButtonIsPressed = true
+        break
+    }
+    ret.X = a.clientX
+    ret.Y = a.clientY
+    return ret
   }
 
   get graph(): Graph {
@@ -145,7 +173,7 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   UnderlyingPolylineCircleRadius: number
-  Graph: Graph
+  graph: Graph
   StartDrawingRubberLine(startingPoint: Point): void {
     throw new Error('Method not implemented.')
   }

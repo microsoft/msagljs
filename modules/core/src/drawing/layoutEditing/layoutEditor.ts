@@ -374,7 +374,7 @@ export class LayoutEditor {
     const isIViewer = sender.hasOwnProperty('IncrementalDraggingModeAlways')
     if (isIViewer) {
       const iViewer = <IViewer>sender
-      this.graph = iViewer.Graph
+      this.graph = iViewer.graph
       if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
         this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
         this.AttachInvalidateEventsToGeomObjects()
@@ -688,7 +688,7 @@ export class LayoutEditor {
   }
 
   ViewerMouseDown(sender: any, e: IMsaglMouseEventArgs) {
-    if (!this.viewer.LayoutEditingEnabled || this.viewer.Graph == null) {
+    if (!this.viewer.LayoutEditingEnabled || this.viewer.graph == null) {
       return
     }
 
@@ -944,7 +944,7 @@ export class LayoutEditor {
   }
 
   static RouteEdgesRectilinearly(viewer: IViewer) {
-    const geomGraph = viewer.Graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
+    const geomGraph = viewer.graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
     const settings = geomGraph.layoutSettings
     RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
       settings.commonSettings.NodeSeparation / 3,
@@ -1287,7 +1287,7 @@ export class LayoutEditor {
   //  prepares for edge dragging
 
   PrepareForEdgeDragging() {
-    if (this.viewer.Graph == null) {
+    if (this.viewer.graph == null) {
       return
     }
 
@@ -1295,7 +1295,7 @@ export class LayoutEditor {
       return
     }
 
-    const settings = GeomGraph.getGeom(this.viewer.Graph).layoutSettings
+    const settings = GeomGraph.getGeom(this.viewer.graph).layoutSettings
     if (!LayoutEditor.RectRouting(settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode)) {
       if (InteractiveEdgeRouter == null) {
         const padding = settings.commonSettings.NodeSeparation / 3
@@ -1405,7 +1405,7 @@ export class LayoutEditor {
   }
 
   DraggingStraightLine(): boolean {
-    if (this.viewer.Graph == null) {
+    if (this.viewer.graph == null) {
       return true
     }
 

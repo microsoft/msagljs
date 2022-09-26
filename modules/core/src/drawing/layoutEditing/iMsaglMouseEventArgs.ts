@@ -1,3 +1,4 @@
+/** represent MouseEvent */
 export interface IMsaglMouseEventArgs {
   LeftButtonIsPressed: boolean
 

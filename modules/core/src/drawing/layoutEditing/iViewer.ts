@@ -118,7 +118,7 @@ export interface IViewer {
 
   //  gets or sets the graph
 
-  Graph: Graph
+  graph: Graph
 
   //  prepare to draw the rubber line
 
