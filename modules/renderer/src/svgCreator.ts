@@ -123,11 +123,12 @@ export class SvgCreator {
     this.container.appendChild(this.svg)
     this.panZoom = svgPanZoom(this.svg)
   }
-  /** gets transform svg to the DOM element */
+  /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
     const tr = (this.svg as SVGGraphicsElement).getScreenCTM()
     const m = new PlaneTransformation(tr.a, tr.b, tr.e, tr.c, tr.d, tr.f)
     const flip = new PlaneTransformation(1, 0, -this.geomGraph.left, 0, -1, this.geomGraph.top)
+    // first we apply flip then m
     return m.multiply(flip)
   }
 

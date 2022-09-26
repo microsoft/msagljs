@@ -1,6 +1,6 @@
 import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeys} from 'msagl-js/drawing'
 import {layoutGraph} from './layout'
-import {Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point} from 'msagl-js'
+import {AttributeRegistry, Edge, EventHandler, GeomEdge, GeomNode, Graph, PlaneTransformation, Point} from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
@@ -40,12 +40,20 @@ export class RendererSvg implements IViewer {
   private _textMeasurer: TextMeasurer
   private _svgCreator: SvgCreator
 
+  private mousePosititonX: number
+  private mousePosititonY: number
+
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
     container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, this.toMsaglEvent(a)))
     container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
+    container.addEventListener('mousemove', (a) => {
+      this.mousePosititonX = a.clientX
+      this.mousePosititonY = a.clientY
+    })
+
     this.MouseMove.subscribe(() => {
       if (this == null || this._svgCreator == null) {
         return null
@@ -131,9 +139,14 @@ export class RendererSvg implements IViewer {
   }
   /** maps the screen coordinates to the graph coordinates */
   ScreenToSource(e: IMsaglMouseEventArgs): Point {
+    return this.ScreenToSourceP(e.X, e.Y)
+  }
+
+  /** maps the screen coordinates to the graph coordinates */
+  ScreenToSourceP(x: number, y: number): Point {
+    // m is the reverse mapping : that is the mapping from the graph coords to the client's
     const m = this._svgCreator.getTransform()
-    // m is the reverse mapping
-    return m.inverse().multiplyPoint(new Point(e.X, e.Y))
+    return m.inverse().multiplyPoint(new Point(x, y))
   }
   IncrementalDraggingModeAlways: boolean
   CurrentScale: number
@@ -150,7 +163,20 @@ export class RendererSvg implements IViewer {
   GraphChanged: EventHandler = new EventHandler()
 
   ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
-  ObjectUnderMouseCursor: IViewerObject
+  get ObjectUnderMouseCursor(): IViewerObject {
+    let dist = Number.POSITIVE_INFINITY
+    let ret = null
+    const mp = this.ScreenToSourceP(this.mousePosititonX, this.mousePosititonY)
+    for (const n of this.graph.deepNodes) {
+      const gn = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
+      const d = gn.center.sub(mp).length
+      if (d < dist) {
+        dist = d
+        ret = n
+      }
+    }
+    return ret.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+  }
   Invalidate(objectToInvalidate: IViewerObject): void {
     throw new Error('Method not implemented.')
   }
