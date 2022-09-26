@@ -8,7 +8,7 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutGraph, layoutGraphOnWorker} from './layout'
-import {Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, GeomEdge} from 'msagl-js'
+import {Node, Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, GeomEdge, AttributeRegistry, Edge} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer from './text-measurer'
@@ -236,10 +236,10 @@ export default class Renderer extends EventSource {
         const nodes: GeomNode[] = []
         const edges: GeomEdge[] = []
         for (const obj of geomGraph.intersectedObjects(rtree, rect, false)) {
-          if (obj instanceof GeomNode) {
-            nodes.push(obj)
-          } else if (obj instanceof GeomEdge) {
-            edges.push(obj)
+          if (obj instanceof Node) {
+            nodes.push(obj.getAttr(AttributeRegistry.GeomObjectIndex))
+          } else if (obj instanceof Edge) {
+            edges.push(obj.getAttr(AttributeRegistry.GeomObjectIndex))
           }
         }
         nodes.sort((a, b) => depth(a) - depth(b))

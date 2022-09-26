@@ -165,7 +165,7 @@ export class RendererSvg implements IViewer {
   ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
   get ObjectUnderMouseCursor(): IViewerObject {
     let dist = Number.POSITIVE_INFINITY
-    let ret = null
+    let ret
     const mp = this.ScreenToSourceP(this.mousePosititonX, this.mousePosititonY)
     for (const n of this.graph.deepNodes) {
       const gn = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode

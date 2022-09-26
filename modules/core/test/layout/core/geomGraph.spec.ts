@@ -1,4 +1,4 @@
-import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, GeomEdge, Graph, Node, GeomGraph} from '../../../src'
+import {SugiyamaLayoutSettings, LayeredLayout, CancelToken, Size, GeomNode, Graph, Node, GeomGraph, Edge} from '../../../src'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
@@ -58,9 +58,9 @@ test('intersectedEnities', () => {
   let n = 0 // the number of nodes that intersected the bounding box
   let e = 0 // the number of edges that intersected the bounding box
   for (const o of intersectedNodes) {
-    if (o instanceof GeomNode) {
+    if (o instanceof Node) {
       n++
-    } else if (o instanceof GeomEdge) {
+    } else if (o instanceof Edge) {
       e++
     }
   }
@@ -68,14 +68,14 @@ test('intersectedEnities', () => {
   expect(n).toBe(Array.from(geomGraph.deepNodesIt()).length)
   expect(e).toBe(0)
 
-  const intersectedNodesAndEdges = Array.from(geomGraph.intersectedObjects(rtree, rect, false)).filter((e) => e instanceof GeomEdge)
+  const intersectedNodesAndEdges = Array.from(geomGraph.intersectedObjects(rtree, rect, false)).filter((e) => e instanceof Edge)
 
   expect(intersectedNodesAndEdges.length).toBe(Array.from(geomGraph.deepEdges).length)
   for (const e of geomGraph.edges()) {
     const r = e.boundingBox
     const intersected_e = Array.from(geomGraph.intersectedObjects(rtree, r, false))
-    expect(intersected_e.indexOf(e)).toBeGreaterThan(-1)
-    expect(intersected_e.indexOf(e.source)).toBeGreaterThan(-1)
-    expect(intersected_e.indexOf(e.target)).toBeGreaterThan(-1)
+    expect(intersected_e.indexOf(e.edge)).toBeGreaterThan(-1)
+    expect(intersected_e.indexOf(e.edge.source)).toBeGreaterThan(-1)
+    expect(intersected_e.indexOf(e.edge.target)).toBeGreaterThan(-1)
   }
 })
