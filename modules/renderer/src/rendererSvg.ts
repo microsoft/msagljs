@@ -129,9 +129,11 @@ export class RendererSvg implements IViewer {
   getSvg(): SVGElement {
     return this._svgCreator ? this._svgCreator.svg : null
   }
-  // implementation of IViewer
+  /** maps the screen coordinates to the graph coordinates */
   ScreenToSource(e: IMsaglMouseEventArgs): Point {
-    throw new Error('Method not implemented.')
+    const m = this._svgCreator.getTransform()
+    // m is the reverse mapping
+    return m.inverse().multiplyPoint(new Point(e.X, e.Y))
   }
   IncrementalDraggingModeAlways: boolean
   CurrentScale: number
@@ -223,7 +225,6 @@ export class RendererSvg implements IViewer {
   }
 
   get Transform(): PlaneTransformation {
-    const tr = this._svgCreator.getTransform()
-    return new PlaneTransformation(tr.scale, 0, tr.x, 0, tr.scale, tr.y)
+    return this._svgCreator.getTransform()
   }
 }

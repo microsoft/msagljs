@@ -19,6 +19,7 @@ import {
   CurveFactory,
   AttributeRegistry,
   EventHandler,
+  PlaneTransformation,
 } from 'msagl-js'
 import {
   DrawingEdge,
@@ -122,9 +123,12 @@ export class SvgCreator {
     this.container.appendChild(this.svg)
     this.panZoom = svgPanZoom(this.svg)
   }
-  /** gets transform from PanZoom */
-  getTransform(): {x: number; y: number; scale: number} {
-    return this.panZoom.getTransform()
+  /** gets transform svg to the DOM element */
+  getTransform(): PlaneTransformation {
+    const tr = (this.svg as SVGGraphicsElement).getScreenCTM()
+    const m = new PlaneTransformation(tr.a, tr.b, tr.e, tr.c, tr.d, tr.f)
+    const flip = new PlaneTransformation(1, 0, -this.geomGraph.left, 0, -1, this.geomGraph.top)
+    return m.multiply(flip)
   }
 
   private drawEdge(edge: Edge) {
