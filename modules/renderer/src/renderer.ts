@@ -8,7 +8,19 @@ import NodeLayer from './layers/node-layer'
 import EdgeLayer from './layers/edge-layer'
 
 import {layoutGraph, layoutGraphOnWorker} from './layout'
-import {Node, Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, GeomEdge, AttributeRegistry, Edge} from 'msagl-js'
+import {
+  Node,
+  Graph,
+  GeomGraph,
+  Rectangle,
+  EdgeRoutingMode,
+  GeomNode,
+  GeomEdge,
+  AttributeRegistry,
+  Edge,
+  buildRTree,
+  intersectedObjects,
+} from 'msagl-js'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer from './text-measurer'
@@ -215,7 +227,7 @@ export default class Renderer extends EventSource {
 
     const fontSettings = this._textMeasurer.opts
 
-    const geomGraph = <GeomGraph>GeomGraph.getGeom(this._graph)
+    const geomGraph = GeomGraph.getGeom(this._graph)
 
     if (!geomGraph) {
       return
@@ -225,7 +237,7 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
-    const rtree = geomGraph.buildRTree()
+    const rtree = buildRTree(geomGraph.graph)
     const boundingBox = geomGraph.boundingBox
     const layer = new TileLayer<{nodes: GeomNode[]; edges: GeomEdge[]}>({
       extent: [boundingBox.left, boundingBox.bottom, boundingBox.right, boundingBox.top],
@@ -235,7 +247,7 @@ export default class Renderer extends EventSource {
         const rect = new Rectangle({left: bbox.left, right: bbox.right, bottom: bbox.top, top: bbox.bottom})
         const nodes: GeomNode[] = []
         const edges: GeomEdge[] = []
-        for (const obj of geomGraph.intersectedObjects(rtree, rect, false)) {
+        for (const obj of intersectedObjects(rtree, rect, false)) {
           if (obj instanceof Node) {
             nodes.push(obj.getAttr(AttributeRegistry.GeomObjectIndex))
           } else if (obj instanceof Edge) {

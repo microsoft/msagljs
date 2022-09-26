@@ -1,3 +1,4 @@
+import {buildRTree, intersectedObjects} from './layout/core/geomGraph'
 import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
 import {PlaneTransformation} from './math/geometry/planeTransformation'
@@ -42,3 +43,4 @@ export {FastIncrementalLayoutSettings} from './layout/incremental/fastIncrementa
 export {ILayoutSettings}
 export {EventHandler}
 export {PlaneTransformation}
+export {buildRTree, intersectedObjects}

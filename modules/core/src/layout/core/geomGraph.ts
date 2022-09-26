@@ -83,27 +83,6 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
       Curve.PointRelativeToCurveLocation(curveUnderTest.start, perimeter) === PointLocation.Inside
     )
   }
-  /** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
-  *intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<Entity> {
-    const result = rtree.GetAllIntersecting(rect)
-    if (onlyNodes) {
-      for (const r of result) {
-        if (r instanceof Node) yield r
-      }
-    } else {
-      // nodes and edges
-      for (const r of result) {
-        if (r instanceof Node || r instanceof Edge) yield r
-      }
-    }
-  }
-
-  buildRTree(): RTree<Entity, Point> {
-    const data: Array<[Rectangle, Entity]> = (Array.from(this.graph.deepNodes) as Array<Entity>)
-      .concat(Array.from(this.graph.deepEdges) as Array<Entity>)
-      .map((o) => [GeomObject.getGeom(o).boundingBox, o])
-    return mkRTree(data)
-  }
 
   isEmpty(): boolean {
     return this.graph.isEmpty()
@@ -356,4 +335,26 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
   if (igraph instanceof GeomGraph) {
     igraph.addLabelToGraphBB(t.b)
   }
+}
+
+/** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
+export function* intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<Entity> {
+  const result = rtree.GetAllIntersecting(rect)
+  if (onlyNodes) {
+    for (const r of result) {
+      if (r instanceof Node) yield r
+    }
+  } else {
+    // nodes and edges
+    for (const r of result) {
+      if (r instanceof Node || r instanceof Edge) yield r
+    }
+  }
+}
+
+export function buildRTree(graph: Graph): RTree<Entity, Point> {
+  const data: Array<[Rectangle, Entity]> = (Array.from(graph.deepNodes) as Array<Entity>)
+    .concat(Array.from(graph.deepEdges) as Array<Entity>)
+    .map((o) => [GeomObject.getGeom(o).boundingBox, o])
+  return mkRTree(data)
 }
