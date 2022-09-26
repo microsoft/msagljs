@@ -74,10 +74,6 @@ export class RendererSvg implements IViewer {
     return ret
   }
 
-  get graph(): Graph {
-    return this._graph
-  }
-
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
@@ -173,7 +169,6 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   UnderlyingPolylineCircleRadius: number
-  graph: Graph
   StartDrawingRubberLine(startingPoint: Point): void {
     throw new Error('Method not implemented.')
   }
@@ -223,6 +218,10 @@ export class RendererSvg implements IViewer {
   StopDrawingRubberEdge(): void {
     throw new Error('Method not implemented.')
   }
+  get graph(): Graph {
+    return this._graph
+  }
+
   get Transform(): PlaneTransformation {
     const tr = this._svgCreator.getTransform()
     return new PlaneTransformation(tr.scale, 0, tr.x, 0, tr.scale, tr.y)
