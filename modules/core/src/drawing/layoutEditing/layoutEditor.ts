@@ -150,16 +150,16 @@ export class LayoutEditor {
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.DecorateEdgeLabelForDragging = LayoutEditor.TheDefaultEdgeLabelDecoratorStub
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
-    this.geomGraphEditor.ChangeInUndoRedoList.subscribe(this.LayoutEditorChangeInUndoRedoList)
+    this.geomGraphEditor.ChangeInUndoRedoList.subscribe(this.LayoutEditorChangeInUndoRedoList.bind(this))
   }
 
   HookUpToViewerEvents() {
-    this.viewer.MouseDown.subscribe(this.ViewerMouseDown)
+    this.viewer.MouseDown.subscribe(this.ViewerMouseDown.bind(this))
     this.viewer.MouseMove.subscribe(this.ViewerMouseMove.bind(this))
-    this.viewer.MouseUp.subscribe(this.ViewerMouseUp)
-    this.viewer.ObjectUnderMouseCursorChanged.subscribe(this.ViewerObjectUnderMouseCursorChanged)
-    this.viewer.GraphChanged.subscribe(this.ViewerGraphChanged)
-    this.viewer.ViewChangeEvent.subscribe(this.ViewChangeEventHandler)
+    this.viewer.MouseUp.subscribe(this.ViewerMouseUp.bind(this))
+    this.viewer.ObjectUnderMouseCursorChanged.subscribe(this.ViewerObjectUnderMouseCursorChanged.bind(this))
+    this.viewer.GraphChanged.subscribe(this.ViewerGraphChanged.bind(this))
+    this.viewer.ViewChangeEvent.subscribe(this.ViewChangeEventHandler.bind(this))
   }
 
   ViewerObjectUnderMouseCursorChanged(sender: any, e: ObjectUnderMouseCursorChangedEventArgs) {
@@ -415,7 +415,7 @@ export class LayoutEditor {
       if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a: any, b: any) => this.ReportBeforeChange(viewerObject))
       if (geom instanceof GeomGraph) {
         const iViewerNode = <IViewerNode>viewerObject
-        iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged)
+        iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged.bind(this))
       }
     }
   }
