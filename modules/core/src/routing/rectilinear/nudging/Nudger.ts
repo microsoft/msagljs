@@ -28,7 +28,7 @@ import {HitTestBehavior} from '../../../math/geometry/RTree/HitTestBehavior'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
 import {GeomEdge} from '../../..'
 type PointProjection = (p: Point) => number
-// following paper "Orthogonal Connector Routing" which is included  of the project
+// following paper "Orthogonal Connector Routing"
 export class Nudger {
   get HasGroups(): boolean {
     return null != this.HierarchyOfGroups && this.HierarchyOfGroups.Count > 0

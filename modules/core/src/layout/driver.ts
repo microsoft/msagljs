@@ -14,7 +14,7 @@ import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
 import {initRandom} from '../utils/random'
 import {EdgeLabelPlacement} from './edgeLabelPlacement'
-import {FastIncrementalLayoutSettings} from './incremental/fastIncrementalLayoutSettings'
+import {IPsepColaSetting} from './incremental/iPsepColaSettings'
 import {InitialLayout} from './initialLayout/initialLayout'
 import {ILayoutSettings} from './iLayoutSettings'
 
@@ -75,7 +75,7 @@ function figureOutSettings(geomGraph: GeomGraph): any {
   if (settings) return settings
   const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
   if (tooLargeForLayered) {
-    return new MdsLayoutSettings()
+    return new IPsepColaSetting()
   }
 
   let directed = false
@@ -86,7 +86,7 @@ function figureOutSettings(geomGraph: GeomGraph): any {
     }
   }
 
-  return directed ? new SugiyamaLayoutSettings() : new MdsLayoutSettings()
+  return directed ? new SugiyamaLayoutSettings() : new IPsepColaSetting()
 }
 function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
   createSettingsIfNeeded(geomGraph)
@@ -96,10 +96,12 @@ function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
   } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
     const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
     pivotMds.run()
-  } else if (geomGraph.layoutSettings instanceof FastIncrementalLayoutSettings) {
+  } else if (geomGraph.layoutSettings instanceof IPsepColaSetting) {
     const layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
     layout.SingleComponent = true
     layout.run()
+  } else {
+    throw new Error('not implemented')
   }
 }
 

@@ -40,7 +40,8 @@ export class Qpsc {
   private solverParameters: Parameters
 
   //
-  // This class tracks closely to the Ipsep_Cola paper's solve_QPSC function, outside of
+  // This class tracks closely to the Ipsep_Cola paper's ,IPSep-CoLa: An Incremental Procedure for
+  // Separation Constraint Layout of Graphs, solve_QPSC function, outside of
   // the SplitBlocks() and Project() operations.  The relevant data are extracted from the
   // Variables of the solver and placed within the mxA (Hessian A) matrix and vecWiDi (b)
   // vector on initialization, and then the vecPrevX (x-hat), vecCurX (x-bar), and vecDeltaX

@@ -1,7 +1,7 @@
 import {Algorithm} from '../../utils/algorithm'
 import {GeomGraph, MdsLayoutSettings} from '../../'
-import {FastIncrementalLayout} from '../incremental/fastIncrementalLayout'
-import {FastIncrementalLayoutSettings} from '../incremental/fastIncrementalLayoutSettings'
+import {IPsepCola} from '../incremental/iPsepCola'
+import {IPsepColaSetting} from '../incremental/iPsepColaSettings'
 import {MdsGraphLayout} from '../mds/mDSGraphLayout'
 import {PivotMDS} from '../mds/pivotMDS'
 import {IGeomGraph} from './iGeomGraph'
@@ -15,7 +15,7 @@ import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
 export class InitialLayout extends Algorithm {
   private graph: GeomGraph
 
-  private settings: FastIncrementalLayoutSettings
+  private settings: IPsepColaSetting
 
   private componentCount: number
 
@@ -30,10 +30,10 @@ export class InitialLayout extends Algorithm {
   //  individually.  Finally, a simple packing is applied.
   //  ratio as close as possible to the PackingAspectRatio property (not currently used).
 
-  public constructor(graph: GeomGraph, settings: FastIncrementalLayoutSettings) {
+  public constructor(graph: GeomGraph, settings: IPsepColaSetting) {
     super(null)
     this.graph = graph
-    this.settings = FastIncrementalLayoutSettings.ctorClone(settings)
+    this.settings = IPsepColaSetting.ctorClone(settings)
     this.settings.ApplyForces = true
     this.settings.InterComponentForces = true
     this.settings.RungeKuttaIntegration = false
@@ -85,7 +85,7 @@ export class InitialLayout extends Algorithm {
         pivotMDS.run()
       }
 
-      const fil: FastIncrementalLayout = new FastIncrementalLayout(component, this.settings, this.settings.MinConstraintLevel)
+      const fil: IPsepCola = new IPsepCola(component, this.settings, this.settings.MinConstraintLevel)
       Assert.assert(this.settings.Iterations == 0)
       for (const level of this.GetConstraintLevels(component)) {
         if (level > this.settings.MaxConstraintLevel) {

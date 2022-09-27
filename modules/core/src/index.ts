@@ -39,7 +39,7 @@ export {setNewParent} from './structs/graph'
 export {Entity} from './structs/entity'
 export {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from './math/geometry/icurve'
 export {AttributeRegistry} from './structs/attributeRegistry'
-export {FastIncrementalLayoutSettings} from './layout/incremental/fastIncrementalLayoutSettings'
+export {IPsepColaSetting as FastIncrementalLayoutSettings} from './layout/incremental/iPsepColaSettings'
 export {ILayoutSettings}
 export {EventHandler}
 export {PlaneTransformation}

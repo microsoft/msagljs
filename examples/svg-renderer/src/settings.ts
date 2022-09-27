@@ -17,8 +17,8 @@ export const LAYOUT: {[value: string]: string} = {
   lr: 'Layered Left-Right',
   bt: 'Layered Bottom-Top',
   rl: 'Layered Right-Left',
+  ipsepCola: 'IPSepCola',
   mds: 'Pivot MDS',
-  fd: 'Force Directed',
 } as const
 
 export const FONT = ['Times New Roman', 'Arial', 'Georgia', 'Courier New', 'Verdana']

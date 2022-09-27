@@ -35,7 +35,7 @@ export interface IRendererControl {
 }
 
 export type LayoutOptions = {
-  layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'MDS' | 'FD'
+  layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPsepCola' | 'MDS'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
 }

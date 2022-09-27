@@ -154,8 +154,8 @@ function getLayoutOptions(): LayoutOptions {
     case 'mds':
       opts.layoutType = 'MDS'
       break
-    case 'fd':
-      opts.layoutType = 'FD'
+    case 'ipsepCola':
+      opts.layoutType = 'IPsepCola'
       break
     default:
       break

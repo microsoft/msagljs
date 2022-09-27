@@ -27,7 +27,7 @@ import {initRandom, randomInt} from '../../src/utils/random'
 import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
-import {FastIncrementalLayoutSettings} from '../../src/layout/incremental/fastIncrementalLayoutSettings'
+import {IPsepColaSetting} from '../../src/layout/incremental/iPsepColaSettings'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
@@ -113,7 +113,7 @@ export function runFastIncLayout(fname: string, edgeRoutingMode: EdgeRoutingMode
 
   dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
-  const settings = new FastIncrementalLayoutSettings()
+  const settings = new IPsepColaSetting()
   settings.maxIterations = 10
   settings.minorIterations = 20
   settings.AvoidOverlaps = true

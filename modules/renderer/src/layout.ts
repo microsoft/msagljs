@@ -15,7 +15,7 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import {parseJSON, graphToJSON} from '@msagl/parser'
 
 import type {LayoutOptions} from './renderer'
-import {} from '../../core/src/layout/incremental/fastIncrementalLayoutSettings'
+import {IPsepColaSetting} from 'msagl-js/src/layout/incremental/iPsepColaSettings'
 
 let layoutWorker: Worker = null
 let layoutInProgress = false
@@ -66,7 +66,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   let needsReroute = false
   let needsLayout = forceUpdate
   const drawingGraph: DrawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
-  const geomGraph: GeomGraph = <GeomGraph>GeomGraph.getGeom(graph) // grab the GeomGraph from the underlying Graph
+  const geomGraph: GeomGraph = GeomGraph.getGeom(graph) // grab the GeomGraph from the underlying Graph
 
   function updateLayoutSettings(gg: GeomGraph) {
     if (!gg) return
@@ -140,7 +140,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     case 'MDS':
       layoutSettings = new MdsLayoutSettings()
       break
-    case 'FD':
+    case 'IPsepCola':
       layoutSettings = new FastIncrementalLayoutSettings()
       break
     default: {
@@ -156,7 +156,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
         }
       } else {
         // the graph is more suitable for the pivot mds layout
-        layoutSettings = new MdsLayoutSettings()
+        layoutSettings = new IPsepColaSetting()
       }
     }
   }

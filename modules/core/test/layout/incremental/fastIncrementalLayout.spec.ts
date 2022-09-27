@@ -2,8 +2,8 @@ import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {GeomEdge, GeomGraph, GeomNode} from '../../../src/layout/core'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {FastIncrementalLayout} from '../../../src/layout/incremental/fastIncrementalLayout'
-import {FastIncrementalLayoutSettings} from '../../../src/layout/incremental/fastIncrementalLayoutSettings'
+import {IPsepCola} from '../../../src/layout/incremental/iPsepCola'
+import {IPsepColaSetting} from '../../../src/layout/incremental/iPsepColaSettings'
 import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
 import {AttributeRegistry, Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
@@ -21,9 +21,9 @@ xtest('filclust', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   if (dg == null) return
   const gg = createGeometry(dg, measureTextSize)
-  const filSettings = new FastIncrementalLayoutSettings()
+  const filSettings = new IPsepColaSetting()
   filSettings.AvoidOverlaps = true
-  const fil = new FastIncrementalLayout(gg, filSettings, 2)
+  const fil = new IPsepCola(gg, filSettings, 2)
   fil.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/fil.svg', gg)
 })
@@ -34,7 +34,7 @@ test('clust', () => {
 
   if (dg == null) return
   const gg = createGeometry(dg, measureTextSize)
-  const settings = new FastIncrementalLayoutSettings()
+  const settings = new IPsepColaSetting()
   settings.maxIterations = 10
   settings.minorIterations = 20
   settings.AvoidOverlaps = true
@@ -50,7 +50,7 @@ test('smlred', () => {
 
   if (dg == null) return
   const gg = createGeometry(dg, measureTextSize)
-  const settings = new FastIncrementalLayoutSettings()
+  const settings = new IPsepColaSetting()
   settings.maxIterations = 10
   settings.minorIterations = 20
   settings.AvoidOverlaps = true
