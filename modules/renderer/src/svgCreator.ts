@@ -36,7 +36,6 @@ import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 import {default as svgPanZoom, PanZoom} from 'panzoom'
-import {IntersectionCache} from 'msagl-js/src/routing/spline/bundling/IntersectionCache'
 class SvgObject {
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity

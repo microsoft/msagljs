@@ -15,7 +15,6 @@ import {Entity} from '../../structs/entity'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Node} from '../../structs/node'
-import {deepEqual} from '../../../../renderer/src/utils'
 import {PointPair} from '../../math/geometry/pointPair'
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
