@@ -7,7 +7,7 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
 import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
-import {Curve, ICurve, PointLocation} from '../../math/geometry'
+import {Curve, ICurve, interpolateICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 import {ILayoutSettings} from '../iLayoutSettings'
@@ -15,6 +15,8 @@ import {Entity} from '../../structs/entity'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Node} from '../../structs/node'
+import {deepEqual} from '../../../../renderer/src/utils'
+import {PointPair} from '../../math/geometry/pointPair'
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
   const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
@@ -357,4 +359,35 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
     .concat(Array.from(graph.deepEdges) as Array<Entity>)
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
+}
+/** not tested!!!!!!!!!!!!!!!!!!!! */
+export function buildRTreeWithInterpolatedEdegs(graph: Graph, slack: number): RTree<Node | {edge: Edge; pp: PointPair}, Point> {
+  const nodes: Array<[Rectangle, Node | {edge: Edge; pp: PointPair}]> = Array.from(graph.deepNodes).map((n) => [
+    GeomNode.getGeom(n).boundingBox,
+    n,
+  ])
+  const interpolatedEdges: Array<[Rectangle, Node | {edge: Edge; pp: PointPair}]> = []
+  for (const e of graph.deepEdges) {
+    const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    const poly = interpolateICurve(ge.curve, slack)
+    if (ge.sourceArrowhead) {
+      interpolatedEdges.push([
+        Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
+        {edge: e, pp: new PointPair(ge.sourceArrowhead.tipPosition, ge.curve.start)},
+      ])
+    }
+    for (let i = 0; i < poly.length - 1; i++) {
+      interpolatedEdges.push([Rectangle.mkPP(poly[i], poly[i + 1]), {edge: e, pp: new PointPair(poly[i], poly[i + 1])}])
+    }
+    if (ge.targetArrowhead) {
+      interpolatedEdges.push([
+        Rectangle.mkPP(ge.curve.end, ge.targetArrowhead.tipPosition),
+        {edge: e, pp: new PointPair(ge.curve.end, ge.targetArrowhead.tipPosition)},
+      ])
+    }
+    const t = nodes.concat(interpolatedEdges)
+    return mkRTree(t)
+  }
+  // .concat(Array.from(graph.deepEdges).flatMap()
+  // .map((o) => [GeomObject.getGeom(o).boundingBox, o])
 }
