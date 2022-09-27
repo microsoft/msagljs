@@ -359,7 +359,7 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
 }
-/** not tested!!!!!!!!!!!!!!!!!!!! */
+/** not tested !!!!!!!!!!!!!*/
 export function buildRTreeWithInterpolatedEdegs(graph: Graph, slack: number): RTree<Node | {edge: Edge; pp: PointPair}, Point> {
   const nodes: Array<[Rectangle, Node | {edge: Edge; pp: PointPair}]> = Array.from(graph.deepNodes).map((n) => [
     GeomNode.getGeom(n).boundingBox,
