@@ -604,7 +604,7 @@ export class LayoutEditor {
   static *CurvePoints(geomEdge: GeomEdge): IterableIterator<Point> {
     yield geomEdge.source.center
     const isCurve = geomEdge.curve instanceof Curve
-    if (isCurve != null) {
+    if (isCurve) {
       const curve = geomEdge.curve as Curve
       if (curve.segs.length > 0) yield curve.start
       for (let i = 0; i < curve.segs.length; i++) yield curve.segs[i].end
@@ -624,18 +624,12 @@ export class LayoutEditor {
 
   SwitchToEdgeEditing(edge: IViewerEdge) {
     this.UnselectEverything()
-    throw new Error('not implemented')
-    /*
-    let editableEdge = (<IEditableObject>(edge));
-    if ((editableEdge == null)) {
-        return;
-    }
 
-    this.SelectedEdge = edge;
-    editableEdge.SelectedForEditing = true;
-    edge.RadiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius;
-    this.DecorateEdgeForDragging(edge);
-    this.viewer.Invalidate(edge);*/
+    this.SelectedEdge = edge
+    edge.SelectedForEditing = true
+    edge.RadiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius
+    this.DecorateEdgeForDragging(edge)
+    this.viewer.Invalidate(edge)
   }
 
   *ViewerNodes(): IterableIterator<IViewerNode> {
@@ -664,7 +658,6 @@ export class LayoutEditor {
 
   UnselectEverything() {
     for (const obj of this.dragGroup) {
-      this.viewer.Invalidate(obj)
       this.UnselectWithoutRemovingFromDragGroup(obj)
     }
 
@@ -698,8 +691,10 @@ export class LayoutEditor {
     if (e.LeftButtonIsPressed) {
       this.LeftMouseButtonWasPressed = true
       if (!this.InsertingEdge) {
-        if (!this.viewer.ObjectUnderMouseCursor.hasOwnProperty('edge')) {
-          this.ActiveDraggedObject = this.viewer.ObjectUnderMouseCursor
+        const obj = this.viewer.ObjectUnderMouseCursor
+
+        if (obj && !this.viewer.ObjectUnderMouseCursor.hasOwnProperty('edge')) {
+          this.ActiveDraggedObject = obj
         }
 
         if (this.ActiveDraggedObject != null) {
@@ -1117,6 +1112,7 @@ export class LayoutEditor {
     // }
   }
   CheckIfDraggingPolylineVertex(e: IMsaglMouseEventArgs) {
+    return
     if (this.SelectedEdge != null && (GeomEdge.getGeom(this.SelectedEdge.edge) as GeomEdge).underlyingPolyline != null) {
       throw new Error('not implemented')
       // let site: CornerSite = this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline.HeadSite;

@@ -31,12 +31,13 @@ import {
   IViewerGraph,
   IViewerNode,
   IViewerEdge,
+  IViewerObject,
 } from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 import {default as svgPanZoom, PanZoom} from 'panzoom'
-class SvgObject {
+class SvgViewerObject {
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
   entity: Entity
   bind() {
@@ -50,24 +51,25 @@ class SvgObject {
   }
 
   svgData: SVGElement
-  isVisible: boolean
-  MarkedForDragging: boolean
+  isVisible = true
+  MarkedForDragging = false
   MarkedForDraggingEvent: (sender: any, eventParameters: any) => void
   UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
 }
 
-class SvgGraph extends SvgObject implements IViewerGraph {
+class SvgViewerGraph extends SvgViewerObject implements IViewerGraph {
   get graph(): Graph {
     return this.entity as Graph
   }
 }
-class SvgNode extends SvgObject implements IViewerNode {
+class SvgViewerNode extends SvgViewerObject implements IViewerNode {
   get node(): Node {
     return this.entity as Node
   }
   IsCollapsedChanged: EventHandler
 }
-class SvgEdge extends SvgObject implements IViewerEdge {
+class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
+  RadiusOfPolylineCorner: number
   SelectedForEditing: boolean
   get edge(): Edge {
     return this.entity as Edge
@@ -76,6 +78,32 @@ class SvgEdge extends SvgObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  Invalidate(objectToInvalidate: IViewerObject) {
+    const svgViewerObj = objectToInvalidate as SvgViewerObject
+    const entity = this.findEntity(svgViewerObj.svgData)
+    const svgElem = svgViewerObj.svgData as Element
+    svgElem.parentElement.removeChild(svgElem)
+
+    if (entity instanceof Node) {
+      this.drawNode(entity)
+    } else if (entity instanceof Edge) {
+      this.drawEdge(entity)
+    } else {
+      throw new Error('not implemented')
+    }
+  }
+
+  svgToIViewerObj = new Map<Element, Entity>()
+  findEntity(l: Element): Entity {
+    do {
+      const ret = this.svgToIViewerObj.get(l)
+      if (ret) {
+        return ret
+      }
+      l = l.parentElement
+    } while (l)
+    return null
+  }
   private panZoom: PanZoom
   getSvgString(): string {
     if (this.svg == null) return null
@@ -103,14 +131,14 @@ export class SvgCreator {
   setGraph(graph: Graph): void {
     this.clearContainer()
     this.graph = graph
-    this.svg = createAndBindWithGraph(this.graph, 'svg') as SVGSVGElement
+    this.svg = this.createAndBindWithGraph(this.graph, 'svg') as SVGSVGElement
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
-    this.transformGroup = createAndBindWithGraph(null, 'g') as SVGSVGElement
+    this.transformGroup = this.createAndBindWithGraph(null, 'g') as SVGSVGElement
     this.svg.appendChild(this.transformGroup)
 
-    // After an y flip the top has moved to -top : need to translate to zero
+    // After the y flip the top has moved to -top : translating it to zero
     this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
@@ -131,10 +159,13 @@ export class SvgCreator {
     return m.multiply(flip)
   }
 
+  getScale(): number {
+    return (this.svg as SVGGraphicsElement).getScreenCTM().a
+  }
+
   private drawEdge(edge: Edge) {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
-    const edgeGroup = createAndBindWithGraph(edge, 'g')
-
+    const edgeGroup = this.createAndBindWithGraph(edge, 'g')
     const path = document.createElementNS(svgns, 'path')
     edgeGroup.appendChild(path)
     path.setAttribute('fill', 'none')
@@ -142,32 +173,35 @@ export class SvgCreator {
     this.setStroke(path, de)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
-    for (const a of this.AddArrows(edge)) {
-      edgeGroup.appendChild(a)
-    }
-    this.DrawEdgeLabel(edge)
+    this.AddArrows(edge, edgeGroup)
+    this.DrawEdgeLabel(edge, edgeGroup)
     this.transformGroup.appendChild(edgeGroup)
   }
 
-  private DrawEdgeLabel(edge: Edge) {
+  private DrawEdgeLabel(edge: Edge, group: SVGElement) {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const label = geometryEdge.label
     if (!label) return
-    this.drawLabelAtXY(de, label.boundingBox)
+    this.drawLabelAtXY(de, label.boundingBox, group)
   }
-  private *AddArrows(edge: Edge): IterableIterator<SVGElement> {
+  private AddArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
-    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start)
-    if (a) yield a
-    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end)
-    if (a) yield a
+    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group)
+    if (a) {
+      group.appendChild(a)
+    }
+    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end, group)
+    if (a) {
+      group.appendChild(a)
+    }
   }
-  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point): SVGElement | null {
+  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point, group: SVGElement): SVGElement | null {
     if (!arrowhead) return
 
-    const path = <SVGPathElement>createAndBindWithGraph(edge, 'polygon')
+    const path = document.createElementNS(svgns, 'polygon')
+    group.appendChild(path)
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
@@ -200,26 +234,30 @@ export class SvgCreator {
     }
   }
   private drawNode(node: Node) {
+    const nodeGroupSvg = this.createAndBindWithGraph(node, 'g')
+    this.transformGroup.appendChild(nodeGroupSvg)
     const gn = GeomObject.getGeom(node) as GeomNode
+
     const boundaryCurve = gn.boundaryCurve
     if (!boundaryCurve) return
-    this.drawNodeOnCurve(boundaryCurve, node)
+    this.drawNodeOnCurve(boundaryCurve, node, nodeGroupSvg)
   }
-  private drawNodeOnCurve(boundaryCurve: ICurve, node: Node) {
+  private drawNodeOnCurve(boundaryCurve: ICurve, node: Node, nodeGroup: SVGElement) {
     const dn = DrawingObject.getDrawingObj(node) as DrawingNode
     if (dn.shape != ShapeEnum.plaintext) {
-      this.makePathOnCurve(node, dn, boundaryCurve)
+      this.makePathOnCurve(node, dn, boundaryCurve, nodeGroup)
       if (dn.shape == ShapeEnum.doublecircle) {
         let ellipse = boundaryCurve as Ellipse
         const r = ellipse.aAxis.length - 2 * dn.penwidth
         ellipse = CurveFactory.mkCircle(r, ellipse.center)
-        this.makePathOnCurve(node, dn, ellipse)
+        this.makePathOnCurve(node, dn, ellipse, nodeGroup)
       }
     }
-    this.drawLabel(node, dn)
+    this.drawLabel(node, dn, nodeGroup)
   }
-  private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve) {
-    const path = <SVGPathElement>createAndBindWithGraph(node, 'path')
+  private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve, nodeGroup: SVGElement) {
+    const path = document.createElementNS(svgns, 'path')
+    nodeGroup.appendChild(path)
     if (dn.styles.find((s) => s == StyleEnum.filled)) {
       const c = dn.fillColor ?? dn.color ?? DrawingNode.defaultFillColor
       path.setAttribute('fill', msaglToSvgColor(c))
@@ -229,21 +267,19 @@ export class SvgCreator {
     path.setAttribute('d', curveString(boundaryCurve))
     path.setAttribute('stroke', msaglToSvgColor(dn.color))
     path.setAttribute('stroke-width', dn.penwidth.toString())
-
-    this.transformGroup.appendChild(path)
   }
 
-  private drawLabel(node: Node, dn: DrawingObject) {
+  private drawLabel(node: Node, dn: DrawingObject, nodeGroup: SVGElement) {
     if (!dn) return
     if (!dn.labelText || dn.labelText.length == 0) return
 
     if (dn instanceof DrawingNode) {
-      this.writeLabelText(node, dn.measuredTextSize)
+      this.writeLabelText(node, dn.measuredTextSize, nodeGroup)
     } else {
       throw new Error('not implemented')
     }
   }
-  private writeLabelText(node: Node, measuredTextSize: Size) {
+  private writeLabelText(node: Node, measuredTextSize: Size, nodeGroup: SVGElement) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
     const isGraph = node instanceof Graph
@@ -256,12 +292,12 @@ export class SvgCreator {
           ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
-    this.drawLabelAtXY(drawingNode, rect)
+    this.drawLabelAtXY(drawingNode, rect, nodeGroup)
   }
 
-  private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle) {
+  private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle, group: SVGElement) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>createAndBindWithGraph(drawingObject.entity, 'text')
+    const textEl = <SVGTextElement>document.createElementNS(svgns, 'text')
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
@@ -271,7 +307,7 @@ export class SvgCreator {
 
     this.createTspans(drawingObject.labelText, textEl, fontSize, rect)
 
-    this.transformGroup.appendChild(textEl)
+    group.appendChild(textEl)
   }
 
   createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
@@ -304,6 +340,28 @@ export class SvgCreator {
     this.svg.setAttribute('width', this.geomGraph.width.toString())
     this.svg.setAttribute('height', this.geomGraph.height.toString())
     this.geomGraph = GeomGraph.getGeom(this.graph)
+  }
+
+  createAndBindWithGraph(entity: Entity, name: string): SVGElement {
+    const svgElement = document.createElementNS(svgns, name)
+    const existingViewerObj = entity ? (entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject) : null
+    if (existingViewerObj) {
+      this.svgToIViewerObj.delete(existingViewerObj.svgData)
+      existingViewerObj.svgData = svgElement
+    } else {
+      if (entity instanceof Graph) {
+        new SvgViewerGraph(entity, svgElement)
+      } else if (entity instanceof Node) {
+        new SvgViewerNode(entity, svgElement)
+      } else if (entity instanceof Edge) {
+        new SvgViewerEdge(entity, svgElement)
+      } else {
+        new SvgViewerObject(entity, svgElement)
+      }
+    }
+    this.svgToIViewerObj.set(svgElement, entity)
+
+    return svgElement
   }
 }
 const svgns = 'http://www.w3.org/2000/svg'
@@ -417,28 +475,4 @@ function getArrowheadPoints(start: Point, end: Point): Point[] {
   const mul = h.length * Math.tan(SvgCreator.arrowAngle * 0.5 * (Math.PI / 180.0))
   s = s.mul(mul)
   return [start.add(s), end, start.sub(s)]
-}
-
-function createAndBindWithGraph(entity: Entity, name: string): SVGElement {
-  if (entity instanceof Graph) {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgGraph(entity, svgNode)
-    return svgNode
-  }
-  if (entity instanceof Node) {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgNode(entity, svgNode)
-    return svgNode
-  }
-  if (entity instanceof Edge) {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgEdge(entity, svgNode)
-    return svgNode
-  }
-
-  {
-    const svgNode = document.createElementNS(svgns, name)
-    new SvgObject(entity, svgNode)
-    return svgNode
-  }
 }

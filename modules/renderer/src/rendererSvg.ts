@@ -1,6 +1,6 @@
 import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeys} from 'msagl-js/drawing'
 import {layoutGraph} from './layout'
-import {AttributeRegistry, Edge, EventHandler, GeomEdge, GeomNode, Graph, PlaneTransformation, Point} from 'msagl-js'
+import {AttributeRegistry, Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point} from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
@@ -22,6 +22,25 @@ class MSAGLEventArgs implements IMsaglMouseEventArgs {
  * Renders an MSAGL graph with SVG
  */
 export class RendererSvg implements IViewer {
+  get UnderlyingPolylineRadiusWithNoScale(): number {
+    return this.Dpi * 0.05
+  }
+  getInterpolationSlack(): number {
+    return this.mouseHitDistance
+  }
+  /** the distance in inches */
+  private mouseHitDistance = 0.05
+  get Dpi(): number {
+    return 96 * window.devicePixelRatio
+  }
+
+  getHitSlack(): number {
+    const dpi = this.Dpi
+    const slackInPoints = dpi * this.mouseHitDistance
+    return slackInPoints / this.CurrentScale
+    throw new Error('Method not implemented.')
+  }
+
   layoutEditor: LayoutEditor
   /** The default is true and the value is reset to true after each call to setGraph */
   needCreateGeometry = true
@@ -149,7 +168,9 @@ export class RendererSvg implements IViewer {
     return m.inverse().multiplyPoint(new Point(x, y))
   }
   IncrementalDraggingModeAlways: boolean
-  CurrentScale: number
+  get CurrentScale(): number {
+    return this._svgCreator.getScale()
+  }
   CreateIViewerNode(drawingNode: Node, center: Point, visualElement: any): IViewerNode
   CreateIViewerNode(drawingNode: Node): IViewerNode
   CreateIViewerNode(drawingNode: unknown, center?: unknown, visualElement?: unknown): IViewerNode {
@@ -164,39 +185,49 @@ export class RendererSvg implements IViewer {
 
   ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
   get ObjectUnderMouseCursor(): IViewerObject {
-    let dist = Number.POSITIVE_INFINITY
-    let ret
-    const mp = this.ScreenToSourceP(this.mousePosititonX, this.mousePosititonY)
-    for (const n of this.graph.deepNodes) {
-      const gn = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
-      const d = gn.center.sub(mp).length
-      if (d < dist) {
-        dist = d
-        ret = n
+    const l = document.elementFromPoint(this.mousePosititonX, this.mousePosititonY)
+    if (l) {
+      const entity = this._svgCreator.findEntity(l)
+      if (entity) {
+        console.log(entity.toString())
+        if (entity.parent == null) {
+          // it is the whole graph!
+          return null
+        }
+        return entity.getAttr(AttributeRegistry.ViewerIndex)
       }
     }
-    return ret.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+
+    return null
+    //return ret.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
-    throw new Error('Method not implemented.')
+    this._svgCreator.Invalidate(objectToInvalidate)
   }
   InvalidateAll(): void {
     throw new Error('Method not implemented.')
   }
   ModifierKeys: ModifierKeys
   Entities: Iterable<IViewerObject>
-  DpiX: number
-  DpiY: number
+  get DpiX() {
+    return this.Dpi
+  }
+  get DpiY() {
+    return this.Dpi
+  }
   OnDragEnd(changedObjects: Iterable<IViewerObject>): void {
     throw new Error('Method not implemented.')
   }
-  LineThicknessForEditing: number
-  LayoutEditingEnabled: boolean
-  InsertingEdge: boolean
+  LineThicknessForEditing = 2
+  LayoutEditingEnabled = true
+  InsertingEdge = false
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
   }
-  UnderlyingPolylineCircleRadius: number
+  get UnderlyingPolylineCircleRadius(): number {
+    return this.UnderlyingPolylineRadiusWithNoScale / this.CurrentScale
+  }
+
   StartDrawingRubberLine(startingPoint: Point): void {
     throw new Error('Method not implemented.')
   }

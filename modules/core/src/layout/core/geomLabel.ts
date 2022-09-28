@@ -16,8 +16,9 @@ export class GeomLabel {
   AttachmentSegmentStart: Point
   parent: GeomObject
   constructor(size: Size, parent: GeomObject) {
-    /*Assert.assert(label instanceof Label)*/
-    if (size) this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
+    if (size) {
+      this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
+    }
     this.parent = parent
   }
   private _boundingBox: Rectangle

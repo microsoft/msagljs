@@ -359,34 +359,41 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
 }
-/** not tested !!!!!!!!!!!!!*/
-export function buildRTreeWithInterpolatedEdegs(graph: Graph, slack: number): RTree<Node | {edge: Edge; pp: PointPair}, Point> {
-  const nodes: Array<[Rectangle, Node | {edge: Edge; pp: PointPair}]> = Array.from(graph.deepNodes).map((n) => [
-    GeomNode.getGeom(n).boundingBox,
-    n,
-  ])
-  const interpolatedEdges: Array<[Rectangle, Node | {edge: Edge; pp: PointPair}]> = []
-  for (const e of graph.deepEdges) {
-    const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
-    const poly = interpolateICurve(ge.curve, slack)
-    if (ge.sourceArrowhead) {
-      interpolatedEdges.push([
-        Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
-        {edge: e, pp: new PointPair(ge.sourceArrowhead.tipPosition, ge.curve.start)},
-      ])
-    }
-    for (let i = 0; i < poly.length - 1; i++) {
-      interpolatedEdges.push([Rectangle.mkPP(poly[i], poly[i + 1]), {edge: e, pp: new PointPair(poly[i], poly[i + 1])}])
-    }
-    if (ge.targetArrowhead) {
-      interpolatedEdges.push([
-        Rectangle.mkPP(ge.curve.end, ge.targetArrowhead.tipPosition),
-        {edge: e, pp: new PointPair(ge.curve.end, ge.targetArrowhead.tipPosition)},
-      ])
-    }
-    const t = nodes.concat(interpolatedEdges)
-    return mkRTree(t)
-  }
-  // .concat(Array.from(graph.deepEdges).flatMap()
-  // .map((o) => [GeomObject.getGeom(o).boundingBox, o])
-}
+/** {labelled: Entity} - correspond to the object that has a label,
+ *  but the corresponding rectangle fits the label
+ * */
+// type TreeNodeType = Node | {edge: Edge; pp: PointPair} | {label: Entity}
+
+// export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<TreeNodeType, Point> {
+//   const nodes: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
+//   const nodeLabels: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes)
+//     .filter((n) => GeomNode.getGeom(n).label != null)
+//     .map((n) => [GeomNode.getGeom(n).label.boundingBox, n])
+//   const edgesPlusEdgeLabels: Array<[Rectangle, TreeNodeType]> = []
+//   for (const e of graph.deepEdges) {
+//     const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+//     const poly = interpolateICurve(ge.curve, slack)
+//     if (ge.sourceArrowhead) {
+//       edgesPlusEdgeLabels.push([
+//         Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
+//         {edge: e, pp: new PointPair(ge.sourceArrowhead.tipPosition, ge.curve.start)},
+//       ])
+//       if (ge.label) {
+//         edgesPlusEdgeLabels.push([ge.label.boundingBox, {label: e}])
+//       }
+//     }
+//     for (let i = 0; i < poly.length - 1; i++) {
+//       edgesPlusEdgeLabels.push([Rectangle.mkPP(poly[i], poly[i + 1]), {edge: e, pp: new PointPair(poly[i], poly[i + 1])}])
+//     }
+//     if (ge.targetArrowhead) {
+//       edgesPlusEdgeLabels.push([
+//         Rectangle.mkPP(ge.curve.end, ge.targetArrowhead.tipPosition),
+//         {edge: e, pp: new PointPair(ge.curve.end, ge.targetArrowhead.tipPosition)},
+//       ])
+//     }
+//     const t = nodes.concat(nodeLabels).concat(edgesPlusEdgeLabels)
+//     return mkRTree(t)
+//   }
+// .concat(Array.from(graph.deepEdges).flatMap()
+// .map((o) => [GeomObject.getGeom(o).boundingBox, o])
+//}

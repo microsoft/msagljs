@@ -6,4 +6,5 @@ export interface IViewerEdge extends IViewerObject {
   SelectedForEditing: boolean
   edge: Edge
   IsCollapsedChanged: (node: IViewerNode) => void
+  RadiusOfPolylineCorner: number
 }
