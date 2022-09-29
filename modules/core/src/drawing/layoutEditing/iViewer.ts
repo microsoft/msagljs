@@ -11,7 +11,7 @@ import {IViewerEdge} from './iViewerEdge'
 import {IViewerGraph} from './iViewerGraph'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
-import {ModifierKeys} from './modifierKeys'
+import {ModifierKeysEnum} from './modifierKeys'
 export interface IViewer {
   /** maps a point in the screen coordinates to the point in the graph coordinates*/
   ScreenToSource(e: IMsaglMouseEventArgs): Point
@@ -76,7 +76,7 @@ export interface IViewer {
 
   //  returns modifier keys; control, shift, or alt are pressed at the moments
 
-  ModifierKeys: ModifierKeys
+  ModifierKeys: ModifierKeysEnum
 
   //  gets all entities which can be manipulated by the viewer
 

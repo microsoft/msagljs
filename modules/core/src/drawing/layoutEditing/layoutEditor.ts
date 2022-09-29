@@ -31,7 +31,7 @@ import {IViewer} from './iViewer'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject, getViewerDrawingObject} from './iViewerObject'
-import {ModifierKeys} from './modifierKeys'
+import {ModifierKeysEnum} from './modifierKeys'
 import {MouseButtons} from './mouseButtons'
 import {NodeRestoreData} from './nodeRestoreData'
 import {ObjectUnderMouseCursorChangedEventArgs, EventArgs} from './objectUnderMouseCursorChangedEventArgs'
@@ -39,7 +39,7 @@ import {PolylineCornerType} from './polylineCornerType'
 import {UndoRedoAction} from './undoRedoAction'
 type DelegateForIViewerObject = (o: IViewerObject) => void
 type DelegateForEdge = (e: IViewerEdge) => void
-type MouseAndKeysAnalyzer = (modifierKeys: ModifierKeys, mouseButtons: MouseButtons, dragging: boolean) => boolean
+type MouseAndKeysAnalyzer = (modifierKeys: ModifierKeysEnum, mouseButtons: MouseButtons, dragging: boolean) => boolean
 
 function getViewerObj(entity: Entity): IViewerObject {
   return entity.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
@@ -617,8 +617,8 @@ export class LayoutEditor {
   //         }
   ModifierKeyIsPressed(): boolean {
     const modifierKeyWasUsed: boolean =
-      (this.viewer.ModifierKeys & ModifierKeys.Control) == ModifierKeys.Control ||
-      (this.viewer.ModifierKeys & ModifierKeys.Shift) == ModifierKeys.Shift
+      (this.viewer.ModifierKeys & ModifierKeysEnum.Control) == ModifierKeysEnum.Control ||
+      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift
     return modifierKeyWasUsed
   }
 
@@ -934,7 +934,7 @@ export class LayoutEditor {
 
   GetDraggingMode(): DraggingMode {
     const incremental: boolean =
-      (this.viewer.ModifierKeys & ModifierKeys.Shift) == ModifierKeys.Shift || this.viewer.IncrementalDraggingModeAlways
+      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift || this.viewer.IncrementalDraggingModeAlways
     return incremental ? DraggingMode.Incremental : DraggingMode.Default
   }
 
@@ -1374,7 +1374,7 @@ export class LayoutEditor {
     this.UnselectEverything()
     if (
       this.ToggleEntityPredicate(this.viewer.ModifierKeys, this.PressedMouseButtons, true) &&
-      (this.viewer.ModifierKeys & ModifierKeys.Shift) != ModifierKeys.Shift
+      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift
     ) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }

@@ -5,7 +5,7 @@ import {IViewerGraph} from './layoutEditing/iViewerGraph'
 import {IViewerNode} from './layoutEditing/iViewerNode'
 import {IViewerObject} from './layoutEditing/iViewerObject'
 import {LayoutEditor} from './layoutEditing/layoutEditor'
-import {ModifierKeys} from './layoutEditing/modifierKeys'
+import {ModifierKeysEnum} from './layoutEditing/modifierKeys'
 
 export {ArrowTypeEnum} from './arrowTypeEnum'
 export {ShapeEnum} from './shapeEnum'
@@ -25,4 +25,4 @@ export type TextMeasurerOptions = {
   fontStyle: 'normal' | 'italic' | 'oblique'
   fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
 }
-export {LayoutEditor, IViewer, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeys}
+export {LayoutEditor, IViewer, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum}

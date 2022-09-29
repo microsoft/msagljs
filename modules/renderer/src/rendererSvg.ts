@@ -1,4 +1,4 @@
-import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeys} from 'msagl-js/drawing'
+import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from 'msagl-js/drawing'
 import {layoutGraph} from './layout'
 import {AttributeRegistry, Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point} from 'msagl-js'
 import {deepEqual} from './utils'
@@ -7,6 +7,8 @@ import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
+import {Assert} from 'msagl-js/src/utils/assert'
+
 /** convert MouseEvent to the msagl internal representation */
 class MSAGLEventArgs implements IMsaglMouseEventArgs {
   LeftButtonIsPressed = false
@@ -72,6 +74,9 @@ export class RendererSvg implements IViewer {
       this.mousePosititonX = a.clientX
       this.mousePosititonY = a.clientY
     })
+    container.addEventListener('keydown', (event) => this.keyDown(event))
+
+    container.addEventListener('keyup', (event) => this.keyUp(event))
 
     this.MouseMove.subscribe(() => {
       if (this == null || this._svgCreator == null) {
@@ -82,6 +87,18 @@ export class RendererSvg implements IViewer {
 
     this.layoutEditor = new LayoutEditor(this)
     this.LayoutEditingEnabled = true
+  }
+  keyDown(event: KeyboardEvent): any {
+    if (event.shiftKey) {
+      this.ModifierKeys |= ModifierKeysEnum.Shift
+    }
+    if (event.ctrlKey) {
+      this.ModifierKeys |= ModifierKeysEnum.Control
+    }
+    // todo - handle other keys if needed
+  }
+  keyUp(event: KeyboardEvent): any {
+    this.ModifierKeys = ModifierKeysEnum.None
   }
   toMsaglEvent(a: MouseEvent): IMsaglMouseEventArgs {
     const ret = new MSAGLEventArgs()
@@ -207,7 +224,7 @@ export class RendererSvg implements IViewer {
   InvalidateAll(): void {
     throw new Error('Method not implemented.')
   }
-  ModifierKeys: ModifierKeys
+  ModifierKeys = ModifierKeysEnum.None
   Entities: Iterable<IViewerObject>
   get DpiX() {
     return this.Dpi

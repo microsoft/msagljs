@@ -1,4 +1,4 @@
-export enum ModifierKeys {
+export enum ModifierKeysEnum {
   // No modifiers are pressed.
 
   None = 0,
