@@ -69,7 +69,7 @@ function NumberOfIntersectedIsLessThanBoundOnNode<T, P>(
 }
 
 export class RTree<T, P> {
-  _rootNode: RectangleNode<T, P>
+  private _rootNode: RectangleNode<T, P>
 
   // Removes everything from the tree
   // <

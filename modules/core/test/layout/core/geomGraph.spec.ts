@@ -10,8 +10,15 @@ import {
   Edge,
   buildRTree,
   intersectedObjects,
+  AttributeRegistry,
+  Rectangle,
+  GeomEdge,
+  Curve,
+  Point,
 } from '../../../src'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
+import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects} from '../../../src/layout/core/geomGraph'
+import {initRandom} from '../../../src/utils/random'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
 test('subgraphs', () => {
@@ -55,6 +62,70 @@ test('geom subgraphs', () => {
 
   const bIndex = aaIds.findIndex((a) => a == 'b')
   expect(bIndex > aaIndex).toBe(true)
+})
+
+test('buildRTreeWithInterpolatedEdges', () => {
+  const g = parseDotGraph('graphvis/fsm.gv')
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  const geomGraph = dg.createGeometry()
+  const ss = new SugiyamaLayoutSettings()
+  const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
+  ll.run()
+  const slack = 0.05
+  const tree = buildRTreeWithInterpolatedEdges(g, slack)
+
+  // centers are hit
+  for (const n of g.deepNodes) {
+    const gn = n.getAttr(AttributeRegistry.GeomObjectIndex)
+    const rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), gn.center)
+    let found = false
+    for (const n of getGeomIntersectedObjects(rect, tree)) {
+      if (n === gn) found = true
+    }
+    expect(found).toBe(true)
+  }
+
+  // edges are hit
+  for (const n of g.deepEdges) {
+    const ge = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    const t = Math.random()
+    let rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd))
+    let found = false
+    for (const n of getGeomIntersectedObjects(rect, tree)) {
+      if (n === ge) found = true
+    }
+    expect(found).toBe(true)
+    if (ge.targetArrowhead) {
+      rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), Point.middle(ge.curve.end, ge.targetArrowhead.tipPosition))
+      found = false
+      for (const n of getGeomIntersectedObjects(rect, tree)) {
+        if (n === ge) found = true
+      }
+      expect(found).toBe(true)
+    }
+    if (ge.sourceArrowhead) {
+      rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), Point.middle(ge.curve.start, ge.sourceArrowhead.tipPosition))
+      found = false
+      for (const n of getGeomIntersectedObjects(rect, tree)) {
+        if (n === ge) found = true
+      }
+      expect(found).toBe(true)
+    }
+  }
+  //labels are hit
+  for (const n of g.deepEdges) {
+    const ge = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    const label = ge.label
+    if (label == null) continue
+    const rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), label.boundingBox.leftTop)
+    let found = false
+    for (const n of getGeomIntersectedObjects(rect, tree)) {
+      if (n === ge.label) found = true
+    }
+    expect(found).toBe(true)
+  }
+
+  initRandom(0) // to remove randomness further on
 })
 
 test('intersectedEnities', () => {

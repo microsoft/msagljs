@@ -16,6 +16,9 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Node} from '../../structs/node'
 import {PointPair} from '../../math/geometry/pointPair'
+import {RectangleNode} from '../../math/geometry/RTree/RectangleNode'
+import {HitTestBehavior} from '../../math/geometry/RTree/HitTestBehavior'
+import {GeomLabel} from './geomLabel'
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
   const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
@@ -359,41 +362,56 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
 }
-/** {labelled: Entity} - correspond to the object that has a label,
+/** {labelledEntity: Entity} - correspond to the object that has a label,
  *  but the corresponding rectangle fits the label
  * */
-// type TreeNodeType = Node | {edge: Edge; pp: PointPair} | {label: Entity}
+type TreeNodeType = Node | {edge: Edge; pp: PointPair} | {labelledEntity: Entity}
+/** Let t be a TreeNodeType: if it is intersecting the square with the side 2*slack
+ *  and the center at 'point', and filter(a) is true, where
+ *  then the entity of t, or its label is returned */
 
-// export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<TreeNodeType, Point> {
-//   const nodes: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
-//   const nodeLabels: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes)
-//     .filter((n) => GeomNode.getGeom(n).label != null)
-//     .map((n) => [GeomNode.getGeom(n).label.boundingBox, n])
-//   const edgesPlusEdgeLabels: Array<[Rectangle, TreeNodeType]> = []
-//   for (const e of graph.deepEdges) {
-//     const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
-//     const poly = interpolateICurve(ge.curve, slack)
-//     if (ge.sourceArrowhead) {
-//       edgesPlusEdgeLabels.push([
-//         Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
-//         {edge: e, pp: new PointPair(ge.sourceArrowhead.tipPosition, ge.curve.start)},
-//       ])
-//       if (ge.label) {
-//         edgesPlusEdgeLabels.push([ge.label.boundingBox, {label: e}])
-//       }
-//     }
-//     for (let i = 0; i < poly.length - 1; i++) {
-//       edgesPlusEdgeLabels.push([Rectangle.mkPP(poly[i], poly[i + 1]), {edge: e, pp: new PointPair(poly[i], poly[i + 1])}])
-//     }
-//     if (ge.targetArrowhead) {
-//       edgesPlusEdgeLabels.push([
-//         Rectangle.mkPP(ge.curve.end, ge.targetArrowhead.tipPosition),
-//         {edge: e, pp: new PointPair(ge.curve.end, ge.targetArrowhead.tipPosition)},
-//       ])
-//     }
-//     const t = nodes.concat(nodeLabels).concat(edgesPlusEdgeLabels)
-//     return mkRTree(t)
-//   }
-// .concat(Array.from(graph.deepEdges).flatMap()
-// .map((o) => [GeomObject.getGeom(o).boundingBox, o])
-//}
+export function* getGeomIntersectedObjects(rect: Rectangle, tree: RTree<TreeNodeType, Point>): IterableIterator<GeomLabel | GeomObject> {
+  for (const t of tree.RootNode.AllHitItems(rect, null)) {
+    if (t instanceof Node) {
+      yield GeomObject.getGeom(t)
+      continue
+    }
+    if ('edge' in t) {
+      yield GeomObject.getGeom(t.edge)
+      continue
+    }
+    yield GeomObject.getGeom(t.labelledEntity).label
+  }
+}
+
+export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<TreeNodeType, Point> {
+  const nodes: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
+  const nodeLabels: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes)
+    .filter((n) => GeomNode.getGeom(n).label != null)
+    .map((n) => [GeomNode.getGeom(n).label.boundingBox, n])
+  const edgesPlusEdgeLabels: Array<[Rectangle, TreeNodeType]> = []
+  for (const e of graph.deepEdges) {
+    const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    if (ge.label) {
+      edgesPlusEdgeLabels.push([ge.label.boundingBox, {labelledEntity: e}])
+    }
+    const poly = interpolateICurve(ge.curve, slack)
+    if (ge.sourceArrowhead) {
+      edgesPlusEdgeLabels.push([
+        Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
+        {edge: e, pp: new PointPair(ge.sourceArrowhead.tipPosition, ge.curve.start)},
+      ])
+    }
+    for (let i = 0; i < poly.length - 1; i++) {
+      edgesPlusEdgeLabels.push([Rectangle.mkPP(poly[i], poly[i + 1]), {edge: e, pp: new PointPair(poly[i], poly[i + 1])}])
+    }
+    if (ge.targetArrowhead) {
+      edgesPlusEdgeLabels.push([
+        Rectangle.mkPP(ge.curve.end, ge.targetArrowhead.tipPosition),
+        {edge: e, pp: new PointPair(ge.curve.end, ge.targetArrowhead.tipPosition)},
+      ])
+    }
+  }
+  const t = nodes.concat(nodeLabels).concat(edgesPlusEdgeLabels)
+  return mkRTree(t)
+}

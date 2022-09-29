@@ -238,6 +238,15 @@ export class RectangleNode<T, P> {
 
     return this.Left.FirstHitNodeWithPredicate(point, hitTest) ?? this.Right.FirstHitNodeWithPredicate(point, hitTest)
   }
+  public FirstHitByRectWithPredicate(rect: IRectangle<P>, hitTest: (t: T) => HitTestBehavior): RectangleNode<T, P> {
+    if (!this.irect.intersects_rect(rect)) return null
+
+    if (this.IsLeaf) {
+      return hitTest(this.UserData) === HitTestBehavior.Stop ? this : null
+    }
+
+    return this.Left.FirstHitByRectWithPredicate(rect, hitTest) ?? this.Right.FirstHitByRectWithPredicate(rect, hitTest)
+  }
   // brings the first leaf which rectangle was hit and the delegate is happy with the object
   FirstHitNode(point: P): RectangleNode<T, P> {
     if (this.irect.contains_point(point)) {
