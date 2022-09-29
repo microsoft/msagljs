@@ -7,7 +7,6 @@ import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
-import {Assert} from 'msagl-js/src/utils/assert'
 
 /** convert MouseEvent to the msagl internal representation */
 class MSAGLEventArgs implements IMsaglMouseEventArgs {
