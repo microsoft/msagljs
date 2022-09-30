@@ -1017,7 +1017,7 @@ export class LayoutEditor {
     this.SourcePort = null
   }
 
-  edgeAttr: DrawingEdge = new DrawingEdge(null)
+  edgeAttr: DrawingEdge = new DrawingEdge(null, true)
 
   InsertEdgeOnMouseUp() {
     if (this.DraggingStraightLine()) {

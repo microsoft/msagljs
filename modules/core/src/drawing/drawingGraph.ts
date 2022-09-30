@@ -1,4 +1,4 @@
-import {DrawingEdge} from '.'
+import {ArrowTypeEnum, DrawingEdge} from '.'
 import {Arrowhead, CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size} from '..'
 import {Graph, Node} from '..'
 import {TextMeasurerOptions} from '.'
@@ -80,22 +80,32 @@ export class DrawingGraph extends DrawingNode {
     return geomGraph
   }
   private createEdgeGeometry(e: Edge) {
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(e)
-    const ge = new GeomEdge(e)
-    if (de.directed) {
-      if (ge.targetArrowhead == null) {
-        ge.targetArrowhead = new Arrowhead()
-      }
+    const drawingEdge = <DrawingEdge>DrawingEdge.getDrawingObj(e)
+    const geomEdge = new GeomEdge(e)
+
+    if (drawingEdge.arrowhead != ArrowTypeEnum.none) {
+      geomEdge.targetArrowhead = new Arrowhead()
     } else {
-      ge.targetArrowhead = null
+      geomEdge.targetArrowhead = null
     }
-    if (de.labelText) {
-      const size = this.textMeasure(de.labelText, {fontSize: de.fontsize, fontFamily: de.fontname, fontStyle: 'normal'})
-      ge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), ge)
-      de.measuredTextSize = size
+
+    if (drawingEdge.arrowtail != ArrowTypeEnum.none) {
+      geomEdge.sourceArrowhead = new Arrowhead()
+    } else {
+      geomEdge.sourceArrowhead = null
     }
-    if (de.penwidth) {
-      ge.lineWidth = de.penwidth
+
+    if (drawingEdge.labelText) {
+      const size = this.textMeasure(drawingEdge.labelText, {
+        fontSize: drawingEdge.fontsize,
+        fontFamily: drawingEdge.fontname,
+        fontStyle: 'normal',
+      })
+      geomEdge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), geomEdge)
+      drawingEdge.measuredTextSize = size
+    }
+    if (drawingEdge.penwidth) {
+      geomEdge.lineWidth = drawingEdge.penwidth
     }
   }
 

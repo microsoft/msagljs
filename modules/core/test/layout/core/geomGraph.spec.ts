@@ -16,9 +16,11 @@ import {
   Curve,
   Point,
 } from '../../../src'
+import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects} from '../../../src/layout/core/geomGraph'
 import {initRandom} from '../../../src/utils/random'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
 test('subgraphs', () => {
@@ -67,10 +69,16 @@ test('geom subgraphs', () => {
 test('buildRTreeWithInterpolatedEdges', () => {
   const g = parseDotGraph('graphvis/fsm.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  //create an edge with the arrowhead at source
+  const edge = Array.from(g.deepEdges)[0]
+  edge.getAttr(AttributeRegistry.DrawingObjectIndex).arrowhead = ArrowTypeEnum.normal
+  edge.getAttr(AttributeRegistry.DrawingObjectIndex).arrowtail = ArrowTypeEnum.normal
   const geomGraph = dg.createGeometry()
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
+  SvgDebugWriter.writeGeomGraph('./tmp/fsm.svg', geomGraph)
+
   const slack = 0.05
   const tree = buildRTreeWithInterpolatedEdges(g, slack)
 

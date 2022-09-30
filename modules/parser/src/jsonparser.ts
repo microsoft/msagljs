@@ -67,7 +67,7 @@ export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
   }
   for (const edge of json.edges) {
     const e = g.setEdge(String(edge.source), String(edge.target))
-    const de = new DrawingEdge(e)
+    const de = new DrawingEdge(e, false)
 
     const {arrowhead = 'none', arrowtail = 'none', directed = true} = edge
     de.arrowhead = ArrowTypeEnum[arrowhead]

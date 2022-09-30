@@ -468,10 +468,9 @@ class DotParser {
     }
     const edge = new Edge(sn, tn)
     nc.addEdge(edge)
-    const drawingEdge = new DrawingEdge(edge)
+    new DrawingEdge(edge, directed)
     parseAttrs(o, edge)
 
-    drawingEdge.directed = directed
     return [edge]
   }
 
