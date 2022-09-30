@@ -517,8 +517,7 @@ test('data_social', () => {
     dn.shape = ShapeEnum.box
   }
   for (const e of g.edges) {
-    const de = new DrawingEdge(e)
-    de.directed = false
+    const de = new DrawingEdge(e, false)
   }
   dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)

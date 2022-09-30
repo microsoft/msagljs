@@ -200,7 +200,7 @@ xtest('austin', () => {
     const s = graph.findNode(edge.source)
     const t = graph.findNode(edge.target)
     const e = new Edge(s, t)
-    const de = new DrawingEdge(e)
+    const de = new DrawingEdge(e, false)
 
     de.arrowhead = ArrowTypeEnum.none
     de.arrowtail = ArrowTypeEnum.none
