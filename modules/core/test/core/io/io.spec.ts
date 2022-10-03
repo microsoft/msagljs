@@ -4,7 +4,6 @@ import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {measureTextSize, parseDotGraph, parseJSONFile} from '../../utils/testUtils'
 import {Graph as JSONGraph} from 'dotparser'
-import {GeomEdge, GeomGraph} from '../../../src/layout/core'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
@@ -20,6 +19,8 @@ import {EdgeRoutingSettings} from '../../../src/routing/EdgeRoutingSettings'
 import {BundlingSettings} from '../../../src/routing/BundlingSettings'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
 import {MdsLayoutSettings} from '../../../src/layout/mds/mDSLayoutSettings'
+import {GeomEdge} from '../../../src/layout/core/geomEdge'
+import {GeomGraph} from '../../../src/layout/core/geomGraph'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -171,7 +172,7 @@ test('graph fsm', () => {
   for (const e of ngg.deepEdges) {
     if (e.label) {
       labelsNow++
-      expect(e.labelBBox.width > 0).toBe(true)
+      expect(e.label.boundingBox.width > 0).toBe(true)
     }
   }
 

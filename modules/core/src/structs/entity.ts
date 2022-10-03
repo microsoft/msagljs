@@ -1,4 +1,3 @@
-import {Graph} from './graph'
 /**
  * Entity is an attribute container with a parent.
  * It also keeps an array of event functions.
@@ -58,7 +57,7 @@ export abstract class Entity {
   }
 
   /**  Determines if this node is a descendant of the given graph.*/
-  isDescendantOf(graph: Graph): boolean {
+  isDescendantOf(graph: Entity): boolean {
     for (const p of this.getAncestors()) {
       if (p === graph) return true
     }

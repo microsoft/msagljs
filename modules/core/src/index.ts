@@ -1,9 +1,20 @@
-import {buildRTree, intersectedObjects} from './layout/core/geomGraph'
+import {GeomEdge} from './layout/core/geomEdge'
+import {
+  buildRTree,
+  buildRTreeWithInterpolatedEdges,
+  GeomGraph,
+  HitTreeNodeType,
+  getGeomIntersectedObjects,
+  intersectedObjects,
+} from './layout/core/geomGraph'
+import {GeomLabel} from './layout/core/geomLabel'
+import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
 import {PlaneTransformation} from './math/geometry/planeTransformation'
+import {Label} from './structs/label'
 
-export {GeomGraph, GeomLabel, GeomNode, GeomEdge} from './layout/core'
+export {GeomGraph, GeomLabel, GeomNode, GeomEdge}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {CancelToken} from './utils/cancelToken'
@@ -43,4 +54,11 @@ export {IPsepColaSetting as FastIncrementalLayoutSettings} from './layout/increm
 export {ILayoutSettings}
 export {EventHandler}
 export {PlaneTransformation}
-export {buildRTree, intersectedObjects}
+export {
+  buildRTree,
+  intersectedObjects,
+  HitTreeNodeType as GeomHitTreeNodeType,
+  buildRTreeWithInterpolatedEdges,
+  getGeomIntersectedObjects,
+  Label,
+}

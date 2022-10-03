@@ -2,10 +2,13 @@ import {ArrowTypeEnum} from '../../drawing/arrowTypeEnum'
 import {DrawingEdge} from '../../drawing/drawingEdge'
 import {DrawingNode} from '../../drawing/drawingNode'
 import {DrawingObject} from '../../drawing/drawingObject'
-import {GeomNode, GeomEdge, GeomGraph} from '../../layout/core'
+
 import {Arrowhead} from '../../layout/core/arrowhead'
 import {CurvePort} from '../../layout/core/curvePort'
 import {FloatingPort} from '../../layout/core/floatingPort'
+import {GeomEdge} from '../../layout/core/geomEdge'
+import {GeomGraph} from '../../layout/core/geomGraph'
+import {GeomNode} from '../../layout/core/geomNode'
 import {GeomObject} from '../../layout/core/geomObject'
 import {Port} from '../../layout/core/port'
 import {layoutGeomGraph} from '../../layout/driver'
@@ -26,20 +29,17 @@ import {Assert} from '../../utils/assert'
 
 import {EdgeRestoreData} from './edgeRestoreData'
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
-import {IMsaglMouseEventArgs} from './iMsaglMouseEventArgs'
 import {IViewer} from './iViewer'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject, getViewerDrawingObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
-import {MouseButtons} from './mouseButtons'
 import {NodeRestoreData} from './nodeRestoreData'
 import {ObjectUnderMouseCursorChangedEventArgs, EventArgs} from './objectUnderMouseCursorChangedEventArgs'
 import {PolylineCornerType} from './polylineCornerType'
 import {UndoRedoAction} from './undoRedoAction'
 type DelegateForIViewerObject = (o: IViewerObject) => void
 type DelegateForEdge = (e: IViewerEdge) => void
-type MouseAndKeysAnalyzer = (modifierKeys: ModifierKeysEnum, mouseButtons: MouseButtons, dragging: boolean) => boolean
 
 function getViewerObj(entity: Entity): IViewerObject {
   return entity.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
@@ -64,6 +64,8 @@ function getRestoreData(entity: Entity): any {
   throw new Error('not implemented')
 }
 
+type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
+
 export class LayoutEditor {
   RadiusOfPolylineCorner = 10
 
@@ -73,7 +75,8 @@ export class LayoutEditor {
   interactiveEdgeRouter: InteractiveEdgeRouter
   selectedEdge: IViewerEdge
   mouseDownScreenPoint: Point
-  mouseButtons: MouseButtons
+  /** https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons */
+  mouseButtons: number
   EdgeAttr: DrawingEdge
   arrowheadLength = Arrowhead.defaultArrowheadLength
   get ActiveDraggedObject(): IViewerObject {
@@ -141,9 +144,6 @@ export class LayoutEditor {
   constructor(viewerPar: IViewer) {
     this.viewer = viewerPar
     this.HookUpToViewerEvents()
-    this.ToggleEntityPredicate = (modifierKeys, mouseButtons, draggingParameter) => LayoutEditor.LeftButtonIsPressed(mouseButtons)
-    this.NodeInsertPredicate = (modifierKeys, mouseButtons, draggingParameter) =>
-      LayoutEditor.MiddleButtonIsPressed(mouseButtons) && draggingParameter == false
 
     this.DecorateObjectForDragging = this.TheDefaultObjectDecorator
     this.RemoveObjDraggingDecorations = this.TheDefaultObjectDecoratorRemover
@@ -206,16 +206,6 @@ export class LayoutEditor {
     this.mouseMoveThreshold = value
   }
 
-  //  the delegate to decide if an entity is dragged or we just zoom of the viewer
-
-  private toggleEntityPredicate: MouseAndKeysAnalyzer
-  public get ToggleEntityPredicate(): MouseAndKeysAnalyzer {
-    return this.toggleEntityPredicate
-  }
-  public set ToggleEntityPredicate(value: MouseAndKeysAnalyzer) {
-    this.toggleEntityPredicate = value
-  }
-
   private dragging: boolean
   public get Dragging(): boolean {
     return this.dragging
@@ -233,10 +223,10 @@ export class LayoutEditor {
 
   //  current pressed mouse buttons
 
-  get PressedMouseButtons(): MouseButtons {
+  get PressedMouseButtons(): number {
     return this.mouseButtons
   }
-  set PressedMouseButtons(value: MouseButtons) {
+  set PressedMouseButtons(value: number) {
     this.mouseButtons = value
   }
 
@@ -550,17 +540,20 @@ export class LayoutEditor {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   static TheDefaultEdgeLabelDecoratorStub(label: IViewerObject) {}
 
-  static LeftButtonIsPressed(mouseButtons: MouseButtons): boolean {
-    return (mouseButtons & MouseButtons.Left) == MouseButtons.Left
+  static LeftButtonIsPressed(e: MouseEvent): boolean {
+    return (e.buttons & 1) == 1
   }
 
-  static MiddleButtonIsPressed(mouseButtons: MouseButtons): boolean {
-    return (mouseButtons & MouseButtons.Middle) == MouseButtons.Middle
+  static MiddleButtonIsPressed(e: MouseEvent): boolean {
+    return (e.buttons & 4) == 4
+  }
+  static RightButtonIsPressed(e: MouseEvent): boolean {
+    return (e.buttons & 2) == 2
   }
 
-  MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: IMsaglMouseEventArgs): boolean {
-    const x: number = e.X
-    const y: number = e.Y
+  MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: MouseEvent): boolean {
+    const x: number = e.clientX
+    const y: number = e.clientY
     const dx: number = (this.MouseDownScreenPoint.x - x) / this.viewer.DpiX
     const dy: number = (this.MouseDownScreenPoint.y - y) / this.viewer.DpiY
     return Math.sqrt(dx * dx + dy * dy) > this.MouseMoveThreshold / 3
@@ -680,15 +673,15 @@ export class LayoutEditor {
     }
   }
 
-  ViewerMouseDown(sender: any, e: IMsaglMouseEventArgs) {
+  ViewerMouseDown(sender: any, e: MouseEvent) {
     if (!this.viewer.LayoutEditingEnabled || this.viewer.graph == null) {
       return
     }
 
-    this.PressedMouseButtons = LayoutEditor.GetPressedButtons(e)
+    this.PressedMouseButtons = e.buttons
     this.mouseDownGraphPoint = this.viewer.ScreenToSource(e)
-    this.MouseDownScreenPoint = new Point(e.X, e.Y)
-    if (e.LeftButtonIsPressed) {
+    this.MouseDownScreenPoint = new Point(e.clientX, e.clientY)
+    if (LayoutEditor.LeftButtonIsPressed(e)) {
       this.LeftMouseButtonWasPressed = true
       if (!this.InsertingEdge) {
         const obj = this.viewer.ObjectUnderMouseCursor
@@ -698,7 +691,7 @@ export class LayoutEditor {
         }
 
         if (this.ActiveDraggedObject != null) {
-          e.Handled = true
+          e.stopPropagation()
         }
 
         if (this.SelectedEdge != null) {
@@ -707,16 +700,16 @@ export class LayoutEditor {
       } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
         this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
       }
-    } else if (e.RightButtonIsPressed) {
+    } else if (LayoutEditor.RightButtonIsPressed(e)) {
       if (this.SelectedEdge != null) {
         this.ProcessRightClickOnSelectedEdge(e)
       }
     }
   }
 
-  ViewerMouseMove(sender: any, e: IMsaglMouseEventArgs) {
+  ViewerMouseMove(sender: any, e: MouseEvent) {
     if (this.viewer.LayoutEditingEnabled) {
-      if (e.LeftButtonIsPressed) {
+      if (LayoutEditor.LeftButtonIsPressed(e)) {
         if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {
           this.DragSomeObjects(e)
         } else if (this.InsertingEdge) {
@@ -730,18 +723,13 @@ export class LayoutEditor {
     }
   }
 
-  SetDraggingFlag(e: IMsaglMouseEventArgs) {
+  SetDraggingFlag(e: MouseEvent) {
     if (!this.Dragging && this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
       this.Dragging = true
     }
   }
 
-  TrySetNodePort(
-    e: IMsaglMouseEventArgs,
-    node: {node: IViewerNode},
-    port: {port: Port},
-    loosePolyline: {loosePolyline: Polyline},
-  ): boolean {
+  TrySetNodePort(e: MouseEvent, node: {node: IViewerNode}, port: {port: Port}, loosePolyline: {loosePolyline: Polyline}): boolean {
     Assert.assert(this.InsertingEdge)
     const mousePos = this.viewer.ScreenToSource(e)
     loosePolyline.loosePolyline = null
@@ -893,7 +881,7 @@ export class LayoutEditor {
 
   _lastDragPoint: Point
 
-  DragSomeObjects(e: IMsaglMouseEventArgs) {
+  DragSomeObjects(e: MouseEvent) {
     if (!this.Dragging) {
       if (this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
         this.Dragging = true
@@ -928,7 +916,7 @@ export class LayoutEditor {
       this.viewer.InvalidateAll()
     }
 
-    e.Handled = true
+    e.stopPropagation()
     this._lastDragPoint = currentDragPoint
   }
 
@@ -967,8 +955,8 @@ export class LayoutEditor {
     return viewerObject.entity.parent as Graph
   }
 
-  ViewerMouseUp(sender: any, args: IMsaglMouseEventArgs) {
-    if (args.Handled) {
+  ViewerMouseUp(sender: any, args: MouseEvent) {
+    if (args.defaultPrevented) {
       return
     }
 
@@ -977,12 +965,12 @@ export class LayoutEditor {
     }
   }
 
-  HandleMouseUpOnLayoutEnabled(args: IMsaglMouseEventArgs) {
+  HandleMouseUpOnLayoutEnabled(args: MouseEvent) {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.LeftMouseButtonWasPressed) {
       if (this.viewer.ObjectUnderMouseCursor != null) {
         this.AnalyzeLeftMouseButtonClick()
-        args.Handled = true
+        args.preventDefault()
       } else {
         this.UnselectEverything()
       }
@@ -995,7 +983,7 @@ export class LayoutEditor {
         this.InsertEdgeOnMouseUp()
       }
 
-      args.Handled = true
+      args.preventDefault()
     }
 
     this.Dragging = false
@@ -1082,7 +1070,7 @@ export class LayoutEditor {
     return geomEdge
   }
 
-  SelectEntitiesForDraggingWithRectangle(args: IMsaglMouseEventArgs) {
+  SelectEntitiesForDraggingWithRectangle(args: MouseEvent) {
     const rect = Rectangle.mkPP(this.mouseDownGraphPoint, this.viewer.ScreenToSource(args))
     for (const node of this.ViewerNodes()) {
       if (rect.intersects(geomNodeOfIViewerNode(node).boundingBox)) {
@@ -1090,10 +1078,10 @@ export class LayoutEditor {
       }
     }
 
-    args.Handled = true
+    args.preventDefault()
   }
 
-  ProcessRightClickOnSelectedEdge(e: IMsaglMouseEventArgs) {
+  ProcessRightClickOnSelectedEdge(e: MouseEvent) {
     this.mouseRightButtonDownPoint = this.viewer.ScreenToSource(e)
     this.cornerInfo = this.AnalyzeInsertOrDeletePolylineCorner(this.mouseRightButtonDownPoint, this.RadiusOfPolylineCorner)
     if (this.cornerInfo == null) {
@@ -1111,7 +1099,7 @@ export class LayoutEditor {
     //     viewer.PopupMenus(new [string, ()=>void]("Delete polyline corner", this.DeleteCorner), edgeRemoveCouple);
     // }
   }
-  CheckIfDraggingPolylineVertex(e: IMsaglMouseEventArgs) {
+  CheckIfDraggingPolylineVertex(e: MouseEvent) {
     return
     if (this.SelectedEdge != null && (GeomEdge.getGeom(this.SelectedEdge.edge) as GeomEdge).underlyingPolyline != null) {
       throw new Error('not implemented')
@@ -1133,23 +1121,6 @@ export class LayoutEditor {
 
   MouseScreenPointIsCloseEnoughToVertex(point: Point, radius: number): boolean {
     return point.sub(this.mouseDownGraphPoint).length < radius
-  }
-
-  static GetPressedButtons(e: IMsaglMouseEventArgs): MouseButtons {
-    let ret = MouseButtons.None
-    if (e.LeftButtonIsPressed) {
-      ret = ret | MouseButtons.Left
-    }
-
-    if (e.MiddleButtonIsPressed) {
-      ret = ret | MouseButtons.Middle
-    }
-
-    if (e.RightButtonIsPressed) {
-      ret = ret | MouseButtons.Right
-    }
-
-    return ret
   }
 
   //  Undoes the editing
@@ -1332,7 +1303,7 @@ export class LayoutEditor {
   // //                 this.SelectedEdge]);
   // // }
 
-  HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e: IMsaglMouseEventArgs) {
+  HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e: MouseEvent) {
     const oldNode: IViewerNode = this.SourceOfInsertedEdge
     const nodeBox: {node: IViewerNode} = {node: null}
     const portBox: {port: Port} = {port: null}
@@ -1344,7 +1315,7 @@ export class LayoutEditor {
     }
   }
 
-  MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: IMsaglMouseEventArgs) {
+  MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: MouseEvent) {
     if (this.SourcePort != null) {
       this.SetDraggingFlag(e)
       if (this.Dragging) {
@@ -1366,21 +1337,22 @@ export class LayoutEditor {
         }
       }
 
-      e.Handled = true
+      e.preventDefault()
     }
   }
 
-  MouseMoveLiveSelectObjectsForDragging(e: IMsaglMouseEventArgs) {
+  MouseMoveLiveSelectObjectsForDragging(e: MouseEvent) {
     this.UnselectEverything()
-    if (
-      this.ToggleEntityPredicate(this.viewer.ModifierKeys, this.PressedMouseButtons, true) &&
-      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift
-    ) {
+    if (this.LeftMouseIsPressed() && (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }
   }
 
-  DrawEdgeInteractivelyToLocation(e: IMsaglMouseEventArgs) {
+  LeftMouseIsPressed(): boolean {
+    return (this.PressedMouseButtons & 1) == 1
+  }
+
+  DrawEdgeInteractivelyToLocation(e: MouseEvent) {
     this.DrawEdgeInteractivelyToLocationP(this.viewer.ScreenToSource(e))
   }
 

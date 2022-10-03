@@ -4,7 +4,6 @@ import {FiEdge} from './fiEdge'
 import {FiNode, getFiNode} from './fiNode'
 import {Point} from '../../math/geometry'
 import {Edge} from '../../structs/edge'
-import {GeomNode} from '../core'
 import {FloatingPort} from '../core/floatingPort'
 import {IPsepColaSetting} from './iPsepColaSettings'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
@@ -16,6 +15,7 @@ import {KDTree, Particle} from './multipole/kdTree'
 import {MultipoleCoefficients} from './multipole/multipoleCoefficients'
 import {GeomObject} from '../core/geomObject'
 import {Graph} from '../../structs/graph'
+import {GeomNode} from '../core/geomNode'
 /** 
   Fast incremental layout is a force directed layout strategy with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
   It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.

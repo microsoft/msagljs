@@ -3,8 +3,7 @@ import {String, StringBuilder} from 'typescript-string-operations'
 import * as fs from 'fs'
 // @ts-ignore
 import xmlw from 'xml-writer'
-import {Rectangle, Point, ICurve, GeomGraph, GeomEdge, Node} from '../../src'
-import {LineSegment, Curve, Polyline} from '../../src/math/geometry'
+import {LineSegment, Curve, Polyline, ICurve, Point, Rectangle} from '../../src/math/geometry'
 import {BezierSeg} from '../../src/math/geometry/bezierSeg'
 import {DebugCurve} from '../../src/math/geometry/debugCurve'
 import {Ellipse} from '../../src/math/geometry/ellipse'
@@ -13,7 +12,9 @@ import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
 import {DrawingObject} from '../../src/drawing/drawingObject'
 import {DrawingEdge, DrawingNode} from '../../src/drawing'
 import {fontHeight} from './testUtils'
-
+import {GeomEdge} from '../../src/layout/core/geomEdge'
+import {GeomGraph} from '../../src/layout/core/geomGraph'
+import {Node} from '../../src/structs/node'
 // this function would be called by jest whenever it uses SvgDebugWriter
 beforeAll(() => {
   const dir = 'tmp'

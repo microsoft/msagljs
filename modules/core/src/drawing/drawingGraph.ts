@@ -1,10 +1,19 @@
 import {ArrowTypeEnum, DrawingEdge} from '.'
-import {Arrowhead, CurveFactory, Edge, GeomEdge, GeomGraph, GeomLabel, GeomNode, ICurve, Point, Rectangle, Size} from '..'
-import {Graph, Node} from '..'
+
 import {TextMeasurerOptions} from '.'
+import {Arrowhead} from '../layout/core/arrowhead'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {GeomLabel} from '../layout/core/geomLabel'
+import {GeomNode} from '../layout/core/geomNode'
+import {Size, Rectangle, Point, ICurve, CurveFactory} from '../math/geometry'
+import {Edge} from '../structs/edge'
+import {Node} from '../structs/node'
+import {Graph} from '../structs/graph'
 import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
 import {ShapeEnum} from './shapeEnum'
+import {Label} from '../structs/label'
 
 type GraphVisData = {
   sameRanks: string[][]
@@ -101,7 +110,8 @@ export class DrawingGraph extends DrawingNode {
         fontFamily: drawingEdge.fontname,
         fontStyle: 'normal',
       })
-      geomEdge.label = new GeomLabel(Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)), geomEdge)
+      const label = (e.label = new Label(e))
+      new GeomLabel(label, Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height)))
       drawingEdge.measuredTextSize = size
     }
     if (drawingEdge.penwidth) {

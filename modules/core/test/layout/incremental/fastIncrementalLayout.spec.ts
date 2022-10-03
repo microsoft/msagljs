@@ -1,16 +1,17 @@
 import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {GeomEdge, GeomGraph, GeomNode} from '../../../src/layout/core'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {IPsepCola} from '../../../src/layout/incremental/iPsepCola'
 import {IPsepColaSetting} from '../../../src/layout/incremental/iPsepColaSettings'
-import {CurveFactory, Point, Rectangle, Size} from '../../../src/math/geometry'
-import {AttributeRegistry, Edge, EdgeRoutingMode, Graph, layoutGeomGraph, Node, routeEdges} from '../../../src'
 import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
-import {InitialLayout} from '../../../src/layout/initialLayout/initialLayout'
 import {sortedList} from '../sortedBySizeListOfgvFiles'
 import {join} from 'path'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+import {GeomGraph} from '../../../src/layout/core/geomGraph'
+import {layoutGeomGraph} from '../../../src/layout/driver'
+import {Size} from '../../../src/math/geometry'
+import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
+import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
 
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)

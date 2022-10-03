@@ -6,7 +6,6 @@ import {Point} from '../../math/geometry'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Edge} from '../../structs/edge'
 import {Graph} from '../../structs/graph'
-import {IMsaglMouseEventArgs} from './iMsaglMouseEventArgs'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerGraph} from './iViewerGraph'
 import {IViewerNode} from './iViewerNode'
@@ -14,7 +13,7 @@ import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
 export interface IViewer {
   /** maps a point in the screen coordinates to the point in the graph coordinates*/
-  ScreenToSource(e: IMsaglMouseEventArgs): Point
+  ScreenToSource(e: MouseEvent): Point
   IncrementalDraggingModeAlways: boolean
 
   //  the scale to screen

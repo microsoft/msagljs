@@ -251,15 +251,11 @@ export class GeometryGraphEditor {
   }
 
   static ShiftDragEdge(delta: Point, geomObj: GeomObject) {
-    const edge = geomObj instanceof GeomEdge
-    if (edge) {
+    const isEdge = geomObj instanceof GeomEdge
+    if (isEdge) {
       geomObj.translate(delta)
-    } else {
-      const label = geomObj.label
-      if (label != null) {
-        GeometryGraphEditor.DragLabel(label, delta)
-      } else {
-        throw new Error()
+      if (geomObj.label) {
+        GeometryGraphEditor.DragLabel(geomObj.label, delta)
       }
     }
   }

@@ -11,14 +11,18 @@ import {
   buildRTree,
   intersectedObjects,
   AttributeRegistry,
-  Rectangle,
   GeomEdge,
-  Curve,
   Point,
+  CurveFactory,
+  LineSegment,
+  Rectangle,
+  ICurve,
+  Entity,
+  GeomObject,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects} from '../../../src/layout/core/geomGraph'
+import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects, HitTreeNodeType, PpEdge} from '../../../src/layout/core/geomGraph'
 import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
@@ -67,6 +71,7 @@ test('geom subgraphs', () => {
 })
 
 test('buildRTreeWithInterpolatedEdges', () => {
+  initRandom(1) // to remove randomness further on
   const g = parseDotGraph('graphvis/fsm.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   //create an edge with the arrowhead at source
@@ -85,9 +90,8 @@ test('buildRTreeWithInterpolatedEdges', () => {
   // centers are hit
   for (const n of g.deepNodes) {
     const gn = n.getAttr(AttributeRegistry.GeomObjectIndex)
-    const rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), gn.center)
     let found = false
-    for (const n of getGeomIntersectedObjects(rect, tree)) {
+    for (const n of getGeomIntersectedObjects(tree, slack, gn.center)) {
       if (n === gn) found = true
     }
     expect(found).toBe(true)
@@ -96,25 +100,39 @@ test('buildRTreeWithInterpolatedEdges', () => {
   // edges are hit
   for (const n of g.deepEdges) {
     const ge = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    if (ge.toString() == 'LR_8->LR_6') {
+      console.log(ge)
+    }
     const t = Math.random()
-    let rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd))
     let found = false
-    for (const n of getGeomIntersectedObjects(rect, tree)) {
+    const hitItems: Array<GeomObject> = Array.from(
+      getGeomIntersectedObjects(tree, slack, ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd)),
+    )
+    for (const n of hitItems) {
       if (n === ge) found = true
+    }
+    if (found == false) {
+      const p = ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd)
+      const rect = Rectangle.mkSizeCenter(new Size(slack * 2), p)
+      const hitItems: Array<HitTreeNodeType> = Array.from(tree.RootNode.AllHitItems(rect, null))
+      const subHitItems = hitItems.filter((i) => i instanceof Entity == false) as Array<PpEdge>
+
+      SvgDebugWriter.dumpICurves(
+        './tmp/debug.svg',
+        [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp.first, m.pp.second))),
+      )
     }
     expect(found).toBe(true)
     if (ge.targetArrowhead) {
-      rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), Point.middle(ge.curve.end, ge.targetArrowhead.tipPosition))
       found = false
-      for (const n of getGeomIntersectedObjects(rect, tree)) {
+      for (const n of getGeomIntersectedObjects(tree, slack, Point.middle(ge.curve.end, ge.targetArrowhead.tipPosition))) {
         if (n === ge) found = true
       }
       expect(found).toBe(true)
     }
     if (ge.sourceArrowhead) {
-      rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), Point.middle(ge.curve.start, ge.sourceArrowhead.tipPosition))
       found = false
-      for (const n of getGeomIntersectedObjects(rect, tree)) {
+      for (const n of getGeomIntersectedObjects(tree, slack, Point.middle(ge.curve.start, ge.sourceArrowhead.tipPosition))) {
         if (n === ge) found = true
       }
       expect(found).toBe(true)
@@ -125,9 +143,8 @@ test('buildRTreeWithInterpolatedEdges', () => {
     const ge = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
     const label = ge.label
     if (label == null) continue
-    const rect = Rectangle.mkSizeCenter(new Size(slack * 2, slack * 2), label.boundingBox.leftTop)
     let found = false
-    for (const n of getGeomIntersectedObjects(rect, tree)) {
+    for (const n of getGeomIntersectedObjects(tree, slack, label.boundingBox.leftTop)) {
       if (n === ge.label) found = true
     }
     expect(found).toBe(true)

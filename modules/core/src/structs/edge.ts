@@ -1,5 +1,6 @@
 import {Entity} from './entity'
 import {Graph} from './graph'
+import {Label} from './label'
 import {Node} from './node'
 
 /** characterize edge if it connects an node and its ancestor */
@@ -13,6 +14,7 @@ export enum ToAncestorEnum {
 }
 
 export class Edge extends Entity {
+  label: Label
   source: Node
   target: Node
   constructor(s: Node, t: Node) {

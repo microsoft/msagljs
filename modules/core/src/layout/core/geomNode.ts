@@ -8,8 +8,6 @@ import {PlaneTransformation} from './../../math/geometry/planeTransformation'
 import {Node} from './../../structs/node'
 import {GeomObject} from './geomObject'
 import {GeomEdge} from './geomEdge'
-import {GeomGraph} from './geomGraph'
-import {Graph} from '../../structs/graph'
 
 export type GeomNodeJSON = {
   boundaryCurve: ICurveJSON
@@ -148,18 +146,18 @@ export class GeomNode extends GeomObject {
   }
 
   underCollapsedGraph(): boolean {
-    const graph = <Graph>this.node.parent
+    const graph = this.node.parent
     if (graph == null) return false
-    const gGraph = GeomGraph.getGeom(graph)
+    const gGraph = GeomObject.getGeom(graph) as GeomNode
     if (gGraph == null) return false
     if (gGraph.isCollapsed) {
       return true
     }
     return gGraph.underCollapsedGraph()
   }
-  *getAncestors(): IterableIterator<GeomGraph> {
+  *getAncestors(): IterableIterator<GeomNode> {
     for (const g of this.node.getAncestors()) {
-      yield GeomObject.getGeom(g) as GeomGraph
+      yield GeomObject.getGeom(g) as GeomNode
     }
   }
 }

@@ -1,6 +1,8 @@
 ﻿// Class for creating Shape elements from a Graph.
 
-import {GeomGraph, GeomNode, GeomEdge} from '../layout/core'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {GeomNode} from '../layout/core/geomNode'
 import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
 import {Port} from '../layout/core/port'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'

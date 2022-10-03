@@ -16,9 +16,6 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Node} from '../../structs/node'
 import {PointPair} from '../../math/geometry/pointPair'
-import {RectangleNode} from '../../math/geometry/RTree/RectangleNode'
-import {HitTestBehavior} from '../../math/geometry/RTree/HitTestBehavior'
-import {GeomLabel} from './geomLabel'
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
   const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
@@ -42,7 +39,7 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 }
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
-export class GeomGraph extends GeomNode implements IGeomGraph {
+export class GeomGraph extends GeomNode {
   *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
     for (const n of this.graph.allSuccessorsWidthFirst()) {
       yield GeomNode.getGeom(n) as GeomNode
@@ -59,13 +56,6 @@ export class GeomGraph extends GeomNode implements IGeomGraph {
     }
     bb.padEverywhere(this.margins)
     return bb
-  }
-  private _isCollapsed = false
-  public get isCollapsed() {
-    return this._isCollapsed
-  }
-  public set isCollapsed(value) {
-    this._isCollapsed = value
   }
 
   static getGeom(attrCont: Graph): GeomGraph {
@@ -326,8 +316,8 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
       const cb = e.curve.boundingBox
       // cb.pad(e.lineWidth)
       t.b.addRecSelf(cb)
-      if (e.label != null) {
-        t.b.addRecSelf(e.label.boundingBox)
+      if (e.edge.label != null) {
+        t.b.addRecSelf(GeomObject.getGeom(e.edge.label).boundingBox)
       }
     }
   }
@@ -362,40 +352,44 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
 }
-/** {labelledEntity: Entity} - correspond to the object that has a label,
- *  but the corresponding rectangle fits the label
- * */
-type TreeNodeType = Node | {edge: Edge; pp: PointPair} | {labelledEntity: Entity}
-/** Let t be a TreeNodeType: if it is intersecting the square with the side 2*slack
- *  and the center at 'point', and filter(a) is true, where
- *  then the entity of t, or its label is returned */
 
-export function* getGeomIntersectedObjects(rect: Rectangle, tree: RTree<TreeNodeType, Point>): IterableIterator<GeomLabel | GeomObject> {
+export type PpEdge = {edge: Edge; pp: PointPair}
+export type HitTreeNodeType = Entity | PpEdge
+
+export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, slack: number, point: Point): IterableIterator<GeomObject> {
+  const rect = Rectangle.mkSizeCenter(new Size(slack * 2), point)
   for (const t of tree.RootNode.AllHitItems(rect, null)) {
-    if (t instanceof Node) {
-      yield GeomObject.getGeom(t)
-      continue
-    }
     if ('edge' in t) {
-      yield GeomObject.getGeom(t.edge)
-      continue
+      if (dist(point, t.pp.first, t.pp.second) < slack) {
+        yield GeomObject.getGeom(t.edge)
+      }
+    } else {
+      yield GeomObject.getGeom(t)
     }
-    yield GeomObject.getGeom(t.labelledEntity).label
+  }
+
+  function dist(p: Point, s: Point, e: Point): number {
+    const l = e.sub(s)
+    const len = l.length
+    if (len < 1.0 / 10) {
+      return p.sub(Point.middle(s, e)).length
+    }
+
+    const perp = l.rotate90Cw()
+    return Math.abs(p.sub(s).dot(perp)) / len
   }
 }
 
-export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<TreeNodeType, Point> {
-  const nodes: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
-  const nodeLabels: Array<[Rectangle, TreeNodeType]> = Array.from(graph.deepNodes)
-    .filter((n) => GeomNode.getGeom(n).label != null)
-    .map((n) => [GeomNode.getGeom(n).label.boundingBox, n])
-  const edgesPlusEdgeLabels: Array<[Rectangle, TreeNodeType]> = []
+export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<HitTreeNodeType, Point> {
+  const nodes: Array<[Rectangle, HitTreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
+
+  const edgesPlusEdgeLabels: Array<[Rectangle, HitTreeNodeType]> = []
   for (const e of graph.deepEdges) {
     const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
     if (ge.label) {
-      edgesPlusEdgeLabels.push([ge.label.boundingBox, {labelledEntity: e}])
+      edgesPlusEdgeLabels.push([ge.label.boundingBox, e.label])
     }
-    const poly = interpolateICurve(ge.curve, slack)
+    const poly = interpolateICurve(ge.curve, slack / 2)
     if (ge.sourceArrowhead) {
       edgesPlusEdgeLabels.push([
         Rectangle.mkPP(ge.sourceArrowhead.tipPosition, ge.curve.start),
@@ -412,6 +406,6 @@ export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RT
       ])
     }
   }
-  const t = nodes.concat(nodeLabels).concat(edgesPlusEdgeLabels)
+  const t = nodes.concat(edgesPlusEdgeLabels)
   return mkRTree(t)
 }

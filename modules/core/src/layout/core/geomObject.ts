@@ -2,7 +2,6 @@ import {Attribute} from '../../structs/attribute'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Rectangle} from './../../math/geometry/rectangle'
-import {GeomLabel} from './geomLabel'
 /** represents a set of functions to handle an event */
 export class EventHandler {
   forEach(action: (a: any) => any) {
@@ -23,6 +22,7 @@ export class EventHandler {
 export abstract class GeomObject extends Attribute {
   abstract boundingBox: Rectangle
   BeforeLayoutChangeEvent: EventHandler
+  isCollapsed: boolean
   constructor(entity: Entity) {
     super(entity, AttributeRegistry.GeomObjectIndex)
   }
@@ -33,5 +33,4 @@ export abstract class GeomObject extends Attribute {
     const p = this.entity.parent
     return p ? GeomObject.getGeom(p) : null
   }
-  label: GeomLabel
 }

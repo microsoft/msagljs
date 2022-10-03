@@ -11,7 +11,8 @@ export class Size {
   }
   width: number
   height: number
-  constructor(width: number, height: number) {
+  /** creates a square if called with width only */
+  constructor(width: number, height = width) {
     this.width = width
     this.height = height
   }

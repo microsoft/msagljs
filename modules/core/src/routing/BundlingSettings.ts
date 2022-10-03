@@ -1,4 +1,5 @@
-import {GeomEdge} from '../layout/core'
+import {GeomEdge} from '../layout/core/geomEdge'
+
 export type BundlingSettingsJSON = {
   capacityOverflowCoefficient?: number
   RotateBundles?: boolean

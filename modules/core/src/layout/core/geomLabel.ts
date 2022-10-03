@@ -1,8 +1,11 @@
 import {Rectangle, Size} from './../../math/geometry/rectangle'
-import {GeomObject, Point} from '../..'
-import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 
-export class GeomLabel {
+import {PlaneTransformation} from '../../math/geometry/planeTransformation'
+import {Point} from '../../math/geometry'
+import {GeomObject} from './geomObject'
+import {Label} from '../../structs/label'
+
+export class GeomLabel extends GeomObject {
   private _isPositioned = false
   public get isPositioned(): boolean {
     return this._isPositioned
@@ -14,12 +17,11 @@ export class GeomLabel {
   AttachmentSegmentEnd: Point
   /** this field is needed for interactive editing */
   AttachmentSegmentStart: Point
-  parent: GeomObject
-  constructor(size: Size, parent: GeomObject) {
+  constructor(entity: Label, size: Size) {
+    super(entity)
     if (size) {
       this.boundingBox = Rectangle.mkPP(new Point(0, 0), new Point(size.width, size.height))
     }
-    this.parent = parent
   }
   private _boundingBox: Rectangle
   public get boundingBox(): Rectangle {
@@ -28,6 +30,7 @@ export class GeomLabel {
   private set boundingBox(value: Rectangle) {
     this._boundingBox = value
   }
+
   setBoundingBox(b: Rectangle) {
     this.isPositioned = true
     this._boundingBox = b

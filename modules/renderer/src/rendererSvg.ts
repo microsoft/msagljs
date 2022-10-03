@@ -1,23 +1,30 @@
-import {DrawingGraph, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from 'msagl-js/drawing'
+import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from 'msagl-js/drawing'
 import {layoutGraph} from './layout'
-import {AttributeRegistry, Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point} from 'msagl-js'
+import {
+  AttributeRegistry,
+  buildRTreeWithInterpolatedEdges,
+  Edge,
+  EventHandler,
+  GeomEdge,
+  GeomGraph,
+  GeomHitTreeNodeType,
+  GeomLabel,
+  GeomNode,
+  GeomObject,
+  getGeomIntersectedObjects,
+  Graph,
+  PlaneTransformation,
+  Point,
+  Rectangle,
+  Size,
+} from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
-
-/** convert MouseEvent to the msagl internal representation */
-class MSAGLEventArgs implements IMsaglMouseEventArgs {
-  LeftButtonIsPressed = false
-  MiddleButtonIsPressed = false
-  RightButtonIsPressed = false
-  Handled = false
-  X: number
-  Y: number
-  Clicks = 0
-}
+import {RTree} from 'msagl-js/src/math/geometry/RTree/rTree'
 
 /**
  * Renders an MSAGL graph with SVG
@@ -60,63 +67,54 @@ export class RendererSvg implements IViewer {
   private _textMeasurer: TextMeasurer
   private _svgCreator: SvgCreator
 
-  private mousePosititonX: number
-  private mousePosititonY: number
+  private objectTree: RTree<GeomHitTreeNodeType, Point>
+
+  private processMouseMove(sender: any, e: MouseEvent): void {
+    if (this == null || this._svgCreator == null) {
+      return null
+    }
+    if (this.objectTree == null) {
+      this.objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
+    }
+    let elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
+    if (elems.length == 0) return
+    elems = elems.filter((e) => filterEdgesCloseBy(e))
+    elems.sort((a, b) => {
+      const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
+      const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
+      if (atype != btype) return atype - btype
+
+      if (atype == 2) return 0 // both are GeomLabels
+
+      return depth(a as GeomObject) - depth(b as GeomObject)
+      function depth(a: GeomObject) {
+        let d = 0
+        let p = a.entity.parent
+        while (p) {
+          d++
+          p = p.parent
+        }
+        return d
+      }
+    })
+    const favorite = elems[0]
+
+    this.ObjectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
+  }
 
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
-    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, this.toMsaglEvent(a)))
+
+    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, a))
     container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
-    container.addEventListener('mousemove', (a) => {
-      this.mousePosititonX = a.clientX
-      this.mousePosititonY = a.clientY
-    })
-    container.addEventListener('keydown', (event) => this.keyDown(event))
 
-    container.addEventListener('keyup', (event) => this.keyUp(event))
-
-    this.MouseMove.subscribe(() => {
-      if (this == null || this._svgCreator == null) {
-        return null
-      }
-      //  console.log(this.Transform)
-    })
+    this.MouseMove.subscribe(this.processMouseMove.bind(this))
 
     this.layoutEditor = new LayoutEditor(this)
     this.LayoutEditingEnabled = true
   }
-  keyDown(event: KeyboardEvent): any {
-    if (event.shiftKey) {
-      this.ModifierKeys |= ModifierKeysEnum.Shift
-    }
-    if (event.ctrlKey) {
-      this.ModifierKeys |= ModifierKeysEnum.Control
-    }
-    // todo - handle other keys if needed
-  }
-  keyUp(event: KeyboardEvent): any {
-    this.ModifierKeys = ModifierKeysEnum.None
-  }
-  toMsaglEvent(a: MouseEvent): IMsaglMouseEventArgs {
-    const ret = new MSAGLEventArgs()
-    switch (a.button) {
-      case 0:
-        ret.LeftButtonIsPressed = true
-        break
-      case 4:
-        ret.MiddleButtonIsPressed = true
-        break
-      case 2:
-        ret.RightButtonIsPressed = true
-        break
-    }
-    ret.X = a.clientX
-    ret.Y = a.clientY
-    return ret
-  }
-
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
@@ -173,8 +171,8 @@ export class RendererSvg implements IViewer {
     return this._svgCreator ? this._svgCreator.svg : null
   }
   /** maps the screen coordinates to the graph coordinates */
-  ScreenToSource(e: IMsaglMouseEventArgs): Point {
-    return this.ScreenToSourceP(e.X, e.Y)
+  ScreenToSource(e: MouseEvent): Point {
+    return this.ScreenToSourceP(e.clientX, e.clientY)
   }
 
   /** maps the screen coordinates to the graph coordinates */
@@ -199,23 +197,14 @@ export class RendererSvg implements IViewer {
   MouseUp: EventHandler = new EventHandler()
   GraphChanged: EventHandler = new EventHandler()
 
+  _objectUnderMouse: IViewerObject
+
   ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
   get ObjectUnderMouseCursor(): IViewerObject {
-    const l = document.elementFromPoint(this.mousePosititonX, this.mousePosititonY)
-    if (l) {
-      const entity = this._svgCreator.findEntity(l)
-      if (entity) {
-        console.log(entity.toString())
-        if (entity.parent == null) {
-          // it is the whole graph!
-          return null
-        }
-        return entity.getAttr(AttributeRegistry.ViewerIndex)
-      }
-    }
-
-    return null
-    //return ret.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+    return this._objectUnderMouse
+  }
+  set ObjectUnderMouseCursor(value) {
+    this._objectUnderMouse = value
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
@@ -300,4 +289,7 @@ export class RendererSvg implements IViewer {
   get Transform(): PlaneTransformation {
     return this._svgCreator.getTransform()
   }
+}
+function filterEdgesCloseBy(e: GeomObject | GeomLabel): boolean {
+  if (!(e instanceof GeomEdge)) return true
 }

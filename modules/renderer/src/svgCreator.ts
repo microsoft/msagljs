@@ -5,6 +5,7 @@ import {
   GeomGraph,
   GeomNode,
   Graph,
+  Label,
   ICurve,
   Point,
   Node,
@@ -68,6 +69,7 @@ class SvgViewerNode extends SvgViewerObject implements IViewerNode {
   }
   IsCollapsedChanged: EventHandler
 }
+class SvgViewerLabel extends SvgViewerObject implements IViewerObject {}
 class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
   RadiusOfPolylineCorner: number
   SelectedForEditing: boolean
@@ -80,31 +82,18 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 export class SvgCreator {
   Invalidate(objectToInvalidate: IViewerObject) {
     const svgViewerObj = objectToInvalidate as SvgViewerObject
-    const entity = this.findEntity(svgViewerObj.svgData)
     const svgElem = svgViewerObj.svgData as Element
     svgElem.parentElement.removeChild(svgElem)
-
+    const entity = svgViewerObj.entity
     if (entity instanceof Node) {
       this.drawNode(entity)
     } else if (entity instanceof Edge) {
       this.drawEdge(entity)
-    } else {
+    } else if (entity instanceof Label) {
       throw new Error('not implemented')
     }
   }
 
-  svgToIViewerObj = new Map<Element, Entity>()
-  findEntity(l: Element): Entity {
-    do {
-      const ret = this.svgToIViewerObj.get(l)
-      if (ret) {
-        return ret
-      }
-      l = l.parentElement
-    } while (l)
-    return null
-  }
-  private panZoom: PanZoom
   getSvgString(): string {
     if (this.svg == null) return null
     return new XMLSerializer().serializeToString(this.svg)
@@ -148,7 +137,7 @@ export class SvgCreator {
     }
 
     this.container.appendChild(this.svg)
-    this.panZoom = svgPanZoom(this.svg)
+    svgPanZoom(this.svg) // it seems enough for these operations
   }
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
@@ -166,6 +155,7 @@ export class SvgCreator {
   private drawEdge(edge: Edge) {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
     const edgeGroup = this.createAndBindWithGraph(edge, 'g')
+    this.transformGroup.appendChild(edgeGroup)
     const path = document.createElementNS(svgns, 'path')
     edgeGroup.appendChild(path)
     path.setAttribute('fill', 'none')
@@ -175,13 +165,12 @@ export class SvgCreator {
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.AddArrows(edge, edgeGroup)
     this.DrawEdgeLabel(edge, edgeGroup)
-    this.transformGroup.appendChild(edgeGroup)
   }
 
   private DrawEdgeLabel(edge: Edge, group: SVGElement) {
+    if (edge.label == null) return
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
-    const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
-    const label = geometryEdge.label
+    const label = edge.label.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!label) return
     this.drawLabelAtXY(de, label.boundingBox, group)
   }
@@ -346,20 +335,16 @@ export class SvgCreator {
     const svgElement = document.createElementNS(svgns, name)
     const existingViewerObj = entity ? (entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject) : null
     if (existingViewerObj) {
-      this.svgToIViewerObj.delete(existingViewerObj.svgData)
       existingViewerObj.svgData = svgElement
-    } else {
-      if (entity instanceof Graph) {
-        new SvgViewerGraph(entity, svgElement)
-      } else if (entity instanceof Node) {
-        new SvgViewerNode(entity, svgElement)
-      } else if (entity instanceof Edge) {
-        new SvgViewerEdge(entity, svgElement)
-      } else {
-        new SvgViewerObject(entity, svgElement)
-      }
+    } else if (entity instanceof Graph) {
+      new SvgViewerGraph(entity, svgElement)
+    } else if (entity instanceof Node) {
+      new SvgViewerNode(entity, svgElement)
+    } else if (entity instanceof Edge) {
+      new SvgViewerEdge(entity, svgElement)
+    } else if (entity instanceof Label) {
+      new SvgViewerLabel(entity, svgElement)
     }
-    this.svgToIViewerObj.set(svgElement, entity)
 
     return svgElement
   }

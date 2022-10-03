@@ -1,4 +1,3 @@
-import {IMsaglMouseEventArgs} from './layoutEditing/iMsaglMouseEventArgs'
 import {IViewer} from './layoutEditing/iViewer'
 import {IViewerEdge} from './layoutEditing/iViewerEdge'
 import {IViewerGraph} from './layoutEditing/iViewerGraph'
@@ -25,4 +24,4 @@ export type TextMeasurerOptions = {
   fontStyle: 'normal' | 'italic' | 'oblique'
   fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | number
 }
-export {LayoutEditor, IViewer, IMsaglMouseEventArgs, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum}
+export {LayoutEditor, IViewer, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum}

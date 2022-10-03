@@ -1,7 +1,7 @@
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {CancelToken} from '../../utils/cancelToken'
-import {GeomGraph} from '../core'
 import {CommonLayoutSettings} from '../commonLayoutSettings'
+import {GeomGraph} from '../core/geomGraph'
 import {ILayoutSettings} from '../iLayoutSettings'
 import {IPsepCola} from './iPsepCola'
 

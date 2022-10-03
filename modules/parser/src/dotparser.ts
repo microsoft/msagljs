@@ -18,6 +18,8 @@ import {
   RectJSON,
   Arrowhead,
   GeomLabel,
+  Label,
+  AttributeRegistry,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -34,7 +36,6 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
-import {AttributeRegistry} from 'msagl-js/src/structs/attributeRegistry'
 // import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
@@ -88,10 +89,11 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           break
         }
         case 'geomEdgeLabel': {
-          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
           const json = JSON.parse(str) as RectJSON
-          geomEdge.label = new GeomLabel(null, geomEdge)
-          geomEdge.label.setBoundingBox(new Rectangle(json))
+          const edge = entity as Edge
+          createEdgeLabelIfNeeded(edge)
+          const geomLabel = new GeomLabel(edge.label, new Rectangle(json))
+          geomLabel.setBoundingBox(new Rectangle(json))
           break
         }
         // end of geometry attributes
@@ -147,6 +149,10 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
             } while (true)
           } else if (typeof str === 'number') {
             drawingObj.labelText = str.toString()
+          }
+
+          if (entity instanceof Edge) {
+            createEdgeLabelIfNeeded(entity)
           }
 
           break
@@ -394,6 +400,12 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
       }
     } else {
       throw new Error('unexpected type ' + attr.type)
+    }
+  }
+
+  function createEdgeLabelIfNeeded(edge: Edge) {
+    if (edge.label == null) {
+      edge.label = new Label(edge)
     }
   }
 }
@@ -845,8 +857,8 @@ function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
     if (geomEdge.targetArrowhead) {
       yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
     }
-    if (geomEdge.label) {
-      const bb = geomEdge.labelBBox
+    if (edge.label) {
+      const bb = edge.label.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox
       const rJSON = {left: bb.left, right: bb.right, top: bb.top, bottom: bb.bottom}
       yield {type: 'attr', id: 'geomEdgeLabel', eq: JSON.stringify(rJSON)}
     }

@@ -1,7 +1,9 @@
-import {GeomNode, CurveFactory, Point, Rectangle, Node} from '../../../src'
-import {DebugCurve} from '../../../src/math/geometry/debugCurve'
+import {GeomNode} from '../../../src/layout/core/geomNode'
+import {CurveFactory, Point, Rectangle} from '../../../src/math/geometry'
 import {closeDistEps} from '../../../src/utils/compare'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+import {Node} from '../../../src/structs/node'
+
+//import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 test('no boundary curve', () => {
   const gn = new GeomNode(null)
@@ -14,7 +16,7 @@ test('node fit', () => {
   const rect = new Rectangle({left: 70, right: 111, top: 111, bottom: 0})
 
   n.boundingBox = rect
-  SvgDebugWriter.dumpDebugCurves('./tmp/fit.svg', [DebugCurve.mkDebugCurveI(boundary), DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)])
+  //SvgDebugWriter.dumpDebugCurves('./tmp/fit.svg', [DebugCurve.mkDebugCurveI(boundary), DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)])
   const p = new Point(50, 90)
   n.center = p
 

@@ -1,8 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {parseDot} from '../src/dotparser'
-import {Color, DrawingNode, DrawingGraph} from '../../core/src/drawing'
+import {Color, DrawingNode, DrawingGraph, DrawingEdge} from '../../core/src/drawing'
 import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
+import {AttributeRegistry} from 'msagl-js'
 
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
@@ -40,21 +41,27 @@ test('parse with colors ', () => {
   const dotString =
     'digraph G {\n' +
     'node [style=filled, shape=box]\n' +
-    'ddddddd [fontcolor=yellow, fillcolor=blue, color=orange]\n' +
+    'd [fontcolor=yellow, fillcolor=blue, color=orange]\n' +
     'subgraph clusterA {\n' +
     '  style=filled\n' +
     '  fillcolor=lightgray\n' +
     'pencolor=blue\n' +
-    'eeeee [peripheries=3, fontcolor=red, color=yellow]\n' +
-    'eeeee -> ee\n' +
+    'e [peripheries=3, fontcolor=red, color=yellow]\n' +
+    'e -> ee\n' +
     '}\n' +
-    'ddddddd -> eeeee [labelfontcolor=chocolate, headlabel=headlabel, label=flue, fontcolor=green, color=lightblue]\n' +
+    'd -> e [labelfontcolor=chocolate, headlabel=headlabel, label=flue, fontcolor=green, color=lightblue]\n' +
     '}'
   const graph = parseDot(dotString)
   expect(graph != null).toBe(true)
   const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
-  const ddNode: DrawingNode = drawingGraph.findNode('ddddddd')
+  const ddNode: DrawingNode = drawingGraph.findNode('d')
   expect(ddNode != null).toBe(true)
-  expect(ddNode.node.id).toBe('ddddddd')
+  expect(ddNode.node.id).toBe('d')
   expect(Color.equal(ddNode.color, Color.Orange)).toBe(true)
+  for (const e of graph.deepEdges) {
+    const de = e.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingEdge
+    if (de.labelText && de.labelText.length > 0) {
+      expect(e.label != null).toBe(true)
+    }
+  }
 })

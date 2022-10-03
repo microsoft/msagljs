@@ -4,7 +4,6 @@ import {Point} from '../../../src'
 import {GeomConstants, Curve, CurveFactory, LineSegment} from '../../../src/math/geometry'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
-import {GeneralMetroMapOrdering} from '../../../src/routing/spline/bundling/GeneralMetroMapOrdering'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 test('ellipse value test', () => {

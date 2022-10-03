@@ -11,6 +11,10 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 
 export class GeomEdge extends GeomObject {
+  get label(): GeomLabel {
+    return this.edge != null && this.edge.label != null ? (GeomObject.getGeom(this.edge.label) as GeomLabel) : null
+  }
+
   RaiseLayoutChangeEvent(delta: Point) {
     this.edge.raiseEvents(delta)
   }
@@ -85,10 +89,6 @@ export class GeomEdge extends GeomObject {
     if (this.label) this.label.transform(matrix)
   }
   underlyingPolyline: SmoothedPolyline
-  label: GeomLabel
-  get labelBBox() {
-    return this.label.boundingBox
-  }
   get edge(): Edge {
     return this.entity as Edge
   }

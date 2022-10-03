@@ -1,5 +1,4 @@
 import {Algorithm} from '../../utils/algorithm'
-import {GeomGraph, MdsLayoutSettings} from '../../'
 import {IPsepCola} from '../incremental/iPsepCola'
 import {IPsepColaSetting} from '../incremental/iPsepColaSettings'
 import {MdsGraphLayout} from '../mds/mDSGraphLayout'
@@ -9,6 +8,8 @@ import {GeomConnectedComponent} from './geomConnectedComponent'
 import {LayoutAlgorithmHelpers} from './layoutAlgorithmHelpers'
 import {Assert} from '../../utils/assert'
 import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
+import {GeomGraph} from '../core/geomGraph'
+import {MdsLayoutSettings} from '../mds/mDSLayoutSettings'
 
 //  Methods for obtaining an initial layout of a graph using various means.
 

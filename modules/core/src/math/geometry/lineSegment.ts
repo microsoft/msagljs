@@ -226,7 +226,7 @@ return xx;
     return LineSegment.mkPP(this.start.clone(), this.end.clone())
   }
 
-  static closestParameterOnLineSegment(point: Point, segmentStart: Point, segmentEnd: Point) {
+  static closestParameterOnLineSegment(point: Point, segmentStart: Point, segmentEnd: Point): number {
     const bc = segmentEnd.sub(segmentStart)
     const ba = point.sub(segmentStart)
     const c1 = bc.dot(ba)

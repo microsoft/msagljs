@@ -4,7 +4,7 @@ import {LineSegment, Curve, GeomConstants, Polyline} from '../../../src/math/geo
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {IntersectionInfo} from '../../../src/math/geometry/intersectionInfo'
 import {closeDistEps} from '../../../src/utils/compare'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+// import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 function paddingIsCorrectOnLineSeg(ls: LineSegment, anchor: Anchor, angle: number) {
   const xWithPadded = Curve.getAllIntersections(ls, anchor.polygonalBoundary, true)
@@ -89,6 +89,6 @@ test('anchor poly cw padded', () => {
   anchor.padding = 8
   const poly = anchor.polygonalBoundary
   expect(poly == null).toBe(false)
-  SvgDebugWriter.dumpICurves('./tmp/anchorCwBounded.svg', [poly, n.boundaryCurve])
+  //  SvgDebugWriter.dumpICurves('./tmp/anchorCwBounded.svg', [poly, n.boundaryCurve])
   paddingIsCorrect(anchor)
 })

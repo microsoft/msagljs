@@ -3,8 +3,11 @@ import {GeomConstants, ICurve, Point, Rectangle, Size} from '../math/geometry'
 import {RTree, mkRTree} from '../math/geometry/RTree/rTree'
 import {Algorithm} from '../utils/algorithm'
 import {CancelToken} from '../utils/cancelToken'
-import {closeDistEps, comparePointsXY} from '../utils/compare'
-import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from './core'
+import {closeDistEps} from '../utils/compare'
+import {GeomEdge} from './core/geomEdge'
+import {GeomGraph} from './core/geomGraph'
+import {GeomLabel} from './core/geomLabel'
+import {GeomNode} from './core/geomNode'
 
 export enum LabelPlacementResult {
   /**

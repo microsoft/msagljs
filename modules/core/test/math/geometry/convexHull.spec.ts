@@ -1,8 +1,6 @@
 import {Point} from '../../../src'
 import {Polyline, Curve, PointLocation} from '../../../src/math/geometry'
 import {ConvexHull} from '../../../src/math/geometry/convexHull'
-import {DebugCurve} from '../../../src/math/geometry/debugCurve'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 test('repeated points', () => {
   const expected = [new Point(0, 0), new Point(10, 0), new Point(10, 10), new Point(0, 10)]

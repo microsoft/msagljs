@@ -42,7 +42,7 @@ class Routing {
     const w = e.lineWidth / 2
     const shift = curveClosestPoint.sub(labelSideClosest)
     const shiftLength = shift.length
-    //  SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.LabelBBox));
+    //  SugiyamaLayoutSettings.Show(e.Curve, shiftLength > 0 ? new LineSegment(curveClosestPoint, labelSideClosest) : null, PolyFromBox(e.label.boundingBox));
     if (shiftLength > w) e.label.positionCenter(e.label.center.add(shift.div(shiftLength * (shiftLength - w))))
   }
 
@@ -50,14 +50,14 @@ class Routing {
     let labelSide: LineSegment = null
     if (anchor.labelIsToTheRightOfTheSpline) {
       e.label.positionCenter(new Point(anchor.x + anchor.rightAnchor / 2, anchor.y))
-      labelSide = LineSegment.mkPP(e.labelBBox.leftTop, e.labelBBox.leftBottom)
+      labelSide = LineSegment.mkPP(e.label.boundingBox.leftTop, e.label.boundingBox.leftBottom)
     } else if (anchor.labelIsToTheLeftOfTheSpline) {
       e.label.positionCenter(new Point(anchor.x - anchor.leftAnchor / 2, anchor.y))
-      labelSide = LineSegment.mkPP(e.labelBBox.rightTop, e.labelBBox.rightBottom)
+      labelSide = LineSegment.mkPP(e.label.boundingBox.rightTop, e.label.boundingBox.rightBottom)
     }
     const segmentInFrontOfLabel = Routing.GetSegmentInFrontOfLabel(e.curve, e.label.center.y)
     if (segmentInFrontOfLabel == null) return
-    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.labelBBox), false).length === 0) {
+    if (Curve.getAllIntersections(e.curve, Curve.polyFromBox(e.label.boundingBox), false).length === 0) {
       const t = Routing.FindClosestPoints(segmentInFrontOfLabel, labelSide)
       if (t) {
         //shift the label if needed
