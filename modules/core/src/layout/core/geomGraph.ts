@@ -360,7 +360,7 @@ export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, 
   const rect = Rectangle.mkSizeCenter(new Size(slack * 2), point)
   for (const t of tree.RootNode.AllHitItems(rect, null)) {
     if ('edge' in t) {
-      if (dist(point, t.pp.first, t.pp.second) < slack) {
+      if (dist(point, t.pp._first, t.pp._second) < slack) {
         yield GeomObject.getGeom(t.edge)
       }
     } else {

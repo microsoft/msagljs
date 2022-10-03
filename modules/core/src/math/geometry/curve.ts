@@ -1673,7 +1673,7 @@ function isCloseToLineSeg(a: number, ap: Point, b: number, bp: Point, s: ICurve,
   if (s instanceof LineSegment) return true
   for (const x of [1 / 3, 0.5, 2 / 3]) {
     const p = a * x + b * (1 - x) // the parameter on the curve s
-    const pointsAreClose = Point.closeSquare(s.value(p), Point.mkPoint(x, ap, 1 - x, bp), e)
+    const pointsAreClose = Point.closeSquare(s.value(p), Point.mkPoint(x, ap, 1 - x, bp), e * e)
     if (pointsAreClose === false) {
       return false
     }

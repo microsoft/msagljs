@@ -64,7 +64,7 @@ export class PathFixer {
       r.pad(GeomConstants.intersectionEpsilon)
       treeOfVertices.Add(r, vertex.point)
     }
-    const treeOfEdges = createRectangleNodeOnData(this.Edges(), (e) => Rectangle.mkPP(e.First, e.Second))
+    const treeOfEdges = createRectangleNodeOnData(this.Edges(), (e) => Rectangle.mkPP(e.first, e.second))
 
     CrossRectangleNodesSameType<PointPair, Point>(treeOfEdges, treeOfEdges, (a, b) =>
       this.IntersectTwoEdges.bind(a, b, splittingPoints, treeOfVertices),
@@ -97,7 +97,7 @@ export class PathFixer {
 
   SortInsideSegment(edge: PointPair, list: Array<Point>) {
     //System.Diagnostics.Debug.Assert(list.Count > 0, "an edge should not be present with an empty list");
-    list.sort((a, b) => compareNumbers(distPP(a, edge.First), distPP(b, edge.First)))
+    list.sort((a, b) => compareNumbers(distPP(a, edge.first), distPP(b, edge.first)))
   }
 
   InsertPointsIntoPolylines(splittingPoints: PointPairMap<Array<Point>>): boolean {
@@ -124,7 +124,7 @@ export class PathFixer {
 
   InsertPointsOnPolypoint(pp: PolylinePoint, splittingPoints: PointPairMap<Array<Point>>, metroline: Metroline): boolean {
     const pointPair = new PointPair(pp.point, pp.next.point)
-    const reversed = pp.point !== pointPair.First
+    const reversed = pp.point !== pointPair.first
     const list: Array<Point> = splittingPoints.get(pointPair)
     if (!list) {
       return false
@@ -237,7 +237,7 @@ export class PathFixer {
   }
 
   IntersectTwoEdges(a: PointPair, b: PointPair, splittingPoints: PointPairMap<Array<Point>>, tree: RTree<Point, Point>) {
-    const x: Point = LineSegment.IntersectPPPP(a.First, a.Second, b.First, b.Second)
+    const x: Point = LineSegment.IntersectPPPP(a.first, a.second, b.first, b.second)
     if (x) {
       const vertex: Point = this.FindExistingVertexOrCreateNew(tree, x)
       if (this.AddVertexToSplittingList(a, splittingPoints, vertex) || this.AddVertexToSplittingList(b, splittingPoints, vertex)) {
@@ -261,7 +261,7 @@ export class PathFixer {
   AddVertexToSplittingList(a: PointPair, splittingPoints: PointPairMap<Array<Point>>, intersectionPoint: Point): boolean {
     //let t: number
     //Assert.assert(Point.distToLineSegment(intersectionPoint, a.First, a.Second, /* out */ t) < ApproximateComparer.IntersectionEpsilon)
-    if (!Curve.closeIntersectionPoints(intersectionPoint, a.First) && !Curve.closeIntersectionPoints(intersectionPoint, a.Second)) {
+    if (!Curve.closeIntersectionPoints(intersectionPoint, a.first) && !Curve.closeIntersectionPoints(intersectionPoint, a.second)) {
       let list: Array<Point> = splittingPoints.get(a)
       if (!list) {
         list = new Array<Point>()

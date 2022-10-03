@@ -26,7 +26,7 @@ export class GeneralMetroMapOrdering {
   *GetOrder(u: Station, v: Station): IterableIterator<Metroline> {
     const pointPair = new PointPair(u.Position, v.Position)
     const orderedMetrolineListForUv = this.bundles.get(pointPair).Metrolines
-    if (u.Position === pointPair.First) {
+    if (u.Position === pointPair.first) {
       for (let i = 0; i < orderedMetrolineListForUv.length; i++) {
         yield orderedMetrolineListForUv[i]
       }
@@ -40,7 +40,7 @@ export class GeneralMetroMapOrdering {
   /**   Get the index of line on the edge (u->v) and node u */
   GetLineIndexInOrder(u: Station, v: Station, ml: Metroline): number {
     const pp = new PointPair(u.Position, v.Position)
-    const reversed = u.Position !== pp.First // we can use the object comparison here because there is no cloning in PointPair
+    const reversed = u.Position !== pp.first // we can use the object comparison here because there is no cloning in PointPair
     const d = this.bundles.get(pp).LineIndexInOrder
     return !reversed ? d.get(ml) : d.size - 1 - d.get(ml)
   }
@@ -72,7 +72,7 @@ export class GeneralMetroMapOrdering {
       return
     }
 
-    order.Metrolines.sort((line0, line1) => this.CompareLines(line0, line1, pair.First, pair.Second))
+    order.Metrolines.sort((line0, line1) => this.CompareLines(line0, line1, pair.first, pair.second))
     // save order
     order.orderFixed = true
     order.LineIndexInOrder = new Map<Metroline, number>()
@@ -106,7 +106,7 @@ export class GeneralMetroMapOrdering {
     while ((p00 = prev0(p0)) != null && (p11 = prev1(p1)) != null && p00.point.equal(p11.point)) {
       const edge = new PointPair(p00.point, p0.point)
       if (this.bundles.get(edge).orderFixed) {
-        return this.CompareOnFixedOrder(edge, ml0, ml1, !p00.point.equal(edge.First))
+        return this.CompareOnFixedOrder(edge, ml0, ml1, !p00.point.equal(edge.first))
       }
 
       p0 = p00
@@ -125,7 +125,7 @@ export class GeneralMetroMapOrdering {
     while ((p00 = next0(p0)) != null && (p11 = next1(p1)) != null && p00.point.equal(p11.point)) {
       const edge = new PointPair(p00.point, p0.point)
       if (this.bundles.get(edge).orderFixed) {
-        return this.CompareOnFixedOrder(edge, ml0, ml1, !p0.point.equal(edge.First))
+        return this.CompareOnFixedOrder(edge, ml0, ml1, !p0.point.equal(edge.first))
       }
 
       p0 = p00

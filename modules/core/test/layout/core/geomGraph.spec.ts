@@ -70,8 +70,18 @@ test('geom subgraphs', () => {
   expect(bIndex > aaIndex).toBe(true)
 })
 
+function dist(p: Point, s: Point, e: Point): number {
+  const l = e.sub(s)
+  const len = l.length
+  if (len < 1.0 / 10) {
+    return p.sub(Point.middle(s, e)).length
+  }
+
+  const perp = l.rotate90Cw()
+  return Math.abs(p.sub(s).dot(perp)) / len
+}
+
 test('buildRTreeWithInterpolatedEdges', () => {
-  initRandom(1) // to remove randomness further on
   const g = parseDotGraph('graphvis/fsm.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   //create an edge with the arrowhead at source
@@ -82,8 +92,8 @@ test('buildRTreeWithInterpolatedEdges', () => {
   const ss = new SugiyamaLayoutSettings()
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
-  SvgDebugWriter.writeGeomGraph('./tmp/fsm.svg', geomGraph)
-
+  //SvgDebugWriter.writeGeomGraph('./tmp/fsm.svg', geomGraph)
+  initRandom(2) // to remove randomness further on
   const slack = 0.05
   const tree = buildRTreeWithInterpolatedEdges(g, slack)
 
@@ -117,9 +127,11 @@ test('buildRTreeWithInterpolatedEdges', () => {
       const hitItems: Array<HitTreeNodeType> = Array.from(tree.RootNode.AllHitItems(rect, null))
       const subHitItems = hitItems.filter((i) => i instanceof Entity == false) as Array<PpEdge>
 
+      const distances = subHitItems.map((a) => dist(p, a.pp.first, a.pp._second))
+
       SvgDebugWriter.dumpICurves(
         './tmp/debug.svg',
-        [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp.first, m.pp.second))),
+        [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp._first, m.pp._second))),
       )
     }
     expect(found).toBe(true)

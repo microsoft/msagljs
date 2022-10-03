@@ -4,46 +4,46 @@ import {distPP} from './point'
 
 /** An unordered pair of points */
 export class PointPair {
-  first: Point
+  _first: Point
 
-  second: Point
+  _second: Point
 
   public constructor(first: Point, second: Point) {
     if (comparePointsYX(first, second) < 0) {
-      this.first = first
-      this.second = second
+      this._first = first
+      this._second = second
     } else {
-      this.first = second
-      this.second = first
+      this._first = second
+      this._second = first
     }
   }
 
-  public get First(): Point {
-    return this.first
+  public get first(): Point {
+    return this._first
   }
 
-  public get Second(): Point {
-    return this.second
+  public get second(): Point {
+    return this._second
   }
 
   public get Length(): number {
-    return distPP(this.first, this.second)
+    return distPP(this._first, this._second)
   }
 
   public CompareTo(other: PointPair): number {
-    const cr: number = comparePointsYX(this.first, other.first)
+    const cr: number = comparePointsYX(this._first, other._first)
     if (cr !== 0) {
       return cr
     }
 
-    return comparePointsYX(this.second, other.second)
+    return comparePointsYX(this._second, other._second)
   }
 
   public static equal(pair0: PointPair, pair1: PointPair): boolean {
-    return pair0.first.equal(pair1.first) && pair0.second.equal(pair1.second)
+    return pair0._first.equal(pair1._first) && pair0._second.equal(pair1._second)
   }
 
   public toString(): string {
-    return this.first + (' ' + this.second)
+    return this._first + (' ' + this._second)
   }
 }

@@ -14,8 +14,8 @@ export class PointPairMap<T> {
     return this.size_
   }
   set(pp: PointPair, v: T) {
-    const x = pp.first
-    const y = pp.second
+    const x = pp._first
+    const y = pp._second
     let m = this.mapOfMaps.get(x)
     if (m == null) this.mapOfMaps.set(x, (m = new PointMap<T>()))
 
@@ -26,8 +26,8 @@ export class PointPairMap<T> {
   }
 
   delete(pp: PointPair) {
-    const x = pp.first
-    const y = pp.second
+    const x = pp._first
+    const y = pp._second
 
     const m = this.mapOfMaps.get(x)
     if (m != null) {
@@ -36,18 +36,18 @@ export class PointPairMap<T> {
   }
 
   has(pp: PointPair): boolean {
-    const m = this.mapOfMaps.get(pp.first)
-    return m != null && m.has(pp.second)
+    const m = this.mapOfMaps.get(pp._first)
+    return m != null && m.has(pp._second)
   }
 
   get_(p: Point, q: Point) {
     return this.get(new PointPair(p, q))
   }
   get(pp: PointPair): T {
-    const m = this.mapOfMaps.get(pp.first)
+    const m = this.mapOfMaps.get(pp._first)
     if (m == null) return
 
-    return m.get(pp.second)
+    return m.get(pp._second)
   }
   constructor() {
     this.mapOfMaps = new PointMap<PointMap<T>>()
