@@ -172,7 +172,7 @@ export class SvgCreator {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     const label = edge.label.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!label) return
-    this.drawLabelAtXY(de, label.boundingBox, group)
+    this.drawLabelAtXY(edge.label, de, label.boundingBox, group)
   }
   private AddArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -281,12 +281,13 @@ export class SvgCreator {
           ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
-    this.drawLabelAtXY(drawingNode, rect, nodeGroup)
+    this.drawLabelAtXY(null, drawingNode, rect, nodeGroup)
   }
 
-  private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle, group: SVGElement) {
+  private drawLabelAtXY(label: Label, drawingObject: DrawingObject, rect: Rectangle, group: SVGElement) {
     const fontSize = drawingObject.fontsize
-    const textEl = <SVGTextElement>document.createElementNS(svgns, 'text')
+
+    const textEl = this.createAndBindWithGraph(label, 'text') as SVGTextElement
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))

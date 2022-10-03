@@ -76,9 +76,8 @@ export class RendererSvg implements IViewer {
     if (this.objectTree == null) {
       this.objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
     }
-    let elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
+    const elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
     if (elems.length == 0) return
-    elems = elems.filter((e) => filterEdgesCloseBy(e))
     elems.sort((a, b) => {
       const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
       const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
@@ -165,6 +164,7 @@ export class RendererSvg implements IViewer {
 
   private _update() {
     if (!this._graph) return
+    this.objectTree = null
     return this._svgCreator.setGraph(this._graph)
   }
   getSvg(): SVGElement {
@@ -204,7 +204,10 @@ export class RendererSvg implements IViewer {
     return this._objectUnderMouse
   }
   set ObjectUnderMouseCursor(value) {
-    this._objectUnderMouse = value
+    if (this._objectUnderMouse !== value) {
+      this._objectUnderMouse = value
+      if (value) console.log(this._objectUnderMouse)
+    }
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
@@ -289,7 +292,4 @@ export class RendererSvg implements IViewer {
   get Transform(): PlaneTransformation {
     return this._svgCreator.getTransform()
   }
-}
-function filterEdgesCloseBy(e: GeomObject | GeomLabel): boolean {
-  if (!(e instanceof GeomEdge)) return true
 }
