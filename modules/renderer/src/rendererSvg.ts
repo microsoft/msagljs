@@ -23,11 +23,13 @@ import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
+import {default as svgPanZoom, PanZoom} from 'panzoom'
 
 /**
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
 export class RendererSvg implements IViewer {
+  panZoom: PanZoom
   keydownEvent(e: KeyboardEvent): void {
     if (e.ctrlKey && e.key.toLowerCase() === 'e') {
       this.LayoutEditingEnabled = !this.LayoutEditingEnabled
@@ -119,12 +121,12 @@ export class RendererSvg implements IViewer {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
     container.addEventListener('mousedown', (a) => {
-      if (this.LayoutEditingEnabled && this.ObjectUnderMouseCursor != null && a.buttons == 1) this._svgCreator.panZoom.pause()
+      if (this.LayoutEditingEnabled && this.ObjectUnderMouseCursor != null && a.buttons == 1) this.panZoom.pause()
       this.MouseDown.raise(this, a)
     })
     container.addEventListener('mouseup', (a) => {
       this.MouseUp.raise(this, a)
-      this._svgCreator.panZoom.resume()
+      this.panZoom.resume()
     })
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
     container.addEventListener('keydown', this.keydownEvent.bind(this))
@@ -184,6 +186,7 @@ export class RendererSvg implements IViewer {
     if (!this._graph) return
     this.objectTree = null
     this._svgCreator.setGraph(this._graph)
+    this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
     this.layoutEditor.ViewerGraphChanged()
   }
   getSvg(): SVGElement {
