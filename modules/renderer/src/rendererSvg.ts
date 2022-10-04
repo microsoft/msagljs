@@ -15,8 +15,7 @@ import {
   Graph,
   PlaneTransformation,
   Point,
-  Rectangle,
-  Size,
+  RTree,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
@@ -24,12 +23,17 @@ import {SvgCreator} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
-import {RTree} from 'msagl-js/src/math/geometry/RTree/rTree'
 
 /**
- * Renders an MSAGL graph with SVG
+ * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
 export class RendererSvg implements IViewer {
+  keydownEvent(e: KeyboardEvent): void {
+    if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+      this.LayoutEditingEnabled = !this.LayoutEditingEnabled
+      e.preventDefault()
+    }
+  }
   get UnderlyingPolylineRadiusWithNoScale(): number {
     return this.Dpi * 0.05
   }
@@ -46,7 +50,6 @@ export class RendererSvg implements IViewer {
     const dpi = this.Dpi
     const slackInPoints = dpi * this.mouseHitDistance
     return slackInPoints / this.CurrentScale
-    throw new Error('Method not implemented.')
   }
 
   layoutEditor: LayoutEditor
@@ -73,7 +76,7 @@ export class RendererSvg implements IViewer {
     if (this == null || this._svgCreator == null) {
       return
     }
-    if (e.buttons) {
+    if (!this.LayoutEditingEnabled) {
       return
     }
     if (this.objectTree == null) {
@@ -85,41 +88,49 @@ export class RendererSvg implements IViewer {
       this.ObjectUnderMouseCursor = null
       return
     }
-    elems.sort((a, b) => {
-      const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
-      const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
-      if (atype != btype) return atype - btype
-
-      if (atype == 2) return 0 // both are GeomLabels
-
-      return depth(a as GeomObject) - depth(b as GeomObject)
-      function depth(a: GeomObject) {
-        let d = 0
-        let p = a.entity.parent
-        while (p) {
-          d++
-          p = p.parent
-        }
-        return d
-      }
-    })
+    sortElems()
     const favorite = elems[0]
 
     this.ObjectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
+    // end of the main function processMouseMove
+    function sortElems() {
+      elems.sort((a, b) => {
+        const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
+        const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
+        if (atype != btype) return atype - btype
+
+        if (atype == 2) return 0 // both are GeomLabels
+
+        return depth(a as GeomObject) - depth(b as GeomObject)
+        function depth(a: GeomObject) {
+          let d = 0
+          let p = a.entity.parent
+          while (p) {
+            d++
+            p = p.parent
+          }
+          return d
+        }
+      })
+    }
   }
 
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
-
-    container.addEventListener('mousedown', (a) => this.MouseDown.raise(this, a))
-    container.addEventListener('mouseup', (a) => this.MouseUp.raise(this, a))
+    container.addEventListener('mousedown', (a) => {
+      if (this.LayoutEditingEnabled && this.ObjectUnderMouseCursor != null && a.buttons == 1) this._svgCreator.panZoom.pause()
+      this.MouseDown.raise(this, a)
+    })
+    container.addEventListener('mouseup', (a) => {
+      this.MouseUp.raise(this, a)
+      this._svgCreator.panZoom.resume()
+    })
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
-
+    container.addEventListener('keydown', this.keydownEvent.bind(this))
     this.MouseMove.subscribe(this.processMouseMove.bind(this))
 
     this.layoutEditor = new LayoutEditor(this)
-    this.LayoutEditingEnabled = true
   }
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
@@ -240,7 +251,7 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   LineThicknessForEditing = 2
-  LayoutEditingEnabled = true
+  LayoutEditingEnabled = false
   InsertingEdge = false
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')

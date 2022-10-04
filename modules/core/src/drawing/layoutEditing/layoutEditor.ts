@@ -688,7 +688,7 @@ export class LayoutEditor {
         }
 
         if (this.ActiveDraggedObject != null) {
-          e.stopPropagation()
+          e.preventDefault()
         }
 
         if (this.SelectedEdge != null) {
@@ -705,18 +705,20 @@ export class LayoutEditor {
   }
 
   ViewerMouseMove(sender: any, e: MouseEvent) {
-    if (this.viewer.LayoutEditingEnabled) {
-      if (LayoutEditor.LeftButtonIsPressed(e)) {
-        if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {
-          this.DragSomeObjects(e)
-        } else if (this.InsertingEdge) {
-          this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
-        } else {
-          this.MouseMoveLiveSelectObjectsForDragging(e)
-        }
+    if (!this.viewer.LayoutEditingEnabled) {
+      return
+    }
+
+    if (LayoutEditor.LeftButtonIsPressed(e)) {
+      if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {
+        this.DragSomeObjects(e)
       } else if (this.InsertingEdge) {
-        this.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e)
+        this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
+      } else {
+        this.MouseMoveLiveSelectObjectsForDragging(e)
       }
+    } else if (this.InsertingEdge) {
+      this.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e)
     }
   }
 
@@ -961,9 +963,10 @@ export class LayoutEditor {
       return
     }
 
-    if (this.viewer.LayoutEditingEnabled) {
-      this.HandleMouseUpOnLayoutEnabled(args)
+    if (!this.viewer.LayoutEditingEnabled) {
+      return
     }
+    this.HandleMouseUpOnLayoutEnabled(args)
   }
 
   HandleMouseUpOnLayoutEnabled(args: MouseEvent) {

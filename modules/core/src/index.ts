@@ -12,6 +12,7 @@ import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
 import {PlaneTransformation} from './math/geometry/planeTransformation'
+import {RTree} from './math/geometry/RTree/rTree'
 import {Label} from './structs/label'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge}
@@ -55,6 +56,7 @@ export {ILayoutSettings}
 export {EventHandler}
 export {PlaneTransformation}
 export {
+  RTree,
   buildRTree,
   intersectedObjects,
   HitTreeNodeType as GeomHitTreeNodeType,
