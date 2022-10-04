@@ -110,9 +110,6 @@ test('buildRTreeWithInterpolatedEdges', () => {
   // edges are hit
   for (const n of g.deepEdges) {
     const ge = n.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
-    if (ge.toString() == 'LR_8->LR_6') {
-      console.log(ge)
-    }
     const t = Math.random()
     let found = false
     const hitItems: Array<GeomObject> = Array.from(
@@ -135,6 +132,7 @@ test('buildRTreeWithInterpolatedEdges', () => {
       )
     }
     expect(found).toBe(true)
+    // target arrowheads are hit
     if (ge.targetArrowhead) {
       found = false
       for (const n of getGeomIntersectedObjects(tree, slack, Point.middle(ge.curve.end, ge.targetArrowhead.tipPosition))) {
@@ -142,6 +140,7 @@ test('buildRTreeWithInterpolatedEdges', () => {
       }
       expect(found).toBe(true)
     }
+    // source arrowheads are hit
     if (ge.sourceArrowhead) {
       found = false
       for (const n of getGeomIntersectedObjects(tree, slack, Point.middle(ge.curve.start, ge.sourceArrowhead.tipPosition))) {

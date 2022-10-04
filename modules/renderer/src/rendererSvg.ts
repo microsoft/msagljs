@@ -71,13 +71,20 @@ export class RendererSvg implements IViewer {
 
   private processMouseMove(sender: any, e: MouseEvent): void {
     if (this == null || this._svgCreator == null) {
-      return null
+      return
+    }
+    if (e.buttons) {
+      return
     }
     if (this.objectTree == null) {
+      // todo: need to modify the tree after editing!
       this.objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
     }
     const elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
-    if (elems.length == 0) return
+    if (elems.length == 0) {
+      this.ObjectUnderMouseCursor = null
+      return
+    }
     elems.sort((a, b) => {
       const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
       const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
@@ -166,7 +173,7 @@ export class RendererSvg implements IViewer {
     if (!this._graph) return
     this.objectTree = null
     this._svgCreator.setGraph(this._graph)
-    this.GraphChanged.raise(this, null)
+    this.layoutEditor.ViewerGraphChanged()
   }
   getSvg(): SVGElement {
     return this._svgCreator ? this._svgCreator.svg : null
@@ -207,14 +214,19 @@ export class RendererSvg implements IViewer {
   set ObjectUnderMouseCursor(value) {
     if (this._objectUnderMouse !== value) {
       this._objectUnderMouse = value
-      if (value) console.log(this._objectUnderMouse)
+      if (value) {
+        console.log(this._objectUnderMouse)
+        // this._svgCreator.panZoom.pause()
+      } else {
+        // this._svgCreator.panZoom.resume()
+      }
     }
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
   }
   InvalidateAll(): void {
-    throw new Error('Method not implemented.')
+    //TODO : implement
   }
   ModifierKeys = ModifierKeysEnum.None
   Entities: Iterable<IViewerObject>

@@ -14,6 +14,7 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
 import {SplineRouter} from '../../routing/splineRouter'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
+import {Entity} from '../../structs/entity'
 import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
 import {IncrementalDragger} from './incrementalDragger'
@@ -153,25 +154,31 @@ export class GeometryGraphEditor {
     label.AttachmentSegmentEnd = edge.curve.value(edge.curve.closestParameter(label.center))
   }
 
-  //      drags elements by the delta
+  /** drags elements by the delta,
+   * and return the array of entities with the changed geometry
+   *
+   */
 
-  Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
+  Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point): Array<Entity> {
     this.GraphBoundingBoxGetsExtended = false
     if (delta.x !== 0 || delta.y !== 0) {
       if (this.EditedEdge == null) {
         if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
-          this.DragObjectsForNonRectilinearCase(delta, draggingMode)
+          return this.DragObjectsForNonRectilinearCase(delta, draggingMode)
         } else {
-          this.DragObjectsForRectilinearCase(delta)
+          return this.DragObjectsForRectilinearCase(delta)
         }
       } else {
+        throw new Error('not implemented')
         this.DragEdgeEdit(lastMousePosition, delta)
         this.UpdateGraphBoundingBoxWithCheck(this.EditedEdge)
+        return [this.EditedEdge.edge]
       }
     }
+    return []
   }
 
-  DragObjectsForRectilinearCase(delta: Point) {
+  DragObjectsForRectilinearCase(delta: Point): Array<Entity> {
     for (const node of this.objectsToDrag) {
       if (node instanceof GeomNode) {
         node.translate(delta)
@@ -196,34 +203,39 @@ export class GeometryGraphEditor {
     }
 
     this.PropagateChangesToClusterParents()
+    throw new Error('not implemented')
   }
 
-  DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
+  DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode): Array<Entity> {
     if (draggingMode === DraggingMode.Incremental) {
       this.DragIncrementally(delta)
     } else if (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
       this.DragWithSplinesOrBundles(delta)
     } else {
-      this.DragWithStraightLines(delta)
+      return this.DragWithStraightLines(delta)
     }
   }
 
-  DragWithStraightLines(delta: Point) {
+  DragWithStraightLines(delta: Point): Array<Entity> {
+    let ret: Array<Entity> = []
     for (const geomObj of this.objectsToDrag) {
       if (geomObj instanceof GeomNode) {
         geomObj.translate(delta)
+        ret.push(geomObj.entity)
       } else {
-        GeometryGraphEditor.ShiftDragEdge(delta, geomObj)
+        ret = ret.concat(GeometryGraphEditor.ShiftDragEdge(delta, geomObj))
       }
 
       this.UpdateGraphBoundingBoxWithCheck(geomObj)
     }
 
-    this.PropagateChangesToClusterParents()
-    this.DragEdgesAsStraighLines(delta)
+    ret = ret.concat(this.PropagateChangesToClusterParents())
+    ret = ret.concat(this.RegenerateEdgesAsStraightLines())
+
+    return ret
   }
 
-  PropagateChangesToClusterParents() {
+  PropagateChangesToClusterParents(): Array<Entity> {
     const touchedClusters = new Set<GeomGraph>()
     for (const n of this.objectsToDrag) {
       if (n instanceof GeomNode === false) continue
@@ -243,9 +255,10 @@ export class GeometryGraphEditor {
         }
       }
     }
+    return Array.from(touchedClusters).map((g) => g.entity)
   }
 
-  static ShiftDragEdge(delta: Point, geomObj: GeomObject) {
+  static ShiftDragEdge(delta: Point, geomObj: GeomObject): Array<Entity> {
     const isEdge = geomObj instanceof GeomEdge
     if (isEdge) {
       geomObj.translate(delta)
@@ -253,6 +266,7 @@ export class GeometryGraphEditor {
         GeometryGraphEditor.DragLabel(geomObj.label, delta)
       }
     }
+    throw new Error('not implemented')
   }
 
   DragWithSplinesOrBundles(delta: Point) {
@@ -279,13 +293,16 @@ export class GeometryGraphEditor {
     this.UpdateGraphBoundingBoxWithCheck_()
   }
 
-  DragEdgesAsStraighLines(delta: Point) {
+  RegenerateEdgesAsStraightLines(): Array<Entity> {
+    const ret: Array<Entity> = []
     for (const edge of this.edgesDraggedWithSource) {
-      GeometryGraphEditor.DragEdgeAsStraightLine(delta, edge)
+      StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
+      ret.push(edge.entity)
     }
 
     for (const edge of this.edgesDraggedWithTarget) {
-      GeometryGraphEditor.DragEdgeAsStraightLine(delta, edge)
+      StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
+      ret.push(edge.entity)
     }
 
     const ep = EdgeLabelPlacement.constructorGA(
@@ -293,10 +310,7 @@ export class GeometryGraphEditor {
       Array.from(this.edgesDraggedWithSource).concat(Array.from(this.edgesDraggedWithTarget)),
     )
     ep.run()
-  }
-
-  static DragEdgeAsStraightLine(delta: Point, edge: GeomEdge) {
-    StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
+    return ret
   }
 
   UpdateGraphBoundingBoxWithCheck_() {
@@ -547,7 +561,10 @@ export class GeometryGraphEditor {
   }
 
   static GetOrCreateListOfMultiedge(nodeToMultiEdge: Map<GeomNode, Array<GeomEdge>>, node: GeomNode): Array<GeomEdge> {
-    return nodeToMultiEdge.get(node)
+    let ret = nodeToMultiEdge.get(node)
+    if (ret) return ret
+    nodeToMultiEdge.set(node, (ret = []))
+    return ret
   }
 
   InsertToListAndSetTheBoxBefore(action: UndoRedoAction): UndoRedoAction {

@@ -69,10 +69,6 @@ export interface IViewer {
 
   InvalidateAll(): void
 
-  //  is raised after the graph is changed
-
-  GraphChanged: EventHandler
-
   //  returns modifier keys; control, shift, or alt are pressed at the moments
 
   ModifierKeys: ModifierKeysEnum

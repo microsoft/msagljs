@@ -20,12 +20,14 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {InteractiveEdgeRouter} from '../../routing/interactiveEdgeRouter'
 import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
+import {TightLooseCouple} from '../../routing/TightLooseCouple'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Node} from '../../structs/node'
 import {Assert} from '../../utils/assert'
+import {insertRange} from '../../utils/setOperations'
 
 import {EdgeRestoreData} from './edgeRestoreData'
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
@@ -158,7 +160,6 @@ export class LayoutEditor {
     this.viewer.MouseMove.subscribe(this.ViewerMouseMove.bind(this))
     this.viewer.MouseUp.subscribe(this.ViewerMouseUp.bind(this))
     this.viewer.ObjectUnderMouseCursorChanged.subscribe(this.ViewerObjectUnderMouseCursorChanged.bind(this))
-    this.viewer.GraphChanged.subscribe(this.ViewerGraphChanged.bind(this))
     this.viewer.ViewChangeEvent.subscribe(this.ViewChangeEventHandler.bind(this))
   }
 
@@ -360,14 +361,11 @@ export class LayoutEditor {
     return this.geomGraphEditor.UndoMode ? this.geomGraphEditor.CurrentUndoAction : this.geomGraphEditor.CurrentRedoAction
   }
 
-  ViewerGraphChanged(sender: any, e: any) {
-    if ('ScreenToSource' in sender) {
-      const iViewer = <IViewer>sender
-      this.graph = iViewer.graph
-      if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
-        this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
-        this.AttachInvalidateEventsToGeomObjects()
-      }
+  ViewerGraphChanged() {
+    this.graph = this.viewer.graph
+    if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
+      this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
+      this.AttachInvalidateEventsToGeomObjects()
     }
 
     this.ActiveDraggedObject = null
@@ -498,7 +496,6 @@ export class LayoutEditor {
     this.viewer.MouseDown.unsubscribe(this.ViewerMouseDown)
     this.viewer.MouseMove.unsubscribe(this.ViewerMouseMove)
     this.viewer.MouseUp.unsubscribe(this.ViewerMouseUp)
-    this.viewer.GraphChanged.unsubscribe(this.ViewerGraphChanged)
     this.viewer.ViewChangeEvent.unsubscribe(this.ViewChangeEventHandler)
     this.geomGraphEditor.ChangeInUndoRedoList.unsubscribe(this.LayoutEditorChangeInUndoRedoList)
   }
@@ -907,7 +904,11 @@ export class LayoutEditor {
     }
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
-    this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
+    const affected = this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
+    insertRange(
+      this.CurrentUndoAction.affectedObjects,
+      affected.map((a) => a.getAttr(AttributeRegistry.ViewerIndex)),
+    )
     for (const affectedObject of this.CurrentUndoAction.affectedObjects) {
       this.viewer.Invalidate(affectedObject)
     }

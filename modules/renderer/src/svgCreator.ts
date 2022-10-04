@@ -80,6 +80,7 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  panZoom: PanZoom
   Invalidate(objectToInvalidate: IViewerObject) {
     const svgViewerObj = objectToInvalidate as SvgViewerObject
     const svgElem = svgViewerObj.svgData as Element
@@ -137,7 +138,7 @@ export class SvgCreator {
     }
 
     this.container.appendChild(this.svg)
-    svgPanZoom(this.svg) // it seems enough for these operations
+    this.panZoom = svgPanZoom(this.svg) // it seems enough for these operations
   }
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
@@ -327,9 +328,13 @@ export class SvgCreator {
   }
 
   private open() {
+    this.setGraphWidthAndHightAttributes()
+    this.geomGraph = GeomGraph.getGeom(this.graph)
+  }
+
+  setGraphWidthAndHightAttributes() {
     this.svg.setAttribute('width', this.geomGraph.width.toString())
     this.svg.setAttribute('height', this.geomGraph.height.toString())
-    this.geomGraph = GeomGraph.getGeom(this.graph)
   }
 
   createAndBindWithGraph(entity: Entity, name: string): SVGElement {
