@@ -165,7 +165,8 @@ export class RendererSvg implements IViewer {
   private _update() {
     if (!this._graph) return
     this.objectTree = null
-    return this._svgCreator.setGraph(this._graph)
+    this._svgCreator.setGraph(this._graph)
+    this.GraphChanged.raise(this, null)
   }
   getSvg(): SVGElement {
     return this._svgCreator ? this._svgCreator.svg : null
@@ -274,10 +275,10 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   RemoveSourcePortEdgeRouting(): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   RemoveTargetPortEdgeRouting(): void {
-    throw new Error('Method not implemented.')
+    // throw new Error('Method not implemented.')
   }
   DrawRubberEdge(edgeGeometry: GeomEdge): void {
     throw new Error('Method not implemented.')

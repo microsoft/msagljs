@@ -361,8 +361,7 @@ export class LayoutEditor {
   }
 
   ViewerGraphChanged(sender: any, e: any) {
-    const isIViewer = sender.hasOwnProperty('IncrementalDraggingModeAlways')
-    if (isIViewer) {
+    if ('ScreenToSource' in sender) {
       const iViewer = <IViewer>sender
       this.graph = iViewer.graph
       if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
@@ -391,9 +390,10 @@ export class LayoutEditor {
   }
 
   AttachInvalidateEventsToGeomObjects() {
-    for (const entity of this.viewer.Entities) {
-      this.AttachLayoutChangeEvent(entity)
-    }
+    // TODO: do we need these?
+    // for (const entity of this.viewer.Entities) {
+    //   this.AttachLayoutChangeEvent(entity)
+    // }
   }
 
   //

@@ -3,7 +3,7 @@ digraph  {
         a    [color="Red",
           height=2,
              pos="27,90",
-             width=0.75];
+             width=0.75,];
         b    [height=0.5,
              pos="27,18",
              width=0.75];

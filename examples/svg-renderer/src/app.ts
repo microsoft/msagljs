@@ -9,7 +9,7 @@ import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 
 const viewer = document.getElementById('viewer')
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/smlred.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/a.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()

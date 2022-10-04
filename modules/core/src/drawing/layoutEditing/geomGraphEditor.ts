@@ -36,8 +36,6 @@ export class GeometryGraphEditor {
 
   graph: GeomGraph
 
-  layoutSettings: ILayoutSettings
-
   objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
   undoRedoActionsList: UndoRedoActionsList = new UndoRedoActionsList()
@@ -93,10 +91,7 @@ export class GeometryGraphEditor {
   }
 
   public get LayoutSettings(): ILayoutSettings {
-    return this.layoutSettings
-  }
-  public set LayoutSettings(value: ILayoutSettings) {
-    this.layoutSettings = value
+    return this.graph.layoutSettings
   }
 
   protected get EdgeRoutingMode(): EdgeRoutingMode {
@@ -367,7 +362,7 @@ export class GeometryGraphEditor {
     this.incrementalDragger = new IncrementalDragger(
       Array.from(this.objectsToDrag).filter((o) => o instanceof GeomNode) as Array<GeomNode>,
       this.graph,
-      this.layoutSettings,
+      this.LayoutSettings,
     )
   }
 
@@ -381,10 +376,10 @@ export class GeometryGraphEditor {
     this.ClearDraggedSets()
     for (const geometryObject of markedObjects) {
       this.objectsToDrag.add(geometryObject)
-      const edge = <GeomEdge>geometryObject
-      if (edge != null) {
-        this.objectsToDrag.add(edge.source)
-        this.objectsToDrag.add(edge.target)
+      const isEdge = geometryObject instanceof GeomEdge
+      if (isEdge) {
+        this.objectsToDrag.add((geometryObject as GeomEdge).source)
+        this.objectsToDrag.add((geometryObject as GeomEdge).target)
       }
     }
 
