@@ -72,7 +72,17 @@ export class RendererSvg implements IViewer {
   private _textMeasurer: TextMeasurer
   private _svgCreator: SvgCreator
 
-  private objectTree: RTree<GeomHitTreeNodeType, Point>
+  private _objectTree: RTree<GeomHitTreeNodeType, Point>
+
+  public get objectTree(): RTree<GeomHitTreeNodeType, Point> {
+    if (this._objectTree == null || this._objectTree.RootNode == null) {
+      this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
+    }
+    return this._objectTree
+  }
+  public set objectTree(value: RTree<GeomHitTreeNodeType, Point>) {
+    this._objectTree = value
+  }
 
   private processMouseMove(sender: any, e: MouseEvent): void {
     if (this == null || this._svgCreator == null) {
@@ -81,10 +91,7 @@ export class RendererSvg implements IViewer {
     if (!this.LayoutEditingEnabled) {
       return
     }
-    if (this.objectTree == null) {
-      // todo: need to modify the tree after editing!
-      this.objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
-    }
+
     const elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
     if (elems.length == 0) {
       this.ObjectUnderMouseCursor = null
@@ -198,7 +205,7 @@ export class RendererSvg implements IViewer {
   }
 
   /** maps the screen coordinates to the graph coordinates */
-  ScreenToSourceP(x: number, y: number): Point {
+  private ScreenToSourceP(x: number, y: number): Point {
     // m is the reverse mapping : that is the mapping from the graph coords to the client's
     const m = this._svgCreator.getTransform()
     return m.inverse().multiplyPoint(new Point(x, y))
@@ -238,6 +245,7 @@ export class RendererSvg implements IViewer {
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
+    this.objectTree.clear()
   }
   InvalidateAll(): void {
     //TODO : implement

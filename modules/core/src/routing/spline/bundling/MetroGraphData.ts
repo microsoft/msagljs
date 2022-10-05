@@ -9,7 +9,7 @@ import {Stack} from 'stack-typescript'
 import {GeomEdge, Point} from '../../..'
 import {Polyline, Curve, PointLocation} from '../../../math/geometry'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
-import {RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
+import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 
 import {PointMap} from '../../../utils/PointMap'
 import {PointSet} from '../../../utils/PointSet'

@@ -24,8 +24,8 @@ import {Path} from './Path'
 import {PathEdge} from './PathEdge'
 import {PathRefiner} from './PathRefiner'
 import {StaircaseRemover} from './StaircaseRemover'
-import {HitTestBehavior} from '../../../math/geometry/RTree/HitTestBehavior'
-import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
+import {HitTestBehavior} from '../../../math/geometry/RTree/hitTestBehavior'
+import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 import {GeomEdge} from '../../..'
 type PointProjection = (p: Point) => number
 // following paper "Orthogonal Connector Routing"

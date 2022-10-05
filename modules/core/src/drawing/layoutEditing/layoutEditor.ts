@@ -9,7 +9,7 @@ import {FloatingPort} from '../../layout/core/floatingPort'
 import {GeomEdge} from '../../layout/core/geomEdge'
 import {GeomGraph} from '../../layout/core/geomGraph'
 import {GeomNode} from '../../layout/core/geomNode'
-import {GeomObject} from '../../layout/core/geomObject'
+import {EventHandler, GeomObject} from '../../layout/core/geomObject'
 import {Port} from '../../layout/core/port'
 import {layoutGeomGraph} from '../../layout/driver'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
@@ -94,6 +94,9 @@ export class LayoutEditor {
   set PolylineVertex(value: CornerSite) {
     this.polylineVertex = value
   }
+  public get ChangeInUndoRedoList(): EventHandler {
+    return this.geomGraphEditor.ChangeInUndoRedoList
+  }
 
   cornerInfo: [CornerSite, PolylineCornerType]
 
@@ -152,7 +155,6 @@ export class LayoutEditor {
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.DecorateEdgeLabelForDragging = LayoutEditor.TheDefaultEdgeLabelDecoratorStub
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
-    this.geomGraphEditor.ChangeInUndoRedoList.subscribe(this.LayoutEditorChangeInUndoRedoList.bind(this))
   }
 
   HookUpToViewerEvents() {
@@ -497,13 +499,6 @@ export class LayoutEditor {
     this.viewer.MouseMove.unsubscribe(this.ViewerMouseMove)
     this.viewer.MouseUp.unsubscribe(this.ViewerMouseUp)
     this.viewer.ViewChangeEvent.unsubscribe(this.ViewChangeEventHandler)
-    this.geomGraphEditor.ChangeInUndoRedoList.unsubscribe(this.LayoutEditorChangeInUndoRedoList)
-  }
-
-  LayoutEditorChangeInUndoRedoList(sender: any, e: EventArgs) {
-    if (this.geomGraphEditor.ChangeInUndoRedoList != null) {
-      this.geomGraphEditor.ChangeInUndoRedoList.raise(this, null)
-    }
   }
 
   TheDefaultObjectDecorator(obj: IViewerObject) {

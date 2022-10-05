@@ -2,9 +2,9 @@
 
 import {Queue} from 'queue-typescript'
 import {Point, Rectangle} from '../../math/geometry'
-import {RectangleNode} from '../../math/geometry/RTree/RectangleNode'
+import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {RTree} from '../../math/geometry/RTree/rTree'
-import {createRectangleNodeOnData} from '../../math/geometry/RTree/RectangleNode'
+import {createRectangleNodeOnData} from '../../math/geometry/RTree/rectangleNode'
 
 import {insertRange} from '../../utils/setOperations'
 import {GeomNode, GeomGraph} from '../../layout/core'

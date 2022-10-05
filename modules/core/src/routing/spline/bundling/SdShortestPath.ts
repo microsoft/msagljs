@@ -2,8 +2,8 @@
 import {HookUpAnywhereFromInsidePort} from '../../../layout/core/hookUpAnywhereFromInsidePort'
 import {Port} from '../../../layout/core/port'
 import {Polyline, LineSegment} from '../../../math/geometry'
-import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
-import {CrossRectangleNodes} from '../../../math/geometry/RTree/RectangleNodeUtils'
+import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
+import {CrossRectangleNodes} from '../../../math/geometry/RTree/rectangleNodeUtils'
 import {GenericBinaryHeapPriorityQueue} from '../../../structs/genericBinaryHeapPriorityQueue'
 
 import {addToMapOfSets} from '../../../utils/setOperations'

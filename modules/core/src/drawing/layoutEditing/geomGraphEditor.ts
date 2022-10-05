@@ -569,7 +569,7 @@ export class GeometryGraphEditor {
 
   InsertToListAndSetTheBoxBefore(action: UndoRedoAction): UndoRedoAction {
     this.UndoRedoActionsList.AddAction(action)
-    action.GraphBoundingBoxBefore = action.graph.boundingBox
+    action.GraphBoundingBoxBefore = action.graph.boundingBox.clone()
     this.RaiseChangeInUndoList()
     return action
   }

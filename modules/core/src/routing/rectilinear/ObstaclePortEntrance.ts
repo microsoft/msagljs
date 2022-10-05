@@ -1,6 +1,6 @@
 import {String} from 'typescript-string-operations'
 import {Point, Rectangle, CompassVector, Curve, PointLocation, Direction, GeomConstants, LineSegment, Polyline} from '../../math/geometry'
-import {RectangleNode} from '../../math/geometry/RTree/RectangleNode'
+import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 
 import {VisibilityVertex} from '../visibility/VisibilityVertex'
 import {Obstacle} from './obstacle'

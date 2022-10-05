@@ -2,7 +2,7 @@
 
 import {Point} from '../../..'
 import {Polyline, PointLocation, Curve, GeomConstants, LineSegment} from '../../../math/geometry'
-import {RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
+import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 
 import {uniteSets} from '../../../utils/setOperations'
 import {BundlingSettings} from '../../BundlingSettings'

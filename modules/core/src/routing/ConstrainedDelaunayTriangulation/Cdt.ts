@@ -14,7 +14,7 @@ import {CdtSite} from './CdtSite'
 import {CdtTriangle} from './CdtTriangle'
 import {SymmetricTuple} from './../../structs/SymmetricTuple'
 import {CdtSweeper} from './CdtSweeper'
-import {RectangleNode, CreateRectNodeOnArrayOfRectNodes, mkRectangleNode} from '../../math/geometry/RTree/RectangleNode'
+import {RectangleNode, CreateRectNodeOnArrayOfRectNodes, mkRectangleNode} from '../../math/geometry/RTree/rectangleNode'
 
 type SymmetricSegment = SymmetricTuple<Point>
 export class Cdt extends Algorithm {

@@ -1,5 +1,5 @@
 import {IRectangle} from '../IRectangle'
-import {RectangleNode, mkRectangleNode, CreateRectNodeOnArrayOfRectNodes as CreateRectNodeOnArrayOfRectNodes} from './RectangleNode'
+import {RectangleNode, mkRectangleNode, CreateRectNodeOnArrayOfRectNodes as CreateRectNodeOnArrayOfRectNodes} from './rectangleNode'
 
 // A search tree for rapid lookup of T objects keyed by rectangles inside a given rectangular region
 // It is very similar to "R-TREES. A DYNAMIC INDEX STRUCTURE FOR SPATIAL SEARCHING" by Antonin Guttman
@@ -73,7 +73,7 @@ export class RTree<T, P> {
 
   // Removes everything from the tree
   // <
-  Clear() {
+  clear() {
     this.RootNode = null
   }
 

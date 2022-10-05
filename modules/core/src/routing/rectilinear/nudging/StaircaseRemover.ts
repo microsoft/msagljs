@@ -1,5 +1,5 @@
 import {Point, Rectangle, CompassVector, Curve, GeomConstants, LineSegment, Polyline} from '../../../math/geometry'
-import {RectangleNode} from '../../../math/geometry/RTree/RectangleNode'
+import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 import {RTree} from '../../../math/geometry/RTree/rTree'
 
 import {closeDistEps} from '../../../utils/compare'

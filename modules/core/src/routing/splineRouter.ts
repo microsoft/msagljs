@@ -3,7 +3,7 @@ import {mkRTree} from '../math/geometry/RTree/rTree'
 // import { Queue } from 'queue-typescript'
 // import { GeomGraph } from '../layout/core/GeomGraph'
 // import { IRectangle } from '../core/geometry/IRectangle'
-// import { RectangleNode } from '../core/geometry/RTree/RectangleNode'
+// import { RectangleNode } from '../core/geometry/RTree/rectangleNode'
 // import { RTree } from '../core/geometry/RTree/rTree'
 // import { BundlingSettings } from '../core/routing/BundlingSettings'
 // import { GeomEdge } from '../layout/core/edge'
@@ -30,7 +30,7 @@ import {VisibilityEdge} from './visibility/VisibilityEdge'
 import {ConeSpanner} from './spline/coneSpanner/ConeSpanner'
 import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
 import {ClusterBoundaryPort} from './ClusterBoundaryPort'
-import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/RectangleNode'
+import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/rectangleNode'
 import {CurvePort} from '../layout/core/curvePort'
 import {BundlingSettings} from './BundlingSettings'
 import {CancelToken, GeomGraph} from '..'
@@ -1061,7 +1061,7 @@ export class SplineRouter extends Algorithm {
         ret.add(point)
       }
 
-      this.portRTree.Clear()
+      this.portRTree.clear()
       return ret
     }
 
