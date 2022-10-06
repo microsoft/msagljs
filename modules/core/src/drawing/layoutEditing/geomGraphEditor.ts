@@ -217,22 +217,18 @@ export class GeometryGraphEditor {
   }
 
   DragWithStraightLines(delta: Point): Array<Entity> {
-    let ret: Array<Entity> = []
+    const ret: Array<Entity> = []
     for (const geomObj of this.objectsToDrag) {
       if (geomObj instanceof GeomNode) {
         geomObj.translate(delta)
-        ret.push(geomObj.entity)
       } else {
-        ret = ret.concat(GeometryGraphEditor.ShiftDragEdge(delta, geomObj))
+        GeometryGraphEditor.ShiftDragEdge(delta, geomObj as GeomEdge)
       }
-
+      ret.push(geomObj.entity)
       this.UpdateGraphBoundingBoxWithCheck(geomObj)
     }
 
-    ret = ret.concat(this.PropagateChangesToClusterParents())
-    ret = ret.concat(this.RegenerateEdgesAsStraightLines())
-
-    return ret
+    return ret.concat(this.PropagateChangesToClusterParents()).concat(this.RegenerateEdgesAsStraightLines())
   }
 
   PropagateChangesToClusterParents(): Array<Entity> {
@@ -258,15 +254,11 @@ export class GeometryGraphEditor {
     return Array.from(touchedClusters).map((g) => g.entity)
   }
 
-  static ShiftDragEdge(delta: Point, geomObj: GeomObject): Array<Entity> {
-    const isEdge = geomObj instanceof GeomEdge
-    if (isEdge) {
-      geomObj.translate(delta)
-      if (geomObj.label) {
-        GeometryGraphEditor.DragLabel(geomObj.label, delta)
-      }
+  static ShiftDragEdge(delta: Point, geomObj: GeomEdge) {
+    geomObj.translate(delta)
+    if (geomObj.label) {
+      GeometryGraphEditor.DragLabel(geomObj.label, delta)
     }
-    throw new Error('not implemented')
   }
 
   DragWithSplinesOrBundles(delta: Point) {

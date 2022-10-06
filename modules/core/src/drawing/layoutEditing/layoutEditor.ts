@@ -551,8 +551,8 @@ export class LayoutEditor {
     return Math.sqrt(dx * dx + dy * dy) > this.MouseMoveThreshold / 3
   }
 
-  AnalyzeLeftMouseButtonClick() {
-    const modifierKeyIsPressed: boolean = this.ModifierKeyIsPressed()
+  AnalyzeLeftMouseButtonClick(e: MouseEvent) {
+    const modifierKeyIsPressed: boolean = e.ctrlKey || e.shiftKey
     const obj: IViewerObject = this.viewer.ObjectUnderMouseCursor
     if (obj != null) {
       const editableObj = obj.entity
@@ -968,7 +968,7 @@ export class LayoutEditor {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.LeftMouseButtonWasPressed) {
       if (this.viewer.ObjectUnderMouseCursor != null) {
-        this.AnalyzeLeftMouseButtonClick()
+        this.AnalyzeLeftMouseButtonClick(args)
         args.preventDefault()
       } else {
         this.UnselectEverything()
