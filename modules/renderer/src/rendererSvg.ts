@@ -29,13 +29,17 @@ import {default as svgPanZoom, PanZoom} from 'panzoom'
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
 export class RendererSvg implements IViewer {
-  panZoom: PanZoom
-  keydownEvent(e: KeyboardEvent): void {
-    if (e.ctrlKey && e.key.toLowerCase() === 'e') {
-      this.LayoutEditingEnabled = !this.LayoutEditingEnabled
-      e.preventDefault()
+  *entitiesIter(): Iterable<IViewerObject> {
+    for (const n of this.graph.deepNodes) yield n.getAttr(AttributeRegistry.ViewerIndex)
+    for (const e of this.graph.deepEdges) {
+      yield e.getAttr(AttributeRegistry.ViewerIndex)
+      if (e.label) {
+        yield e.label.getAttr(AttributeRegistry.ViewerIndex)
+      }
     }
   }
+  panZoom: PanZoom
+
   get UnderlyingPolylineRadiusWithNoScale(): number {
     return this.Dpi * 0.05
   }
@@ -136,7 +140,6 @@ export class RendererSvg implements IViewer {
       this.panZoom.resume()
     })
     container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
-    container.addEventListener('keydown', this.keydownEvent.bind(this))
     this.MouseMove.subscribe(this.processMouseMove.bind(this))
 
     this.layoutEditor = new LayoutEditor(this)
@@ -236,9 +239,10 @@ export class RendererSvg implements IViewer {
     if (this._objectUnderMouse !== value) {
       this._objectUnderMouse = value
       if (value) {
-        console.log(this._objectUnderMouse)
+        console.log(this._objectUnderMouse.entity)
         // this._svgCreator.panZoom.pause()
       } else {
+        console.log('no selection')
         // this._svgCreator.panZoom.resume()
       }
     }
@@ -251,7 +255,10 @@ export class RendererSvg implements IViewer {
     //TODO : implement
   }
   ModifierKeys = ModifierKeysEnum.None
-  Entities: Iterable<IViewerObject>
+  get entities(): Iterable<IViewerObject> {
+    return this.entitiesIter()
+  }
+
   get DpiX() {
     return this.Dpi
   }

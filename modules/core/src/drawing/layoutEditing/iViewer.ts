@@ -75,7 +75,7 @@ export interface IViewer {
 
   //  gets all entities which can be manipulated by the viewer
 
-  Entities: Iterable<IViewerObject>
+  entities: Iterable<IViewerObject>
 
   //  number of dots per inch in x direction
 

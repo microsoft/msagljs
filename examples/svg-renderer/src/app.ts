@@ -13,6 +13,13 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/m
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
+/** setup the viewer */
+viewer.addEventListener('keydown', (e: KeyboardEvent) => {
+  if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+    svgRenderer.LayoutEditingEnabled = !svgRenderer.LayoutEditingEnabled
+    e.preventDefault()
+  }
+})
 
 dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value

@@ -20,7 +20,6 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {InteractiveEdgeRouter} from '../../routing/interactiveEdgeRouter'
 import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
-import {TightLooseCouple} from '../../routing/TightLooseCouple'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Entity} from '../../structs/entity'
@@ -77,8 +76,6 @@ export class LayoutEditor {
   interactiveEdgeRouter: InteractiveEdgeRouter
   selectedEdge: IViewerEdge
   mouseDownScreenPoint: Point
-  /** https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons */
-  mouseButtons: number
   EdgeAttr: DrawingEdge
   arrowheadLength = Arrowhead.defaultArrowheadLength
   get ActiveDraggedObject(): IViewerObject {
@@ -222,15 +219,6 @@ export class LayoutEditor {
   }
   set MouseDownScreenPoint(value: Point) {
     this.mouseDownScreenPoint = value
-  }
-
-  //  current pressed mouse buttons
-
-  get PressedMouseButtons(): number {
-    return this.mouseButtons
-  }
-  set PressedMouseButtons(value: number) {
-    this.mouseButtons = value
   }
 
   //  a delegate to decorate a node for dragging
@@ -618,7 +606,7 @@ export class LayoutEditor {
   }
 
   *ViewerNodes(): IterableIterator<IViewerNode> {
-    for (const o of this.viewer.Entities) {
+    for (const o of this.viewer.entities) {
       if (o.entity instanceof Node) yield o.entity.getAttr(AttributeRegistry.ViewerIndex)
     }
   }
@@ -670,7 +658,6 @@ export class LayoutEditor {
       return
     }
 
-    this.PressedMouseButtons = e.buttons
     this.mouseDownGraphPoint = this.viewer.ScreenToSource(e)
     this.MouseDownScreenPoint = new Point(e.clientX, e.clientY)
     if (LayoutEditor.LeftButtonIsPressed(e)) {
@@ -1342,13 +1329,9 @@ export class LayoutEditor {
 
   MouseMoveLiveSelectObjectsForDragging(e: MouseEvent) {
     this.UnselectEverything()
-    if (this.LeftMouseIsPressed() && (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
+    if (LeftMouseIsPressed(e) && (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }
-  }
-
-  LeftMouseIsPressed(): boolean {
-    return (this.PressedMouseButtons & 1) == 1
   }
 
   DrawEdgeInteractivelyToLocation(e: MouseEvent) {
@@ -1436,3 +1419,6 @@ export class LayoutEditor {
 
 // // }
 // }
+function LeftMouseIsPressed(e: MouseEvent): boolean {
+  return (e.buttons & 1) == 1
+}
