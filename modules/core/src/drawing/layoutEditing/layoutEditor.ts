@@ -33,10 +33,10 @@ import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
 import {IViewer} from './iViewer'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerNode} from './iViewerNode'
-import {IViewerObject, getViewerDrawingObject} from './iViewerObject'
+import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
 import {NodeRestoreData} from './nodeRestoreData'
-import {ObjectUnderMouseCursorChangedEventArgs, EventArgs} from './objectUnderMouseCursorChangedEventArgs'
+import {ObjectUnderMouseCursorChangedEventArgs} from './objectUnderMouseCursorChangedEventArgs'
 import {PolylineCornerType} from './polylineCornerType'
 import {UndoRedoAction} from './undoRedoAction'
 type DelegateForIViewerObject = (o: IViewerObject) => void
@@ -56,13 +56,6 @@ function geomNodeOfIViewerNode(obj: IViewerObject): GeomNode {
 
 function isIViewerNode(obj: IViewerObject): boolean {
   return obj.hasOwnProperty('node')
-}
-
-function getRestoreData(entity: Entity): any {
-  if (entity instanceof Graph) return null
-  if (entity instanceof Node) return new NodeRestoreData((GeomObject.getGeom(entity) as GeomNode).boundaryCurve)
-  if (entity instanceof Edge) return new EdgeRestoreData(GeomObject.getGeom(entity) as GeomEdge)
-  throw new Error('not implemented')
 }
 
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
@@ -145,21 +138,12 @@ export class LayoutEditor {
 
   constructor(viewerPar: IViewer) {
     this.viewer = viewerPar
-    this.HookUpToViewerEvents()
 
     this.DecorateObjectForDragging = this.TheDefaultObjectDecorator
     this.RemoveObjDraggingDecorations = this.TheDefaultObjectDecoratorRemover
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.DecorateEdgeLabelForDragging = LayoutEditor.TheDefaultEdgeLabelDecoratorStub
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
-  }
-
-  HookUpToViewerEvents() {
-    this.viewer.MouseDown.subscribe(this.ViewerMouseDown.bind(this))
-    this.viewer.MouseMove.subscribe(this.ViewerMouseMove.bind(this))
-    this.viewer.MouseUp.subscribe(this.ViewerMouseUp.bind(this))
-    this.viewer.ObjectUnderMouseCursorChanged.subscribe(this.ViewerObjectUnderMouseCursorChanged.bind(this))
-    this.viewer.ViewChangeEvent.subscribe(this.ViewChangeEventHandler.bind(this))
   }
 
   ViewerObjectUnderMouseCursorChanged(sender: any, e: ObjectUnderMouseCursorChangedEventArgs) {
@@ -348,7 +332,7 @@ export class LayoutEditor {
   //  current undo action
 
   get CurrentUndoAction(): UndoRedoAction {
-    return this.geomGraphEditor.UndoMode ? this.geomGraphEditor.CurrentUndoAction : this.geomGraphEditor.CurrentRedoAction
+    return this.geomGraphEditor.ActiveUndoRedoAction
   }
 
   ViewerGraphChanged() {
@@ -386,17 +370,17 @@ export class LayoutEditor {
 
   //
 
-  AttachLayoutChangeEvent(viewerObject: IViewerObject) {
-    const drawingObject = getViewerDrawingObject(viewerObject)
-    if (drawingObject != null) {
-      const geom = GeomObject.getGeom(drawingObject.entity)
-      if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a: any, b: any) => this.ReportBeforeChange(viewerObject))
-      if (geom instanceof GeomGraph) {
-        const iViewerNode = <IViewerNode>viewerObject
-        iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged.bind(this))
-      }
-    }
-  }
+  // AttachLayoutChangeEvent(viewerObject: IViewerObject) {
+  //   const drawingObject = getViewerDrawingObject(viewerObject)
+  //   if (drawingObject != null) {
+  //     const geom = GeomObject.getGeom(drawingObject.entity)
+  //     if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a: any, b: any) => this.ReportBeforeChange(viewerObject))
+  //     if (geom instanceof GeomGraph) {
+  //       const iViewerNode = <IViewerNode>viewerObject
+  //       iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged.bind(this))
+  //     }
+  //   }
+  // }
 
   RelayoutOnIsCollapsedChanged(iCluster: IViewerNode) {
     this.geomGraphEditor.PrepareForClusterCollapseChange([iCluster])
@@ -408,8 +392,8 @@ export class LayoutEditor {
     }
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
-    for (const o of this.geomGraphEditor.CurrentUndoAction.affectedObjects) {
-      this.viewer.Invalidate(o)
+    for (const o of this.geomGraphEditor.CurrentUndoAction.getAffectedObjects()) {
+      this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
 
@@ -469,24 +453,6 @@ export class LayoutEditor {
         if (GeomGraph.getGeom(n).isCollapsed == false) LayoutEditor.HideCollapsed(n)
       }
     }
-  }
-
-  ReportBeforeChange(viewerObject: IViewerObject) {
-    if (this.CurrentUndoAction == null || this.CurrentUndoAction.hasAffectedObject(viewerObject)) {
-      return
-    }
-
-    this.CurrentUndoAction.AddAffectedObject(viewerObject)
-    this.CurrentUndoAction.AddRestoreData(viewerObject.entity, getRestoreData(viewerObject.entity))
-  }
-
-  //  Unsubscibes from the viewer events
-
-  DetouchFromViewerEvents() {
-    this.viewer.MouseDown.unsubscribe(this.ViewerMouseDown)
-    this.viewer.MouseMove.unsubscribe(this.ViewerMouseMove)
-    this.viewer.MouseUp.unsubscribe(this.ViewerMouseUp)
-    this.viewer.ViewChangeEvent.unsubscribe(this.ViewChangeEventHandler)
   }
 
   TheDefaultObjectDecorator(obj: IViewerObject) {
@@ -875,8 +841,7 @@ export class LayoutEditor {
             this.UnselectEverything()
           }
 
-          this.SelectObjectForDragging(this.ActiveDraggedObject)
-          this.geomGraphEditor.PrepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
+          this.prepareForDragging()
         }
       }
 
@@ -888,13 +853,9 @@ export class LayoutEditor {
     }
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
-    const affected = this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    insertRange(
-      this.CurrentUndoAction.affectedObjects,
-      affected.map((a) => a.getAttr(AttributeRegistry.ViewerIndex)),
-    )
-    for (const affectedObject of this.CurrentUndoAction.affectedObjects) {
-      this.viewer.Invalidate(affectedObject)
+    this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
+    for (const affectedObject of this.CurrentUndoAction.getAffectedObjects()) {
+      this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
     if (this.geomGraphEditor.GraphBoundingBoxGetsExtended) {
@@ -903,6 +864,16 @@ export class LayoutEditor {
 
     e.stopPropagation()
     this._lastDragPoint = currentDragPoint
+  }
+
+  private prepareForDragging() {
+    this.SelectObjectForDragging(this.ActiveDraggedObject)
+    this.geomGraphEditor.PrepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
+    const currentUndoRedo = this.CurrentUndoAction
+    // for (const g of this.geomGraphEditor.objectsToDrag) {
+    //   currentUndoRedo.AddAffectedObject(g.entity.getAttr(AttributeRegistry.ViewerIndex))
+    //   currentUndoRedo.AddRestoreData(g.entity, getRestoreData(g.entity))
+    // }
   }
 
   GetDraggingMode(): DraggingMode {
@@ -1003,7 +974,7 @@ export class LayoutEditor {
         edge.setAttr(AttributeRegistry.DrawingObjectIndex, this.EdgeAttr.clone())
         const iEdge: IViewerEdge = this.viewer.RouteEdge(edge)
         this.viewer.AddEdge(iEdge, true)
-        this.AttachLayoutChangeEvent(iEdge)
+        // take care of undo() : TODO
       }
     } else {
       this.viewer.StopDrawingRubberEdge()
@@ -1024,7 +995,7 @@ export class LayoutEditor {
     this.GeomEdge.targetPort = this.TargetPort
     const iEdge = this.viewer.CreateEdgeWithGivenGeometry(edge)
     this.viewer.AddEdge(iEdge, true)
-    this.AttachLayoutChangeEvent(iEdge)
+    // take care of undo() : TODO
   }
 
   mkArrowhead(): Arrowhead {
@@ -1114,13 +1085,11 @@ export class LayoutEditor {
   Undo() {
     if (this.geomGraphEditor.CanUndo) {
       const action: UndoRedoAction = this.geomGraphEditor.CurrentUndoAction
-      this.geomGraphEditor.Undo()
-      for (const o of action.affectedObjects) {
-        this.viewer.Invalidate(o)
-      }
+      const objectsToInvalidate = action.getAffectedObjects()
 
-      if (action.GraphBoundingBoxHasChanged) {
-        this.viewer.InvalidateAll()
+      this.geomGraphEditor.Undo()
+      for (const o of objectsToInvalidate) {
+        this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
     }
   }
@@ -1131,13 +1100,10 @@ export class LayoutEditor {
     if (this.geomGraphEditor.CanRedo) {
       this.geomGraphEditor.UndoMode = false
       const action: UndoRedoAction = this.geomGraphEditor.CurrentRedoAction
+      const objectsToInvalidate = action.getAffectedObjects()
       this.geomGraphEditor.Redo()
-      for (const o of action.affectedObjects) {
-        this.viewer.Invalidate(o)
-      }
-
-      if (action.GraphBoundingBoxHasChanged) {
-        this.viewer.InvalidateAll()
+      for (const o of objectsToInvalidate) {
+        this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
 
       this.geomGraphEditor.UndoMode = true

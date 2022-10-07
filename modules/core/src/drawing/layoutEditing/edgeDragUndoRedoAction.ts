@@ -16,13 +16,11 @@ export class EdgeDragUndoRedoAction extends UndoRedoAction {
 
   /**    undoes the editing*/
   public Undo() {
-    this.ClearAffectedObjects()
     this.Restore()
   }
 
   /**   redoes the editing*/
   public Redo() {
-    this.ClearAffectedObjects()
     this.Restore()
   }
 

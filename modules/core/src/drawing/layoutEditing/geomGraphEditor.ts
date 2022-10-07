@@ -14,12 +14,19 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
 import {SplineRouter} from '../../routing/splineRouter'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
+import {Edge} from '../../structs/edge'
 import {Entity} from '../../structs/entity'
+import {Graph} from '../../structs/graph'
+import {Label} from '../../structs/label'
+import {Node} from '../../structs/node'
 import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
 import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
+import {EdgeRestoreData} from './edgeRestoreData'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
+import {LabelRestoreData} from './labelRestoreData'
+import {NodeRestoreData} from './nodeRestoreData'
 import {ObjectDragUndoRedoAction} from './objectDragUndoRedoAction'
 import {SiteInsertUndoAction} from './siteInsertUndoAction'
 import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
@@ -62,6 +69,10 @@ export class GeometryGraphEditor {
 
   public get CurrentUndoAction(): UndoRedoAction {
     return this.UndoRedoActionsList.CurrentUndo
+  }
+  /** Depending on UndoMode return the forming action */
+  get ActiveUndoRedoAction(): UndoRedoAction {
+    return this.UndoMode ? this.CurrentUndoAction : this.CurrentRedoAction
   }
 
   /**  return the current redo action*/
@@ -159,23 +170,24 @@ export class GeometryGraphEditor {
    *
    */
 
-  Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point): Array<Entity> {
+  Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
     this.GraphBoundingBoxGetsExtended = false
+    for (const o of this.objectsToDrag) {
+      this.registerForUndo(o.entity)
+    }
     if (delta.x !== 0 || delta.y !== 0) {
       if (this.EditedEdge == null) {
         if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
-          return this.DragObjectsForNonRectilinearCase(delta, draggingMode)
+          this.DragObjectsForNonRectilinearCase(delta, draggingMode)
         } else {
-          return this.DragObjectsForRectilinearCase(delta)
+          this.DragObjectsForRectilinearCase(delta)
         }
       } else {
         throw new Error('not implemented')
         this.DragEdgeEdit(lastMousePosition, delta)
         this.UpdateGraphBoundingBoxWithCheck(this.EditedEdge)
-        return [this.EditedEdge.edge]
       }
     }
-    return []
   }
 
   DragObjectsForRectilinearCase(delta: Point): Array<Entity> {
@@ -206,32 +218,28 @@ export class GeometryGraphEditor {
     throw new Error('not implemented')
   }
 
-  DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode): Array<Entity> {
+  DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
     if (draggingMode === DraggingMode.Incremental) {
       this.DragIncrementally(delta)
     } else if (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
       this.DragWithSplinesOrBundles(delta)
     } else {
-      return this.DragWithStraightLines(delta)
+      this.DragWithStraightLines(delta)
     }
   }
 
-  DragWithStraightLines(delta: Point): Array<Entity> {
-    const ret: Array<Entity> = []
+  DragWithStraightLines(delta: Point) {
+    // TODO: add to currentUndoRedo.restoreData
     for (const geomObj of this.objectsToDrag) {
-      if (geomObj instanceof GeomNode) {
-        geomObj.translate(delta)
-      } else {
-        GeometryGraphEditor.ShiftDragEdge(delta, geomObj as GeomEdge)
-      }
-      ret.push(geomObj.entity)
+      this.DragGeomObject(delta, geomObj)
       this.UpdateGraphBoundingBoxWithCheck(geomObj)
     }
 
-    return ret.concat(this.PropagateChangesToClusterParents()).concat(this.RegenerateEdgesAsStraightLines())
+    this.PropagateChangesToClusterParents()
+    this.RegenerateEdgesAsStraightLines()
   }
 
-  PropagateChangesToClusterParents(): Array<Entity> {
+  PropagateChangesToClusterParents() {
     const touchedClusters = new Set<GeomGraph>()
     for (const n of this.objectsToDrag) {
       if (n instanceof GeomNode === false) continue
@@ -247,17 +255,25 @@ export class GeometryGraphEditor {
     if (touchedClusters.size > 0) {
       for (const c of this.graph.subgraphs()) {
         if (touchedClusters.has(c)) {
-          c.boundingBox = c.calculateBoundsFromChildren()
+          c.boundingBox = c.calculateBoundsFromChildren() // TODO : add to undoAction here!!!!
         }
       }
     }
-    return Array.from(touchedClusters).map((g) => g.entity)
   }
 
   static ShiftDragEdge(delta: Point, geomObj: GeomEdge) {
     geomObj.translate(delta)
     if (geomObj.label) {
       GeometryGraphEditor.DragLabel(geomObj.label, delta)
+    }
+  }
+
+  DragGeomObject(delta: Point, geomObj: GeomObject) {
+    if (geomObj instanceof GeomNode) {
+      geomObj.translate(delta)
+    } else if (geomObj instanceof GeomEdge) {
+      GeometryGraphEditor.ShiftDragEdge(delta, geomObj)
+    } else {
     }
   }
 
@@ -285,24 +301,27 @@ export class GeometryGraphEditor {
     this.UpdateGraphBoundingBoxWithCheck_()
   }
 
-  RegenerateEdgesAsStraightLines(): Array<Entity> {
-    const ret: Array<Entity> = []
+  registerForUndo(e: Entity) {
+    this.ActiveUndoRedoAction.AddRestoreData(e, getRestoreData(e))
+  }
+
+  RegenerateEdgesAsStraightLines() {
     for (const edge of this.edgesDraggedWithSource) {
+      this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
-      ret.push(edge.entity)
     }
 
     for (const edge of this.edgesDraggedWithTarget) {
+      this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
-      ret.push(edge.entity)
     }
 
+    // no need to register for undo the labels here because the edges are registered already
     const ep = EdgeLabelPlacement.constructorGA(
       this.graph,
       Array.from(this.edgesDraggedWithSource).concat(Array.from(this.edgesDraggedWithTarget)),
     )
     ep.run()
-    return ret
   }
 
   UpdateGraphBoundingBoxWithCheck_() {
@@ -347,8 +366,6 @@ export class GeometryGraphEditor {
     }
   }
 
-  //      prepares for node dragging
-
   PrepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.EditedEdge = null
     this.CalculateDragSets(markedObjects)
@@ -357,10 +374,11 @@ export class GeometryGraphEditor {
       this.InitIncrementalDragger()
     }
   }
+
   PrepareForClusterCollapseChange(changedClusters: Iterable<IViewerNode>) {
     this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph))
     for (const iCluster of changedClusters) {
-      this.CurrentUndoAction.AddAffectedObject(iCluster)
+      throw new Error('not implemented') // this.CurrentUndoAction.AddAffectedObject(iCluster) //
     }
   }
 
@@ -586,15 +604,14 @@ export class GeometryGraphEditor {
 
   public PrepareForPolylineCornerRemoval(affectedEdge: IViewerObject, site: CornerSite): UndoRedoAction {
     const action = new SiteRemoveUndoAction(this.EditedEdge)
-    action.AddAffectedObject(affectedEdge)
     return this.InsertToListAndSetTheBoxBefore(action)
   }
 
   //      prepare for polyline corner insertion
 
   PrepareForPolylineCornerInsertion(affectedObj: IViewerObject, site: CornerSite): UndoRedoAction {
+    throw new Error('non tested')
     const action = new SiteInsertUndoAction(this.EditedEdge)
-    action.AddAffectedObject(affectedObj)
     return this.InsertToListAndSetTheBoxBefore(action)
   }
 
@@ -717,33 +734,6 @@ export class GeometryGraphEditor {
 
   //      creates a "tight" bounding box
 
-  public FitGraphBoundingBox(affectedEntity: IViewerObject, geometryGraph: GeomGraph) {
-    if (geometryGraph != null) {
-      const uAction = new UndoRedoAction(geometryGraph)
-      this.UndoRedoActionsList.AddAction(uAction)
-      const r = Rectangle.mkEmpty()
-      for (const n of geometryGraph.shallowNodes) {
-        r.addRecSelf(n.boundingBox)
-      }
-
-      for (const e of geometryGraph.edges()) {
-        r.addRecSelf(e.boundingBox)
-        if (e.label != null) {
-          r.addRecSelf(e.label.boundingBox)
-        }
-      }
-
-      r.left -= geometryGraph.margins.left
-      r.top += geometryGraph.margins.top
-      r.bottom -= -geometryGraph.margins.bottom
-      r.right += geometryGraph.margins.right
-      uAction.ClearAffectedObjects()
-      uAction.AddAffectedObject(affectedEntity)
-      geometryGraph.boundingBox = r
-      uAction.GraphBoundingBoxAfter = r
-    }
-  }
-
   public OnDragEnd(delta: Point) {
     if (this.CurrentUndoAction != null) {
       const action = this.CurrentUndoAction
@@ -758,4 +748,11 @@ export class GeometryGraphEditor {
   ForgetDragging() {
     this.incrementalDragger = null
   }
+}
+
+function getRestoreData(entity: Entity): any {
+  if (entity instanceof Graph) return null
+  if (entity instanceof Node) return new NodeRestoreData((GeomObject.getGeom(entity) as GeomNode).boundaryCurve)
+  if (entity instanceof Edge) return new EdgeRestoreData(GeomObject.getGeom(entity) as GeomEdge)
+  if (entity instanceof Label) return new LabelRestoreData(GeomLabel.getGeom(entity) as GeomLabel)
 }

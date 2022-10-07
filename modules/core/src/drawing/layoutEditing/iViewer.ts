@@ -41,18 +41,6 @@ export interface IViewer {
 
   ViewChangeEvent: EventHandler
 
-  //  signalling the mouse down event
-
-  MouseDown: EventHandler
-
-  //  signalling the mouse move event
-
-  MouseMove: EventHandler
-
-  //  signalling the mouse up event
-
-  MouseUp: EventHandler
-
   //  the event raised at a time when ObjectUnderMouseCursor changes
 
   ObjectUnderMouseCursorChanged: EventHandler
@@ -193,4 +181,6 @@ export interface IViewer {
   //  the transformation from the graph surface to the client viewport
 
   Transform: PlaneTransformation
+  undo(): void
+  redo(): void
 }

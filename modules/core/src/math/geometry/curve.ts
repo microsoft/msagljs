@@ -1299,6 +1299,7 @@ export class Curve implements ICurve {
     for (const s of this.segs) r += s.length
     return r
   }
+  /** returns a new curve */
   transform(transformation: PlaneTransformation): ICurve {
     const c = new Curve()
     for (const s of this.segs) {

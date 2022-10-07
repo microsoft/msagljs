@@ -88,7 +88,7 @@ export class RendererSvg implements IViewer {
     this._objectTree = value
   }
 
-  private processMouseMove(sender: any, e: MouseEvent): void {
+  private processMouseMove(e: MouseEvent): void {
     if (this == null || this._svgCreator == null) {
       return
     }
@@ -131,19 +131,40 @@ export class RendererSvg implements IViewer {
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
-    container.addEventListener('mousedown', (a) => {
-      if (this.LayoutEditingEnabled && this.ObjectUnderMouseCursor != null && a.buttons == 1) this.panZoom.pause()
-      this.MouseDown.raise(this, a)
+
+    container.addEventListener('mousedown', (e) => {
+      if (!this.LayoutEditingEnabled) return
+
+      if (this.ObjectUnderMouseCursor != null && e.buttons == 1) {
+        this.panZoom.pause()
+      }
+      this.layoutEditor.ViewerMouseDown(this, e)
     })
-    container.addEventListener('mouseup', (a) => {
-      this.MouseUp.raise(this, a)
+
+    container.addEventListener('mousemove', (e) => {
+      this.processMouseMove(e)
+      if (this.LayoutEditingEnabled) this.layoutEditor.ViewerMouseMove(this, e)
+    })
+
+    container.addEventListener('mouseup', (e) => {
+      if (!this.LayoutEditingEnabled) return
+      this.layoutEditor.ViewerMouseUp(this, e)
       this.panZoom.resume()
     })
-    container.addEventListener('mousemove', (a) => this.MouseMove.raise(this, a))
-    this.MouseMove.subscribe(this.processMouseMove.bind(this))
 
     this.layoutEditor = new LayoutEditor(this)
   }
+
+  undo(): void {
+    this.layoutEditor.Undo()
+  }
+
+  redo(): void {
+    this.layoutEditor.Redo()
+  }
+
+  ViewChangeEvent: EventHandler
+
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
     if (this._graph === graph) {
@@ -213,7 +234,7 @@ export class RendererSvg implements IViewer {
     const m = this._svgCreator.getTransform()
     return m.inverse().multiplyPoint(new Point(x, y))
   }
-  IncrementalDraggingModeAlways: boolean
+  IncrementalDraggingModeAlways = false
   get CurrentScale(): number {
     return this._svgCreator.getScale()
   }
@@ -223,10 +244,6 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   NeedToCalculateLayout: boolean
-  ViewChangeEvent: EventHandler = new EventHandler()
-  MouseDown: EventHandler = new EventHandler()
-  MouseMove: EventHandler = new EventHandler()
-  MouseUp: EventHandler = new EventHandler()
   GraphChanged: EventHandler = new EventHandler()
 
   _objectUnderMouse: IViewerObject

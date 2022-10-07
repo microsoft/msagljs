@@ -15,9 +15,21 @@ const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
 /** setup the viewer */
 viewer.addEventListener('keydown', (e: KeyboardEvent) => {
-  if (e.ctrlKey && e.key.toLowerCase() === 'e') {
-    svgRenderer.LayoutEditingEnabled = !svgRenderer.LayoutEditingEnabled
-    e.preventDefault()
+  if (e.ctrlKey) {
+    switch (e.key.toLowerCase()) {
+      case 'e':
+        svgRenderer.LayoutEditingEnabled = !svgRenderer.LayoutEditingEnabled
+        e.preventDefault()
+        break
+      case 'z':
+        svgRenderer.undo()
+        e.preventDefault()
+        break
+      case 'y':
+        svgRenderer.redo()
+        e.preventDefault()
+        break
+    }
   }
 })
 

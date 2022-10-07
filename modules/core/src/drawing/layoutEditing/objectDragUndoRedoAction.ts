@@ -17,7 +17,6 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
 
   public Undo() {
     super.Undo()
-    this.ClearAffectedObjects()
     const restDictionary = this.CloneRestoreDictionary()
     for (const kv of restDictionary) {
       ObjectDragUndoRedoAction.RestoreOnKevValue(kv)
@@ -53,7 +52,6 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
 
   Redo() {
     super.Redo()
-    this.ClearAffectedObjects()
     const dict = this.CloneRestoreDictionary()
     for (const restoreData of dict) {
       ObjectDragUndoRedoAction.RestoreOnKevValue(restoreData)

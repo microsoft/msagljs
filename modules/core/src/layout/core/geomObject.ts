@@ -21,7 +21,6 @@ export class EventHandler {
 
 export abstract class GeomObject extends Attribute {
   abstract boundingBox: Rectangle
-  BeforeLayoutChangeEvent: EventHandler
   isCollapsed: boolean
   constructor(entity: Entity) {
     super(entity, AttributeRegistry.GeomObjectIndex)

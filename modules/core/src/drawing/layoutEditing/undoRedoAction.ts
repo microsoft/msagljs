@@ -6,26 +6,14 @@ import {Rectangle} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 
-import {IViewerObject} from './iViewerObject'
-
 export class UndoRedoAction {
-  // the set of the objects that the viewer has to invalidate
-  affectedObjects: Set<IViewerObject> = new Set<IViewerObject>()
-
-  hasAffectedObject(o: IViewerObject): boolean {
-    return this.affectedObjects.has(o)
+  /** creates an Array of affected objects */
+  *getAffectedObjects(): IterableIterator<Entity> {
+    yield* this.restoreDataDictionary.keys()
   }
 
-  AddAffectedObject(o: IViewerObject) {
-    this.affectedObjects.add(o)
-  }
-
-  RemoveAffectedObject(o: IViewerObject) {
-    this.affectedObjects.delete(o)
-  }
-
-  ClearAffectedObjects() {
-    this.affectedObjects.clear()
+  hasAffectedObject(o: Entity): boolean {
+    return this.restoreDataDictionary.has(o)
   }
 
   constructor(graphPar: GeomGraph) {
@@ -80,10 +68,13 @@ export class UndoRedoAction {
     this.prev = value
   }
 
-  protected restoreDataDictionary: Map<Entity, any> = new Map<Entity, any>()
+  protected restoreDataDictionary = new Map<Entity, any>()
 
+  /** it adds only when the key entity is not present */
   AddRestoreData(entity: Entity, restoreData: any) {
-    this.restoreDataDictionary.set(entity, restoreData)
+    if (!this.restoreDataDictionary.has(entity)) {
+      this.restoreDataDictionary.set(entity, restoreData)
+    }
   }
 
   private static GetParentGraph(geomObj: GeomObject): GeomGraph {
