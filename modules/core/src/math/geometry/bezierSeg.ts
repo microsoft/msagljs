@@ -205,7 +205,7 @@ export class BezierSeg implements ICurve {
   }
 
   // Return the transformed curve
-  transform(transformation: PlaneTransformation) {
+  transform(transformation: PlaneTransformation): ICurve {
     return new BezierSeg(
       transformation.multiplyPoint(this.b[0]),
       transformation.multiplyPoint(this.b[1]),

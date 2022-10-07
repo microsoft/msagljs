@@ -202,7 +202,7 @@ export class Ellipse implements ICurve {
       const bp = transformation.multiplyPoint(this.bAxis).sub(transformation.offset())
       return new Ellipse(this.parStart, this.parEnd, ap, bp, transformation.multiplyPoint(this.center))
     }
-    return this
+    return this.clone()
   }
 
   /** returns a parameter t such that the distance between curve[t] and targetPoint is minimal
