@@ -623,10 +623,27 @@ export class GeometryGraphEditor {
 
   public Undo() {
     if (this.CanUndo) {
+      this.createRedoActionIfNeeded()
       this.UndoRedoActionsList.CurrentUndo.Undo()
-      this.UndoRedoActionsList.CurrentRedo = this.UndoRedoActionsList.CurrentUndo
-      this.UndoRedoActionsList.CurrentUndo = this.UndoRedoActionsList.CurrentUndo.prev
+      this.UndoRedoActionsList.CurrentRedo = this.UndoRedoActionsList.CurrentUndo.Next
+      this.UndoRedoActionsList.CurrentUndo = this.UndoRedoActionsList.CurrentUndo.Previous
       this.RaiseChangeInUndoList()
+    }
+  }
+  createRedoActionIfNeeded() {
+    const currentUndo = this.UndoRedoActionsList.CurrentUndo
+    if (currentUndo.Next != null) return
+    let action: UndoRedoAction
+    if (currentUndo instanceof ObjectDragUndoRedoAction) {
+      action = new ObjectDragUndoRedoAction(currentUndo.geomGraph)
+    } else {
+      action = null
+      throw new Error('not implemented')
+    }
+    currentUndo.Next = action
+    action.Previous = currentUndo
+    for (const e of currentUndo.EditedObjects) {
+      action.AddRestoreData(e, getRestoreData(e))
     }
   }
 

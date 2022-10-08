@@ -1,7 +1,7 @@
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoRedoActionsList {
-  currentUndo: UndoRedoAction
+  private currentUndo: UndoRedoAction
 
   get CurrentUndo(): UndoRedoAction {
     return this.currentUndo
@@ -10,7 +10,7 @@ export class UndoRedoActionsList {
     this.currentUndo = value
   }
 
-  currentRedo: UndoRedoAction
+  private currentRedo: UndoRedoAction
 
   get CurrentRedo(): UndoRedoAction {
     return this.currentRedo

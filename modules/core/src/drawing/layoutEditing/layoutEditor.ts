@@ -1100,7 +1100,7 @@ export class LayoutEditor {
     if (this.geomGraphEditor.CanRedo) {
       this.geomGraphEditor.UndoMode = false
       const action: UndoRedoAction = this.geomGraphEditor.CurrentRedoAction
-      const objectsToInvalidate = action.getAffectedObjects()
+      const objectsToInvalidate = Array.from(action.getAffectedObjects())
       this.geomGraphEditor.Redo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))

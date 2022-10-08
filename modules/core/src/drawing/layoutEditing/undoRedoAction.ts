@@ -7,6 +7,8 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 
 export class UndoRedoAction {
+  static count = 0
+  id: number;
   /** creates an Array of affected objects */
   *getAffectedObjects(): IterableIterator<Entity> {
     yield* this.restoreDataDictionary.keys()
@@ -19,6 +21,7 @@ export class UndoRedoAction {
   constructor(graphPar: GeomGraph) {
     this.geomGraph = graphPar
     this.graphBoundingBoxBefore = this.geomGraph.boundingBox
+    this.id = UndoRedoAction.count++
   }
 
   graph: GeomGraph
@@ -32,9 +35,9 @@ export class UndoRedoAction {
     this.graph = value
   }
 
-  next: UndoRedoAction
+  private next: UndoRedoAction
 
-  prev: UndoRedoAction
+  private prev: UndoRedoAction
 
   // Undoes the action
   Undo() {
