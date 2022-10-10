@@ -37,18 +37,17 @@ import {
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
+import {Attribute} from 'msagl-js/src/structs/attribute'
 
-class SvgViewerObject {
-  /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
-  entity: Entity
-  bind() {
-    if (this.entity) this.entity.setAttr(AttributeRegistry.ViewerIndex, this)
+class SvgViewerObject extends Attribute {
+  rebind(): void {
+    this.bind(AttributeRegistry.ViewerIndex)
   }
+  /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */
 
   constructor(attrCont: Entity, svgData: SVGElement) {
-    this.entity = attrCont
+    super(attrCont, AttributeRegistry.ViewerIndex)
     this.svgData = svgData
-    this.bind()
   }
 
   svgData: SVGElement

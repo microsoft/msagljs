@@ -31,7 +31,7 @@ import {ObjectDragUndoRedoAction} from './objectDragUndoRedoAction'
 import {SiteInsertUndoAction} from './siteInsertUndoAction'
 import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
 import {UndoRedoAction} from './undoRedoAction'
-import {UndoRedoActionsList} from './undoRedoActionsList'
+import {UndoList} from './undoRedoActionsList'
 
 export enum DraggingMode {
   Incremental,
@@ -46,39 +46,15 @@ export class GeometryGraphEditor {
 
   objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
-  undoRedoActionsList: UndoRedoActionsList = new UndoRedoActionsList()
+  undoList: UndoList = new UndoList()
 
   undoMode = true
 
   incrementalDragger: IncrementalDragger
-  /**
-   * Signals that there is a change  of the undo/redo list.
-   * There are four possibilities: Undo(Redo) becomes available (unavailable)
-   * */
-
-  ChangeInUndoRedoList: EventHandler = new EventHandler()
-
-  get UndoRedoActionsList(): UndoRedoActionsList {
-    return this.undoRedoActionsList
-  }
-  set UndoRedoActionsList(value: UndoRedoActionsList) {
-    this.undoRedoActionsList = value
-  }
-
   /**      return the current undo action*/
 
   public get CurrentUndoAction(): UndoRedoAction {
-    return this.UndoRedoActionsList.CurrentUndo
-  }
-  /** Depending on UndoMode return the forming action */
-  get ActiveUndoRedoAction(): UndoRedoAction {
-    return this.UndoMode ? this.CurrentUndoAction : this.CurrentRedoAction
-  }
-
-  /**  return the current redo action*/
-
-  public get CurrentRedoAction(): UndoRedoAction {
-    return this.UndoRedoActionsList.CurrentRedo
+    return this.undoList.currentUndo
   }
 
   /**  Will be set to true if an entity was dragged out of the graph bounding box*/
@@ -125,13 +101,13 @@ export class GeometryGraphEditor {
   }
 
   /**       returns true if "undo" is available */
-  public get CanUndo(): boolean {
-    return this.UndoRedoActionsList.CurrentUndo != null
+  public get canUndo(): boolean {
+    return this.undoList.currentUndo != null
   }
 
   /**  returns true if "redo" is available*/
   public get CanRedo(): boolean {
-    return this.UndoRedoActionsList.CurrentRedo != null
+    return this.undoList.currentUndo.isOld
   }
 
   /**  indicates if the editor is under the undo mode*/
@@ -302,7 +278,7 @@ export class GeometryGraphEditor {
   }
 
   registerForUndo(e: Entity) {
-    this.ActiveUndoRedoAction.AddRestoreData(e, getRestoreData(e))
+    this.ActiveUndoRedoAction.addRestoreData(e, getRestoreData(e))
   }
 
   RegenerateEdgesAsStraightLines() {
@@ -578,8 +554,8 @@ export class GeometryGraphEditor {
   }
 
   InsertToListAndSetTheBoxBefore(action: UndoRedoAction): UndoRedoAction {
-    this.UndoRedoActionsList.AddAction(action)
-    action.GraphBoundingBoxBefore = action.graph.boundingBox.clone()
+    this.undoList.AddAction(action)
+    action.graphBoundingBoxBefore = action.graph.boundingBox.clone()
     this.RaiseChangeInUndoList()
     return action
   }
@@ -622,16 +598,15 @@ export class GeometryGraphEditor {
   //      Undoes the last editing.
 
   public Undo() {
-    if (this.CanUndo) {
-      this.createRedoActionIfNeeded()
-      this.UndoRedoActionsList.CurrentUndo.Undo()
-      this.UndoRedoActionsList.CurrentRedo = this.UndoRedoActionsList.CurrentUndo.Next
-      this.UndoRedoActionsList.CurrentUndo = this.UndoRedoActionsList.CurrentUndo.Previous
+    if (this.canUndo) {
+      this.undoList.currentUndo.undo()
+      this.undoList.CurrentRedo = this.undoList.currentUndo.Next
+      this.undoList.currentUndo = this.undoList.currentUndo.Previous
       this.RaiseChangeInUndoList()
     }
   }
   createRedoActionIfNeeded() {
-    const currentUndo = this.UndoRedoActionsList.CurrentUndo
+    const currentUndo = this.undoList.currentUndo
     if (currentUndo.Next != null) return
     let action: UndoRedoAction
     if (currentUndo instanceof ObjectDragUndoRedoAction) {
@@ -643,7 +618,7 @@ export class GeometryGraphEditor {
     currentUndo.Next = action
     action.Previous = currentUndo
     for (const e of currentUndo.EditedObjects) {
-      action.AddRestoreData(e, getRestoreData(e))
+      action.addRestoreData(e, getRestoreData(e))
     }
   }
 
@@ -651,9 +626,9 @@ export class GeometryGraphEditor {
 
   public Redo() {
     if (this.CanRedo) {
-      this.UndoRedoActionsList.CurrentRedo.Redo()
-      this.UndoRedoActionsList.CurrentUndo = this.UndoRedoActionsList.CurrentRedo
-      this.UndoRedoActionsList.CurrentRedo = this.UndoRedoActionsList.CurrentRedo.Next
+      this.undoList.CurrentRedo.redo()
+      this.undoList.currentUndo = this.undoList.CurrentRedo
+      this.undoList.CurrentRedo = this.undoList.CurrentRedo.Next
       this.RaiseChangeInUndoList()
     }
   }
@@ -664,7 +639,7 @@ export class GeometryGraphEditor {
     this.objectsToDrag = new Set<GeomObject>()
     this.edgesDraggedWithSource.clear()
     this.edgesDraggedWithTarget.clear()
-    this.UndoRedoActionsList = new UndoRedoActionsList()
+    this.undoList = new UndoList()
     this.EditedEdge = null
   }
 
@@ -754,7 +729,7 @@ export class GeometryGraphEditor {
   public OnDragEnd(delta: Point) {
     if (this.CurrentUndoAction != null) {
       const action = this.CurrentUndoAction
-      action.GraphBoundingBoxAfter = action.graph.boundingBox
+      action.graphBoundingBoxAfter = action.graph.boundingBox
     }
   }
 
