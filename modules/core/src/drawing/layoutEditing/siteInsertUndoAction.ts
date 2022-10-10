@@ -69,7 +69,7 @@ export class SiteInsertUndoAction extends UndoRedoAction {
   public constructor(edgeToEdit: GeomEdge) {
     super(GeomGraph.getGeom(edgeToEdit.edge.parent as Graph))
     this.editedEdge = edgeToEdit
-    this.AddRestoreData(this.editedEdge.edge, null) // RestoreHelper.GetRestoreData(this.editedEdge))
+    this.addRestoreData(this.editedEdge.edge, null) // RestoreHelper.GetRestoreData(this.editedEdge))
   }
 
   //  undoes the editing
@@ -84,7 +84,7 @@ export class SiteInsertUndoAction extends UndoRedoAction {
 
   //  redoes the editing
 
-  public Redo() {
+  public redo() {
     this.insertedSite = CornerSite.mkSiteSPS(this.PrevSite, this.InsertionPoint, this.PrevSite.next)
     this.insertedSite.nextBezierCoefficient = this.SiteKNext
     this.insertedSite.previouisBezierCoefficient = this.SiteKPrevious

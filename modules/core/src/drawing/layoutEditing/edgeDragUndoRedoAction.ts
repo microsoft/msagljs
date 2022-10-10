@@ -20,12 +20,12 @@ export class EdgeDragUndoRedoAction extends UndoRedoAction {
   }
 
   /**   redoes the editing*/
-  public Redo() {
+  public redo() {
     this.Restore()
   }
 
   Restore() {
-    const erd = <EdgeRestoreData>this.GetRestoreData(this.editedEdge.edge)
+    const erd = <EdgeRestoreData>this.getAttribute(this.editedEdge.edge)
     this.editedEdge.curve = erd.Curve
     this.editedEdge.underlyingPolyline = erd.UnderlyingPolyline
     if (this.editedEdge.sourceArrowhead != null) {

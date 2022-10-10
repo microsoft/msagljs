@@ -303,7 +303,7 @@ export class LayoutEditor {
   //  returns true if Undo is available
 
   get CanUndo(): boolean {
-    return this.geomGraphEditor.CanUndo
+    return this.geomGraphEditor.canUndo
   }
 
   //  return true if Redo is available
@@ -392,7 +392,7 @@ export class LayoutEditor {
     }
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
-    for (const o of this.geomGraphEditor.CurrentUndoAction.getAffectedObjects()) {
+    for (const o of this.geomGraphEditor.CurrentUndoAction.getAffectedEntities()) {
       this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
@@ -854,7 +854,7 @@ export class LayoutEditor {
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
     this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    for (const affectedObject of this.CurrentUndoAction.getAffectedObjects()) {
+    for (const affectedObject of this.CurrentUndoAction.getAffectedEntities()) {
       this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
@@ -1083,9 +1083,9 @@ export class LayoutEditor {
   //  Undoes the editing
 
   Undo() {
-    if (this.geomGraphEditor.CanUndo) {
+    if (this.geomGraphEditor.canUndo) {
       const action: UndoRedoAction = this.geomGraphEditor.CurrentUndoAction
-      const objectsToInvalidate = action.getAffectedObjects()
+      const objectsToInvalidate = action.getAffectedEntities()
 
       this.geomGraphEditor.Undo()
       for (const o of objectsToInvalidate) {
@@ -1100,7 +1100,7 @@ export class LayoutEditor {
     if (this.geomGraphEditor.CanRedo) {
       this.geomGraphEditor.UndoMode = false
       const action: UndoRedoAction = this.geomGraphEditor.CurrentRedoAction
-      const objectsToInvalidate = Array.from(action.getAffectedObjects())
+      const objectsToInvalidate = Array.from(action.getAffectedEntities())
       this.geomGraphEditor.Redo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))

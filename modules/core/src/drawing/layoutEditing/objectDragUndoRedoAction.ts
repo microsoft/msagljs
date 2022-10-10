@@ -47,11 +47,11 @@ export class ObjectDragUndoRedoAction extends UndoRedoAction {
   }
 
   CloneRestoreDictionary(): Map<Entity, LabelRestoreData | NodeRestoreData | EdgeRestoreData | LabelRestoreData> {
-    return new Map<Entity, any>(this.restoreDataDictionary)
+    return new Map<Entity, any>(this.changes)
   }
 
-  Redo() {
-    super.Redo()
+  redo() {
+    super.redo()
     const dict = this.CloneRestoreDictionary()
     for (const restoreData of dict) {
       ObjectDragUndoRedoAction.RestoreOnKevValue(restoreData)

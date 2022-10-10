@@ -1,32 +1,15 @@
 import {UndoRedoAction} from './undoRedoAction'
 
-export class UndoRedoActionsList {
-  private currentUndo: UndoRedoAction
-
-  get CurrentUndo(): UndoRedoAction {
-    return this.currentUndo
-  }
-  set CurrentUndo(value: UndoRedoAction) {
-    this.currentUndo = value
-  }
-
-  private currentRedo: UndoRedoAction
-
-  get CurrentRedo(): UndoRedoAction {
-    return this.currentRedo
-  }
-  set CurrentRedo(value: UndoRedoAction) {
-    this.currentRedo = value
-  }
+export class UndoList {
+  currentUndo: UndoRedoAction
 
   AddAction(action: UndoRedoAction): UndoRedoAction {
-    if (this.CurrentUndo != null) {
-      this.CurrentUndo.Next = action
+    if (this.currentUndo != null) {
+      this.currentUndo.next = action
     }
 
-    action.Previous = this.CurrentUndo
-    this.CurrentUndo = action
-    this.CurrentRedo = null
+    action.prev = this.currentUndo
+    this.currentUndo = action
     return action
   }
 }

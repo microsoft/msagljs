@@ -23,7 +23,7 @@ export class SiteRemoveUndoAction extends UndoRedoAction {
   public constructor(geomEdge: GeomEdge) {
     super(GeomGraph.getGeom(geomEdge.edge.parent as Graph) as GeomGraph)
     this.editedEdge = geomEdge
-    this.AddRestoreData(this.editedEdge.edge, null /*RestoreHelper.GetRestoreData(this.editedEdge)*/)
+    this.addRestoreData(this.editedEdge.edge, null /*RestoreHelper.GetRestoreData(this.editedEdge)*/)
   }
 
   /**  undoes the editing*/
@@ -38,7 +38,7 @@ export class SiteRemoveUndoAction extends UndoRedoAction {
 
   /**   redoes the editing*/
 
-  public Redo() {
+  public redo() {
     const prev: CornerSite = this.RemovedSite.prev
     const next: CornerSite = this.RemovedSite.next
     prev.next = next
