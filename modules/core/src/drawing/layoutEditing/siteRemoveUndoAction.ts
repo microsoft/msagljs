@@ -23,7 +23,7 @@ export class SiteRemoveUndoAction extends UndoRedoAction {
   public constructor(geomEdge: GeomEdge) {
     super(GeomGraph.getGeom(geomEdge.edge.parent as Graph) as GeomGraph)
     this.editedEdge = geomEdge
-    this.addRestoreData(this.editedEdge.edge, null /*RestoreHelper.GetRestoreData(this.editedEdge)*/)
+    this.addOldNewPair(this.editedEdge.edge, null /*RestoreHelper.GetRestoreData(this.editedEdge)*/)
   }
 
   /**  undoes the editing*/

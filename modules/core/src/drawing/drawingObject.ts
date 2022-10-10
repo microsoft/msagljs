@@ -11,6 +11,9 @@ import {Attribute} from '../structs/attribute'
 import {AttributeRegistry} from '../structs/attributeRegistry'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject extends Attribute {
+  rebind(): void {
+    this.bind(AttributeRegistry.DrawingObjectIndex)
+  }
   static copyValidFields(source: DrawingObject, target: DrawingObject) {
     if (source == null || target == null) return
     if (source.color && source.color.keyword && source.color.keyword.toLowerCase() !== 'black') {

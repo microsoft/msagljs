@@ -32,4 +32,7 @@ export abstract class GeomObject extends Attribute {
     const p = this.entity.parent
     return p ? GeomObject.getGeom(p) : null
   }
+  rebind(): void {
+    this.bind(AttributeRegistry.GeomObjectIndex)
+  }
 }

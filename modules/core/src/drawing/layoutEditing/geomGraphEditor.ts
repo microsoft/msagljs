@@ -48,8 +48,6 @@ export class GeometryGraphEditor {
 
   undoList: UndoList = new UndoList()
 
-  undoMode = true
-
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
 
@@ -75,7 +73,6 @@ export class GeometryGraphEditor {
   public set geomGraph(value: GeomGraph) {
     this.graph = value
     this.Clear()
-    this.RaiseChangeInUndoList()
   }
 
   public get LayoutSettings(): ILayoutSettings {
@@ -102,21 +99,12 @@ export class GeometryGraphEditor {
 
   /**       returns true if "undo" is available */
   public get canUndo(): boolean {
-    return this.undoList.currentUndo != null
+    return this.undoList.canUndo()
   }
 
   /**  returns true if "redo" is available*/
-  public get CanRedo(): boolean {
-    return this.undoList.currentUndo.isOld
-  }
-
-  /**  indicates if the editor is under the undo mode*/
-
-  get UndoMode(): boolean {
-    return this.undoMode
-  }
-  set UndoMode(value: boolean) {
-    this.undoMode = value
+  public get canRedo(): boolean {
+    return this.undoList.canRedo()
   }
 
   static DragLabel(label: GeomLabel, delta: Point) {
@@ -278,7 +266,7 @@ export class GeometryGraphEditor {
   }
 
   registerForUndo(e: Entity) {
-    this.ActiveUndoRedoAction.addRestoreData(e, getRestoreData(e))
+    this.undoList.registerForUndo(e)
   }
 
   RegenerateEdgesAsStraightLines() {
@@ -554,16 +542,7 @@ export class GeometryGraphEditor {
   }
 
   InsertToListAndSetTheBoxBefore(action: UndoRedoAction): UndoRedoAction {
-    this.undoList.AddAction(action)
-    action.graphBoundingBoxBefore = action.graph.boundingBox.clone()
-    this.RaiseChangeInUndoList()
-    return action
-  }
-
-  RaiseChangeInUndoList() {
-    if (this.ChangeInUndoRedoList != null) {
-      this.ChangeInUndoRedoList.forEach((a) => a(this, null))
-    }
+    return this.undoList.AddAction(action)
   }
 
   //      preparing for an edge corner dragging
@@ -599,37 +578,31 @@ export class GeometryGraphEditor {
 
   public Undo() {
     if (this.canUndo) {
-      this.undoList.currentUndo.undo()
-      this.undoList.CurrentRedo = this.undoList.currentUndo.Next
-      this.undoList.currentUndo = this.undoList.currentUndo.Previous
-      this.RaiseChangeInUndoList()
+      this.undoList.undo()
     }
   }
-  createRedoActionIfNeeded() {
-    const currentUndo = this.undoList.currentUndo
-    if (currentUndo.Next != null) return
-    let action: UndoRedoAction
-    if (currentUndo instanceof ObjectDragUndoRedoAction) {
-      action = new ObjectDragUndoRedoAction(currentUndo.geomGraph)
-    } else {
-      action = null
-      throw new Error('not implemented')
-    }
-    currentUndo.Next = action
-    action.Previous = currentUndo
-    for (const e of currentUndo.EditedObjects) {
-      action.addRestoreData(e, getRestoreData(e))
-    }
-  }
+  // createRedoActionIfNeeded() {
+  //   const currentUndo = this.undoList.currentUndo
+  //   if (currentUndo.Next != null) return
+  //   let action: UndoRedoAction
+  //   if (currentUndo instanceof ObjectDragUndoRedoAction) {
+  //     action = new ObjectDragUndoRedoAction(currentUndo.geomGraph)
+  //   } else {
+  //     action = null
+  //     throw new Error('not implemented')
+  //   }
+  //   currentUndo.Next = action
+  //   action.Previous = currentUndo
+  //   for (const e of currentUndo.EditedObjects) {
+  //     action.addRestoreData(e, getRestoreData(e))
+  //   }
+  // }
 
   //      redo the dragging
 
   public Redo() {
-    if (this.CanRedo) {
-      this.undoList.CurrentRedo.redo()
-      this.undoList.currentUndo = this.undoList.CurrentRedo
-      this.undoList.CurrentRedo = this.undoList.CurrentRedo.Next
-      this.RaiseChangeInUndoList()
+    if (this.canRedo) {
+      this.undoList.redo()
     }
   }
 

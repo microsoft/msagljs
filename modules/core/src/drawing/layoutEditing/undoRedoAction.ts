@@ -2,7 +2,6 @@
 
 import {GeomGraph} from '../../layout/core'
 import {GeomObject} from '../../layout/core/geomObject'
-import {Rectangle} from '../../math/geometry'
 import {Attribute} from '../../structs/attribute'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
@@ -11,6 +10,9 @@ import {Assert} from '../../utils/assert'
 export class UndoRedoAction {
   static count = 0 // used for debug : TODO remove
   id: number // used for debug : TODO remove
+  get isNew(): boolean {
+    return !this.isOld
+  }
   /** isOld = true means that the relevant objects, the keys of restoreDataDictionary, have old attributes
    *  isOld = false means that the objects are in the new state
    */
@@ -34,9 +36,7 @@ export class UndoRedoAction {
     return this.changes.has(o)
   }
 
-  constructor(graphPar: GeomGraph) {
-    this.geomGraph = graphPar
-    this.graphBoundingBoxBefore_ = this.geomGraph.boundingBox
+  constructor() {
     this.id = UndoRedoAction.count++
   }
 
@@ -56,15 +56,18 @@ export class UndoRedoAction {
   prev: UndoRedoAction
 
   redo() {
-    if (this.graphBoundingBoxHasChanged) {
-      this.geomGraph.boundingBox = this.graphBoundingBoxAfter
+    Assert.assert(this.isOld)
+    for (const v of this.changes.values()) {
+      for (const pair of v) {
+        pair.new.rebind()
+      }
     }
   }
 
   protected changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
 
   /** it adds only when the key entity is not present */
-  addRestoreData(entity: Entity, data: {old: Attribute; new: Attribute}[]) {
+  addOldNewPair(entity: Entity, data: {old: Attribute; new: Attribute}[]) {
     if (!this.changes.has(entity)) {
       this.changes.set(entity, data)
     }
@@ -91,31 +94,6 @@ export class UndoRedoAction {
     return this.changes.keys()
   }
 
-  graphBoundingBoxBefore_: Rectangle = Rectangle.mkEmpty()
-
-  // the graph bounding box before the change
-
-  get graphBoundingBoxBefore(): Rectangle {
-    return this.graphBoundingBoxBefore_
-  }
-  set graphBoundingBoxBefore(value: Rectangle) {
-    this.graphBoundingBoxBefore_ = value
-  }
-
-  graphBoundingBoxAfter_: Rectangle
-
-  // the graph bounding box after the change
-  get graphBoundingBoxAfter(): Rectangle {
-    return this.graphBoundingBoxAfter_
-  }
-  set graphBoundingBoxAfter(value: Rectangle) {
-    this.graphBoundingBoxAfter_ = value
-  }
-
-  // returns true if the was a change in the bounding box of the graph
-  get graphBoundingBoxHasChanged(): boolean {
-    return this.graphBoundingBoxAfter_ !== this.graphBoundingBoxBefore_
-  }
   undo() {
     Assert.assert(this.isOld == false)
     for (const v of this.changes.values()) {
