@@ -309,7 +309,7 @@ export class LayoutEditor {
   //  return true if Redo is available
 
   get CanRedo(): boolean {
-    return this.geomGraphEditor.CanRedo
+    return this.geomGraphEditor.canRedo
   }
 
   //  If set to true then we are of a mode for node insertion
@@ -331,8 +331,8 @@ export class LayoutEditor {
 
   //  current undo action
 
-  get CurrentUndoAction(): UndoRedoAction {
-    return this.geomGraphEditor.ActiveUndoRedoAction
+  get undoAction(): UndoRedoAction {
+    return this.geomGraphEditor.undoList.currentUndo
   }
 
   ViewerGraphChanged() {
@@ -854,7 +854,7 @@ export class LayoutEditor {
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
     this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    for (const affectedObject of this.CurrentUndoAction.getAffectedEntities()) {
+    for (const affectedObject of this.undoAction.getAffectedEntities()) {
       this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
@@ -869,7 +869,7 @@ export class LayoutEditor {
   private prepareForDragging() {
     this.SelectObjectForDragging(this.ActiveDraggedObject)
     this.geomGraphEditor.PrepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
-    const currentUndoRedo = this.CurrentUndoAction
+    const currentUndoRedo = this.undoAction
     // for (const g of this.geomGraphEditor.objectsToDrag) {
     //   currentUndoRedo.AddAffectedObject(g.entity.getAttr(AttributeRegistry.ViewerIndex))
     //   currentUndoRedo.AddRestoreData(g.entity, getRestoreData(g.entity))
@@ -1097,16 +1097,13 @@ export class LayoutEditor {
   //  Redoes the editing
 
   Redo() {
-    if (this.geomGraphEditor.CanRedo) {
-      this.geomGraphEditor.UndoMode = false
-      const action: UndoRedoAction = this.geomGraphEditor.CurrentRedoAction
+    if (this.geomGraphEditor.canRedo) {
+      const action: UndoRedoAction = this.undoAction
       const objectsToInvalidate = Array.from(action.getAffectedEntities())
       this.geomGraphEditor.Redo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
-
-      this.geomGraphEditor.UndoMode = true
     }
   }
 
