@@ -1,3 +1,4 @@
+import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {UndoRedoAction} from './undoRedoAction'
 
@@ -6,7 +7,7 @@ export class UndoList {
     if (this.currentUndo == null) {
       this.currentUndo = new UndoRedoAction()
     }
-    this.currentUndo.addOldNewPair
+    this.currentUndo.addOldNewPair(e, {old: e.getAttr(AttributeRegistry.GeomObjectIndex), new: null})
   }
   canUndo(): boolean {
     if (this.currentUndo == null) return false

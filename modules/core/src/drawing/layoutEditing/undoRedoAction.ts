@@ -67,10 +67,11 @@ export class UndoRedoAction {
   protected changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
 
   /** it adds only when the key entity is not present */
-  addOldNewPair(entity: Entity, data: {old: Attribute; new: Attribute}[]) {
+  addOldNewPair(entity: Entity, pair: {old: Attribute; new: Attribute}) {
     if (!this.changes.has(entity)) {
-      this.changes.set(entity, data)
+      this.changes.set(entity, [])
     }
+    this.changes.get(entity).push(pair)
   }
 
   private static GetParentGraph(geomObj: GeomObject): GeomGraph {
