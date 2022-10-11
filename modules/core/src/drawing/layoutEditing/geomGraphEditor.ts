@@ -3,7 +3,7 @@ import {SortedMap} from '@esfx/collections-sortedmap'
 import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from '../../layout/core'
 import {Arrowhead} from '../../layout/core/arrowhead'
 
-import {EventHandler, GeomObject} from '../../layout/core/geomObject'
+import {GeomObject} from '../../layout/core/geomObject'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
 import {ILayoutSettings} from '../../layout/iLayoutSettings'
 import {Point, Curve, LineSegment, Rectangle, ICurve} from '../../math/geometry'
@@ -19,17 +19,12 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Label} from '../../structs/label'
 import {Node} from '../../structs/node'
-import {ClustersCollapseExpandUndoRedoAction} from './clustersCollapseExpandUndoRedoAction'
-import {EdgeDragUndoRedoAction} from './edgeDragUndoRedoAction'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {LabelRestoreData} from './labelRestoreData'
 import {NodeRestoreData} from './nodeRestoreData'
-import {ObjectDragUndoRedoAction} from './objectDragUndoRedoAction'
-import {SiteInsertUndoAction} from './siteInsertUndoAction'
-import {SiteRemoveUndoAction} from './siteRemoveUndoAction'
 import {UndoRedoAction} from './undoRedoAction'
 import {UndoList} from './undoRedoActionsList'
 
@@ -51,7 +46,7 @@ export class GeometryGraphEditor {
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
 
-  public get CurrentUndoAction(): UndoRedoAction {
+  public get currentUndoAction(): UndoRedoAction {
     return this.undoList.currentUndo
   }
 
@@ -112,21 +107,21 @@ export class GeometryGraphEditor {
     const edge = <GeomEdge>GeomObject.getGeom(label.parent.entity)
     if (edge != null) {
       GeometryGraphEditor.CalculateAttachedSegmentEnd(label, edge)
-      if (!Point.closeDistEps(label.AttachmentSegmentEnd, label.center)) {
+      if (!Point.closeDistEps(label.attachmentSegmentEnd, label.center)) {
         const x: IntersectionInfo = Curve.intersectionOne(
           label.boundingBox.perimeter(),
-          LineSegment.mkPP(label.AttachmentSegmentEnd, label.center),
+          LineSegment.mkPP(label.attachmentSegmentEnd, label.center),
           false,
         )
-        label.AttachmentSegmentStart = x != null ? x.x : label.center
+        label.attachmentSegmentStart = x != null ? x.x : label.center
       } else {
-        label.AttachmentSegmentStart = label.center
+        label.attachmentSegmentStart = label.center
       }
     }
   }
 
   static CalculateAttachedSegmentEnd(label: GeomLabel, edge: GeomEdge) {
-    label.AttachmentSegmentEnd = edge.curve.value(edge.curve.closestParameter(label.center))
+    label.attachmentSegmentEnd = edge.curve.value(edge.curve.closestParameter(label.center))
   }
 
   /** drags elements by the delta,
@@ -333,17 +328,20 @@ export class GeometryGraphEditor {
   PrepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.EditedEdge = null
     this.CalculateDragSets(markedObjects)
-    this.InsertToListAndSetTheBoxBefore(new ObjectDragUndoRedoAction(this.graph))
+
+    this.undoList.AddAction(createDragUndoAction())
+
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
     }
   }
 
   PrepareForClusterCollapseChange(changedClusters: Iterable<IViewerNode>) {
-    this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph))
-    for (const iCluster of changedClusters) {
-      throw new Error('not implemented') // this.CurrentUndoAction.AddAffectedObject(iCluster) //
-    }
+    throw new Error('not implemented')
+    // this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph))
+    // for (const iCluster of changedClusters) {
+    //   throw new Error('not implemented') // this.CurrentUndoAction.AddAffectedObject(iCluster) //
+    // }
   }
 
   InitIncrementalDragger() {
@@ -360,6 +358,7 @@ export class GeometryGraphEditor {
     this.edgesDraggedWithTarget.clear()
   }
 
+  /** fills the fields objectsToDrag, edgesDraggedWithSource, edgesDraggedWithTarget */
   CalculateDragSets(markedObjects: Iterable<GeomObject>) {
     this.ClearDraggedSets()
     for (const geometryObject of markedObjects) {
@@ -541,18 +540,16 @@ export class GeometryGraphEditor {
     return ret
   }
 
-  InsertToListAndSetTheBoxBefore(action: UndoRedoAction): UndoRedoAction {
-    return this.undoList.AddAction(action)
-  }
-
   //      preparing for an edge corner dragging
 
   public PrepareForEdgeCornerDragging(geometryEdge: GeomEdge, site: CornerSite): UndoRedoAction {
-    this.EditedEdge = geometryEdge
-    const edgeDragUndoRedoAction: UndoRedoAction = this.CreateEdgeEditUndoRedoAction()
-    //             var edgeRestoreDate = (EdgeRestoreData) edgeDragUndoRedoAction.GetRestoreData(geometryEdge);
-    //             edgeRestoreDate.CornerSite = site;
-    return this.InsertToListAndSetTheBoxBefore(edgeDragUndoRedoAction)
+    throw new Error('not implemented')
+
+    // this.EditedEdge = geometryEdge
+    // const edgeDragUndoRedoAction: UndoRedoAction = this.CreateEdgeEditUndoRedoAction()
+    // //             var edgeRestoreDate = (EdgeRestoreData) edgeDragUndoRedoAction.GetRestoreData(geometryEdge);
+    // //             edgeRestoreDate.CornerSite = site;
+    // return this.InsertToListAndSetTheBoxBefore(edgeDragUndoRedoAction)
   }
 
   //      prepares for the polyline corner removal
@@ -568,10 +565,6 @@ export class GeometryGraphEditor {
     throw new Error('non tested')
     const action = new SiteInsertUndoAction(this.EditedEdge)
     return this.InsertToListAndSetTheBoxBefore(action)
-  }
-
-  CreateEdgeEditUndoRedoAction(): UndoRedoAction {
-    return new EdgeDragUndoRedoAction(this.EditedEdge)
   }
 
   //      Undoes the last editing.
@@ -699,10 +692,9 @@ export class GeometryGraphEditor {
 
   //      creates a "tight" bounding box
 
-  public OnDragEnd(delta: Point) {
-    if (this.CurrentUndoAction != null) {
-      const action = this.CurrentUndoAction
-      action.graphBoundingBoxAfter = action.graph.boundingBox
+  public OnDragEnd() {
+    if (this.currentUndoAction != null) {
+      for (const e of this.currentUndoAction.entities()) this.currentUndoAction.addNewAttr(e)
     }
   }
 
@@ -712,6 +704,13 @@ export class GeometryGraphEditor {
 
   ForgetDragging() {
     this.incrementalDragger = null
+  }
+  createDragUndoAction(): UndoRedoAction {
+    const ret = new UndoRedoAction()
+    for (const go of this.objectsToDrag) {
+      this.currentUndoAction.addNewAttr(go.entity, {old: go.clone(), new: null})
+    }
+    return ret
   }
 }
 

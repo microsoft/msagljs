@@ -6,6 +6,15 @@ import {GeomObject} from './geomObject'
 import {Label} from '../../structs/label'
 
 export class GeomLabel extends GeomObject {
+  /** clones but does not bind to the entity and does not set the parent edge*/
+  clone(): GeomObject {
+    const ret = new GeomLabel(null, null)
+    ret.isPositioned = this.isPositioned
+    ret._boundingBox = this._boundingBox.clone()
+    ret.attachmentSegmentEnd = this.attachmentSegmentEnd
+    ret.attachmentSegmentStart = this.attachmentSegmentStart
+    return ret
+  }
   private _isPositioned = false
   public get isPositioned(): boolean {
     return this._isPositioned
@@ -14,9 +23,9 @@ export class GeomLabel extends GeomObject {
     this._isPositioned = value
   }
   /** this field is needed for interactive editing */
-  AttachmentSegmentEnd: Point
+  attachmentSegmentEnd: Point
   /** this field is needed for interactive editing */
-  AttachmentSegmentStart: Point
+  attachmentSegmentStart: Point
   constructor(entity: Label, size: Size) {
     super(entity)
     if (size) {
