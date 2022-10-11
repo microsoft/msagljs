@@ -9,10 +9,32 @@ import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Port} from './port'
 import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
+import {AttributeRegistry} from '../../structs/attributeRegistry'
 
 export class GeomEdge extends GeomObject {
+  /** clones but does not bind to the entity */
+  clone(): GeomObject {
+    const geomEdge = new GeomEdge(null)
+    if (this.underlyingPolyline) geomEdge.underlyingPolyline = this.underlyingPolyline.clone()
+    this.curve = this.curve.clone()
+    if (this.sourceArrowhead != null) {
+      geomEdge.sourceArrowhead = this.sourceArrowhead.clone()
+    }
+
+    if (this.targetArrowhead != null) {
+      geomEdge.targetArrowhead = this.targetArrowhead.clone()
+    }
+
+    if (this.label != null) {
+      geomEdge.label = this.label.clone() as GeomLabel
+    }
+    return geomEdge
+  }
   get label(): GeomLabel {
     return this.edge != null && this.edge.label != null ? (GeomObject.getGeom(this.edge.label) as GeomLabel) : null
+  }
+  set label(value: GeomLabel) {
+    this.edge.label.setAttr(AttributeRegistry.GeomObjectIndex, value)
   }
 
   RaiseLayoutChangeEvent(delta: Point) {
@@ -176,4 +198,7 @@ export class GeomEdge extends GeomObject {
   EdgeToAncestor(): ToAncestorEnum {
     return this.edge.EdgeToAncestor()
   }
+  /** these two fields are used for editing */
+  LabelOffsetFromTheAttachmentPoint: Point
+  LabelAttachmentParameter: number
 }

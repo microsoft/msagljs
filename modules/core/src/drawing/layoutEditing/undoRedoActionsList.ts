@@ -11,12 +11,12 @@ export class UndoList {
   }
   canUndo(): boolean {
     if (this.currentUndo == null) return false
-    return this.currentUndo.isNew
+    return this.currentUndo.readyForRedo
     return false
   }
   canRedo(): boolean {
     if (this.currentUndo == null) return false
-    if (this.currentUndo.isOld) return true
+    if (this.currentUndo.readyForUndo) return true
     return false
   }
   undo() {

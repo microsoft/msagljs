@@ -8,27 +8,25 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Assert} from '../../utils/assert'
 export class UndoRedoAction {
+  private _readyForUndo: boolean
+  addNewAttr(e: any) {
+    const val = this.changes.get(e)
+    val[AttributeRegistry.GeomObjectIndex].new = e.getAttr(AttributeRegistry.GeomObjectIndex).clone()
+  }
   static count = 0 // used for debug : TODO remove
   id: number // used for debug : TODO remove
-  get isNew(): boolean {
-    return !this.isOld
+  get readyForRedo(): boolean {
+    return !this.readyForUndo
   }
-  /** isOld = true means that the relevant objects, the keys of restoreDataDictionary, have old attributes
-   *  isOld = false means that the objects are in the new state
+  /** readyForUndo = true means that the relevant objects, the keys of restoreDataDictionary, have old attributes, ready for undo
+   *  readyForUndo = false means that the objects are in the new state
    */
-  get isOld() {
-    // check that the the saved geometry is present in the current state
-    for (const [e, attrs] of this.changes) {
-      const geomAttr = e.getAttr(AttributeRegistry.GeomObjectIndex)
-      for (const a of attrs) {
-        if (geomAttr === a.old) return true
-      }
-      return false
-    }
+  get readyForUndo() {
+    return this._readyForUndo
   }
 
   /** creates an Array of affected objects */
-  *getAffectedEntities(): IterableIterator<Entity> {
+  *entities(): IterableIterator<Entity> {
     yield* this.changes.keys()
   }
 
@@ -56,10 +54,11 @@ export class UndoRedoAction {
   prev: UndoRedoAction
 
   redo() {
-    Assert.assert(this.isOld)
-    for (const v of this.changes.values()) {
+    Assert.assert(this.readyForUndo)
+    for (const [e, v] of this.changes) {
       for (const pair of v) {
-        pair.new.rebind()
+        const attr = pair.new
+        attr.rebind(e)
       }
     }
   }
@@ -96,10 +95,10 @@ export class UndoRedoAction {
   }
 
   undo() {
-    Assert.assert(this.isOld == false)
-    for (const v of this.changes.values()) {
+    Assert.assert(this.readyForUndo == false)
+    for (const [e, v] of this.changes) {
       for (const pair of v) {
-        pair.old.rebind()
+        pair.old.rebind(e)
       }
     }
   }

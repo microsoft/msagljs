@@ -8,7 +8,7 @@ export abstract class Attribute {
     if (this.entity) this.entity.setAttr(index, this)
   }
 
-  abstract rebind(): void
+  abstract rebind(e: Entity): void
 
   /** The arguments are the underlying entity and the attribute index in the attribute array */
   constructor(entity: Entity, index: number) {

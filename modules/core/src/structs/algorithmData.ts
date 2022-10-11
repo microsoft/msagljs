@@ -3,7 +3,8 @@ import {AttributeRegistry} from './attributeRegistry'
 import {Entity} from './entity'
 
 export class AlgorithmData extends Attribute {
-  rebind(): void {
+  rebind(e: Entity): void {
+    this.entity = e
     this.bind(AttributeRegistry.AlgorithmDataIndex)
   }
 

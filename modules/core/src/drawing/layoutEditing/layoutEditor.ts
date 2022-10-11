@@ -9,7 +9,7 @@ import {FloatingPort} from '../../layout/core/floatingPort'
 import {GeomEdge} from '../../layout/core/geomEdge'
 import {GeomGraph} from '../../layout/core/geomGraph'
 import {GeomNode} from '../../layout/core/geomNode'
-import {EventHandler, GeomObject} from '../../layout/core/geomObject'
+import {GeomObject} from '../../layout/core/geomObject'
 import {Port} from '../../layout/core/port'
 import {layoutGeomGraph} from '../../layout/driver'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
@@ -26,16 +26,13 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Node} from '../../structs/node'
 import {Assert} from '../../utils/assert'
-import {insertRange} from '../../utils/setOperations'
 
-import {EdgeRestoreData} from './edgeRestoreData'
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
 import {IViewer} from './iViewer'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
-import {NodeRestoreData} from './nodeRestoreData'
 import {ObjectUnderMouseCursorChangedEventArgs} from './objectUnderMouseCursorChangedEventArgs'
 import {PolylineCornerType} from './polylineCornerType'
 import {UndoRedoAction} from './undoRedoAction'
@@ -83,9 +80,6 @@ export class LayoutEditor {
   }
   set PolylineVertex(value: CornerSite) {
     this.polylineVertex = value
-  }
-  public get ChangeInUndoRedoList(): EventHandler {
-    return this.geomGraphEditor.ChangeInUndoRedoList
   }
 
   cornerInfo: [CornerSite, PolylineCornerType]
@@ -392,7 +386,7 @@ export class LayoutEditor {
     }
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
-    for (const o of this.geomGraphEditor.CurrentUndoAction.getAffectedEntities()) {
+    for (const o of this.geomGraphEditor.currentUndoAction.entities()) {
       this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
@@ -854,7 +848,7 @@ export class LayoutEditor {
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
     this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    for (const affectedObject of this.undoAction.getAffectedEntities()) {
+    for (const affectedObject of this.undoAction.entities()) {
       this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
@@ -933,7 +927,7 @@ export class LayoutEditor {
       }
     } else if (this.Dragging) {
       if (!this.InsertingEdge) {
-        this.geomGraphEditor.OnDragEnd(this.viewer.ScreenToSource(args).sub(this.mouseDownGraphPoint))
+        this.geomGraphEditor.OnDragEnd()
         this.InteractiveEdgeRouter = null
         this.looseObstaclesToTheirViewerNodes = null
       } else {
@@ -1084,8 +1078,8 @@ export class LayoutEditor {
 
   Undo() {
     if (this.geomGraphEditor.canUndo) {
-      const action: UndoRedoAction = this.geomGraphEditor.CurrentUndoAction
-      const objectsToInvalidate = action.getAffectedEntities()
+      const action: UndoRedoAction = this.geomGraphEditor.currentUndoAction
+      const objectsToInvalidate = action.entities()
 
       this.geomGraphEditor.Undo()
       for (const o of objectsToInvalidate) {
@@ -1099,7 +1093,7 @@ export class LayoutEditor {
   Redo() {
     if (this.geomGraphEditor.canRedo) {
       const action: UndoRedoAction = this.undoAction
-      const objectsToInvalidate = Array.from(action.getAffectedEntities())
+      const objectsToInvalidate = Array.from(action.entities())
       this.geomGraphEditor.Redo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
