@@ -3,6 +3,9 @@ import {AttributeRegistry} from './attributeRegistry'
 import {Entity} from './entity'
 
 export class AlgorithmData extends Attribute {
+  clone(): Attribute {
+    throw new Error('Method not implemented.')
+  }
   rebind(e: Entity): void {
     this.entity = e
     this.bind(AttributeRegistry.AlgorithmDataIndex)
