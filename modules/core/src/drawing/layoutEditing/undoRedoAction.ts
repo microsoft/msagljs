@@ -7,12 +7,10 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Assert} from '../../utils/assert'
+import {DrawingObject} from '../drawingObject'
 export class UndoRedoAction {
   private _readyForUndo: boolean
-  addNewAttr(e: any) {
-    const val = this.changes.get(e)
-    val[AttributeRegistry.GeomObjectIndex].new = e.getAttr(AttributeRegistry.GeomObjectIndex).clone()
-  }
+
   static count = 0 // used for debug : TODO remove
   id: number // used for debug : TODO remove
   get readyForRedo(): boolean {
@@ -65,23 +63,32 @@ export class UndoRedoAction {
 
   protected changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
 
-  /** it adds only when the key entity is not present */
-  addOldNewPair(entity: Entity, pair: {old: Attribute; new: Attribute}) {
+  /** It adds an entry for the entity if the changes does not contain the entity as a key
+   *  Also, only one pair is added for each index.
+   * old plays the role of 'old' field of the pair  */
+
+  addOldNewPair(entity: Entity, old: Attribute) {
     if (!this.changes.has(entity)) {
       this.changes.set(entity, [])
     }
-    this.changes.get(entity).push(pair)
+
+    let index: number
+    if (old instanceof GeomObject) index = AttributeRegistry.GeomObjectIndex
+    else if (old instanceof DrawingObject) index = AttributeRegistry.DrawingObjectIndex
+    else {
+      // todo: enforce type here
+      index = AttributeRegistry.ViewerIndex
+    }
+    const pairs = this.changes.get(entity)
+
+    if (pairs[index] != null) return
+
+    pairs[index] = {old: old.clone(), new: null}
   }
 
-  private static GetParentGraph(geomObj: GeomObject): GeomGraph {
-    let ent = geomObj.entity.parent
-    do {
-      if (ent instanceof Graph) {
-        return GeomGraph.getGeom(ent)
-      }
-      if (ent == null) return null
-      ent = ent.parent
-    } while (true)
+  addGeomAttrForRedo(e: Entity) {
+    const val = this.changes.get(e)
+    val[AttributeRegistry.GeomObjectIndex].new = e.getAttr(AttributeRegistry.GeomObjectIndex).clone()
   }
 
   getAttribute(entity: Entity): any {

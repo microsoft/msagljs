@@ -862,8 +862,8 @@ export class LayoutEditor {
 
   private prepareForDragging() {
     this.SelectObjectForDragging(this.ActiveDraggedObject)
-    this.geomGraphEditor.PrepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
-    const currentUndoRedo = this.undoAction
+    this.geomGraphEditor.prepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
+    //  const currentUndoRedo = this.undoAction
     // for (const g of this.geomGraphEditor.objectsToDrag) {
     //   currentUndoRedo.AddAffectedObject(g.entity.getAttr(AttributeRegistry.ViewerIndex))
     //   currentUndoRedo.AddRestoreData(g.entity, getRestoreData(g.entity))

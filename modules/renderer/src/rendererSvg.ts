@@ -286,7 +286,7 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   LineThicknessForEditing = 2
-  LayoutEditingEnabled = false
+  LayoutEditingEnabled = true // set to true by default: TODO
   InsertingEdge = false
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')

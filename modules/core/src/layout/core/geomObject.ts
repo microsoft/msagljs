@@ -35,5 +35,4 @@ export abstract class GeomObject extends Attribute {
   rebind(): void {
     this.bind(AttributeRegistry.GeomObjectIndex)
   }
-  abstract clone(): GeomObject
 }
