@@ -130,22 +130,21 @@ export class GeometryGraphEditor {
    */
 
   Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
+    if (delta.x == 0 && delta.y == 0) return
     this.GraphBoundingBoxGetsExtended = false
     for (const o of this.objectsToDrag) {
       this.registerForUndo(o.entity)
     }
-    if (delta.x !== 0 || delta.y !== 0) {
-      if (this.EditedEdge == null) {
-        if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
-          this.DragObjectsForNonRectilinearCase(delta, draggingMode)
-        } else {
-          this.DragObjectsForRectilinearCase(delta)
-        }
+    if (this.EditedEdge == null) {
+      if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
+        this.DragObjectsForNonRectilinearCase(delta, draggingMode)
       } else {
-        throw new Error('not implemented')
-        this.DragEdgeEdit(lastMousePosition, delta)
-        this.UpdateGraphBoundingBoxWithCheck(this.EditedEdge)
+        this.DragObjectsForRectilinearCase(delta)
       }
+    } else {
+      throw new Error('not implemented')
+      this.DragEdgeEdit(lastMousePosition, delta)
+      //this.UpdateGraphBoundingBoxWithCheck(this.EditedEdge)
     }
   }
 
@@ -165,13 +164,13 @@ export class GeometryGraphEditor {
     )
     EdgeLabelPlacement.constructorG(this.graph).run()
 
-    for (const e of this.geomGraph.deepEdges) {
-      this.UpdateGraphBoundingBoxWithCheck(e)
-    }
+    // for (const e of this.geomGraph.deepEdges) {
+    //   this.UpdateGraphBoundingBoxWithCheck(e)
+    // }
 
-    for (const n of this.geomGraph.deepNodes) {
-      this.UpdateGraphBoundingBoxWithCheck(n)
-    }
+    // for (const n of this.geomGraph.deepNodes) {
+    //   this.UpdateGraphBoundingBoxWithCheck(n)
+    // }
 
     this.PropagateChangesToClusterParents()
     throw new Error('not implemented')
@@ -183,19 +182,17 @@ export class GeometryGraphEditor {
     } else if (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
       this.DragWithSplinesOrBundles(delta)
     } else {
-      this.DragWithStraightLines(delta)
+      this.dragWithStraightLines(delta)
     }
   }
 
-  DragWithStraightLines(delta: Point) {
-    // TODO: add to currentUndoRedo.restoreData
+  dragWithStraightLines(delta: Point) {
     for (const geomObj of this.objectsToDrag) {
-      this.DragGeomObject(delta, geomObj)
-      this.UpdateGraphBoundingBoxWithCheck(geomObj)
+      this.dragGeomObject(delta, geomObj)
     }
 
     this.PropagateChangesToClusterParents()
-    this.RegenerateEdgesAsStraightLines()
+    this.regenerateEdgesAsStraightLines()
   }
 
   PropagateChangesToClusterParents() {
@@ -227,7 +224,7 @@ export class GeometryGraphEditor {
     }
   }
 
-  DragGeomObject(delta: Point, geomObj: GeomObject) {
+  dragGeomObject(delta: Point, geomObj: GeomObject) {
     if (geomObj instanceof GeomNode) {
       geomObj.translate(delta)
     } else if (geomObj instanceof GeomEdge) {
@@ -257,14 +254,13 @@ export class GeometryGraphEditor {
     router.run()
     const elp = EdgeLabelPlacement.constructorG(this.graph)
     elp.run()
-    this.UpdateGraphBoundingBoxWithCheck_()
   }
 
   registerForUndo(e: Entity) {
     this.undoList.registerForUndo(e)
   }
 
-  RegenerateEdgesAsStraightLines() {
+  regenerateEdgesAsStraightLines() {
     for (const edge of this.edgesDraggedWithSource) {
       this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
@@ -283,17 +279,17 @@ export class GeometryGraphEditor {
     ep.run()
   }
 
-  UpdateGraphBoundingBoxWithCheck_() {
-    for (const node of this.graph.shallowNodes) {
-      // shallow or deep?
-      this.UpdateGraphBoundingBoxWithCheck(node)
-    }
+  // UpdateGraphBoundingBoxWithCheck_() {
+  //   for (const node of this.graph.shallowNodes) {
+  //     // shallow or deep?
+  //     this.UpdateGraphBoundingBoxWithCheck(node)
+  //   }
 
-    for (const edge of this.graph.edges()) {
-      // shallow or deep?
-      this.UpdateGraphBoundingBoxWithCheck(edge)
-    }
-  }
+  //   for (const edge of this.graph.edges()) {
+  //     // shallow or deep?
+  //     this.UpdateGraphBoundingBoxWithCheck(edge)
+  //   }
+  // }
 
   DragIncrementally(delta: Point) {
     const box: Rectangle = this.graph.boundingBox
@@ -325,11 +321,11 @@ export class GeometryGraphEditor {
     }
   }
 
-  PrepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
+  prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.EditedEdge = null
     this.CalculateDragSets(markedObjects)
 
-    this.undoList.AddAction(createDragUndoAction())
+    this.undoList.addAction(new UndoRedoAction())
 
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
@@ -391,15 +387,15 @@ export class GeometryGraphEditor {
     }
   }
 
-  UpdateGraphBoundingBoxWithCheck(geomObj: GeomObject) {
-    const bBox = geomObj.boundingBox.clone()
-    const leftTop = new Point(-this.geomGraph.margins.left, this.geomGraph.margins.top)
-    const rightBottom = new Point(-this.geomGraph.margins.right, -this.geomGraph.margins.bottom)
-    const bounds = this.geomGraph.boundingBox.clone()
-    this.GraphBoundingBoxGetsExtended ||=
-      bounds.addWithCheck(bBox.leftTop.add(leftTop)) || bounds.addWithCheck(bBox.rightBottom.add(rightBottom))
-    this.geomGraph.boundingBox = bounds
-  }
+  // UpdateGraphBoundingBoxWithCheck(geomObj: GeomObject) {
+  //   const bBox = geomObj.boundingBox.clone()
+  //   const leftTop = new Point(-this.geomGraph.margins.left, this.geomGraph.margins.top)
+  //   const rightBottom = new Point(-this.geomGraph.margins.right, -this.geomGraph.margins.bottom)
+  //   const bounds = this.geomGraph.boundingBox.clone()
+  //   this.GraphBoundingBoxGetsExtended ||=
+  //     bounds.addWithCheck(bBox.leftTop.add(leftTop)) || bounds.addWithCheck(bBox.rightBottom.add(rightBottom))
+  //   this.geomGraph.boundingBox = bounds
+  // }
 
   CalculateDragSetsForEdges() {
     const clonedObjectsToDrag = Array.from(this.objectsToDrag)
@@ -555,16 +551,18 @@ export class GeometryGraphEditor {
   //      prepares for the polyline corner removal
 
   public PrepareForPolylineCornerRemoval(affectedEdge: IViewerObject, site: CornerSite): UndoRedoAction {
-    const action = new SiteRemoveUndoAction(this.EditedEdge)
-    return this.InsertToListAndSetTheBoxBefore(action)
+    throw new Error('not implemented')
+    //   const action = new SiteRemoveUndoAction(this.EditedEdge)
+    //   return this.InsertToListAndSetTheBoxBefore(action)
+    //
   }
 
   //      prepare for polyline corner insertion
 
   PrepareForPolylineCornerInsertion(affectedObj: IViewerObject, site: CornerSite): UndoRedoAction {
     throw new Error('non tested')
-    const action = new SiteInsertUndoAction(this.EditedEdge)
-    return this.InsertToListAndSetTheBoxBefore(action)
+    // const action = new SiteInsertUndoAction(this.EditedEdge)
+    // return this.InsertToListAndSetTheBoxBefore(action)
   }
 
   //      Undoes the last editing.
@@ -690,11 +688,9 @@ export class GeometryGraphEditor {
     return bestSite
   }
 
-  //      creates a "tight" bounding box
-
-  public OnDragEnd() {
+  OnDragEnd() {
     if (this.currentUndoAction != null) {
-      for (const e of this.currentUndoAction.entities()) this.currentUndoAction.addNewAttr(e)
+      for (const e of this.currentUndoAction.entities()) this.currentUndoAction.addGeomAttrForRedo(e)
     }
   }
 
@@ -705,18 +701,4 @@ export class GeometryGraphEditor {
   ForgetDragging() {
     this.incrementalDragger = null
   }
-  createDragUndoAction(): UndoRedoAction {
-    const ret = new UndoRedoAction()
-    for (const go of this.objectsToDrag) {
-      this.currentUndoAction.addNewAttr(go.entity, {old: go.clone(), new: null})
-    }
-    return ret
-  }
-}
-
-function getRestoreData(entity: Entity): any {
-  if (entity instanceof Graph) return null
-  if (entity instanceof Node) return new NodeRestoreData((GeomObject.getGeom(entity) as GeomNode).boundaryCurve)
-  if (entity instanceof Edge) return new EdgeRestoreData(GeomObject.getGeom(entity) as GeomEdge)
-  if (entity instanceof Label) return new LabelRestoreData(GeomLabel.getGeom(entity) as GeomLabel)
 }

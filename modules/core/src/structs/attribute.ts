@@ -15,4 +15,5 @@ export abstract class Attribute {
     this.entity = entity
     this.bind(index)
   }
+  abstract clone(): Attribute
 }

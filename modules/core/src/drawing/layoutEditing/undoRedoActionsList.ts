@@ -3,11 +3,12 @@ import {Entity} from '../../structs/entity'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
+  /** registers some attributes of the entity for undo */
   registerForUndo(e: Entity) {
     if (this.currentUndo == null) {
       this.currentUndo = new UndoRedoAction()
     }
-    this.currentUndo.addOldNewPair(e, {old: e.getAttr(AttributeRegistry.GeomObjectIndex), new: null})
+    this.currentUndo.addOldNewPair(e, e.getAttr(AttributeRegistry.GeomObjectIndex))
   }
   canUndo(): boolean {
     if (this.currentUndo == null) return false
@@ -33,7 +34,8 @@ export class UndoList {
 
   currentUndo: UndoRedoAction
 
-  AddAction(action: UndoRedoAction): UndoRedoAction {
+  /** adds the "action" ufter the currentUndo and sets currentUndo=action */
+  addAction(action: UndoRedoAction): UndoRedoAction {
     if (this.currentUndo != null) {
       this.currentUndo.next = action
     }
