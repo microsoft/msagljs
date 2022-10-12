@@ -19,6 +19,7 @@ import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
 import {Label} from '../../structs/label'
 import {Node} from '../../structs/node'
+import {Assert} from '../../utils/assert'
 import {EdgeRestoreData} from './edgeRestoreData'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
@@ -567,10 +568,9 @@ export class GeometryGraphEditor {
 
   //      Undoes the last editing.
 
-  public Undo() {
-    if (this.canUndo) {
-      this.undoList.undo()
-    }
+  public undo() {
+    Assert.assert(this.undoList.canUndo())
+    this.undoList.undo()
   }
   // createRedoActionIfNeeded() {
   //   const currentUndo = this.undoList.currentUndo

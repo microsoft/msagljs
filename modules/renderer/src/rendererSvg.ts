@@ -78,15 +78,15 @@ export class RendererSvg implements IViewer {
 
   private _objectTree: RTree<GeomHitTreeNodeType, Point>
 
-  public get objectTree(): RTree<GeomHitTreeNodeType, Point> {
-    if (this._objectTree == null || this._objectTree.RootNode == null) {
-      this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
-    }
-    return this._objectTree
-  }
-  public set objectTree(value: RTree<GeomHitTreeNodeType, Point>) {
-    this._objectTree = value
-  }
+  // public get objectTree(): RTree<GeomHitTreeNodeType, Point> {
+  //   if (this._objectTree == null || this._objectTree.RootNode == null) {
+  //     this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
+  //   }
+  //   return this._objectTree
+  // }
+  // public set objectTree(value: RTree<GeomHitTreeNodeType, Point>) {
+  //   this._objectTree = value
+  // }
 
   private processMouseMove(e: MouseEvent): void {
     if (this == null || this._svgCreator == null) {
@@ -96,7 +96,14 @@ export class RendererSvg implements IViewer {
       return
     }
 
-    const elems = Array.from(getGeomIntersectedObjects(this.objectTree, this.getHitSlack(), this.ScreenToSource(e)))
+    if (this.layoutEditor.Dragging) {
+      return
+    }
+
+    if (this._objectTree == null) {
+      this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
+    }
+    const elems = Array.from(getGeomIntersectedObjects(this._objectTree, this.getHitSlack(), this.ScreenToSource(e)))
     if (elems.length == 0) {
       this.ObjectUnderMouseCursor = null
       return
@@ -156,7 +163,7 @@ export class RendererSvg implements IViewer {
   }
 
   undo(): void {
-    this.layoutEditor.Undo()
+    this.layoutEditor.undo()
   }
 
   redo(): void {
@@ -215,7 +222,7 @@ export class RendererSvg implements IViewer {
 
   private _update() {
     if (!this._graph) return
-    this.objectTree = null
+    this._objectTree = null
     this._svgCreator.setGraph(this._graph)
     this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
     this.layoutEditor.ViewerGraphChanged()
@@ -266,7 +273,7 @@ export class RendererSvg implements IViewer {
   }
   Invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
-    this.objectTree.clear()
+    this._objectTree = null
   }
   InvalidateAll(): void {
     //TODO : implement
