@@ -73,10 +73,6 @@ export interface IViewer {
 
   DpiY: number
 
-  //  this method should be called on the end of the dragging
-
-  OnDragEnd(changedObjects: Iterable<IViewerObject>): void
-
   //  The scale dependent width of an edited curve that should be clearly visible.
   //  Used in the default entity editing.
 

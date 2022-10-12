@@ -167,7 +167,7 @@ export class RendererSvg implements IViewer {
   }
 
   redo(): void {
-    this.layoutEditor.Redo()
+    this.layoutEditor.redo()
   }
 
   ViewChangeEvent: EventHandler
@@ -288,9 +288,6 @@ export class RendererSvg implements IViewer {
   }
   get DpiY() {
     return this.Dpi
-  }
-  OnDragEnd(changedObjects: Iterable<IViewerObject>): void {
-    throw new Error('Method not implemented.')
   }
   LineThicknessForEditing = 2
   LayoutEditingEnabled = true // set to true by default: TODO

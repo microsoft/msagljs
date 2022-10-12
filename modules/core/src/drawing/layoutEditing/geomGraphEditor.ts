@@ -591,7 +591,7 @@ export class GeometryGraphEditor {
 
   //      redo the dragging
 
-  public Redo() {
+  public redo() {
     if (this.canRedo) {
       this.undoList.redo()
     }
@@ -686,12 +686,6 @@ export class GeometryGraphEditor {
     }
 
     return bestSite
-  }
-
-  OnDragEnd() {
-    if (this.currentUndoAction != null) {
-      for (const e of this.currentUndoAction.entities()) this.currentUndoAction.addGeomAttrForRedo(e)
-    }
   }
 
   ReactOnViewChange() {

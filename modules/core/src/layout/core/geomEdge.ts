@@ -16,7 +16,7 @@ export class GeomEdge extends GeomObject {
   clone(): GeomObject {
     const geomEdge = new GeomEdge(null)
     if (this.underlyingPolyline) geomEdge.underlyingPolyline = this.underlyingPolyline.clone()
-    this.curve = this.curve.clone()
+    geomEdge.curve = this.curve.clone()
     if (this.sourceArrowhead != null) {
       geomEdge.sourceArrowhead = this.sourceArrowhead.clone()
     }

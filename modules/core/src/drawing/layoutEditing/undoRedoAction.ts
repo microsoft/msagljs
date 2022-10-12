@@ -54,13 +54,14 @@ export class UndoRedoAction {
   prev: UndoRedoAction
 
   redo() {
-    Assert.assert(this.readyForUndo)
+    Assert.assert(this.readyForRedo)
     for (const [e, v] of this.changes) {
       for (const pair of v) {
         const attr = pair.new
         attr.rebind(e)
       }
     }
+    this.readyForUndo = true
   }
 
   protected changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
@@ -74,15 +75,8 @@ export class UndoRedoAction {
       this.changes.set(entity, [])
     }
 
-    let index: number
-    if (old instanceof GeomObject) index = AttributeRegistry.GeomObjectIndex
-    else if (old instanceof DrawingObject) index = AttributeRegistry.DrawingObjectIndex
-    else {
-      // todo: enforce type here
-      index = AttributeRegistry.ViewerIndex
-    }
+    const index: number = registryIndexOfAttribue(old)
     const pairs = this.changes.get(entity)
-
     if (pairs[index] != null) return
 
     pairs[index] = {old: old.clone(), new: null}
@@ -107,9 +101,21 @@ export class UndoRedoAction {
     Assert.assert(this.readyForUndo)
     for (const [e, v] of this.changes) {
       for (const pair of v) {
+        // prepare for redo as well
+        pair.new = e.getAttr(registryIndexOfAttribue(pair.old)).clone()
         pair.old.rebind(e)
       }
     }
     this.readyForUndo = false
   }
+}
+function registryIndexOfAttribue(old: Attribute) {
+  let index: number
+  if (old instanceof GeomObject) index = AttributeRegistry.GeomObjectIndex
+  else if (old instanceof DrawingObject) index = AttributeRegistry.DrawingObjectIndex
+  else {
+    // todo: enforce type here
+    index = AttributeRegistry.ViewerIndex
+  }
+  return index
 }
