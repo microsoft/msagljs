@@ -3,7 +3,11 @@ import {Color} from './color'
 import {ShapeEnum} from './shapeEnum'
 import {Node} from '../structs/node'
 import {Attr} from 'dotparser'
+import {Attribute} from '../structs/attribute'
 export class DrawingNode extends DrawingObject {
+  clone(): Attribute {
+    throw new Error('Method not implemented.')
+  }
   *attrIter(): IterableIterator<Attr> {
     yield* super.attrIter()
     if (this.shape && this.shape !== ShapeEnum.box) {
