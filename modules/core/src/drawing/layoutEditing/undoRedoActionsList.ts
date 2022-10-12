@@ -11,14 +11,10 @@ export class UndoList {
     this.currentUndo.addOldNewPair(e, e.getAttr(AttributeRegistry.GeomObjectIndex))
   }
   canUndo(): boolean {
-    if (this.currentUndo == null) return false
-    return this.currentUndo.readyForRedo
-    return false
+    return this.currentUndo && this.currentUndo.readyForUndo
   }
   canRedo(): boolean {
-    if (this.currentUndo == null) return false
-    if (this.currentUndo.readyForUndo) return true
-    return false
+    return this.currentUndo && this.currentUndo.readyForRedo
   }
   undo() {
     this.currentUndo.undo()

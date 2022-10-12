@@ -5,11 +5,10 @@ import {GeomObject} from '../../layout/core/geomObject'
 import {Attribute} from '../../structs/attribute'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
-import {Graph} from '../../structs/graph'
 import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
 export class UndoRedoAction {
-  private _readyForUndo: boolean
+  private _readyForUndo = true // initially
 
   static count = 0 // used for debug : TODO remove
   id: number // used for debug : TODO remove
@@ -21,6 +20,9 @@ export class UndoRedoAction {
    */
   get readyForUndo() {
     return this._readyForUndo
+  }
+  set readyForUndo(v) {
+    this._readyForUndo = v
   }
 
   /** creates an Array of affected objects */
@@ -102,11 +104,12 @@ export class UndoRedoAction {
   }
 
   undo() {
-    Assert.assert(this.readyForUndo == false)
+    Assert.assert(this.readyForUndo)
     for (const [e, v] of this.changes) {
       for (const pair of v) {
         pair.old.rebind(e)
       }
     }
+    this.readyForUndo = false
   }
 }

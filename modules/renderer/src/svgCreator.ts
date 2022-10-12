@@ -40,6 +40,9 @@ import {Entity} from '../../core/src/structs/entity'
 import {Attribute} from 'msagl-js/src/structs/attribute'
 
 class SvgViewerObject extends Attribute {
+  clone(): Attribute {
+    throw new Error('not implemented')
+  }
   rebind(e: Entity): void {
     this.entity = e
     this.bind(AttributeRegistry.ViewerIndex)

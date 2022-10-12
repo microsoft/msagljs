@@ -1076,12 +1076,12 @@ export class LayoutEditor {
 
   //  Undoes the editing
 
-  Undo() {
+  undo() {
     if (this.geomGraphEditor.canUndo) {
       const action: UndoRedoAction = this.geomGraphEditor.currentUndoAction
       const objectsToInvalidate = action.entities()
 
-      this.geomGraphEditor.Undo()
+      this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
