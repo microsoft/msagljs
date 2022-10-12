@@ -927,7 +927,6 @@ export class LayoutEditor {
       }
     } else if (this.Dragging) {
       if (!this.InsertingEdge) {
-        this.geomGraphEditor.OnDragEnd()
         this.InteractiveEdgeRouter = null
         this.looseObstaclesToTheirViewerNodes = null
       } else {
@@ -1090,11 +1089,11 @@ export class LayoutEditor {
 
   //  Redoes the editing
 
-  Redo() {
+  redo() {
     if (this.geomGraphEditor.canRedo) {
       const action: UndoRedoAction = this.undoAction
       const objectsToInvalidate = Array.from(action.entities())
-      this.geomGraphEditor.Redo()
+      this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
         this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
