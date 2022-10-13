@@ -1,7 +1,7 @@
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Graph} from 'msagl-js'
+import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
@@ -9,7 +9,7 @@ import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 
 const viewer = document.getElementById('viewer')
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/a.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()

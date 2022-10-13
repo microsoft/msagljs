@@ -33,7 +33,7 @@ export class GeometryGraphEditor {
 
   graph: GeomGraph
 
-  objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
+  private objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
   undoList: UndoList = new UndoList()
 
@@ -123,7 +123,7 @@ export class GeometryGraphEditor {
    *
    */
 
-  Drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
+  drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
     if (delta.x == 0 && delta.y == 0) return
     this.GraphBoundingBoxGetsExtended = false
     for (const o of this.objectsToDrag) {
@@ -255,21 +255,13 @@ export class GeometryGraphEditor {
   }
 
   regenerateEdgesAsStraightLines() {
-    for (const edge of this.edgesDraggedWithSource) {
+    const edges = Array.from(this.edgesDraggedWithSource).concat(Array.from(this.edgesDraggedWithTarget))
+    for (const edge of edges) {
       this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
     }
 
-    for (const edge of this.edgesDraggedWithTarget) {
-      this.registerForUndo(edge.entity)
-      StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
-    }
-
-    // no need to register for undo the labels here because the edges are registered already
-    const ep = EdgeLabelPlacement.constructorGA(
-      this.graph,
-      Array.from(this.edgesDraggedWithSource).concat(Array.from(this.edgesDraggedWithTarget)),
-    )
+    const ep = EdgeLabelPlacement.constructorGA(this.graph, edges)
     ep.run()
   }
 
@@ -392,11 +384,9 @@ export class GeometryGraphEditor {
   // }
 
   CalculateDragSetsForEdges() {
-    const clonedObjectsToDrag = Array.from(this.objectsToDrag)
-    for (const geomObj of clonedObjectsToDrag) {
-      if (geomObj instanceof GeomNode) {
-        this.AssignEdgesOfNodeToEdgeDragSets(geomObj)
-      }
+    // copy this.objectsToDrag to an array because new entities might be added to it
+    for (const geomObj of Array.from(this.objectsToDrag).filter((n) => n instanceof GeomNode)) {
+      this.AssignEdgesOfNodeToEdgeDragSets(geomObj as GeomNode)
     }
   }
 
@@ -421,21 +411,11 @@ export class GeometryGraphEditor {
       }
     }
 
-    GeometryGraphEditor.CalculateOffsetsForMultiedges(node, this.LayoutSettings.commonSettings.NodeSeparation)
     if (node instanceof GeomGraph) {
       for (const n of node.allSuccessorsWidthFirst()) {
         this.AssignEdgesOfNodeToEdgeDragSets(n)
       }
     }
-  }
-
-  static CalculateOffsetsForMultiedges(node: GeomNode, nodeSeparation: number): Map<GeomEdge, number> {
-    const offsetsInsideOfMultiedge = new Map<GeomEdge, number>()
-    for (const multiedge of GeometryGraphEditor.GetMultiEdges(node)) {
-      GeometryGraphEditor.CalculateMiddleOffsetsForMultiedge(multiedge, node, offsetsInsideOfMultiedge, nodeSeparation)
-    }
-
-    return offsetsInsideOfMultiedge
   }
 
   static CalculateMiddleOffsetsForMultiedge(

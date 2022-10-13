@@ -25,11 +25,9 @@ export class GeomEdge extends GeomObject {
       geomEdge.targetArrowhead = this.targetArrowhead.clone()
     }
 
-    if (this.label != null) {
-      geomEdge.label = this.label.clone() as GeomLabel
-    }
     return geomEdge
   }
+
   get label(): GeomLabel {
     return this.edge != null && this.edge.label != null ? (GeomObject.getGeom(this.edge.label) as GeomLabel) : null
   }

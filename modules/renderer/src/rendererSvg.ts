@@ -150,7 +150,7 @@ export class RendererSvg implements IViewer {
 
     container.addEventListener('mousemove', (e) => {
       this.processMouseMove(e)
-      if (this.LayoutEditingEnabled) this.layoutEditor.ViewerMouseMove(this, e)
+      if (this.LayoutEditingEnabled) this.layoutEditor.viewerMouseMove(this, e)
     })
 
     container.addEventListener('mouseup', (e) => {

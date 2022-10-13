@@ -646,14 +646,14 @@ export class LayoutEditor {
     }
   }
 
-  ViewerMouseMove(sender: any, e: MouseEvent) {
+  viewerMouseMove(sender: any, e: MouseEvent) {
     if (!this.viewer.LayoutEditingEnabled) {
       return
     }
 
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {
-        this.DragSomeObjects(e)
+        this.drag(e)
       } else if (this.InsertingEdge) {
         this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
       } else {
@@ -822,7 +822,7 @@ export class LayoutEditor {
 
   _lastDragPoint: Point
 
-  DragSomeObjects(e: MouseEvent) {
+  drag(e: MouseEvent) {
     if (!this.Dragging) {
       if (this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
         this.Dragging = true
@@ -847,7 +847,7 @@ export class LayoutEditor {
     }
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
-    this.geomGraphEditor.Drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
+    this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
     for (const affectedObject of this.undoAction.entities()) {
       this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }

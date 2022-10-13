@@ -94,6 +94,11 @@ export class SvgCreator {
       this.drawEdge(entity)
     } else if (entity instanceof Label) {
       throw new Error('not implemented')
+      // if (entity.parent instanceof Edge) {
+      //   this.DrawEdgeLabel(entity.parent, svgElem.parentElement as unknown as SVGElement)
+      // }
+    } else {
+      throw new Error('not implemented')
     }
   }
 
