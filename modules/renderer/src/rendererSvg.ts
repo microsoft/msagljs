@@ -47,7 +47,7 @@ export class RendererSvg implements IViewer {
     return this.mouseHitDistance
   }
   /** the distance in inches */
-  private mouseHitDistance = 0.05
+  private mouseHitDistance = 0.05 / 2
   get Dpi(): number {
     return 96 * window.devicePixelRatio
   }
@@ -105,13 +105,13 @@ export class RendererSvg implements IViewer {
     }
     const elems = Array.from(getGeomIntersectedObjects(this._objectTree, this.getHitSlack(), this.ScreenToSource(e)))
     if (elems.length == 0) {
-      this.ObjectUnderMouseCursor = null
+      this.objectUnderMouseCursor = null
       return
     }
     sortElems()
     const favorite = elems[0]
 
-    this.ObjectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
+    this.objectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
     // end of the main function processMouseMove
     function sortElems() {
       elems.sort((a, b) => {
@@ -142,7 +142,7 @@ export class RendererSvg implements IViewer {
     container.addEventListener('mousedown', (e) => {
       if (!this.LayoutEditingEnabled) return
 
-      if (this.ObjectUnderMouseCursor != null && e.buttons == 1) {
+      if (this.objectUnderMouseCursor != null && e.buttons == 1) {
         this.panZoom.pause()
       }
       this.layoutEditor.ViewerMouseDown(this, e)
@@ -256,18 +256,16 @@ export class RendererSvg implements IViewer {
   _objectUnderMouse: IViewerObject
 
   ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
-  get ObjectUnderMouseCursor(): IViewerObject {
+  get objectUnderMouseCursor(): IViewerObject {
     return this._objectUnderMouse
   }
-  set ObjectUnderMouseCursor(value) {
+  set objectUnderMouseCursor(value) {
     if (this._objectUnderMouse !== value) {
       this._objectUnderMouse = value
       if (value) {
         console.log(this._objectUnderMouse.entity)
-        // this._svgCreator.panZoom.pause()
       } else {
         console.log('no selection')
-        // this._svgCreator.panZoom.resume()
       }
     }
   }

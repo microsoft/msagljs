@@ -47,7 +47,7 @@ export interface IViewer {
 
   //  Returns the object under the cursor and null if there is none
 
-  ObjectUnderMouseCursor: IViewerObject
+  objectUnderMouseCursor: IViewerObject
 
   //  forcing redraw of the object
 

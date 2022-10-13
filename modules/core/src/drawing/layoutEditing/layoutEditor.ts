@@ -501,7 +501,7 @@ export class LayoutEditor {
 
   AnalyzeLeftMouseButtonClick(e: MouseEvent) {
     const modifierKeyIsPressed: boolean = e.ctrlKey || e.shiftKey
-    const obj: IViewerObject = this.viewer.ObjectUnderMouseCursor
+    const obj: IViewerObject = this.viewer.objectUnderMouseCursor
     if (obj != null) {
       const editableObj = obj.entity
       if (editableObj instanceof Edge) {
@@ -623,9 +623,9 @@ export class LayoutEditor {
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       this.LeftMouseButtonWasPressed = true
       if (!this.InsertingEdge) {
-        const obj = this.viewer.ObjectUnderMouseCursor
+        const obj = this.viewer.objectUnderMouseCursor
 
-        if (obj && !this.viewer.ObjectUnderMouseCursor.hasOwnProperty('edge')) {
+        if (obj && !this.viewer.objectUnderMouseCursor.hasOwnProperty('edge')) {
           this.ActiveDraggedObject = obj
         }
 
@@ -697,10 +697,10 @@ export class LayoutEditor {
   }
 
   SetPortWhenDraggingStraightLine(a: {port: Port}, b: {mousePosition: Point}): IViewerNode {
-    const isViewerNode = isIViewerNode(this.viewer.ObjectUnderMouseCursor)
+    const isViewerNode = isIViewerNode(this.viewer.objectUnderMouseCursor)
     let viewerNode: IViewerNode = null
     if (isViewerNode != null) {
-      viewerNode = this.viewer.ObjectUnderMouseCursor as IViewerNode
+      viewerNode = this.viewer.objectUnderMouseCursor as IViewerNode
       const t = {portParameter: 0}
       const geomNode = geomObjFromIViewerObj(viewerNode) as GeomNode
       if (this.NeedToCreateBoundaryPort(b.mousePosition, viewerNode, t)) {
@@ -919,7 +919,7 @@ export class LayoutEditor {
   HandleMouseUpOnLayoutEnabled(args: MouseEvent) {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.LeftMouseButtonWasPressed) {
-      if (this.viewer.ObjectUnderMouseCursor != null) {
+      if (this.viewer.objectUnderMouseCursor != null) {
         this.AnalyzeLeftMouseButtonClick(args)
         args.preventDefault()
       } else {
