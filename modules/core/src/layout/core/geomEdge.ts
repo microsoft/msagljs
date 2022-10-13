@@ -76,7 +76,6 @@ export class GeomEdge extends GeomObject {
 
     if (this.sourceArrowhead != null) this.sourceArrowhead.tipPosition = this.sourceArrowhead.tipPosition.add(delta)
     if (this.targetArrowhead != null) this.targetArrowhead.tipPosition = this.targetArrowhead.tipPosition.add(delta)
-    if (this.label) this.label.translate(delta)
   }
 
   GetMaxArrowheadLength(): number {
@@ -105,8 +104,6 @@ export class GeomEdge extends GeomObject {
     if (this.targetArrowhead != null) {
       this.targetArrowhead.tipPosition = matrix.multiplyPoint(this.targetArrowhead.tipPosition)
     }
-
-    if (this.label) this.label.transform(matrix)
   }
   underlyingPolyline: SmoothedPolyline
   get edge(): Edge {

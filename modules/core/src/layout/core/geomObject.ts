@@ -1,3 +1,4 @@
+import {Point} from '../../math/geometry/point'
 import {Attribute} from '../../structs/attribute'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
@@ -20,6 +21,7 @@ export class EventHandler {
 }
 
 export abstract class GeomObject extends Attribute {
+  abstract translate(delta: Point): void
   abstract boundingBox: Rectangle
   isCollapsed: boolean
   constructor(entity: Entity) {

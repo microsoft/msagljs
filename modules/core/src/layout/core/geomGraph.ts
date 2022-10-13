@@ -127,6 +127,7 @@ export class GeomGraph extends GeomNode {
     }
     for (const e of this.edges()) {
       e.transform(matrix)
+      if (e.label) e.label.transform(matrix)
     }
 
     this.boundingBox =

@@ -184,7 +184,7 @@ export class GeometryGraphEditor {
 
   dragWithStraightLines(delta: Point) {
     for (const geomObj of this.objectsToDrag) {
-      this.dragGeomObject(delta, geomObj)
+      geomObj.translate(delta)
     }
 
     this.PropagateChangesToClusterParents()
@@ -210,22 +210,6 @@ export class GeometryGraphEditor {
           c.boundingBox = c.calculateBoundsFromChildren() // TODO : add to undoAction here!!!!
         }
       }
-    }
-  }
-
-  static ShiftDragEdge(delta: Point, geomObj: GeomEdge) {
-    geomObj.translate(delta)
-    if (geomObj.label) {
-      GeometryGraphEditor.DragLabel(geomObj.label, delta)
-    }
-  }
-
-  dragGeomObject(delta: Point, geomObj: GeomObject) {
-    if (geomObj instanceof GeomNode) {
-      geomObj.translate(delta)
-    } else if (geomObj instanceof GeomEdge) {
-      GeometryGraphEditor.ShiftDragEdge(delta, geomObj)
-    } else {
     }
   }
 
@@ -261,6 +245,9 @@ export class GeometryGraphEditor {
     for (const edge of edges) {
       this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
+      if (edge.label) {
+        this.registerForUndo(edge.edge.label)
+      }
     }
 
     const ep = EdgeLabelPlacement.constructorGA(this.graph, edges)
