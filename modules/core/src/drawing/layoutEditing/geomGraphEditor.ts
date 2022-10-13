@@ -17,6 +17,7 @@ import {StraightLineEdges} from '../../routing/StraightLineEdges'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
+import {IntPairSet} from '../../utils/IntPairSet'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
@@ -355,6 +356,18 @@ export class GeometryGraphEditor {
 
     this.RemoveClusterSuccessorsFromObjectsToDrag()
     this.CalculateDragSetsForEdges()
+    this.addEdgeLabelsToObjectsToDrag()
+  }
+  addEdgeLabelsToObjectsToDrag() {
+    const labelsToAdd = new Array<GeomLabel>()
+    for (const e of this.objectsToDrag) {
+      if (e instanceof GeomEdge && e.edge.label) {
+        labelsToAdd.push(e.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
+      }
+    }
+    for (const l of labelsToAdd) {
+      this.objectsToDrag.add(l)
+    }
   }
 
   RemoveClusterSuccessorsFromObjectsToDrag() {
