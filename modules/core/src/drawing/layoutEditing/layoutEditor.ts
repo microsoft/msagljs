@@ -387,7 +387,7 @@ export class LayoutEditor {
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
     for (const o of this.geomGraphEditor.currentUndoAction.entities()) {
-      this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+      this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
 
@@ -455,7 +455,7 @@ export class LayoutEditor {
     if (!this.decoratorRemovalsDict.has(obj))
       this.decoratorRemovalsDict.set(obj, () => (DrawingObject.getDrawingObj(obj.entity).penwidth = w))
     drawingObj.penwidth = Math.max(this.viewer.LineThicknessForEditing, w * 2)
-    this.viewer.Invalidate(obj)
+    this.viewer.invalidate(obj)
   }
 
   TheDefaultObjectDecoratorRemover(obj: IViewerObject) {
@@ -463,7 +463,7 @@ export class LayoutEditor {
     if (decoratorRemover) {
       decoratorRemover()
       this.decoratorRemovalsDict.delete(obj)
-      this.viewer.Invalidate(obj)
+      this.viewer.invalidate(obj)
     }
 
     const ent = obj.entity
@@ -562,7 +562,7 @@ export class LayoutEditor {
     edge.SelectedForEditing = true
     edge.RadiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
-    this.viewer.Invalidate(edge)
+    this.viewer.invalidate(edge)
   }
 
   *ViewerNodes(): IterableIterator<IViewerNode> {
@@ -602,7 +602,7 @@ export class LayoutEditor {
     if (this.SelectedEdge != null) {
       this.SelectedEdge.SelectedForEditing = false
       this.removeEdgeDraggingDecorations(this.SelectedEdge)
-      this.viewer.Invalidate(this.SelectedEdge)
+      this.viewer.invalidate(this.SelectedEdge)
       this.SelectedEdge = null
     }
   }
@@ -849,11 +849,11 @@ export class LayoutEditor {
     const currentDragPoint = this.viewer.ScreenToSource(e)
     this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
     for (const affectedObject of this.undoAction.entities()) {
-      this.viewer.Invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
+      this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
     if (this.geomGraphEditor.GraphBoundingBoxGetsExtended) {
-      this.viewer.InvalidateAll()
+      this.viewer.invalidateAll()
     }
 
     e.stopPropagation()
@@ -1082,7 +1082,7 @@ export class LayoutEditor {
 
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
-        this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+        this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
     }
   }
@@ -1095,7 +1095,7 @@ export class LayoutEditor {
       const objectsToInvalidate = Array.from(action.entities())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
-        this.viewer.Invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+        this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
     }
   }

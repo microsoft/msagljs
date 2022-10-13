@@ -51,11 +51,11 @@ export interface IViewer {
 
   //  forcing redraw of the object
 
-  Invalidate(objectToInvalidate: IViewerObject): void
+  invalidate(objectToInvalidate: IViewerObject): void
 
   //  invalidates everything
 
-  InvalidateAll(): void
+  invalidateAll(): void
 
   //  returns modifier keys; control, shift, or alt are pressed at the moments
 

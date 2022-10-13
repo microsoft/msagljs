@@ -271,11 +271,11 @@ export class RendererSvg implements IViewer {
       }
     }
   }
-  Invalidate(objectToInvalidate: IViewerObject): void {
+  invalidate(objectToInvalidate: IViewerObject): void {
     this._svgCreator.Invalidate(objectToInvalidate)
     this._objectTree = null
   }
-  InvalidateAll(): void {
+  invalidateAll(): void {
     //TODO : implement
   }
   ModifierKeys = ModifierKeysEnum.None
