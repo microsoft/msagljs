@@ -272,7 +272,8 @@ export class RendererSvg implements IViewer {
     }
   }
   invalidate(objectToInvalidate: IViewerObject): void {
-    this._svgCreator.Invalidate(objectToInvalidate)
+    //  console.log('invalidate', objectToInvalidate.entity)
+    this._svgCreator.invalidate(objectToInvalidate)
     this._objectTree = null
   }
   invalidateAll(): void {

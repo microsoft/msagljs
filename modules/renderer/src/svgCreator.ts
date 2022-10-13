@@ -83,7 +83,7 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
-  Invalidate(objectToInvalidate: IViewerObject) {
+  invalidate(objectToInvalidate: IViewerObject) {
     const svgViewerObj = objectToInvalidate as SvgViewerObject
     const svgElem = svgViewerObj.svgData as Element
     svgElem.parentElement.removeChild(svgElem)
@@ -93,10 +93,7 @@ export class SvgCreator {
     } else if (entity instanceof Edge) {
       this.drawEdge(entity)
     } else if (entity instanceof Label) {
-      throw new Error('not implemented')
-      // if (entity.parent instanceof Edge) {
-      //   this.DrawEdgeLabel(entity.parent, svgElem.parentElement as unknown as SVGElement)
-      // }
+      this.drawEdgeLabel(entity)
     } else {
       throw new Error('not implemented')
     }
@@ -142,6 +139,7 @@ export class SvgCreator {
     }
     for (const edge of this.graph.deepEdges) {
       this.drawEdge(edge)
+      this.drawEdgeLabel(edge.label)
     }
 
     this.container.appendChild(this.svg)
@@ -171,15 +169,14 @@ export class SvgCreator {
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.AddArrows(edge, edgeGroup)
-    this.DrawEdgeLabel(edge, edgeGroup)
   }
 
-  private DrawEdgeLabel(edge: Edge, group: SVGElement) {
-    if (edge.label == null) return
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
-    const label = edge.label.getAttr(AttributeRegistry.GeomObjectIndex)
-    if (!label) return
-    this.drawLabelAtXY(edge.label, de, label.boundingBox, group)
+  private drawEdgeLabel(edgeLabel: Label) {
+    if (edgeLabel == null) return
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
+    const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
+    if (!geomLabel) return
+    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, this.transformGroup)
   }
   private AddArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)

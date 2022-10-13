@@ -14,6 +14,7 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
 import {SplineRouter} from '../../routing/splineRouter'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
+import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
 import {IncrementalDragger} from './incrementalDragger'
@@ -385,8 +386,12 @@ export class GeometryGraphEditor {
 
   CalculateDragSetsForEdges() {
     // copy this.objectsToDrag to an array because new entities might be added to it
-    for (const geomObj of Array.from(this.objectsToDrag).filter((n) => n instanceof GeomNode)) {
-      this.AssignEdgesOfNodeToEdgeDragSets(geomObj as GeomNode)
+    for (const geomObj of Array.from(this.objectsToDrag)) {
+      if (geomObj instanceof GeomNode) {
+        this.AssignEdgesOfNodeToEdgeDragSets(geomObj as GeomNode)
+      } else if (geomObj instanceof GeomEdge && geomObj.edge.label) {
+        this.objectsToDrag.add(geomObj.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
+      }
     }
   }
 
