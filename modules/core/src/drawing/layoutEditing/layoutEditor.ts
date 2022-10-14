@@ -24,6 +24,7 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Entity} from '../../structs/entity'
 import {Graph} from '../../structs/graph'
+import {Label} from '../../structs/label'
 import {Node} from '../../structs/node'
 import {Assert} from '../../utils/assert'
 
@@ -133,8 +134,8 @@ export class LayoutEditor {
   constructor(viewerPar: IViewer) {
     this.viewer = viewerPar
 
-    this.DecorateObjectForDragging = this.TheDefaultObjectDecorator
-    this.RemoveObjDraggingDecorations = this.TheDefaultObjectDecoratorRemover
+    this.decorateObjectForDragging = this.defaultObjectDecorator
+    this.RemoveObjDraggingDecorations = this.defaultObjectDecoratorRemover
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.DecorateEdgeLabelForDragging = LayoutEditor.TheDefaultEdgeLabelDecoratorStub
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
@@ -201,13 +202,7 @@ export class LayoutEditor {
 
   //  a delegate to decorate a node for dragging
 
-  private decorateObjectForDragging: DelegateForIViewerObject
-  public get DecorateObjectForDragging(): DelegateForIViewerObject {
-    return this.decorateObjectForDragging
-  }
-  public set DecorateObjectForDragging(value: DelegateForIViewerObject) {
-    this.decorateObjectForDragging = value
-  }
+  decorateObjectForDragging: DelegateForIViewerObject
 
   //  a delegate decorate an edge for editing
 
@@ -449,7 +444,11 @@ export class LayoutEditor {
     }
   }
 
-  TheDefaultObjectDecorator(obj: IViewerObject) {
+  defaultObjectDecorator(obj: IViewerObject) {
+    if (obj.entity instanceof Label) {
+      this.decorateEdgeLabelForDragging(obj)
+      return
+    }
     const drawingObj = DrawingNode.getDrawingObj(obj.entity)
     const w = drawingObj.penwidth
     if (!this.decoratorRemovalsDict.has(obj))
@@ -458,7 +457,7 @@ export class LayoutEditor {
     this.viewer.invalidate(obj)
   }
 
-  TheDefaultObjectDecoratorRemover(obj: IViewerObject) {
+  defaultObjectDecoratorRemover(obj: IViewerObject) {
     const decoratorRemover = this.decoratorRemovalsDict.get(obj)
     if (decoratorRemover) {
       decoratorRemover()
@@ -514,14 +513,14 @@ export class LayoutEditor {
           this.SwitchToEdgeEditing(obj as IViewerEdge)
         }
       } else {
-        if (obj.MarkedForDragging) {
+        if (obj.markedForDragging) {
           this.UnselectObjectForDragging(obj)
         } else {
           if (!modifierKeyIsPressed) {
             this.UnselectEverything()
           }
 
-          this.SelectObjectForDragging(obj)
+          this.selectObjectForDragging(obj)
         }
 
         this.UnselectEdge()
@@ -571,11 +570,11 @@ export class LayoutEditor {
     }
   }
 
-  SelectObjectForDragging(obj: IViewerObject) {
-    if (obj.MarkedForDragging == false) {
-      obj.MarkedForDragging = true
+  selectObjectForDragging(obj: IViewerObject) {
+    if (obj.markedForDragging == false) {
+      obj.markedForDragging = true
       this.dragGroup.add(obj)
-      this.DecorateObjectForDragging(obj)
+      this.decorateObjectForDragging(obj)
     }
   }
 
@@ -585,7 +584,7 @@ export class LayoutEditor {
   }
 
   UnselectWithoutRemovingFromDragGroup(obj: IViewerObject) {
-    obj.MarkedForDragging = false
+    obj.markedForDragging = false
     this.RemoveObjDraggingDecorations(obj)
   }
 
@@ -831,7 +830,7 @@ export class LayoutEditor {
           this.geomGraphEditor.PrepareForEdgeCornerDragging(<GeomEdge>geomObjFromIViewerObj(this.SelectedEdge), this.PolylineVertex)
         } else if (this.ActiveDraggedObject != null) {
           this.UnselectEdge()
-          if (!this.ActiveDraggedObject.MarkedForDragging) {
+          if (!this.ActiveDraggedObject.markedForDragging) {
             this.UnselectEverything()
           }
 
@@ -861,7 +860,7 @@ export class LayoutEditor {
   }
 
   private prepareForDragging() {
-    this.SelectObjectForDragging(this.ActiveDraggedObject)
+    this.selectObjectForDragging(this.ActiveDraggedObject)
     this.geomGraphEditor.prepareForObjectDragging(this.DraggedGeomObjects(), this.GetDraggingMode())
     //  const currentUndoRedo = this.undoAction
     // for (const g of this.geomGraphEditor.objectsToDrag) {
@@ -1024,7 +1023,7 @@ export class LayoutEditor {
     const rect = Rectangle.mkPP(this.mouseDownGraphPoint, this.viewer.ScreenToSource(args))
     for (const node of this.ViewerNodes()) {
       if (rect.intersects(geomNodeOfIViewerNode(node).boundingBox)) {
-        this.SelectObjectForDragging(node)
+        this.selectObjectForDragging(node)
       }
     }
 

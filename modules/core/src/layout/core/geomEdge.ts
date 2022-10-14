@@ -193,7 +193,6 @@ export class GeomEdge extends GeomObject {
   EdgeToAncestor(): ToAncestorEnum {
     return this.edge.EdgeToAncestor()
   }
-  /** these two fields are used for editing */
-  LabelOffsetFromTheAttachmentPoint: Point
-  LabelAttachmentParameter: number
+  /** this field is used for editing */
+  labelAttachmentParameter: number
 }

@@ -56,9 +56,14 @@ class SvgViewerObject extends Attribute {
 
   svgData: SVGElement
   isVisible = true
-  MarkedForDragging = false
+  markedForDragging = false
   MarkedForDraggingEvent: (sender: any, eventParameters: any) => void
   UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
+  /**  raised when the entity is marked for dragging */
+  markedForDraggingCallback: (sender: any, eventParameters: any) => void
+
+  /**  raised when the entity is unmarked for dragging*/
+  unmarkedForDraggingCallback: (sender: any, eventParameters: any) => void
 }
 
 class SvgViewerGraph extends SvgViewerObject implements IViewerGraph {
@@ -154,7 +159,11 @@ export class SvgCreator {
   }
 
   getScale(): number {
-    return (this.svg as SVGGraphicsElement).getScreenCTM().a
+    try {
+      return (this.svg as SVGGraphicsElement).getScreenCTM().a
+    } catch (error) {
+      return 1
+    }
   }
 
   private drawEdge(edge: Edge) {
@@ -173,10 +182,24 @@ export class SvgCreator {
 
   private drawEdgeLabel(edgeLabel: Label) {
     if (edgeLabel == null) return
+    const labelSvgGroup = this.createAndBindWithGraph(edgeLabel, 'g')
+    this.transformGroup.appendChild(labelSvgGroup)
+
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
     const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!geomLabel) return
-    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, this.transformGroup)
+    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, labelSvgGroup)
+    if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
+      const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
+      const p = curve.closestParameter(geomLabel.boundingBox.center)
+      const ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
+      const path = document.createElementNS(svgns, 'path')
+      labelSvgGroup.appendChild(path)
+      path.setAttribute('fill', 'none')
+      const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
+      this.setStroke(path, de)
+      path.setAttribute('d', curveString(ls))
+    }
   }
   private AddArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
@@ -290,8 +313,7 @@ export class SvgCreator {
 
   private drawLabelAtXY(label: Label, drawingObject: DrawingObject, rect: Rectangle, group: SVGElement) {
     const fontSize = drawingObject.fontsize
-
-    const textEl = this.createAndBindWithGraph(label, 'text') as SVGTextElement
+    const textEl = document.createElementNS(svgns, 'text') as SVGTextElement
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
