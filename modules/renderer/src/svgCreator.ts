@@ -200,8 +200,11 @@ export class SvgCreator {
       const path = document.createElementNS(svgns, 'path')
       labelSvgGroup.appendChild(path)
       path.setAttribute('fill', 'none')
+      const length = ls.length
+      path.setAttribute('stroke-dasharray', [length * 0.4, length * 0.2, length * 0.4].toString())
       const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
       this.setStroke(path, de)
+
       path.setAttribute('d', curveString(ls))
     }
   }
