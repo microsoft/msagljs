@@ -135,9 +135,9 @@ export class LayoutEditor {
     this.viewer = viewerPar
 
     this.decorateObjectForDragging = this.defaultObjectDecorator
-    this.RemoveObjDraggingDecorations = this.defaultObjectDecoratorRemover
+    this.removeObjDraggingDecorations = this.defaultObjectDecoratorRemover
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
-    this.DecorateEdgeLabelForDragging = LayoutEditor.TheDefaultEdgeLabelDecoratorStub
+    this.decorateEdgeLabelForDragging = this.defaultEdgeLabelDecorator
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
   }
 
@@ -216,23 +216,11 @@ export class LayoutEditor {
 
   //  a delegate decorate a label for editing
 
-  private decorateEdgeLabelForDragging: DelegateForIViewerObject
-  public get DecorateEdgeLabelForDragging(): DelegateForIViewerObject {
-    return this.decorateEdgeLabelForDragging
-  }
-  public set DecorateEdgeLabelForDragging(value: DelegateForIViewerObject) {
-    this.decorateEdgeLabelForDragging = value
-  }
+  decorateEdgeLabelForDragging: DelegateForIViewerObject
 
   //  a delegate to remove node decorations
 
-  private removeObjDraggingDecorations: DelegateForIViewerObject
-  public get RemoveObjDraggingDecorations(): DelegateForIViewerObject {
-    return this.removeObjDraggingDecorations
-  }
-  public set RemoveObjDraggingDecorations(value: DelegateForIViewerObject) {
-    this.removeObjDraggingDecorations = value
-  }
+  removeObjDraggingDecorations: DelegateForIViewerObject
 
   //  a delegate to remove edge decorations
 
@@ -468,7 +456,7 @@ export class LayoutEditor {
     const ent = obj.entity
     if (ent instanceof Node) {
       for (const edge of ent.edges) {
-        this.RemoveObjDraggingDecorations(edge.getAttr(AttributeRegistry.ViewerIndex))
+        this.removeObjDraggingDecorations(edge.getAttr(AttributeRegistry.ViewerIndex))
       }
     }
   }
@@ -477,7 +465,12 @@ export class LayoutEditor {
   static TheDefaultEdgeDecoratorStub(edge: IViewerEdge) {}
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  static TheDefaultEdgeLabelDecoratorStub(label: IViewerObject) {}
+  defaultEdgeLabelDecorator(label: IViewerObject) {
+    if (!this.decoratorRemovalsDict.has(label)) {
+      this.decoratorRemovalsDict.set(label, () => this.viewer.invalidate(label))
+    }
+    this.viewer.invalidate(label)
+  }
 
   static LeftButtonIsPressed(e: MouseEvent): boolean {
     return (e.buttons & 1) == 1
@@ -514,7 +507,7 @@ export class LayoutEditor {
         }
       } else {
         if (obj.markedForDragging) {
-          this.UnselectObjectForDragging(obj)
+          this.unselectForDragging(obj)
         } else {
           if (!modifierKeyIsPressed) {
             this.UnselectEverything()
@@ -578,19 +571,19 @@ export class LayoutEditor {
     }
   }
 
-  UnselectObjectForDragging(obj: IViewerObject) {
-    this.UnselectWithoutRemovingFromDragGroup(obj)
-    this.dragGroup.delete(obj)
+  prepareToRemoveFromDragGroup(obj: IViewerObject) {
+    obj.markedForDragging = false
+    this.removeObjDraggingDecorations(obj)
   }
 
-  UnselectWithoutRemovingFromDragGroup(obj: IViewerObject) {
-    obj.markedForDragging = false
-    this.RemoveObjDraggingDecorations(obj)
+  unselectForDragging(obj: IViewerObject) {
+    this.prepareToRemoveFromDragGroup(obj)
+    this.dragGroup.delete(obj)
   }
 
   UnselectEverything() {
     for (const obj of this.dragGroup) {
-      this.UnselectWithoutRemovingFromDragGroup(obj)
+      this.prepareToRemoveFromDragGroup(obj)
     }
 
     this.dragGroup.clear()

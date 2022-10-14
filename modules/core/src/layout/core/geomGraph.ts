@@ -382,6 +382,7 @@ export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, 
 }
 
 export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<HitTreeNodeType, Point> {
+  if (graph == null) return null
   const nodes: Array<[Rectangle, HitTreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
 
   const edgesPlusEdgeLabels: Array<[Rectangle, HitTreeNodeType]> = []

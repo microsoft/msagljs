@@ -177,7 +177,7 @@ export class SvgCreator {
     this.setStroke(path, de)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
-    this.AddArrows(edge, edgeGroup)
+    this.addArrows(edge, edgeGroup)
   }
 
   private drawEdgeLabel(edgeLabel: Label) {
@@ -192,7 +192,11 @@ export class SvgCreator {
     if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
       const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
       const p = curve.closestParameter(geomLabel.boundingBox.center)
-      const ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
+      let ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
+      const x = Curve.intersectionOne(ls, geomLabel.boundingBox.perimeter(), false)
+      if (x) {
+        ls = LineSegment.mkPP(x.x, ls.end)
+      }
       const path = document.createElementNS(svgns, 'path')
       labelSvgGroup.appendChild(path)
       path.setAttribute('fill', 'none')
@@ -201,7 +205,7 @@ export class SvgCreator {
       path.setAttribute('d', curveString(ls))
     }
   }
-  private AddArrows(edge: Edge, group: SVGElement) {
+  private addArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
     let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group)
