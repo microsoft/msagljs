@@ -21,6 +21,9 @@ import {
   AttributeRegistry,
   EventHandler,
   PlaneTransformation,
+  Assert,
+  Attribute,
+  SmoothedPolyline,
 } from 'msagl-js'
 import {
   DrawingEdge,
@@ -37,8 +40,6 @@ import {
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
-import {Attribute} from 'msagl-js/src/structs/attribute'
-import {Assert} from 'msagl-js/src/utils/assert'
 
 class SvgViewerObject extends Attribute {
   clone(): Attribute {
@@ -80,8 +81,8 @@ class SvgViewerNode extends SvgViewerObject implements IViewerNode {
 }
 class SvgViewerLabel extends SvgViewerObject implements IViewerObject {}
 class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
-  RadiusOfPolylineCorner: number
-  SelectedForEditing: boolean
+  radiusOfPolylineCorner: number
+  selectedForEditing: boolean
   get edge(): Edge {
     return this.entity as Edge
   }
@@ -173,6 +174,28 @@ export class SvgCreator {
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.addArrows(edge, edgeGroup)
+    this.drawSelectedForEdit(edge, edgeGroup)
+  }
+  /** This method can create the SVG child for the smoothed polyline,
+   * and also remove it*/
+  private drawSelectedForEdit(edge: Edge, edgeGroup: SVGElement) {
+    const vEdge = edge.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerEdge
+    const id = 'smoothPoly'
+    if (vEdge.selectedForEditing) {
+      this.drawSmoothPolyline(edge, edgeGroup, id)
+    } else {
+      const svgSmoothPoly = edgeGroup.children.namedItem(id)
+      if (svgSmoothPoly) edgeGroup.removeChild(svgSmoothPoly)
+    }
+  }
+  drawSmoothPolyline(edge: Edge, edgeGroup: SVGElement, smoothPolyId: string) {
+    const path = this.createOrGetWithId(edgeGroup, 'path', smoothPolyId)
+    const sp = (edge.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge).smoothedPolyline
+    const pathValue = String.Join(' ', Array.from(smoothedPolylineToString(sp)))
+    path.setAttribute('d', pathValue)
+    path.setAttribute('fill', 'none')
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
+    this.setStroke(path, de)
   }
 
   private createOrGetWithId(group: SVGElement, tag: string, id: string): SVGElement {
@@ -228,14 +251,8 @@ export class SvgCreator {
   private addArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
-    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group, 'sourceArr')
-    if (a) {
-      group.appendChild(a)
-    }
-    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end, group, 'targetArr')
-    if (a) {
-      group.appendChild(a)
-    }
+    this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group, 'sourceArr')
+    this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end, group, 'targetArr')
   }
   private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point, group: SVGElement, id: string): SVGElement | null {
     if (!arrowhead) return
@@ -407,6 +424,20 @@ const svgns = 'http://www.w3.org/2000/svg'
 
 function curveString(iCurve: ICurve): string {
   return String.Join(' ', Array.from(curveStringTokens(iCurve)))
+}
+
+function* smoothedPolylineToString(sp: SmoothedPolyline): IterableIterator<string> {
+  let first = true
+  for (const p of sp) {
+    if (first) {
+      first = false
+      yield 'M'
+      yield pointToString(p)
+    } else {
+      yield 'L'
+      yield pointToString(p)
+    }
+  }
 }
 
 function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {

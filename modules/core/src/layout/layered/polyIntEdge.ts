@@ -139,10 +139,10 @@ export class PolyIntEdge implements IIntEdge {
   }
 
   get underlyingPolyline() {
-    return this.edge.underlyingPolyline
+    return this.edge.smoothedPolyline
   }
   set underlyingPolyline(value) {
-    this.edge.underlyingPolyline = value
+    this.edge.smoothedPolyline = value
   }
 
   get LayerSpan() {

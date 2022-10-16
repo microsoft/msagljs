@@ -174,7 +174,10 @@ export class GeometryGraphEditor {
   DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
     if (draggingMode === DraggingMode.Incremental) {
       this.DragIncrementally(delta)
-    } else if (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling) {
+    } else if (
+      false && //debug - not implemented yet! TODO
+      (this.EdgeRoutingMode === EdgeRoutingMode.Spline || this.EdgeRoutingMode === EdgeRoutingMode.SplineBundling)
+    ) {
       this.DragWithSplinesOrBundles(delta)
     } else {
       this.dragWithStraightLines(delta)
@@ -277,7 +280,7 @@ export class GeometryGraphEditor {
 
   DragEdgeEdit(lastMousePosition: Point, delta: Point) {
     // this.EditedEdge.RaiseLayoutChangeEvent(delta); Todo : implement
-    const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.EditedEdge.underlyingPolyline, lastMousePosition)
+    const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.EditedEdge.smoothedPolyline, lastMousePosition)
     site.point = site.point.add(delta)
     GeometryGraphEditor.CreateCurveOnChangedPolyline(this.EditedEdge)
   }
@@ -289,7 +292,7 @@ export class GeometryGraphEditor {
   }
 
   static CreateCurveOnChangedPolyline(e: GeomEdge) {
-    const curve: Curve = e.underlyingPolyline.createCurve()
+    const curve: Curve = e.smoothedPolyline.createCurve()
     if (!Arrowhead.trimSplineAndCalculateArrowheadsII(e, e.source.boundaryCurve, e.target.boundaryCurve, curve, false)) {
       Arrowhead.createBigEnoughSpline(e)
     }
@@ -587,7 +590,7 @@ export class GeometryGraphEditor {
   //      gets the enumerator pointing to the polyline corner before the point
 
   public static GetPreviousSite(edge: GeomEdge, point: Point): CornerSite {
-    let prevSite: CornerSite = edge.underlyingPolyline.headSite
+    let prevSite: CornerSite = edge.smoothedPolyline.headSite
     let nextSite: CornerSite = prevSite.next
     for (; nextSite != null; ) {
       if (GeometryGraphEditor.BetweenSites(prevSite, nextSite, point)) {

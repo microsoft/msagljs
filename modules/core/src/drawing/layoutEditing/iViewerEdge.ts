@@ -3,8 +3,8 @@ import {Edge} from '../../structs/edge'
 import {IViewerNode} from './iViewerNode'
 
 export interface IViewerEdge extends IViewerObject {
-  SelectedForEditing: boolean
+  selectedForEditing: boolean
   edge: Edge
   IsCollapsedChanged: (node: IViewerNode) => void
-  RadiusOfPolylineCorner: number
+  radiusOfPolylineCorner: number
 }

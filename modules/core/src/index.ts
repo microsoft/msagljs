@@ -13,7 +13,10 @@ import {EventHandler} from './layout/core/geomObject'
 import {ILayoutSettings} from './layout/iLayoutSettings'
 import {PlaneTransformation} from './math/geometry/planeTransformation'
 import {RTree} from './math/geometry/RTree/rTree'
+import {SmoothedPolyline} from './math/geometry/smoothedPolyline'
+import {Attribute} from './structs/attribute'
 import {Label} from './structs/label'
+import {Assert} from './utils/assert'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -63,4 +66,7 @@ export {
   buildRTreeWithInterpolatedEdges,
   getGeomIntersectedObjects,
   Label,
+  Assert,
+  Attribute,
+  SmoothedPolyline,
 }

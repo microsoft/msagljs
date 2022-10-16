@@ -12,10 +12,19 @@ import {Arrowhead} from './arrowhead'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 
 export class GeomEdge extends GeomObject {
+  curve: ICurve
+  sourceArrowhead: Arrowhead
+
+  targetArrowhead: Arrowhead
+
+  lineWidth = 1
+  sourcePort: Port
+  targetPort: Port
+  smoothedPolyline: SmoothedPolyline
   /** clones but does not bind to the entity */
   clone(): GeomObject {
     const geomEdge = new GeomEdge(null)
-    if (this.underlyingPolyline) geomEdge.underlyingPolyline = this.underlyingPolyline.clone()
+    if (this.smoothedPolyline) geomEdge.smoothedPolyline = this.smoothedPolyline.clone()
     geomEdge.curve = this.curve.clone()
     if (this.sourceArrowhead != null) {
       geomEdge.sourceArrowhead = this.sourceArrowhead.clone()
@@ -40,30 +49,8 @@ export class GeomEdge extends GeomObject {
   }
   requireRouting() {
     this.curve = null
-    this.underlyingPolyline = null
+    this.smoothedPolyline = null
   }
-  private _sourcePort: Port
-  public get sourcePort(): Port {
-    return this._sourcePort
-  }
-  public set sourcePort(value: Port) {
-    this._sourcePort = value
-  }
-  private _targetPort: Port
-  public get targetPort(): Port {
-    return this._targetPort
-  }
-  public set targetPort(value: Port) {
-    this._targetPort = value
-  }
-  curve: ICurve
-  smoothedPolyline: SmoothedPolyline
-
-  sourceArrowhead: Arrowhead
-
-  targetArrowhead: Arrowhead
-
-  lineWidth = 1
 
   translate(delta: Point) {
     if (delta.x === 0 && delta.y === 0) return
@@ -94,8 +81,8 @@ export class GeomEdge extends GeomObject {
   transform(matrix: PlaneTransformation) {
     if (this.curve == null) return
     this.curve = this.curve.transform(matrix)
-    if (this.underlyingPolyline != null)
-      for (let s = this.underlyingPolyline.headSite, s0 = this.underlyingPolyline.headSite; s != null; s = s.next, s0 = s0.next)
+    if (this.smoothedPolyline != null)
+      for (let s = this.smoothedPolyline.headSite, s0 = this.smoothedPolyline.headSite; s != null; s = s.next, s0 = s0.next)
         s.point = matrix.multiplyPoint(s.point)
 
     if (this.sourceArrowhead != null) {
@@ -105,7 +92,7 @@ export class GeomEdge extends GeomObject {
       this.targetArrowhead.tipPosition = matrix.multiplyPoint(this.targetArrowhead.tipPosition)
     }
   }
-  underlyingPolyline: SmoothedPolyline
+
   get edge(): Edge {
     return this.entity as Edge
   }
@@ -136,7 +123,7 @@ export class GeomEdge extends GeomObject {
 
   get boundingBox(): Rectangle {
     const rect = Rectangle.mkEmpty()
-    if (this.underlyingPolyline != null) for (const p of this.underlyingPolyline) rect.add(p)
+    if (this.smoothedPolyline != null) for (const p of this.smoothedPolyline) rect.add(p)
 
     if (this.curve != null) rect.addRecSelf(this.curve.boundingBox)
 

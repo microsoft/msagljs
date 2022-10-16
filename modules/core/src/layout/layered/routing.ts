@@ -129,7 +129,7 @@ export class Routing extends Algorithm {
           CornerSite.mkSiteSP(s, p0)
           const c: Curve = polyline.createCurve()
           intEdge.curve = c
-          intEdge.edge.underlyingPolyline = polyline
+          intEdge.edge.smoothedPolyline = polyline
           offset = dx
           if (intEdge.edge.label != null) {
             offset += intEdge.edge.label.width

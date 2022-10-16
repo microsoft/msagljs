@@ -117,15 +117,15 @@ export class RectilinearInteractiveEditor {
     if (edge.source === edge.target) {
       const dx = edge.source.boundaryCurve.boundingBox.width / 2
       const dy = edge.source.boundingBox.height / 4
-      edge.underlyingPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
-      for (let site = edge.underlyingPolyline.headSite.next; site.next != null; site = site.next) {
+      edge.smoothedPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
+      for (let site = edge.smoothedPolyline.headSite.next; site.next != null; site = site.next) {
         RectilinearInteractiveEditor.CalculateCoefficiensUnderSite(site, cornerFitRadius)
       }
 
-      edge.curve = edge.underlyingPolyline.createCurve()
+      edge.curve = edge.smoothedPolyline.createCurve()
     } else {
-      edge.underlyingPolyline = SmoothedPolyline.mkFromPoints([a, b])
-      edge.curve = edge.underlyingPolyline.createCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([a, b])
+      edge.curve = edge.smoothedPolyline.createCurve()
     }
 
     if (!Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, true)) {
@@ -141,11 +141,11 @@ export class RectilinearInteractiveEditor {
     if (edge.source === edge.target) {
       const dx = edge.source.boundaryCurve.boundingBox.width / 2
       const dy = edge.source.boundingBox.height / 4
-      edge.underlyingPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
-      edge.curve = edge.underlyingPolyline.createCurve()
+      edge.smoothedPolyline = RectilinearInteractiveEditor.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
+      edge.curve = edge.smoothedPolyline.createCurve()
     } else {
-      edge.underlyingPolyline = SmoothedPolyline.mkFromPoints([a, b])
-      edge.curve = edge.underlyingPolyline.createCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([a, b])
+      edge.curve = edge.smoothedPolyline.createCurve()
     }
 
     if (!Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, true)) {

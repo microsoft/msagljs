@@ -1134,8 +1134,8 @@ function TransformEdgeCurve(transformation: PlaneTransformation, e: GeomEdge) {
 }
 
 function TransformUnderlyingPolyline(e: GeomEdge, transformation: PlaneTransformation) {
-  if (e.underlyingPolyline != null) {
-    for (let s = e.underlyingPolyline.headSite; s != null; s = s.next) {
+  if (e.smoothedPolyline != null) {
+    for (let s = e.smoothedPolyline.headSite; s != null; s = s.next) {
       s.point = transformation.multiplyPoint(s.point)
     }
   }

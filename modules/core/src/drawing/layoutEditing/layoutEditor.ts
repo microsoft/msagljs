@@ -476,11 +476,11 @@ export class LayoutEditor {
       if (editableObj instanceof Edge) {
         const geomEdge = editableObj.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
         if (geomEdge != null && this.viewer.LayoutEditingEnabled) {
-          if (geomEdge.underlyingPolyline == null) {
-            geomEdge.underlyingPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge)
+          if (geomEdge.smoothedPolyline == null) {
+            geomEdge.smoothedPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge)
           }
 
-          this.SwitchToEdgeEditing(obj as IViewerEdge)
+          this.switchToEdgeEditing(obj as IViewerEdge)
         }
       } else {
         if (obj.markedForDragging) {
@@ -524,12 +524,12 @@ export class LayoutEditor {
     return modifierKeyWasUsed
   }
 
-  SwitchToEdgeEditing(edge: IViewerEdge) {
+  switchToEdgeEditing(edge: IViewerEdge) {
     this.UnselectEverything()
 
     this.SelectedEdge = edge
-    edge.SelectedForEditing = true
-    edge.RadiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius
+    edge.selectedForEditing = true
+    edge.radiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
     this.viewer.invalidate(edge)
   }
@@ -569,7 +569,7 @@ export class LayoutEditor {
 
   UnselectEdge() {
     if (this.SelectedEdge != null) {
-      this.SelectedEdge.SelectedForEditing = false
+      this.SelectedEdge.selectedForEditing = false
       this.removeEdgeDraggingDecorations(this.SelectedEdge)
       this.viewer.invalidate(this.SelectedEdge)
       this.SelectedEdge = null
@@ -1020,7 +1020,7 @@ export class LayoutEditor {
   }
   CheckIfDraggingPolylineVertex(e: MouseEvent) {
     return
-    if (this.SelectedEdge != null && (GeomEdge.getGeom(this.SelectedEdge.edge) as GeomEdge).underlyingPolyline != null) {
+    if (this.SelectedEdge != null && (GeomEdge.getGeom(this.SelectedEdge.edge) as GeomEdge).smoothedPolyline != null) {
       throw new Error('not implemented')
       // let site: CornerSite = this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline.HeadSite;
       // for (
