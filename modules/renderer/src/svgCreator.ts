@@ -38,6 +38,7 @@ import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 import {Attribute} from 'msagl-js/src/structs/attribute'
+import {Assert} from 'msagl-js/src/utils/assert'
 
 class SvgViewerObject extends Attribute {
   clone(): Attribute {
@@ -89,10 +90,7 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
   invalidate(objectToInvalidate: IViewerObject) {
-    const svgViewerObj = objectToInvalidate as SvgViewerObject
-    const svgElem = svgViewerObj.svgData as Element
-    svgElem.parentElement.removeChild(svgElem)
-    const entity = svgViewerObj.entity
+    const entity = objectToInvalidate.entity
     if (entity instanceof Node) {
       this.drawNode(entity)
     } else if (entity instanceof Edge) {
@@ -110,7 +108,7 @@ export class SvgCreator {
   }
   static arrowAngle = 25
   svg: SVGElement
-  transformGroup: SVGGElement
+  transformGroup: SVGElement
   graph: Graph
   geomGraph: GeomGraph
   _textMeasurer = new TextMeasurer()
@@ -131,7 +129,7 @@ export class SvgCreator {
     this.clearContainer()
     this.graph = graph
 
-    this.svg = this.createAndBindWithGraph(this.graph, 'svg') as SVGSVGElement
+    this.svg = this.createAndBindWithGraph(this.graph, 'svg', this.container) as SVGSVGElement
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
@@ -147,8 +145,6 @@ export class SvgCreator {
       this.drawEdge(edge)
       this.drawEdgeLabel(edge.label)
     }
-
-    this.container.appendChild(this.svg)
   }
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
@@ -169,8 +165,7 @@ export class SvgCreator {
 
   private drawEdge(edge: Edge) {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
-    const edgeGroup = this.createAndBindWithGraph(edge, 'g')
-    this.transformGroup.appendChild(edgeGroup)
+    const edgeGroup = this.createAndBindWithGraph(edge, 'g', this.transformGroup)
     const path = this.createOrGetWithId(edgeGroup, 'path', 'curve')
     path.setAttribute('fill', 'none')
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
@@ -181,39 +176,55 @@ export class SvgCreator {
   }
 
   private createOrGetWithId(group: SVGElement, tag: string, id: string): SVGElement {
-    const path = document.createElementNS(svgns, tag)
-    path.id = id
-    group.appendChild(path)
-    return path
+    const ret = group.children.namedItem(id)
+    if (ret) {
+      return ret as SVGElement
+    }
+    const svgElem = document.createElementNS(svgns, tag)
+    svgElem.id = id
+    group.appendChild(svgElem)
+    return svgElem
   }
 
   private drawEdgeLabel(edgeLabel: Label) {
     if (edgeLabel == null) return
-    const labelSvgGroup = this.createAndBindWithGraph(edgeLabel, 'g')
-    this.transformGroup.appendChild(labelSvgGroup)
+    const labelSvgGroup = this.createAndBindWithGraph(edgeLabel, 'g', this.transformGroup)
 
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
     const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!geomLabel) return
     this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
+    const attachPromptId = 'attachPrompt'
     if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
-      const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
-      const p = curve.closestParameter(geomLabel.boundingBox.center)
-      let ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
-      const x = Curve.intersectionOne(ls, geomLabel.boundingBox.perimeter(), false)
-      if (x) {
-        ls = LineSegment.mkPP(x.x, ls.end)
-      }
-      const path = this.createOrGetWithId(labelSvgGroup, 'path', 'labelGroup')
-      path.setAttribute('fill', 'none')
-      const length = ls.length
-      path.setAttribute('stroke-dasharray', [length * 0.4, length * 0.2, length * 0.4].toString())
-      const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
-      this.setStroke(path, de)
-
-      path.setAttribute('d', curveString(ls))
+      this.addLabelAttachmentPrompt(edgeLabel, geomLabel, labelSvgGroup, attachPromptId)
+    } else {
+      this.removeLabelAttachmentPrompt(labelSvgGroup, attachPromptId)
     }
   }
+  private removeLabelAttachmentPrompt(labelSvgGroup: SVGElement, attachPromptId: string) {
+    const attachPrompt = labelSvgGroup.children.namedItem(attachPromptId)
+    if (attachPrompt) {
+      labelSvgGroup.removeChild(attachPrompt)
+    }
+  }
+
+  private addLabelAttachmentPrompt(edgeLabel: Label, geomLabel: any, labelSvgGroup: SVGElement, attachPromptId: string) {
+    const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
+    const p = curve.closestParameter(geomLabel.boundingBox.center)
+    let ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
+    const x = Curve.intersectionOne(ls, geomLabel.boundingBox.perimeter(), false)
+    if (x) {
+      ls = LineSegment.mkPP(x.x, ls.end)
+    }
+    const path = this.createOrGetWithId(labelSvgGroup, 'path', attachPromptId)
+    path.setAttribute('fill', 'none')
+    const length = ls.length
+    path.setAttribute('stroke-dasharray', [length * 0.4, length * 0.2, length * 0.4].toString())
+    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
+    this.setStroke(path, de)
+    path.setAttribute('d', curveString(ls))
+  }
+
   private addArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
@@ -263,8 +274,7 @@ export class SvgCreator {
     }
   }
   private drawNode(node: Node) {
-    const nodeGroupSvg = this.createAndBindWithGraph(node, 'g')
-    this.transformGroup.appendChild(nodeGroupSvg)
+    const nodeGroupSvg = this.createAndBindWithGraph(node, 'g', this.transformGroup)
     const gn = GeomObject.getGeom(node) as GeomNode
 
     const boundaryCurve = gn.boundaryCurve
@@ -372,12 +382,15 @@ export class SvgCreator {
     this.svg.setAttribute('height', this.geomGraph.height.toString())
   }
 
-  createAndBindWithGraph(entity: Entity, name: string): SVGElement {
-    const svgElement = document.createElementNS(svgns, name)
+  private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
     const existingViewerObj = entity ? (entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject) : null
     if (existingViewerObj) {
-      existingViewerObj.svgData = svgElement
-    } else if (entity instanceof Graph) {
+      Assert.assert(existingViewerObj.svgData != null)
+      return existingViewerObj.svgData
+    }
+    const svgElement = document.createElementNS(svgns, name)
+    group.appendChild(svgElement)
+    if (entity instanceof Graph) {
       new SvgViewerGraph(entity, svgElement)
     } else if (entity instanceof Node) {
       new SvgViewerNode(entity, svgElement)
