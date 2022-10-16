@@ -3,6 +3,11 @@ import {Entity} from '../../structs/entity'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
+  private currentUndo: UndoRedoAction
+  getCurrentUndoRedoAction(): UndoRedoAction {
+    return this.currentUndo
+  }
+
   /** registers some attributes of the entity for undo */
   registerForUndo(e: Entity) {
     if (this.currentUndo == null) {
@@ -27,8 +32,6 @@ export class UndoList {
       this.currentUndo = this.currentUndo.next
     }
   }
-
-  currentUndo: UndoRedoAction
 
   /** adds the "action" ufter the currentUndo and sets currentUndo=action */
   addAction(action: UndoRedoAction): UndoRedoAction {

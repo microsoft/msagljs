@@ -309,25 +309,23 @@ export class LayoutEditor {
   //  current undo action
 
   get undoAction(): UndoRedoAction {
-    return this.geomGraphEditor.undoList.currentUndo
+    return this.geomGraphEditor.undoList.getCurrentUndoRedoAction()
   }
 
-  ViewerGraphChanged() {
+  viewerGraphChanged() {
     this.graph = this.viewer.graph
+    this.geomGraphEditor.clear()
     if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
       this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
-      this.AttachInvalidateEventsToGeomObjects()
     }
 
     this.ActiveDraggedObject = null
     this.decoratorRemovalsDict.clear()
     this.dragGroup.clear()
-    this.CleanObstacles()
+    this.cleanObstacles()
   }
 
-  //
-
-  CleanObstacles() {
+  cleanObstacles() {
     this.InteractiveEdgeRouter = null
     this.looseObstaclesToTheirViewerNodes = null
     this.SourceOfInsertedEdge = null
@@ -337,27 +335,6 @@ export class LayoutEditor {
     this.viewer.RemoveSourcePortEdgeRouting()
     this.viewer.RemoveTargetPortEdgeRouting()
   }
-
-  AttachInvalidateEventsToGeomObjects() {
-    // TODO: do we need these?
-    // for (const entity of this.viewer.Entities) {
-    //   this.AttachLayoutChangeEvent(entity)
-    // }
-  }
-
-  //
-
-  // AttachLayoutChangeEvent(viewerObject: IViewerObject) {
-  //   const drawingObject = getViewerDrawingObject(viewerObject)
-  //   if (drawingObject != null) {
-  //     const geom = GeomObject.getGeom(drawingObject.entity)
-  //     if (geom != null) geom.BeforeLayoutChangeEvent.subscribe((a: any, b: any) => this.ReportBeforeChange(viewerObject))
-  //     if (geom instanceof GeomGraph) {
-  //       const iViewerNode = <IViewerNode>viewerObject
-  //       iViewerNode.IsCollapsedChanged.subscribe(this.RelayoutOnIsCollapsedChanged.bind(this))
-  //     }
-  //   }
-  // }
 
   RelayoutOnIsCollapsedChanged(iCluster: IViewerNode) {
     this.geomGraphEditor.PrepareForClusterCollapseChange([iCluster])

@@ -225,7 +225,7 @@ export class RendererSvg implements IViewer {
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
     this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
-    this.layoutEditor.ViewerGraphChanged()
+    this.layoutEditor.viewerGraphChanged()
   }
   getSvg(): SVGElement {
     return this._svgCreator ? this._svgCreator.svg : null

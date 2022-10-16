@@ -17,7 +17,6 @@ import {StraightLineEdges} from '../../routing/StraightLineEdges'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
-import {IntPairSet} from '../../utils/IntPairSet'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
@@ -43,7 +42,7 @@ export class GeometryGraphEditor {
   /**      return the current undo action*/
 
   public get currentUndoAction(): UndoRedoAction {
-    return this.undoList.currentUndo
+    return this.undoList.getCurrentUndoRedoAction()
   }
 
   /**  Will be set to true if an entity was dragged out of the graph bounding box*/
@@ -63,7 +62,7 @@ export class GeometryGraphEditor {
   }
   public set geomGraph(value: GeomGraph) {
     this.graph = value
-    this.Clear()
+    this.clear()
   }
 
   public get LayoutSettings(): ILayoutSettings {
@@ -577,7 +576,7 @@ export class GeometryGraphEditor {
 
   //      clear the editor
 
-  public Clear() {
+  public clear() {
     this.objectsToDrag = new Set<GeomObject>()
     this.edgesDraggedWithSource.clear()
     this.edgesDraggedWithTarget.clear()
