@@ -171,14 +171,20 @@ export class SvgCreator {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
     const edgeGroup = this.createAndBindWithGraph(edge, 'g')
     this.transformGroup.appendChild(edgeGroup)
-    const path = document.createElementNS(svgns, 'path')
-    edgeGroup.appendChild(path)
+    const path = this.createOrGetWithId(edgeGroup, 'path', 'curve')
     path.setAttribute('fill', 'none')
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.addArrows(edge, edgeGroup)
+  }
+
+  private createOrGetWithId(group: SVGElement, tag: string, id: string): SVGElement {
+    const path = document.createElementNS(svgns, tag)
+    path.id = id
+    group.appendChild(path)
+    return path
   }
 
   private drawEdgeLabel(edgeLabel: Label) {
@@ -189,7 +195,7 @@ export class SvgCreator {
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
     const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!geomLabel) return
-    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, labelSvgGroup)
+    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
     if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
       const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
       const p = curve.closestParameter(geomLabel.boundingBox.center)
@@ -198,8 +204,7 @@ export class SvgCreator {
       if (x) {
         ls = LineSegment.mkPP(x.x, ls.end)
       }
-      const path = document.createElementNS(svgns, 'path')
-      labelSvgGroup.appendChild(path)
+      const path = this.createOrGetWithId(labelSvgGroup, 'path', 'labelGroup')
       path.setAttribute('fill', 'none')
       const length = ls.length
       path.setAttribute('stroke-dasharray', [length * 0.4, length * 0.2, length * 0.4].toString())
@@ -212,20 +217,20 @@ export class SvgCreator {
   private addArrows(edge: Edge, group: SVGElement) {
     const geomEdge = <GeomEdge>GeomEdge.getGeom(edge)
     const curve = geomEdge.curve
-    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group)
+    let a = this.AddArrowhead(edge, geomEdge.sourceArrowhead, curve.start, group, 'sourceArr')
     if (a) {
       group.appendChild(a)
     }
-    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end, group)
+    a = this.AddArrowhead(edge, geomEdge.targetArrowhead, curve.end, group, 'targetArr')
     if (a) {
       group.appendChild(a)
     }
   }
-  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point, group: SVGElement): SVGElement | null {
+  private AddArrowhead(edge: Edge, arrowhead: Arrowhead, base: Point, group: SVGElement, id: string): SVGElement | null {
     if (!arrowhead) return
 
-    const path = document.createElementNS(svgns, 'polygon')
-    group.appendChild(path)
+    const path = this.createOrGetWithId(group, 'polygon', id)
+
     const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
     this.setStroke(path, de)
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
@@ -233,7 +238,7 @@ export class SvgCreator {
     return path
   }
 
-  private setStroke(path: SVGPathElement, de: DrawingObject) {
+  private setStroke(path: SVGElement, de: DrawingObject) {
     const msaglColor = msaglToSvgColor(de.color)
     path.setAttribute('stroke', msaglColor)
     path.setAttribute('stroke-opacity', (de.color ? de.color.A / 255 : 1).toString())
@@ -244,7 +249,7 @@ export class SvgCreator {
       }
     }
   }
-  attachStyleToPath(path: SVGPathElement, style: StyleEnum) {
+  attachStyleToPath(path: SVGElement, style: StyleEnum) {
     switch (style) {
       case StyleEnum.dashed:
         path.setAttribute('stroke-dasharray', '5')
@@ -269,19 +274,18 @@ export class SvgCreator {
   private drawNodeOnCurve(boundaryCurve: ICurve, node: Node, nodeGroup: SVGElement) {
     const dn = DrawingObject.getDrawingObj(node) as DrawingNode
     if (dn.shape != ShapeEnum.plaintext) {
-      this.makePathOnCurve(node, dn, boundaryCurve, nodeGroup)
+      this.makePathOnCurve(node, dn, boundaryCurve, nodeGroup, 'boundaryCurve')
       if (dn.shape == ShapeEnum.doublecircle) {
         let ellipse = boundaryCurve as Ellipse
         const r = ellipse.aAxis.length - 2 * dn.penwidth
         ellipse = CurveFactory.mkCircle(r, ellipse.center)
-        this.makePathOnCurve(node, dn, ellipse, nodeGroup)
+        this.makePathOnCurve(node, dn, ellipse, nodeGroup, 'doubleCircle')
       }
     }
     this.drawLabel(node, dn, nodeGroup)
   }
-  private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve, nodeGroup: SVGElement) {
-    const path = document.createElementNS(svgns, 'path')
-    nodeGroup.appendChild(path)
+  private makePathOnCurve(node: Node, dn: DrawingNode, boundaryCurve: ICurve, nodeGroup: SVGElement, id: string) {
+    const path = this.createOrGetWithId(nodeGroup, 'path', id)
     if (dn.styles.find((s) => s == StyleEnum.filled)) {
       const c = dn.fillColor ?? dn.color ?? DrawingNode.defaultFillColor
       path.setAttribute('fill', msaglToSvgColor(c))
@@ -298,12 +302,12 @@ export class SvgCreator {
     if (!dn.labelText || dn.labelText.length == 0) return
 
     if (dn instanceof DrawingNode) {
-      this.writeLabelText(node, dn.measuredTextSize, nodeGroup)
+      this.writeLabelText(node, dn.measuredTextSize, nodeGroup, 'nodeLabel')
     } else {
       throw new Error('not implemented')
     }
   }
-  private writeLabelText(node: Node, measuredTextSize: Size, nodeGroup: SVGElement) {
+  private writeLabelText(node: Node, measuredTextSize: Size, nodeGroup: SVGElement, id: string) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
     const isGraph = node instanceof Graph
@@ -316,12 +320,13 @@ export class SvgCreator {
           ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
-    this.drawLabelAtXY(null, drawingNode, rect, nodeGroup)
+    this.drawLabelAtXY(null, drawingNode, rect, nodeGroup, id)
   }
 
-  private drawLabelAtXY(label: Label, drawingObject: DrawingObject, rect: Rectangle, group: SVGElement) {
+  private drawLabelAtXY(label: Label, drawingObject: DrawingObject, rect: Rectangle, group: SVGElement, id: string) {
     const fontSize = drawingObject.fontsize
-    const textEl = document.createElementNS(svgns, 'text') as SVGTextElement
+    const textEl = this.createOrGetWithId(group, 'text', id) as SVGTextElement
+
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
     textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
@@ -330,16 +335,14 @@ export class SvgCreator {
     textEl.setAttribute('transform', 'scale(1,-1)')
 
     this.createTspans(drawingObject.labelText, textEl, fontSize, rect)
-
-    group.appendChild(textEl)
   }
 
   createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
     const endOfLine = '\n'
     const textLines = text.split(endOfLine)
+
     if (textLines.length == 1) {
-      const tspan = document.createElementNS(svgns, 'tspan')
-      textEl.appendChild(tspan)
+      const tspan = this.createOrGetWithId(textEl, 'tspan', 'singleTspan')
       tspan.textContent = text
       tspan.setAttribute('text-anchor', 'middle')
       tspan.setAttribute('x', rect.center.x.toString())
@@ -348,8 +351,7 @@ export class SvgCreator {
     } else {
       let y = rect.top - 1
       for (let i = 0; i < textLines.length; i++) {
-        const tspan = document.createElementNS(svgns, 'tspan')
-        textEl.appendChild(tspan)
+        const tspan = this.createOrGetWithId(textEl, 'tspan', i.toString())
         tspan.textContent = textLines[i]
         tspan.setAttribute('text-anchor', 'middle')
         tspan.setAttribute('x', rect.center.x.toString())
