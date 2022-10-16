@@ -110,7 +110,7 @@ export class SvgCreator {
   }
   static arrowAngle = 25
   svg: SVGElement
-  transformGroup: SVGSVGElement
+  transformGroup: SVGGElement
   graph: Graph
   geomGraph: GeomGraph
   _textMeasurer = new TextMeasurer()
@@ -130,11 +130,12 @@ export class SvgCreator {
   setGraph(graph: Graph): void {
     this.clearContainer()
     this.graph = graph
+
     this.svg = this.createAndBindWithGraph(this.graph, 'svg') as SVGSVGElement
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
-    this.transformGroup = this.createAndBindWithGraph(null, 'g') as SVGSVGElement
+    this.transformGroup = document.createElementNS(svgns, 'g')
     this.svg.appendChild(this.transformGroup)
 
     // After the y flip the top has moved to -top : translating it to zero
@@ -397,7 +398,7 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
   yield 'M'
   yield pointToString(iCurve.start)
   const iscurve = iCurve instanceof Curve
-  if (iscurve) for (const segment of (iCurve as Curve).segs) yield segmentString(segment)
+  if (iscurve) for (const segment of iCurve.segs) yield segmentString(segment)
   else {
     const islineSeg = iCurve instanceof LineSegment
     if (islineSeg) {
