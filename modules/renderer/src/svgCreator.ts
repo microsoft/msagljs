@@ -260,7 +260,7 @@ export class SvgCreator {
       }
     }
   }
-  attachStyleToPath(path: SVGElement, style: StyleEnum) {
+  private attachStyleToPath(path: SVGElement, style: StyleEnum) {
     switch (style) {
       case StyleEnum.dashed:
         path.setAttribute('stroke-dasharray', '5')
@@ -347,7 +347,7 @@ export class SvgCreator {
     this.createTspans(drawingObject.labelText, textEl, fontSize, rect)
   }
 
-  createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
+  private createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
     const endOfLine = '\n'
     const textLines = text.split(endOfLine)
 
@@ -377,7 +377,7 @@ export class SvgCreator {
     this.geomGraph = GeomGraph.getGeom(this.graph)
   }
 
-  setGraphWidthAndHightAttributes() {
+  private setGraphWidthAndHightAttributes() {
     this.svg.setAttribute('width', this.geomGraph.width.toString())
     this.svg.setAttribute('height', this.geomGraph.height.toString())
   }
