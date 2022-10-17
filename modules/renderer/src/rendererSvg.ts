@@ -40,7 +40,7 @@ export class RendererSvg implements IViewer {
   }
   panZoom: PanZoom
 
-  get UnderlyingPolylineRadiusWithNoScale(): number {
+  get smoothedPolylineRadiusWithNoScale(): number {
     return this.Dpi * 0.05
   }
   getInterpolationSlack(): number {
@@ -110,8 +110,10 @@ export class RendererSvg implements IViewer {
     }
     sortElems()
     const favorite = elems[0]
+    if (favorite instanceof GeomObject) {
+      this.objectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
+    }
 
-    this.objectUnderMouseCursor = favorite.entity.getAttr(AttributeRegistry.ViewerIndex)
     // end of the main function processMouseMove
     function sortElems() {
       elems.sort((a, b) => {
@@ -138,6 +140,7 @@ export class RendererSvg implements IViewer {
   constructor(container: HTMLElement = document.body) {
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
+    this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
 
     container.addEventListener('mousedown', (e) => {
       if (!this.LayoutEditingEnabled) return
@@ -294,8 +297,8 @@ export class RendererSvg implements IViewer {
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
   }
-  get UnderlyingPolylineCircleRadius(): number {
-    return this.UnderlyingPolylineRadiusWithNoScale / this.CurrentScale
+  get smoothedPolylineCircleRadius(): number {
+    return this.smoothedPolylineRadiusWithNoScale / this.CurrentScale
   }
 
   StartDrawingRubberLine(startingPoint: Point): void {

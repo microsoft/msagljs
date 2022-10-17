@@ -529,7 +529,7 @@ export class LayoutEditor {
 
     this.SelectedEdge = edge
     edge.selectedForEditing = true
-    edge.radiusOfPolylineCorner = this.viewer.UnderlyingPolylineCircleRadius
+    edge.radiusOfPolylineCorner = this.viewer.smoothedPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
     this.viewer.invalidate(edge)
   }
@@ -766,7 +766,7 @@ export class LayoutEditor {
     t.portParameter = curve.closestParameter(mousePoint)
     const pointOnCurve: Point = curve.value(t.portParameter)
     const length: number = mousePoint.sub(pointOnCurve).length
-    if (length <= this.viewer.UnderlyingPolylineCircleRadius * 2 + drawingNode.penwidth / 2) {
+    if (length <= this.viewer.smoothedPolylineCircleRadius * 2 + drawingNode.penwidth / 2) {
       this.TryToSnapToTheSegmentEnd(t, curve, pointOnCurve)
       return true
     }
@@ -780,9 +780,9 @@ export class LayoutEditor {
       const segPar = sipar.par
       const seg = c.segs[sipar.segIndex]
       if (segPar - seg.parStart < seg.parEnd - segPar) {
-        if (seg.start.sub(pointOnCurve).length < this.viewer.UnderlyingPolylineCircleRadius * 2) {
+        if (seg.start.sub(pointOnCurve).length < this.viewer.smoothedPolylineCircleRadius * 2) {
           t.portParameter -= segPar - seg.parStart
-        } else if (seg.end.sub(pointOnCurve).length < this.viewer.UnderlyingPolylineCircleRadius * 2) {
+        } else if (seg.end.sub(pointOnCurve).length < this.viewer.smoothedPolylineCircleRadius * 2) {
           t.portParameter += +(seg.parEnd - segPar)
         }
       }

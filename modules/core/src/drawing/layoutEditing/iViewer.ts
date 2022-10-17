@@ -93,7 +93,7 @@ export interface IViewer {
 
   //  The radius of the circle drawn around a polyline corner
 
-  UnderlyingPolylineCircleRadius: number
+  smoothedPolylineCircleRadius: number
 
   //  gets or sets the graph
 

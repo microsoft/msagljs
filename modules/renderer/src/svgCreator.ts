@@ -169,8 +169,7 @@ export class SvgCreator {
     const edgeGroup = this.createAndBindWithGraph(edge, 'g', this.transformGroup)
     const path = this.createOrGetWithId(edgeGroup, 'path', 'curve')
     path.setAttribute('fill', 'none')
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
-    this.setStroke(path, de)
+    this.setStroke(path, DrawingEdge.getDrawingObj(edge))
     const geometryEdge = <GeomEdge>GeomEdge.getGeom(edge)
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.addArrows(edge, edgeGroup)
@@ -180,22 +179,44 @@ export class SvgCreator {
    * and also remove it*/
   private drawSelectedForEdit(edge: Edge, edgeGroup: SVGElement) {
     const vEdge = edge.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerEdge
-    const id = 'smoothPoly'
+    const smoothPolyId = 'smoothPoly'
+    const cornersGroupId = 'corners'
     if (vEdge.selectedForEditing) {
-      this.drawSmoothPolyline(edge, edgeGroup, id)
+      this.drawSmoothPolyline(edge, edgeGroup, smoothPolyId)
+      this.addCornerCirclesGroup(edge, edgeGroup, cornersGroupId)
     } else {
-      const svgSmoothPoly = edgeGroup.children.namedItem(id)
+      const svgSmoothPoly = edgeGroup.children.namedItem(smoothPolyId)
       if (svgSmoothPoly) edgeGroup.removeChild(svgSmoothPoly)
+      const cornerGroup = edgeGroup.children.namedItem(cornersGroupId)
+      if (cornerGroup) edgeGroup.removeChild(cornerGroup)
     }
   }
+  addCornerCirclesGroup(edge: Edge, edgeGroup: SVGElement, cornersGroupId: string) {
+    const cornerGroup = this.createOrGetWithId(edgeGroup, 'g', cornersGroupId)
+    const sp = (GeomEdge.getGeom(edge) as GeomEdge).smoothedPolyline
+    let i = 0
+    for (const p of sp) {
+      this.addCornerCircle(p, cornerGroup, i++, edge)
+    }
+  }
+  addCornerCircle(p: Point, cornerGroup: SVGElement, i: number, edge: Edge) {
+    const path = this.createOrGetWithId(cornerGroup, 'path', i.toString())
+    const rad = this.getSmoothedPolylineRadius()
+    const pathValue = curveString(CurveFactory.mkCircle(rad, p))
+    path.setAttribute('d', pathValue)
+    path.setAttribute('fill', 'none')
+    this.setStroke(path, DrawingEdge.getDrawingObj(edge))
+  }
+
+  getSmoothedPolylineRadius: () => number
+
   drawSmoothPolyline(edge: Edge, edgeGroup: SVGElement, smoothPolyId: string) {
     const path = this.createOrGetWithId(edgeGroup, 'path', smoothPolyId)
     const sp = (edge.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge).smoothedPolyline
-    const pathValue = String.Join(' ', Array.from(smoothedPolylineToString(sp)))
+    const pathValue = smoothedPolylineToString(sp)
     path.setAttribute('d', pathValue)
     path.setAttribute('fill', 'none')
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
-    this.setStroke(path, de)
+    this.setStroke(path, DrawingEdge.getDrawingObj(edge))
   }
 
   private createOrGetWithId(group: SVGElement, tag: string, id: string): SVGElement {
@@ -213,10 +234,9 @@ export class SvgCreator {
     if (edgeLabel == null) return
     const labelSvgGroup = this.createAndBindWithGraph(edgeLabel, 'g', this.transformGroup)
 
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
     const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!geomLabel) return
-    this.drawLabelAtXY(edgeLabel, de, geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
+    this.drawLabelAtXY(edgeLabel, DrawingEdge.getDrawingObj(edgeLabel.parent), geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
     const attachPromptId = 'attachPrompt'
     if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
       this.addLabelAttachmentPrompt(edgeLabel, geomLabel, labelSvgGroup, attachPromptId)
@@ -243,8 +263,7 @@ export class SvgCreator {
     path.setAttribute('fill', 'none')
     const length = ls.length
     path.setAttribute('stroke-dasharray', [length * 0.4, length * 0.2, length * 0.4].toString())
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edgeLabel.parent)
-    this.setStroke(path, de)
+    this.setStroke(path, DrawingEdge.getDrawingObj(edgeLabel.parent))
     path.setAttribute('d', curveString(ls))
   }
 
@@ -259,20 +278,19 @@ export class SvgCreator {
 
     const path = this.createOrGetWithId(group, 'polygon', id)
 
-    const de = <DrawingEdge>DrawingEdge.getDrawingObj(edge)
-    this.setStroke(path, de)
+    this.setStroke(path, DrawingEdge.getDrawingObj(edge))
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
     path.setAttribute('points', pointsToString(points))
     return path
   }
 
-  private setStroke(path: SVGElement, de: DrawingObject) {
-    const msaglColor = msaglToSvgColor(de.color)
+  private setStroke(path: SVGElement, drObj: DrawingObject) {
+    const msaglColor = msaglToSvgColor(drObj.color)
     path.setAttribute('stroke', msaglColor)
-    path.setAttribute('stroke-opacity', (de.color ? de.color.A / 255 : 1).toString())
-    path.setAttribute('stroke-width', de.penwidth.toString())
-    if (de.styles && de.styles.length) {
-      for (const style of de.styles) {
+    path.setAttribute('stroke-opacity', (drObj.color ? drObj.color.A / 255 : 1).toString())
+    path.setAttribute('stroke-width', drObj.penwidth.toString())
+    if (drObj.styles && drObj.styles.length) {
+      for (const style of drObj.styles) {
         this.attachStyleToPath(path, style)
       }
     }
@@ -426,7 +444,10 @@ function curveString(iCurve: ICurve): string {
   return String.Join(' ', Array.from(curveStringTokens(iCurve)))
 }
 
-function* smoothedPolylineToString(sp: SmoothedPolyline): IterableIterator<string> {
+function smoothedPolylineToString(sp: SmoothedPolyline): string {
+  return String.Join(' ', Array.from(tokensOfSmoothedPolyline(sp)))
+}
+function* tokensOfSmoothedPolyline(sp: SmoothedPolyline): IterableIterator<string> {
   let first = true
   for (const p of sp) {
     if (first) {
@@ -439,7 +460,6 @@ function* smoothedPolylineToString(sp: SmoothedPolyline): IterableIterator<strin
     }
   }
 }
-
 function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
   yield 'M'
   yield pointToString(iCurve.start)
