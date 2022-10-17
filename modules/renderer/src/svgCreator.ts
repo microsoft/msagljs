@@ -129,13 +129,12 @@ export class SvgCreator {
   setGraph(graph: Graph): void {
     this.clearContainer()
     this.graph = graph
-
-    this.svg = this.createAndBindWithGraph(this.graph, 'svg', this.container) as SVGSVGElement
+    this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
+    this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
-    this.transformGroup = document.createElementNS(svgns, 'g')
-    this.svg.appendChild(this.transformGroup)
+    this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
     // After the y flip the top has moved to -top : translating it to zero
     this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
@@ -420,8 +419,15 @@ export class SvgCreator {
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
     const existingViewerObj = entity ? (entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject) : null
     if (existingViewerObj) {
+      const svgData = existingViewerObj.svgData
       Assert.assert(existingViewerObj.svgData != null)
-      return existingViewerObj.svgData
+      if (group !== svgData.parentNode) {
+        if (svgData.parentNode) {
+          svgData.parentNode.removeChild(svgData)
+        }
+        group.appendChild(svgData)
+      }
+      return svgData
     }
     const svgElement = document.createElementNS(svgns, name)
     group.appendChild(svgElement)
