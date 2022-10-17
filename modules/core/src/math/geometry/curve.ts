@@ -1274,11 +1274,13 @@ export class Curve implements ICurve {
     }
   }
 
-  // clones the curve.
+  /**  clones the curve */
   clone() {
     const c = new Curve()
     for (const seg of this.segs) c.addSegment(seg.clone())
-    c.boundingBox_ = this.boundingBox_.clone()
+    if (this.boundingBox_ != null) {
+      c.boundingBox_ = this.boundingBox_.clone()
+    }
     return c
   }
 

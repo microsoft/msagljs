@@ -28,6 +28,12 @@ export enum DraggingMode {
   Default,
 }
 export class GeometryGraphEditor {
+  addUndoAction() {
+    this.undoList.addAction(new UndoRedoAction())
+  }
+  getCurrentUndoRedoAction(): UndoRedoAction {
+    return this.undoList.getCurrentUndoRedoAction()
+  }
   edgesDraggedWithSource: Set<GeomEdge> = new Set<GeomEdge>()
 
   edgesDraggedWithTarget: Set<GeomEdge> = new Set<GeomEdge>()
@@ -36,7 +42,7 @@ export class GeometryGraphEditor {
 
   private objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
-  undoList: UndoList = new UndoList()
+  private undoList: UndoList = new UndoList()
 
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
@@ -137,9 +143,8 @@ export class GeometryGraphEditor {
         this.DragObjectsForRectilinearCase(delta)
       }
     } else {
-      throw new Error('not implemented')
-      this.DragEdgeEdit(lastMousePosition, delta)
-      //this.UpdateGraphBoundingBoxWithCheck(this.EditedEdge)
+      // this.EditedEdge != null
+      this.dragPolylineCorner(lastMousePosition, delta)
     }
   }
 
@@ -278,7 +283,7 @@ export class GeometryGraphEditor {
     this.GraphBoundingBoxGetsExtended = box !== this.graph.boundingBox
   }
 
-  DragEdgeEdit(lastMousePosition: Point, delta: Point) {
+  dragPolylineCorner(lastMousePosition: Point, delta: Point) {
     // this.EditedEdge.RaiseLayoutChangeEvent(delta); Todo : implement
     const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.EditedEdge.smoothedPolyline, lastMousePosition)
     site.point = site.point.add(delta)
@@ -301,9 +306,7 @@ export class GeometryGraphEditor {
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.EditedEdge = null
     this.CalculateDragSets(markedObjects)
-
     this.undoList.addAction(new UndoRedoAction())
-
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
     }
@@ -517,16 +520,10 @@ export class GeometryGraphEditor {
     return ret
   }
 
-  //      preparing for an edge corner dragging
-
-  public PrepareForEdgeCornerDragging(geometryEdge: GeomEdge, site: CornerSite): UndoRedoAction {
-    throw new Error('not implemented')
-
-    // this.EditedEdge = geometryEdge
-    // const edgeDragUndoRedoAction: UndoRedoAction = this.CreateEdgeEditUndoRedoAction()
-    // //             var edgeRestoreDate = (EdgeRestoreData) edgeDragUndoRedoAction.GetRestoreData(geometryEdge);
-    // //             edgeRestoreDate.CornerSite = site;
-    // return this.InsertToListAndSetTheBoxBefore(edgeDragUndoRedoAction)
+  prepareForEdgeCornerDragging(geometryEdge: GeomEdge) {
+    this.EditedEdge = geometryEdge
+    this.addUndoAction()
+    this.registerForUndo(geometryEdge.edge)
   }
 
   //      prepares for the polyline corner removal
@@ -653,7 +650,7 @@ export class GeometryGraphEditor {
   //      finds the polyline corner near the mouse position
 
   static FindClosestCornerForEdit(underlyingPolyline: SmoothedPolyline, mousePoint: Point): CornerSite {
-    let site = underlyingPolyline.headSite.next
+    let site = underlyingPolyline.headSite
     let bestSite = site
     let dist = bestSite.point.sub(mousePoint).lengthSquared
     while (site.next != null) {

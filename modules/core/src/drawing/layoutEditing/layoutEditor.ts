@@ -63,7 +63,7 @@ export class LayoutEditor {
 
   aActiveDraggedObject: IViewerObject
   polylineVertex: CornerSite
-  geomEdge: GeomEdge = new GeomEdge(null) // keep it to hold geometry only
+  geomEdge: GeomEdge = new GeomEdge(null) // keep it to hold the geometry only
   interactiveEdgeRouter: InteractiveEdgeRouter
   selectedEdge: IViewerEdge
   mouseDownScreenPoint: Point
@@ -74,13 +74,6 @@ export class LayoutEditor {
   }
   set ActiveDraggedObject(value: IViewerObject) {
     this.aActiveDraggedObject = value
-  }
-
-  get PolylineVertex(): CornerSite {
-    return this.polylineVertex
-  }
-  set PolylineVertex(value: CornerSite) {
-    this.polylineVertex = value
   }
 
   cornerInfo: [CornerSite, PolylineCornerType]
@@ -166,15 +159,6 @@ export class LayoutEditor {
     }
   }
 
-  //  the current selected edge
-
-  get SelectedEdge(): IViewerEdge {
-    return this.selectedEdge
-  }
-  set SelectedEdge(value: IViewerEdge) {
-    this.selectedEdge = value
-  }
-
   //  If the distance between the mouse down point and the mouse up point is greater than the threshold
   //  then we have a mouse move. Otherwise we have a click.
 
@@ -185,13 +169,7 @@ export class LayoutEditor {
     this.mouseMoveThreshold = value
   }
 
-  private dragging: boolean
-  public get Dragging(): boolean {
-    return this.dragging
-  }
-  public set Dragging(value: boolean) {
-    this.dragging = value
-  }
+  dragging: boolean
 
   get MouseDownScreenPoint(): Point {
     return this.mouseDownScreenPoint
@@ -309,7 +287,7 @@ export class LayoutEditor {
   //  current undo action
 
   get undoAction(): UndoRedoAction {
-    return this.geomGraphEditor.undoList.getCurrentUndoRedoAction()
+    return this.geomGraphEditor.getCurrentUndoRedoAction()
   }
 
   viewerGraphChanged() {
@@ -468,7 +446,7 @@ export class LayoutEditor {
     return Math.sqrt(dx * dx + dy * dy) > this.MouseMoveThreshold / 3
   }
 
-  AnalyzeLeftMouseButtonClick(e: MouseEvent) {
+  analyzeLeftMouseButtonClick(e: MouseEvent) {
     const modifierKeyIsPressed: boolean = e.ctrlKey || e.shiftKey
     const obj: IViewerObject = this.viewer.objectUnderMouseCursor
     if (obj != null) {
@@ -487,13 +465,13 @@ export class LayoutEditor {
           this.unselectForDragging(obj)
         } else {
           if (!modifierKeyIsPressed) {
-            this.UnselectEverything()
+            this.unselectEverything()
           }
 
           this.selectObjectForDragging(obj)
         }
 
-        this.UnselectEdge()
+        this.unselectEdge()
       }
     }
   }
@@ -525,9 +503,8 @@ export class LayoutEditor {
   }
 
   switchToEdgeEditing(edge: IViewerEdge) {
-    this.UnselectEverything()
-
-    this.SelectedEdge = edge
+    this.unselectEverything()
+    this.selectedEdge = edge
     edge.selectedForEditing = true
     edge.radiusOfPolylineCorner = this.viewer.smoothedPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
@@ -558,21 +535,21 @@ export class LayoutEditor {
     this.dragGroup.delete(obj)
   }
 
-  UnselectEverything() {
+  unselectEverything() {
     for (const obj of this.dragGroup) {
       this.prepareToRemoveFromDragGroup(obj)
     }
 
     this.dragGroup.clear()
-    this.UnselectEdge()
+    this.unselectEdge()
   }
 
-  UnselectEdge() {
-    if (this.SelectedEdge != null) {
-      this.SelectedEdge.selectedForEditing = false
-      this.removeEdgeDraggingDecorations(this.SelectedEdge)
-      this.viewer.invalidate(this.SelectedEdge)
-      this.SelectedEdge = null
+  unselectEdge() {
+    if (this.selectedEdge != null) {
+      this.selectedEdge.selectedForEditing = false
+      this.removeEdgeDraggingDecorations(this.selectedEdge)
+      this.viewer.invalidate(this.selectedEdge)
+      this.selectedEdge = null
     }
   }
 
@@ -602,14 +579,14 @@ export class LayoutEditor {
           e.preventDefault()
         }
 
-        if (this.SelectedEdge != null) {
-          this.CheckIfDraggingPolylineVertex(e)
+        if (this.selectedEdge != null) {
+          this.checkIfDraggingPolylineVertex(e)
         }
       } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
         this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
       }
     } else if (LayoutEditor.RightButtonIsPressed(e)) {
-      if (this.SelectedEdge != null) {
+      if (this.selectedEdge != null) {
         this.ProcessRightClickOnSelectedEdge(e)
       }
     }
@@ -621,7 +598,7 @@ export class LayoutEditor {
     }
 
     if (LayoutEditor.LeftButtonIsPressed(e)) {
-      if (this.ActiveDraggedObject != null || this.PolylineVertex != null) {
+      if (this.ActiveDraggedObject != null || this.polylineVertex != null) {
         this.drag(e)
       } else if (this.InsertingEdge) {
         this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
@@ -634,8 +611,8 @@ export class LayoutEditor {
   }
 
   SetDraggingFlag(e: MouseEvent) {
-    if (!this.Dragging && this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
-      this.Dragging = true
+    if (!this.dragging && this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
+      this.dragging = true
     }
   }
 
@@ -792,18 +769,17 @@ export class LayoutEditor {
   _lastDragPoint: Point
 
   drag(e: MouseEvent) {
-    if (!this.Dragging) {
+    if (!this.dragging) {
       if (this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
-        this.Dragging = true
-        // first time we are of Dragging mode
-        if (this.PolylineVertex != null) {
-          this.geomGraphEditor.PrepareForEdgeCornerDragging(<GeomEdge>geomObjFromIViewerObj(this.SelectedEdge), this.PolylineVertex)
+        this.dragging = true
+        // first time we are in dragging
+        if (this.polylineVertex != null) {
+          this.geomGraphEditor.prepareForEdgeCornerDragging(this.selectedEdge.edge.getAttr(AttributeRegistry.GeomObjectIndex))
         } else if (this.ActiveDraggedObject != null) {
-          this.UnselectEdge()
+          this.unselectEdge()
           if (!this.ActiveDraggedObject.markedForDragging) {
-            this.UnselectEverything()
+            this.unselectEverything()
           }
-
           this.prepareForDragging()
         }
       }
@@ -811,7 +787,7 @@ export class LayoutEditor {
       this._lastDragPoint = this.mouseDownGraphPoint
     }
 
-    if (!this.Dragging) {
+    if (!this.dragging) {
       return
     }
 
@@ -889,12 +865,12 @@ export class LayoutEditor {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.LeftMouseButtonWasPressed) {
       if (this.viewer.objectUnderMouseCursor != null) {
-        this.AnalyzeLeftMouseButtonClick(args)
+        this.analyzeLeftMouseButtonClick(args)
         args.preventDefault()
       } else {
-        this.UnselectEverything()
+        this.unselectEverything()
       }
-    } else if (this.Dragging) {
+    } else if (this.dragging) {
       if (!this.InsertingEdge) {
         this.InteractiveEdgeRouter = null
         this.looseObstaclesToTheirViewerNodes = null
@@ -905,9 +881,9 @@ export class LayoutEditor {
       args.preventDefault()
     }
 
-    this.Dragging = false
+    this.dragging = false
     this.geomGraphEditor.ForgetDragging()
-    this.PolylineVertex = null
+    this.polylineVertex = null
     this.ActiveDraggedObject = null
     this.LeftMouseButtonWasPressed = false
     if (this.TargetPort != null) {
@@ -1018,23 +994,18 @@ export class LayoutEditor {
     //     viewer.PopupMenus(new [string, ()=>void]("Delete polyline corner", this.DeleteCorner), edgeRemoveCouple);
     // }
   }
-  CheckIfDraggingPolylineVertex(e: MouseEvent) {
-    return
-    if (this.SelectedEdge != null && (GeomEdge.getGeom(this.SelectedEdge.edge) as GeomEdge).smoothedPolyline != null) {
-      throw new Error('not implemented')
-      // let site: CornerSite = this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline.HeadSite;
-      // for (
-      // ; (site != null);
-      // ) {
-      //     if (this.MouseScreenPointIsCloseEnoughToVertex(site.point, (this.SelectedEdge.RadiusOfPolylineCorner
-      //                     + (this.SelectedEdge.edge.Attr.LineWidth / 2)))) {
-      //         this.PolylineVertex = site;
-      //         e.Handled = true;
-      //         break;
-      //     }
 
-      //     site = site.next;
-      // }
+  checkIfDraggingPolylineVertex(e: MouseEvent) {
+    let cornerSite = this.selectedEdge.edge.getAttr(AttributeRegistry.GeomObjectIndex).smoothedPolyline.headSite
+    const p = this.viewer.ScreenToSource(e)
+    const lw = this.selectedEdge.edge.getAttr(AttributeRegistry.DrawingObjectIndex).penwidth
+    while (cornerSite) {
+      const dist = p.sub(cornerSite.point).length - lw
+      if (dist <= this.selectedEdge.radiusOfPolylineCorner) {
+        this.polylineVertex = cornerSite
+        break
+      }
+      cornerSite = cornerSite.next
     }
   }
 
@@ -1229,7 +1200,7 @@ export class LayoutEditor {
   MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: MouseEvent) {
     if (this.SourcePort != null) {
       this.SetDraggingFlag(e)
-      if (this.Dragging) {
+      if (this.dragging) {
         const loosePolylineBox: {loosePolyline: Polyline} = {loosePolyline: null}
         if (this.TrySetNodePort(e, this.targetOfInsertedEdge, this.targetPort, loosePolylineBox)) {
           this.viewer.SetTargetPortForEdgeRouting(this.targetPort.port.Location)
@@ -1253,7 +1224,7 @@ export class LayoutEditor {
   }
 
   MouseMoveLiveSelectObjectsForDragging(e: MouseEvent) {
-    this.UnselectEverything()
+    this.unselectEverything()
     if (LeftMouseIsPressed(e) && (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }

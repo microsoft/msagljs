@@ -96,7 +96,7 @@ export class RendererSvg implements IViewer {
       return
     }
 
-    if (this.layoutEditor.Dragging) {
+    if (this.layoutEditor.dragging) {
       return
     }
 
