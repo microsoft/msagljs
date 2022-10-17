@@ -22,7 +22,7 @@ import {
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects, HitTreeNodeType, PpEdge} from '../../../src/layout/core/geomGraph'
+import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects, HitTreeNodeType} from '../../../src/layout/core/geomGraph'
 import {PointPair} from '../../../src/math/geometry/pointPair'
 import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
@@ -124,13 +124,13 @@ test('buildRTreeWithInterpolatedEdges', () => {
       const rect = Rectangle.mkSizeCenter(new Size(slack * 2), p)
       const hitItems: Array<HitTreeNodeType> = Array.from(tree.RootNode.AllHitItems(rect, null))
       const subHitItems = hitItems.filter((i) => i instanceof Entity == false) as Array<{edge: Edge; pp: PointPair}>
-
+      /*
       const distances = subHitItems.map((a) => dist(p, a.pp.first, a.pp._second))
 
       SvgDebugWriter.dumpICurves(
         './tmp/debug.svg',
         [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp._first, m.pp._second))),
-      )
+      )*/
     }
     expect(found).toBe(true)
     // target arrowheads are hit
