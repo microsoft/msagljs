@@ -355,22 +355,15 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
 }
 
 type PpEdge = {edge: Edge; pp: PointPair}
-type CornerOfSmoothPoly = {parentEdge: Edge; corner: Point}
-export type HitTreeNodeType = Entity | PpEdge | CornerOfSmoothPoly
+export type HitTreeNodeType = Entity | PpEdge
 
-export function* getGeomIntersectedObjects(
-  tree: RTree<HitTreeNodeType, Point>,
-  slack: number,
-  point: Point,
-): IterableIterator<GeomObject | CornerOfSmoothPoly> {
+export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, slack: number, point: Point): IterableIterator<GeomObject> {
   const rect = Rectangle.mkSizeCenter(new Size(slack * 2), point)
   for (const t of tree.RootNode.AllHitItems(rect, null)) {
     if ('edge' in t) {
       if (dist(point, t.pp._first, t.pp._second) < slack) {
         yield GeomObject.getGeom(t.edge)
       }
-    } else if ('corner' in t) {
-      yield t
     } else {
       yield GeomObject.getGeom(t)
     }
