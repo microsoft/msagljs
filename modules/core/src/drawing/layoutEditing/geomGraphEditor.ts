@@ -6,7 +6,7 @@ import {Arrowhead} from '../../layout/core/arrowhead'
 import {GeomObject} from '../../layout/core/geomObject'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
 import {ILayoutSettings} from '../../layout/iLayoutSettings'
-import {Point, Curve, LineSegment, Rectangle, ICurve} from '../../math/geometry'
+import {Point, Curve, LineSegment, Rectangle, ICurve, PointLocation} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
@@ -81,12 +81,6 @@ export class GeometryGraphEditor {
 
   //      The edge data of the edge selected for editing
   editedEdge: GeomEdge
-  get EditedEdge(): GeomEdge {
-    return this.editedEdge
-  }
-  set EditedEdge(value: GeomEdge) {
-    this.editedEdge = value
-  }
 
   /**  enumerates over the nodes chosen for dragging */
   public *ObjectsToDrag(): IterableIterator<GeomObject> {
@@ -136,7 +130,7 @@ export class GeometryGraphEditor {
     for (const o of this.objectsToDrag) {
       this.registerForUndo(o.entity)
     }
-    if (this.EditedEdge == null) {
+    if (this.editedEdge == null) {
       if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
         this.DragObjectsForNonRectilinearCase(delta, draggingMode)
       } else {
@@ -285,9 +279,16 @@ export class GeometryGraphEditor {
 
   dragPolylineCorner(lastMousePosition: Point, delta: Point) {
     // this.EditedEdge.RaiseLayoutChangeEvent(delta); Todo : implement
-    const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.EditedEdge.smoothedPolyline, lastMousePosition)
+    const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.editedEdge.smoothedPolyline, lastMousePosition)
     site.point = site.point.add(delta)
-    GeometryGraphEditor.CreateCurveOnChangedPolyline(this.EditedEdge)
+
+    if (site.prev == null) {
+      pullSiteToTheNode(this.editedEdge.source, site)
+    } else if (site.next == null) {
+      pullSiteToTheNode(this.editedEdge.target, site)
+    }
+
+    GeometryGraphEditor.CreateCurveOnChangedPolyline(this.editedEdge)
   }
 
   static DragEdgeWithSite(delta: Point, e: GeomEdge, site: CornerSite) {
@@ -304,7 +305,7 @@ export class GeometryGraphEditor {
   }
 
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
-    this.EditedEdge = null
+    this.editedEdge = null
     this.CalculateDragSets(markedObjects)
     this.undoList.addAction(new UndoRedoAction())
     if (dragMode === DraggingMode.Incremental) {
@@ -521,7 +522,7 @@ export class GeometryGraphEditor {
   }
 
   prepareForEdgeCornerDragging(geometryEdge: GeomEdge) {
-    this.EditedEdge = geometryEdge
+    this.editedEdge = geometryEdge
     this.addUndoAction()
     this.registerForUndo(geometryEdge.edge)
   }
@@ -581,7 +582,7 @@ export class GeometryGraphEditor {
     this.edgesDraggedWithSource.clear()
     this.edgesDraggedWithTarget.clear()
     this.undoList = new UndoList()
-    this.EditedEdge = null
+    this.editedEdge = null
   }
 
   //      gets the enumerator pointing to the polyline corner before the point
@@ -609,7 +610,7 @@ export class GeometryGraphEditor {
   //      insert a polyline corner
 
   public InsertSite(edge: GeomEdge, point: Point, siteBeforeInsertion: CornerSite, affectedEntity: IViewerObject) {
-    this.EditedEdge = edge
+    this.editedEdge = edge
     // creating the new site
     const first: CornerSite = siteBeforeInsertion
     const second: CornerSite = first.next
@@ -622,7 +623,7 @@ export class GeometryGraphEditor {
   //      deletes the polyline corner
 
   public DeleteSite(edge: GeomEdge, site: CornerSite, userData: IViewerObject) {
-    this.EditedEdge = edge
+    this.editedEdge = edge
     this.PrepareForPolylineCornerRemoval(userData, site)
     site.prev.next = site.next
     // removing the site from the list
@@ -671,5 +672,16 @@ export class GeometryGraphEditor {
 
   ForgetDragging() {
     this.incrementalDragger = null
+  }
+}
+function pullSiteToTheNode(node: GeomNode, site: CornerSite) {
+  const bc = node.boundaryCurve
+  const location = Curve.PointRelativeToCurveLocation(site.point, bc)
+  if (location != PointLocation.Outside) return
+
+  const ls = LineSegment.mkPP(node.center, site.point)
+  const x = Curve.intersectionOne(ls, bc, false)
+  if (x) {
+    site.point = x.x
   }
 }
