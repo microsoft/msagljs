@@ -90,6 +90,7 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  private edgeContextMenu: HTMLElement
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
     if (entity instanceof Node) {
@@ -117,6 +118,59 @@ export class SvgCreator {
   private container: HTMLElement
   public constructor(container: HTMLElement) {
     this.container = container
+    this.createEdgeContextMenu()
+  }
+
+  private createEdgeContextMenu() {
+    const navItems = [
+      {text: 'Google'},
+      {text: 'Bing'},
+      {text: 'StackOverflow'}, // todo: fill navItems
+    ]
+
+    this.edgeContextMenu = document.createElement('nav')
+    const navList = document.createElement('ul')
+    this.edgeContextMenu.appendChild(navList)
+
+    for (let i = 0; i < navItems.length; i++) {
+      // Create a fresh list item, and anchor
+      const navItem = document.createElement('button')
+
+      // Set properties on anchor
+
+      // Add anchor to list item, and list item to list
+      navItem.textContent = navItems[i].text
+      navList.appendChild(navItem)
+    }
+    this.edgeContextMenu.style.display = 'none'
+    this.edgeContextMenu.style.position = 'absolute'
+    this.edgeContextMenu.style.left = `200px`
+    const menu = this.edgeContextMenu
+    const ele = this.container
+    ele.addEventListener('contextmenu', function (e) {
+      e.preventDefault()
+      const rect = ele.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+
+      // Set the position for menu
+      menu.style.top = `${y}px`
+      menu.style.left = `${x}px`
+
+      // Show the menu
+      menu.style.display = 'block'
+      document.addEventListener('click', documentClickHandler)
+      function documentClickHandler(e: MouseEvent) {
+        const isClickedOutside = !menu.contains(e.target as globalThis.Node)
+        if (isClickedOutside) {
+          // Hide the menu
+          menu.style.display = 'none'
+
+          // Remove the event handler
+          document.removeEventListener('click', documentClickHandler)
+        }
+      }
+    })
   }
 
   private clearContainer() {
@@ -131,6 +185,7 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
+    this.container.appendChild(this.edgeContextMenu)
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
