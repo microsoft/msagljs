@@ -122,29 +122,26 @@ export class SvgCreator {
   }
 
   private createEdgeContextMenu() {
-    const navItems = [
-      {text: 'Google'},
-      {text: 'Bing'},
-      {text: 'StackOverflow'}, // todo: fill navItems
+    const navItems: {text: string; color: string}[] = [
+      {text: 'Google', color: undefined},
+      {text: 'Bing', color: undefined},
+      {text: 'StackOverflow', color: undefined}, // todo: fill navItems
     ]
 
-    this.edgeContextMenu = document.createElement('nav')
-    const navList = document.createElement('ul')
-    this.edgeContextMenu.appendChild(navList)
+    this.edgeContextMenu = document.createElement('ul')
+    this.edgeContextMenu.style.listStyle = 'none'
 
     for (let i = 0; i < navItems.length; i++) {
-      // Create a fresh list item, and anchor
-      const navItem = document.createElement('button')
-
-      // Set properties on anchor
-
-      // Add anchor to list item, and list item to list
-      navItem.textContent = navItems[i].text
-      navList.appendChild(navItem)
+      const li = document.createElement('li')
+      li.setAttribute('class', 'item')
+      li.addEventListener('mouseover', (e) => chbg(e.target, 'Red'))
+      li.addEventListener('mouseleave', (e) => chbg(e.target, navItems[i].color))
+      this.edgeContextMenu.appendChild(li)
+      navItems[i].color = li.style.backgroundColor
+      li.innerHTML = navItems[i].text
     }
     this.edgeContextMenu.style.display = 'none'
     this.edgeContextMenu.style.position = 'absolute'
-    this.edgeContextMenu.style.left = `200px`
     const menu = this.edgeContextMenu
     const ele = this.container
     ele.addEventListener('contextmenu', function (e) {
@@ -159,18 +156,23 @@ export class SvgCreator {
 
       // Show the menu
       menu.style.display = 'block'
+      menu.style.backgroundColor = '#fff000'
+
       document.addEventListener('click', documentClickHandler)
       function documentClickHandler(e: MouseEvent) {
-        const isClickedOutside = !menu.contains(e.target as globalThis.Node)
-        if (isClickedOutside) {
-          // Hide the menu
-          menu.style.display = 'none'
-
-          // Remove the event handler
-          document.removeEventListener('click', documentClickHandler)
-        }
+        e.stopImmediatePropagation()
+        //const isClickedOutside = !menu.contains(e.target as globalThis.Node)
+        //if (isClickedOutside) {
+        // Hide the menu
+        menu.style.display = 'none'
+        // Remove the event handler
+        document.removeEventListener('click', documentClickHandler)
+        // }
       }
     })
+    function chbg(elem: any, color: string) {
+      elem.style.backgroundColor = color
+    }
   }
 
   private clearContainer() {
