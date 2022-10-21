@@ -90,7 +90,6 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
-  private edgeContextMenu: HTMLElement
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
     if (entity instanceof Node) {
@@ -118,61 +117,6 @@ export class SvgCreator {
   private container: HTMLElement
   public constructor(container: HTMLElement) {
     this.container = container
-    this.createEdgeContextMenu()
-  }
-
-  private createEdgeContextMenu() {
-    const navItems: {text: string; color: string}[] = [
-      {text: 'Google', color: undefined},
-      {text: 'Bing', color: undefined},
-      {text: 'StackOverflow', color: undefined}, // todo: fill navItems
-    ]
-
-    this.edgeContextMenu = document.createElement('ul')
-    this.edgeContextMenu.style.listStyle = 'none'
-
-    for (let i = 0; i < navItems.length; i++) {
-      const li = document.createElement('li')
-      li.setAttribute('class', 'item')
-      li.addEventListener('mouseover', (e) => chbg(e.target, 'Red'))
-      li.addEventListener('mouseleave', (e) => chbg(e.target, navItems[i].color))
-      this.edgeContextMenu.appendChild(li)
-      navItems[i].color = li.style.backgroundColor
-      li.innerHTML = navItems[i].text
-    }
-    this.edgeContextMenu.style.display = 'none'
-    this.edgeContextMenu.style.position = 'absolute'
-    const menu = this.edgeContextMenu
-    const ele = this.container
-    ele.addEventListener('contextmenu', function (e) {
-      e.preventDefault()
-      const rect = ele.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-
-      // Set the position for menu
-      menu.style.top = `${y}px`
-      menu.style.left = `${x}px`
-
-      // Show the menu
-      menu.style.display = 'block'
-      menu.style.backgroundColor = '#fff000'
-
-      document.addEventListener('click', documentClickHandler)
-      function documentClickHandler(e: MouseEvent) {
-        e.stopImmediatePropagation()
-        //const isClickedOutside = !menu.contains(e.target as globalThis.Node)
-        //if (isClickedOutside) {
-        // Hide the menu
-        menu.style.display = 'none'
-        // Remove the event handler
-        document.removeEventListener('click', documentClickHandler)
-        // }
-      }
-    })
-    function chbg(elem: any, color: string) {
-      elem.style.backgroundColor = color
-    }
   }
 
   private clearContainer() {
@@ -187,7 +131,6 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
-    this.container.appendChild(this.edgeContextMenu)
     this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
