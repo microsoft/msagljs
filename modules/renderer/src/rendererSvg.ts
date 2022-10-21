@@ -158,7 +158,7 @@ export class RendererSvg implements IViewer {
 
     container.addEventListener('mouseup', (e) => {
       if (!this.LayoutEditingEnabled) return
-      this.layoutEditor.ViewerMouseUp(this, e)
+      this.layoutEditor.viewerMouseUp(this, e)
       this.panZoom.resume()
     })
 

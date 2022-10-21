@@ -219,13 +219,7 @@ export class LayoutEditor {
     this.nodeInsertPredicate = value
   }
 
-  private leftMouseButtonWasPressed: boolean
-  public get LeftMouseButtonWasPressed(): boolean {
-    return this.leftMouseButtonWasPressed
-  }
-  public set LeftMouseButtonWasPressed(value: boolean) {
-    this.leftMouseButtonWasPressed = value
-  }
+  leftMouseButtonWasPressed: boolean
 
   get SourceOfInsertedEdge(): IViewerNode {
     return this.sourceOfInsertedEdge.node
@@ -457,8 +451,8 @@ export class LayoutEditor {
           if (geomEdge.smoothedPolyline == null) {
             geomEdge.smoothedPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge)
           }
-
-          this.switchToEdgeEditing(obj as IViewerEdge)
+          if (this.selectedEdge !== obj) this.switchToEdgeEditing(obj as IViewerEdge)
+          else this.toggleCornerForSelectedEdge()
         }
       } else {
         if (obj.markedForDragging) {
@@ -474,6 +468,9 @@ export class LayoutEditor {
         this.unselectEdge()
       }
     }
+  }
+  toggleCornerForSelectedEdge() {
+    //throw new Error('Method not implemented.')
   }
 
   static CreateUnderlyingPolyline(geomEdge: GeomEdge): SmoothedPolyline {
@@ -567,7 +564,7 @@ export class LayoutEditor {
     this.mouseDownGraphPoint = this.viewer.ScreenToSource(e)
     this.MouseDownScreenPoint = new Point(e.clientX, e.clientY)
     if (LayoutEditor.LeftButtonIsPressed(e)) {
-      this.LeftMouseButtonWasPressed = true
+      this.leftMouseButtonWasPressed = true
       if (!this.InsertingEdge) {
         const obj = this.viewer.objectUnderMouseCursor
 
@@ -850,7 +847,7 @@ export class LayoutEditor {
     return viewerObject.entity.parent as Graph
   }
 
-  ViewerMouseUp(sender: any, args: MouseEvent) {
+  viewerMouseUp(sender: any, args: MouseEvent) {
     if (args.defaultPrevented) {
       return
     }
@@ -858,12 +855,12 @@ export class LayoutEditor {
     if (!this.viewer.LayoutEditingEnabled) {
       return
     }
-    this.HandleMouseUpOnLayoutEnabled(args)
+    this.handleMouseUpOnLayoutEnabled(args)
   }
 
-  HandleMouseUpOnLayoutEnabled(args: MouseEvent) {
+  handleMouseUpOnLayoutEnabled(args: MouseEvent) {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
-    if (click && this.LeftMouseButtonWasPressed) {
+    if (click && this.leftMouseButtonWasPressed) {
       if (this.viewer.objectUnderMouseCursor != null) {
         this.analyzeLeftMouseButtonClick(args)
         args.preventDefault()
@@ -885,7 +882,7 @@ export class LayoutEditor {
     this.geomGraphEditor.ForgetDragging()
     this.polylineVertex = null
     this.ActiveDraggedObject = null
-    this.LeftMouseButtonWasPressed = false
+    this.leftMouseButtonWasPressed = false
     if (this.TargetPort != null) {
       this.viewer.RemoveTargetPortEdgeRouting()
     }

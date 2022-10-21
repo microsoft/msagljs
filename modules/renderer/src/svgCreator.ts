@@ -181,9 +181,11 @@ export class SvgCreator {
     const smoothPolyId = 'smoothPoly'
     const cornersGroupId = 'corners'
     if (vEdge.selectedForEditing) {
+      // add editing fixtures
       this.drawSmoothPolyline(edge, edgeGroup, smoothPolyId)
       this.addCornerCirclesGroup(edge, edgeGroup, cornersGroupId)
     } else {
+      // remove editing fixtures
       const svgSmoothPoly = edgeGroup.children.namedItem(smoothPolyId)
       if (svgSmoothPoly) edgeGroup.removeChild(svgSmoothPoly)
       const cornerGroup = edgeGroup.children.namedItem(cornersGroupId)

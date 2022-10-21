@@ -219,7 +219,9 @@ export class Curve implements ICurve {
 
   translate(delta: Point) {
     for (const s of this.segs) s.translate(delta)
-    this.boundingBox_ = Rectangle.translate(this.boundingBox_, delta)
+    if (this.boundingBox_) {
+      this.boundingBox_ = Rectangle.translate(this.boundingBox_, delta)
+    }
     this.pBNode = null
   }
 
