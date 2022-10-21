@@ -10,8 +10,12 @@ import {Port} from './port'
 import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
+import {Entity} from '../../structs/entity'
 
 export class GeomEdge extends GeomObject {
+  static getGeom(e: Entity): GeomEdge {
+    return GeomObject.getGeom(e) as GeomEdge
+  }
   curve: ICurve
   sourceArrowhead: Arrowhead
 

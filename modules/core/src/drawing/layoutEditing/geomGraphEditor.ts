@@ -278,8 +278,7 @@ export class GeometryGraphEditor {
   }
 
   dragPolylineCorner(lastMousePosition: Point, delta: Point) {
-    // this.EditedEdge.RaiseLayoutChangeEvent(delta); Todo : implement
-    const site: CornerSite = GeometryGraphEditor.FindClosestCornerForEdit(this.editedEdge.smoothedPolyline, lastMousePosition)
+    const site: CornerSite = GeometryGraphEditor.findClosestCornerForEdit(this.editedEdge.smoothedPolyline, lastMousePosition)
     site.point = site.point.add(delta)
 
     if (site.prev == null) {
@@ -288,16 +287,15 @@ export class GeometryGraphEditor {
       pullSiteToTheNode(this.editedEdge.target, site)
     }
 
-    GeometryGraphEditor.CreateCurveOnChangedPolyline(this.editedEdge)
+    GeometryGraphEditor.createCurveOnChangedPolyline(this.editedEdge)
   }
 
-  static DragEdgeWithSite(delta: Point, e: GeomEdge, site: CornerSite) {
-    e.RaiseLayoutChangeEvent(delta)
+  static dragEdgeWithSite(delta: Point, e: GeomEdge, site: CornerSite) {
     site.point = site.point.add(delta)
-    GeometryGraphEditor.CreateCurveOnChangedPolyline(e)
+    GeometryGraphEditor.createCurveOnChangedPolyline(e)
   }
 
-  static CreateCurveOnChangedPolyline(e: GeomEdge) {
+  static createCurveOnChangedPolyline(e: GeomEdge) {
     const curve: Curve = e.smoothedPolyline.createCurve()
     if (!Arrowhead.trimSplineAndCalculateArrowheadsII(e, e.source.boundaryCurve, e.target.boundaryCurve, curve, false)) {
       Arrowhead.createBigEnoughSpline(e)
@@ -521,27 +519,10 @@ export class GeometryGraphEditor {
     return ret
   }
 
-  prepareForEdgeCornerDragging(geometryEdge: GeomEdge) {
+  prepareForGeomEdgeChange(geometryEdge: GeomEdge) {
     this.editedEdge = geometryEdge
     this.addUndoAction()
     this.registerForUndo(geometryEdge.edge)
-  }
-
-  //      prepares for the polyline corner removal
-
-  public PrepareForPolylineCornerRemoval(affectedEdge: IViewerObject, site: CornerSite): UndoRedoAction {
-    throw new Error('not implemented')
-    //   const action = new SiteRemoveUndoAction(this.EditedEdge)
-    //   return this.InsertToListAndSetTheBoxBefore(action)
-    //
-  }
-
-  //      prepare for polyline corner insertion
-
-  PrepareForPolylineCornerInsertion(affectedObj: IViewerObject, site: CornerSite): UndoRedoAction {
-    throw new Error('non tested')
-    // const action = new SiteInsertUndoAction(this.EditedEdge)
-    // return this.InsertToListAndSetTheBoxBefore(action)
   }
 
   //      Undoes the last editing.
@@ -587,7 +568,7 @@ export class GeometryGraphEditor {
 
   //      gets the enumerator pointing to the polyline corner before the point
 
-  public static GetPreviousSite(edge: GeomEdge, point: Point): CornerSite {
+  public static getPreviousSite(edge: GeomEdge, point: Point): CornerSite {
     let prevSite: CornerSite = edge.smoothedPolyline.headSite
     let nextSite: CornerSite = prevSite.next
     for (; nextSite != null; ) {
@@ -609,27 +590,26 @@ export class GeometryGraphEditor {
 
   //      insert a polyline corner
 
-  public InsertSite(edge: GeomEdge, point: Point, siteBeforeInsertion: CornerSite, affectedEntity: IViewerObject) {
+  insertSite(edge: GeomEdge, point: Point, siteBeforeInsertion: CornerSite) {
     this.editedEdge = edge
     // creating the new site
     const first: CornerSite = siteBeforeInsertion
     const second: CornerSite = first.next
     const s = CornerSite.mkSiteSPS(first, point, second)
-    this.PrepareForPolylineCornerInsertion(affectedEntity, s)
     // just to recalc everything  of a correct way
-    GeometryGraphEditor.DragEdgeWithSite(new Point(0, 0), edge, s)
+    GeometryGraphEditor.dragEdgeWithSite(new Point(0, 0), edge, s)
   }
 
   //      deletes the polyline corner
 
-  public DeleteSite(edge: GeomEdge, site: CornerSite, userData: IViewerObject) {
+  deleteSite(edge: GeomEdge, site: CornerSite) {
+    this.prepareForGeomEdgeChange(edge)
     this.editedEdge = edge
-    this.PrepareForPolylineCornerRemoval(userData, site)
     site.prev.next = site.next
     // removing the site from the list
     site.next.prev = site.prev
-    // just to recalc everything  of a correct way
-    GeometryGraphEditor.DragEdgeWithSite(new Point(0, 0), edge, site.prev)
+    // recalculate the edge geometry  in a correct way
+    GeometryGraphEditor.dragEdgeWithSite(new Point(0, 0), edge, site.prev)
   }
 
   //      finds the polyline corner near the mouse position
@@ -650,8 +630,11 @@ export class GeometryGraphEditor {
 
   //      finds the polyline corner near the mouse position
 
-  static FindClosestCornerForEdit(underlyingPolyline: SmoothedPolyline, mousePoint: Point): CornerSite {
-    let site = underlyingPolyline.headSite
+  static findClosestCornerForEdit(sp: SmoothedPolyline, mousePoint: Point, minDist: number = Number.POSITIVE_INFINITY): CornerSite {
+    if (minDist !== Number.POSITIVE_INFINITY) {
+      minDist *= minDist
+    }
+    let site = sp.headSite
     let bestSite = site
     let dist = bestSite.point.sub(mousePoint).lengthSquared
     while (site.next != null) {
@@ -662,7 +645,7 @@ export class GeometryGraphEditor {
         dist = d
       }
     }
-
+    if (dist > minDist) return null
     return bestSite
   }
 
