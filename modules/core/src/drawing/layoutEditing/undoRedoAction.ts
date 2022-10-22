@@ -1,5 +1,3 @@
-// the interface for undo objects
-
 import {GeomGraph} from '../../layout/core'
 import {GeomObject} from '../../layout/core/geomObject'
 import {Attribute} from '../../structs/attribute'
@@ -7,11 +5,11 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
+/** support for undo/redo functionality */
 export class UndoRedoAction {
   private _readyForUndo = true // initially
+  private changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
 
-  static count = 0 // used for debug : TODO remove
-  id: number // used for debug : TODO remove
   get readyForRedo(): boolean {
     return !this.readyForUndo
   }
@@ -32,10 +30,6 @@ export class UndoRedoAction {
 
   has(o: Entity): boolean {
     return this.changes.has(o)
-  }
-
-  constructor() {
-    this.id = UndoRedoAction.count++
   }
 
   graph: GeomGraph
@@ -64,11 +58,9 @@ export class UndoRedoAction {
     this.readyForUndo = true
   }
 
-  protected changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
-
   /** It adds an entry for the entity if the changes does not contain the entity as a key
    *  Also, only one pair is added for each index.
-   * old plays the role of 'old' field of the pair  */
+   *  'old' will be restored by undo  */
 
   addOldNewPair(entity: Entity, old: Attribute) {
     if (!this.changes.has(entity)) {
