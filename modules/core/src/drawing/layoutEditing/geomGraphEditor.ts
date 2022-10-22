@@ -563,16 +563,15 @@ export class GeometryGraphEditor {
     this.edgesDraggedWithSource.clear()
     this.edgesDraggedWithTarget.clear()
     this.undoList = new UndoList()
-    this.editedEdge = null
   }
 
   //      gets the enumerator pointing to the polyline corner before the point
 
-  public static getPreviousSite(edge: GeomEdge, point: Point): CornerSite {
+  public static getPreviousCornerSite(edge: GeomEdge, point: Point): CornerSite {
     let prevSite: CornerSite = edge.smoothedPolyline.headSite
     let nextSite: CornerSite = prevSite.next
     for (; nextSite != null; ) {
-      if (GeometryGraphEditor.BetweenSites(prevSite, nextSite, point)) {
+      if (GeometryGraphEditor.betweenSites(prevSite, nextSite, point)) {
         return prevSite
       }
 
@@ -583,7 +582,7 @@ export class GeometryGraphEditor {
     return null
   }
 
-  static BetweenSites(prevSite: CornerSite, nextSite: CornerSite, point: Point): boolean {
+  static betweenSites(prevSite: CornerSite, nextSite: CornerSite, point: Point): boolean {
     const par: number = LineSegment.closestParameterOnLineSegment(point, prevSite.point, nextSite.point)
     return par > 0.1 && par < 0.9
   }
@@ -591,12 +590,9 @@ export class GeometryGraphEditor {
   //      insert a polyline corner
 
   insertSite(edge: GeomEdge, point: Point, siteBeforeInsertion: CornerSite) {
-    this.editedEdge = edge
+    this.prepareForGeomEdgeChange(edge)
     // creating the new site
-    const first: CornerSite = siteBeforeInsertion
-    const second: CornerSite = first.next
-    const s = CornerSite.mkSiteSPS(first, point, second)
-    // just to recalc everything  of a correct way
+    const s = CornerSite.mkSiteSPS(siteBeforeInsertion, point, siteBeforeInsertion.next)
     GeometryGraphEditor.dragEdgeWithSite(new Point(0, 0), edge, s)
   }
 

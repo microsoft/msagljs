@@ -65,7 +65,24 @@ export class LayoutEditor {
   activeCornerSite: CornerSite
   geomEdge: GeomEdge = new GeomEdge(null) // keep it to hold the geometry only
   interactiveEdgeRouter: InteractiveEdgeRouter
-  selectedEdge: IViewerEdge
+  private _selectedEdge: IViewerEdge
+  public get selectedEdge(): IViewerEdge {
+    return this._selectedEdge
+  }
+  public set selectedEdge(value: IViewerEdge) {
+    if (this._selectedEdge !== value) {
+      if (this._selectedEdge) {
+        this._selectedEdge.selectedForEditing = false
+      }
+    }
+    this._selectedEdge = value
+    if (value) {
+      value.selectedForEditing = true
+      this.geomGraphEditor.editedEdge = GeomEdge.getGeom(value.edge)
+    } else {
+      this.geomGraphEditor.editedEdge = null
+    }
+  }
   mouseDownScreenPoint: Point
   EdgeAttr: DrawingEdge
   arrowheadLength = Arrowhead.defaultArrowheadLength
@@ -434,10 +451,10 @@ export class LayoutEditor {
   }
 
   analyzeLeftMouseButtonClick(e: MouseEvent) {
-    if (this.viewer.objectUnderMouseCursor) {
-      this.analyzeLeftMouseButtonClickOnObjectUnderCursor(e)
-    } else if (this.selectedEdge) {
+    if (this.selectedEdge) {
       this.toggleCornerForSelectedEdge()
+    } else if (this.viewer.objectUnderMouseCursor) {
+      this.analyzeLeftMouseButtonClickOnObjectUnderCursor(e)
     }
   }
 
@@ -482,11 +499,27 @@ export class LayoutEditor {
         return // ignore the source and the target corners
       }
       this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.selectedEdge.edge), corner)
+      this.viewer.invalidate(this.selectedEdge)
     }
-    this.viewer.invalidate(this.selectedEdge)
   }
   insertCorner() {
-    throw new Error('Method not implemented.')
+    // we have to be close enough to the curve
+    if (!this.closeEnoughToSelectedEdge()) {
+      this.unselectEdge()
+    } else {
+      const a = GeometryGraphEditor.getPreviousCornerSite(GeomEdge.getGeom(this.selectedEdge.edge), this.mouseDownGraphPoint)
+      if (a == null) return
+      const b = a.next
+      if (b == null) return
+      this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.selectedEdge.edge), this.mouseDownGraphPoint, a)
+      this.viewer.invalidate(this.selectedEdge)
+    }
+  }
+
+  closeEnoughToSelectedEdge(): boolean {
+    const curve = GeomEdge.getGeom(this.selectedEdge.edge).curve
+    const t = curve.closestParameter(this.mouseDownGraphPoint)
+    return curve.value(t).sub(this.mouseDownGraphPoint).length < this.selectedEdge.radiusOfPolylineCorner
   }
 
   static CreateUnderlyingPolyline(geomEdge: GeomEdge): SmoothedPolyline {
@@ -518,7 +551,6 @@ export class LayoutEditor {
   switchToEdgeEditing(edge: IViewerEdge) {
     this.unselectEverything()
     this.selectedEdge = edge
-    edge.selectedForEditing = true
     edge.radiusOfPolylineCorner = this.viewer.smoothedPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
     this.viewer.invalidate(edge)
@@ -877,7 +909,7 @@ export class LayoutEditor {
   handleMouseUpOnLayoutEnabled(args: MouseEvent) {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.leftMouseButtonWasPressed) {
-      if (this.viewer.objectUnderMouseCursor != null || this.activeCornerSite != null) {
+      if (this.viewer.objectUnderMouseCursor != null || this.selectedEdge != null) {
         this.analyzeLeftMouseButtonClick(args)
         args.preventDefault()
       } else {
