@@ -80,7 +80,7 @@ export class GeometryGraphEditor {
   }
 
   //      The edge data of the edge selected for editing
-  editedEdge: GeomEdge
+  geomEdgeWithSmoothedPolylineExposed: GeomEdge
 
   /**  enumerates over the nodes chosen for dragging */
   public *ObjectsToDrag(): IterableIterator<GeomObject> {
@@ -130,7 +130,7 @@ export class GeometryGraphEditor {
     for (const o of this.objectsToDrag) {
       this.registerForUndo(o.entity)
     }
-    if (this.editedEdge == null) {
+    if (this.geomEdgeWithSmoothedPolylineExposed == null) {
       if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
         this.DragObjectsForNonRectilinearCase(delta, draggingMode)
       } else {
@@ -278,16 +278,19 @@ export class GeometryGraphEditor {
   }
 
   dragPolylineCorner(lastMousePosition: Point, delta: Point) {
-    const site: CornerSite = GeometryGraphEditor.findClosestCornerForEdit(this.editedEdge.smoothedPolyline, lastMousePosition)
+    const site: CornerSite = GeometryGraphEditor.findClosestCornerForEdit(
+      this.geomEdgeWithSmoothedPolylineExposed.smoothedPolyline,
+      lastMousePosition,
+    )
     site.point = site.point.add(delta)
 
     if (site.prev == null) {
-      pullSiteToTheNode(this.editedEdge.source, site)
+      pullSiteToTheNode(this.geomEdgeWithSmoothedPolylineExposed.source, site)
     } else if (site.next == null) {
-      pullSiteToTheNode(this.editedEdge.target, site)
+      pullSiteToTheNode(this.geomEdgeWithSmoothedPolylineExposed.target, site)
     }
 
-    GeometryGraphEditor.createCurveOnChangedPolyline(this.editedEdge)
+    GeometryGraphEditor.createCurveOnChangedPolyline(this.geomEdgeWithSmoothedPolylineExposed)
   }
 
   static dragEdgeWithSite(delta: Point, e: GeomEdge, site: CornerSite) {
@@ -303,7 +306,7 @@ export class GeometryGraphEditor {
   }
 
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
-    this.editedEdge = null
+    this.geomEdgeWithSmoothedPolylineExposed = null
     this.CalculateDragSets(markedObjects)
     this.undoList.addAction(new UndoRedoAction())
     if (dragMode === DraggingMode.Incremental) {
@@ -520,7 +523,7 @@ export class GeometryGraphEditor {
   }
 
   prepareForGeomEdgeChange(geometryEdge: GeomEdge) {
-    this.editedEdge = geometryEdge
+    Assert.assert(this.geomEdgeWithSmoothedPolylineExposed === geometryEdge)
     this.addUndoAction()
     this.registerForUndo(geometryEdge.edge)
   }
@@ -600,7 +603,7 @@ export class GeometryGraphEditor {
 
   deleteSite(edge: GeomEdge, site: CornerSite) {
     this.prepareForGeomEdgeChange(edge)
-    this.editedEdge = edge
+    Assert.assert(this.geomEdgeWithSmoothedPolylineExposed === edge)
     site.prev.next = site.next
     // removing the site from the list
     site.next.prev = site.prev

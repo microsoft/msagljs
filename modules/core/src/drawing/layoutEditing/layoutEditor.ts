@@ -65,22 +65,22 @@ export class LayoutEditor {
   activeCornerSite: CornerSite
   geomEdge: GeomEdge = new GeomEdge(null) // keep it to hold the geometry only
   interactiveEdgeRouter: InteractiveEdgeRouter
-  private _selectedEdge: IViewerEdge
-  public get selectedEdge(): IViewerEdge {
-    return this._selectedEdge
+  private _edgeWithSmoothedPolylineExposed: IViewerEdge
+  public get edgeWithSmoothedPolylineExposed(): IViewerEdge {
+    return this._edgeWithSmoothedPolylineExposed
   }
-  public set selectedEdge(value: IViewerEdge) {
-    if (this._selectedEdge !== value) {
-      if (this._selectedEdge) {
-        this._selectedEdge.selectedForEditing = false
+  public set edgeWithSmoothedPolylineExposed(value: IViewerEdge) {
+    if (this._edgeWithSmoothedPolylineExposed !== value) {
+      if (this._edgeWithSmoothedPolylineExposed) {
+        this._edgeWithSmoothedPolylineExposed.selectedForEditing = false
       }
     }
-    this._selectedEdge = value
+    this._edgeWithSmoothedPolylineExposed = value
     if (value) {
       value.selectedForEditing = true
-      this.geomGraphEditor.editedEdge = GeomEdge.getGeom(value.edge)
+      this.geomGraphEditor.geomEdgeWithSmoothedPolylineExposed = GeomEdge.getGeom(value.edge)
     } else {
-      this.geomGraphEditor.editedEdge = null
+      this.geomGraphEditor.geomEdgeWithSmoothedPolylineExposed = null
     }
   }
   mouseDownScreenPoint: Point
@@ -451,7 +451,7 @@ export class LayoutEditor {
   }
 
   analyzeLeftMouseButtonClick(e: MouseEvent) {
-    if (this.selectedEdge) {
+    if (this.edgeWithSmoothedPolylineExposed) {
       this.toggleCornerForSelectedEdge()
     } else if (this.viewer.objectUnderMouseCursor) {
       this.analyzeLeftMouseButtonClickOnObjectUnderCursor(e)
@@ -469,7 +469,7 @@ export class LayoutEditor {
         if (geomEdge.smoothedPolyline == null) {
           geomEdge.smoothedPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge)
         }
-        if (this.selectedEdge !== obj) this.switchToEdgeEditing(obj as IViewerEdge)
+        if (this.edgeWithSmoothedPolylineExposed !== obj) this.switchToEdgeEditing(obj as IViewerEdge)
       }
     } else {
       if (obj.markedForDragging) {
@@ -488,9 +488,9 @@ export class LayoutEditor {
 
   toggleCornerForSelectedEdge() {
     const corner = GeometryGraphEditor.findClosestCornerForEdit(
-      GeomEdge.getGeom(this.selectedEdge.edge).smoothedPolyline,
+      GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge).smoothedPolyline,
       this.mouseDownGraphPoint,
-      this.selectedEdge.radiusOfPolylineCorner,
+      this.edgeWithSmoothedPolylineExposed.radiusOfPolylineCorner,
     )
     if (corner == null) {
       this.insertCorner()
@@ -498,8 +498,8 @@ export class LayoutEditor {
       if (corner.prev == null || corner.next == null) {
         return // ignore the source and the target corners
       }
-      this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.selectedEdge.edge), corner)
-      this.viewer.invalidate(this.selectedEdge)
+      this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), corner)
+      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
     }
   }
   insertCorner() {
@@ -507,19 +507,22 @@ export class LayoutEditor {
     if (!this.closeEnoughToSelectedEdge()) {
       this.unselectEdge()
     } else {
-      const a = GeometryGraphEditor.getPreviousCornerSite(GeomEdge.getGeom(this.selectedEdge.edge), this.mouseDownGraphPoint)
+      const a = GeometryGraphEditor.getPreviousCornerSite(
+        GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge),
+        this.mouseDownGraphPoint,
+      )
       if (a == null) return
       const b = a.next
       if (b == null) return
-      this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.selectedEdge.edge), this.mouseDownGraphPoint, a)
-      this.viewer.invalidate(this.selectedEdge)
+      this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), this.mouseDownGraphPoint, a)
+      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
     }
   }
 
   closeEnoughToSelectedEdge(): boolean {
-    const curve = GeomEdge.getGeom(this.selectedEdge.edge).curve
+    const curve = GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge).curve
     const t = curve.closestParameter(this.mouseDownGraphPoint)
-    return curve.value(t).sub(this.mouseDownGraphPoint).length < this.selectedEdge.radiusOfPolylineCorner
+    return curve.value(t).sub(this.mouseDownGraphPoint).length < this.edgeWithSmoothedPolylineExposed.radiusOfPolylineCorner
   }
 
   static CreateUnderlyingPolyline(geomEdge: GeomEdge): SmoothedPolyline {
@@ -550,7 +553,7 @@ export class LayoutEditor {
 
   switchToEdgeEditing(edge: IViewerEdge) {
     this.unselectEverything()
-    this.selectedEdge = edge
+    this.edgeWithSmoothedPolylineExposed = edge
     edge.radiusOfPolylineCorner = this.viewer.smoothedPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
     this.viewer.invalidate(edge)
@@ -590,11 +593,11 @@ export class LayoutEditor {
   }
 
   unselectEdge() {
-    if (this.selectedEdge != null) {
-      this.selectedEdge.selectedForEditing = false
-      this.removeEdgeDraggingDecorations(this.selectedEdge)
-      this.viewer.invalidate(this.selectedEdge)
-      this.selectedEdge = null
+    if (this.edgeWithSmoothedPolylineExposed != null) {
+      this.edgeWithSmoothedPolylineExposed.selectedForEditing = false
+      this.removeEdgeDraggingDecorations(this.edgeWithSmoothedPolylineExposed)
+      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
+      this.edgeWithSmoothedPolylineExposed = null
     }
   }
 
@@ -624,14 +627,14 @@ export class LayoutEditor {
           e.preventDefault()
         }
 
-        if (this.selectedEdge != null) {
+        if (this.edgeWithSmoothedPolylineExposed != null) {
           this.mouseIsInsideOfCornerSite(e)
         }
       } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
         this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
       }
     } else if (LayoutEditor.RightButtonIsPressed(e)) {
-      if (this.selectedEdge != null) {
+      if (this.edgeWithSmoothedPolylineExposed != null) {
         this.ProcessRightClickOnSelectedEdge(e)
       }
     }
@@ -819,7 +822,9 @@ export class LayoutEditor {
         this.dragging = true
         // first time we are in dragging
         if (this.activeCornerSite != null) {
-          this.geomGraphEditor.prepareForGeomEdgeChange(this.selectedEdge.edge.getAttr(AttributeRegistry.GeomObjectIndex))
+          this.geomGraphEditor.prepareForGeomEdgeChange(
+            this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.GeomObjectIndex),
+          )
         } else if (this.ActiveDraggedObject != null) {
           this.unselectEdge()
           if (!this.ActiveDraggedObject.markedForDragging) {
@@ -909,7 +914,7 @@ export class LayoutEditor {
   handleMouseUpOnLayoutEnabled(args: MouseEvent) {
     const click = !this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(args)
     if (click && this.leftMouseButtonWasPressed) {
-      if (this.viewer.objectUnderMouseCursor != null || this.selectedEdge != null) {
+      if (this.viewer.objectUnderMouseCursor != null || this.edgeWithSmoothedPolylineExposed != null) {
         this.analyzeLeftMouseButtonClick(args)
         args.preventDefault()
       } else {
@@ -1043,12 +1048,12 @@ export class LayoutEditor {
   /** it also sets this.activeCornerSite */
   mouseIsInsideOfCornerSite(e: MouseEvent): boolean {
     const p = this.viewer.ScreenToSource(e)
-    const lw = this.selectedEdge.edge.getAttr(AttributeRegistry.DrawingObjectIndex).penwidth
+    const lw = this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.DrawingObjectIndex).penwidth
 
     this.activeCornerSite = GeometryGraphEditor.FindCornerForEdit(
-      GeomEdge.getGeom(this.selectedEdge.edge).smoothedPolyline,
+      GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge).smoothedPolyline,
       p,
-      this.selectedEdge.radiusOfPolylineCorner + lw,
+      this.edgeWithSmoothedPolylineExposed.radiusOfPolylineCorner + lw,
     )
     return this.activeCornerSite !== null
   }

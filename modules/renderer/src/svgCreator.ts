@@ -148,6 +148,7 @@ export class SvgCreator {
   }
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
+    if (!this.svg) return PlaneTransformation.getIdentity()
     const tr = (this.svg as SVGGraphicsElement).getScreenCTM()
     const m = new PlaneTransformation(tr.a, tr.b, tr.e, tr.c, tr.d, tr.f)
     const flip = new PlaneTransformation(1, 0, -this.geomGraph.left, 0, -1, this.geomGraph.top)

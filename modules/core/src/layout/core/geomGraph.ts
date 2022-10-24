@@ -358,6 +358,7 @@ type PpEdge = {edge: Edge; pp: PointPair}
 export type HitTreeNodeType = Entity | PpEdge
 
 export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, slack: number, point: Point): IterableIterator<GeomObject> {
+  if (!tree) return
   const rect = Rectangle.mkSizeCenter(new Size(slack * 2), point)
   for (const t of tree.RootNode.AllHitItems(rect, null)) {
     if ('edge' in t) {
