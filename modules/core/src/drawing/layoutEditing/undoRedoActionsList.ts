@@ -1,46 +1,87 @@
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
+import {Assert} from '../../utils/assert'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
-  private currentUndo: UndoRedoAction
-  getCurrentUndoRedoAction(): UndoRedoAction {
-    return this.currentUndo
+  *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
+    if (this.currentBridge == null) return
+    if (this.currentBridge.readyForRedo) {
+      yield* this.currentBridge.entities()
+    } else if (this.currentBridge.next != null && this.currentBridge.next.readyForRedo) {
+      yield* this.currentBridge.next.entities()
+    }
   }
+  *entitiesToBeChangedByUndo(): IterableIterator<Entity> {
+    if (this.currentBridge == null) return
+    if (this.currentBridge.readyForUndo) {
+      yield* this.currentBridge.entities()
+    } else if (this.currentBridge.prev != null && this.currentBridge.prev.readyForUndo) {
+      yield* this.currentBridge.prev.entities()
+    }
+  }
+  private currentBridge: UndoRedoAction
 
   /** registers some attributes of the entity for undo */
   registerForUndo(e: Entity) {
-    if (this.currentUndo == null) {
-      this.currentUndo = new UndoRedoAction()
+    if (this.currentBridge == null) {
+      this.currentBridge = new UndoRedoAction()
     }
-    this.currentUndo.addOldNewPair(e, e.getAttr(AttributeRegistry.GeomObjectIndex))
+    this.currentBridge.addOldNewPair(e, e.getAttr(AttributeRegistry.GeomObjectIndex))
   }
   canUndo(): boolean {
-    return this.currentUndo && this.currentUndo.readyForUndo
+    if (this.currentBridge == null) return false
+    if (this.currentBridge.readyForUndo) return true
+    if (this.currentBridge.prev != null && this.currentBridge.prev.readyForUndo) return true
+    return false
   }
   canRedo(): boolean {
-    return this.currentUndo && this.currentUndo.readyForRedo
+    if (this.currentBridge == null) return false
+    if (this.currentBridge.readyForRedo) return true
+    if (this.currentBridge.next != null && this.currentBridge.next.readyForRedo) return true
+    return false
   }
   undo() {
-    this.currentUndo.undo()
-    if (this.currentUndo.prev) this.currentUndo = this.currentUndo.prev
+    if (this.currentBridge.readyForUndo) {
+      this.currentBridge.undo()
+    } else {
+      this.currentBridge.prev.undo()
+    }
+
+    if (this.currentBridge.prev) this.currentBridge = this.currentBridge.prev
   }
 
   redo() {
-    this.currentUndo.redo()
-    if (this.currentUndo.next) {
-      this.currentUndo = this.currentUndo.next
+    if (this.currentBridge.readyForRedo) {
+      this.currentBridge.redo()
+    } else {
+      this.currentBridge.next.redo()
+    }
+
+    if (this.currentBridge.next) {
+      this.currentBridge = this.currentBridge.next
     }
   }
 
   /** adds the "action" ufter the currentUndo and sets currentUndo=action */
-  addAction(action: UndoRedoAction): UndoRedoAction {
-    if (this.currentUndo != null) {
-      this.currentUndo.next = action
+  addAction(): UndoRedoAction {
+    const action = new UndoRedoAction()
+    if (this.currentBridge === null) {
+      this.currentBridge = action
+    } else if (this.currentBridge.readyForUndo) {
+      this.currentBridge.next = action
+      action.prev = this.currentBridge
+      this.currentBridge = action
+    } else {
+      Assert.assert(this.currentBridge.readyForRedo)
+      // we need to discard this.currentBridge as it is undone already
+      const prev = this.currentBridge.prev
+      if (prev) {
+        action.prev = prev
+        prev.next = action
+      }
+      this.currentBridge = action
     }
-
-    action.prev = this.currentUndo
-    this.currentUndo = action
     return action
   }
 }

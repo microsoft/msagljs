@@ -79,16 +79,6 @@ export class UndoRedoAction {
     val[AttributeRegistry.GeomObjectIndex].new = e.getAttr(AttributeRegistry.GeomObjectIndex).clone()
   }
 
-  getAttribute(entity: Entity): any {
-    return this.changes.get(entity)
-  }
-
-  // enumerates over all edited objects
-
-  get EditedObjects(): IterableIterator<Entity> {
-    return this.changes.keys()
-  }
-
   undo() {
     Assert.assert(this.readyForUndo)
     for (const [e, v] of this.changes) {

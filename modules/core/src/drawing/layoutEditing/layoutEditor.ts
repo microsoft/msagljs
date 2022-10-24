@@ -288,12 +288,6 @@ export class LayoutEditor {
     this.viewer.InsertingEdge = value
   }
 
-  //  current undo action
-
-  get undoAction(): UndoRedoAction {
-    return this.geomGraphEditor.getCurrentUndoRedoAction()
-  }
-
   viewerGraphChanged() {
     this.graph = this.viewer.graph
     this.geomGraphEditor.clear()
@@ -328,7 +322,7 @@ export class LayoutEditor {
     }
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
-    for (const o of this.geomGraphEditor.currentUndoAction.entities()) {
+    for (const o of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
       this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
@@ -493,16 +487,18 @@ export class LayoutEditor {
       this.edgeWithSmoothedPolylineExposed.radiusOfPolylineCorner,
     )
     if (corner == null) {
-      this.insertCorner()
+      this.tryInsertCorner()
     } else {
       if (corner.prev == null || corner.next == null) {
         return // ignore the source and the target corners
       }
+      this.geomGraphEditor.addUndoAction()
+      this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), corner)
       this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
     }
   }
-  insertCorner() {
+  tryInsertCorner() {
     // we have to be close enough to the curve
     if (!this.closeEnoughToSelectedEdge()) {
       this.unselectEdge()
@@ -514,7 +510,9 @@ export class LayoutEditor {
       if (a == null) return
       const b = a.next
       if (b == null) return
+      this.geomGraphEditor.addUndoAction()
       this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), this.mouseDownGraphPoint, a)
+      this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
     }
   }
@@ -843,7 +841,7 @@ export class LayoutEditor {
 
     const currentDragPoint = this.viewer.ScreenToSource(e)
     this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    for (const affectedObject of this.undoAction.entities()) {
+    for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
       this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
     }
 
@@ -1016,14 +1014,16 @@ export class LayoutEditor {
   }
 
   SelectEntitiesForDraggingWithRectangle(args: MouseEvent) {
+    /*
     const rect = Rectangle.mkPP(this.mouseDownGraphPoint, this.viewer.ScreenToSource(args))
     for (const node of this.ViewerNodes()) {
       if (rect.intersects(geomNodeOfIViewerNode(node).boundingBox)) {
         this.selectObjectForDragging(node)
       }
     }
-
-    args.preventDefault()
+    if (rect.width > 0) {
+      args.stopImmediatePropagation()
+    }*/
   }
 
   ProcessRightClickOnSelectedEdge(e: MouseEvent) {
@@ -1062,13 +1062,10 @@ export class LayoutEditor {
     return point.sub(this.mouseDownGraphPoint).length < radius
   }
 
-  //  Undoes the editing
-
+  /**   Undoes the editing*/
   undo() {
     if (this.geomGraphEditor.canUndo) {
-      const action: UndoRedoAction = this.geomGraphEditor.currentUndoAction
-      const objectsToInvalidate = action.entities()
-
+      const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByUndo())
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
         this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
@@ -1076,12 +1073,10 @@ export class LayoutEditor {
     }
   }
 
-  //  Redoes the editing
-
+  /**   Redo the editing*/
   redo() {
     if (this.geomGraphEditor.canRedo) {
-      const action: UndoRedoAction = this.undoAction
-      const objectsToInvalidate = Array.from(action.entities())
+      const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
         this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))

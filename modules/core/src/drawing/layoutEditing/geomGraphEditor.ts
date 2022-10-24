@@ -19,8 +19,6 @@ import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
-import {IViewerObject} from './iViewerObject'
-import {UndoRedoAction} from './undoRedoAction'
 import {UndoList} from './undoRedoActionsList'
 
 export enum DraggingMode {
@@ -28,11 +26,15 @@ export enum DraggingMode {
   Default,
 }
 export class GeometryGraphEditor {
-  addUndoAction() {
-    this.undoList.addAction(new UndoRedoAction())
+  *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
+    yield* this.undoList.entitiesToBeChangedByRedo()
   }
-  getCurrentUndoRedoAction(): UndoRedoAction {
-    return this.undoList.getCurrentUndoRedoAction()
+  *entitiesToBeChangedByUndo(): IterableIterator<Entity> {
+    yield* this.undoList.entitiesToBeChangedByUndo()
+  }
+
+  addUndoAction() {
+    this.undoList.addAction()
   }
   edgesDraggedWithSource: Set<GeomEdge> = new Set<GeomEdge>()
 
@@ -46,10 +48,6 @@ export class GeometryGraphEditor {
 
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
-
-  public get currentUndoAction(): UndoRedoAction {
-    return this.undoList.getCurrentUndoRedoAction()
-  }
 
   /**  Will be set to true if an entity was dragged out of the graph bounding box*/
 
@@ -308,7 +306,7 @@ export class GeometryGraphEditor {
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.geomEdgeWithSmoothedPolylineExposed = null
     this.CalculateDragSets(markedObjects)
-    this.undoList.addAction(new UndoRedoAction())
+    this.undoList.addAction()
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
     }
