@@ -7,20 +7,20 @@ import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
 /** support for undo/redo functionality */
 export class UndoRedoAction {
-  private _readyForUndo = true // initially
+  private _canUndo = true // initially
   private changes = new Map<Entity, {old: Attribute; new: Attribute}[]>()
 
-  get readyForRedo(): boolean {
-    return !this.readyForUndo
+  get canRedo(): boolean {
+    return !this.canUndo
   }
   /** readyForUndo = true means that the relevant objects, the keys of restoreDataDictionary, have old attributes, ready for undo
    *  readyForUndo = false means that the objects are in the new state
    */
-  get readyForUndo() {
-    return this._readyForUndo
+  get canUndo() {
+    return this._canUndo
   }
-  set readyForUndo(v) {
-    this._readyForUndo = v
+  set canUndo(v) {
+    this._canUndo = v
   }
 
   /** creates an Array of affected objects */
@@ -48,14 +48,14 @@ export class UndoRedoAction {
   prev: UndoRedoAction
 
   redo() {
-    Assert.assert(this.readyForRedo)
+    Assert.assert(this.canRedo)
     for (const [e, v] of this.changes) {
       for (const pair of v) {
         const attr = pair.new
         attr.rebind(e)
       }
     }
-    this.readyForUndo = true
+    this.canUndo = true
   }
 
   /** It adds an entry for the entity if the changes does not contain the entity as a key
@@ -80,7 +80,7 @@ export class UndoRedoAction {
   }
 
   undo() {
-    Assert.assert(this.readyForUndo)
+    Assert.assert(this.canUndo)
     for (const [e, v] of this.changes) {
       for (const pair of v) {
         // prepare for redo as well
@@ -88,7 +88,7 @@ export class UndoRedoAction {
         pair.old.rebind(e)
       }
     }
-    this.readyForUndo = false
+    this.canUndo = false
   }
 }
 function registryIndexOfAttribue(old: Attribute) {
