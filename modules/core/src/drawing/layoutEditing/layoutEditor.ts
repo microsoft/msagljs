@@ -59,6 +59,9 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
+  registerDelete(entity: Entity) {
+    this.geomGraphEditor.registerDelete(entity)
+  }
   /** unregister the element from everywhere */
   forget(ent: IViewerObject) {
     this.dragGroup.delete(ent)

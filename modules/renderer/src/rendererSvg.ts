@@ -340,6 +340,7 @@ export class RendererSvg implements IViewer {
   }
 
   remove(viewerObj: IViewerObject, registerForUndo: boolean): void {
+    if (registerForUndo) this.layoutEditor.registerDelete(viewerObj.entity)
     if (this.objectUnderMouseCursor === viewerObj) {
       this.objectUnderMouseCursor = null
     }
@@ -349,6 +350,11 @@ export class RendererSvg implements IViewer {
     svgVO.svgData.remove()
     this.layoutEditor.forget(viewerObj)
     if (ent instanceof Node) {
+      for (const e of ent.edges) {
+        this.layoutEditor.registerDelete(e)
+        if (e.label) this.layoutEditor.registerDelete(e.label)
+      }
+
       const graph = ent.parent as Graph
       graph.removeNode(ent)
 
@@ -357,6 +363,7 @@ export class RendererSvg implements IViewer {
       }
     } else if (ent instanceof Edge) {
       ent.remove()
+      if (ent.label) this.layoutEditor.registerDelete(ent.label)
       removeEdge(ent)
     } else if (ent instanceof Label) {
       const edge = ent.parent as Edge
@@ -405,7 +412,7 @@ function removeEdge(e: Edge) {
 
 function isRemoved(entity: Entity) {
   if (entity instanceof Edge) {
-    if (entity.source !== entity.target) return !this.source.outEdges.has(entity)
+    if (entity.source !== entity.target) return !entity.source.outEdges.has(entity)
     return !entity.source.selfEdges.has(entity)
   }
 

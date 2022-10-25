@@ -4,6 +4,13 @@ import {Assert} from '../../utils/assert'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
+  registerForDelete(entity: Entity) {
+    if (this.currentBridge == null || this.currentBridge.hasAttributeChanges() || this.currentBridge.deleteIsEmpty()) {
+      this.addAction()
+    }
+
+    this.currentBridge.registerDelete(entity)
+  }
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
     if (this.currentBridge == null) return
     if (this.currentBridge.canRedo) {
@@ -64,7 +71,7 @@ export class UndoList {
   }
 
   /** adds the "action" ufter the currentUndo and sets currentUndo=action */
-  addAction(): UndoRedoAction {
+  addAction() {
     const action = new UndoRedoAction()
     if (!this.currentBridge) {
       this.currentBridge = action
@@ -82,6 +89,5 @@ export class UndoList {
       }
       this.currentBridge = action
     }
-    return action
   }
 }
