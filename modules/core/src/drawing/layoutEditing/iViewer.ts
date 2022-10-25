@@ -12,8 +12,10 @@ import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
 export interface IViewer {
+  /** returns the array of the entities that are currently selected */
+  selectedEntities(): Array<IViewerObject>
   /** maps a point in the screen coordinates to the point in the graph coordinates*/
-  ScreenToSource(e: MouseEvent): Point
+  screenToSource(e: MouseEvent): Point
   IncrementalDraggingModeAlways: boolean
 
   //  the scale to screen
@@ -21,29 +23,28 @@ export interface IViewer {
   CurrentScale: number
 
   /** Creates a visual element for the node, and the corresponding geometry node is created according
-   *  to the size of the visual element.
-   *  If this value is not null then is should be a visual for the label; the node width and the height
-   *  will be taken from this visual.
-   *  Returns IViewerNode
+   *  to the size of the visual element.  If the latter is not null then the node width and the node
+   *  height will be taken from the visual element.
+   * Returns IViewerNode.
    */
-  CreateIViewerNodeNPA(drawingNode: Node, center: Point, visualElement: any): IViewerNode
+  createIViewerNodeNPA(drawingNode: Node, center: Point, visualElement: any): IViewerNode
 
   //  creates a default visual element for the node
 
   //  <returns></returns>
-  CreateIViewerNodeN(drawingNode: Node): IViewerNode
+  createIViewerNodeN(drawingNode: Node): IViewerNode
 
   //  if set to true the Graph geometry is unchanged after the assignment viewer.Graph=graph;
 
-  NeedToCalculateLayout: boolean
+  needToCalculateLayout: boolean
 
   //  the viewer signalls that the view, the transform or the viewport, has changed
 
-  ViewChangeEvent: EventHandler
+  viewChangeEvent: EventHandler
 
   //  the event raised at a time when ObjectUnderMouseCursor changes
 
-  ObjectUnderMouseCursorChanged: EventHandler
+  objectUnderMouseCursorChanged: EventHandler
 
   //  Returns the object under the cursor and null if there is none
 
@@ -59,7 +60,7 @@ export interface IViewer {
 
   //  returns modifier keys; control, shift, or alt are pressed at the moments
 
-  ModifierKeys: ModifierKeysEnum
+  bodifierKeys: ModifierKeysEnum
 
   //  gets all entities which can be manipulated by the viewer
 
@@ -129,13 +130,8 @@ export interface IViewer {
 
   AddNode(node: IViewerNode, registerForUndo: boolean): void
 
-  //  removes an edge from the graph
-
-  removeEdge(edge: IViewerEdge, registerForUndo: boolean): void
-
-  //  deletes node
-
-  removeNode(node: IViewerNode, registerForUndo: boolean): void
+  /**removes an edge from the graph */
+  remove(obj: IViewerObject, registerForUndo: boolean): void
 
   //  Routes the edge. The edge will not be not attached to the graph after the routing
 

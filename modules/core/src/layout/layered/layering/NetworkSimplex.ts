@@ -532,7 +532,7 @@ export class NetworkSimplex implements LayerCalculator {
     //and T0 be the tree without with e but containg f. Let us consider the path with no edge repetitions from u to v in T.
     //It has to contain e since there is a path from u to v in T containing e, because v lies in the component of w in T
     //and u lies in the component of x in T, if there is a path without e then we have a cycle in T.
-    // Now if we romove e from this path and add f to it we get a path without edge repetitions connecting w to x.
+    // Now if we remove e from this path and add f to it we get a path without edge repetitions connecting w to x.
     // The edge adjacent in this path to w is parent(w) in T0, and the edge of the path adjacent to x is
     //parent(x) in T0. If it is not true then we can get a cycle by constructing another path from w to x going up through the
     //parents to the common ancessor of w and x.

@@ -59,21 +59,12 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
-  deleteSelectedEntities() {
-    for (const e of this.dragGroup) {
-      this.deleteEntity(e)
-    }
-    if (this.viewer.objectUnderMouseCursor) {
-      this.deleteEntity(this.viewer.objectUnderMouseCursor)
-    }
-  }
-  deleteEntity(e: IViewerObject) {
-    const ent = e.entity
-
-    if (ent instanceof Node) {
-      this.viewer.removeNode(e as IViewerNode, true)
-      const graph = ent.parent as Graph
-      graph.removeNode(ent)
+  /** unregister the element from everywhere */
+  forget(ent: IViewerObject) {
+    this.dragGroup.delete(ent)
+    this.decoratorRemovalsDict.delete(ent)
+    if (this.edgeWithSmoothedPolylineExposed === ent) {
+      this.edgeWithSmoothedPolylineExposed = null
     }
   }
   RadiusOfPolylineCorner = 10
@@ -561,8 +552,8 @@ export class LayoutEditor {
   //         }
   ModifierKeyIsPressed(): boolean {
     const modifierKeyWasUsed: boolean =
-      (this.viewer.ModifierKeys & ModifierKeysEnum.Control) == ModifierKeysEnum.Control ||
-      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift
+      (this.viewer.bodifierKeys & ModifierKeysEnum.Control) == ModifierKeysEnum.Control ||
+      (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift
     return modifierKeyWasUsed
   }
 
@@ -627,7 +618,7 @@ export class LayoutEditor {
       return
     }
 
-    this.mouseDownGraphPoint = this.viewer.ScreenToSource(e)
+    this.mouseDownGraphPoint = this.viewer.screenToSource(e)
     this.mouseDownScreenPoint = new Point(e.clientX, e.clientY)
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       this.leftMouseButtonWasPressed = true
@@ -647,10 +638,6 @@ export class LayoutEditor {
         }
       } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
         this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
-      }
-    } else if (LayoutEditor.RightButtonIsPressed(e)) {
-      if (this.edgeWithSmoothedPolylineExposed != null) {
-        this.ProcessRightClickOnSelectedEdge(e)
       }
     }
   }
@@ -681,7 +668,7 @@ export class LayoutEditor {
 
   TrySetNodePort(e: MouseEvent, node: {node: IViewerNode}, port: {port: Port}, loosePolyline: {loosePolyline: Polyline}): boolean {
     Assert.assert(this.InsertingEdge)
-    const mousePos = this.viewer.ScreenToSource(e)
+    const mousePos = this.viewer.screenToSource(e)
     loosePolyline.loosePolyline = null
     const mousePosition = {mousePosition: mousePos}
     if (Graph != null) {
@@ -692,7 +679,7 @@ export class LayoutEditor {
           this.PrepareForEdgeDragging()
         }
 
-        loosePolyline.loosePolyline = this.InteractiveEdgeRouter.GetHitLoosePolyline(this.viewer.ScreenToSource(e))
+        loosePolyline.loosePolyline = this.InteractiveEdgeRouter.GetHitLoosePolyline(this.viewer.screenToSource(e))
         if (loosePolyline != null) {
           this.SetPortUnderLoosePolyline(mousePosition.mousePosition, loosePolyline.loosePolyline, node, port)
         } else {
@@ -856,7 +843,7 @@ export class LayoutEditor {
       return
     }
 
-    const currentDragPoint = this.viewer.ScreenToSource(e)
+    const currentDragPoint = this.viewer.screenToSource(e)
     this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
     for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
       this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
@@ -882,7 +869,7 @@ export class LayoutEditor {
 
   GetDraggingMode(): DraggingMode {
     const incremental: boolean =
-      (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift || this.viewer.IncrementalDraggingModeAlways
+      (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift || this.viewer.IncrementalDraggingModeAlways
     return incremental ? DraggingMode.Incremental : DraggingMode.Default
   }
 
@@ -1043,28 +1030,9 @@ export class LayoutEditor {
     }*/
   }
 
-  ProcessRightClickOnSelectedEdge(e: MouseEvent) {
-    this.mouseRightButtonDownPoint = this.viewer.ScreenToSource(e)
-    this.cornerInfo = this.AnalyzeInsertOrDeletePolylineCorner(this.mouseRightButtonDownPoint, this.RadiusOfPolylineCorner)
-    if (this.cornerInfo == null) {
-      return
-    }
-    throw new Error('not implemented')
-
-    // e.Handled = true;
-    // let edgeRemoveCouple = new [string, ()=>void>("Remove edge", () =] {  }, viewer.RemoveEdge(this.SelectedEdge, true));
-    // if ((this.cornerInfo.Item2 == PolylineCornerType.PreviousCornerForInsertion)) {
-    //     viewer.PopupMenus(new [string, ()=>void]("Insert polyline corner",  this.InsertPolylineCorner), edgeRemoveCouple);
-    // }
-    //
-    // else if ((this.cornerInfo.Item2 == PolylineCornerType.CornerToDelete)) {
-    //     viewer.PopupMenus(new [string, ()=>void]("Delete polyline corner", this.DeleteCorner), edgeRemoveCouple);
-    // }
-  }
-
   /** it also sets this.activeCornerSite */
   mouseIsInsideOfCornerSite(e: MouseEvent): boolean {
-    const p = this.viewer.ScreenToSource(e)
+    const p = this.viewer.screenToSource(e)
     const lw = this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.DrawingObjectIndex).penwidth
 
     this.activeCornerSite = GeometryGraphEditor.FindCornerForEdit(
@@ -1110,26 +1078,6 @@ export class LayoutEditor {
   // //  Finds a corner to delete or insert
 
   // //  <returns>null if a corner is not found</returns>
-
-  AnalyzeInsertOrDeletePolylineCorner(point: Point, tolerance: number): [CornerSite, PolylineCornerType] {
-    throw new Error('not implemented')
-    // if ((this.SelectedEdge == null)) {
-    //     return null;
-    // }
-
-    // tolerance = (tolerance + this.SelectedEdge.edge.Attr.LineWidth);
-    // let corner: CornerSite = GeometryGraphEditor.FindCornerForEdit(this.SelectedEdge.edge.GeometryEdge.UnderlyingPolyline, point, tolerance);
-    // if ((corner != null)) {
-    //     return new [CornerSite, PolylineCornerType](corner, PolylineCornerType.CornerToDelete);
-    // }
-
-    // corner = GeometryGraphEditor.GetPreviousSite(this.SelectedEdge.edge.GeometryEdge, point);
-    // if ((corner != null)) {
-    //     return new [CornerSite, PolylineCornerType](corner, PolylineCornerType.PreviousCornerForInsertion);
-    // }
-
-    // return null;
-  }
 
   // // //  create a tight bounding box for the graph
 
@@ -1286,13 +1234,13 @@ export class LayoutEditor {
 
   MouseMoveLiveSelectObjectsForDragging(e: MouseEvent) {
     this.unselectEverything()
-    if (LeftMouseIsPressed(e) && (this.viewer.ModifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
+    if (LeftMouseIsPressed(e) && (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }
   }
 
   DrawEdgeInteractivelyToLocation(e: MouseEvent) {
-    this.DrawEdgeInteractivelyToLocationP(this.viewer.ScreenToSource(e))
+    this.DrawEdgeInteractivelyToLocationP(this.viewer.screenToSource(e))
   }
 
   DrawEdgeInteractivelyToLocationP(point: Point) {

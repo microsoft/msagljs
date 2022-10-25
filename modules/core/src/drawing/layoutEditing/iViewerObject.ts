@@ -10,10 +10,10 @@ export interface IViewerObject {
   /** is set to true when the object is selected for editing */
   markedForDragging: boolean
 
-  /**  raised when the entity is marked for dragging */
+  /**  called when the entity is marked for dragging */
   markedForDraggingCallback: (sender: any, eventParameters: any) => void
 
-  /**  raised when the entity is unmarked for dragging*/
+  /**  called when the entity is unmarked for dragging*/
   unmarkedForDraggingCallback: (sender: any, eventParameters: any) => void
 }
 export function getViewerDrawingObject(ivo: IViewerObject): DrawingObject {

@@ -31,6 +31,11 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
         break
     }
   }
+  if (e.key == 'Delete') {
+    for (const v of svgRenderer.selectedEntities()) {
+      svgRenderer.remove(v, true)
+    }
+  }
 })
 
 dotFileSelect.onchange = () => {

@@ -17,10 +17,11 @@ import {
   Point,
   RTree,
   Node,
+  Label,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
-import {SvgCreator, SvgViewerNode, SvgViewerObject} from './svgCreator'
+import {SvgCreator, SvgViewerObject} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
@@ -104,7 +105,7 @@ export class RendererSvg implements IViewer {
     if (this._objectTree == null) {
       this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
     }
-    const elems = Array.from(getGeomIntersectedObjects(this._objectTree, this.getHitSlack(), this.ScreenToSource(e)))
+    const elems = Array.from(getGeomIntersectedObjects(this._objectTree, this.getHitSlack(), this.screenToSource(e)))
     if (elems.length == 0) {
       this.objectUnderMouseCursor = null
       return
@@ -143,15 +144,6 @@ export class RendererSvg implements IViewer {
     this._svgCreator = new SvgCreator(container)
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
 
-    container.addEventListener(
-      'dblclick',
-      (e) => {
-        this.layoutEditor.deleteSelectedEntities()
-        e.preventDefault()
-      },
-      {passive: false},
-    )
-
     container.addEventListener('mousedown', (e) => {
       if (!this.LayoutEditingEnabled) return
 
@@ -174,10 +166,20 @@ export class RendererSvg implements IViewer {
 
     this.layoutEditor = new LayoutEditor(this)
   }
-  CreateIViewerNodeNPA(drawingNode: globalThis.Node, center: Point, visualElement: any): IViewerNode {
+  selectedEntities(): IViewerObject[] {
+    const ret = Array.from(this.layoutEditor.dragGroup)
+    if (this.objectUnderMouseCursor) {
+      ret.push(this.objectUnderMouseCursor)
+    }
+    if (this.layoutEditor.edgeWithSmoothedPolylineExposed) {
+      ret.push(this.layoutEditor.edgeWithSmoothedPolylineExposed)
+    }
+    return ret
+  }
+  createIViewerNodeNPA(drawingNode: globalThis.Node, center: Point, visualElement: any): IViewerNode {
     throw new Error('Method not implemented.')
   }
-  CreateIViewerNodeN(drawingNode: globalThis.Node): IViewerNode {
+  createIViewerNodeN(drawingNode: globalThis.Node): IViewerNode {
     throw new Error('Method not implemented.')
   }
 
@@ -189,7 +191,7 @@ export class RendererSvg implements IViewer {
     this.layoutEditor.redo()
   }
 
-  ViewChangeEvent: EventHandler
+  viewChangeEvent: EventHandler
 
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
@@ -250,7 +252,7 @@ export class RendererSvg implements IViewer {
     return this._svgCreator ? this._svgCreator.svg : null
   }
   /** maps the screen coordinates to the graph coordinates */
-  ScreenToSource(e: MouseEvent): Point {
+  screenToSource(e: MouseEvent): Point {
     return this.ScreenToSourceP(e.clientX, e.clientY)
   }
 
@@ -265,12 +267,12 @@ export class RendererSvg implements IViewer {
     return this._svgCreator.getScale()
   }
 
-  NeedToCalculateLayout: boolean
+  needToCalculateLayout: boolean
   GraphChanged: EventHandler = new EventHandler()
 
   _objectUnderMouse: IViewerObject
 
-  ObjectUnderMouseCursorChanged: EventHandler = new EventHandler()
+  objectUnderMouseCursorChanged: EventHandler = new EventHandler()
   get objectUnderMouseCursor(): IViewerObject {
     return this._objectUnderMouse
   }
@@ -292,7 +294,7 @@ export class RendererSvg implements IViewer {
   invalidateAll(): void {
     //TODO : implement
   }
-  ModifierKeys = ModifierKeysEnum.None
+  bodifierKeys = ModifierKeysEnum.None
   get entities(): Iterable<IViewerObject> {
     return this.entitiesIter()
   }
@@ -333,25 +335,32 @@ export class RendererSvg implements IViewer {
   AddNode(node: IViewerNode, registerForUndo: boolean): void {
     throw new Error('Method not implemented.')
   }
-  removeEdge(edge: IViewerEdge, registerForUndo: boolean): void {
-    throw new Error('Method not implemented.')
+
+  remove(viewerObj: IViewerObject, registerForUndo: boolean): void {
+    if (this.objectUnderMouseCursor === viewerObj) {
+      this.objectUnderMouseCursor = null
+    }
+
+    const ent = viewerObj.entity
+    const svgVO = viewerObj as SvgViewerObject
+    svgVO.svgData.remove()
+    this.layoutEditor.forget(viewerObj)
+    if (ent instanceof Node) {
+      const graph = ent.parent as Graph
+      graph.removeNode(ent)
+
+      for (const e of ent.edges) {
+        removeEdge(e)
+      }
+    } else if (ent instanceof Edge) {
+      ent.remove()
+      removeEdge(ent)
+    } else if (ent instanceof Label) {
+      const edge = ent.parent as Edge
+      edge.label = null
+    }
   }
 
-  removeNode(node: IViewerNode, registerForUndo: boolean): void {
-    const vNode = node as SvgViewerNode
-    removeSvgElem(vNode.svgData)
-
-    const entNode = node.entity as Node
-    for (const e of entNode.inEdges) {
-      removeSvgEdge(e)
-    }
-    for (const e of entNode.outEdges) {
-      removeSvgEdge(e)
-    }
-    for (const e of entNode.selfEdges) {
-      removeSvgEdge(e)
-    }
-  }
   RouteEdge(drawingEdge: Edge): IViewerEdge {
     throw new Error('Method not implemented.')
   }
@@ -383,12 +392,10 @@ export class RendererSvg implements IViewer {
     return this._svgCreator.getTransform()
   }
 }
-
-function removeSvgElem(a: SVGElement) {
-  if (a.parentNode) a.parentNode.removeChild(a)
-}
-
-function removeSvgEdge(e: Edge) {
-  if (e.label) removeSvgElem(e.label.getAttr(AttributeRegistry.ViewerIndex).svgData)
-  removeSvgElem(e.getAttr(AttributeRegistry.ViewerIndex).svgData)
+function removeEdge(e: Edge) {
+  e.remove()
+  e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+  if (e.label) {
+    e.label.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+  }
 }
