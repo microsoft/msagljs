@@ -59,6 +59,23 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
+  deleteSelectedEntities() {
+    for (const e of this.dragGroup) {
+      this.deleteEntity(e)
+    }
+    if (this.viewer.objectUnderMouseCursor) {
+      this.deleteEntity(this.viewer.objectUnderMouseCursor)
+    }
+  }
+  deleteEntity(e: IViewerObject) {
+    const ent = e.entity
+
+    if (ent instanceof Node) {
+      this.viewer.removeNode(e as IViewerNode, true)
+      const graph = ent.parent as Graph
+      graph.removeNode(ent)
+    }
+  }
   RadiusOfPolylineCorner = 10
 
   aActiveDraggedObject: IViewerObject
@@ -605,7 +622,7 @@ export class LayoutEditor {
     }
   }
 
-  ViewerMouseDown(sender: any, e: MouseEvent) {
+  viewerMouseDown(sender: any, e: MouseEvent) {
     if (!this.viewer.LayoutEditingEnabled || this.viewer.graph == null) {
       return
     }
@@ -626,7 +643,7 @@ export class LayoutEditor {
         }
 
         if (this.edgeWithSmoothedPolylineExposed != null) {
-          this.mouseIsInsideOfCornerSite(e)
+          if (this.mouseIsInsideOfCornerSite(e)) e.preventDefault()
         }
       } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
         this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)

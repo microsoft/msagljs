@@ -66,7 +66,7 @@ export class UndoList {
   /** adds the "action" ufter the currentUndo and sets currentUndo=action */
   addAction(): UndoRedoAction {
     const action = new UndoRedoAction()
-    if (this.currentBridge === null) {
+    if (!this.currentBridge) {
       this.currentBridge = action
     } else if (this.currentBridge.readyForUndo) {
       this.currentBridge.next = action

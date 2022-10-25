@@ -16,10 +16,11 @@ import {
   PlaneTransformation,
   Point,
   RTree,
+  Node,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
-import {SvgCreator} from './svgCreator'
+import {SvgCreator, SvgViewerNode, SvgViewerObject} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
@@ -142,13 +143,22 @@ export class RendererSvg implements IViewer {
     this._svgCreator = new SvgCreator(container)
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
 
+    container.addEventListener(
+      'dblclick',
+      (e) => {
+        this.layoutEditor.deleteSelectedEntities()
+        e.preventDefault()
+      },
+      {passive: false},
+    )
+
     container.addEventListener('mousedown', (e) => {
       if (!this.LayoutEditingEnabled) return
 
       if (this.objectUnderMouseCursor != null && e.buttons == 1) {
         this.panZoom.pause()
       }
-      this.layoutEditor.ViewerMouseDown(this, e)
+      this.layoutEditor.viewerMouseDown(this, e)
     })
 
     container.addEventListener('mousemove', (e) => {
@@ -163,6 +173,12 @@ export class RendererSvg implements IViewer {
     })
 
     this.layoutEditor = new LayoutEditor(this)
+  }
+  CreateIViewerNodeNPA(drawingNode: globalThis.Node, center: Point, visualElement: any): IViewerNode {
+    throw new Error('Method not implemented.')
+  }
+  CreateIViewerNodeN(drawingNode: globalThis.Node): IViewerNode {
+    throw new Error('Method not implemented.')
   }
 
   undo(): void {
@@ -248,11 +264,7 @@ export class RendererSvg implements IViewer {
   get CurrentScale(): number {
     return this._svgCreator.getScale()
   }
-  CreateIViewerNode(drawingNode: Node, center: Point, visualElement: any): IViewerNode
-  CreateIViewerNode(drawingNode: Node): IViewerNode
-  CreateIViewerNode(drawingNode: unknown, center?: unknown, visualElement?: unknown): IViewerNode {
-    throw new Error('Method not implemented.')
-  }
+
   NeedToCalculateLayout: boolean
   GraphChanged: EventHandler = new EventHandler()
 
@@ -321,11 +333,24 @@ export class RendererSvg implements IViewer {
   AddNode(node: IViewerNode, registerForUndo: boolean): void {
     throw new Error('Method not implemented.')
   }
-  RemoveEdge(edge: IViewerEdge, registerForUndo: boolean): void {
+  removeEdge(edge: IViewerEdge, registerForUndo: boolean): void {
     throw new Error('Method not implemented.')
   }
-  RemoveNode(node: IViewerNode, registerForUndo: boolean): void {
-    throw new Error('Method not implemented.')
+
+  removeNode(node: IViewerNode, registerForUndo: boolean): void {
+    const vNode = node as SvgViewerNode
+    removeSvgElem(vNode.svgData)
+
+    const entNode = node.entity as Node
+    for (const e of entNode.inEdges) {
+      removeSvgEdge(e)
+    }
+    for (const e of entNode.outEdges) {
+      removeSvgEdge(e)
+    }
+    for (const e of entNode.selfEdges) {
+      removeSvgEdge(e)
+    }
   }
   RouteEdge(drawingEdge: Edge): IViewerEdge {
     throw new Error('Method not implemented.')
@@ -357,4 +382,13 @@ export class RendererSvg implements IViewer {
   get Transform(): PlaneTransformation {
     return this._svgCreator.getTransform()
   }
+}
+
+function removeSvgElem(a: SVGElement) {
+  if (a.parentNode) a.parentNode.removeChild(a)
+}
+
+function removeSvgEdge(e: Edge) {
+  if (e.label) removeSvgElem(e.label.getAttr(AttributeRegistry.ViewerIndex).svgData)
+  removeSvgElem(e.getAttr(AttributeRegistry.ViewerIndex).svgData)
 }

@@ -26,12 +26,12 @@ export interface IViewer {
    *  will be taken from this visual.
    *  Returns IViewerNode
    */
-  CreateIViewerNode(drawingNode: Node, center: Point, visualElement: any): IViewerNode
+  CreateIViewerNodeNPA(drawingNode: Node, center: Point, visualElement: any): IViewerNode
 
   //  creates a default visual element for the node
 
   //  <returns></returns>
-  CreateIViewerNode(drawingNode: Node): IViewerNode
+  CreateIViewerNodeN(drawingNode: Node): IViewerNode
 
   //  if set to true the Graph geometry is unchanged after the assignment viewer.Graph=graph;
 
@@ -131,11 +131,11 @@ export interface IViewer {
 
   //  removes an edge from the graph
 
-  RemoveEdge(edge: IViewerEdge, registerForUndo: boolean): void
+  removeEdge(edge: IViewerEdge, registerForUndo: boolean): void
 
   //  deletes node
 
-  RemoveNode(node: IViewerNode, registerForUndo: boolean): void
+  removeNode(node: IViewerNode, registerForUndo: boolean): void
 
   //  Routes the edge. The edge will not be not attached to the graph after the routing
 

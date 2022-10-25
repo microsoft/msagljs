@@ -41,7 +41,7 @@ import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 
-class SvgViewerObject extends Attribute {
+export class SvgViewerObject extends Attribute {
   clone(): Attribute {
     throw new Error('not implemented')
   }
@@ -68,12 +68,12 @@ class SvgViewerObject extends Attribute {
   unmarkedForDraggingCallback: (sender: any, eventParameters: any) => void
 }
 
-class SvgViewerGraph extends SvgViewerObject implements IViewerGraph {
+export class SvgViewerGraph extends SvgViewerObject implements IViewerGraph {
   get graph(): Graph {
     return this.entity as Graph
   }
 }
-class SvgViewerNode extends SvgViewerObject implements IViewerNode {
+export class SvgViewerNode extends SvgViewerObject implements IViewerNode {
   get node(): Node {
     return this.entity as Node
   }
