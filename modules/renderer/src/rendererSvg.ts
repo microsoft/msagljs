@@ -18,6 +18,8 @@ import {
   RTree,
   Node,
   Label,
+  Entity,
+  Assert,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
@@ -287,7 +289,7 @@ export class RendererSvg implements IViewer {
     }
   }
   invalidate(objectToInvalidate: IViewerObject): void {
-    if (objectToInvalidate.entity.isRemoved()) return
+    if (isRemoved(objectToInvalidate.entity)) return
     //  console.log('invalidate', objectToInvalidate.entity)
     this._svgCreator.invalidate(objectToInvalidate)
     this._objectTree = null
@@ -398,5 +400,34 @@ function removeEdge(e: Edge) {
   e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
   if (e.label) {
     e.label.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+  }
+}
+
+function isRemoved(entity: Entity) {
+  if (entity instanceof Edge) {
+    if (entity.source !== entity.target) return !this.source.outEdges.has(entity)
+    return !entity.source.selfEdges.has(entity)
+  }
+
+  if (entity instanceof Graph) {
+    if (entity.parent == null) {
+      return false
+    }
+    const graph = entity.parent as Graph
+    return !(graph.findNode(entity.id) === entity)
+  }
+
+  if (entity instanceof Node) {
+    if (entity.parent == null) {
+      Assert.assert(entity instanceof Graph)
+      return false
+    }
+    const graph = entity.parent as Graph
+    return !(graph.findNode(entity.id) === entity)
+  }
+  if (entity instanceof Label) {
+    if (entity.parent == null) return true
+    const edge = entity.parent as Edge
+    return edge.label !== entity
   }
 }

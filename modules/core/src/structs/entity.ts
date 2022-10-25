@@ -4,7 +4,6 @@
  */
 
 export abstract class Entity {
-  abstract isRemoved(): boolean
   /** keeps entity attributes: for example, drawing attributes, geometry attributes, etc */
   private attrs: any[] = []
   /** the mechanism to propagate changes in the layout */

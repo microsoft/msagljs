@@ -14,10 +14,6 @@ export enum ToAncestorEnum {
 }
 
 export class Edge extends Entity {
-  isRemoved(): boolean {
-    if (this.source !== this.target) return !this.source.outEdges.has(this)
-    return !this.source.selfEdges.has(this)
-  }
   label: Label
   source: Node
   target: Node
