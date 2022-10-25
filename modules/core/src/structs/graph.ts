@@ -7,6 +7,9 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. Some nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  isRemoved(): boolean {
+    return super.isRemoved()
+  }
   /**  Iterates over all connected components of the graph and for each component
    * returns all its nodes with "this" as the parent
    */
