@@ -45,6 +45,7 @@ export class UndoList {
     return false
   }
   undo() {
+    if (!this.canUndo) return
     if (this.currentBridge.canUndo) {
       this.currentBridge.undo()
     } else {
@@ -55,6 +56,7 @@ export class UndoList {
   }
 
   redo() {
+    if (!this.canRedo) return
     if (this.currentBridge.canRedo) {
       this.currentBridge.redo()
     } else {
@@ -70,7 +72,7 @@ export class UndoList {
    * Otherwise, when the currentBridge is undone, the current undo is replaced by the action.
    * In both cases the tail of the current undo, which is reached through this.currentBridge.next, is lost.
    */
-  addAction() {
+  createUndoPoint() {
     const action = new UndoRedoAction()
     if (!this.currentBridge) {
       this.currentBridge = action

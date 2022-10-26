@@ -37,7 +37,7 @@ export class GeometryGraphEditor {
   }
 
   createUndoPoint() {
-    this.undoList.addAction()
+    this.undoList.createUndoPoint()
   }
   edgesDraggedWithSource: Set<GeomEdge> = new Set<GeomEdge>()
 
@@ -309,7 +309,7 @@ export class GeometryGraphEditor {
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.geomEdgeWithSmoothedPolylineExposed = null
     this.CalculateDragSets(markedObjects)
-    this.undoList.addAction()
+    this.undoList.createUndoPoint()
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
     }
@@ -532,7 +532,6 @@ export class GeometryGraphEditor {
   //      Undoes the last editing.
 
   public undo() {
-    Assert.assert(this.undoList.canUndo())
     this.undoList.undo()
   }
   // createRedoActionIfNeeded() {
@@ -555,9 +554,7 @@ export class GeometryGraphEditor {
   //      redo the dragging
 
   public redo() {
-    if (this.canRedo) {
-      this.undoList.redo()
-    }
+    this.undoList.redo()
   }
 
   //      clear the editor
