@@ -12,6 +12,8 @@ import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
 export interface IViewer {
+  /** creates an undo action to the current state */
+  createUndoPoint(): void
   /** returns the array of the entities that are currently selected */
   selectedEntities(): Array<IViewerObject>
   /** maps a point in the screen coordinates to the point in the graph coordinates*/
@@ -34,7 +36,7 @@ export interface IViewer {
   //  <returns></returns>
   createIViewerNodeN(drawingNode: Node): IViewerNode
 
-  //  if set to true the Graph geometry is unchanged after the assignment viewer.Graph=graph;
+  /**  if set to true the Graph geometry is unchanged after the assignment viewer.Graph=graph; */
 
   needToCalculateLayout: boolean
 
@@ -46,8 +48,7 @@ export interface IViewer {
 
   objectUnderMouseCursorChanged: EventHandler
 
-  //  Returns the object under the cursor and null if there is none
-
+  /** Returns the object under the cursor and null if there is none */
   objectUnderMouseCursor: IViewerObject
 
   //  forcing redraw of the object

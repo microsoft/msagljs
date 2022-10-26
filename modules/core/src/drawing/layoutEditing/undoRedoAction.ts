@@ -23,8 +23,8 @@ export class UndoRedoAction {
   get canRedo(): boolean {
     return !this._canUndo
   }
-  /** canUndo = true means that the relevant objects, the keys of restoreDataDictionary, have old attributes, ready for undo
-   *  canUndo = false means that the objects are in the new state
+  /** canUndo = true means that the relevant objects, the keys of restoreDataDictionary, have 'old' attributes set up: ready for undo
+   *  canUndo = false means that the undo has been done already:
    */
   get canUndo() {
     return this._canUndo

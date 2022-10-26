@@ -59,6 +59,9 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
+  createUndoPoint() {
+    this.geomGraphEditor.createUndoPoint()
+  }
   registerDelete(entity: Entity) {
     this.geomGraphEditor.registerDelete(entity)
   }
@@ -503,7 +506,7 @@ export class LayoutEditor {
       if (corner.prev == null || corner.next == null) {
         return // ignore the source and the target corners
       }
-      this.geomGraphEditor.addUndoAction()
+      this.geomGraphEditor.createUndoPoint()
       this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), corner)
       this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
@@ -521,7 +524,7 @@ export class LayoutEditor {
       if (a == null) return
       const b = a.next
       if (b == null) return
-      this.geomGraphEditor.addUndoAction()
+      this.geomGraphEditor.createUndoPoint()
       this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), this.mouseDownGraphPoint, a)
       this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)

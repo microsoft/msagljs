@@ -36,7 +36,7 @@ export class GeometryGraphEditor {
     yield* this.undoList.entitiesToBeChangedByUndo()
   }
 
-  addUndoAction() {
+  createUndoPoint() {
     this.undoList.addAction()
   }
   edgesDraggedWithSource: Set<GeomEdge> = new Set<GeomEdge>()
@@ -525,7 +525,7 @@ export class GeometryGraphEditor {
 
   prepareForGeomEdgeChange(geometryEdge: GeomEdge) {
     Assert.assert(this.geomEdgeWithSmoothedPolylineExposed === geometryEdge)
-    this.addUndoAction()
+    this.createUndoPoint()
     this.registerForUndo(geometryEdge.edge)
   }
 

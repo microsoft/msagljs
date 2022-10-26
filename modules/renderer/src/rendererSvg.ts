@@ -168,6 +168,9 @@ export class RendererSvg implements IViewer {
 
     this.layoutEditor = new LayoutEditor(this)
   }
+  createUndoPoint(): void {
+    this.layoutEditor.createUndoPoint()
+  }
   selectedEntities(): IViewerObject[] {
     const ret = Array.from(this.layoutEditor.dragGroup)
     if (this.objectUnderMouseCursor) {

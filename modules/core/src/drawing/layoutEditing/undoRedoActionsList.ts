@@ -5,10 +5,6 @@ import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
   registerForDelete(entity: Entity) {
-    if (this.currentBridge == null || this.currentBridge.hasAttributeChanges() || this.currentBridge.deleteIsEmpty()) {
-      this.addAction()
-    }
-
     this.currentBridge.registerDelete(entity)
   }
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
@@ -70,7 +66,10 @@ export class UndoList {
     }
   }
 
-  /** adds the "action" ufter the currentUndo and sets currentUndo=action */
+  /** If the current undo has not been undone, the adds the "action" after the currentUndo and sets currentUndo=action .
+   * Otherwise, when the currentBridge is undone, the current undo is replaced by the action.
+   * In both cases the tail of the current undo, which is reached through this.currentBridge.next, is lost.
+   */
   addAction() {
     const action = new UndoRedoAction()
     if (!this.currentBridge) {
