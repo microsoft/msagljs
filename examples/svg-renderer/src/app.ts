@@ -32,8 +32,12 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
     }
   }
   if (e.key == 'Delete') {
-    svgRenderer.createUndoPoint()
+    let first = true
     for (const v of svgRenderer.selectedEntities()) {
+      if (first) {
+        svgRenderer.createUndoPoint()
+        first = false
+      }
       svgRenderer.remove(v, true)
     }
   }
