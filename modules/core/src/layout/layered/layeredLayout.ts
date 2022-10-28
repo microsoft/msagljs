@@ -544,9 +544,7 @@ export class LayeredLayout extends Algorithm {
     const del = new Point(-delta, delta)
     box.add(box.leftTop.add(del))
     box.add(box.rightBottom.sub(del))
-    this.originalGraph.ignoreBBoxCheck = true
     this.originalGraph.boundingBox = box
-    this.originalGraph.ignoreBBoxCheck = false
   }
 
   StraightensShortEdges() {

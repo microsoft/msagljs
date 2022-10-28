@@ -92,7 +92,14 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 export class SvgCreator {
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
-    if (entity instanceof Node) {
+    if (entity instanceof Graph) {
+      if (entity.parent == null) {
+        this.setGraphWidthAndHightAttributes()
+        this.setTransformForTranformGroup()
+      } else {
+        throw new Error('not implemented')
+      }
+    } else if (entity instanceof Node) {
       this.drawNode(entity)
     } else if (entity instanceof Edge) {
       this.drawEdge(entity)
@@ -131,13 +138,13 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
-    //this.svg.setAttribute('style', 'border: 1px solid black')
+    this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
     this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
     // After the y flip the top has moved to -top : translating it to zero
-    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
+    this.setTransformForTranformGroup()
     for (const node of this.graph.deepNodes) {
       this.drawNode(node)
     }
@@ -146,6 +153,10 @@ export class SvgCreator {
       this.drawEdgeLabel(edge.label)
     }
   }
+  private setTransformForTranformGroup() {
+    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
+  }
+
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
     if (!this.svg) return PlaneTransformation.getIdentity()

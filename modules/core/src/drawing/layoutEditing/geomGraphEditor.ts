@@ -1,4 +1,4 @@
-//      the editor of a graph layout
+//      the editor of a graph() layout
 import {SortedMap} from '@esfx/collections-sortedmap'
 import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from '../../layout/core'
 import {Arrowhead} from '../../layout/core/arrowhead'
@@ -43,7 +43,7 @@ export class GeometryGraphEditor {
 
   edgesDraggedWithTarget: Set<GeomEdge> = new Set<GeomEdge>()
 
-  graph: GeomGraph
+  graph: () => GeomGraph
 
   private objectsToDrag: Set<GeomObject> = new Set<GeomObject>()
 
@@ -52,7 +52,7 @@ export class GeometryGraphEditor {
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
 
-  /**  Will be set to true if an entity was dragged out of the graph bounding box*/
+  /**  Will be set to true if an entity was dragged out of the graph() bounding box*/
 
   graphBoundingBoxGetsExtended_: boolean
   public get GraphBoundingBoxGetsExtended(): boolean {
@@ -62,18 +62,8 @@ export class GeometryGraphEditor {
     this.graphBoundingBoxGetsExtended_ = value
   }
 
-  //      Current graph under editing
-
-  public get geomGraph(): GeomGraph {
-    return this.graph
-  }
-  public set geomGraph(value: GeomGraph) {
-    this.graph = value
-    this.clear()
-  }
-
   public get LayoutSettings(): ILayoutSettings {
-    return this.graph.layoutSettings
+    return this.graph().layoutSettings
   }
 
   protected get EdgeRoutingMode(): EdgeRoutingMode {
@@ -141,7 +131,20 @@ export class GeometryGraphEditor {
       // this.EditedEdge != null
       this.dragPolylineCorner(lastMousePosition, delta)
     }
+    // this.registerForUndo(this.graph().entity)
+    // this.graph().pumpTheBoxToTheGraphWithMargins()
   }
+  // registerChangedParents(entitiesWithExtendedBoxes: Set<Entity>, e: GeomObject) {
+  //   const parent = e.parent
+  //   if (!parent) return
+
+  //   if (entitiesWithExtendedBoxes.has(parent.entity)) return
+  //   if (parent.boundingBox.containsRect(e.boundingBox)) return
+  //   this.registerForUndo(parent.entity)
+  //   parent.boundingBox = parent.boundingBox.add_rect(e.boundingBox) as Rectangle
+  //   entitiesWithExtendedBoxes.add(parent.entity)
+  //   this.registerChangedParents(entitiesWithExtendedBoxes, parent)
+  // }
 
   DragObjectsForRectilinearCase(delta: Point): Array<Entity> {
     for (const node of this.objectsToDrag) {
@@ -153,11 +156,11 @@ export class GeometryGraphEditor {
     RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
       this.LayoutSettings.commonSettings.NodeSeparation / 3,
       1,
-      this.graph.deepNodes,
-      this.graph.deepEdges,
+      this.graph().deepNodes,
+      this.graph().deepEdges,
       this.LayoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode,
     )
-    EdgeLabelPlacement.constructorG(this.graph).run()
+    EdgeLabelPlacement.constructorG(this.graph()).run()
 
     // for (const e of this.geomGraph.deepEdges) {
     //   this.UpdateGraphBoundingBoxWithCheck(e)
@@ -200,14 +203,14 @@ export class GeometryGraphEditor {
       const geomNode = n as GeomNode
       for (const c of geomNode.node.getAncestors()) {
         const gc = GeomObject.getGeom(c)
-        if (gc !== this.geomGraph && !this.objectsToDrag.has(gc)) {
+        if (gc !== this.graph() && !this.objectsToDrag.has(gc)) {
           touchedClusters.add(gc as GeomGraph)
         }
       }
     }
 
     if (touchedClusters.size > 0) {
-      for (const c of this.graph.subgraphs()) {
+      for (const c of this.graph().subgraphs()) {
         if (touchedClusters.has(c)) {
           c.boundingBox = c.calculateBoundsFromChildren() // TODO : add to undoAction here!!!!
         }
@@ -227,14 +230,14 @@ export class GeometryGraphEditor {
 
   RunSplineRouterAndPutLabels() {
     const router = SplineRouter.mk5(
-      this.graph,
+      this.graph(),
       this.LayoutSettings.commonSettings.edgeRoutingSettings.Padding,
       this.LayoutSettings.commonSettings.edgeRoutingSettings.PolylinePadding,
       this.LayoutSettings.commonSettings.edgeRoutingSettings.ConeAngle,
       this.LayoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings,
     )
     router.run()
-    const elp = EdgeLabelPlacement.constructorG(this.graph)
+    const elp = EdgeLabelPlacement.constructorG(this.graph())
     elp.run()
   }
 
@@ -252,30 +255,30 @@ export class GeometryGraphEditor {
       }
     }
 
-    const ep = EdgeLabelPlacement.constructorGA(this.graph, edges)
+    const ep = EdgeLabelPlacement.constructorGA(this.graph(), edges)
     ep.run()
   }
 
   // UpdateGraphBoundingBoxWithCheck_() {
-  //   for (const node of this.graph.shallowNodes) {
+  //   for (const node of this.graph().shallowNodes) {
   //     // shallow or deep?
   //     this.UpdateGraphBoundingBoxWithCheck(node)
   //   }
 
-  //   for (const edge of this.graph.edges()) {
+  //   for (const edge of this.graph().edges()) {
   //     // shallow or deep?
   //     this.UpdateGraphBoundingBoxWithCheck(edge)
   //   }
   // }
 
   DragIncrementally(delta: Point) {
-    const box: Rectangle = this.graph.boundingBox
+    const box: Rectangle = this.graph().boundingBox
     if (this.incrementalDragger == null) {
       this.InitIncrementalDragger()
     }
 
     this.incrementalDragger.Drag(delta)
-    this.GraphBoundingBoxGetsExtended = box !== this.graph.boundingBox
+    this.GraphBoundingBoxGetsExtended = box !== this.graph().boundingBox
   }
 
   dragPolylineCorner(lastMousePosition: Point, delta: Point) {
@@ -317,7 +320,7 @@ export class GeometryGraphEditor {
 
   PrepareForClusterCollapseChange(changedClusters: Iterable<IViewerNode>) {
     throw new Error('not implemented')
-    // this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph))
+    // this.InsertToListAndSetTheBoxBefore(new ClustersCollapseExpandUndoRedoAction(this.graph()))
     // for (const iCluster of changedClusters) {
     //   throw new Error('not implemented') // this.CurrentUndoAction.AddAffectedObject(iCluster) //
     // }
@@ -326,7 +329,7 @@ export class GeometryGraphEditor {
   InitIncrementalDragger() {
     this.incrementalDragger = new IncrementalDragger(
       Array.from(this.objectsToDrag).filter((o) => o instanceof GeomNode) as Array<GeomNode>,
-      this.graph,
+      this.graph(),
       this.LayoutSettings,
     )
   }

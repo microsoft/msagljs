@@ -40,14 +40,26 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
-  *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
-    for (const n of this.graph.allSuccessorsWidthFirst()) {
-      yield GeomNode.getGeom(n) as GeomNode
-    }
-  }
-  ignoreBBoxCheck = false
   /** The empty space between the graph inner entities and its boundary */
   margins = {left: 10, top: 10, bottom: 10, right: 10}
+  private rrect: RRect
+  private _layoutSettings: ILayoutSettings
+  private _labelSize: Size
+  /** The X radius of the rounded rectangle border */
+  radX = 10
+  /** The Y radius of the rounded rectangle border */
+  radY = 10
+  /** it is a rather shallow clone */
+  clone(): GeomGraph {
+    const gg = new GeomGraph(null)
+    gg.boundingBox = this.boundingBox
+    gg.layoutSettings = this.layoutSettings
+    gg.margins = this.margins
+    gg.radX = this.radX
+    gg.radY = this.radY
+    return gg
+  }
+
   /** Calculate bounding box from children, not updating the bounding boxes recursively. */
   calculateBoundsFromChildren() {
     const bb = Rectangle.mkEmpty()
@@ -57,11 +69,15 @@ export class GeomGraph extends GeomNode {
     bb.padEverywhere(this.margins)
     return bb
   }
+  *allSuccessorsWidthFirst(): IterableIterator<GeomNode> {
+    for (const n of this.graph.allSuccessorsWidthFirst()) {
+      yield GeomNode.getGeom(n) as GeomNode
+    }
+  }
 
   static getGeom(attrCont: Graph): GeomGraph {
     return <GeomGraph>GeomObject.getGeom(attrCont)
   }
-  private rrect: RRect
 
   edgeCurveOrArrowheadsIntersectRect(geomEdge: GeomEdge, rect: Rectangle): boolean {
     for (const p of geomEdge.sourceArrowheadPoints(25)) {
@@ -88,7 +104,6 @@ export class GeomGraph extends GeomNode {
       gg.layoutSettings = ls
     }
   }
-  private _layoutSettings: ILayoutSettings
   get layoutSettings(): ILayoutSettings {
     return this._layoutSettings
   }
@@ -97,8 +112,6 @@ export class GeomGraph extends GeomNode {
   set layoutSettings(value: ILayoutSettings) {
     this._layoutSettings = value
   }
-
-  private _labelSize: Size
 
   get labelSize() {
     return this._labelSize
@@ -181,10 +194,6 @@ export class GeomGraph extends GeomNode {
   CheckClusterConsistency(): boolean {
     throw new Error('Method not implemented.')
   }
-  /** The X radius of the rounded rectangle border */
-  radX = 10
-  /** The Y radius of the rounded rectangle border */
-  radY = 10
   get edgeCount() {
     return this.graph.edgeCount
   }

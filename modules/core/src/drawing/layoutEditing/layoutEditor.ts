@@ -13,7 +13,7 @@ import {GeomObject} from '../../layout/core/geomObject'
 import {Port} from '../../layout/core/port'
 import {layoutGeomGraph} from '../../layout/driver'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
-import {Polyline, Point, Curve, Rectangle, LineSegment, ICurve, PointLocation} from '../../math/geometry'
+import {Polyline, Point, Curve, Rectangle, LineSegment, ICurve, PointLocation, Size} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
@@ -163,6 +163,7 @@ export class LayoutEditor {
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.decorateEdgeLabelForDragging = this.defaultEdgeLabelDecorator
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
+    this.geomGraphEditor.graph = () => GeomGraph.getGeom(this.graph)
   }
 
   ViewerObjectUnderMouseCursorChanged(sender: any, e: ObjectUnderMouseCursorChangedEventArgs) {
@@ -185,9 +186,7 @@ export class LayoutEditor {
   }
   set Graph(value: Graph) {
     this.graph = value
-    if (this.graph != null) {
-      this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
-    }
+    this.geomGraphEditor.clear()
   }
 
   //  If the distance between the mouse down point and the mouse up point is greater than the threshold
@@ -306,7 +305,7 @@ export class LayoutEditor {
     this.graph = this.viewer.graph
     this.geomGraphEditor.clear()
     if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
-      this.geomGraphEditor.graph = GeomGraph.getGeom(this.graph)
+      this.geomGraphEditor.clear()
     }
 
     this.ActiveDraggedObject = null
@@ -850,6 +849,17 @@ export class LayoutEditor {
     }
 
     const currentDragPoint = this.viewer.screenToSource(e)
+
+    // extend the viewport
+    const w = this.viewer.smoothedPolylineCircleRadius // some rather small but still visible distance on the screen
+    const mousePointerBox = Rectangle.mkSizeCenter(new Size(w, w), currentDragPoint)
+    const g = GeomGraph.getGeom(this.graph)
+    if (!g.boundingBox.containsRect(mousePointerBox)) {
+      //this.geomGraphEditor.registerForUndo(this.graph)
+      g.boundingBox = g.boundingBox.addRec(mousePointerBox)
+      this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+    }
+
     this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
     for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
       this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
@@ -936,6 +946,9 @@ export class LayoutEditor {
         this.InsertEdgeOnMouseUp()
       }
 
+      // take care about the graph bounding box and the viewport: how about undo?
+      GeomGraph.getGeom(this.graph).pumpTheBoxToTheGraphWithMargins()
+      this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
       args.preventDefault()
     }
 

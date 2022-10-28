@@ -319,21 +319,6 @@ export class Rectangle implements IRectangle<Point> {
     }
   }
 
-  // extend the box to keep the point.
-  // Assume here that the box is initialized correctly
-  addWithCheck(point: Point): boolean {
-    let wider: boolean
-    if ((wider = point.x < this.left_)) this.left_ = point.x
-    else if ((wider = this.right_ < point.x)) this.right_ = point.x
-
-    let higher: boolean
-
-    if ((higher = point.y > this.top_)) this.top_ = point.y
-    else if ((higher = this.bottom_ > point.y)) this.bottom = point.y
-
-    return wider || higher
-  }
-
   // adding rectangle
   addRecSelf(rectangle: Rectangle) {
     this.add(rectangle.leftTop)

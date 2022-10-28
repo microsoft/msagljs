@@ -24,7 +24,7 @@ export class UndoRedoAction {
           pair.old.rebind(e)
         }
       }
-    } else if ('deletedEnts' in this.data) {
+    } else if (this.data && 'deletedEnts' in this.data) {
       for (const e of this.data.deletedEnts) {
         restoreEntity(e)
       }
