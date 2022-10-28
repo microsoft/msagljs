@@ -131,7 +131,7 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
-    this.svg.setAttribute('style', 'border: 1px solid black')
+    //this.svg.setAttribute('style', 'border: 1px solid black')
     this.geomGraph = GeomGraph.getGeom(this.graph)
     this.open()
     this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
@@ -415,8 +415,10 @@ export class SvgCreator {
   }
 
   private setGraphWidthAndHightAttributes() {
-    this.svg.setAttribute('width', this.geomGraph.width.toString())
-    this.svg.setAttribute('height', this.geomGraph.height.toString())
+    this.svg.setAttribute('viewBox', this.getViewBoxString())
+  }
+  getViewBoxString(): string {
+    return String.Format('0 0 {0} {1}', this.geomGraph.width, this.geomGraph.height)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
