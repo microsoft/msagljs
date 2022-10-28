@@ -8,7 +8,6 @@ import {Node} from '../../structs/node'
 import {Label} from '../../structs/label'
 import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
-import {EdgeNudger} from '../../routing/spline/bundling/EdgeNudger'
 type UndoChangeData = Map<Entity, {old: Attribute; new: Attribute}[]>
 type UndoDeleteData = {deletedEnts: Set<Entity>}
 type UndoInsertData = {insertedEnts: Set<Entity>}

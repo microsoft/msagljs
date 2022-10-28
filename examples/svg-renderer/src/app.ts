@@ -1,7 +1,7 @@
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated} from 'msagl-js'
+import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, GeomGraph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
@@ -13,6 +13,22 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/m
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
+
+window.addEventListener('contextmenu', (e) => {
+  if (!svgRenderer.graph) return
+  const geomGraph = GeomGraph.getGeom(svgRenderer.graph)
+  if (!geomGraph) return
+  const mousePosition = svgRenderer.screenToSource(e)
+  // only react on the context menu inside of the graph bounding box
+  if (geomGraph.boundingBox.contains(mousePosition)) {
+    e.preventDefault()
+    setPositionAndShow(e, contmenu)
+  }
+})
+
+window.addEventListener('click', () => {
+  toggleContextMenu(contmenu, 'hide')
+})
 /** setup the viewer */
 viewer.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.ctrlKey) {
@@ -52,6 +68,8 @@ dotFileSelect.onchange = () => {
     })
     .then((id) => (document.getElementById('graph-name').innerText = id))
 }
+
+const contmenu = document.getElementById('contmenu')
 
 const edgeRoutingSelect = createEdgeRoutingSelect()
 edgeRoutingSelect.onchange = () => {
@@ -212,4 +230,16 @@ function getLayoutOptions(): LayoutOptions {
     }
   }
   return opts
+}
+function setPositionAndShow(e: MouseEvent, contextmenu: HTMLElement) {
+  contextmenu.style.left = `${e.pageX}px`
+  contextmenu.style.top = `${e.pageY}px`
+  toggleContextMenu(contextmenu, 'show')
+}
+function toggleContextMenu(contextmenu: HTMLElement, command: string) {
+  if (command === 'show') {
+    contextmenu.style.display = 'block'
+  } else {
+    contextmenu.style.display = 'none'
+  }
 }

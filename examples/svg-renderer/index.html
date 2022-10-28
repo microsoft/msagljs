@@ -114,10 +114,29 @@
         background: #ddd;
       }
       #save-JSON.active {
-        background: rgb(117, 18, 18);
+        background: #ddd;
       }
       svg {
         margin: 0 12px;
+      }
+
+      .menu_class {
+        width: 120px;
+        box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: none;
+        background-color: #ddd;
+        z-index: 2;
+      }
+      .menu-options {
+        list-style-type: none;
+        padding: 10px 0;
+      }
+      .menu-option {
+        font-weight: 500;
+        font-size: 12x;
+        padding: 10px 40px 10px 20px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -140,6 +159,15 @@
           <path d="M0 0h24v24H0V0z" fill="none" />
           <path d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
         </svg>
+      </div>
+      <div id="contmenu" class="menu_class">
+        <ul class="menu-options">
+          <li class="menu-option">Back</li>
+          <li class="menu-option">Reload</li>
+          <li class="menu-option">Save</li>
+          <li class="menu-option">Save As</li>
+          <li class="menu-option">Ins</li>
+        </ul>
       </div>
       <div id="drop-target">
         <label
@@ -173,7 +201,8 @@
         <label>Fonts</label>
         <select id="fonts"></select>
       </div>
+
+      <script src="./app.js"></script>
     </div>
-    <script src="./app.js"></script>
   </body>
 </html>
