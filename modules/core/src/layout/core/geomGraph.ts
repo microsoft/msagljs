@@ -158,12 +158,16 @@ export class GeomGraph extends GeomNode {
     const structEdge = this.graph.setEdge(s, t)
     return new GeomEdge(structEdge)
   }
-  /** sets the bounding box and the bounary curve as well */
-  pumpTheBoxToTheGraphWithMargins(): Rectangle {
+  /** this does not change the graph bounding box */
+  pumpedGraphWithMarginsBox(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
     pumpTheBoxToTheGraph(this, t)
     t.b.padEverywhere(this.margins)
-    return (this.boundingBox = t.b)
+    return t.b
+  }
+  /** sets the bounding box and the bounary curve as well */
+  pumpTheBoxToTheGraphWithMargins(): Rectangle {
+    return (this.boundingBox = this.pumpedGraphWithMarginsBox())
   }
 
   // Fields which are set by Msagl

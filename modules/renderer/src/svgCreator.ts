@@ -118,7 +118,9 @@ export class SvgCreator {
   svg: SVGElement
   transformGroup: SVGElement
   graph: Graph
-  geomGraph: GeomGraph
+  get geomGraph(): GeomGraph {
+    return GeomGraph.getGeom(this.graph)
+  }
   _textMeasurer = new TextMeasurer()
 
   private container: HTMLElement
@@ -139,7 +141,7 @@ export class SvgCreator {
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
     this.svg.setAttribute('style', 'border: 1px solid black')
-    this.geomGraph = GeomGraph.getGeom(this.graph)
+
     this.open()
     this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
@@ -422,7 +424,6 @@ export class SvgCreator {
 
   private open() {
     this.setGraphWidthAndHightAttributes()
-    this.geomGraph = GeomGraph.getGeom(this.graph)
   }
 
   private setGraphWidthAndHightAttributes() {

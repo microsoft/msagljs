@@ -855,7 +855,7 @@ export class LayoutEditor {
     const mousePointerBox = Rectangle.mkSizeCenter(new Size(w, w), currentDragPoint)
     const g = GeomGraph.getGeom(this.graph)
     if (!g.boundingBox.containsRect(mousePointerBox)) {
-      //this.geomGraphEditor.registerForUndo(this.graph)
+      this.geomGraphEditor.registerForUndo(this.graph)
       g.boundingBox = g.boundingBox.addRec(mousePointerBox)
       this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
     }
@@ -946,10 +946,14 @@ export class LayoutEditor {
         this.InsertEdgeOnMouseUp()
       }
 
-      // take care about the graph bounding box and the viewport: how about undo?
-      GeomGraph.getGeom(this.graph).pumpTheBoxToTheGraphWithMargins()
-      this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
-      args.preventDefault()
+      const gg = GeomGraph.getGeom(this.graph)
+      const newBox = gg.pumpedGraphWithMarginsBox()
+      if (!newBox.equal(gg.boundingBox)) {
+        this.geomGraphEditor.registerForUndo(this.graph)
+        gg.boundingBox = newBox
+        this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+        args.preventDefault()
+      }
     }
 
     this.dragging = false
