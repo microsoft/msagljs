@@ -106,7 +106,7 @@ export class RendererSvg implements IViewer {
     if (this.layoutEditor.dragging) {
       return
     }
-    if (this._svgCreator.nodeInsertionCircle) {
+    if (this.insertingNode) {
       this._svgCreator.positionInsertionCircle(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
       return
     }
@@ -368,12 +368,14 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   addNode(node: IViewerNode, registerForUndo: boolean): void {
+    this._objectTree = null
     if (registerForUndo) {
       this.layoutEditor.registerAdd(node.entity)
     }
   }
 
   remove(viewerObj: IViewerObject, registerForUndo: boolean): void {
+    this._objectTree = null
     if (registerForUndo) this.layoutEditor.registerDelete(viewerObj.entity)
     if (this.objectUnderMouseCursor === viewerObj) {
       this.objectUnderMouseCursor = null

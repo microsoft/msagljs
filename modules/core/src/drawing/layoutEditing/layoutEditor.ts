@@ -295,8 +295,7 @@ export class LayoutEditor {
     return this.viewer.insertingNode
   }
 
-  //  If set to true then we are of a mode for node insertion
-
+  /** If set to true then we are insterting edges */
   get insertingEdge(): boolean {
     if (this.viewer == null) {
       return false
