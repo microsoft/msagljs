@@ -5,6 +5,7 @@ import {EventHandler} from '../../layout/core/geomObject'
 import {Point} from '../../math/geometry'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Edge} from '../../structs/edge'
+import {Node} from '../../structs/node'
 import {Graph} from '../../structs/graph'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerGraph} from './iViewerGraph'
@@ -34,7 +35,7 @@ export interface IViewer {
   //  creates a default visual element for the node
 
   //  <returns></returns>
-  createIViewerNodeN(drawingNode: Node): IViewerNode
+  createIViewerNodeN(drawingNode: Node, center: Point): IViewerNode
 
   /**  if set to true the Graph geometry is unchanged after the assignment viewer.Graph=graph; */
 
@@ -82,12 +83,15 @@ export interface IViewer {
 
   //  enables and disables the default editing of the viewer
 
-  LayoutEditingEnabled: boolean
+  layoutEditingEnabled: boolean
 
-  //  if is set to true then the mouse left click on a node and dragging the cursor to
-  //  another node will create an edge and add it to the graph
+  insertingNode: boolean
 
-  InsertingEdge: boolean
+  /**
+   *  If set to true then the mouse left click on a node and dragging the cursor to
+   *  another node will create an edge and add it to the graph
+   */
+  insertingEdge: boolean
 
   //  Pops up a pop up menu with a menu item for each couple, the string is the title and the delegate is the callback
 
@@ -129,7 +133,7 @@ export interface IViewer {
 
   //  adds a node to the viewer graph
 
-  AddNode(node: IViewerNode, registerForUndo: boolean): void
+  addNode(node: IViewerNode, registerForUndo: boolean): void
 
   /**removes an edge from the graph */
   remove(obj: IViewerObject, registerForUndo: boolean): void

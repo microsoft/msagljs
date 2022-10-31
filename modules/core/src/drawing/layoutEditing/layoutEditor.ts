@@ -65,6 +65,9 @@ export class LayoutEditor {
   registerDelete(entity: Entity) {
     this.geomGraphEditor.registerDelete(entity)
   }
+  registerAdd(entity: Entity) {
+    this.geomGraphEditor.registerAdd(entity)
+  }
   /** unregister the element from everywhere */
   forget(ent: IViewerObject) {
     this.dragGroup.delete(ent)
@@ -284,21 +287,29 @@ export class LayoutEditor {
     return this.geomGraphEditor.canRedo
   }
 
-  //  If set to true then we are of a mode for node insertion
-
-  get InsertingEdge(): boolean {
+  get insertingNode(): boolean {
     if (this.viewer == null) {
       return false
     }
 
-    return this.viewer.InsertingEdge
+    return this.viewer.insertingNode
   }
-  set InsertingEdge(value: boolean) {
+
+  //  If set to true then we are of a mode for node insertion
+
+  get insertingEdge(): boolean {
+    if (this.viewer == null) {
+      return false
+    }
+
+    return this.viewer.insertingEdge
+  }
+  set insertingEdge(value: boolean) {
     if (this.viewer == null) {
       return
     }
 
-    this.viewer.InsertingEdge = value
+    this.viewer.insertingEdge = value
   }
 
   viewerGraphChanged() {
@@ -472,7 +483,7 @@ export class LayoutEditor {
     const editableObj = obj.entity
     if (editableObj instanceof Edge) {
       const geomEdge = editableObj.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
-      if (geomEdge != null && this.viewer.LayoutEditingEnabled) {
+      if (geomEdge != null && this.viewer.layoutEditingEnabled) {
         if (geomEdge.smoothedPolyline == null) {
           geomEdge.smoothedPolyline = LayoutEditor.CreateUnderlyingPolyline(geomEdge)
         }
@@ -619,7 +630,7 @@ export class LayoutEditor {
   }
 
   viewerMouseDown(sender: any, e: MouseEvent) {
-    if (!this.viewer.LayoutEditingEnabled || this.viewer.graph == null) {
+    if (!this.viewer.layoutEditingEnabled || this.viewer.graph == null) {
       return
     }
 
@@ -627,7 +638,18 @@ export class LayoutEditor {
     this.mouseDownScreenPoint = new Point(e.clientX, e.clientY)
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       this.leftMouseButtonWasPressed = true
-      if (!this.InsertingEdge) {
+      if (this.insertingEdge) {
+        if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
+          this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
+        }
+      } else if (this.insertingNode) {
+        const id = this.findNodeID()
+        const node = new Node(id)
+        this.graph.addNode(node)
+        new DrawingNode(node) // it would create the default drawing attribute
+        const vn = this.viewer.createIViewerNodeN(node, this.mouseDownGraphPoint)
+        this.viewer.addNode(vn, true)
+      } else {
         const obj = this.viewer.objectUnderMouseCursor
 
         if (obj && !this.viewer.objectUnderMouseCursor.hasOwnProperty('edge')) {
@@ -641,26 +663,32 @@ export class LayoutEditor {
         if (this.edgeWithSmoothedPolylineExposed != null) {
           if (this.mouseIsInsideOfCornerSite(e)) e.preventDefault()
         }
-      } else if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
-        this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
       }
     }
   }
+  findNodeID(): string {
+    let i = 0
+    let id = 'node' + i.toString()
+    while (this.graph.findNode(id)) {
+      id = 'node' + ++i
+    }
+    return id
+  }
 
   viewerMouseMove(sender: any, e: MouseEvent) {
-    if (!this.viewer.LayoutEditingEnabled) {
+    if (!this.viewer.layoutEditingEnabled) {
       return
     }
 
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       if (this.ActiveDraggedObject != null || this.activeCornerSite != null) {
         this.drag(e)
-      } else if (this.InsertingEdge) {
+      } else if (this.insertingEdge) {
         this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
       } else {
         this.MouseMoveLiveSelectObjectsForDragging(e)
       }
-    } else if (this.InsertingEdge) {
+    } else if (this.insertingEdge) {
       this.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e)
     }
   }
@@ -672,7 +700,7 @@ export class LayoutEditor {
   }
 
   TrySetNodePort(e: MouseEvent, node: {node: IViewerNode}, port: {port: Port}, loosePolyline: {loosePolyline: Polyline}): boolean {
-    Assert.assert(this.InsertingEdge)
+    Assert.assert(this.insertingEdge)
     const mousePos = this.viewer.screenToSource(e)
     loosePolyline.loosePolyline = null
     const mousePosition = {mousePosition: mousePos}
@@ -923,7 +951,7 @@ export class LayoutEditor {
       return
     }
 
-    if (!this.viewer.LayoutEditingEnabled) {
+    if (!this.viewer.layoutEditingEnabled) {
       return
     }
     this.handleMouseUpOnLayoutEnabled(args)
@@ -939,7 +967,7 @@ export class LayoutEditor {
         this.unselectEverything()
       }
     } else if (this.dragging) {
-      if (!this.InsertingEdge) {
+      if (!this.insertingEdge) {
         this.InteractiveEdgeRouter = null
         this.looseObstaclesToTheirViewerNodes = null
       } else {

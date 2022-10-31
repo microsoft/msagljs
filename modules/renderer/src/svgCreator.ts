@@ -90,6 +90,25 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  positionInsertionCircle(cursorPosition: Point) {
+    const pathValue = curveString(CurveFactory.mkCircle(this.getSmoothedPolylineRadius() / 2, cursorPosition))
+    this.nodeInsertionCircle.setAttribute('d', pathValue)
+    this.nodeInsertionCircle.setAttribute('fill', 'red')
+  }
+  stopNodeInsertion() {
+    this.nodeInsertionCircle.remove()
+  }
+  nodeInsertionCircle: SVGElement
+  prepareToNodeInsertion(cursorPosition: Point) {
+    this.nodeInsertionCircle = this.createOrGetWithId(this.transformGroup, 'path', 'nodeInsertCircle')
+    const rad = this.getSmoothedPolylineRadius() / 2
+    const pathValue = curveString(CurveFactory.mkCircle(rad, cursorPosition))
+    this.nodeInsertionCircle.setAttribute('d', pathValue)
+    this.nodeInsertionCircle.setAttribute('fill', 'red')
+    // this.nodeInsertionCircle.setAttribute('stroke', "red")
+    // this.nodeInsertionCircle.setAttribute('stroke-opacity', '1')
+    // this.nodeInsertionCircle.setAttribute('stroke-width', )
+  }
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
     if (entity instanceof Graph) {
@@ -323,7 +342,7 @@ export class SvgCreator {
         break
     }
   }
-  private drawNode(node: Node) {
+  drawNode(node: Node) {
     const nodeGroupSvg = this.createAndBindWithGraph(node, 'g', this.transformGroup)
     const gn = GeomObject.getGeom(node) as GeomNode
 

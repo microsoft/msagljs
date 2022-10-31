@@ -175,7 +175,7 @@ export class DrawingGraph extends DrawingNode {
     return curve ?? CurveFactory.mkRectangleWithRoundedCorners(width, height, drawingNode.XRadius, drawingNode.YRadius, center)
   }
 
-  private createNodeGeometry(n: Node): void {
+  createNodeGeometry(n: Node, center = new Point(0, 0)): void {
     if (n instanceof Graph) {
       const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
       const geomGraph = new GeomGraph(n)
@@ -189,7 +189,6 @@ export class DrawingGraph extends DrawingNode {
         textSize = measureTextSize(drawingNode, this.textMeasure)
       }
       drawingNode.measuredTextSize = textSize
-      const center = new Point(0, 0)
       const geomNode = new GeomNode(n)
       const width = textSize.width + drawingNode.LabelMargin * 2
       const height = textSize.height + drawingNode.LabelMargin * 2

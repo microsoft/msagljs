@@ -29,7 +29,14 @@ export class UndoRedoAction {
         restoreEntity(e)
       }
     } else if ('insertedEnts' in this.data) {
-      throw new Error('not implemented')
+      for (const ent of this.data.insertedEnts) {
+        const graph = ent.parent as Graph
+        if (ent instanceof Node) {
+          graph.removeNode(ent)
+        } else {
+          throw new Error('not implemented')
+        }
+      }
     } else {
       throw new Error('unexpected undo data')
     }
@@ -59,6 +66,12 @@ export class UndoRedoAction {
           throw new Error('unexpected type in redo')
         }
       }
+    } else if ('insertedEnts' in this.data) {
+      for (const ent of this.data.insertedEnts) {
+        restoreEntity(ent)
+      }
+    } else {
+      throw new Error('not implemented')
     }
     this.canUndo = true
   }
@@ -86,6 +99,13 @@ export class UndoRedoAction {
 
     const dd = this.data as UndoDeleteData
     dd.deletedEnts.add(entity)
+  }
+
+  registerAdd(entity: Entity) {
+    if (!this.data) this.data = {insertedEnts: new Set<Entity>()}
+
+    const dd = this.data as UndoInsertData
+    dd.insertedEnts.add(entity)
   }
   private _canUndo = true // initially
 

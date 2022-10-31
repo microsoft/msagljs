@@ -33,6 +33,7 @@ import {default as svgPanZoom, PanZoom} from 'panzoom'
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
 export class RendererSvg implements IViewer {
+  mousePosition: Point;
   *entitiesIter(): Iterable<IViewerObject> {
     for (const n of this.graph.deepNodes) yield n.getAttr(AttributeRegistry.ViewerIndex)
     for (const e of this.graph.deepEdges) {
@@ -93,17 +94,22 @@ export class RendererSvg implements IViewer {
   // }
 
   private processMouseMove(e: MouseEvent): void {
+    this.mousePosition = new Point(e.clientX, e.clientY)
+
     if (this == null || this._svgCreator == null) {
       return
     }
-    if (!this.LayoutEditingEnabled) {
+    if (!this.layoutEditingEnabled) {
       return
     }
 
     if (this.layoutEditor.dragging) {
       return
     }
-
+    if (this._svgCreator.nodeInsertionCircle) {
+      this._svgCreator.positionInsertionCircle(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
+      return
+    }
     if (this._objectTree == null) {
       this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
     }
@@ -147,7 +153,7 @@ export class RendererSvg implements IViewer {
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
 
     container.addEventListener('mousedown', (e) => {
-      if (!this.LayoutEditingEnabled) return
+      if (!this.layoutEditingEnabled) return
 
       if (this.objectUnderMouseCursor != null && e.buttons == 1) {
         this.panZoom.pause()
@@ -157,11 +163,11 @@ export class RendererSvg implements IViewer {
 
     container.addEventListener('mousemove', (e) => {
       this.processMouseMove(e)
-      if (this.LayoutEditingEnabled) this.layoutEditor.viewerMouseMove(this, e)
+      if (this.layoutEditingEnabled) this.layoutEditor.viewerMouseMove(this, e)
     })
 
     container.addEventListener('mouseup', (e) => {
-      if (!this.LayoutEditingEnabled) return
+      if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
       this.panZoom.resume()
     })
@@ -181,11 +187,15 @@ export class RendererSvg implements IViewer {
     }
     return ret
   }
-  createIViewerNodeNPA(drawingNode: globalThis.Node, center: Point, visualElement: any): IViewerNode {
+  createIViewerNodeNPA(drawingNode: Node, center: Point, visualElement: any): IViewerNode {
     throw new Error('Method not implemented.')
   }
-  createIViewerNodeN(drawingNode: globalThis.Node): IViewerNode {
-    throw new Error('Method not implemented.')
+  createIViewerNodeN(node: Node, center: Point): IViewerNode {
+    const drawingGraph = this.graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
+    drawingGraph.createNodeGeometry(node, center)
+    this._svgCreator.drawNode(node)
+
+    return node.getAttr(AttributeRegistry.ViewerIndex)
   }
 
   undo(): void {
@@ -316,8 +326,23 @@ export class RendererSvg implements IViewer {
     return this.Dpi
   }
   LineThicknessForEditing = 2
-  LayoutEditingEnabled = true // set to true by default: TODO
-  InsertingEdge = false
+  layoutEditingEnabled = true
+  private _insertingNode = false
+  get insertingNode() {
+    return this._insertingNode
+  }
+  set insertingNode(value) {
+    if (value == this._insertingNode) return
+
+    if (value) {
+      this._svgCreator.prepareToNodeInsertion(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
+    } else {
+      this._svgCreator.stopNodeInsertion()
+    }
+
+    this._insertingNode = value
+  }
+  insertingEdge = false
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
   }
@@ -342,8 +367,10 @@ export class RendererSvg implements IViewer {
   CreateEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge {
     throw new Error('Method not implemented.')
   }
-  AddNode(node: IViewerNode, registerForUndo: boolean): void {
-    throw new Error('Method not implemented.')
+  addNode(node: IViewerNode, registerForUndo: boolean): void {
+    if (registerForUndo) {
+      this.layoutEditor.registerAdd(node.entity)
+    }
   }
 
   remove(viewerObj: IViewerObject, registerForUndo: boolean): void {

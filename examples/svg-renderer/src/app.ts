@@ -34,7 +34,7 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.ctrlKey) {
     switch (e.key.toLowerCase()) {
       case 'e':
-        svgRenderer.LayoutEditingEnabled = !svgRenderer.LayoutEditingEnabled
+        svgRenderer.layoutEditingEnabled = !svgRenderer.layoutEditingEnabled
         e.preventDefault()
         break
       case 'z':
@@ -43,6 +43,10 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
         break
       case 'y':
         svgRenderer.redo()
+        e.preventDefault()
+        break
+      case 'i':
+        svgRenderer.insertingNode = !svgRenderer.insertingNode
         e.preventDefault()
         break
     }

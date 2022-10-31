@@ -4,9 +4,19 @@ import {Assert} from '../../utils/assert'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
-  registerForDelete(entity: Entity) {
+  registerDelete(entity: Entity) {
+    if (this.currentBridge == null) {
+      this.currentBridge = new UndoRedoAction()
+    }
     this.currentBridge.registerDelete(entity)
   }
+  registerAdd(entity: Entity) {
+    if (this.currentBridge == null) {
+      this.currentBridge = new UndoRedoAction()
+    }
+    this.currentBridge.registerAdd(entity)
+  }
+
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
     if (this.currentBridge == null) return
     if (this.currentBridge.canRedo) {

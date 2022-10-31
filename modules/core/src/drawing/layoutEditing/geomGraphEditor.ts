@@ -27,7 +27,10 @@ export enum DraggingMode {
 }
 export class GeometryGraphEditor {
   registerDelete(entity: Entity) {
-    this.undoList.registerForDelete(entity)
+    this.undoList.registerDelete(entity)
+  }
+  registerAdd(entity: Entity) {
+    this.undoList.registerAdd(entity)
   }
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
     yield* this.undoList.entitiesToBeChangedByRedo()
