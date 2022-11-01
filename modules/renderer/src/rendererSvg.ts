@@ -28,6 +28,7 @@ import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor} from 'msagl-js/drawing'
 import {default as svgPanZoom, PanZoom} from 'panzoom'
+import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 
 /**
  * This class renders an MSAGL graph with SVG and enables the graph editing.
@@ -173,6 +174,28 @@ export class RendererSvg implements IViewer {
     })
 
     this.layoutEditor = new LayoutEditor(this)
+  }
+  private _insertionMode: InsertionMode
+  public get insertionMode(): InsertionMode {
+    return this._insertionMode
+  }
+  public set insertionMode(value: InsertionMode) {
+    if (value == this.insertionMode) return
+
+    switch (value) {
+      case InsertionMode.Default:
+        this._svgCreator.stopNodeInsertion()
+        break
+      case InsertionMode.Node:
+        this._svgCreator.prepareToNodeInsertion(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
+        break
+      case InsertionMode.Edge:
+        break
+      default:
+        throw new Error('not implemented')
+    }
+
+    this._insertionMode = value
   }
   createUndoPoint(): void {
     this.layoutEditor.createUndoPoint()
@@ -327,20 +350,8 @@ export class RendererSvg implements IViewer {
   }
   LineThicknessForEditing = 2
   layoutEditingEnabled = true
-  private _insertingNode = false
-  get insertingNode() {
-    return this._insertingNode
-  }
-  set insertingNode(value) {
-    if (value == this._insertingNode) return
-
-    if (value) {
-      this._svgCreator.prepareToNodeInsertion(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
-    } else {
-      this._svgCreator.stopNodeInsertion()
-    }
-
-    this._insertingNode = value
+  private get insertingNode() {
+    return this.insertionMode == InsertionMode.Node
   }
   insertingEdge = false
   PopupMenus(menuItems: [string, () => void][]): void {

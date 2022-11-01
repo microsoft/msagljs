@@ -6,6 +6,7 @@ import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, GeomGraph} from 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
 import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
+import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 
 const viewer = document.getElementById('viewer')
 
@@ -29,6 +30,11 @@ window.addEventListener('contextmenu', (e) => {
 window.addEventListener('click', () => {
   toggleContextMenu(contmenu, 'hide')
 })
+
+viewer.addEventListener('dblclick', (e) => {
+  // to disable the double click zoom under panZoom of anvaka
+  e.stopImmediatePropagation()
+})
 /** setup the viewer */
 viewer.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.ctrlKey) {
@@ -46,7 +52,9 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
         e.preventDefault()
         break
       case 'i':
-        svgRenderer.insertingNode = !svgRenderer.insertingNode
+        if (svgRenderer.insertionMode != InsertionMode.Node) svgRenderer.insertionMode = InsertionMode.Node
+        else svgRenderer.insertionMode = InsertionMode.Default
+
         e.preventDefault()
         break
     }

@@ -29,7 +29,7 @@ import {Node} from '../../structs/node'
 import {Assert} from '../../utils/assert'
 
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
-import {IViewer} from './iViewer'
+import {InsertionMode, IViewer} from './iViewer'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerNode} from './iViewerNode'
 import {IViewerObject} from './iViewerObject'
@@ -59,6 +59,9 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
+  get insertingEdge(): boolean {
+    return this.insertionMode == InsertionMode.Edge
+  }
   createUndoPoint() {
     this.geomGraphEditor.createUndoPoint()
   }
@@ -287,28 +290,14 @@ export class LayoutEditor {
     return this.geomGraphEditor.canRedo
   }
 
-  get insertingNode(): boolean {
-    if (this.viewer == null) {
-      return false
-    }
-
-    return this.viewer.insertingNode
+  private _insertionMode: InsertionMode
+  private get insertionMode(): InsertionMode {
+    if (this.viewer == null) return InsertionMode.Default
+    return this.viewer.insertionMode
   }
-
-  /** If set to true then we are insterting edges */
-  get insertingEdge(): boolean {
-    if (this.viewer == null) {
-      return false
-    }
-
-    return this.viewer.insertingEdge
-  }
-  set insertingEdge(value: boolean) {
-    if (this.viewer == null) {
-      return
-    }
-
-    this.viewer.insertingEdge = value
+  private set insertionMode(value: InsertionMode) {
+    if (this.viewer == null) return
+    this.viewer.insertionMode = value
   }
 
   viewerGraphChanged() {
@@ -641,7 +630,7 @@ export class LayoutEditor {
         if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
           this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
         }
-      } else if (this.insertingNode) {
+      } else if (this.insertionMode == InsertionMode.Node) {
         const id = this.findNodeID()
         const node = new Node(id)
         this.graph.addNode(node)
