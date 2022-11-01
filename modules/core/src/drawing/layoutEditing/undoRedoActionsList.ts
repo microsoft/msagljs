@@ -11,9 +11,7 @@ export class UndoList {
     this.currentBridge.registerDelete(entity)
   }
   registerAdd(entity: Entity) {
-    if (this.currentBridge == null) {
-      this.currentBridge = new UndoRedoAction()
-    }
+    this.createUndoPoint()
     this.currentBridge.registerAdd(entity)
   }
 
