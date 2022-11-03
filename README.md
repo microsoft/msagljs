@@ -120,7 +120,7 @@ getSvg(): SVGAElement
 The renderer options accept the following fields:
 
 - `layoutType: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPSepCola' | 'MDS'` - algorithm used to layout the graph.
-  By default, if all the edges in the graph are undirected then IPSepCola algorithm is used; otherwise, the graph is laid out with the Sugiyama Scheme.
+  By default, if all the edges in the graph are undirected, IPSepCola algorithm is used; otherwise, the graph is laid out with the Sugiyama Scheme.
 
   [Sugiyama](https://en.wikipedia.org/wiki/Layered_graph_drawing) TB :layered top-to-bottom.
 
@@ -155,7 +155,7 @@ folder icon at the left-upper corner of the page.
 
 To run examples locally, execute in the terminal command "npm run start" in the directory "examples/svg-renderer" or
 "examples/webgl-renderer". You will see a printout in a form
-"Local: http://127.0.0.1:8000/". Clicking on it should pop up a tab in your
+"Local: http://127.0.0.1:8000/". Clicking on it, or just typing it as the address in an Interned browser, should pop up a tab in your
 default Internet browser with the example running.
 
 ## Build and test
