@@ -15,7 +15,7 @@
   "scripts": {
     "test": "jest",
     "build": "rm -f modules/*/*.tsbuildinfo && rm -rf modules/*/dist && lerna run build",
-    "publish": "lerna run build && lerna publish",
+    "publish": "cp README.md -r docs modules/core && lerna run build && lerna publish && rm modules/core/README.md -r modules/core/docs",
     "typecheck": "tsc",
     "eslint": "eslint modules/core/src",
     "prettier": "prettier --write modules/core/src"
