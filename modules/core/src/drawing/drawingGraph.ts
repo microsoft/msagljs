@@ -123,7 +123,7 @@ export class DrawingGraph extends DrawingNode {
     let curve: ICurve
     switch (shape) {
       case ShapeEnum.diamond:
-        curve = CurveFactory.CreateDiamond(width, height, center)
+        curve = CurveFactory.mkDiamond(width, height, center)
         break
       case ShapeEnum.ellipse:
         curve = CurveFactory.mkEllipse(width / 1.6, height / 1.6, center)

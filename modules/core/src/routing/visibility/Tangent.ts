@@ -36,7 +36,7 @@ export class Tangent {
     this.separatingPolygons = value
   }
 
-  diagonal: Diagonal
+  private diagonal: Diagonal
 
   // the diagonal will be not a null only when it is active
 

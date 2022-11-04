@@ -589,13 +589,20 @@ export class TangentPair {
   }
 
   CalculateLeftTangents() {
-    let t: {
+    const t: {
       bisectorPivot: Point
       bisectorRay: Point
       p1: number
       p2: number
       q1: number
       q2: number
+    } = {
+      bisectorPivot: null,
+      bisectorRay: null,
+      p1: 0,
+      p2: 0,
+      q1: 0,
+      q2: 0,
     }
 
     this.FindDividingBisector(t)
@@ -626,14 +633,14 @@ export class TangentPair {
   //}
 
   CalculateRightTangents() {
-    let t: {
+    const t: {
       bisectorPivot: Point
       bisectorRay: Point
       p1: number
       p2: number
       q1: number
       q2: number
-    }
+    } = {bisectorPivot: null, bisectorRay: null, p1: 0, p2: 0, q1: 0, q2: 0}
     this.FindDividingBisector(t)
 
     const pFurthest = this.P.FindTheFurthestVertexFromBisector(t.p1, t.p2, t.bisectorPivot, t.bisectorRay)

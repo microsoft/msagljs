@@ -168,11 +168,11 @@ export interface IViewer {
 
   //
 
-  DrawRubberEdge(edgeGeometry: GeomEdge): void
+  drawRubberEdge(edgeGeometry: GeomEdge): void
 
   //  stops drawing the rubber edge
 
-  StopDrawingRubberEdge(): void
+  stopDrawingRubberEdge(): void
 
   //  the transformation from the graph surface to the client viewport
 

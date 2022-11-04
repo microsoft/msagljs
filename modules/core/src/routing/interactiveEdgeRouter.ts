@@ -1,6 +1,6 @@
 // the router between nodes
 
-import {ICurve, Rectangle, Point, GeomEdge} from '..'
+import {ICurve, Rectangle, Point, GeomEdge, Assert} from '..'
 import {CurvePort} from '../layout/core/curvePort'
 import {FloatingPort} from '../layout/core/floatingPort'
 import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
@@ -33,6 +33,13 @@ import {CornerSite} from '../math/geometry/cornerSite'
 // import {Assert} from '../utils/assert'
 
 export class InteractiveEdgeRouter extends Algorithm {
+  get hasEdgeInsertionPort(): boolean {
+    return this.SourcePort != null || this.TargetPort != null
+  }
+
+  static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
+    return InteractiveEdgeRouter.constructorANNNB(obstacles, padding, loosePadding, coneSpannerAngle, false)
+  }
   // the obstacles for routing
   obstacles_: Array<ICurve>
   targetVV: VisibilityVertex
@@ -102,7 +109,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   alreadyAddedOrExcludedPolylines: Set<Polyline> = new Set<Polyline>()
 
   //    Dictionary<Point, Polyline> pointsToObstacles = new Dicitonary<Point, Polyline>();
-  sourcePort: Port
+  private sourcePort: Port
 
   // the port of the edge start
 
@@ -127,7 +134,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     }
   }
 
-  targetPort: Port
+  private targetPort: Port
 
   // the port of the edge end
 
@@ -827,6 +834,34 @@ export class InteractiveEdgeRouter extends Algorithm {
       this.IgnoreTightPadding,
     )
     this.ObstacleCalculator.Calculate()
+  }
+
+  public static constructorANNNB(
+    obstacles: Array<ICurve>,
+    padding: number,
+    loosePadding: number,
+    coneSpannerAngle: number,
+    ignoreTightPadding: boolean,
+  ): InteractiveEdgeRouter {
+    const ier = new InteractiveEdgeRouter(null)
+    ier.IgnoreTightPadding = ignoreTightPadding
+    ier.EnteringAngleBound = 80 * (Math.PI / 180)
+    ier.TightPadding = padding
+    ier.LoosePadding = loosePadding
+    ier.OffsetForPolylineRelaxing = 0.75 * padding
+    if (coneSpannerAngle > 0) {
+      Assert.assert(coneSpannerAngle > Math.PI / 180)
+      Assert.assert(coneSpannerAngle <= 90 * (Math.PI / 180))
+      ier.UseSpanner = true
+      ier.ExpectedProgressSteps = ConeSpanner.GetTotalSteps(coneSpannerAngle)
+    } else {
+      ier.ExpectedProgressSteps = obstacles.length
+    }
+
+    ier.ConeSpannerAngle = coneSpannerAngle
+    ier.Obstacles = obstacles
+    ier.CalculateObstacles()
+    return ier
   }
 
   RouteEdgeToLocation(targetLocation: Point): GeomEdge {

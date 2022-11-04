@@ -83,7 +83,7 @@ export class CurveFactory {
     Curve.continueWithLineSegmentNN(c, x - w, y + h)
     return Curve.closeCurve(c)
   }
-  public static CreateDiamond(width: number, height: number, center: Point): ICurve {
+  public static mkDiamond(width: number, height: number, center: Point): ICurve {
     const w: number = width
     const h: number = height
     const x: number = center.x

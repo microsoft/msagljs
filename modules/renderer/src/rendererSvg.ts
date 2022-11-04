@@ -108,7 +108,14 @@ export class RendererSvg implements IViewer {
       return
     }
     if (this.insertingNode) {
-      this._svgCreator.positionInsertionCircle(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
+      this._svgCreator.positionNodeInsertionCircle(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
+      return
+    }
+    if (this.insertingEdge) {
+      this._svgCreator.positionEdgeInsertionElement(
+        this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y),
+        this.layoutEditor.hasEdgeInsertionPort,
+      )
       return
     }
     if (this._objectTree == null) {
@@ -185,11 +192,16 @@ export class RendererSvg implements IViewer {
     switch (value) {
       case InsertionMode.Default:
         this._svgCreator.stopNodeInsertion()
+        this._svgCreator.stopEdgeInsertion()
         break
       case InsertionMode.Node:
         this._svgCreator.prepareToNodeInsertion(this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y))
         break
       case InsertionMode.Edge:
+        this._svgCreator.prepareToEdgeInsertion(
+          this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y),
+          this.layoutEditor.hasEdgeInsertionPort,
+        )
         break
       default:
         throw new Error('not implemented')
@@ -217,7 +229,6 @@ export class RendererSvg implements IViewer {
     const drawingGraph = this.graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
     drawingGraph.createNodeGeometry(node, center)
     this._svgCreator.drawNode(node)
-
     return node.getAttr(AttributeRegistry.ViewerIndex)
   }
 
@@ -353,7 +364,9 @@ export class RendererSvg implements IViewer {
   private get insertingNode() {
     return this.insertionMode == InsertionMode.Node
   }
-  insertingEdge = false
+  private get insertingEdge() {
+    return this.insertionMode == InsertionMode.Edge
+  }
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
   }
@@ -373,10 +386,12 @@ export class RendererSvg implements IViewer {
     throw new Error('Method not implemented.')
   }
   AddEdge(edge: IViewerEdge, registerForUndo: boolean): void {
-    throw new Error('Method not implemented.')
+    this._objectTree = null
+    if (registerForUndo) this.layoutEditor.registerAdd(edge.entity)
   }
-  CreateEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge {
-    throw new Error('Method not implemented.')
+  CreateEdgeWithGivenGeometry(edge: Edge): IViewerEdge {
+    this._svgCreator.drawEdge(edge)
+    return edge.getAttr(AttributeRegistry.ViewerIndex)
   }
   addNode(node: IViewerNode, registerForUndo: boolean): void {
     this._objectTree = null
@@ -424,10 +439,10 @@ export class RendererSvg implements IViewer {
   ViewerGraph: IViewerGraph
   ArrowheadLength: number
   SetSourcePortForEdgeRouting(portLocation: Point): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.') // start here, parametrize edgeCircle shape and color
   }
   SetTargetPortForEdgeRouting(portLocation: Point): void {
-    throw new Error('Method not implemented.')
+    // throw new Error('Method not implemented.')
   }
   RemoveSourcePortEdgeRouting(): void {
     //throw new Error('Method not implemented.')
@@ -435,11 +450,11 @@ export class RendererSvg implements IViewer {
   RemoveTargetPortEdgeRouting(): void {
     // throw new Error('Method not implemented.')
   }
-  DrawRubberEdge(edgeGeometry: GeomEdge): void {
-    throw new Error('Method not implemented.')
+  drawRubberEdge(edgeGeometry: GeomEdge): void {
+    this._svgCreator.drawRubberEdge(edgeGeometry)
   }
-  StopDrawingRubberEdge(): void {
-    throw new Error('Method not implemented.')
+  stopDrawingRubberEdge(): void {
+    this._svgCreator.removeRubberEdge()
   }
   get graph(): Graph {
     return this._graph

@@ -90,24 +90,57 @@ class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
-  positionInsertionCircle(cursorPosition: Point) {
+  removeRubberEdge() {
+    this.rubberEdge.remove()
+    this.rubberEdge = null
+  }
+  rubberEdge: SVGElement
+  drawRubberEdge(edgeGeometry: GeomEdge) {
+    const path = (this.rubberEdge = this.createOrGetWithId(this.transformGroup, 'path', 'rubberEdge'))
+    path.setAttribute('d', curveString(edgeGeometry.curve))
+    path.setAttribute('fill', 'none')
+    path.setAttribute('stroke', 'black')
+    path.setAttribute('stroke-opacity', '1')
+    path.setAttribute('stroke-width', '1')
+    path.setAttribute('stroke-dasharray', '5')
+  }
+  /** changes color and shape depending on inside parameter */
+  positionEdgeInsertionElement(cursorPosition: Point, inside: boolean) {
+    const color = inside ? 'brown' : 'blue'
+
+    const rad = this.getSmoothedPolylineRadius() / 2
+
+    const pathValue = curveString(inside ? CurveFactory.mkCircle(rad, cursorPosition) : CurveFactory.mkDiamond(rad, rad, cursorPosition))
+
+    this.edgeInsertionPortElem.setAttribute('d', pathValue)
+    this.edgeInsertionPortElem.setAttribute('fill', color)
+  }
+  nodeInsertionCircle: SVGElement
+  edgeInsertionPortElem: SVGElement
+  prepareToEdgeInsertion(cursorPosition: Point, insideOfANode: boolean) {
+    this.stopNodeInsertion()
+    this.edgeInsertionPortElem = this.createOrGetWithId(this.transformGroup, 'path', 'edgeInsertCircle')
+    this.positionEdgeInsertionElement(cursorPosition, insideOfANode) // thinking that at the b
+  }
+  positionNodeInsertionCircle(cursorPosition: Point) {
     const pathValue = curveString(CurveFactory.mkCircle(this.getSmoothedPolylineRadius() / 2, cursorPosition))
     this.nodeInsertionCircle.setAttribute('d', pathValue)
     this.nodeInsertionCircle.setAttribute('fill', 'red')
   }
   stopNodeInsertion() {
-    this.nodeInsertionCircle.remove()
+    if (this.nodeInsertionCircle) this.nodeInsertionCircle.remove()
   }
-  nodeInsertionCircle: SVGElement
+  stopEdgeInsertion() {
+    if (this.edgeInsertionPortElem) this.edgeInsertionPortElem.remove()
+  }
+
   prepareToNodeInsertion(cursorPosition: Point) {
+    this.stopEdgeInsertion()
     this.nodeInsertionCircle = this.createOrGetWithId(this.transformGroup, 'path', 'nodeInsertCircle')
     const rad = this.getSmoothedPolylineRadius() / 2
     const pathValue = curveString(CurveFactory.mkCircle(rad, cursorPosition))
     this.nodeInsertionCircle.setAttribute('d', pathValue)
     this.nodeInsertionCircle.setAttribute('fill', 'red')
-    // this.nodeInsertionCircle.setAttribute('stroke', "red")
-    // this.nodeInsertionCircle.setAttribute('stroke-opacity', '1')
-    // this.nodeInsertionCircle.setAttribute('stroke-width', )
   }
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
@@ -196,8 +229,10 @@ export class SvgCreator {
     }
   }
 
-  private drawEdge(edge: Edge) {
+  drawEdge(edge: Edge): SVGElement {
     if ((GeomEdge.getGeom(edge) as GeomEdge).curve == null) return
+    // it is a possible bug: could be that we need to create an edge under the lowest
+    // common ancestor of the source and the target
     const edgeGroup = this.createAndBindWithGraph(edge, 'g', this.transformGroup)
     const path = this.createOrGetWithId(edgeGroup, 'path', 'curve')
     path.setAttribute('fill', 'none')
@@ -206,6 +241,7 @@ export class SvgCreator {
     path.setAttribute('d', curveString(geometryEdge.curve))
     this.addArrows(edge, edgeGroup)
     this.drawSelectedForEdit(edge, edgeGroup)
+    return edgeGroup
   }
   /** This method can create the SVG child for the smoothed polyline,
    * and also remove it*/

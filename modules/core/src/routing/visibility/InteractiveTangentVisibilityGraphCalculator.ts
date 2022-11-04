@@ -117,16 +117,15 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
         )
         this.InsertActiveDiagonal(diagonal)
       }
+    }
+    if (firstTangent.Diagonal.RbNode === this.activeDiagonalTree.treeMinimum()) {
+      this.AddVisibleEdge(firstTangent)
+    }
 
-      if (firstTangent.Diagonal.RbNode === this.activeDiagonalTree.treeMinimum()) {
-        this.AddVisibleEdge(firstTangent)
-      }
-
-      if (firstTangent.IsLow === false) {
-        // remove the diagonal of the top tangent from active edges
-        const diag: Diagonal = firstTangent.Diagonal
-        this.RemoveDiagonalFromActiveNodes(diag)
-      }
+    if (firstTangent.IsLow === false) {
+      // remove the diagonal of the top tangent from active edges
+      const diag: Diagonal = firstTangent.Diagonal
+      this.RemoveDiagonalFromActiveNodes(diag)
     }
   }
 

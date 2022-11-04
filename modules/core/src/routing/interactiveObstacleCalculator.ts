@@ -23,7 +23,7 @@ export class InteractiveObstacleCalculator {
   LoosePadding: number
   tightPolylinesToLooseDistances: Map<Polyline, number>
   LooseObstacles: Polyline[]
-  TightObstacles: Set<Polyline>
+  TightObstacles = new Set<Polyline>()
   OverlapsDetected: boolean
   private static PadCorner(poly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number): boolean {
     const padInfo = InteractiveObstacleCalculator.GetPaddedCorner(p0, p1, p2, padding)
@@ -87,13 +87,13 @@ export class InteractiveObstacleCalculator {
   Obstacles: Array<ICurve>
   TightPadding: number
   CreateTightObstacles() {
-    this.RootOfTightHierarchy = InteractiveObstacleCalculator.CreateTightObstacles_(this.Obstacles, this.TightPadding, this.TightObstacles)
+    this.RootOfTightHierarchy = this.CreateTightObstacles_()
     this.OverlapsDetected = this.TightObstacles.size < this.Obstacles.length
   }
 
   Calculate() {
-    if (!this.IgnoreTightPadding) this.CreateTightObstacles()
-    else this.CreateTightObstaclesIgnoringTightPadding()
+    if (this.IgnoreTightPadding) this.CreateTightObstaclesIgnoringTightPadding()
+    else this.CreateTightObstacles()
     if (!this.IsEmpty()) this.CreateLooseObstacles()
   }
   IsEmpty(): boolean {
@@ -165,20 +165,16 @@ export class InteractiveObstacleCalculator {
     }
   }
 
-  static CreateTightObstacles_(
-    obstacles: Array<ICurve>,
-    tightPadding: number,
-    tightObstacleSet: Set<Polyline>,
-  ): RectangleNode<Polyline, Point> {
-    if (obstacles.length === 0) {
+  CreateTightObstacles_(): RectangleNode<Polyline, Point> {
+    if (this.Obstacles.length === 0) {
       return null
     }
 
-    for (const curve of obstacles) {
-      InteractiveObstacleCalculator.CalculateTightPolyline(tightObstacleSet, tightPadding, curve)
+    for (const curve of this.Obstacles) {
+      InteractiveObstacleCalculator.CalculateTightPolyline(this.TightObstacles, this.TightPadding, curve)
     }
 
-    return InteractiveObstacleCalculator.RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacleSet)
+    return InteractiveObstacleCalculator.RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(this.TightObstacles)
   }
   static CalculateTightPolyline(tightObstacles: Set<Polyline>, tightPadding: number, curve: ICurve) {
     const tightPoly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(curve, tightPadding)

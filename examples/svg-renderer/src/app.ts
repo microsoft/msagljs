@@ -57,6 +57,12 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
 
         e.preventDefault()
         break
+      case 'd':
+        if (svgRenderer.insertionMode != InsertionMode.Edge) svgRenderer.insertionMode = InsertionMode.Edge
+        else svgRenderer.insertionMode = InsertionMode.Default
+
+        e.preventDefault()
+        break
     }
   }
   if (e.key == 'Delete') {

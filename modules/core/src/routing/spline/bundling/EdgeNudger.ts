@@ -178,7 +178,7 @@ export class EdgeNudger extends Algorithm {
   ) {
     let ttt = EdgeNudger.GetAllDebugCurves(metroMapOrdering, metroGraphData)
     if (station != null) {
-      ttt.push(DebugCurve.mkDebugCurveTWCI(255, 1, 'red', CurveFactory.CreateDiamond(5, 25, station.Position)))
+      ttt.push(DebugCurve.mkDebugCurveTWCI(255, 1, 'red', CurveFactory.mkDiamond(5, 25, station.Position)))
     }
     ttt = ttt.concat(moreCurves)
     // SvgDebugWriter.dumpDebugCurves(fileName, ttt) // uncomment this line to get the SVG output

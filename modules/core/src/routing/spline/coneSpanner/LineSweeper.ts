@@ -527,7 +527,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //             return new Ellipse(i, i, pp.point);
   //         }
   static Diamond(p: Point) {
-    return CurveFactory.CreateDiamond(2, 2, p)
+    return CurveFactory.mkDiamond(2, 2, p)
   }
   //         // ReSharper disable UnusedMember.Local
 
