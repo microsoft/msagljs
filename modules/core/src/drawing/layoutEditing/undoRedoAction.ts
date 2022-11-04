@@ -33,6 +33,8 @@ export class UndoRedoAction {
         const graph = ent.parent as Graph
         if (ent instanceof Node) {
           graph.removeNode(ent)
+        } else if (ent instanceof Edge) {
+          ent.remove()
         } else {
           throw new Error('not implemented')
         }

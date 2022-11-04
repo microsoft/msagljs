@@ -128,7 +128,7 @@ export interface IViewer {
   //  drawing edge already has its geometry in place
 
   //  <returns></returns>
-  CreateEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge
+  createEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge
 
   //  adds a node to the viewer graph
 

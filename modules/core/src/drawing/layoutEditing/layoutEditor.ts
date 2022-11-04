@@ -1008,15 +1008,15 @@ export class LayoutEditor {
       this.viewer.stopDrawingRubberEdge()
       if (this.TargetPort != null) {
         const e = this.FinishRoutingEdge()
-        this.AddEdgeToTheViewer(e)
+        this.addEdgeToTheViewer(e)
       }
 
       this.interactiveEdgeRouter.Clean()
     }
   }
 
-  AddEdgeToTheViewer(e: Edge) {
-    const vEdge = this.viewer.CreateEdgeWithGivenGeometry(e)
+  addEdgeToTheViewer(e: Edge) {
+    const vEdge = this.viewer.createEdgeWithGivenGeometry(e)
     this.viewer.AddEdge(vEdge, true)
   }
 
@@ -1033,8 +1033,8 @@ export class LayoutEditor {
     edgeAttr.rebind(e)
 
     this.geomEdge.rebind(e)
-    this.geomEdge.sourceArrowhead = edgeAttr.arrowhead == ArrowTypeEnum.none ? null : this.mkArrowhead()
-    this.geomEdge.targetArrowhead = edgeAttr.arrowtail == ArrowTypeEnum.none ? null : this.mkArrowhead()
+    this.geomEdge.sourceArrowhead = edgeAttr.arrowtail == ArrowTypeEnum.none ? null : this.mkArrowhead()
+    this.geomEdge.targetArrowhead = edgeAttr.arrowhead == ArrowTypeEnum.none ? null : this.mkArrowhead()
     if (this.TargetOfInsertedEdge != this.SourceOfInsertedEdge) {
       this.interactiveEdgeRouter.TryToRemoveInflectionsAndCollinearSegments(this.geomEdge.smoothedPolyline)
       this.interactiveEdgeRouter.SmoothenCorners(this.geomEdge.smoothedPolyline)

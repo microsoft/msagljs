@@ -389,7 +389,7 @@ export class RendererSvg implements IViewer {
     this._objectTree = null
     if (registerForUndo) this.layoutEditor.registerAdd(edge.entity)
   }
-  CreateEdgeWithGivenGeometry(edge: Edge): IViewerEdge {
+  createEdgeWithGivenGeometry(edge: Edge): IViewerEdge {
     this._svgCreator.drawEdge(edge)
     return edge.getAttr(AttributeRegistry.ViewerIndex)
   }
