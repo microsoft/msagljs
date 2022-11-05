@@ -60,7 +60,7 @@ type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
   get hasEdgeInsertionPort(): boolean {
-    return this.interactiveEdgeRouter != null && this.interactiveEdgeRouter.hasEdgeInsertionPort
+    return this.SourcePort != null || this.TargetPort != null
   }
   get insertingEdge(): boolean {
     return this.insertionMode == InsertionMode.Edge
@@ -748,14 +748,14 @@ export class LayoutEditor {
     return new FloatingPort(geomNode.boundaryCurve, location)
   }
 
-  SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, node: {node: IViewerNode}, port: {port: Port}) {
+  SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, node: {node: IViewerNode}, portWrap: {port: Port}) {
     let dist: number = Number.POSITIVE_INFINITY
     let par = 0
     for (const viewerNode of this.GetViewerNodesInsideOfLooseObstacle(loosePoly)) {
       const curve: ICurve = viewerNode.entity.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve
       if (LayoutEditor.PointIsInside(mousePosition, curve)) {
         node.node = viewerNode
-        this.SetPortForMousePositionInsideOfNode(mousePosition, node.node, port)
+        this.SetPortForMousePositionInsideOfNode(mousePosition, node.node, portWrap)
         return
       }
 
@@ -768,7 +768,7 @@ export class LayoutEditor {
       }
     }
 
-    port.port = this.CreateOrUpdateCurvePort(par, geomObjFromIViewerObj(node.node) as GeomNode, port.port)
+    portWrap.port = this.CreateOrUpdateCurvePort(par, geomObjFromIViewerObj(node.node) as GeomNode, portWrap.port)
   }
 
   GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): Array<IViewerNode> {

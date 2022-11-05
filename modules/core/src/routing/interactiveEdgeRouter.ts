@@ -33,10 +33,6 @@ import {CornerSite} from '../math/geometry/cornerSite'
 // import {Assert} from '../utils/assert'
 
 export class InteractiveEdgeRouter extends Algorithm {
-  get hasEdgeInsertionPort(): boolean {
-    return this.SourcePort != null || this.TargetPort != null
-  }
-
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
     return InteractiveEdgeRouter.constructorANNNB(obstacles, padding, loosePadding, coneSpannerAngle, false)
   }
