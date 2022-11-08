@@ -199,7 +199,11 @@ export class TangentPair {
     }
     this.FindClosestFeatures(m)
     t.bisectorPivot = Point.middle(m.pClosest, m.qClosest)
-    t.bisectorRay = m.pClosest.add(m.qClosest).rotate(Math.PI / 2)
+    t.bisectorRay = m.pClosest.sub(m.qClosest).rotate(Math.PI / 2)
+    t.p1 = m.p1
+    t.p2 = m.p2
+    t.q1 = m.q1
+    t.q2 = m.q2
     // number p=P.FindTheFurthestVertexFromBisector(
     // #if TEST_MSAGL
     //             //if (!Point.closeDistEps(pClosest, qClosest))

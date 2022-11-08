@@ -20,7 +20,7 @@ export class Diagonal {
     this.RightTangent = rightTangent
   }
 
-  leftTangent: Tangent
+  private leftTangent: Tangent
 
   get LeftTangent(): Tangent {
     return this.leftTangent
@@ -29,7 +29,7 @@ export class Diagonal {
     this.leftTangent = value
   }
 
-  rightTangent: Tangent
+  private rightTangent: Tangent
 
   get RightTangent(): Tangent {
     return this.rightTangent

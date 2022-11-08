@@ -201,7 +201,7 @@ export class LayoutEditor {
     this.mouseMoveThreshold = value
   }
 
-  dragging: boolean
+  dragging = false
 
   //  a delegate to decorate a node for dragging
 
@@ -650,6 +650,7 @@ export class LayoutEditor {
       }
     }
   }
+
   findNodeID(): string {
     let i = 0
     let id = 'node' + i.toString()

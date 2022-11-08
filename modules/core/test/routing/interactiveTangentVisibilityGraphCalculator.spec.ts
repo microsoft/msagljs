@@ -9,15 +9,14 @@ import {LayoutEditor} from '../../src/drawing/layoutEditing/layoutEditor'
 import {ModifierKeysEnum} from '../../src/drawing/layoutEditing/modifierKeys'
 import {GeomEdge, GeomGraph, GeomNode} from '../../src/layout/core'
 import {EventHandler} from '../../src/layout/core/geomObject'
-import {Port} from '../../src/layout/core/port'
 import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
-import {Point, Polyline} from '../../src/math/geometry'
+import {Point, Polyline, Rectangle, Size} from '../../src/math/geometry'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
-import {MetroGraphData} from '../../src/routing/spline/bundling/MetroGraphData'
-import {Attribute} from '../../src/structs/attribute'
+import {InteractiveTangentVisibilityGraphCalculator} from '../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
+import {Polygon} from '../../src/routing/visibility/Polygon'
+import {VisibilityGraph} from '../../src/routing/visibility/VisibilityGraph'
 import {AttributeRegistry} from '../../src/structs/attributeRegistry'
 import {Edge} from '../../src/structs/edge'
-import {Entity} from '../../src/structs/entity'
 import {Graph} from '../../src/structs/graph'
 import {Node} from '../../src/structs/node'
 import {parseDotGraph} from '../utils/testUtils'
@@ -42,6 +41,22 @@ import {parseDotGraph} from '../utils/testUtils'
 // }
 
 class FakeMouseEvent implements MouseEvent {
+  preventDefault(): any {
+    return function () {
+      return {}
+    }
+  }
+  stopImmediatePropagation(): any {
+    return function () {
+      return {}
+    }
+  }
+  stopPropagation(): any {
+    return function () {
+      return {}
+    }
+  }
+
   altKey: boolean
   button: number
   buttons: number
@@ -108,15 +123,6 @@ class FakeMouseEvent implements MouseEvent {
   initEvent(type: string, bubbles?: boolean, cancelable?: boolean): void {
     throw new Error('Method not implemented.')
   }
-  preventDefault(): void {
-    throw new Error('Method not implemented.')
-  }
-  stopImmediatePropagation(): void {
-    throw new Error('Method not implemented.')
-  }
-  stopPropagation(): void {
-    throw new Error('Method not implemented.')
-  }
   AT_TARGET: number
   BUBBLING_PHASE: number
   CAPTURING_PHASE: number
@@ -165,10 +171,10 @@ class FakeViewer implements IViewer {
       yield n.getAttr(AttributeRegistry.ViewerIndex)
     }
   }
-  DpiX: number
-  DpiY: number
+  DpiX = 100
+  DpiY = 100
   LineThicknessForEditing: number
-  layoutEditingEnabled: boolean
+  layoutEditingEnabled = true
   insertionMode: InsertionMode
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
@@ -204,22 +210,22 @@ class FakeViewer implements IViewer {
   ViewerGraph: IViewerGraph
   ArrowheadLength: number
   SetSourcePortForEdgeRouting(portLocation: Point): void {
-    throw new Error('Method not implemented.')
+    // throw new Error('Method not implemented.')
   }
   SetTargetPortForEdgeRouting(portLocation: Point): void {
-    throw new Error('Method not implemented.')
+    // throw new Error('Method not implemented.')
   }
   RemoveSourcePortEdgeRouting(): void {
     throw new Error('Method not implemented.')
   }
   RemoveTargetPortEdgeRouting(): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   drawRubberEdge(edgeGeometry: GeomEdge): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   stopDrawingRubberEdge(): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   Transform: PlaneTransformation
   undo(): void {
@@ -230,22 +236,63 @@ class FakeViewer implements IViewer {
   }
 }
 
+function routeEdge(source: Node, target: Node, layoutEditor: LayoutEditor) {
+  const sourceGeom = source.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
+  const mouseEvent = new FakeMouseEvent()
+  mouseEvent.clientX = sourceGeom.center.x
+  mouseEvent.clientY = sourceGeom.center.y
+  mouseEvent.buttons = 0 // the buttons are off
+  mouseEvent.buttons = 1 // left button is on
+  layoutEditor.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(mouseEvent)
+  mouseEvent.buttons = 1 // left button is on
+
+  layoutEditor.viewerMouseDown(null, mouseEvent)
+  const targetGeom = target.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
+  mouseEvent.buttons = 1 // left button is on
+  for (let i = 9; i <= 10; i++) {
+    const alpha = i * 0.1
+    const p = Point.convSum(alpha, sourceGeom.center, targetGeom.center)
+    mouseEvent.clientX = p.x
+    mouseEvent.clientY = p.y
+    layoutEditor.viewerMouseMove(null, mouseEvent)
+  }
+}
+
+test('twoRectangles', () => {
+  const visibilityGraph = new VisibilityGraph()
+
+  const addedPolygons = [new Polygon(getPoly(new Point(0, 0), 20)), new Polygon(getPoly(new Point(200, 0), 20))]
+  for (const p of addedPolygons) {
+    visibilityGraph.AddHole(p.Polyline)
+  }
+  const ir = new InteractiveTangentVisibilityGraphCalculator(null, addedPolygons, visibilityGraph)
+  ir.run()
+  expect(Array.from(visibilityGraph.Edges).length).toBe(12)
+  let tangent = false
+  for (const e of visibilityGraph.Edges) {
+    if (Math.abs(e.TargetPoint.x - e.SourcePoint.x) > 100) tangent = true
+  }
+  expect(tangent).toBe(true)
+})
+
 test('diagonals', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/fsm.gv'))
   dg.createGeometry()
   layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
   const graph = dg.graph
-  const lr_2 = graph.findNode('LR_2')
-  const lr_2_g = lr_2.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
+  const nodes = Array.from(graph.deepNodes)
   const viewer = new FakeViewer(graph)
   viewer.insertionMode = InsertionMode.Edge
   const layoutEditor = new LayoutEditor(viewer)
-  viewer.graph = layoutEditor.graph = dg.entity as Graph
-  const mouseEvent = new FakeMouseEvent()
-  mouseEvent.clientX = lr_2_g.center.x
-  mouseEvent.clientY = lr_2_g.center.y
-  const vnWrap: {node: IViewerNode} = {node: null}
-  const portWrap: {port: Port} = {port: null}
-  const loosePolyline: {loosePolyline: Polyline} = {loosePolyline: null}
-  expect(layoutEditor.TrySetNodePort(mouseEvent, vnWrap, portWrap, loosePolyline)).toBe(true)
+  layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
+
+  for (let i = 0; i < nodes.length - 1; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      routeEdge(nodes[i], nodes[j], layoutEditor)
+    }
+  }
 })
+function getPoly(center: Point, size: number): Polyline {
+  const rect = Rectangle.mkSizeCenter(new Size(size, size), center)
+  return rect.perimeter()
+}

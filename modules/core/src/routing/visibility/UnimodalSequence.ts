@@ -110,6 +110,6 @@ export class UnimodalSequence {
           return m
       }
     }
-    return a === b ? a : this.f(a) > this.f(b) ? a : b
+    return a === b ? a : this.f(a) >= this.f(b) ? a : b
   }
 }

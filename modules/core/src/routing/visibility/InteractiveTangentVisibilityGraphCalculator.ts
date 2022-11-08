@@ -1,4 +1,4 @@
-import {Point, ICurve} from '../..'
+import {Point} from '../..'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {RBNode} from '../../math/RBTree/rbNode'
 import {RBTree} from '../../math/RBTree/rbTree'
@@ -9,7 +9,6 @@ import {Algorithm} from '../../utils/algorithm'
 import {Diagonal} from './Diagonal'
 import {Tangent} from './Tangent'
 import {ActiveDiagonalComparerWithRay} from './ActiveDiagonalComparerWithRay'
-import {Polyline} from '../../math/geometry'
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {VisibilityVertex} from './VisibilityVertex'
 import {StemStartPointComparer} from './StemStartPointComparer'
@@ -17,7 +16,7 @@ import {StemStartPointComparer} from './StemStartPointComparer'
 export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
   // the list of obstacles
 
-  polygons: Array<Polygon>
+  polygons: Array<Polygon> = []
 
   // From these polygons we calculate visibility edges to all other polygons
 
@@ -171,8 +170,10 @@ export class InteractiveTangentVisibilityGraphCalculator extends Algorithm {
     for (const p of this.addedPolygons) {
       yield p
     }
-    for (const p of this.polygons) {
-      yield p
+    if (this.polygons) {
+      for (const p of this.polygons) {
+        yield p
+      }
     }
   }
 
