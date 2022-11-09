@@ -627,28 +627,32 @@ export class LayoutEditor {
           this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
         }
       } else if (this.insertionMode == InsertionMode.Node) {
-        const id = this.findNodeID()
-        const node = new Node(id)
-        this.graph.addNode(node)
-        new DrawingNode(node) // it would create the default drawing attribute
-        const vn = this.viewer.createIViewerNodeN(node, this.mouseDownGraphPoint)
-        this.viewer.addNode(vn, true)
+        this.insertNode()
       } else {
-        const obj = this.viewer.objectUnderMouseCursor
-
-        if (obj && !this.viewer.objectUnderMouseCursor.hasOwnProperty('edge')) {
-          this.ActiveDraggedObject = obj
-        }
-
-        if (this.ActiveDraggedObject != null) {
-          e.preventDefault()
-        }
-
         if (this.edgeWithSmoothedPolylineExposed != null) {
-          if (this.mouseIsInsideOfCornerSite(e)) e.preventDefault()
+          if (this.mouseIsInsideOfCornerSite(e)) {
+            e.preventDefault()
+          }
+        } else {
+          const obj = this.viewer.objectUnderMouseCursor
+          if (obj && !this.viewer.objectUnderMouseCursor.hasOwnProperty('edge')) {
+            this.ActiveDraggedObject = obj
+          }
+          if (this.ActiveDraggedObject != null) {
+            e.preventDefault()
+          }
         }
       }
     }
+  }
+
+  private insertNode() {
+    const id = this.findNodeID()
+    const node = new Node(id)
+    this.graph.addNode(node)
+    new DrawingNode(node) // it would create the default drawing attribute: TODO: keep a customizable attribute here
+    const vn = this.viewer.createIViewerNodeN(node, this.mouseDownGraphPoint)
+    this.viewer.addNode(vn, true)
   }
 
   findNodeID(): string {

@@ -618,16 +618,15 @@ export class GeometryGraphEditor {
   //      finds the polyline corner near the mouse position
 
   public static FindCornerForEdit(underlyingPolyline: SmoothedPolyline, mousePoint: Point, tolerance: number): CornerSite {
-    let site = underlyingPolyline.headSite.next
+    let site = underlyingPolyline.headSite
     tolerance *= tolerance //square the tolerance
 
     do {
-      if (site.prev == null || site.next == null) continue //don't return the first and the last corners
       const diff = mousePoint.sub(site.point)
       if (diff.dot(diff) <= tolerance) return site
 
       site = site.next
-    } while (site.next != null)
+    } while (site != null)
     return null
   }
 
