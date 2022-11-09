@@ -6,7 +6,7 @@ import {Arrowhead} from '../../layout/core/arrowhead'
 import {GeomObject} from '../../layout/core/geomObject'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
 import {ILayoutSettings} from '../../layout/iLayoutSettings'
-import {Point, Curve, LineSegment, Rectangle, ICurve, PointLocation} from '../../math/geometry'
+import {Point, Curve, LineSegment, ICurve, PointLocation} from '../../math/geometry'
 import {CornerSite} from '../../math/geometry/cornerSite'
 import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
 import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
@@ -54,16 +54,6 @@ export class GeometryGraphEditor {
 
   incrementalDragger: IncrementalDragger
   /**      return the current undo action*/
-
-  /**  Will be set to true if an entity was dragged out of the graph() bounding box*/
-
-  graphBoundingBoxGetsExtended_: boolean
-  public get GraphBoundingBoxGetsExtended(): boolean {
-    return this.graphBoundingBoxGetsExtended_
-  }
-  public set GraphBoundingBoxGetsExtended(value: boolean) {
-    this.graphBoundingBoxGetsExtended_ = value
-  }
 
   public get LayoutSettings(): ILayoutSettings {
     return this.graph().layoutSettings
@@ -120,7 +110,6 @@ export class GeometryGraphEditor {
 
   drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
     if (delta.x == 0 && delta.y == 0) return
-    this.GraphBoundingBoxGetsExtended = false
     for (const o of this.objectsToDrag) {
       this.registerForUndo(o.entity)
     }
@@ -275,13 +264,11 @@ export class GeometryGraphEditor {
   // }
 
   DragIncrementally(delta: Point) {
-    const box: Rectangle = this.graph().boundingBox
     if (this.incrementalDragger == null) {
       this.InitIncrementalDragger()
     }
 
     this.incrementalDragger.Drag(delta)
-    this.GraphBoundingBoxGetsExtended = box !== this.graph().boundingBox
   }
 
   dragPolylineCorner(lastMousePosition: Point, delta: Point) {
@@ -613,21 +600,6 @@ export class GeometryGraphEditor {
     site.next.prev = site.prev
     // recalculate the edge geometry  in a correct way
     GeometryGraphEditor.dragEdgeWithSite(new Point(0, 0), edge, site.prev)
-  }
-
-  //      finds the polyline corner near the mouse position
-
-  public static FindCornerForEdit(underlyingPolyline: SmoothedPolyline, mousePoint: Point, tolerance: number): CornerSite {
-    let site = underlyingPolyline.headSite
-    tolerance *= tolerance //square the tolerance
-
-    do {
-      const diff = mousePoint.sub(site.point)
-      if (diff.dot(diff) <= tolerance) return site
-
-      site = site.next
-    } while (site != null)
-    return null
   }
 
   //      finds the polyline corner near the mouse position

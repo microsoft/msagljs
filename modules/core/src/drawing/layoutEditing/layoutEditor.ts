@@ -846,31 +846,39 @@ export class LayoutEditor {
   drag(e: MouseEvent) {
     if (!this.dragging) {
       if (this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
-        this.dragging = true
-        // first time we are in dragging
-        if (this.activeCornerSite != null) {
-          this.geomGraphEditor.prepareForGeomEdgeChange(
-            this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.GeomObjectIndex),
-          )
-        } else if (this.ActiveDraggedObject != null) {
-          this.unselectEdge()
-          if (!this.ActiveDraggedObject.markedForDragging) {
-            this.unselectEverything()
-          }
-          this.prepareForDragging()
-        }
+        this.prepareFirstTimeDragging()
+      } else {
+        // the mouse has not moved enough
+        return
       }
-
-      this._lastDragPoint = this.mouseDownGraphPoint
-    }
-
-    if (!this.dragging) {
-      return
     }
 
     const currentDragPoint = this.viewer.screenToSource(e)
+    this.handleTheMouseCursorOutOfTheBoundingBox(currentDragPoint)
+    this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
+    for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
+      this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
+    }
+    e.stopPropagation()
+    this._lastDragPoint = currentDragPoint
+  }
 
-    // extend the viewport
+  private prepareFirstTimeDragging() {
+    this.dragging = true
+    // first time we are in dragging
+    if (this.activeCornerSite != null) {
+      this.geomGraphEditor.prepareForGeomEdgeChange(this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.GeomObjectIndex))
+    } else if (this.ActiveDraggedObject != null) {
+      this.unselectEdge()
+      if (!this.ActiveDraggedObject.markedForDragging) {
+        this.unselectEverything()
+      }
+      this.prepareForDragging()
+    }
+    this._lastDragPoint = this.mouseDownGraphPoint
+  }
+
+  private handleTheMouseCursorOutOfTheBoundingBox(currentDragPoint: Point) {
     const w = this.viewer.smoothedPolylineCircleRadius // some rather small but still visible distance on the screen
     const mousePointerBox = Rectangle.mkSizeCenter(new Size(w, w), currentDragPoint)
     const g = GeomGraph.getGeom(this.graph)
@@ -879,18 +887,6 @@ export class LayoutEditor {
       g.boundingBox = g.boundingBox.addRec(mousePointerBox)
       this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
     }
-
-    this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
-    for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
-      this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
-    }
-
-    if (this.geomGraphEditor.GraphBoundingBoxGetsExtended) {
-      this.viewer.invalidateAll()
-    }
-
-    e.stopPropagation()
-    this._lastDragPoint = currentDragPoint
   }
 
   private prepareForDragging() {
@@ -1079,7 +1075,7 @@ export class LayoutEditor {
     const p = this.viewer.screenToSource(e)
     const lw = this.edgeWithSmoothedPolylineExposed.edge.getAttr(AttributeRegistry.DrawingObjectIndex).penwidth
 
-    this.activeCornerSite = GeometryGraphEditor.FindCornerForEdit(
+    this.activeCornerSite = GeometryGraphEditor.findClosestCornerForEdit(
       GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge).smoothedPolyline,
       p,
       this.edgeWithSmoothedPolylineExposed.radiusOfPolylineCorner + lw,
