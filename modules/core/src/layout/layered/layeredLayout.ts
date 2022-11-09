@@ -540,10 +540,10 @@ export class LayeredLayout extends Algorithm {
       box.add(a.rightBottom)
     }
 
-    const delta: number = box.leftTop.sub(box.rightBottom).length / 2
-    const del = new Point(-delta, delta)
-    box.add(box.leftTop.add(del))
-    box.add(box.rightBottom.sub(del))
+    if (this.originalGraph.labelSize) {
+      this.originalGraph.addLabelToGraphBB(box)
+    }
+    box.padEverywhere(this.originalGraph.margins)
     this.originalGraph.boundingBox = box
   }
 

@@ -312,7 +312,7 @@ export class LayoutEditor {
   cleanObstacles() {
     this.interactiveEdgeRouter = null
     this.looseObstaclesToTheirViewerNodes = null
-    this.SourceOfInsertedEdge.node = null
+    this.SourceOfInsertedEdge = null
     this.TargetOfInsertedEdge = null
     this.SourcePort = null
     this.TargetPort = null
@@ -963,7 +963,7 @@ export class LayoutEditor {
       }
 
       const gg = GeomGraph.getGeom(this.graph)
-      const newBox = gg.pumpedGraphWithMarginsBox()
+      const newBox = gg.getPumpedGraphWithMarginsBox()
       if (!newBox.equal(gg.boundingBox)) {
         this.geomGraphEditor.registerForUndo(this.graph)
         gg.boundingBox = newBox

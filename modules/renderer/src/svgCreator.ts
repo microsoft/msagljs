@@ -149,7 +149,7 @@ export class SvgCreator {
         this.setGraphWidthAndHightAttributes()
         this.setTransformForTranformGroup()
       } else {
-        throw new Error('not implemented')
+        this.drawNode(entity)
       }
     } else if (entity instanceof Node) {
       this.drawNode(entity)

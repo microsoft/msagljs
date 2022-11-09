@@ -22,7 +22,7 @@ export class NodeCollection {
   get nodesShallow(): IterableIterator<Node> {
     return this.nodes_()
   }
-
+  /** iterates breadth first  */
   *nodesDeep(): IterableIterator<Node> {
     for (const n of this.nodes_()) {
       yield n

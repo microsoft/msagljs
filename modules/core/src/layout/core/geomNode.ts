@@ -8,6 +8,7 @@ import {PlaneTransformation} from './../../math/geometry/planeTransformation'
 import {Node} from './../../structs/node'
 import {GeomObject} from './geomObject'
 import {GeomEdge} from './geomEdge'
+import {TightLooseCouple} from '../../routing/TightLooseCouple'
 
 export type GeomNodeJSON = {
   boundaryCurve: ICurveJSON

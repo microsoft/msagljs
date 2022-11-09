@@ -75,6 +75,7 @@ export class Graph extends Node {
     return false
   }
 
+  /** iterates breadth first  */
   *subgraphs(): IterableIterator<Graph> {
     for (const n of this.deepNodes) {
       if (n instanceof Graph) yield <Graph>n

@@ -71,7 +71,7 @@ export class GeometryGraphEditor {
     return this.objectsToDrag
   }
 
-  /**       returns true if "undo" is available */
+  /**  returns true if "undo" is available */
   public get canUndo(): boolean {
     return this.undoList.canUndo()
   }
@@ -115,7 +115,7 @@ export class GeometryGraphEditor {
     }
     if (this.geomEdgeWithSmoothedPolylineExposed == null) {
       if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
-        this.DragObjectsForNonRectilinearCase(delta, draggingMode)
+        this.dragObjectsForNonRectilinearCase(delta, draggingMode)
       } else {
         this.DragObjectsForRectilinearCase(delta)
       }
@@ -162,11 +162,11 @@ export class GeometryGraphEditor {
     //   this.UpdateGraphBoundingBoxWithCheck(n)
     // }
 
-    this.PropagateChangesToClusterParents()
+    this.propagateChangesToClusterParents()
     throw new Error('not implemented')
   }
 
-  DragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
+  dragObjectsForNonRectilinearCase(delta: Point, draggingMode: DraggingMode) {
     if (draggingMode === DraggingMode.Incremental) {
       this.DragIncrementally(delta)
     } else if (
@@ -184,11 +184,11 @@ export class GeometryGraphEditor {
       geomObj.translate(delta)
     }
 
-    this.PropagateChangesToClusterParents()
+    this.propagateChangesToClusterParents()
     this.regenerateEdgesAsStraightLines()
   }
 
-  PropagateChangesToClusterParents() {
+  propagateChangesToClusterParents() {
     const touchedClusters = new Set<GeomGraph>()
     for (const n of this.objectsToDrag) {
       if (n instanceof GeomNode === false) continue
@@ -202,9 +202,14 @@ export class GeometryGraphEditor {
     }
 
     if (touchedClusters.size > 0) {
-      for (const c of this.graph().subgraphs()) {
-        if (touchedClusters.has(c)) {
-          c.boundingBox = c.calculateBoundsFromChildren() // TODO : add to undoAction here!!!!
+      for (const c of this.graph().subgraphsDepthFirst) {
+        const gc = c as GeomGraph
+        if (touchedClusters.has(gc)) {
+          const newBox = gc.getPumpedGraphWithMarginsBox()
+          if (!newBox.equalEps(gc.boundingBox)) {
+            this.registerForUndo(gc.entity)
+            gc.boundingBox = newBox
+          }
         }
       }
     }

@@ -159,15 +159,15 @@ export class GeomGraph extends GeomNode {
     return new GeomEdge(structEdge)
   }
   /** this does not change the graph bounding box */
-  pumpedGraphWithMarginsBox(): Rectangle {
+  getPumpedGraphWithMarginsBox(): Rectangle {
     const t = {b: Rectangle.mkEmpty()}
     pumpTheBoxToTheGraph(this, t)
     t.b.padEverywhere(this.margins)
     return t.b
   }
-  /** sets the bounding box and the bounary curve as well */
+  /** sets the bounding box and the boundary curve as well */
   pumpTheBoxToTheGraphWithMargins(): Rectangle {
-    return (this.boundingBox = this.pumpedGraphWithMarginsBox())
+    return (this.boundingBox = this.getPumpedGraphWithMarginsBox())
   }
 
   // Fields which are set by Msagl
@@ -243,7 +243,7 @@ export class GeomGraph extends GeomNode {
   get Clusters(): IterableIterator<IGeomGraph> {
     return this.subgraphs()
   }
-
+  /** iterates over all subgraphs  */
   *subgraphs(): IterableIterator<GeomGraph> {
     for (const g of this.graph.subgraphs()) {
       yield <GeomGraph>GeomObject.getGeom(g)
