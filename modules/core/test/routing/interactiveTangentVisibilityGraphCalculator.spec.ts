@@ -19,6 +19,7 @@ import {AttributeRegistry} from '../../src/structs/attributeRegistry'
 import {Edge} from '../../src/structs/edge'
 import {Graph} from '../../src/structs/graph'
 import {Node} from '../../src/structs/node'
+// import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {parseDotGraph} from '../utils/testUtils'
 
 // class ViewerNodeTest extends Attribute implements IViewerNode {
@@ -157,7 +158,7 @@ class FakeViewer implements IViewer {
   objectUnderMouseCursorChanged: EventHandler
   objectUnderMouseCursor: IViewerObject
   invalidate(objectToInvalidate: IViewerObject): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   invalidateAll(): void {
     throw new Error('Method not implemented.')
@@ -257,7 +258,35 @@ function routeEdge(source: Node, target: Node, layoutEditor: LayoutEditor) {
     layoutEditor.viewerMouseMove(null, mouseEvent)
   }
 }
-
+test('clusters drag', () => {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
+  dg.createGeometry()
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  const graph = dg.graph
+  const viewer = new FakeViewer(graph)
+  viewer.insertionMode = InsertionMode.Default
+  const layoutEditor = new LayoutEditor(viewer)
+  layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
+  const x = graph.findNodeRecursive('x')
+  const xv = new SvgViewerNode(x, null)
+  viewer.objectUnderMouseCursor = xv
+  const xg = x.getAttr(AttributeRegistry.GeomObjectIndex)
+  const cluster_1 = x.parent
+  const cluster_1G = cluster_1.getAttr(AttributeRegistry.GeomObjectIndex)
+  const cluster_0 = graph.findNode('cluster_0')
+  const mouseEvent = new FakeMouseEvent()
+  mouseEvent.clientX = xg.center.x
+  mouseEvent.clientY = xg.center.y
+  mouseEvent.buttons = 1 // left button is on
+  let inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
+  expect(cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox).isEmpty()).toBe(true)
+  layoutEditor.viewerMouseDown(null, mouseEvent)
+  mouseEvent.clientY += 2
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
+  // SvgDebugWriter.writeGeomGraph('./tmp/clust.svg', GeomGraph.getGeom(graph))
+  expect(inters.isEmpty()).toBe(true)
+})
 test('twoRectangles', () => {
   const visibilityGraph = new VisibilityGraph()
 

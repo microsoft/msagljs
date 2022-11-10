@@ -207,6 +207,7 @@ export class GeometryGraphEditor {
           const newBox = gc.getPumpedGraphWithMarginsBox()
           if (!newBox.equalEps(gc.boundingBox)) {
             this.registerForUndo(gc.entity)
+            this.addNodeEdgesToReroute(gc)
             gc.boundingBox = newBox
           }
         }
@@ -391,14 +392,14 @@ export class GeometryGraphEditor {
     // copy this.objectsToDrag to an array because new entities might be added to it
     for (const geomObj of Array.from(this.objectsToDrag)) {
       if (geomObj instanceof GeomNode) {
-        this.AssignEdgesOfNodeToEdgeDragSets(geomObj as GeomNode)
+        this.addNodeEdgesToReroute(geomObj as GeomNode)
       } else if (geomObj instanceof GeomEdge && geomObj.edge.label) {
         this.objectsToDrag.add(geomObj.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
       }
     }
   }
 
-  AssignEdgesOfNodeToEdgeDragSets(node: GeomNode) {
+  private addNodeEdgesToReroute(node: GeomNode) {
     for (const edge of node.selfEdges()) {
       this.objectsToDrag.add(edge)
     }
@@ -416,12 +417,6 @@ export class GeometryGraphEditor {
         this.objectsToDrag.add(edge)
       } else {
         this.edgesToReroute.add(edge)
-      }
-    }
-
-    if (node instanceof GeomGraph) {
-      for (const n of node.allSuccessorsWidthFirst()) {
-        this.AssignEdgesOfNodeToEdgeDragSets(n)
       }
     }
   }

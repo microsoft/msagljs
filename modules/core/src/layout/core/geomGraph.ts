@@ -52,7 +52,7 @@ export class GeomGraph extends GeomNode {
   /** it is a rather shallow clone */
   clone(): GeomGraph {
     const gg = new GeomGraph(null)
-    gg.boundingBox = this.boundingBox
+    gg.boundingBox = this.boundingBox.clone()
     gg.layoutSettings = this.layoutSettings
     gg.margins = this.margins
     gg.radX = this.radX
@@ -324,15 +324,13 @@ export class GeomGraph extends GeomNode {
 
 export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
   for (const e of igraph.edges()) {
-    if (e.underCollapsedGraph()) continue
+    if (!isProperEdge(e)) continue
 
-    if (e.curve != null) {
-      const cb = e.curve.boundingBox
-      // cb.pad(e.lineWidth)
-      t.b.addRecSelf(cb)
-      if (e.edge.label != null) {
-        t.b.addRecSelf(GeomObject.getGeom(e.edge.label).boundingBox)
-      }
+    const cb = e.curve.boundingBox
+    // cb.pad(e.lineWidth)
+    t.b.addRecSelf(cb)
+    if (e.edge.label != null) {
+      t.b.addRecSelf(GeomObject.getGeom(e.edge.label).boundingBox)
     }
   }
 
@@ -343,9 +341,19 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
   if (igraph instanceof GeomGraph) {
     igraph.addLabelToGraphBB(t.b)
   }
+  function isProperEdge(geomEdge: GeomEdge): boolean {
+    if (geomEdge.curve == null) return false
+    if (geomEdge.underCollapsedGraph()) return false
+    if (igraph instanceof GeomGraph) {
+      const graph = igraph.entity as Graph
+      return graph.isAncestor(geomEdge.source.entity) && graph.isAncestor(geomEdge.target.entity)
+    } else {
+      return true
+    }
+  }
 }
 
-/** iterate over the graph objects intersected by a rectangle: by default return only the intersected nodes */
+/** iterate over the graph objects intersected by a rectangle: by default, return only the intersected nodes */
 export function* intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<Entity> {
   const result = rtree.GetAllIntersecting(rect)
   if (onlyNodes) {

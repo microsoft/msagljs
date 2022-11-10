@@ -14,7 +14,7 @@ import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {Algorithm} from '../utils/algorithm'
 import {SplineRouter} from './splineRouter'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
-import {CancelToken} from '..'
+import {Assert, CancelToken} from '..'
 
 export function straightLineEdgePatcher(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken): void {
   if (edgesToRoute) {
@@ -184,6 +184,7 @@ export class StraightLineEdges extends Algorithm {
 
   // creates an geomedge curve based only on the source and target geometry
   public static CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge: GeomEdge) {
+    Assert.assert(geomedge.source.boundingBox.intersects_rect(geomedge.target.boundingBox) == false)
     const a = geomedge.source.center
     const b = geomedge.target.center
     if (geomedge.source === geomedge.target) {

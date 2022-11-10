@@ -2,11 +2,21 @@ import {Queue} from 'queue-typescript'
 // import {Assert} from '../utils/assert'
 
 import {Edge} from './edge'
+import {Entity} from './entity'
 import {Node} from './node'
 import {NodeCollection} from './nodeCollection'
 
-/** This class keeps the connection between the nodes and the edges of the graph. Some nodes of a Graph can also be Graphs.  */
+/** This class keeps the connection between the nodes and the edges of the graph. The nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  isAncestor(entity: Entity): boolean {
+    for (const ant of entity.getAncestors()) {
+      if (ant === this) {
+        return true
+      }
+    }
+
+    return false
+  }
   /**  Iterates over all connected components of the graph and for each component
    * returns all its nodes with "this" as the parent
    */
