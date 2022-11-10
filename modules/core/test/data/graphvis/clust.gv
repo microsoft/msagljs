@@ -15,7 +15,7 @@ digraph G {
 		y -> z;
 		y -> q;
 	}
-
+	cluster_0 -> cluster_1
 	top -> a;
 	top -> y;
 	y -> b;

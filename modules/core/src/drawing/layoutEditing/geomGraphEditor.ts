@@ -42,9 +42,8 @@ export class GeometryGraphEditor {
   createUndoPoint() {
     this.undoList.createUndoPoint()
   }
-  edgesDraggedWithSource: Set<GeomEdge> = new Set<GeomEdge>()
 
-  edgesDraggedWithTarget: Set<GeomEdge> = new Set<GeomEdge>()
+  private edgesToReroute: Set<GeomEdge> = new Set<GeomEdge>()
 
   graph: () => GeomGraph
 
@@ -243,8 +242,7 @@ export class GeometryGraphEditor {
   }
 
   regenerateEdgesAsStraightLines() {
-    const edges = Array.from(this.edgesDraggedWithSource).concat(Array.from(this.edgesDraggedWithTarget))
-    for (const edge of edges) {
+    for (const edge of this.edgesToReroute) {
       this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
       if (edge.label) {
@@ -252,7 +250,7 @@ export class GeometryGraphEditor {
       }
     }
 
-    const ep = EdgeLabelPlacement.constructorGA(this.graph(), edges)
+    const ep = EdgeLabelPlacement.constructorGA(this.graph(), Array.from(this.edgesToReroute))
     ep.run()
   }
 
@@ -331,11 +329,10 @@ export class GeometryGraphEditor {
 
   ClearDraggedSets() {
     this.objectsToDrag.clear()
-    this.edgesDraggedWithSource.clear()
-    this.edgesDraggedWithTarget.clear()
+    this.edgesToReroute.clear()
   }
 
-  /** fills the fields objectsToDrag, edgesDraggedWithSource, edgesDraggedWithTarget */
+  /** fills the fields objectsToDrag, edgesToDrag */
   CalculateDragSets(markedObjects: Iterable<GeomObject>) {
     this.ClearDraggedSets()
     for (const geometryObject of markedObjects) {
@@ -410,7 +407,7 @@ export class GeometryGraphEditor {
       if (this.objectsToDrag.has(edge.source) || (edge.source.parent && this.objectsToDrag.has(edge.source.parent))) {
         this.objectsToDrag.add(edge)
       } else {
-        this.edgesDraggedWithTarget.add(edge)
+        this.edgesToReroute.add(edge)
       }
     }
 
@@ -418,7 +415,7 @@ export class GeometryGraphEditor {
       if (this.objectsToDrag.has(edge.target) || (edge.target.parent != null && this.objectsToDrag.has(edge.target.parent))) {
         this.objectsToDrag.add(edge)
       } else {
-        this.edgesDraggedWithSource.add(edge)
+        this.edgesToReroute.add(edge)
       }
     }
 
@@ -559,8 +556,7 @@ export class GeometryGraphEditor {
 
   public clear() {
     this.objectsToDrag = new Set<GeomObject>()
-    this.edgesDraggedWithSource.clear()
-    this.edgesDraggedWithTarget.clear()
+    this.edgesToReroute.clear()
     this.undoList = new UndoList()
   }
 

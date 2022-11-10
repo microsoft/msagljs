@@ -181,8 +181,7 @@ export class LayoutEditor {
     }
   }
 
-  //  current graph of under editin
-
+  /**  current graph under editing */
   get Graph(): Graph {
     return this.graph
   }
