@@ -112,7 +112,7 @@ export default class GraphHighlighter {
 
     let nodeIndex = 0
     let edgeIndex = 0
-    for (const node of graph.deepNodesIt()) {
+    for (const node of graph.nodesBreadthFirst) {
       this._nodeList[nodeIndex] = node
       this._nodeMap.set(node.id, nodeIndex + 1)
       nodeIndex++

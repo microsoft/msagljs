@@ -99,7 +99,7 @@ xtest('brandom subgraphs 10_20', () => {
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
           layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
-          for (const n of g.deepNodesIt()) {
+          for (const n of g.nodesBreadthFirst) {
             n.center = round(n.center)
           }
           for (const e of g.deepEdges) {
@@ -133,7 +133,7 @@ xtest('brandom subgraphs 40_50', () => {
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
           layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
-          for (const n of g.deepNodesIt()) {
+          for (const n of g.nodesBreadthFirst) {
             n.center = round(n.center)
           }
           for (const e of g.deepEdges) {
@@ -166,7 +166,7 @@ xtest('brandom subgraphs 50_60', () => {
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
           layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
-          for (const n of g.deepNodesIt()) {
+          for (const n of g.nodesBreadthFirst) {
             n.center = round(n.center)
           }
           for (const e of g.deepEdges) {
@@ -245,7 +245,7 @@ xtest('brandom subgraphs 60_70', () => {
           g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.None
           layoutGraphWithMds(g, null)
           expect(isConsistent(g)).toBe(true)
-          for (const n of g.deepNodesIt()) {
+          for (const n of g.nodesBreadthFirst) {
             n.center = round(n.center)
           }
           for (const e of g.deepEdges) {
@@ -279,7 +279,7 @@ test('cut random graphs', () => {
     (w, h, xy) => CurveFactory.mkRectangleWithRoundedCorners(w, h, 1, 1, xy),
     2 * nodeCount,
   )
-  for (const n of g.deepNodesIt()) {
+  for (const n of g.nodesBreadthFirst) {
     const center = round(n.center)
     if (n instanceof GeomGraph) {
       n.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(Math.floor(n.width), Math.floor(n.height), 10, 10, center)
@@ -289,7 +289,7 @@ test('cut random graphs', () => {
     }
   }
   const ids = ['c', 'f', 'a', 'g']
-  for (const n of g.deepNodesIt()) {
+  for (const n of g.nodesBreadthFirst) {
     if (ids.find((t) => n.id === t)) {
       const parent: Graph = <Graph>n.node.parent
       parent.removeNode(n.node)

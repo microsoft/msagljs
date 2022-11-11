@@ -51,12 +51,4 @@ export class Node extends Entity {
   get degree(): number {
     return this.outDegree + this.inDegree + this.selfDegree
   }
-
-  *getAncestors(): IterableIterator<Graph> {
-    let g: Graph = this.parent as unknown as Graph
-    while (g != null) {
-      yield g
-      g = g.parent as unknown as Graph
-    }
-  }
 }

@@ -266,7 +266,7 @@ export class SvgDebugWriter {
     const r = g.pumpTheBoxToTheGraphWithMargins()
 
     this.open(r)
-    for (const n of g.deepNodesIt()) {
+    for (const n of g.nodesBreadthFirst) {
       if (!n.boundaryCurve) continue
       this.writeDebugCurve(DebugCurve.mkDebugCurveI(n.boundaryCurve))
       let box = n.boundingBox

@@ -147,7 +147,7 @@ export class GeometryGraphEditor {
     RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
       this.LayoutSettings.commonSettings.NodeSeparation / 3,
       1,
-      this.graph().deepNodes,
+      this.graph().nodesBreadthFirst,
       this.graph().deepEdges,
       this.LayoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode,
     )
@@ -180,7 +180,8 @@ export class GeometryGraphEditor {
 
   dragWithStraightLines(delta: Point) {
     for (const geomObj of this.objectsToDrag) {
-      geomObj.translate(delta)
+      if (geomObj instanceof GeomGraph) geomObj.deepTranslate(delta)
+      else geomObj.translate(delta)
     }
 
     this.propagateChangesToClusterParents()
@@ -188,26 +189,35 @@ export class GeometryGraphEditor {
   }
 
   propagateChangesToClusterParents() {
-    const touchedClusters = new Set<GeomGraph>()
+    const touchedWithChangedBorder = new Set<GeomGraph>()
     for (const n of this.objectsToDrag) {
       if (n instanceof GeomNode === false) continue
       const geomNode = n as GeomNode
       for (const c of geomNode.node.getAncestors()) {
         const gc = GeomObject.getGeom(c)
         if (gc !== this.graph() && !this.objectsToDrag.has(gc)) {
-          touchedClusters.add(gc as GeomGraph)
+          touchedWithChangedBorder.add(gc as GeomGraph)
         }
       }
     }
 
-    if (touchedClusters.size > 0) {
+    if (touchedWithChangedBorder.size > 0) {
       for (const c of this.graph().subgraphsDepthFirst) {
         const gc = c as GeomGraph
-        if (touchedClusters.has(gc)) {
+        if (touchedWithChangedBorder.has(gc)) {
           const newBox = gc.getPumpedGraphWithMarginsBox()
           if (!newBox.equalEps(gc.boundingBox)) {
             this.registerForUndo(gc.entity)
-            this.addNodeEdgesToReroute(gc)
+            for (const e of gc.selfEdges()) {
+              this.edgesToReroute.add(e)
+            }
+            for (const e of gc.inEdges()) {
+              this.edgesToReroute.add(e)
+            }
+            for (const e of gc.outEdges()) {
+              this.edgesToReroute.add(e)
+            }
+
             gc.boundingBox = newBox
           }
         }
@@ -305,7 +315,7 @@ export class GeometryGraphEditor {
 
   prepareForObjectDragging(markedObjects: Iterable<GeomObject>, dragMode: DraggingMode) {
     this.geomEdgeWithSmoothedPolylineExposed = null
-    this.CalculateDragSets(markedObjects)
+    this.calculateObjectToDragAndEdgesToReroute(markedObjects)
     this.undoList.createUndoPoint()
     if (dragMode === DraggingMode.Incremental) {
       this.InitIncrementalDragger()
@@ -328,25 +338,29 @@ export class GeometryGraphEditor {
     )
   }
 
-  ClearDraggedSets() {
+  clearDraggedSets() {
     this.objectsToDrag.clear()
     this.edgesToReroute.clear()
   }
 
+  private addToObjectsToDrag(geomObj: GeomObject) {
+    this.objectsToDrag.add(geomObj)
+  }
+
   /** fills the fields objectsToDrag, edgesToDrag */
-  CalculateDragSets(markedObjects: Iterable<GeomObject>) {
-    this.ClearDraggedSets()
+  calculateObjectToDragAndEdgesToReroute(markedObjects: Iterable<GeomObject>) {
+    this.clearDraggedSets()
     for (const geometryObject of markedObjects) {
-      this.objectsToDrag.add(geometryObject)
+      this.addToObjectsToDrag(geometryObject)
       const isEdge = geometryObject instanceof GeomEdge
       if (isEdge) {
-        this.objectsToDrag.add((geometryObject as GeomEdge).source)
-        this.objectsToDrag.add((geometryObject as GeomEdge).target)
+        this.addToObjectsToDrag((geometryObject as GeomEdge).source)
+        this.addToObjectsToDrag((geometryObject as GeomEdge).target)
       }
     }
 
-    this.RemoveClusterSuccessorsFromObjectsToDrag()
-    this.CalculateDragSetsForEdges()
+    this.removeClusterSuccessorsFromObjectsToDrag()
+    this.calculateDragSetsForEdges()
     this.addEdgeLabelsToObjectsToDrag()
   }
   addEdgeLabelsToObjectsToDrag() {
@@ -357,20 +371,14 @@ export class GeometryGraphEditor {
       }
     }
     for (const l of labelsToAdd) {
-      this.objectsToDrag.add(l)
+      this.addToObjectsToDrag(l)
     }
   }
 
-  RemoveClusterSuccessorsFromObjectsToDrag() {
-    const listToRemove = new Array<GeomNode>()
+  removeClusterSuccessorsFromObjectsToDrag() {
+    const listToRemove = new Array<GeomObject>()
     for (const node of this.objectsToDrag) {
-      if (node instanceof GeomNode)
-        for (const nodeAnc of node.getAncestors()) {
-          if (this.objectsToDrag.has(nodeAnc)) {
-            listToRemove.push(node)
-            break
-          }
-        }
+      if (this.hasAncestorInObjectsToDrag(node)) listToRemove.push(node)
     }
 
     for (const node of listToRemove) {
@@ -388,37 +396,71 @@ export class GeometryGraphEditor {
   //   this.geomGraph.boundingBox = bounds
   // }
 
-  CalculateDragSetsForEdges() {
+  calculateDragSetsForEdges() {
     // copy this.objectsToDrag to an array because new entities might be added to it
     for (const geomObj of Array.from(this.objectsToDrag)) {
       if (geomObj instanceof GeomNode) {
-        this.addNodeEdgesToReroute(geomObj as GeomNode)
+        this.addNodeEdgesToRerouteOrDrag(geomObj as GeomNode)
       } else if (geomObj instanceof GeomEdge && geomObj.edge.label) {
-        this.objectsToDrag.add(geomObj.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
+        this.addToObjectsToDrag(geomObj.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
       }
     }
   }
 
-  private addNodeEdgesToReroute(node: GeomNode) {
+  private addNodeEdgesToRerouteOrDrag(node: GeomNode) {
     for (const edge of node.selfEdges()) {
-      this.objectsToDrag.add(edge)
+      this.addToObjectsToDrag(edge)
     }
 
     for (const edge of node.inEdges()) {
-      if (this.objectsToDrag.has(edge.source) || (edge.source.parent && this.objectsToDrag.has(edge.source.parent))) {
-        this.objectsToDrag.add(edge)
+      if (node instanceof GeomGraph && node.isAncestor(edge.source)) {
+        // this edge will be translated by the cluster move
+        continue
+      }
+
+      if (this.hasSelfOrAncestorInObjectsToDrag(edge.source)) {
+        // has to drag
+        this.addToObjectsToDrag(edge)
       } else {
         this.edgesToReroute.add(edge)
       }
     }
 
     for (const edge of node.outEdges()) {
-      if (this.objectsToDrag.has(edge.target) || (edge.target.parent != null && this.objectsToDrag.has(edge.target.parent))) {
-        this.objectsToDrag.add(edge)
+      if (node instanceof GeomGraph && node.isAncestor(edge.target)) {
+        // this edge will be translated by the cluster move
+        continue
+      }
+
+      if (this.hasSelfOrAncestorInObjectsToDrag(edge.target)) {
+        // has to drag
+        this.addToObjectsToDrag(edge)
       } else {
         this.edgesToReroute.add(edge)
       }
     }
+    if (node instanceof GeomGraph)
+      for (const n of node.nodesBreadthFirst) {
+        this.addNodeEdgesToRerouteOrDrag(n)
+      }
+  }
+  /** returns true iff the edge is under a cluster belonging to this.objectsToDrag */
+
+  private hasSelfOrAncestorInObjectsToDrag(ent: GeomObject) {
+    while (ent) {
+      if (this.objectsToDrag.has(ent)) return true
+      ent = ent.parent
+    }
+    return false
+  }
+
+  private hasAncestorInObjectsToDrag(ent: GeomObject) {
+    ent = ent.parent
+    while (ent) {
+      if (this.objectsToDrag.has(ent)) return true
+      ent = ent.parent
+    }
+    return false
   }
 
   static CalculateMiddleOffsetsForMultiedge(

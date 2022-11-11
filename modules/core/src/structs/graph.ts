@@ -24,7 +24,7 @@ export class Graph extends Node {
   *getClusteredConnectedComponents(): IterableIterator<Array<Node>> {
     const processed = new Set<Node>()
     const q = new Queue<Node>()
-    for (const v of this.deepNodes) {
+    for (const v of this.nodesBreadthFirst) {
       if (processed.has(v)) continue
       processed.add(v)
       q.enqueue(v)
@@ -59,7 +59,7 @@ export class Graph extends Node {
     }
   }
   hasSomeAttrOnIndex(index: number): boolean {
-    for (const n of this.deepNodes) {
+    for (const n of this.nodesBreadthFirst) {
       if (n.getAttr(index)) return true
     }
     for (const n of this.deepEdges) {
@@ -74,7 +74,7 @@ export class Graph extends Node {
   }
 
   noEmptySubgraphs(): boolean {
-    for (const g of this.subgraphs()) {
+    for (const g of this.subgraphsBreadthFirst()) {
       if (g.shallowNodeCount === 0) return false
     }
     return true
@@ -86,8 +86,8 @@ export class Graph extends Node {
   }
 
   /** iterates breadth first  */
-  *subgraphs(): IterableIterator<Graph> {
-    for (const n of this.deepNodes) {
+  *subgraphsBreadthFirst(): IterableIterator<Graph> {
+    for (const n of this.nodesBreadthFirst) {
       if (n instanceof Graph) yield <Graph>n
     }
   }
@@ -115,8 +115,8 @@ export class Graph extends Node {
   /** Iterates over all the nodes of including the subgraphs.
    * The iteration happens in the breadth first pattern.
    */
-  get deepNodes(): IterableIterator<Node> {
-    return this.nodeCollection.nodesDeep()
+  get nodesBreadthFirst(): IterableIterator<Node> {
+    return this.nodeCollection.nodesBreadthFirst()
   }
 
   constructor(id = '__graph__') {
@@ -158,7 +158,7 @@ export class Graph extends Node {
   }
 
   private *deepEdgesIt() {
-    for (const node of this.deepNodes) {
+    for (const node of this.nodesBreadthFirst) {
       for (const e of node.outEdges) {
         yield e
       }
@@ -219,14 +219,14 @@ export class Graph extends Node {
   /** return the number of all nodes in the graph, including the subgraphs */
   deepEdgesCount(): number {
     let count = 0
-    for (const p of this.deepNodes) {
+    for (const p of this.nodesBreadthFirst) {
       count += p.outDegree + p.selfDegree
     }
     return count
   }
   eachNodeIdIsUnique(): boolean {
     const ids = new Set<string>()
-    for (const n of this.deepNodes) {
+    for (const n of this.nodesBreadthFirst) {
       if (ids.has(n.id)) {
         return false
       }

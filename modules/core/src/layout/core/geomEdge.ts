@@ -65,8 +65,13 @@ export class GeomEdge extends GeomObject {
       for (let s = this.smoothedPolyline.headSite, s0 = this.smoothedPolyline.headSite; s != null; s = s.next, s0 = s0.next)
         s.point = s0.point.add(delta)
 
-    if (this.sourceArrowhead != null) this.sourceArrowhead.tipPosition = this.sourceArrowhead.tipPosition.add(delta)
-    if (this.targetArrowhead != null) this.targetArrowhead.tipPosition = this.targetArrowhead.tipPosition.add(delta)
+    if (this.sourceArrowhead != null && this.sourceArrowhead.tipPosition)
+      this.sourceArrowhead.tipPosition = this.sourceArrowhead.tipPosition.add(delta)
+    if (this.targetArrowhead != null && this.targetArrowhead.tipPosition)
+      this.targetArrowhead.tipPosition = this.targetArrowhead.tipPosition.add(delta)
+    if (this.edge.label) {
+      this.edge.label.getAttr(AttributeRegistry.GeomObjectIndex).translate(delta)
+    }
   }
 
   GetMaxArrowheadLength(): number {

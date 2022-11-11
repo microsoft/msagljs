@@ -9,14 +9,14 @@ export class GeomConnectedComponent implements IGeomGraph {
   constructor(topNodes: Node[]) {
     this.topNodes = topNodes
   }
-  get deepNodes(): IterableIterator<GeomNode> {
-    return this.deepNodes_()
+  get nodesBreadthFirst(): IterableIterator<GeomNode> {
+    return this.nodesBreadthFirst_()
   }
-  *deepNodes_(): IterableIterator<GeomNode> {
+  *nodesBreadthFirst_(): IterableIterator<GeomNode> {
     for (const n of this.topNodes) {
       yield GeomNode.getGeom(n) as GeomNode
       if (n instanceof Graph) {
-        for (const nn of n.deepNodes) {
+        for (const nn of n.nodesBreadthFirst) {
           yield GeomNode.getGeom(nn) as GeomNode
         }
       }

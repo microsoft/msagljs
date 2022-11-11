@@ -36,7 +36,7 @@ import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 export class RendererSvg implements IViewer {
   mousePosition: Point;
   *entitiesIter(): Iterable<IViewerObject> {
-    for (const n of this.graph.deepNodes) yield n.getAttr(AttributeRegistry.ViewerIndex)
+    for (const n of this.graph.nodesBreadthFirst) yield n.getAttr(AttributeRegistry.ViewerIndex)
     for (const e of this.graph.deepEdges) {
       yield e.getAttr(AttributeRegistry.ViewerIndex)
       if (e.label) {
@@ -348,7 +348,7 @@ export class RendererSvg implements IViewer {
   invalidateAll(): void {
     //TODO : implement
   }
-  bodifierKeys = ModifierKeysEnum.None
+  modifierKeys = ModifierKeysEnum.None
   get entities(): Iterable<IViewerObject> {
     return this.entitiesIter()
   }

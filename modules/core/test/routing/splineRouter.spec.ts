@@ -602,10 +602,10 @@ xtest('random circles', () => {
   for (let nodeCount = 6; nodeCount < 10; nodeCount++)
     for (let seed = 0; seed < 40; seed++) {
       const g: GeomGraph = generateRandomGeomGraph(seed, nodeCount, (w, _, xy) => CurveFactory.mkCircle(w * 0.9, xy))
-      for (const n of g.graph.deepNodes) {
+      for (const n of g.graph.nodesBreadthFirst) {
         n.outEdges.clear()
       }
-      const nodes = Array.from(g.graph.deepNodes)
+      const nodes = Array.from(g.graph.nodesBreadthFirst)
       for (let i = 0; i < nodes.length - 1; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const e = new Edge(nodes[i], nodes[j])
@@ -723,7 +723,7 @@ test('two edges with obstacle', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/two_edges_with_obstacle.svg', g)
 })
 function checkEdges(gg: GeomGraph) {
-  for (const n of gg.deepNodesIt()) {
+  for (const n of gg.nodesBreadthFirst) {
     for (const e of n.outEdges()) {
       expect(e.curve != null).toBe(true)
     }

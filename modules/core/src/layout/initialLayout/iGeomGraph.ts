@@ -7,7 +7,7 @@ export interface IGeomGraph {
   uniformMargins: number
   edges(): IterableIterator<GeomEdge>
   shallowNodes: IterableIterator<GeomNode>
-  deepNodes: IterableIterator<GeomNode>
+  nodesBreadthFirst: IterableIterator<GeomNode>
   pumpTheBoxToTheGraphWithMargins(): Rectangle
   shallowNodeCount: number
   deepNodeCount: number

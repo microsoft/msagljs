@@ -40,6 +40,20 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  isAncestor(source: GeomNode): boolean {
+    return this.graph.isAncestor(source.node)
+  }
+  deepTranslate(delta: Point) {
+    for (const n of this.nodesBreadthFirst) {
+      n.translate(delta)
+      for (const e of n.selfEdges()) {
+        e.translate(delta)
+      }
+      for (const e of n.outEdges()) {
+        if (this.graph.isAncestor(e.target.node)) e.translate(delta)
+      }
+    }
+  }
   /** The empty space between the graph inner entities and its boundary */
   margins = {left: 10, top: 10, bottom: 10, right: 10}
   private rrect: RRect
@@ -99,7 +113,7 @@ export class GeomGraph extends GeomNode {
   }
   setSettingsRecursively(ls: ILayoutSettings) {
     this.layoutSettings = ls
-    for (const n of this.deepNodes) {
+    for (const n of this.nodesBreadthFirst) {
       const gg = <GeomGraph>n
       gg.layoutSettings = ls
     }
@@ -146,11 +160,26 @@ export class GeomGraph extends GeomNode {
     this.boundingBox =
       this.rrect == null || this.rrect.isEmpty() ? this.pumpTheBoxToTheGraphWithMargins() : this.boundingBox.transform(matrix)
   }
-  get deepNodes(): IterableIterator<GeomNode> {
-    return this.deepNodesIt()
+
+  translate(delta: Point) {
+    if (delta.x === 0 && delta.y === 0) return
+
+    for (const n of this.shallowNodes) {
+      n.translate(delta)
+    }
+    for (const e of this.edges()) {
+      e.translate(delta)
+      if (e.label) e.label.translate(delta)
+    }
+
+    this.boundingBox =
+      this.rrect == null || this.rrect.isEmpty() ? this.pumpTheBoxToTheGraphWithMargins() : this.boundingBox.translate(delta)
   }
-  *deepNodesIt(): IterableIterator<GeomNode> {
-    for (const n of this.graph.deepNodes) {
+  get nodesBreadthFirst(): IterableIterator<GeomNode> {
+    return this.nodesBreadthFirstIter()
+  }
+  private *nodesBreadthFirstIter(): IterableIterator<GeomNode> {
+    for (const n of this.graph.nodesBreadthFirst) {
       yield GeomObject.getGeom(n) as unknown as GeomNode
     }
   }
@@ -245,7 +274,7 @@ export class GeomGraph extends GeomNode {
   }
   /** iterates over all subgraphs  */
   *subgraphs(): IterableIterator<GeomGraph> {
-    for (const g of this.graph.subgraphs()) {
+    for (const g of this.graph.subgraphsBreadthFirst()) {
       yield <GeomGraph>GeomObject.getGeom(g)
     }
   }
@@ -262,7 +291,7 @@ export class GeomGraph extends GeomNode {
   }
   get deepNodeCount(): number {
     let n = 0
-    for (const v of this.graph.deepNodes) n++
+    for (const v of this.graph.nodesBreadthFirst) n++
     return n
   }
   get subgraphsDepthFirst(): IterableIterator<IGeomGraph> {
@@ -369,7 +398,7 @@ export function* intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle
 }
 
 export function buildRTree(graph: Graph): RTree<Entity, Point> {
-  const data: Array<[Rectangle, Entity]> = (Array.from(graph.deepNodes) as Array<Entity>)
+  const data: Array<[Rectangle, Entity]> = (Array.from(graph.nodesBreadthFirst) as Array<Entity>)
     .concat(Array.from(graph.deepEdges) as Array<Entity>)
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
   return mkRTree(data)
@@ -405,7 +434,7 @@ export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, 
 
 export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<HitTreeNodeType, Point> {
   if (graph == null) return null
-  const nodes: Array<[Rectangle, HitTreeNodeType]> = Array.from(graph.deepNodes).map((n) => [GeomNode.getGeom(n).boundingBox, n])
+  const nodes: Array<[Rectangle, HitTreeNodeType]> = Array.from(graph.nodesBreadthFirst).map((n) => [GeomNode.getGeom(n).boundingBox, n])
 
   const edgesPlusEdgeLabels: Array<[Rectangle, HitTreeNodeType]> = []
   for (const e of graph.deepEdges) {

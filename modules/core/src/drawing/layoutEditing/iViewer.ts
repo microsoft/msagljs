@@ -67,7 +67,7 @@ export interface IViewer {
 
   //  returns modifier keys; control, shift, or alt are pressed at the moments
 
-  bodifierKeys: ModifierKeysEnum
+  modifierKeys: ModifierKeysEnum
 
   //  gets all entities which can be manipulated by the viewer
 

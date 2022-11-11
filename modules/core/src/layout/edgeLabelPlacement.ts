@@ -192,7 +192,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   public static constructorG(graph: GeomGraph) {
     return new EdgeLabelPlacement(
-      Array.from(graph.deepNodesIt()),
+      Array.from(graph.nodesBreadthFirst),
       Array.from(graph.deepEdges).filter((e) => e.label),
     )
   }
@@ -201,7 +201,7 @@ export class EdgeLabelPlacement extends Algorithm {
 
   public static constructorGA(graph: GeomGraph, edges: GeomEdge[]) {
     return new EdgeLabelPlacement(
-      Array.from(graph.deepNodesIt()),
+      Array.from(graph.nodesBreadthFirst),
       edges.filter((e) => e.label),
     )
   }

@@ -23,8 +23,7 @@ export class GeomNode extends GeomObject {
   }
   translate(delta: Point) {
     if (delta.x === 0 && delta.y === 0) return
-    const m = new PlaneTransformation(1, 0, delta.x, 0, 1, delta.y)
-    this.transform(m)
+    this.boundaryCurve.translate(delta)
   }
   toJSON(): GeomNodeJSON {
     return {boundaryCurve: this.boundaryCurve, padding: this.padding}

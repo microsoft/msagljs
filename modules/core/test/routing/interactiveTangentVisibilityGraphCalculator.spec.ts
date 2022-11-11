@@ -10,7 +10,7 @@ import {ModifierKeysEnum} from '../../src/drawing/layoutEditing/modifierKeys'
 import {GeomEdge, GeomGraph, GeomNode} from '../../src/layout/core'
 import {EventHandler} from '../../src/layout/core/geomObject'
 import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
-import {Point, Polyline, Rectangle, Size} from '../../src/math/geometry'
+import {Curve, Point, PointLocation, Polyline, Rectangle, Size} from '../../src/math/geometry'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
 import {InteractiveTangentVisibilityGraphCalculator} from '../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
 import {Polygon} from '../../src/routing/visibility/Polygon'
@@ -19,6 +19,8 @@ import {AttributeRegistry} from '../../src/structs/attributeRegistry'
 import {Edge} from '../../src/structs/edge'
 import {Graph} from '../../src/structs/graph'
 import {Node} from '../../src/structs/node'
+import {closeDistEps} from '../../src/utils/compare'
+import {SvgDebugWriter} from '../utils/svgDebugWriter'
 // import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {parseDotGraph} from '../utils/testUtils'
 
@@ -132,7 +134,7 @@ class FakeMouseEvent implements MouseEvent {
 
 class FakeViewer implements IViewer {
   constructor(graph: Graph) {
-    for (const n of graph.deepNodes) {
+    for (const n of graph.nodesBreadthFirst) {
       new SvgViewerNode(n, null)
     }
   }
@@ -163,12 +165,12 @@ class FakeViewer implements IViewer {
   invalidateAll(): void {
     throw new Error('Method not implemented.')
   }
-  bodifierKeys: ModifierKeysEnum
+  modifierKeys = ModifierKeysEnum.None
   get entities(): IterableIterator<IViewerObject> {
     return this._ents()
   }
   *_ents(): IterableIterator<IViewerObject> {
-    for (const n of this.graph.deepNodes) {
+    for (const n of this.graph.nodesBreadthFirst) {
       yield n.getAttr(AttributeRegistry.ViewerIndex)
     }
   }
@@ -180,7 +182,7 @@ class FakeViewer implements IViewer {
   PopupMenus(menuItems: [string, () => void][]): void {
     throw new Error('Method not implemented.')
   }
-  smoothedPolylineCircleRadius: number
+  smoothedPolylineCircleRadius = 5
   graph: Graph
   StartDrawingRubberLine(startingPoint: Point): void {
     throw new Error('Method not implemented.')
@@ -258,7 +260,48 @@ function routeEdge(source: Node, target: Node, layoutEditor: LayoutEditor) {
     layoutEditor.viewerMouseMove(null, mouseEvent)
   }
 }
-test('clusters drag', () => {
+test('clusters_1 drag', () => {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
+  dg.createGeometry()
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  const graph = dg.graph
+  const viewer = new FakeViewer(graph)
+  viewer.insertionMode = InsertionMode.Default
+  const layoutEditor = new LayoutEditor(viewer)
+  layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
+  const x = graph.findNodeRecursive('x')
+  const xg = x.getAttr(AttributeRegistry.GeomObjectIndex)
+  const x_edge = Array.from(x.edges)[0]
+  const x_edge_curve = x_edge.getAttr(AttributeRegistry.GeomObjectIndex).curve
+  const x_edge_start = x_edge_curve.start.clone() as Point
+
+  const cluster_1 = graph.findNodeRecursive('cluster_1') as Node
+  const cluster_1G = GeomGraph.getGeom(cluster_1 as Graph)
+  const cluster_1v = new SvgViewerNode(cluster_1, null)
+  viewer.objectUnderMouseCursor = cluster_1v
+  const xg_center = xg.center.clone() as Point
+  const cluster_0 = graph.findNode('cluster_0')
+  const mouseEvent = new FakeMouseEvent()
+  mouseEvent.clientX = xg.center.x
+  mouseEvent.clientY = xg.center.y
+  mouseEvent.buttons = 1 // left button is on
+  let inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
+  expect(
+    (cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle).isEmpty(),
+  ).toBe(true)
+  layoutEditor.viewerMouseDown(null, mouseEvent)
+  const y_del = 2
+  mouseEvent.clientY += y_del
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  expect(closeDistEps(xg_center.y + y_del, xg.center.y)).toBe(true)
+  inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
+  SvgDebugWriter.writeGeomGraph('./tmp/clust.svg', GeomGraph.getGeom(graph))
+  expect(inters.isEmpty()).toBe(true)
+  expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
+  expect(edgesAreAttached(graph)).toBe(true)
+})
+
+test('clusters x drag', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   dg.createGeometry()
   layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
@@ -271,6 +314,7 @@ test('clusters drag', () => {
   const xv = new SvgViewerNode(x, null)
   viewer.objectUnderMouseCursor = xv
   const xg = x.getAttr(AttributeRegistry.GeomObjectIndex)
+  const xg_center = xg.center.clone() as Point
   const cluster_1 = x.parent
   const cluster_1G = cluster_1.getAttr(AttributeRegistry.GeomObjectIndex)
   const cluster_0 = graph.findNode('cluster_0')
@@ -286,7 +330,10 @@ test('clusters drag', () => {
   inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
   // SvgDebugWriter.writeGeomGraph('./tmp/clust.svg', GeomGraph.getGeom(graph))
   expect(inters.isEmpty()).toBe(true)
+  expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
+  expect(edgesAreAttached(graph)).toBe(true)
 })
+
 test('twoRectangles', () => {
   const visibilityGraph = new VisibilityGraph()
 
@@ -309,7 +356,7 @@ test('diagonals', () => {
   dg.createGeometry()
   layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
   const graph = dg.graph
-  const nodes = Array.from(graph.deepNodes)
+  const nodes = Array.from(graph.nodesBreadthFirst)
   const viewer = new FakeViewer(graph)
   viewer.insertionMode = InsertionMode.Edge
   const layoutEditor = new LayoutEditor(viewer)
@@ -324,4 +371,28 @@ test('diagonals', () => {
 function getPoly(center: Point, size: number): Polyline {
   const rect = Rectangle.mkSizeCenter(new Size(size, size), center)
   return rect.perimeter()
+}
+function edgesAreAttached(graph: Graph): boolean {
+  for (const e of graph.edges) {
+    if (edgeIsAttached(e) == false) return false
+  }
+  return true
+}
+function edgeIsAttached(e: Edge): boolean {
+  return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)
+}
+function pointIsAttached(p: Point, target: Node): boolean {
+  const bc = (GeomNode.getGeom(target) as GeomNode).boundaryCurve
+  const loc = Curve.PointRelativeToCurveLocation(p, bc)
+  return loc == PointLocation.Boundary
+}
+function edgeStart(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.sourceArrowhead) return ge.sourceArrowhead.tipPosition
+  return ge.curve.start
+}
+function edgeEnd(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
+  return ge.curve.end
 }

@@ -24,6 +24,9 @@ export class Rectangle implements IRectangle<Point> {
     const newCenter = m.multiplyPoint(this.center)
     return Rectangle.mkSizeCenter(this.size, newCenter)
   }
+  translate(m: Point): Rectangle {
+    return Rectangle.mkSizeCenter(this.size, this.center.add(m))
+  }
   /** Returns true iff the rectangles are geometrically identical */
   equal(bbox: Rectangle): boolean {
     return this.left_ === bbox.left && this.right_ === bbox.right && this.top_ === bbox.top && this.bottom_ === bbox.bottom

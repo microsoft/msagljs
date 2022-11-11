@@ -83,17 +83,18 @@ test('layout0-50 gv files with fil', () => {
   for (const f of sortedList) {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 50) return
-    // if (i != 40) continue
+    if (i != 9) continue
     let dg: DrawingGraph
     try {
       dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)
+      SvgDebugWriter.writeGeomGraph('./tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
       expect(noOverlaps(dg.graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph)).toBe(true)
     } catch (Error) {
+      if (dg != null) {
+        SvgDebugWriter.writeGeomGraph('./tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      }
       console.log('i = ' + i + ', ' + f + ' error:' + Error.message)
       expect(1).toBe(0)
-    }
-    if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('./tmp/fil' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })

@@ -763,7 +763,7 @@ function applyAttributesToEntities(o: any, dg: DrawingGraph, entities: Entity[])
 }
 function removeEmptySubgraphs(graph: Graph) {
   const emptySubgraphList: Graph[] = []
-  for (const sg of graph.subgraphs()) {
+  for (const sg of graph.subgraphsBreadthFirst()) {
     if (sg.isEmpty()) {
       emptySubgraphList.push(sg)
     }
@@ -777,7 +777,7 @@ function removeEmptySubgraphs(graph: Graph) {
 }
 
 function createGeomForSubgraphs(graph: Graph) {
-  for (const sg of graph.subgraphs()) {
+  for (const sg of graph.subgraphsBreadthFirst()) {
     if (GeomGraph.getGeom(sg) == null && sg.hasSomeAttrOnIndex(AttributeRegistry.GeomObjectIndex)) {
       new GeomGraph(sg)
     }
@@ -817,11 +817,11 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
   }
   addDefaultNodeStmt(children, graph)
   // fill the map of idToStmh
-  for (const n of graph.deepNodes) {
+  for (const n of graph.nodesBreadthFirst) {
     idToStmt.set(n.id, getNodeStatement(n))
   }
   // attach node and subgraphs stmts to their parents
-  for (const n of graph.deepNodes) {
+  for (const n of graph.nodesBreadthFirst) {
     if (n.parent === graph) {
       continue
     }

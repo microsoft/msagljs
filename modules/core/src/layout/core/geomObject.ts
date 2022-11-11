@@ -38,4 +38,11 @@ export abstract class GeomObject extends Attribute {
     this.entity = e
     this.bind(AttributeRegistry.GeomObjectIndex)
   }
+  *getAncestors(): IterableIterator<GeomObject> {
+    let p = this.parent
+    while (p != null) {
+      yield p
+      p = p.parent
+    }
+  }
 }

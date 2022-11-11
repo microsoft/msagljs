@@ -144,12 +144,12 @@ xtest('graph ldbxtried.gv', () => {
 
 test('graph smlred', () => {
   const g = parseDotGraph('graphvis/smlred.gv')
-  const subgraphsWas = Array.from(g.subgraphs()).length
+  const subgraphsWas = Array.from(g.subgraphsBreadthFirst()).length
   const nodesWas = g.nodeCountDeep
   const parsedGraph: JSONGraph = graphToJSON(g)
 
   const graph = parseJSONGraph(parsedGraph)
-  const subgraphs = Array.from(graph.subgraphs())
+  const subgraphs = Array.from(graph.subgraphsBreadthFirst())
   expect(subgraphs.length).toBe(subgraphsWas)
   expect(graph.nodeCountDeep).toBe(nodesWas)
 })

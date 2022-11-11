@@ -99,7 +99,7 @@ test('buildRTreeWithInterpolatedEdges', () => {
   const tree = buildRTreeWithInterpolatedEdges(g, slack)
 
   // centers are hit
-  for (const n of g.deepNodes) {
+  for (const n of g.nodesBreadthFirst) {
     const gn = n.getAttr(AttributeRegistry.GeomObjectIndex)
     let found = false
     for (const n of getGeomIntersectedObjects(tree, slack, gn.center)) {
@@ -185,7 +185,7 @@ test('intersectedEnities', () => {
     }
   }
 
-  expect(n).toBe(Array.from(geomGraph.deepNodesIt()).length)
+  expect(n).toBe(Array.from(geomGraph.nodesBreadthFirst).length)
   expect(e).toBe(0)
 
   const intersectedNodesAndEdges = Array.from(intersectedObjects(rtree, rect, false)).filter((e) => e instanceof Edge)

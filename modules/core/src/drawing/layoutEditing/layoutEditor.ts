@@ -330,7 +330,7 @@ export class LayoutEditor {
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
     for (const o of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
-      this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+      this.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
 
@@ -402,7 +402,7 @@ export class LayoutEditor {
     if (!this.decoratorRemovalsDict.has(obj))
       this.decoratorRemovalsDict.set(obj, () => (DrawingObject.getDrawingObj(obj.entity).penwidth = w))
     drawingObj.penwidth = Math.max(this.viewer.LineThicknessForEditing, w * 2)
-    this.viewer.invalidate(obj)
+    this.invalidate(obj.entity)
   }
 
   defaultObjectDecoratorRemover(obj: IViewerObject) {
@@ -410,7 +410,7 @@ export class LayoutEditor {
     if (decoratorRemover) {
       decoratorRemover()
       this.decoratorRemovalsDict.delete(obj)
-      this.viewer.invalidate(obj)
+      this.invalidate(obj.entity)
     }
 
     const ent = obj.entity
@@ -427,9 +427,9 @@ export class LayoutEditor {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   defaultEdgeLabelDecorator(label: IViewerObject) {
     if (!this.decoratorRemovalsDict.has(label)) {
-      this.decoratorRemovalsDict.set(label, () => this.viewer.invalidate(label))
+      this.decoratorRemovalsDict.set(label, () => this.invalidate(label.entity))
     }
-    this.viewer.invalidate(label)
+    this.invalidate(label.entity)
   }
 
   static LeftButtonIsPressed(e: MouseEvent): boolean {
@@ -502,7 +502,7 @@ export class LayoutEditor {
       this.geomGraphEditor.createUndoPoint()
       this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.geomGraphEditor.deleteSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), corner)
-      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
+      this.invalidate(this.edgeWithSmoothedPolylineExposed.entity)
     }
   }
   tryInsertCorner() {
@@ -520,7 +520,7 @@ export class LayoutEditor {
       this.geomGraphEditor.createUndoPoint()
       this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), this.mouseDownGraphPoint, a)
       this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
-      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
+      this.invalidate(this.edgeWithSmoothedPolylineExposed.edge)
     }
   }
 
@@ -551,8 +551,8 @@ export class LayoutEditor {
   //         }
   ModifierKeyIsPressed(): boolean {
     const modifierKeyWasUsed: boolean =
-      (this.viewer.bodifierKeys & ModifierKeysEnum.Control) == ModifierKeysEnum.Control ||
-      (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift
+      (this.viewer.modifierKeys & ModifierKeysEnum.Control) == ModifierKeysEnum.Control ||
+      (this.viewer.modifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift
     return modifierKeyWasUsed
   }
 
@@ -561,7 +561,7 @@ export class LayoutEditor {
     this.edgeWithSmoothedPolylineExposed = edge
     edge.radiusOfPolylineCorner = this.viewer.smoothedPolylineCircleRadius
     this.DecorateEdgeForDragging(edge)
-    this.viewer.invalidate(edge)
+    this.invalidate(edge.entity)
   }
 
   *ViewerNodes(): IterableIterator<IViewerNode> {
@@ -601,7 +601,7 @@ export class LayoutEditor {
     if (this.edgeWithSmoothedPolylineExposed != null) {
       this.edgeWithSmoothedPolylineExposed.selectedForEditing = false
       this.removeEdgeDraggingDecorations(this.edgeWithSmoothedPolylineExposed)
-      this.viewer.invalidate(this.edgeWithSmoothedPolylineExposed)
+      this.invalidate(this.edgeWithSmoothedPolylineExposed.edge)
       this.edgeWithSmoothedPolylineExposed = null
     }
   }
@@ -856,7 +856,7 @@ export class LayoutEditor {
     this.handleTheMouseCursorOutOfTheBoundingBox(currentDragPoint)
     this.geomGraphEditor.drag(currentDragPoint.sub(this._lastDragPoint), this.GetDraggingMode(), this._lastDragPoint)
     for (const affectedObject of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
-      this.viewer.invalidate(affectedObject.getAttr(AttributeRegistry.ViewerIndex))
+      this.invalidate(affectedObject)
     }
     e.stopPropagation()
     this._lastDragPoint = currentDragPoint
@@ -884,7 +884,7 @@ export class LayoutEditor {
     if (!g.boundingBox.containsRect(mousePointerBox)) {
       this.geomGraphEditor.registerForUndo(this.graph)
       g.boundingBox = g.boundingBox.addRec(mousePointerBox)
-      this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+      this.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
     }
   }
 
@@ -900,7 +900,7 @@ export class LayoutEditor {
 
   GetDraggingMode(): DraggingMode {
     const incremental: boolean =
-      (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift || this.viewer.IncrementalDraggingModeAlways
+      (this.viewer.modifierKeys & ModifierKeysEnum.Shift) == ModifierKeysEnum.Shift || this.viewer.IncrementalDraggingModeAlways
     return incremental ? DraggingMode.Incremental : DraggingMode.Default
   }
 
@@ -910,7 +910,7 @@ export class LayoutEditor {
     RectilinearInteractiveEditor.CreatePortsAndRouteEdges(
       settings.commonSettings.NodeSeparation / 3,
       1,
-      geomGraph.deepNodes,
+      geomGraph.nodesBreadthFirst,
       geomGraph.deepEdges,
       settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode,
     )
@@ -966,7 +966,7 @@ export class LayoutEditor {
       if (!newBox.equal(gg.boundingBox)) {
         this.geomGraphEditor.registerForUndo(this.graph)
         gg.boundingBox = newBox
-        this.viewer.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+        this.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
         args.preventDefault()
       }
     }
@@ -1086,13 +1086,25 @@ export class LayoutEditor {
     return point.sub(this.mouseDownGraphPoint).length < radius
   }
 
+  invalidate(ent: Entity) {
+    this.viewer.invalidate(ent.getAttr(AttributeRegistry.ViewerIndex))
+    if (ent instanceof Graph) {
+      for (const n of ent.nodesBreadthFirst) {
+        this.viewer.invalidate(n.getAttr(AttributeRegistry.ViewerIndex))
+      }
+      for (const e of ent.edges) {
+        this.viewer.invalidate(e.getAttr(AttributeRegistry.ViewerIndex))
+      }
+    }
+  }
+
   /**   Undoes the editing*/
   undo() {
     if (this.geomGraphEditor.canUndo) {
       const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByUndo())
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
-        this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+        this.invalidate(o)
       }
     }
   }
@@ -1103,7 +1115,7 @@ export class LayoutEditor {
       const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
-        this.viewer.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+        this.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
       }
     }
   }
@@ -1123,7 +1135,7 @@ export class LayoutEditor {
   // //  FitGraphBoundingBox(graphToFit: IViewerObject) {
   // //     if ((graphToFit != null)) {
   // //         this.geomGraphEditor.FitGraphBoundingBox(graphToFit, (<GeometryGraph>(graphToFit.DrawingObject.GeomObject)));
-  // //         this.viewer.Invalidate();
+  // //         this.invalidate();
   // //     }
 
   // // }
@@ -1199,7 +1211,7 @@ export class LayoutEditor {
         const loosePadding = 0.65 * padding
 
         this.interactiveEdgeRouter = InteractiveEdgeRouter.constructorANNN(
-          Array.from(this.graph.deepNodes).map((n) => (GeomNode.getGeom(n) as GeomNode).boundaryCurve),
+          Array.from(this.graph.nodesBreadthFirst).map((n) => (GeomNode.getGeom(n) as GeomNode).boundaryCurve),
           padding,
           loosePadding,
           0,
@@ -1212,26 +1224,26 @@ export class LayoutEditor {
 
   // //  InsertPolylineCorner(point: Point, previousCorner: CornerSite) {
   // //     this.geomGraphEditor.InsertSite(this.SelectedEdge.edge.GeometryEdge, point, previousCorner, this.SelectedEdge);
-  // //     this.viewer.Invalidate(this.SelectedEdge);
+  // //     this.invalidate(this.SelectedEdge);
   // // }
 
   // // InsertPolylineCorner() {
   // //     this.geomGraphEditor.InsertSite(this.SelectedEdge.edge.GeometryEdge, this.mouseRightButtonDownPoint, this.cornerInfo.Item1, this.SelectedEdge);
-  // //     this.viewer.Invalidate(this.SelectedEdge);
+  // //     this.invalidate(this.SelectedEdge);
   // // }
 
   // // //  delete the polyline corner, shortcut it.
 
   // //  DeleteCorner(corner: CornerSite) {
   // //     this.geomGraphEditor.DeleteSite(this.SelectedEdge.edge.GeometryEdge, corner, this.SelectedEdge);
-  // //     this.viewer.Invalidate(this.SelectedEdge);
+  // //     this.invalidate(this.SelectedEdge);
   // //     this.viewer.OnDragEnd([
   // //                 this.SelectedEdge]);
   // // }
 
   // // DeleteCorner() {
   // //     this.geomGraphEditor.DeleteSite(this.SelectedEdge.edge.GeometryEdge, this.cornerInfo.Item1, this.SelectedEdge);
-  // //     this.viewer.Invalidate(this.SelectedEdge);
+  // //     this.invalidate(this.SelectedEdge);
   // //     this.viewer.OnDragEnd([
   // //                 this.SelectedEdge]);
   // // }
@@ -1273,7 +1285,7 @@ export class LayoutEditor {
 
   MouseMoveLiveSelectObjectsForDragging(e: MouseEvent) {
     this.unselectEverything()
-    if (LeftMouseIsPressed(e) && (this.viewer.bodifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
+    if (LeftMouseIsPressed(e) && (this.viewer.modifierKeys & ModifierKeysEnum.Shift) != ModifierKeysEnum.Shift) {
       this.SelectEntitiesForDraggingWithRectangle(e)
     }
   }
@@ -1336,7 +1348,7 @@ export class LayoutEditor {
 // //     let matrix = (translateToNode
 // //                 * (scaleMatrix * translateToOrigin));
 // //     viewerNode.node.GeomNode.BoundaryCurve = viewerNode.node.GeomNode.BoundaryCurve.Transform(matrix);
-// //     this.viewer.Invalidate(viewerNode);
+// //     this.invalidate(viewerNode);
 // //     for (let edge of viewerNode.OutEdges.Concat(viewerNode.InEdges).Concat(viewerNode.SelfEdges)) {
 // //         this.RecoverEdge(edge);
 // //     }
@@ -1346,7 +1358,7 @@ export class LayoutEditor {
 // // RecoverEdge(edge: IViewerEdge) {
 // //     let curve = edge.edge.GeometryEdge.UnderlyingPolyline.CreateCurve();
 // //     Arrowheads.TrimSplineAndCalculateArrowheads(edge.edge.GeometryEdge, curve, true, this.Graph.LayoutAlgorithmSettings.EdgeRoutingSettings.KeepOriginalSpline);
-// //     this.viewer.Invalidate(edge);
+// //     this.invalidate(edge);
 // // }
 
 // // //

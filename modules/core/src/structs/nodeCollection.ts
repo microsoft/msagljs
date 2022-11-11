@@ -23,11 +23,11 @@ export class NodeCollection {
     return this.nodes_()
   }
   /** iterates breadth first  */
-  *nodesDeep(): IterableIterator<Node> {
+  *nodesBreadthFirst(): IterableIterator<Node> {
     for (const n of this.nodes_()) {
       yield n
       if (n instanceof Graph) {
-        for (const nn of (<Graph>n).nodeCollection.nodesDeep()) {
+        for (const nn of (<Graph>n).nodeCollection.nodesBreadthFirst()) {
           yield nn
         }
       }

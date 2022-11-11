@@ -199,7 +199,7 @@ export class SvgCreator {
 
     // After the y flip the top has moved to -top : translating it to zero
     this.setTransformForTranformGroup()
-    for (const node of this.graph.deepNodes) {
+    for (const node of this.graph.nodesBreadthFirst) {
       this.drawNode(node)
     }
     for (const edge of this.graph.deepEdges) {
