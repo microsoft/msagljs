@@ -122,20 +122,7 @@ export class GeometryGraphEditor {
       // this.EditedEdge != null
       this.dragPolylineCorner(lastMousePosition, delta)
     }
-    // this.registerForUndo(this.graph().entity)
-    // this.graph().pumpTheBoxToTheGraphWithMargins()
   }
-  // registerChangedParents(entitiesWithExtendedBoxes: Set<Entity>, e: GeomObject) {
-  //   const parent = e.parent
-  //   if (!parent) return
-
-  //   if (entitiesWithExtendedBoxes.has(parent.entity)) return
-  //   if (parent.boundingBox.containsRect(e.boundingBox)) return
-  //   this.registerForUndo(parent.entity)
-  //   parent.boundingBox = parent.boundingBox.add_rect(e.boundingBox) as Rectangle
-  //   entitiesWithExtendedBoxes.add(parent.entity)
-  //   this.registerChangedParents(entitiesWithExtendedBoxes, parent)
-  // }
 
   DragObjectsForRectilinearCase(delta: Point): Array<Entity> {
     for (const node of this.objectsToDrag) {
@@ -399,7 +386,9 @@ export class GeometryGraphEditor {
   calculateDragSetsForEdges() {
     // copy this.objectsToDrag to an array because new entities might be added to it
     for (const geomObj of Array.from(this.objectsToDrag)) {
-      if (geomObj instanceof GeomNode) {
+      if (geomObj instanceof GeomGraph) {
+        this.addGeomGraphEdgesToRerouteOrDrag(geomObj)
+      } else if (geomObj instanceof GeomNode) {
         this.addNodeEdgesToRerouteOrDrag(geomObj as GeomNode)
       } else if (geomObj instanceof GeomEdge && geomObj.edge.label) {
         this.addToObjectsToDrag(geomObj.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
@@ -408,16 +397,12 @@ export class GeometryGraphEditor {
   }
 
   private addNodeEdgesToRerouteOrDrag(node: GeomNode) {
+    Assert.assert(node instanceof GeomGraph == false)
     for (const edge of node.selfEdges()) {
       this.addToObjectsToDrag(edge)
     }
 
     for (const edge of node.inEdges()) {
-      if (node instanceof GeomGraph && node.isAncestor(edge.source)) {
-        // this edge will be translated by the cluster move
-        continue
-      }
-
       if (this.hasSelfOrAncestorInObjectsToDrag(edge.source)) {
         // has to drag
         this.addToObjectsToDrag(edge)
@@ -427,11 +412,6 @@ export class GeometryGraphEditor {
     }
 
     for (const edge of node.outEdges()) {
-      if (node instanceof GeomGraph && node.isAncestor(edge.target)) {
-        // this edge will be translated by the cluster move
-        continue
-      }
-
       if (this.hasSelfOrAncestorInObjectsToDrag(edge.target)) {
         // has to drag
         this.addToObjectsToDrag(edge)
@@ -443,6 +423,45 @@ export class GeometryGraphEditor {
       for (const n of node.nodesBreadthFirst) {
         this.addNodeEdgesToRerouteOrDrag(n)
       }
+  }
+  private addGeomGraphEdgesToRerouteOrDrag(subg: GeomGraph) {
+    Assert.assert(subg instanceof GeomGraph)
+    for (const edge of subg.selfEdges()) {
+      this.addToObjectsToDrag(edge)
+    }
+
+    for (const edge of subg.inEdges()) {
+      if (subg.isAncestor(edge.source)) continue
+      if (this.hasAncestorInObjectsToDrag(edge.source)) {
+        this.addToObjectsToDrag(edge)
+      } else {
+        this.edgesToReroute.add(edge)
+      }
+    }
+
+    for (const edge of subg.outEdges()) {
+      if (subg.isAncestor(edge.target)) continue
+      if (this.hasSelfOrAncestorInObjectsToDrag(edge.target)) {
+        // has to drag
+        this.addToObjectsToDrag(edge)
+      } else {
+        this.edgesToReroute.add(edge)
+      }
+    }
+    for (const n of subg.nodesBreadthFirst) {
+      for (const e of n.outEdges()) {
+        const target = e.target
+        if (subg.isAncestor(target)) continue
+        if (this.hasSelfOrAncestorInObjectsToDrag(target)) this.objectsToDrag.add(e)
+        else this.edgesToReroute.add(e)
+      }
+      for (const e of n.inEdges()) {
+        const source = e.source
+        if (subg.isAncestor(source)) continue
+        if (this.hasSelfOrAncestorInObjectsToDrag(source)) this.objectsToDrag.add(e)
+        else this.edgesToReroute.add(e)
+      }
+    }
   }
   /** returns true iff the edge is under a cluster belonging to this.objectsToDrag */
 

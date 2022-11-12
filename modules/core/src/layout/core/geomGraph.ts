@@ -45,7 +45,11 @@ export class GeomGraph extends GeomNode {
   }
   deepTranslate(delta: Point) {
     for (const n of this.nodesBreadthFirst) {
-      n.translate(delta)
+      if (n instanceof GeomGraph) {
+        n.boundingBox = n.boundingBox.translate(delta)
+      } else {
+        n.translate(delta)
+      }
       for (const e of n.selfEdges()) {
         e.translate(delta)
       }
@@ -53,6 +57,7 @@ export class GeomGraph extends GeomNode {
         if (this.graph.isAncestor(e.target.node)) e.translate(delta)
       }
     }
+    this.boundingBox = this.boundingBox.translate(delta)
   }
   /** The empty space between the graph inner entities and its boundary */
   margins = {left: 10, top: 10, bottom: 10, right: 10}
@@ -161,19 +166,10 @@ export class GeomGraph extends GeomNode {
       this.rrect == null || this.rrect.isEmpty() ? this.pumpTheBoxToTheGraphWithMargins() : this.boundingBox.transform(matrix)
   }
 
+  /** Contrary to the deepTranslate() it also translates edges leading out of the graph */
   translate(delta: Point) {
     if (delta.x === 0 && delta.y === 0) return
-
-    for (const n of this.shallowNodes) {
-      n.translate(delta)
-    }
-    for (const e of this.edges()) {
-      e.translate(delta)
-      if (e.label) e.label.translate(delta)
-    }
-
-    this.boundingBox =
-      this.rrect == null || this.rrect.isEmpty() ? this.pumpTheBoxToTheGraphWithMargins() : this.boundingBox.translate(delta)
+    this.deepTranslate(delta)
   }
   get nodesBreadthFirst(): IterableIterator<GeomNode> {
     return this.nodesBreadthFirstIter()

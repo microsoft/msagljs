@@ -17,6 +17,7 @@ import {Polygon} from '../../src/routing/visibility/Polygon'
 import {VisibilityGraph} from '../../src/routing/visibility/VisibilityGraph'
 import {AttributeRegistry} from '../../src/structs/attributeRegistry'
 import {Edge} from '../../src/structs/edge'
+import {Entity} from '../../src/structs/entity'
 import {Graph} from '../../src/structs/graph'
 import {Node} from '../../src/structs/node'
 import {closeDistEps} from '../../src/utils/compare'
@@ -271,12 +272,9 @@ test('clusters_1 drag', () => {
   layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
   const x = graph.findNodeRecursive('x')
   const xg = x.getAttr(AttributeRegistry.GeomObjectIndex)
-  const x_edge = Array.from(x.edges)[0]
-  const x_edge_curve = x_edge.getAttr(AttributeRegistry.GeomObjectIndex).curve
-  const x_edge_start = x_edge_curve.start.clone() as Point
 
-  const cluster_1 = graph.findNodeRecursive('cluster_1') as Node
-  const cluster_1G = GeomGraph.getGeom(cluster_1 as Graph)
+  const cluster_1 = graph.findNodeRecursive('cluster_1') as Graph
+  const cluster_1g = GeomGraph.getGeom(cluster_1 as Graph)
   const cluster_1v = new SvgViewerNode(cluster_1, null)
   viewer.objectUnderMouseCursor = cluster_1v
   const xg_center = xg.center.clone() as Point
@@ -285,17 +283,21 @@ test('clusters_1 drag', () => {
   mouseEvent.clientX = xg.center.x
   mouseEvent.clientY = xg.center.y
   mouseEvent.buttons = 1 // left button is on
-  let inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
+  let inters = cluster_1g.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
   expect(
-    (cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle).isEmpty(),
+    (cluster_1g.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle).isEmpty(),
   ).toBe(true)
   layoutEditor.viewerMouseDown(null, mouseEvent)
-  const y_del = 2
-  mouseEvent.clientY += y_del
+  const del = 4
+  mouseEvent.clientX += del
+  mouseEvent.clientY += del
+  const positions: Map<Entity, Point> = fillPositions(cluster_1g, cluster_1)
+
   layoutEditor.viewerMouseMove(null, mouseEvent)
-  expect(closeDistEps(xg_center.y + y_del, xg.center.y)).toBe(true)
-  inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
-  SvgDebugWriter.writeGeomGraph('./tmp/clust.svg', GeomGraph.getGeom(graph))
+  checkThatPositionsAreTranslated(cluster_1g, positions, del)
+  expect(Point.closeDistEps(xg.center, xg_center.add(new Point(del, del)))).toBe(true)
+  inters = cluster_1g.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox) as Rectangle
+  SvgDebugWriter.writeGeomGraph('./tmp/clust_1drag.svg', GeomGraph.getGeom(graph))
   expect(inters.isEmpty()).toBe(true)
   expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
   expect(edgesAreAttached(graph)).toBe(true)
@@ -325,10 +327,12 @@ test('clusters x drag', () => {
   let inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
   expect(cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox).isEmpty()).toBe(true)
   layoutEditor.viewerMouseDown(null, mouseEvent)
-  mouseEvent.clientY += 2
+  const del = 4
+  mouseEvent.clientX += del
+  mouseEvent.clientY += del
   layoutEditor.viewerMouseMove(null, mouseEvent)
   inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
-  // SvgDebugWriter.writeGeomGraph('./tmp/clust.svg', GeomGraph.getGeom(graph))
+  SvgDebugWriter.writeGeomGraph('./tmp/clusters_x.svg', GeomGraph.getGeom(graph))
   expect(inters.isEmpty()).toBe(true)
   expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
   expect(edgesAreAttached(graph)).toBe(true)
@@ -368,13 +372,24 @@ test('diagonals', () => {
     }
   }
 })
+function fillPositions(cluster_1g: GeomGraph, cluster_1: Graph) {
+  const positions = new Map<Entity, Point>()
+  for (const n of cluster_1g.nodesBreadthFirst) {
+    positions.set(n.node, n.center)
+  }
+  positions.set(cluster_1, cluster_1g.center)
+  return positions
+}
+
 function getPoly(center: Point, size: number): Polyline {
   const rect = Rectangle.mkSizeCenter(new Size(size, size), center)
   return rect.perimeter()
 }
 function edgesAreAttached(graph: Graph): boolean {
-  for (const e of graph.edges) {
-    if (edgeIsAttached(e) == false) return false
+  for (const e of graph.deepEdges) {
+    if (edgeIsAttached(e) == false) {
+      return false
+    }
   }
   return true
 }
@@ -395,4 +410,14 @@ function edgeEnd(e: Edge): Point {
   const ge = GeomEdge.getGeom(e)
   if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
   return ge.curve.end
+}
+function checkThatPositionsAreTranslated(cluster_1g: GeomGraph, positions: Map<Entity, Point>, del: number) {
+  const dp = new Point(del, del)
+  for (const n of cluster_1g.nodesBreadthFirst) {
+    const pos = positions.get(n.node)
+    const npos = n.center
+    expect(Point.closeDistEps(npos, pos.add(dp))).toBe(true)
+  }
+  const clust_pos = positions.get(cluster_1g.entity)
+  expect(Point.closeDistEps(cluster_1g.center, clust_pos.add(dp))).toBe(true)
 }
