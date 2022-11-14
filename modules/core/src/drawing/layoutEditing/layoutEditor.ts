@@ -966,7 +966,7 @@ export class LayoutEditor {
       if (!newBox.equal(gg.boundingBox)) {
         this.geomGraphEditor.registerForUndo(this.graph)
         gg.boundingBox = newBox
-        this.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+        this.invalidate(this.graph)
         args.preventDefault()
       }
     }

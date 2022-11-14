@@ -184,7 +184,6 @@ export class StraightLineEdges extends Algorithm {
 
   // creates an geomedge curve based only on the source and target geometry
   public static CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge: GeomEdge) {
-    Assert.assert(geomedge.source.boundingBox.intersects_rect(geomedge.target.boundingBox) == false)
     const a = geomedge.source.center
     const b = geomedge.target.center
     if (geomedge.source === geomedge.target) {
