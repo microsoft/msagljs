@@ -82,7 +82,7 @@ export default class Renderer extends EventSource {
 
     this._deck = new Deck({
       parent: divs[0],
-      views: [new OrthographicView({})],
+      views: [new OrthographicView({flipY: false})],
       initialViewState: {
         target: [0, 0, 0],
         zoom: 0,

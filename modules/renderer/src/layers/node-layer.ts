@@ -58,9 +58,16 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
           getText: (n: GeomNode) => (<DrawingNode>DrawingNode.getDrawingObj(n.node)).labelText,
           getColor: getNodeColor,
           getSize: this.props.getTextSize,
+          billboard: false,
           sizeMaxPixels: 48,
           sizeUnits: 'common',
           characterSet: 'auto',
+          // TODO - fix in ClipExtension
+          _subLayerProps: {
+            characters: {
+              clipByInstance: false,
+            },
+          },
         },
       ),
     ]

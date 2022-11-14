@@ -139,6 +139,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           getIcon: (d) => d.type,
           getSize: (d) => getArrowSize(d.tip, d.end),
           getAngle: (d) => getArrowAngle(d.tip, d.end),
+          billboard: false,
           sizeUnits: 'common',
         },
       ),
@@ -155,6 +156,7 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           getColor: getEdgeColor,
           getSize: this.props.getTextSize,
           sizeMaxPixels: 48,
+          billboard: false,
           sizeUnits: 'common',
           characterSet: 'auto',
         },
@@ -220,5 +222,5 @@ function getArrowSize(tip: Point, end: Point): number {
 function getArrowAngle(tip: Point, end: Point): number {
   const dx = tip.x - end.x
   const dy = tip.y - end.y
-  return (-Math.atan2(dy, dx) / Math.PI) * 180
+  return (Math.atan2(dy, dx) / Math.PI) * 180
 }
