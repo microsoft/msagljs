@@ -8,12 +8,26 @@ import {Node} from '../../structs/node'
 import {Label} from '../../structs/label'
 import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
+import {Point} from '../../math/geometry'
 type UndoChangeData = Map<Entity, {old: Attribute; new: Attribute}[]>
 type UndoDeleteData = {deletedEnts: Set<Entity>}
 type UndoInsertData = {insertedEnts: Set<Entity>}
-type UndoData = UndoChangeData | UndoDeleteData | UndoInsertData
+type UndoDragData = {draggedEnts: Set<Entity>; delta: Point; changeData: UndoChangeData}
+type UndoData = UndoChangeData | UndoDeleteData | UndoInsertData | UndoDragData
 /** support for undo/redo functionality */
 export class UndoRedoAction {
+  updateDeltaForDragUndo(delta: Point) {
+    const data = this.data as UndoDragData
+    data.delta = delta
+  }
+  registerUndoDrag(entity: Entity) {
+    if (this.data == null) {
+      this.data = {draggedEnts: new Set<Entity>(), delta: null, changeData: new Map<Entity, {old: Attribute; new: Attribute}[]>()}
+    }
+    if ('draggedEnts' in this.data) {
+      this.data.draggedEnts.add(entity)
+    }
+  }
   undo() {
     Assert.assert(this.canUndo)
     if (this.data instanceof Map) {
@@ -39,8 +53,18 @@ export class UndoRedoAction {
           throw new Error('not implemented')
         }
       }
-    } else {
-      throw new Error('unexpected undo data')
+    } else if ('draggedEnts' in this.data) {
+      for (const e of this.data.draggedEnts) {
+        const geom = GeomObject.getGeom(e)
+        geom.translate(this.data.delta)
+      }
+      for (const [e, v] of this.data.changeData) {
+        for (const pair of v) {
+          // prepare for redo as well
+          pair.new = e.getAttr(registryIndexOfAttribue(pair.old)).clone()
+          pair.old.rebind(e)
+        }
+      }
     }
 
     this.canUndo = false
@@ -85,7 +109,7 @@ export class UndoRedoAction {
     if (!this.data) {
       this.data = new Map<Entity, {old: Attribute; new: Attribute}[]>()
     }
-    const changesInAttributes = this.data as UndoChangeData
+    const changesInAttributes = 'draggedEnts' in this.data ? this.data.changeData : (this.data as UndoChangeData)
     if (!changesInAttributes.has(entity)) {
       changesInAttributes.set(entity, [])
     }
@@ -124,14 +148,20 @@ export class UndoRedoAction {
     this._canUndo = v
   }
 
-  data: UndoData;
+  private data: UndoData;
 
   /** iterates over the affected objects */
   *entities(): IterableIterator<Entity> {
     if (!this.data) return
     if (this.data instanceof Map) yield* this.data.keys()
-    else if ('deletedEnts' in this.data) yield* this.data.deletedEnts
+    else if ('draggedEnts' in this.data) {
+      yield* this.data.changeData.keys()
+      yield* this.data.draggedEnts
+    } else if ('deletedEnts' in this.data) yield* this.data.deletedEnts
     else if ('insertedEnts' in this.data) yield* this.data.insertedEnts
+    else {
+      throw new Error('not implemented')
+    }
   }
 
   next: UndoRedoAction

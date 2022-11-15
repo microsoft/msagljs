@@ -955,6 +955,7 @@ export class LayoutEditor {
       }
     } else if (this.dragging) {
       if (!this.insertingEdge) {
+        this.geomGraphEditor.updateDeltaForDragUndo(this.mouseDownGraphPoint.sub(this._lastDragPoint))
         this.interactiveEdgeRouter = null
         this.looseObstaclesToTheirViewerNodes = null
       } else {

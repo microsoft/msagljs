@@ -1,9 +1,19 @@
+import {Point} from '../../math/geometry'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
 import {Assert} from '../../utils/assert'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {
+  updateDeltaForDragUndo(delta: Point) {
+    this.currentBridge.updateDeltaForDragUndo(delta)
+  }
+  registerForUndoDrag(entity: Entity) {
+    if (this.currentBridge == null) {
+      this.currentBridge = new UndoRedoAction()
+    }
+    this.currentBridge.registerUndoDrag(entity)
+  }
   registerDelete(entity: Entity) {
     if (this.currentBridge == null) {
       this.currentBridge = new UndoRedoAction()

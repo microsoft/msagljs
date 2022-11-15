@@ -26,6 +26,9 @@ export enum DraggingMode {
   Default,
 }
 export class GeometryGraphEditor {
+  updateDeltaForDragUndo(delta: Point) {
+    this.undoList.updateDeltaForDragUndo(delta)
+  }
   registerDelete(entity: Entity) {
     this.undoList.registerDelete(entity)
   }
@@ -110,7 +113,7 @@ export class GeometryGraphEditor {
   drag(delta: Point, draggingMode: DraggingMode, lastMousePosition: Point) {
     if (delta.x == 0 && delta.y == 0) return
     for (const o of this.objectsToDrag) {
-      this.registerForUndo(o.entity)
+      this.registerForUndoDrag(o.entity)
     }
     if (this.geomEdgeWithSmoothedPolylineExposed == null) {
       if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
@@ -122,6 +125,9 @@ export class GeometryGraphEditor {
       // this.EditedEdge != null
       this.dragPolylineCorner(lastMousePosition, delta)
     }
+  }
+  registerForUndoDrag(entity: Entity) {
+    this.undoList.registerForUndoDrag(entity)
   }
 
   DragObjectsForRectilinearCase(delta: Point): Array<Entity> {
@@ -172,7 +178,7 @@ export class GeometryGraphEditor {
     }
 
     this.propagateChangesToClusterParents()
-    this.regenerateEdgesAsStraightLines()
+    this.routeEdgesAsStraightLines()
   }
 
   propagateChangesToClusterParents() {
@@ -239,7 +245,7 @@ export class GeometryGraphEditor {
     this.undoList.registerForUndo(e)
   }
 
-  regenerateEdgesAsStraightLines() {
+  routeEdgesAsStraightLines() {
     for (const edge of this.edgesToReroute) {
       this.registerForUndo(edge.entity)
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(edge)
