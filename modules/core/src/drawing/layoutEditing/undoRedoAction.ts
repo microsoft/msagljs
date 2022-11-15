@@ -65,6 +65,8 @@ export class UndoRedoAction {
           pair.old.rebind(e)
         }
       }
+    } else {
+      throw new Error('not implemented')
     }
 
     this.canUndo = false
@@ -92,9 +94,17 @@ export class UndoRedoAction {
           throw new Error('unexpected type in redo')
         }
       }
-    } else if ('insertedEnts' in this.data) {
-      for (const ent of this.data.insertedEnts) {
-        restoreEntity(ent)
+    } else if ('draggedEnts' in this.data) {
+      const del = this.data.delta.neg()
+      for (const e of this.data.draggedEnts) {
+        const geom = GeomObject.getGeom(e)
+        geom.translate(del)
+      }
+      for (const [e, v] of this.data.changeData) {
+        for (const pair of v) {
+          const attr = pair.new
+          attr.rebind(e)
+        }
       }
     } else {
       throw new Error('not implemented')

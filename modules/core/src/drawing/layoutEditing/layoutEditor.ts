@@ -1116,7 +1116,7 @@ export class LayoutEditor {
       const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
-        this.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+        this.invalidate(o)
       }
     }
   }
