@@ -148,7 +148,7 @@ export class Graph extends Node {
   /** iterates over the edges of the graph which adjacent to the nodes of the graph:
    * not iterating over the subgraphs
    */
-  get edges() {
+  get shallowEdges() {
     return this.nodeCollection.edges
   }
 

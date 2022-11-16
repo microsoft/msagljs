@@ -18,7 +18,7 @@ export class ShapeCreator {
 
   // graph with edges to route and nodes/clusters to route around
   // <returns>the set of obstacles with correct cluster hierarchy and ports</returns>
-  public static GetShapes(graph: GeomGraph, edges: GeomEdge[] = Array.from(graph.edges())): Array<Shape> {
+  public static GetShapes(graph: GeomGraph, edges: GeomEdge[] = Array.from(graph.shallowEdges)): Array<Shape> {
     const nodesToShapes = new Map<GeomNode, Shape>()
     getShapesUnderGraph(graph, nodesToShapes)
 

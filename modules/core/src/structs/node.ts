@@ -1,8 +1,5 @@
 import {Entity} from './entity'
 import {Edge} from './edge'
-import {Graph} from './graph'
-import {Assert} from '../utils/assert'
-// import {Assert} from '../utils/assert'
 /** Represent a node of a graph: has id, which is a string, and sets of in/out/self edges */
 export class Node extends Entity {
   private _id: string

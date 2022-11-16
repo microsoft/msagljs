@@ -79,7 +79,7 @@ function figureOutSettings(geomGraph: GeomGraph): any {
   }
 
   let directed = false
-  for (const e of geomGraph.edges()) {
+  for (const e of geomGraph.deepEdges) {
     if (e.sourceArrowhead != null || e.targetArrowhead != null) {
       directed = true
       break
@@ -326,7 +326,7 @@ export function layoutIsCalculated(graph: Graph): boolean {
       if (layoutIsCalculated(n) === false) return false
     }
   }
-  for (const e of graph.edges) {
+  for (const e of graph.deepEdges) {
     const ge = GeomEdge.getGeom(e) as GeomEdge
     if (ge == null || ge.curve == null) return false
   }

@@ -221,8 +221,8 @@ export class StraightLineEdges extends Algorithm {
   }
 
   static SetStraightLineEdgesWithUnderlyingPolylines(graph: GeomGraph) {
-    SplineRouter.CreatePortsIfNeeded(Array.from(graph.edges()))
-    for (const geomedge of graph.edges()) {
+    SplineRouter.CreatePortsIfNeeded(Array.from(graph.deepEdges))
+    for (const geomedge of graph.deepEdges) {
       StraightLineEdges.CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge)
     }
   }

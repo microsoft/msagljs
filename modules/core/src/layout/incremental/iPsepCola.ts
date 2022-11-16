@@ -51,7 +51,7 @@ export class IPsepCola extends Algorithm {
     this.graph = geometryGraph
     this.settings = settings
     this.initFiNodesEdges()
-    this.edges = Array.from(this.graph.edges()).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
+    this.edges = Array.from(this.graph.shallowEdges).map((gn) => AlgorithmData.getAlgData(gn.edge).data as FiEdge)
     this.nodes = Array.from(this.graph.shallowNodes).map((gn) => AlgorithmData.getAlgData(gn.node).data as FiNode)
     this.components = new Array<FiNode[]>()
     if (!this.settings.InterComponentForces) {
@@ -83,7 +83,7 @@ export class IPsepCola extends Algorithm {
       new AlgorithmData(gn.node, fiNode) //this will bind the new fiNode with the underlying Node
     }
 
-    for (const e of this.graph.edges()) {
+    for (const e of this.graph.shallowEdges) {
       // if (e.source instanceof GeomGraph || e.target instanceof GeomGraph) {
       // continue
       //} else {

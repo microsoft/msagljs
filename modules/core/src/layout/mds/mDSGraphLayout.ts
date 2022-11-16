@@ -46,7 +46,7 @@ export class MdsGraphLayout extends Algorithm {
 
     let avgLength = 0
     let avgSum = 0
-    for (const edge of g.edges()) {
+    for (const edge of g.shallowEdges) {
       const i: number = index.get(edge.source)
       const j: number = index.get(edge.target)
       avgSum += Math.sqrt(Math.pow(x[i] - x[j], 2) + Math.pow(y[i] - y[j], 2))

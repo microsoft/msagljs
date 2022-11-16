@@ -105,7 +105,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
 function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, overrides: LayoutOptions): ILayoutSettings {
   // directed is true iff the dot starts with keyword 'digraph'
   let directed = false
-  for (const e of subgraph.edges()) {
+  for (const e of subgraph.deepEdges) {
     if (e.sourceArrowhead != null || e.targetArrowhead != null) {
       directed = true
       break

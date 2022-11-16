@@ -1093,7 +1093,7 @@ export class LayoutEditor {
       for (const n of ent.nodesBreadthFirst) {
         this.viewer.invalidate(n.getAttr(AttributeRegistry.ViewerIndex))
       }
-      for (const e of ent.edges) {
+      for (const e of ent.deepEdges) {
         this.viewer.invalidate(e.getAttr(AttributeRegistry.ViewerIndex))
       }
     }

@@ -42,8 +42,11 @@ export class GeomConnectedComponent implements IGeomGraph {
       }
     }
   }
-  uniformMargins: number;
-  *edges(): IterableIterator<GeomEdge> {
+  uniformMargins: number
+  get shallowEdges(): IterableIterator<GeomEdge> {
+    return this.edges_()
+  }
+  *edges_(): IterableIterator<GeomEdge> {
     for (const n of this.topNodes) {
       for (const e of n.outEdges) yield GeomEdge.getGeom(e) as GeomEdge
       for (const e of n.selfEdges) yield GeomEdge.getGeom(e) as GeomEdge

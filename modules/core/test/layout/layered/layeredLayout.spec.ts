@@ -62,7 +62,7 @@ test('self on node', () => {
   g.setEdge('a', 'a')
   g.layoutSettings = new SugiyamaLayoutSettings()
   layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
-  for (const e of g.edges()) {
+  for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
   // SvgDebugWriter.writeGeomGraph('./tmp/self.svg', g)
@@ -159,7 +159,7 @@ test('disconnected comps', () => {
     strB.AppendLine(s)
   }
   strB.AppendLine('edges')
-  for (const e of g.edges()) {
+  for (const e of g.deepEdges) {
     strB.AppendLine(edgeString(e, true)) // true to get an array of poins
   }
 
@@ -261,7 +261,7 @@ test('arrowhead size default', () => {
 test('arrowhead size per edge', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/abstract.gv'))
   const geomGraph = createGeometry(dg, measureTextSize)
-  for (const e of geomGraph.edges()) {
+  for (const e of geomGraph.deepEdges) {
     if (e.sourceArrowhead) {
       e.sourceArrowhead.length /= 2
     }
@@ -325,12 +325,12 @@ test('layered layout empty graph', () => {
 // the smaller number the better layout
 export function qualityMetric(gg: GeomGraph): number {
   let r = 0 // the sum of edges length
-  for (const e of gg.edges()) {
+  for (const e of gg.deepEdges) {
     r += e.source.center.sub(e.target.center).length
   }
   const internsectionWeight = 100
-  for (const e of gg.edges()) {
-    for (const u of gg.edges()) {
+  for (const e of gg.deepEdges) {
+    for (const u of gg.deepEdges) {
       if (e === u) continue
       if (crossed(e, u)) {
         r += internsectionWeight
@@ -477,7 +477,7 @@ xtest('layout all gv files', () => {
 
 function duplicateDisconnected(g: GeomGraph, suffix: string) {
   const nodes: GeomNode[] = Array.from(g.shallowNodes)
-  const edges: GeomEdge[] = Array.from(g.edges())
+  const edges: GeomEdge[] = Array.from(g.deepEdges)
   for (const n of nodes) {
     setNode(g, n.node.id + suffix, 10, 10)
   }

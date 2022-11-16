@@ -18,7 +18,7 @@ export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve
       gn.boundaryCurve = nodeBoundaryFunc(text)
     }
   }
-  for (const e of g.edges) {
+  for (const e of g.deepEdges) {
     new GeomEdge(e)
   }
   return GeomGraph.mkWithGraphAndLabel(g, null)

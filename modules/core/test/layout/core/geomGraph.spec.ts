@@ -191,7 +191,7 @@ test('intersectedEnities', () => {
   const intersectedNodesAndEdges = Array.from(intersectedObjects(rtree, rect, false)).filter((e) => e instanceof Edge)
 
   expect(intersectedNodesAndEdges.length).toBe(Array.from(geomGraph.deepEdges).length)
-  for (const e of geomGraph.edges()) {
+  for (const e of geomGraph.deepEdges) {
     const r = e.boundingBox
     const intersected_e = Array.from(intersectedObjects(rtree, r, false))
     expect(intersected_e.indexOf(e.edge)).toBeGreaterThan(-1)

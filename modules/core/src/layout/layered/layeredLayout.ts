@@ -87,7 +87,7 @@ export class LayeredLayout extends Algorithm {
     }
 
     const intEdges: PolyIntEdge[] = []
-    for (const edge of this.originalGraph.edges()) {
+    for (const edge of this.originalGraph.shallowEdges) {
       /*Assert.assert(!(edge.source == null  || edge.target == null ))*/
       const source = this.nodeIdToIndex.get(edge.source.id)
       if (source == null) continue
@@ -1074,7 +1074,7 @@ function preRunTransform(geomGraph: GeomGraph, m: PlaneTransformation) {
   }
 
   // calculate new label widths and heights
-  for (const e of geomGraph.edges()) {
+  for (const e of geomGraph.shallowEdges) {
     if (e.label != null) {
       const r = Rectangle.mkPP(
         matrixInverse.multiplyPoint(new Point(0, 0)),
@@ -1093,7 +1093,7 @@ function postRunTransform(geometryGraph: GeomGraph, transform: PlaneTransformati
   }
 
   // restore labels widths and heights
-  for (const e of geometryGraph.edges()) {
+  for (const e of geometryGraph.shallowEdges) {
     if (e.label != null) {
       const r = Rectangle.mkPP(transform.multiplyPoint(new Point(0, 0)), transform.multiplyPoint(new Point(e.label.width, e.label.height)))
       e.label.width = r.width
@@ -1107,7 +1107,7 @@ function postRunTransform(geometryGraph: GeomGraph, transform: PlaneTransformati
 }
 
 function TransformEdges(geometryGraph: GeomGraph, m: PlaneTransformation) {
-  for (const e of geometryGraph.edges()) {
+  for (const e of geometryGraph.shallowEdges) {
     if (e.label) {
       e.label.transform(m)
     }

@@ -157,7 +157,7 @@ export class GeomGraph extends GeomNode {
     for (const n of this.shallowNodes) {
       n.transform(matrix)
     }
-    for (const e of this.edges()) {
+    for (const e of this.shallowEdges) {
       e.transform(matrix)
       if (e.label) e.label.transform(matrix)
     }
@@ -247,15 +247,20 @@ export class GeomGraph extends GeomNode {
   /** iterates over the edges of the graph which adjacent to the nodes of the graph:
    * not iterating over the subgraphs
    */
-  *edges(): IterableIterator<GeomEdge> {
-    for (const n of this.graph.edges) yield GeomObject.getGeom(n) as GeomEdge
-  }
   /** iterates over the edges of the graph including subgraphs */
   get deepEdges() {
     return this.deepEdgesIt()
   }
   private *deepEdgesIt(): IterableIterator<GeomEdge> {
     for (const e of this.graph.deepEdges) {
+      yield <GeomEdge>GeomObject.getGeom(e)
+    }
+  }
+  get shallowEdges() {
+    return this.shallowEdgesIt()
+  }
+  private *shallowEdgesIt(): IterableIterator<GeomEdge> {
+    for (const e of this.graph.shallowEdges) {
       yield <GeomEdge>GeomObject.getGeom(e)
     }
   }
@@ -348,7 +353,7 @@ export class GeomGraph extends GeomNode {
 }
 
 export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
-  for (const e of igraph.edges()) {
+  for (const e of igraph.shallowEdges) {
     if (!isProperEdge(e)) continue
 
     const cb = e.curve.boundingBox
@@ -360,6 +365,9 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
   }
 
   for (const n of igraph.shallowNodes) {
+    if ('shallowEdges' in n) {
+      pumpTheBoxToTheGraph(n as unknown as IGeomGraph, t)
+    }
     if (n.underCollapsedGraph() || !n.boundingBox) continue
     t.b.addRecSelf(n.boundingBox)
   }

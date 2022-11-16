@@ -5,7 +5,7 @@ export interface IGeomGraph {
   Clusters: IterableIterator<IGeomGraph>
   subgraphsDepthFirst: IterableIterator<IGeomGraph>
   uniformMargins: number
-  edges(): IterableIterator<GeomEdge>
+  shallowEdges: IterableIterator<GeomEdge>
   shallowNodes: IterableIterator<GeomNode>
   nodesBreadthFirst: IterableIterator<GeomNode>
   pumpTheBoxToTheGraphWithMargins(): Rectangle

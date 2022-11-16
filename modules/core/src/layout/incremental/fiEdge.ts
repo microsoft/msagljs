@@ -2,7 +2,6 @@ import {Point} from '../../math/geometry'
 import {FiNode, getFiNode} from './fiNode'
 import {IEdge} from '../../structs/iedge'
 import {GeomEdge} from '../core'
-import {AlgorithmData} from '../../structs/algorithmData'
 
 export class FiEdge implements IEdge {
   mEdge: GeomEdge

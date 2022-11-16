@@ -516,8 +516,8 @@ test('data_social', () => {
     dn.arrowtail = ArrowTypeEnum.none
     dn.shape = ShapeEnum.box
   }
-  for (const e of g.edges) {
-    const de = new DrawingEdge(e, false)
+  for (const e of g.deepEdges) {
+    new DrawingEdge(e, false)
   }
   dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)
@@ -531,7 +531,7 @@ test('data_social', () => {
   layoutGraphWithMds(gg, null)
   const sr = new SplineRouter(
     gg,
-    Array.from(gg.edges()),
+    Array.from(gg.deepEdges),
     // edgesToRoute.map((e) => <GeomEdge>GeomObject.getGeom(e)),
   )
   sr.run()
@@ -543,7 +543,7 @@ test('spline router self edge', () => {
   g.setEdge('a', 'a')
   g.layoutSettings = new SugiyamaLayoutSettings()
   layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
-  for (const e of g.edges()) {
+  for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
   g.translate(n.center.neg())
@@ -559,7 +559,7 @@ test('one edge', () => {
   g.setEdge('a', 'b')
   g.layoutSettings = new SugiyamaLayoutSettings()
   layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
-  for (const e of g.edges()) {
+  for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
   g.translate(a.center.neg())

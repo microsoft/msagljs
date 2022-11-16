@@ -61,7 +61,7 @@ export class AllPairsDistances extends Algorithm {
     apd.run()
     const D = apd.Result
     let l = 0
-    for (const e of graph.edges()) {
+    for (const e of graph.shallowEdges) {
       l += length(e)
     }
     l /= graph.edgeCount // average of lengths

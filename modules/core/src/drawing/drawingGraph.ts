@@ -60,7 +60,7 @@ export class DrawingGraph extends DrawingNode {
   }
 
   hasDirectedEdge(): boolean {
-    for (const e of this.graph.edges) {
+    for (const e of this.graph.deepEdges) {
       const drawingEdge = <DrawingEdge>DrawingObject.getDrawingObj(e)
       if (drawingEdge.directed) {
         return true

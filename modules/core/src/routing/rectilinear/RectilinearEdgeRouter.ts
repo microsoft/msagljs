@@ -315,7 +315,7 @@ export class RectilinearEdgeRouter extends Algorithm {
   static constructorGNAN(graph: GeomGraph, geomEdges: GeomEdge[], padding: number, cornerFitRadius: number): RectilinearEdgeRouter {
     const ret = new RectilinearEdgeRouter(ShapeCreator.GetShapes(graph), padding, cornerFitRadius)
     if (geomEdges == null)
-      for (const edge of graph.edges()) {
+      for (const edge of graph.deepEdges) {
         ret.AddEdgeGeometryToRoute(edge)
       }
     else {

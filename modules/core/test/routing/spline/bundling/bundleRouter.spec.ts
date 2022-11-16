@@ -229,7 +229,7 @@ test('fans', () => {
   g.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
   g.layoutSettings.commonSettings.edgeRoutingSettings.bundlingSettings.edgeSeparation *= 2
   // todo : add a check that EdgeNudger create disjoint segments inside of the hub
-  const sr = new SplineRouter(g, Array.from(g.edges()))
+  const sr = new SplineRouter(g, Array.from(g.deepEdges))
   sr.run()
   // const svgDebugWriter = // SvgDebugWriter.writeGeomGraph('./tmp/fan.svg',
   /// SvgDebugWriter.writeGeomGraph(g)

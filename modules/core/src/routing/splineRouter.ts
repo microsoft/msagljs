@@ -147,12 +147,12 @@ export class SplineRouter extends Algorithm {
   }
 
   static mk4(graph: GeomGraph, tightTightPadding: number, loosePadding: number, coneAngle: number): SplineRouter {
-    return new SplineRouter(graph, Array.from(graph.edges()), tightTightPadding, loosePadding, coneAngle, null)
+    return new SplineRouter(graph, Array.from(graph.deepEdges), tightTightPadding, loosePadding, coneAngle, null)
   }
 
   // Creates a spline group router for the given graph
   static mk5(graph: GeomGraph, tightTightPadding: number, loosePadding: number, coneAngle: number, bundlingSettings: BundlingSettings) {
-    return new SplineRouter(graph, Array.from(graph.edges()), tightTightPadding, loosePadding, coneAngle, bundlingSettings)
+    return new SplineRouter(graph, Array.from(graph.deepEdges), tightTightPadding, loosePadding, coneAngle, bundlingSettings)
   }
 
   // Creates a spline group router for a given GeomGraph.
