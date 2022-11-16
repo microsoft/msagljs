@@ -338,7 +338,7 @@ export class RendererSvg implements IViewer {
   invalidate(objectToInvalidate: IViewerObject): void {
     //  console.log('invalidate', objectToInvalidate.entity)
     this._objectTree = null
-    if (isRemoved(objectToInvalidate.entity)) {
+    if (this.graph !== objectToInvalidate.entity && isRemoved(objectToInvalidate.entity)) {
       const svgElem = (objectToInvalidate.entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject).svgData
       svgElem.remove()
     } else {
@@ -447,7 +447,7 @@ export class RendererSvg implements IViewer {
     for (const e of elems) {
       e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
     }
-    subgraph.remove()
+    subgraph.removeSubgraph()
     for (const e of elems) {
       const ve = e.getAttr(AttributeRegistry.ViewerIndex).svgData
       ve.remove()
@@ -493,31 +493,30 @@ function removeEdge(e: Edge) {
   }
 }
 
-function isRemoved(entity: Entity) {
+function isRemoved(entity: Entity): boolean {
   if (entity instanceof Edge) {
-    if (entity.source !== entity.target) return !entity.source.outEdges.has(entity)
-    return !entity.source.selfEdges.has(entity)
-  }
-
-  if (entity instanceof Graph) {
-    if (entity.parent == null) {
-      return false
-    }
-    const graph = entity.parent as Graph
-    return !(graph.findNode(entity.id) === entity)
+    if (entity.source !== entity.target) {
+      if (!entity.source.outEdges.has(entity)) return true
+      if (!entity.target.inEdges.has(entity)) return true
+      return nodeIsRemoved(entity.source) || nodeIsRemoved(entity.target)
+    } else return !entity.source.selfEdges.has(entity) || nodeIsRemoved(entity.source)
   }
 
   if (entity instanceof Node) {
-    if (entity.parent == null) {
-      Assert.assert(entity instanceof Graph)
-      return false
-    }
-    const graph = entity.parent as Graph
-    return !(graph.findNode(entity.id) === entity)
+    return nodeIsRemoved(entity)
   }
   if (entity instanceof Label) {
     if (entity.parent == null) return true
-    const edge = entity.parent as Edge
-    return edge.label !== entity
+    return isRemoved(entity.parent)
+  }
+  return false
+  function nodeIsRemoved(node: Node): boolean {
+    let parent = node.parent as Graph
+    while (parent) {
+      if (parent.findNode(node.id) !== node) return true
+      node = parent
+      parent = parent.parent as Graph
+    }
+    return false
   }
 }

@@ -884,7 +884,7 @@ export class LayoutEditor {
     if (!g.boundingBox.containsRect(mousePointerBox)) {
       this.geomGraphEditor.registerForUndo(this.graph)
       g.boundingBox = g.boundingBox.addRec(mousePointerBox)
-      this.invalidate(this.graph.getAttr(AttributeRegistry.ViewerIndex))
+      this.invalidate(this.graph)
     }
   }
 
@@ -1102,7 +1102,8 @@ export class LayoutEditor {
   /**   Undoes the editing*/
   undo() {
     if (this.geomGraphEditor.canUndo) {
-      const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByUndo())
+      const objectsToInvalidate = new Set<Entity>(this.geomGraphEditor.entitiesToBeChangedByUndo())
+
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
         this.invalidate(o)
@@ -1113,7 +1114,7 @@ export class LayoutEditor {
   /**   Redo the editing*/
   redo() {
     if (this.geomGraphEditor.canRedo) {
-      const objectsToInvalidate = Array.from(this.geomGraphEditor.entitiesToBeChangedByRedo())
+      const objectsToInvalidate = new Set<Entity>(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
         this.invalidate(o)

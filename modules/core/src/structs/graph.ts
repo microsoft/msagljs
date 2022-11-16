@@ -12,7 +12,7 @@ export class Graph extends Node {
   /** Removes itself from under the parent.
    *  Also removes all the edges leading out of the graph.
    */
-  remove() {
+  removeSubgraph() {
     const parent = this.parent as Graph
     if (parent) parent.removeNode(this)
 

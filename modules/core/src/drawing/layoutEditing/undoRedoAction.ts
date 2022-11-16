@@ -82,7 +82,9 @@ export class UndoRedoAction {
       }
     } else if ('deletedEnts' in this.data) {
       for (const ent of this.data.deletedEnts) {
-        if (ent instanceof Node) {
+        if (ent instanceof Graph) {
+          ent.removeSubgraph()
+        } else if (ent instanceof Node) {
           const graph = ent.parent as Graph
           graph.removeNode(ent)
         } else if (ent instanceof Edge) {

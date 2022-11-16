@@ -16,6 +16,7 @@ import {SplineRouter} from '../../routing/splineRouter'
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
+import {Graph} from '../../structs/graph'
 import {Assert} from '../../utils/assert'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
@@ -36,7 +37,12 @@ export class GeometryGraphEditor {
     this.undoList.registerAdd(entity)
   }
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
-    yield* this.undoList.entitiesToBeChangedByRedo()
+    for (const ent of this.undoList.entitiesToBeChangedByRedo()) {
+      yield ent
+      if (ent instanceof Graph) {
+        for (const e of ent.allElements()) yield e
+      }
+    }
   }
   *entitiesToBeChangedByUndo(): IterableIterator<Entity> {
     yield* this.undoList.entitiesToBeChangedByUndo()
