@@ -411,6 +411,10 @@ export class RendererSvg implements IViewer {
     const svgVO = viewerObj as SvgViewerObject
     svgVO.svgData.remove()
     this.layoutEditor.forget(viewerObj)
+    if (ent instanceof Graph) {
+      this.removeSubgraph(ent, registerForUndo)
+      return
+    }
     if (ent instanceof Node) {
       for (const e of ent.edges) {
         this.layoutEditor.registerDelete(e)
@@ -430,6 +434,21 @@ export class RendererSvg implements IViewer {
     } else if (ent instanceof Label) {
       const edge = ent.parent as Edge
       edge.label = null
+    }
+  }
+
+  private removeSubgraph(ent: Graph, registerForUndo: boolean) {
+    const elems = Array.from(ent.allElements())
+    for (const e of elems) {
+      if (registerForUndo) {
+        this.layoutEditor.registerDelete(e)
+      }
+      e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+    }
+    ent.remove()
+    for (const e of elems) {
+      const ve = e.getAttr(AttributeRegistry.ViewerIndex).svgData
+      ve.remove()
     }
   }
 

@@ -1,4 +1,5 @@
 import {Queue} from 'queue-typescript'
+import {Assert} from '../utils/assert'
 // import {Assert} from '../utils/assert'
 
 import {Edge} from './edge'
@@ -8,6 +9,20 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. The nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  /** removes itself from under the parent */
+  remove() {
+    const ents = Array.from(this.allElements())
+    for (const ent of ents) {
+      if (ent instanceof Node) {
+        const pg = ent.parent as Graph
+        pg.removeNode(ent)
+      } else {
+        if (ent instanceof Edge) {
+          ent.remove()
+        }
+      }
+    }
+  }
   isAncestor(entity: Entity): boolean {
     for (const ant of entity.getAncestors()) {
       if (ant === this) {
@@ -176,7 +191,10 @@ export class Graph extends Node {
   nodeIsConsistent(n: Node): boolean {
     return this.nodeCollection.nodeIsConsistent(n)
   }
-  /** detouches all the node's edges and removes the node from the graph */
+  /** Detouches all the node's edges and removes the node from the graph.
+   * This method does not change the parent of the node.
+   */
+
   removeNode(n: Node): void {
     this.nodeCollection.removeNode(n)
   }
@@ -234,6 +252,24 @@ export class Graph extends Node {
     }
     return true
   }
+  /** returns all the nodes under graph and the edges with at least one end adjacent to the graph */
+  *allElements(): IterableIterator<Entity> {
+    for (const n of this.allSuccessorsWidthFirst()) {
+      yield n
+      for (const e of n.selfEdges) {
+        yield e
+      }
+      for (const e of n.outEdges) {
+        yield e
+      }
+      for (const e of n.inEdges) {
+        if (!this.isAncestor(e.source)) {
+          yield e
+        }
+      }
+    }
+    yield* this.edges // uses get edges() of Node
+  }
   *allSuccessorsWidthFirst(): IterableIterator<Node> {
     for (const n of this.shallowNodes) {
       yield n
@@ -281,6 +317,7 @@ export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node
     }
   }
 }
+
 /** sets a new Graph as the parent of the node */
 export function setNewParent(newParent: Graph, node: Node) {
   if (node.parent) {
