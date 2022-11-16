@@ -9,16 +9,48 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. The nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
-  /** removes itself from under the parent */
+  /** Removes itself from under the parent.
+   *  Also removes all the edges leading out of the graph.
+   */
   remove() {
-    const ents = Array.from(this.allElements())
-    for (const ent of ents) {
-      if (ent instanceof Node) {
-        const pg = ent.parent as Graph
-        pg.removeNode(ent)
+    const parent = this.parent as Graph
+    if (parent) parent.removeNode(this)
+
+    for (const c of this.outGoingEdges()) {
+      if (c.attachedAtSource) {
+        c.node.removeOutEdge(c.edge)
       } else {
-        if (ent instanceof Edge) {
-          ent.remove()
+        c.node.removeInEdge(c.edge)
+      }
+    }
+  }
+  /** returns the objects that show how the edge is adjacent to a node  that is outside of the graph */
+  *outGoingEdges(): IterableIterator<{edge: Edge; node: Node; attachedAtSource: boolean}> {
+    for (const e of this.outEdges) {
+      const t = e.target
+      if (!this.isAncestor(t)) {
+        yield {edge: e, node: t, attachedAtSource: false}
+      }
+    }
+    for (const e of this.inEdges) {
+      const s = e.source
+      if (!this.isAncestor(s)) {
+        yield {edge: e, node: s, attachedAtSource: true}
+      }
+    }
+    for (const n of this.nodesBreadthFirst) {
+      for (const e of n.outEdges) {
+        const t = e.target
+        if (t === this) continue
+        if (!this.isAncestor(t)) {
+          yield {edge: e, node: t, attachedAtSource: false}
+        }
+      }
+      for (const e of n.inEdges) {
+        const s = e.source
+        if (s === this) continue
+        if (!this.isAncestor(s)) {
+          yield {edge: e, node: s, attachedAtSource: true}
         }
       }
     }
@@ -180,6 +212,9 @@ export class Graph extends Node {
       for (const e of node.selfEdges) {
         yield e
       }
+      for (const e of node.inEdges) {
+        if (!this.isAncestor(e.source)) yield e
+      }
     }
   }
 
@@ -225,9 +260,8 @@ export class Graph extends Node {
     return this.nodeCollection.edgeCount
   }
 
-  // If n has the graph as the parent then return n,
-  // otherwise set n = n.parent and repeat.
-  // Return null if the node parent is above the graph.
+  // If n has an ancestor which is the graph child then return it.
+  // Otherwise return null
   liftNode(n: Node): Node {
     while (n != null && n.parent !== this) {
       n = <Node>n.parent

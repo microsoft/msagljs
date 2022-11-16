@@ -401,26 +401,31 @@ export class RendererSvg implements IViewer {
   }
 
   remove(viewerObj: IViewerObject, registerForUndo: boolean): void {
+    const ent = viewerObj.entity
     this._objectTree = null
-    if (registerForUndo) this.layoutEditor.registerDelete(viewerObj.entity)
+    if (registerForUndo) this.layoutEditor.registerDelete(ent)
     if (this.objectUnderMouseCursor === viewerObj) {
       this.objectUnderMouseCursor = null
     }
 
-    const ent = viewerObj.entity
     const svgVO = viewerObj as SvgViewerObject
     svgVO.svgData.remove()
     this.layoutEditor.forget(viewerObj)
     if (ent instanceof Graph) {
-      this.removeSubgraph(ent, registerForUndo)
-      return
+      this.removeSubgraph(ent)
+    } else {
+      this.removeForNonSubgraph(ent, registerForUndo)
     }
-    if (ent instanceof Node) {
-      for (const e of ent.edges) {
-        this.layoutEditor.registerDelete(e)
-        if (e.label) this.layoutEditor.registerDelete(e.label)
-      }
+  }
 
+  private removeForNonSubgraph(ent: Entity, registerForUndo: boolean) {
+    if (ent instanceof Node) {
+      if (registerForUndo) {
+        for (const e of ent.edges) {
+          this.layoutEditor.registerDelete(e)
+          if (e.label) this.layoutEditor.registerDelete(e.label)
+        }
+      }
       const graph = ent.parent as Graph
       graph.removeNode(ent)
 
@@ -429,7 +434,7 @@ export class RendererSvg implements IViewer {
       }
     } else if (ent instanceof Edge) {
       ent.remove()
-      if (ent.label) this.layoutEditor.registerDelete(ent.label)
+      if (registerForUndo) if (ent.label) this.layoutEditor.registerDelete(ent.label)
       removeEdge(ent)
     } else if (ent instanceof Label) {
       const edge = ent.parent as Edge
@@ -437,15 +442,12 @@ export class RendererSvg implements IViewer {
     }
   }
 
-  private removeSubgraph(ent: Graph, registerForUndo: boolean) {
-    const elems = Array.from(ent.allElements())
+  private removeSubgraph(subgraph: Graph) {
+    const elems = Array.from(subgraph.allElements())
     for (const e of elems) {
-      if (registerForUndo) {
-        this.layoutEditor.registerDelete(e)
-      }
       e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
     }
-    ent.remove()
+    subgraph.remove()
     for (const e of elems) {
       const ve = e.getAttr(AttributeRegistry.ViewerIndex).svgData
       ve.remove()

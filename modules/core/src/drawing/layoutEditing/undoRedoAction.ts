@@ -40,7 +40,7 @@ export class UndoRedoAction {
       }
     } else if (this.data && 'deletedEnts' in this.data) {
       for (const e of this.data.deletedEnts) {
-        restoreEntity(e)
+        restoreDeletedEntity(e)
       }
     } else if ('insertedEnts' in this.data) {
       for (const ent of this.data.insertedEnts) {
@@ -188,12 +188,25 @@ function registryIndexOfAttribue(old: Attribute) {
   }
   return index
 }
-function restoreEntity(e: Entity) {
-  if (e instanceof Label) {
-    const edge = <Edge>e.parent
-    edge.label = e
-  } else if (e instanceof Node) {
-    const graph = e.parent as Graph
-    graph.addNode(e)
-  } else if (e instanceof Edge) e.add()
+function restoreDeletedEntity(ent: Entity) {
+  if (ent instanceof Label) {
+    const edge = <Edge>ent.parent
+    edge.label = ent
+  } else if (ent instanceof Graph) {
+    const graph = ent.parent as Graph
+    graph.addNode(ent)
+    /** reattach all the edges, that might be removed.
+     * attaching twice does not have an effect
+     */
+    for (const edge of ent.edges) {
+      edge.add()
+    }
+    for (const n of ent.nodesBreadthFirst) {
+      for (const e of n.outEdges) e.add()
+      for (const e of n.inEdges) e.add()
+    }
+  } else if (ent instanceof Node) {
+    const graph = ent.parent as Graph
+    graph.addNode(ent)
+  } else if (ent instanceof Edge) ent.add()
 }
