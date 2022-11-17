@@ -34,6 +34,11 @@ import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
 export class RendererSvg implements IViewer {
+  /** debug feature : TODO - redesign */
+  keyDownListener: (e: KeyboardEvent) => void
+  addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
+    this.keyDownListener = callback
+  }
   mousePosition: Point;
   *entitiesIter(): Iterable<IViewerObject> {
     for (const n of this.graph.nodesBreadthFirst) yield n.getAttr(AttributeRegistry.ViewerIndex)
@@ -296,9 +301,13 @@ export class RendererSvg implements IViewer {
     this._svgCreator.setGraph(this._graph)
     this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
     this.layoutEditor.viewerGraphChanged()
-  }
-  getSvg(): SVGElement {
-    return this._svgCreator ? this._svgCreator.svg : null
+    const svg = this._svgCreator.svg
+    /**  debug !!!*/
+    svg.addEventListener('keydown', (event) => {
+      this.keyDownListener(event)
+    })
+    svg.setAttribute('tabindex', '0')
+    /** end debug !!!*/
   }
   /** maps the screen coordinates to the graph coordinates */
   screenToSource(e: MouseEvent): Point {
@@ -510,6 +519,13 @@ function isRemoved(entity: Entity): boolean {
     return isRemoved(entity.parent)
   }
   return false
+  /** the only proof that the node is removed is
+   * a) the node has a valid parent
+   * and
+   * b) the parent does not have the node in its node collection
+   * or a) and be hods for one of the node ancestors
+   *
+   **/
   function nodeIsRemoved(node: Node): boolean {
     let parent = node.parent as Graph
     while (parent) {

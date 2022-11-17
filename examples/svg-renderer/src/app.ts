@@ -35,8 +35,10 @@ viewer.addEventListener('dblclick', (e) => {
   // to disable the double click zoom under panZoom of anvaka
   e.stopImmediatePropagation()
 })
+
 /** setup the viewer */
-viewer.addEventListener('keydown', (e: KeyboardEvent) => {
+svgRenderer.addKeyDownListener((e: KeyboardEvent) => {
+  console.log('svg keydown: ', e.key)
   if (e.ctrlKey) {
     switch (e.key.toLowerCase()) {
       case 'e':

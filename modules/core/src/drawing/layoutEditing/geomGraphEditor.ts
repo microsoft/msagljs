@@ -37,12 +37,7 @@ export class GeometryGraphEditor {
     this.undoList.registerAdd(entity)
   }
   *entitiesToBeChangedByRedo(): IterableIterator<Entity> {
-    for (const ent of this.undoList.entitiesToBeChangedByRedo()) {
-      yield ent
-      if (ent instanceof Graph) {
-        for (const e of ent.allElements()) yield e
-      }
-    }
+    yield* this.undoList.entitiesToBeChangedByRedo()
   }
   *entitiesToBeChangedByUndo(): IterableIterator<Entity> {
     yield* this.undoList.entitiesToBeChangedByUndo()
@@ -361,7 +356,10 @@ export class GeometryGraphEditor {
     this.removeClusterSuccessorsFromObjectsToDrag()
     this.calculateDragSetsForEdges()
     this.addEdgeLabelsToObjectsToDrag()
+    console.log('calculateObjectToDragAndEdgesToReroute')
+    console.log(this.objectsToDrag)
   }
+
   addEdgeLabelsToObjectsToDrag() {
     const labelsToAdd = new Array<GeomLabel>()
     for (const e of this.objectsToDrag) {
