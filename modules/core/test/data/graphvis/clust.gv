@@ -10,13 +10,13 @@ digraph G {
 		label = "MSDOT";
 		style= "dashed";
 		color=purple;
-		x -> y;
+		x -> y [ label = "xtoy" ];;
 		x -> z;
 		y -> z;
 		y -> q;
 	}
-	cluster_0 -> cluster_1
-	top -> a;
+	cluster_0 -> cluster_1 [ label = "C0->C1" ];
+	top -> a; [ label = "top_a" ];
 	top -> y;
 	y -> b;
 }
