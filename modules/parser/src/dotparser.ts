@@ -682,8 +682,13 @@ class DotParser {
 
 /** parses a string representing a Graph in DOT format */
 export function parseDot(graphStr: string): Graph {
-  const dp = new DotParser(parse(graphStr))
-  return dp.parse()
+  try {
+    const dp = new DotParser(parse(graphStr))
+    return dp.parse()
+  } catch (Error) {
+    console.log('cannot parse the graph')
+    return null
+  }
 }
 
 // /** parses a string representing a Graph in JSON format, corresponding to JSONGraph type */
