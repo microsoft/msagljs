@@ -24,6 +24,7 @@ import {
   Assert,
   Attribute,
   SmoothedPolyline,
+  GeomLabel,
 } from 'msagl-js'
 import {
   DrawingEdge,
@@ -59,13 +60,9 @@ export class SvgViewerObject extends Attribute {
   svgData: SVGElement
   isVisible = true
   markedForDragging = false
-  MarkedForDraggingEvent: (sender: any, eventParameters: any) => void
-  UnmarkedForDraggingEvent: (sender: any, eventParameters: any) => void
-  /**  raised when the entity is marked for dragging */
-  markedForDraggingCallback: (sender: any, eventParameters: any) => void
 
   /**  raised when the entity is unmarked for dragging*/
-  unmarkedForDraggingCallback: (sender: any, eventParameters: any) => void
+  unmarkedForDraggingCallback: () => void
 }
 
 export class SvgViewerGraph extends SvgViewerObject implements IViewerGraph {
@@ -320,15 +317,8 @@ export class SvgCreator {
       labelSvgGroup.removeChild(attachPrompt)
     }
   }
-
-  private addLabelAttachmentPrompt(edgeLabel: Label, geomLabel: any, labelSvgGroup: SVGElement, attachPromptId: string) {
-    const curve = edgeLabel.parent.getAttr(AttributeRegistry.GeomObjectIndex).curve as ICurve
-    const p = curve.closestParameter(geomLabel.boundingBox.center)
-    let ls = LineSegment.mkPP(geomLabel.boundingBox.center, curve.value(p))
-    const x = Curve.intersectionOne(ls, geomLabel.boundingBox.perimeter(), false)
-    if (x) {
-      ls = LineSegment.mkPP(x.x, ls.end)
-    }
+  private addLabelAttachmentPrompt(edgeLabel: Label, geomLabel: GeomLabel, labelSvgGroup: SVGElement, attachPromptId: string) {
+    const ls = LineSegment.mkPP(geomLabel.attachmentSegmentStart, geomLabel.attachmentSegmentEnd)
     const path = this.createOrGetWithId(labelSvgGroup, 'path', attachPromptId)
     path.setAttribute('fill', 'none')
     const length = ls.length

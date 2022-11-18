@@ -84,8 +84,7 @@ export class GeometryGraphEditor {
     return this.undoList.canRedo()
   }
 
-  static DragLabel(label: GeomLabel, delta: Point) {
-    label.positionCenter(label.center.add(delta))
+  static calculateAttachmentSegment(label: GeomLabel) {
     const edge = <GeomEdge>GeomObject.getGeom(label.parent.entity)
     if (edge != null) {
       GeometryGraphEditor.CalculateAttachedSegmentEnd(label, edge)
@@ -174,8 +173,11 @@ export class GeometryGraphEditor {
 
   dragWithStraightLines(delta: Point) {
     for (const geomObj of this.objectsToDrag) {
-      if (geomObj instanceof GeomGraph) geomObj.deepTranslate(delta)
-      else geomObj.translate(delta)
+      if (geomObj instanceof GeomGraph) {
+        geomObj.deepTranslate(delta)
+      } else {
+        geomObj.translate(delta)
+      }
     }
 
     this.propagateChangesToClusterParents()
@@ -356,8 +358,6 @@ export class GeometryGraphEditor {
     this.removeClusterSuccessorsFromObjectsToDrag()
     this.calculateDragSetsForEdges()
     this.addEdgeLabelsToObjectsToDrag()
-    console.log('calculateObjectToDragAndEdgesToReroute')
-    console.log(this.objectsToDrag)
   }
 
   addEdgeLabelsToObjectsToDrag() {

@@ -2,6 +2,7 @@ import {ArrowTypeEnum} from '../../drawing/arrowTypeEnum'
 import {DrawingEdge} from '../../drawing/drawingEdge'
 import {DrawingNode} from '../../drawing/drawingNode'
 import {DrawingObject} from '../../drawing/drawingObject'
+import {GeomLabel} from '../../layout/core'
 
 import {Arrowhead} from '../../layout/core/arrowhead'
 import {CurvePort} from '../../layout/core/curvePort'
@@ -36,7 +37,6 @@ import {IViewerObject} from './iViewerObject'
 import {ModifierKeysEnum} from './modifierKeys'
 import {ObjectUnderMouseCursorChangedEventArgs} from './objectUnderMouseCursorChangedEventArgs'
 import {PolylineCornerType} from './polylineCornerType'
-import {UndoRedoAction} from './undoRedoAction'
 type DelegateForIViewerObject = (o: IViewerObject) => void
 type DelegateForEdge = (e: IViewerEdge) => void
 
@@ -46,10 +46,6 @@ function getViewerObj(entity: Entity): IViewerObject {
 
 function geomObjFromIViewerObj(obj: IViewerObject): GeomObject {
   return GeomObject.getGeom(obj.entity)
-}
-function geomNodeOfIViewerNode(obj: IViewerObject): GeomNode {
-  Assert.assert(GeomObject.getGeom(obj.entity) instanceof GeomNode)
-  return GeomObject.getGeom(obj.entity) as GeomNode
 }
 
 function isIViewerNode(obj: IViewerObject): boolean {
@@ -77,7 +73,6 @@ export class LayoutEditor {
   /** unregister the element from everywhere */
   forget(ent: IViewerObject) {
     this.dragGroup.delete(ent)
-    this.decoratorRemovalsDict.delete(ent)
     if (this.edgeWithSmoothedPolylineExposed === ent) {
       this.edgeWithSmoothedPolylineExposed = null
     }
@@ -117,8 +112,6 @@ export class LayoutEditor {
   }
 
   cornerInfo: [CornerSite, PolylineCornerType]
-
-  decoratorRemovalsDict: Map<IViewerObject, () => void> = new Map<IViewerObject, () => void>()
 
   dragGroup: Set<IViewerObject> = new Set<IViewerObject>()
 
@@ -203,7 +196,6 @@ export class LayoutEditor {
   dragging = false
 
   //  a delegate to decorate a node for dragging
-
   decorateObjectForDragging: DelegateForIViewerObject
 
   //  a delegate decorate an edge for editing
@@ -303,7 +295,6 @@ export class LayoutEditor {
     }
 
     this.ActiveDraggedObject = null
-    this.decoratorRemovalsDict.clear()
     this.dragGroup.clear()
     this.cleanObstacles()
   }
@@ -399,17 +390,18 @@ export class LayoutEditor {
     }
     const drawingObj = DrawingNode.getDrawingObj(obj.entity)
     const w = drawingObj.penwidth
-    if (!this.decoratorRemovalsDict.has(obj))
-      this.decoratorRemovalsDict.set(obj, () => (DrawingObject.getDrawingObj(obj.entity).penwidth = w))
+    if (!obj.unmarkedForDraggingCallback) {
+      obj.unmarkedForDraggingCallback = () => (DrawingObject.getDrawingObj(obj.entity).penwidth = w)
+    }
     drawingObj.penwidth = Math.max(this.viewer.LineThicknessForEditing, w * 2)
     this.invalidate(obj.entity)
   }
 
   defaultObjectDecoratorRemover(obj: IViewerObject) {
-    const decoratorRemover = this.decoratorRemovalsDict.get(obj)
+    const decoratorRemover = obj.unmarkedForDraggingCallback
     if (decoratorRemover) {
       decoratorRemover()
-      this.decoratorRemovalsDict.delete(obj)
+      obj.unmarkedForDraggingCallback = null
       this.invalidate(obj.entity)
     }
 
@@ -426,9 +418,14 @@ export class LayoutEditor {
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   defaultEdgeLabelDecorator(label: IViewerObject) {
-    if (!this.decoratorRemovalsDict.has(label)) {
-      this.decoratorRemovalsDict.set(label, () => this.invalidate(label.entity))
+    const geomLabel = label.entity.getAttr(AttributeRegistry.GeomObjectIndex) as GeomLabel
+    if (label.markedForDragging) {
+      GeometryGraphEditor.calculateAttachmentSegment(geomLabel)
+      label.unmarkedForDraggingCallback = () => {
+        this.invalidate(label.entity)
+      }
     }
+
     this.invalidate(label.entity)
   }
 
@@ -1088,7 +1085,15 @@ export class LayoutEditor {
   }
 
   invalidate(ent: Entity) {
-    this.viewer.invalidate(ent.getAttr(AttributeRegistry.ViewerIndex))
+    const vo = ent.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+    if (!vo) return
+    if (vo.entity instanceof Label) {
+      if (vo.markedForDragging) {
+        const geomLabel = GeomObject.getGeom(vo.entity) as GeomLabel
+        GeometryGraphEditor.calculateAttachmentSegment(geomLabel)
+      }
+    }
+    this.viewer.invalidate(vo)
     if (ent instanceof Graph) {
       for (const n of ent.nodesBreadthFirst) {
         this.viewer.invalidate(n.getAttr(AttributeRegistry.ViewerIndex))
@@ -1106,6 +1111,12 @@ export class LayoutEditor {
 
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
+        const vo = o.getAttr(AttributeRegistry.ViewerIndex)
+        if (vo.markedForDragging) {
+          this.dragGroup.add(vo)
+        } else {
+          this.dragGroup.delete(vo)
+        }
         this.invalidate(o)
       }
     }
@@ -1117,6 +1128,12 @@ export class LayoutEditor {
       const objectsToInvalidate = new Set<Entity>(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
+        const vo = o.getAttr(AttributeRegistry.ViewerIndex)
+        if (vo.markedForDragging) {
+          this.dragGroup.add(vo)
+        } else {
+          this.dragGroup.delete(vo)
+        }
         this.invalidate(o)
       }
     }

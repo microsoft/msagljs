@@ -15,22 +15,6 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/m
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
 
-window.addEventListener('contextmenu', (e) => {
-  if (!svgRenderer.graph) return
-  const geomGraph = GeomGraph.getGeom(svgRenderer.graph)
-  if (!geomGraph) return
-  const mousePosition = svgRenderer.screenToSource(e)
-  // only react on the context menu inside of the graph bounding box
-  if (geomGraph.boundingBox.contains(mousePosition)) {
-    e.preventDefault()
-    setPositionAndShow(e, contmenu)
-  }
-})
-
-window.addEventListener('click', () => {
-  toggleContextMenu(contmenu, 'hide')
-})
-
 viewer.addEventListener('dblclick', (e) => {
   // to disable the double click zoom under panZoom of anvaka
   e.stopImmediatePropagation()
@@ -88,8 +72,6 @@ dotFileSelect.onchange = () => {
     })
     .then((id) => (document.getElementById('graph-name').innerText = id))
 }
-
-const contmenu = document.getElementById('contmenu')
 
 const edgeRoutingSelect = createEdgeRoutingSelect()
 edgeRoutingSelect.onchange = () => {

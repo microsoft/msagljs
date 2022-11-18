@@ -20,29 +20,9 @@ import {Edge} from '../../src/structs/edge'
 import {Entity} from '../../src/structs/entity'
 import {Graph} from '../../src/structs/graph'
 import {Node} from '../../src/structs/node'
-import {closeDistEps} from '../../src/utils/compare'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
 // import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {parseDotGraph} from '../utils/testUtils'
-
-// class ViewerNodeTest extends Attribute implements IViewerNode {
-//   rebind(e: Entity): void {
-//     throw new Error('Method not implemented.')
-//   }
-//   clone(): Attribute {
-//     throw new Error('Method not implemented.')
-//   }
-//   constructor(node: Node) {
-
-//   }
-//   node: Node
-//   IsCollapsedChanged: EventHandler
-//   entity: Entity
-//   isVisible: boolean
-//   markedForDragging: boolean
-//   markedForDraggingCallback: (sender: any, eventParameters: any) => void
-//   unmarkedForDraggingCallback: (sender: any, eventParameters: any) => void
-// }
 
 class FakeMouseEvent implements MouseEvent {
   preventDefault(): any {
