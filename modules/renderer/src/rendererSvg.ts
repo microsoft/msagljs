@@ -140,14 +140,14 @@ export class RendererSvg implements IViewer {
 
     // end of the main function processMouseMove
     function sortElems() {
-      elems.sort((a, b) => {
+      elems.sort((a: GeomObject, b: GeomEdge) => {
         const atype = a instanceof GeomGraph ? 3 : a instanceof GeomLabel ? 2 : a instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
         const btype = b instanceof GeomGraph ? 3 : b instanceof GeomLabel ? 2 : b instanceof GeomNode ? 1 : 0 // 0 for GeomEdge
         if (atype != btype) return atype - btype
 
         if (atype == 2) return 0 // both are GeomLabels
 
-        return depth(a as GeomObject) - depth(b as GeomObject)
+        return depth(b) - depth(a)
         function depth(a: GeomObject) {
           let d = 0
           let p = a.entity.parent
