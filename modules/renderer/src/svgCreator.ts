@@ -78,7 +78,7 @@ export class SvgViewerNode extends SvgViewerObject implements IViewerNode {
   IsCollapsedChanged: EventHandler
 }
 class SvgViewerLabel extends SvgViewerObject implements IViewerObject {}
-class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
+export class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
   radiusOfPolylineCorner: number
   selectedForEditing: boolean
   get edge(): Edge {

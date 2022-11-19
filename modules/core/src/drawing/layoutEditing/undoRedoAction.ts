@@ -9,6 +9,7 @@ import {Label} from '../../structs/label'
 import {Assert} from '../../utils/assert'
 import {DrawingObject} from '../drawingObject'
 import {Point} from '../../math/geometry'
+import {constructor} from '../../routing/ConstrainedDelaunayTriangulation/ThreeArray'
 type UndoChangeData = Map<Entity, {old: Attribute; new: Attribute}[]>
 type UndoDeleteData = {deletedEnts: Set<Entity>}
 type UndoInsertData = {insertedEnts: Set<Entity>}
@@ -27,6 +28,9 @@ export class UndoRedoAction {
     if ('draggedEnts' in this.data) {
       this.data.draggedEnts.add(entity)
     }
+  }
+  constructor() {
+    console.log('const undoredo')
   }
   undo() {
     Assert.assert(this.canUndo)

@@ -514,9 +514,7 @@ export class LayoutEditor {
       if (a == null) return
       const b = a.next
       if (b == null) return
-      this.geomGraphEditor.createUndoPoint()
       this.geomGraphEditor.insertSite(GeomEdge.getGeom(this.edgeWithSmoothedPolylineExposed.edge), this.mouseDownGraphPoint, a)
-      this.geomGraphEditor.registerForUndo(this.edgeWithSmoothedPolylineExposed.edge)
       this.invalidate(this.edgeWithSmoothedPolylineExposed.edge)
     }
   }

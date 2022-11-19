@@ -1,28 +1,27 @@
-import {SvgViewerNode} from '../../../renderer/src/svgCreator'
-import {DrawingGraph} from '../../src/drawing/drawingGraph'
-import {InsertionMode, IViewer} from '../../src/drawing/layoutEditing/iViewer'
-import {IViewerEdge} from '../../src/drawing/layoutEditing/iViewerEdge'
-import {IViewerGraph} from '../../src/drawing/layoutEditing/iViewerGraph'
-import {IViewerNode} from '../../src/drawing/layoutEditing/iViewerNode'
-import {IViewerObject} from '../../src/drawing/layoutEditing/iViewerObject'
-import {LayoutEditor} from '../../src/drawing/layoutEditing/layoutEditor'
-import {ModifierKeysEnum} from '../../src/drawing/layoutEditing/modifierKeys'
-import {GeomEdge, GeomGraph, GeomNode} from '../../src/layout/core'
-import {EventHandler} from '../../src/layout/core/geomObject'
-import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
-import {Curve, Point, PointLocation, Polyline, Rectangle, Size} from '../../src/math/geometry'
-import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
-import {InteractiveTangentVisibilityGraphCalculator} from '../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
-import {Polygon} from '../../src/routing/visibility/Polygon'
-import {VisibilityGraph} from '../../src/routing/visibility/VisibilityGraph'
-import {AttributeRegistry} from '../../src/structs/attributeRegistry'
-import {Edge} from '../../src/structs/edge'
-import {Entity} from '../../src/structs/entity'
-import {Graph} from '../../src/structs/graph'
-import {Node} from '../../src/structs/node'
-import {SvgDebugWriter} from '../utils/svgDebugWriter'
-// import {SvgDebugWriter} from '../utils/svgDebugWriter'
-import {parseDotGraph} from '../utils/testUtils'
+import {SvgViewerNode, SvgViewerEdge} from '../../../../renderer/src/svgCreator'
+import {DrawingGraph} from '../../../src/drawing/drawingGraph'
+import {IViewer, InsertionMode} from '../../../src/drawing/layoutEditing/iViewer'
+import {IViewerEdge} from '../../../src/drawing/layoutEditing/iViewerEdge'
+import {IViewerGraph} from '../../../src/drawing/layoutEditing/iViewerGraph'
+import {IViewerNode} from '../../../src/drawing/layoutEditing/iViewerNode'
+import {IViewerObject} from '../../../src/drawing/layoutEditing/iViewerObject'
+import {LayoutEditor} from '../../../src/drawing/layoutEditing/layoutEditor'
+import {ModifierKeysEnum} from '../../../src/drawing/layoutEditing/modifierKeys'
+import {GeomEdge, GeomNode, GeomGraph} from '../../../src/layout/core'
+import {Node} from '../../../src/'
+import {EventHandler} from '../../../src/layout/core/geomObject'
+import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
+import {Point, Rectangle, Polyline, Size, Curve, PointLocation} from '../../../src/math/geometry'
+import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
+import {InteractiveTangentVisibilityGraphCalculator} from '../../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
+import {Polygon} from '../../../src/routing/visibility/Polygon'
+import {VisibilityGraph} from '../../../src/routing/visibility/VisibilityGraph'
+import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
+import {Edge} from '../../../src/structs/edge'
+import {Entity} from '../../../src/structs/entity'
+import {Graph} from '../../../src/structs/graph'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+import {parseDotGraph} from '../../utils/testUtils'
 
 class FakeMouseEvent implements MouseEvent {
   preventDefault(): any {
@@ -316,6 +315,47 @@ test('clusters x drag', () => {
   expect(inters.isEmpty()).toBe(true)
   expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
   expect(edgesAreAttached(graph)).toBe(true)
+})
+test('cluster0 a->b edit edge', () => {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
+  dg.createGeometry()
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  const graph = dg.graph
+  const viewer = new FakeViewer(graph)
+  viewer.insertionMode = InsertionMode.Default
+  const layoutEditor = new LayoutEditor(viewer)
+  layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
+  const a = graph.findNodeRecursive('a')
+  let ab: Edge = null
+  for (const e of a.outEdges) {
+    if (e.target.id == 'b') {
+      ab = e
+      console.log('got ab')
+      break
+    }
+  }
+  const vab = new SvgViewerEdge(ab, null)
+  viewer.objectUnderMouseCursor = vab
+  const geom_ag = GeomNode.getGeom(ab) as GeomEdge
+  const curve = geom_ag.curve
+  const pos = curve.value((curve.parEnd + curve.parStart) / 2)
+  const mouseEvent = new FakeMouseEvent()
+  mouseEvent.clientX = pos.x
+  mouseEvent.clientY = pos.y
+  mouseEvent.buttons = 1 // left button is on
+  layoutEditor.viewerMouseDown(null, mouseEvent) // should create the underlying polyline
+  layoutEditor.viewerMouseUp(null, mouseEvent)
+  layoutEditor.viewerMouseDown(null, mouseEvent) // should create a polyline corner
+  layoutEditor.viewerMouseUp(null, mouseEvent)
+
+  const del = 4
+  mouseEvent.clientX += del
+  mouseEvent.clientY += del
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  layoutEditor.undo()
+  layoutEditor.undo()
+  layoutEditor.undo()
+  SvgDebugWriter.writeGeomGraph('./tmp/clusters_x.svg', GeomGraph.getGeom(graph))
 })
 
 test('twoRectangles', () => {
