@@ -1,0 +1,26 @@
+digraph G {
+	subgraph cluster_0 {
+		label = "hello world";
+		a -> b;
+		a -> c;
+		color = hot_pink;
+	}
+
+subgraph cluster_1_parent {
+	subgraph cluster_1 {
+		label = "MSDOT";
+		style= "dashed";
+		color=purple;
+		x -> y [ label = "xtoy"];
+		x -> z;
+		y -> z;
+		y -> q;
+	}
+    z->top [label = "ztop"];
+}
+	cluster_0 -> cluster_1 [ label = "C0->C1" ];
+    cluster_0 -> cluster_1_parent [ label = "c0->c1parent" ];
+	top -> a [ label = "top_a" ];
+	top -> y;
+	y -> b;
+}
