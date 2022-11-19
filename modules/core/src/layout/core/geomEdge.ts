@@ -69,8 +69,9 @@ export class GeomEdge extends GeomObject {
       this.sourceArrowhead.tipPosition = this.sourceArrowhead.tipPosition.add(delta)
     if (this.targetArrowhead != null && this.targetArrowhead.tipPosition)
       this.targetArrowhead.tipPosition = this.targetArrowhead.tipPosition.add(delta)
+
     if (this.edge.label) {
-      this.edge.label.getAttr(AttributeRegistry.GeomObjectIndex).translate(delta)
+      GeomLabel.getGeom(this.edge.label).translate(delta)
     }
   }
 

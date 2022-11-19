@@ -37,12 +37,13 @@ import {
   IViewerNode,
   IViewerEdge,
   IViewerObject,
+  viewerObj,
 } from 'msagl-js/drawing'
 import TextMeasurer from './text-measurer'
 import {String} from 'typescript-string-operations'
 import {Entity} from '../../core/src/structs/entity'
 
-export class SvgViewerObject extends Attribute {
+export class SvgViewerObject extends Attribute implements IViewerObject {
   clone(): Attribute {
     throw new Error('not implemented')
   }
@@ -243,7 +244,7 @@ export class SvgCreator {
   /** This method can create the SVG child for the smoothed polyline,
    * and also remove it*/
   private drawSelectedForEdit(edge: Edge, edgeGroup: SVGElement) {
-    const vEdge = edge.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerEdge
+    const vEdge = viewerObj(edge) as SvgViewerEdge
     const smoothPolyId = 'smoothPoly'
     const cornersGroupId = 'corners'
     if (vEdge.selectedForEditing) {
@@ -479,7 +480,7 @@ export class SvgCreator {
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
-    const existingViewerObj = entity ? (entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject) : null
+    const existingViewerObj = entity ? (viewerObj(entity) as SvgViewerObject) : null
     if (existingViewerObj) {
       const svgData = existingViewerObj.svgData
       Assert.assert(existingViewerObj.svgData != null)

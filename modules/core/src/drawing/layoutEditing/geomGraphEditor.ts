@@ -69,11 +69,6 @@ export class GeometryGraphEditor {
   //      The edge data of the edge selected for editing
   geomEdgeWithSmoothedPolylineExposed: GeomEdge
 
-  /**  enumerates over the nodes chosen for dragging */
-  public *ObjectsToDrag(): IterableIterator<GeomObject> {
-    return this.objectsToDrag
-  }
-
   /**  returns true if "undo" is available */
   public get canUndo(): boolean {
     return this.undoList.canUndo()
@@ -205,13 +200,13 @@ export class GeometryGraphEditor {
           if (!newBox.equalEps(gc.boundingBox)) {
             this.registerForUndo(gc.entity)
             for (const e of gc.selfEdges()) {
-              this.edgesToReroute.add(e)
+              this.addToEdgesToReroute(e)
             }
             for (const e of gc.inEdges()) {
-              this.edgesToReroute.add(e)
+              this.addToEdgesToReroute(e)
             }
             for (const e of gc.outEdges()) {
-              this.edgesToReroute.add(e)
+              this.addToEdgesToReroute(e)
             }
 
             gc.boundingBox = newBox
@@ -220,6 +215,13 @@ export class GeometryGraphEditor {
       }
     }
   }
+  addToEdgesToReroute(e: GeomEdge) {
+    //    Assert.assert(!this.bothEndsInDragObjects(e))
+    this.edgesToReroute.add(e)
+  }
+  //bothEndsInDragObjects(e: GeomEdge) {
+  //  return this.objectsToDrag.has(e.source) && this.objectsToDrag.has(e.target)
+  //}
 
   DragWithSplinesOrBundles(delta: Point) {
     for (const geomObj of this.objectsToDrag) {
@@ -340,6 +342,9 @@ export class GeometryGraphEditor {
   }
 
   private addToObjectsToDrag(geomObj: GeomObject) {
+    if (geomObj instanceof GeomLabel) {
+      console.log()
+    }
     this.objectsToDrag.add(geomObj)
   }
 
@@ -357,19 +362,6 @@ export class GeometryGraphEditor {
 
     this.removeClusterSuccessorsFromObjectsToDrag()
     this.calculateDragSetsForEdges()
-    this.addEdgeLabelsToObjectsToDrag()
-  }
-
-  addEdgeLabelsToObjectsToDrag() {
-    const labelsToAdd = new Array<GeomLabel>()
-    for (const e of this.objectsToDrag) {
-      if (e instanceof GeomEdge && e.edge.label) {
-        labelsToAdd.push(e.edge.label.getAttr(AttributeRegistry.GeomObjectIndex))
-      }
-    }
-    for (const l of labelsToAdd) {
-      this.addToObjectsToDrag(l)
-    }
   }
 
   removeClusterSuccessorsFromObjectsToDrag() {
@@ -417,7 +409,7 @@ export class GeometryGraphEditor {
         // has to drag
         this.addToObjectsToDrag(edge)
       } else {
-        this.edgesToReroute.add(edge)
+        this.addToEdgesToReroute(edge)
       }
     }
 
@@ -426,7 +418,7 @@ export class GeometryGraphEditor {
         // has to drag
         this.addToObjectsToDrag(edge)
       } else {
-        this.edgesToReroute.add(edge)
+        this.addToEdgesToReroute(edge)
       }
     }
     if (node instanceof GeomGraph)
@@ -442,10 +434,10 @@ export class GeometryGraphEditor {
 
     for (const edge of subg.inEdges()) {
       if (subg.isAncestor(edge.source)) continue
-      if (this.hasAncestorInObjectsToDrag(edge.source)) {
+      if (this.hasSelfOrAncestorInObjectsToDrag(edge.source)) {
         this.addToObjectsToDrag(edge)
       } else {
-        this.edgesToReroute.add(edge)
+        this.addToEdgesToReroute(edge)
       }
     }
 
@@ -455,21 +447,21 @@ export class GeometryGraphEditor {
         // has to drag
         this.addToObjectsToDrag(edge)
       } else {
-        this.edgesToReroute.add(edge)
+        this.addToEdgesToReroute(edge)
       }
     }
     for (const n of subg.nodesBreadthFirst) {
       for (const e of n.outEdges()) {
         const target = e.target
         if (subg.isAncestor(target)) continue
-        if (this.hasSelfOrAncestorInObjectsToDrag(target)) this.objectsToDrag.add(e)
-        else this.edgesToReroute.add(e)
+        if (this.hasSelfOrAncestorInObjectsToDrag(target)) this.addToObjectsToDrag(e)
+        else this.addToEdgesToReroute(e)
       }
       for (const e of n.inEdges()) {
         const source = e.source
         if (subg.isAncestor(source)) continue
-        if (this.hasSelfOrAncestorInObjectsToDrag(source)) this.objectsToDrag.add(e)
-        else this.edgesToReroute.add(e)
+        if (this.hasSelfOrAncestorInObjectsToDrag(source)) this.addToObjectsToDrag(e)
+        else this.addToEdgesToReroute(e)
       }
     }
   }

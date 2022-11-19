@@ -19,17 +19,18 @@ import {
   Node,
   Label,
   Entity,
-  Assert,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
 import {SvgCreator, SvgViewerObject} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
-import {IViewer, LayoutEditor} from 'msagl-js/drawing'
+import {IViewer, LayoutEditor, viewerObj, InsertionMode} from 'msagl-js/drawing'
 import {default as svgPanZoom, PanZoom} from 'panzoom'
-import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 
+function svgViewerObj(ent: Entity): SvgViewerObject {
+  return viewerObj(ent) as SvgViewerObject
+}
 /**
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
@@ -41,11 +42,11 @@ export class RendererSvg implements IViewer {
   }
   mousePosition: Point;
   *entitiesIter(): Iterable<IViewerObject> {
-    for (const n of this.graph.nodesBreadthFirst) yield n.getAttr(AttributeRegistry.ViewerIndex)
+    for (const n of this.graph.nodesBreadthFirst) yield svgViewerObj(n)
     for (const e of this.graph.deepEdges) {
-      yield e.getAttr(AttributeRegistry.ViewerIndex)
+      yield svgViewerObj(e)
       if (e.label) {
-        yield e.label.getAttr(AttributeRegistry.ViewerIndex)
+        yield svgViewerObj(e.label)
       }
     }
   }
@@ -234,7 +235,7 @@ export class RendererSvg implements IViewer {
     const drawingGraph = this.graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
     drawingGraph.createNodeGeometry(node, center)
     this._svgCreator.drawNode(node)
-    return node.getAttr(AttributeRegistry.ViewerIndex)
+    return svgViewerObj(node) as unknown as IViewerNode
   }
 
   undo(): void {
@@ -400,7 +401,7 @@ export class RendererSvg implements IViewer {
   }
   createEdgeWithGivenGeometry(edge: Edge): IViewerEdge {
     this._svgCreator.drawEdge(edge)
-    return edge.getAttr(AttributeRegistry.ViewerIndex)
+    return svgViewerObj(edge) as unknown as IViewerEdge
   }
   addNode(node: IViewerNode, registerForUndo: boolean): void {
     this._objectTree = null
@@ -454,12 +455,17 @@ export class RendererSvg implements IViewer {
   private removeSubgraph(subgraph: Graph) {
     const elems = Array.from(subgraph.allElements())
     for (const e of elems) {
-      e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+      svgViewerObj(e).svgData.remove()
     }
     subgraph.removeSubgraph()
+
+    // we do net need to change the subgraph structure: just to remove all the visuals
     for (const e of elems) {
-      const ve = e.getAttr(AttributeRegistry.ViewerIndex).svgData
+      const ve = svgViewerObj(e).svgData
       ve.remove()
+      if (e instanceof Edge && e.label) {
+        svgViewerObj(e.label).svgData.remove()
+      }
     }
   }
 
@@ -496,9 +502,9 @@ export class RendererSvg implements IViewer {
 }
 function removeEdge(e: Edge) {
   e.remove()
-  e.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+  svgViewerObj(e).svgData.remove()
   if (e.label) {
-    e.label.getAttr(AttributeRegistry.ViewerIndex).svgData.remove()
+    svgViewerObj(e.label).svgData.remove()
   }
 }
 

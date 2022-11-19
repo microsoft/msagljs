@@ -40,7 +40,7 @@ import {PolylineCornerType} from './polylineCornerType'
 type DelegateForIViewerObject = (o: IViewerObject) => void
 type DelegateForEdge = (e: IViewerEdge) => void
 
-function getViewerObj(entity: Entity): IViewerObject {
+export function viewerObj(entity: Entity): IViewerObject {
   return entity.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
 }
 
@@ -321,7 +321,7 @@ export class LayoutEditor {
 
     // LayoutAlgorithmSettings.ShowGraph(viewer.Graph.GeometryGraph);
     for (const o of this.geomGraphEditor.entitiesToBeChangedByUndo()) {
-      this.invalidate(o.getAttr(AttributeRegistry.ViewerIndex))
+      this.invalidate(o)
     }
   }
 
@@ -341,7 +341,7 @@ export class LayoutEditor {
 
   MakeExpandedNodesVisible(cluster: Graph) {
     for (const node of cluster.shallowNodes) {
-      const iviewerNode = node.getAttr(AttributeRegistry.ViewerIndex) as IViewerNode
+      const iviewerNode = viewerObj(node) as IViewerNode
       LayoutEditor.UnhideNodeEdges(node)
       iviewerNode.isVisible = true
       if (node instanceof Graph) {
@@ -353,16 +353,16 @@ export class LayoutEditor {
 
   static UnhideNodeEdges(drn: Node) {
     for (const e of drn.selfEdges) {
-      const viewerObject = e.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+      const viewerObject = viewerObj(e) as IViewerObject
       viewerObject.isVisible = true
     }
 
     for (const e of drn.outEdges) {
-      if (getViewerObj(e.target).isVisible) getViewerObj(e).isVisible = true
+      if (viewerObj(e.target).isVisible) viewerObj(e).isVisible = true
     }
 
     for (const e of drn.inEdges) {
-      if (getViewerObj(e.source).isVisible) getViewerObj(e).isVisible = true
+      if (viewerObj(e.source).isVisible) viewerObj(e).isVisible = true
     }
   }
 
@@ -376,7 +376,7 @@ export class LayoutEditor {
 
   static HideCollapsed(cluster: Graph) {
     for (const n of cluster.shallowNodes) {
-      getViewerObj(n).isVisible = false
+      viewerObj(n).isVisible = false
       if (n instanceof Graph) {
         if (GeomGraph.getGeom(n).isCollapsed == false) LayoutEditor.HideCollapsed(n)
       }
@@ -408,7 +408,7 @@ export class LayoutEditor {
     const ent = obj.entity
     if (ent instanceof Node) {
       for (const edge of ent.edges) {
-        this.removeObjDraggingDecorations(edge.getAttr(AttributeRegistry.ViewerIndex))
+        this.removeObjDraggingDecorations(viewerObj(edge))
       }
     }
   }
@@ -605,7 +605,7 @@ export class LayoutEditor {
 
   static *Edges(node: IViewerNode): IterableIterator<IViewerEdge> {
     for (const edge of (node.entity as Node).edges) {
-      yield edge.getAttr(AttributeRegistry.ViewerIndex)
+      yield viewerObj(edge) as IViewerEdge
     }
   }
 
@@ -1085,21 +1085,28 @@ export class LayoutEditor {
   }
 
   invalidate(ent: Entity) {
-    const vo = ent.getAttr(AttributeRegistry.ViewerIndex) as IViewerObject
+    const vo = viewerObj(ent) as IViewerObject
     if (!vo) return
     if (vo.entity instanceof Label) {
       if (vo.markedForDragging) {
         const geomLabel = GeomObject.getGeom(vo.entity) as GeomLabel
         GeometryGraphEditor.calculateAttachmentSegment(geomLabel)
       }
+    } else {
+      if (vo.entity instanceof Edge) {
+        if (vo.entity.label) {
+          this.viewer.invalidate(viewerObj(vo.entity.label))
+        }
+      }
     }
     this.viewer.invalidate(vo)
     if (ent instanceof Graph) {
       for (const n of ent.nodesBreadthFirst) {
-        this.viewer.invalidate(n.getAttr(AttributeRegistry.ViewerIndex))
+        this.viewer.invalidate(viewerObj(n))
       }
       for (const e of ent.deepEdges) {
-        this.viewer.invalidate(e.getAttr(AttributeRegistry.ViewerIndex))
+        this.viewer.invalidate(viewerObj(e))
+        if (e.label) this.viewer.invalidate(viewerObj(e.label))
       }
     }
   }
@@ -1111,7 +1118,7 @@ export class LayoutEditor {
 
       this.geomGraphEditor.undo()
       for (const o of objectsToInvalidate) {
-        const vo = o.getAttr(AttributeRegistry.ViewerIndex)
+        const vo = viewerObj(o)
         if (vo.markedForDragging) {
           this.dragGroup.add(vo)
         } else {
@@ -1128,7 +1135,7 @@ export class LayoutEditor {
       const objectsToInvalidate = new Set<Entity>(this.geomGraphEditor.entitiesToBeChangedByRedo())
       this.geomGraphEditor.redo()
       for (const o of objectsToInvalidate) {
-        const vo = o.getAttr(AttributeRegistry.ViewerIndex)
+        const vo = viewerObj(o)
         if (vo.markedForDragging) {
           this.dragGroup.add(vo)
         } else {
