@@ -29,9 +29,6 @@ export class UndoRedoAction {
       this.data.draggedEnts.add(entity)
     }
   }
-  constructor() {
-    console.log('const undoredo')
-  }
   undo() {
     Assert.assert(this.canUndo)
     if (this.data instanceof Map) {

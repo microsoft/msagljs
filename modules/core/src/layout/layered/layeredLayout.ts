@@ -44,11 +44,19 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
 }
-
-export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken = null) {
+/** Executes the layered layout following the Sugiyama Scheme.
+ * Cancel token allows to cancel the layout run(tbd).
+ * If transform to screen is true then the y-coordinate of the graph will be reversed and
+ * the graph's left-top corner will be at (0,0)
+ */
+export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken, transformToScreen: boolean) {
   const ss: ILayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
   enforceLayoutSettings(geomGraph, ss)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layeredLayoutRunner, routeEdges, optimalPackingRunner)
+  if (transformToScreen) {
+    const flip = new PlaneTransformation(1, 0, -geomGraph.boundingBox.left, 0, -1, geomGraph.top)
+    geomGraph.transform(flip)
+  }
 }
 
 export class LayeredLayout extends Algorithm {

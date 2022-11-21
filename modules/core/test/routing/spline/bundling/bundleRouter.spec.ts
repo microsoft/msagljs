@@ -19,7 +19,6 @@ import {BundlingSettings} from '../../../../src/routing/BundlingSettings'
 import {EdgeRoutingMode} from '../../../../src/routing/EdgeRoutingMode'
 import {EdgeRoutingSettings} from '../../../../src/routing/EdgeRoutingSettings'
 import {SplineRouter} from '../../../../src/routing/splineRouter'
-import {SvgDebugWriter} from '../../../utils/svgDebugWriter'
 //import {SvgDebugWriter} from '../../../utils/svgDebugWriter'
 import {generateRandomGeomGraph, generateRandomGeomGraphWithSubgraphs, measureTextSize, parseDotGraph} from '../../../utils/testUtils'
 
@@ -48,7 +47,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
   const ss: SugiyamaLayoutSettings = (gg.layoutSettings = settings ?? new SugiyamaLayoutSettings())
   if (!ss.edgeRoutingSettings) ss.edgeRoutingSettings = new EdgeRoutingSettings()
   ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-  layoutGraphWithSugiayma(gg, null)
+  layoutGraphWithSugiayma(gg, null, false)
   const sr = SplineRouter.mk4(gg, 2, 4, Math.PI / 6)
   sr.run()
   return dg

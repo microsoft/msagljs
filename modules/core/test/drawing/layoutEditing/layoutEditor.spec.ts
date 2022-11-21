@@ -243,7 +243,7 @@ function routeEdge(source: Node, target: Node, layoutEditor: LayoutEditor) {
 test('clusters_1 drag', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   dg.createGeometry()
-  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph), null, false)
   const graph = dg.graph
   const viewer = new FakeViewer(graph)
   viewer.insertionMode = InsertionMode.Default
@@ -285,7 +285,7 @@ test('clusters_1 drag', () => {
 test('clusters x drag', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   dg.createGeometry()
-  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph), null, false)
   const graph = dg.graph
   const viewer = new FakeViewer(graph)
   viewer.insertionMode = InsertionMode.Default
@@ -319,7 +319,7 @@ test('clusters x drag', () => {
 test('cluster0 a->b edit edge', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   dg.createGeometry()
-  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph), null, false)
   const graph = dg.graph
   const viewer = new FakeViewer(graph)
   viewer.insertionMode = InsertionMode.Default
@@ -330,7 +330,6 @@ test('cluster0 a->b edit edge', () => {
   for (const e of a.outEdges) {
     if (e.target.id == 'b') {
       ab = e
-      console.log('got ab')
       break
     }
   }
@@ -378,7 +377,7 @@ test('twoRectangles', () => {
 test('diagonals', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/fsm.gv'))
   dg.createGeometry()
-  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph))
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph), null, false)
   const graph = dg.graph
   const nodes = Array.from(graph.nodesBreadthFirst)
   const viewer = new FakeViewer(graph)

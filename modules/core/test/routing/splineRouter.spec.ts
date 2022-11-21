@@ -542,7 +542,7 @@ test('spline router self edge', () => {
   const n = setNode(g, 'a', 10, 10)
   g.setEdge('a', 'a')
   g.layoutSettings = new SugiyamaLayoutSettings()
-  layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
+  layoutGraphWithSugiayma(g, null, false) // null for the CancelToken that is ignored at the moment
   for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
@@ -558,7 +558,7 @@ test('one edge', () => {
   setNode(g, 'b', 10, 10)
   g.setEdge('a', 'b')
   g.layoutSettings = new SugiyamaLayoutSettings()
-  layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
+  layoutGraphWithSugiayma(g, null, false) // null for the CancelToken that is ignored at the moment
   for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }

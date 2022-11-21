@@ -61,7 +61,7 @@ test('self on node', () => {
   setNode(g, 'a', 10, 10)
   g.setEdge('a', 'a')
   g.layoutSettings = new SugiyamaLayoutSettings()
-  layoutGraphWithSugiayma(g, null) // null for the CancelToken that is ignored at the moment
+  layoutGraphWithSugiayma(g, null, false) // null for the CancelToken that is ignored at the moment
   for (const e of g.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
@@ -118,16 +118,16 @@ test('show API', () => {
   g.setEdge('lwilson', 'kbacon')
   const ss = new SugiyamaLayoutSettings()
   g.layoutSettings = ss
-  layoutGraphWithSugiayma(g)
+  layoutGraphWithSugiayma(g, null, false)
   outputGraph(g, 'TB')
   ss.layerDirection = LayerDirectionEnum.BT
-  layoutGraphWithSugiayma(g)
+  layoutGraphWithSugiayma(g, null, false)
   outputGraph(g, 'BT')
   ss.layerDirection = LayerDirectionEnum.LR
-  layoutGraphWithSugiayma(g)
+  layoutGraphWithSugiayma(g, null, false)
   outputGraph(g, 'LR')
   ss.layerDirection = LayerDirectionEnum.RL
-  layoutGraphWithSugiayma(g)
+  layoutGraphWithSugiayma(g, null, false)
   outputGraph(g, 'RL')
 })
 
@@ -340,6 +340,23 @@ export function qualityMetric(gg: GeomGraph): number {
   return r
 }
 
+test('flip transform', () => {
+  const g = new GeomGraph(new Graph('graph'))
+  setNode(g, 'kspacey', 10, 10)
+  setNode(g, 'swilliams', 10, 10)
+  setNode(g, 'bpitt', 10, 10)
+  setNode(g, 'hford', 10, 10)
+  setNode(g, 'lwilson', 10, 10)
+  setNode(g, 'kbacon', 10, 10)
+  layoutGraphWithSugiayma(g, null, true)
+  const bb = g.boundingBox
+  expect(Point.closeDistEps(new Point(0, 0), bb.leftBottom))
+  const n = g.findNode('kspacey')
+  expect(n.center.x >= 0).toBe(true)
+  expect(n.center.y >= 0).toBe(true)
+  // SvgDebugWriter.writeGeomGraph('./tmp/nodes_only.svg', g)
+})
+
 test('layered layout nodes only', () => {
   const g = new GeomGraph(new Graph('graph'))
   setNode(g, 'kspacey', 10, 10)
@@ -367,7 +384,7 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
       ss.layerDirection = dg.rankdir
     }
   }
-  layoutGraphWithSugiayma(gg, null)
+  layoutGraphWithSugiayma(gg, null, false)
   return dg
 }
 

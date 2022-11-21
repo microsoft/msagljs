@@ -84,7 +84,7 @@ import {measureTextSize, parseDotGraph} from '../utils/testUtils'
 
 function layoutGeomGraph(geomGraph: GeomGraph, directed: boolean) {
   if (directed) {
-    layoutGraphWithSugiayma(geomGraph, null)
+    layoutGraphWithSugiayma(geomGraph, null, false)
   } else {
     layoutGraphWithMds(geomGraph, null)
   }

@@ -159,7 +159,7 @@ test('graph fsm', () => {
   const dg = DrawingGraph.getDrawingGraph(g)
   dg.createGeometry(measureTextSize)
   const geomGraph = GeomGraph.getGeom(g)
-  layoutGraphWithSugiayma(geomGraph, null)
+  layoutGraphWithSugiayma(geomGraph, null, false)
   let labelsWas = 0
   for (const e of geomGraph.deepEdges) {
     if (e.label) labelsWas++
