@@ -1,6 +1,6 @@
 {
   "name": "svg-example",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "private": true,
   "description": "Public demo for svg from msagl-js",
   "main": "index.js",
@@ -11,9 +11,9 @@
   "author": "levnach@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/parser": "^0.0.80",
-    "@msagl/renderer": "^0.0.49",
-    "msagl-js": "^0.0.79"
+    "@msagl/parser": "^0.0.81",
+    "@msagl/renderer": "^0.0.50",
+    "msagl-js": "^0.0.80"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",
