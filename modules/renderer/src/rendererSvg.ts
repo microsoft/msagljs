@@ -19,6 +19,7 @@ import {
   Node,
   Label,
   Entity,
+  LineSegment,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
@@ -37,6 +38,9 @@ function svgViewerObj(ent: Entity): SvgViewerObject {
 export class RendererSvg implements IViewer {
   /** debug feature : TODO - redesign */
   keyDownListener: (e: KeyboardEvent) => void
+  rubberEdgeStart: Point
+  sourcePortLocatiton: Point
+  targetPortLocatiton: Point
   addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
     this.keyDownListener = callback
   }
@@ -110,7 +114,7 @@ export class RendererSvg implements IViewer {
       return
     }
 
-    if (this.layoutEditor.dragging) {
+    if (this.layoutEditor.dragging && this.insertingEdge == false) {
       return
     }
     if (this.insertingNode) {
@@ -122,7 +126,6 @@ export class RendererSvg implements IViewer {
         this.ScreenToSourceP(this.mousePosition.x, this.mousePosition.y),
         this.layoutEditor.hasEdgeInsertionPort,
       )
-      return
     }
     if (this._objectTree == null) {
       this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
@@ -341,7 +344,11 @@ export class RendererSvg implements IViewer {
       if (value) {
         console.log(this._objectUnderMouse.entity)
       } else {
-        console.log('no selection')
+        if (this.layoutEditor.insertingEdge) {
+          console.log('no selection')
+        } else {
+          console.log('no sel: no insert')
+        }
       }
     }
   }
@@ -384,18 +391,7 @@ export class RendererSvg implements IViewer {
     return this.smoothedPolylineRadiusWithNoScale / this.CurrentScale
   }
 
-  StartDrawingRubberLine(startingPoint: Point): void {
-    throw new Error('Method not implemented.')
-  }
-  DrawRubberLine(args: any): void
-  DrawRubberLine(point: Point): void
-  DrawRubberLine(point: unknown): void {
-    throw new Error('Method not implemented.')
-  }
-  StopDrawingRubberLine(): void {
-    throw new Error('Method not implemented.')
-  }
-  AddEdge(edge: IViewerEdge, registerForUndo: boolean): void {
+  addEdge(edge: IViewerEdge, registerForUndo: boolean): void {
     this._objectTree = null
     if (registerForUndo) this.layoutEditor.registerAdd(edge.entity)
   }
@@ -475,10 +471,10 @@ export class RendererSvg implements IViewer {
   ViewerGraph: IViewerGraph
   ArrowheadLength: number
   SetSourcePortForEdgeRouting(portLocation: Point): void {
-    //throw new Error('Method not implemented.') // start here, parametrize edgeCircle shape and color
+    this.sourcePortLocatiton = portLocation
   }
-  SetTargetPortForEdgeRouting(portLocation: Point): void {
-    // throw new Error('Method not implemented.')
+  setTargetPortForEdgeRouting(portLocation: Point): void {
+    this.targetPortLocatiton = portLocation
   }
   RemoveSourcePortEdgeRouting(): void {
     //throw new Error('Method not implemented.')

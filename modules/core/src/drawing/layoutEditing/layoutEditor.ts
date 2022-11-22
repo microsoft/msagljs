@@ -49,7 +49,7 @@ function geomObjFromIViewerObj(obj: IViewerObject): GeomObject {
 }
 
 function isIViewerNode(obj: IViewerObject): boolean {
-  return obj.hasOwnProperty('node')
+  return obj && obj.entity instanceof Node
 }
 
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
@@ -117,7 +117,7 @@ export class LayoutEditor {
 
   geomGraphEditor: GeometryGraphEditor = new GeometryGraphEditor()
 
-  graph: Graph
+  private _graph: Graph
 
   looseObstaclesToTheirViewerNodes: Map<Polyline, Array<IViewerNode>>
 
@@ -129,15 +129,15 @@ export class LayoutEditor {
 
   removeEdgeDraggingDecorations: DelegateForEdge
 
-  sourceLoosePolyline: {loosePolyline: Polyline} = {loosePolyline: null}
+  sourceLoosePolylineWrap: {loosePolyline: Polyline} = {loosePolyline: null}
 
-  sourceOfInsertedEdge: {node: IViewerNode} = {node: null}
+  sourceOfInsertedEdgeWrap: {node: IViewerNode} = {node: null}
 
-  sourcePort: {port: Port} = {port: null}
+  sourcePortWrap: {port: Port} = {port: null}
 
-  targetOfInsertedEdge: {node: IViewerNode} = {node: null}
+  targetOfInsertedEdgeWrap: {node: IViewerNode} = {node: null}
 
-  targetPort: {port: Port} = {port: null}
+  targetPortWrap: {port: Port} = {port: null}
 
   viewer: IViewer
 
@@ -158,7 +158,7 @@ export class LayoutEditor {
     this.DecorateEdgeForDragging = LayoutEditor.TheDefaultEdgeDecoratorStub
     this.decorateEdgeLabelForDragging = this.defaultEdgeLabelDecorator
     this.RemoveEdgeDraggingDecorations = LayoutEditor.TheDefaultEdgeDecoratorStub
-    this.geomGraphEditor.graph = () => GeomGraph.getGeom(this.graph)
+    this.geomGraphEditor.graph = () => GeomGraph.getGeom(this._graph)
   }
 
   ViewerObjectUnderMouseCursorChanged(sender: any, e: ObjectUnderMouseCursorChangedEventArgs) {
@@ -169,17 +169,17 @@ export class LayoutEditor {
   }
 
   ViewChangeEventHandler(sender: any, e: any) {
-    if (this.graph == null) {
+    if (this._graph == null) {
       return
     }
   }
 
   /**  current graph under editing */
-  get Graph(): Graph {
-    return this.graph
+  get graph(): Graph {
+    return this._graph
   }
-  set Graph(value: Graph) {
-    this.graph = value
+  set graph(value: Graph) {
+    this._graph = value
     this.geomGraphEditor.clear()
   }
 
@@ -238,31 +238,34 @@ export class LayoutEditor {
   leftMouseButtonWasPressed: boolean
 
   get SourceOfInsertedEdge(): IViewerNode {
-    return this.sourceOfInsertedEdge.node
+    return this.sourceOfInsertedEdgeWrap.node
   }
   set SourceOfInsertedEdge(value: IViewerNode) {
-    this.sourceOfInsertedEdge.node = value
+    this.sourceOfInsertedEdgeWrap.node = value
   }
 
   get TargetOfInsertedEdge(): IViewerNode {
-    return this.targetOfInsertedEdge.node
+    return this.targetOfInsertedEdgeWrap.node
   }
   set TargetOfInsertedEdge(value: IViewerNode) {
-    this.targetOfInsertedEdge.node = value
+    this.targetOfInsertedEdgeWrap.node = value
   }
-
+  /** gets the port from the wrapper */
   get SourcePort(): Port {
-    return this.sourcePort.port
+    return this.sourcePortWrap.port
   }
+  /** set the port for the wrapper */
   set SourcePort(value: Port) {
-    this.sourcePort.port = value
+    this.sourcePortWrap.port = value
   }
 
+  /** gets the port from the wrapper */
   get TargetPort(): Port {
-    return this.targetPort.port
+    return this.targetPortWrap.port
   }
+  /** sets the port for the wrapper */
   set TargetPort(value: Port) {
-    this.targetPort.port = value
+    this.targetPortWrap.port = value
   }
 
   //  returns true if Undo is available
@@ -288,9 +291,9 @@ export class LayoutEditor {
   }
 
   viewerGraphChanged() {
-    this.graph = this.viewer.graph
+    this._graph = this.viewer.graph
     this.geomGraphEditor.clear()
-    if (this.graph != null && GeomGraph.getGeom(this.graph) != null) {
+    if (this._graph != null && GeomGraph.getGeom(this._graph) != null) {
       this.geomGraphEditor.clear()
     }
 
@@ -617,9 +620,9 @@ export class LayoutEditor {
     if (LayoutEditor.LeftButtonIsPressed(e)) {
       this.leftMouseButtonWasPressed = true
       if (this.insertingEdge) {
-        if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
-          this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
-        }
+        // if (this.SourceOfInsertedEdge != null && this.SourcePort != null && this.DraggingStraightLine()) {
+        //   this.viewer.StartDrawingRubberLine(this.sourcePort.port.Location)
+        // }
       } else if (this.insertionMode == InsertionMode.Node) {
         this.insertNode()
       } else {
@@ -643,7 +646,7 @@ export class LayoutEditor {
   private insertNode() {
     const id = this.findNodeID()
     const node = new Node(id)
-    this.graph.addNode(node)
+    this._graph.addNode(node)
     new DrawingNode(node) // it would create the default drawing attribute: TODO: keep a customizable attribute here
     const vn = this.viewer.createIViewerNodeN(node, this.mouseDownGraphPoint)
     this.viewer.addNode(vn, true)
@@ -652,7 +655,7 @@ export class LayoutEditor {
   findNodeID(): string {
     let i = 0
     let id = 'node' + i.toString()
-    while (this.graph.findNode(id)) {
+    while (this._graph.findNode(id)) {
       id = 'node' + ++i
     }
     return id
@@ -667,69 +670,68 @@ export class LayoutEditor {
       if (this.ActiveDraggedObject != null || this.activeCornerSite != null) {
         this.drag(e)
       } else if (this.insertingEdge) {
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        this.MouseMoveWhenInsertingEdgeAndPressingLeftButton(e)
+        //e.preventDefault()
+        //e.stopImmediatePropagation()
+        this.mouseMoveInsertEdgeLeftButtonOn(e)
       } else {
         this.MouseMoveLiveSelectObjectsForDragging(e)
       }
     } else if (this.insertingEdge) {
-      this.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e)
+      this.mouseMoveInsertEdgeNoButtons(e)
     }
   }
 
-  SetDraggingFlag(e: MouseEvent) {
+  setDraggingFlag(e: MouseEvent) {
     if (!this.dragging && this.MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e)) {
       this.dragging = true
     }
   }
 
-  TrySetNodePort(e: MouseEvent, node: {node: IViewerNode}, port: {port: Port}, loosePolyline: {loosePolyline: Polyline}): boolean {
+  TrySetNodePort(
+    e: MouseEvent,
+    nodeWrapper: {node: IViewerNode},
+    portWr: {port: Port},
+    loosePolylineWrapper: {loosePolyline: Polyline},
+  ): boolean {
+    if (this.graph == null) return
     Assert.assert(this.insertingEdge)
     const mousePos = this.viewer.screenToSource(e)
-    loosePolyline.loosePolyline = null
-    const mousePosition = {mousePosition: mousePos}
-    if (Graph != null) {
-      if (this.DraggingStraightLine()) {
-        node.node = this.SetPortWhenDraggingStraightLine(port, mousePosition)
-      } else {
-        if (this.interactiveEdgeRouter == null) {
-          this.PrepareForEdgeDragging()
-        }
+    loosePolylineWrapper.loosePolyline = null
+    if (this.DraggingStraightLine()) {
+      nodeWrapper.node = this.setPortWhenDraggingStraightLine(portWr, mousePos)
+    } else {
+      if (this.interactiveEdgeRouter == null) {
+        this.PrepareForEdgeDragging()
+      }
 
-        loosePolyline.loosePolyline = this.interactiveEdgeRouter.GetHitLoosePolyline(this.viewer.screenToSource(e))
-        if (loosePolyline.loosePolyline != null) {
-          this.SetPortUnderLoosePolyline(mousePosition.mousePosition, loosePolyline.loosePolyline, node, port)
-        } else {
-          node.node = null
-          port.port = null
-        }
+      loosePolylineWrapper.loosePolyline = this.interactiveEdgeRouter.GetHitLoosePolyline(mousePos)
+      if (loosePolylineWrapper.loosePolyline != null) {
+        this.SetPortUnderLoosePolyline(mousePos, loosePolylineWrapper.loosePolyline, nodeWrapper, portWr)
+      } else {
+        nodeWrapper.node = null
+        portWr.port = null
       }
     }
 
-    return port.port != null
+    return portWr.port != null
   }
 
-  SetPortWhenDraggingStraightLine(a: {port: Port}, b: {mousePosition: Point}): IViewerNode {
-    const isViewerNode = isIViewerNode(this.viewer.objectUnderMouseCursor)
-    let viewerNode: IViewerNode = null
-    if (isViewerNode != null) {
-      viewerNode = this.viewer.objectUnderMouseCursor as IViewerNode
+  setPortWhenDraggingStraightLine(portWr: {port: Port}, mousePos: Point): IViewerNode {
+    if (isIViewerNode(this.viewer.objectUnderMouseCursor)) {
+      const viewerNode = this.viewer.objectUnderMouseCursor as IViewerNode
       const t = {portParameter: 0}
       const geomNode = geomObjFromIViewerObj(viewerNode) as GeomNode
-      if (this.NeedToCreateBoundaryPort(b.mousePosition, viewerNode, t)) {
-        a.port = this.CreateOrUpdateCurvePort(t.portParameter, geomNode, a.port)
+      if (this.NeedToCreateBoundaryPort(mousePos, viewerNode, t)) {
+        portWr.port = this.CreateOrUpdateCurvePort(t.portParameter, geomNode, portWr.port)
+      } else if (LayoutEditor.PointIsInside(mousePos, geomNode.boundaryCurve)) {
+        portWr.port = this.CreateFloatingPort(geomNode, mousePos)
       } else {
-        a.port = this.CreateFloatingPort(geomNode, b.mousePosition)
+        portWr.port = null
       }
-      a.port = LayoutEditor.PointIsInside(b.mousePosition, geomNode.boundaryCurve)
-        ? this.CreateFloatingPort(geomNode, b.mousePosition)
-        : null
-    } else {
-      a.port = null
+      return viewerNode
     }
-
-    return viewerNode
+    portWr.port = null
+    return null
   }
 
   CreateOrUpdateCurvePort(t: number, geomNode: GeomNode, port: Port): Port {
@@ -747,27 +749,27 @@ export class LayoutEditor {
     return new FloatingPort(geomNode.boundaryCurve, location)
   }
 
-  SetPortUnderLoosePolyline(mousePosition: Point, loosePoly: Polyline, node: {node: IViewerNode}, portWrap: {port: Port}) {
+  SetPortUnderLoosePolyline(mousePos: Point, loosePoly: Polyline, nodeWr: {node: IViewerNode}, portWrap: {port: Port}) {
     let dist: number = Number.POSITIVE_INFINITY
     let par = 0
     for (const viewerNode of this.GetViewerNodesInsideOfLooseObstacle(loosePoly)) {
       const curve: ICurve = viewerNode.entity.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve
-      if (LayoutEditor.PointIsInside(mousePosition, curve)) {
-        node.node = viewerNode
-        this.SetPortForMousePositionInsideOfNode(mousePosition, node.node, portWrap)
+      if (LayoutEditor.PointIsInside(mousePos, curve)) {
+        nodeWr.node = viewerNode
+        this.SetPortForMousePositionInsideOfNode(mousePos, nodeWr.node, portWrap)
         return
       }
 
-      const p: number = curve.closestParameter(mousePosition)
-      const d: number = curve.value(p).sub(mousePosition).length
+      const p: number = curve.closestParameter(mousePos)
+      const d: number = curve.value(p).sub(mousePos).length
       if (d < dist) {
         par = p
         dist = d
-        node.node = viewerNode
+        nodeWr.node = viewerNode
       }
     }
 
-    portWrap.port = this.CreateOrUpdateCurvePort(par, geomObjFromIViewerObj(node.node) as GeomNode, portWrap.port)
+    portWrap.port = this.CreateOrUpdateCurvePort(par, geomObjFromIViewerObj(nodeWr.node) as GeomNode, portWrap.port)
   }
 
   GetViewerNodesInsideOfLooseObstacle(loosePoly: Polyline): Array<IViewerNode> {
@@ -875,11 +877,11 @@ export class LayoutEditor {
   private handleTheMouseCursorOutOfTheBoundingBox(currentDragPoint: Point) {
     const w = this.viewer.smoothedPolylineCircleRadius // some rather small but still visible distance on the screen
     const mousePointerBox = Rectangle.mkSizeCenter(new Size(w, w), currentDragPoint)
-    const g = GeomGraph.getGeom(this.graph)
+    const g = GeomGraph.getGeom(this._graph)
     if (!g.boundingBox.containsRect(mousePointerBox)) {
-      this.geomGraphEditor.registerForUndo(this.graph)
+      this.geomGraphEditor.registerForUndo(this._graph)
       g.boundingBox = g.boundingBox.addRec(mousePointerBox)
-      this.invalidate(this.graph)
+      this.invalidate(this._graph)
     }
   }
 
@@ -957,12 +959,12 @@ export class LayoutEditor {
         this.InsertEdgeOnMouseUp()
       }
 
-      const gg = GeomGraph.getGeom(this.graph)
+      const gg = GeomGraph.getGeom(this._graph)
       const newBox = gg.getPumpedGraphWithMarginsBox()
       if (!newBox.equal(gg.boundingBox)) {
-        this.geomGraphEditor.registerForUndo(this.graph)
+        this.geomGraphEditor.registerForUndo(this._graph)
         gg.boundingBox = newBox
-        this.invalidate(this.graph)
+        this.invalidate(this._graph)
         args.preventDefault()
       }
     }
@@ -989,15 +991,15 @@ export class LayoutEditor {
   edgeAttr: DrawingEdge = new DrawingEdge(null, true)
 
   InsertEdgeOnMouseUp() {
-    if (this.DraggingStraightLine()) {
-      this.viewer.StopDrawingRubberLine()
+    if (this.DraggingStraightLine() && false) {
+      this.viewer.stopDrawingRubberEdge()
       this.viewer.RemoveSourcePortEdgeRouting()
       this.viewer.RemoveTargetPortEdgeRouting()
       if (this.SourcePort != null && this.TargetOfInsertedEdge != null && this.TargetPort != null) {
         const edge = new Edge(<Node>this.SourceOfInsertedEdge.entity, <Node>this.TargetOfInsertedEdge.entity)
         edge.setAttr(AttributeRegistry.DrawingObjectIndex, this.EdgeAttr.clone())
         const iEdge: IViewerEdge = this.viewer.RouteEdge(edge)
-        this.viewer.AddEdge(iEdge, true)
+        this.viewer.addEdge(iEdge, true)
         // take care of undo() : TODO
       }
     } else {
@@ -1013,7 +1015,7 @@ export class LayoutEditor {
 
   addEdgeToTheViewer(e: Edge) {
     const vEdge = this.viewer.createEdgeWithGivenGeometry(e)
-    this.viewer.AddEdge(vEdge, true)
+    this.viewer.addEdge(vEdge, true)
   }
 
   mkArrowhead(): Arrowhead {
@@ -1023,7 +1025,7 @@ export class LayoutEditor {
   }
 
   FinishRoutingEdge(): Edge {
-    const e = new Edge(this.sourceOfInsertedEdge.node.entity as Node, this.targetOfInsertedEdge.node.entity as Node)
+    const e = new Edge(this.sourceOfInsertedEdgeWrap.node.entity as Node, this.targetOfInsertedEdgeWrap.node.entity as Node)
     e.add()
     const edgeAttr = this.EdgeAttr.clone() as DrawingEdge
     edgeAttr.rebind(e)
@@ -1032,9 +1034,11 @@ export class LayoutEditor {
     this.geomEdge.sourceArrowhead = edgeAttr.arrowtail == ArrowTypeEnum.none ? null : this.mkArrowhead()
     this.geomEdge.targetArrowhead = edgeAttr.arrowhead == ArrowTypeEnum.none ? null : this.mkArrowhead()
     if (this.TargetOfInsertedEdge != this.SourceOfInsertedEdge) {
-      this.interactiveEdgeRouter.TryToRemoveInflectionsAndCollinearSegments(this.geomEdge.smoothedPolyline)
-      this.interactiveEdgeRouter.SmoothenCorners(this.geomEdge.smoothedPolyline)
-      this.geomEdge.curve = this.geomEdge.smoothedPolyline.createCurve()
+      if (!(this.geomEdge.curve instanceof LineSegment)) {
+        this.interactiveEdgeRouter.TryToRemoveInflectionsAndCollinearSegments(this.geomEdge.smoothedPolyline)
+        this.interactiveEdgeRouter.SmoothenCorners(this.geomEdge.smoothedPolyline)
+        this.geomEdge.curve = this.geomEdge.smoothedPolyline.createCurve()
+      }
       Arrowhead.trimSplineAndCalculateArrowheads(this.geomEdge, this.geomEdge.curve, true)
     } else {
       this.geomEdge = LayoutEditor.CreateEdgeGeometryForSelfEdge(this.SourceOfInsertedEdge.entity as Node)
@@ -1235,7 +1239,7 @@ export class LayoutEditor {
         const loosePadding = 0.65 * padding
 
         this.interactiveEdgeRouter = InteractiveEdgeRouter.constructorANNN(
-          Array.from(this.graph.nodesBreadthFirst).map((n) => (GeomNode.getGeom(n) as GeomNode).boundaryCurve),
+          Array.from(this._graph.nodesBreadthFirst).map((n) => (GeomNode.getGeom(n) as GeomNode).boundaryCurve),
           padding,
           loosePadding,
           0,
@@ -1272,34 +1276,26 @@ export class LayoutEditor {
   // //                 this.SelectedEdge]);
   // // }
 
-  HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(e: MouseEvent) {
+  mouseMoveInsertEdgeNoButtons(e: MouseEvent) {
     const oldNode: IViewerNode = this.SourceOfInsertedEdge
-    if (this.TrySetNodePort(e, this.sourceOfInsertedEdge, this.sourcePort, this.sourceLoosePolyline)) {
-      this.viewer.SetSourcePortForEdgeRouting(this.sourcePort.port.Location)
+    if (this.TrySetNodePort(e, this.sourceOfInsertedEdgeWrap, this.sourcePortWrap, this.sourceLoosePolylineWrap)) {
+      this.viewer.SetSourcePortForEdgeRouting(this.sourcePortWrap.port.Location)
     } else if (oldNode != null) {
       this.viewer.RemoveSourcePortEdgeRouting()
     }
   }
 
-  MouseMoveWhenInsertingEdgeAndPressingLeftButton(e: MouseEvent) {
+  mouseMoveInsertEdgeLeftButtonOn(e: MouseEvent) {
     if (this.SourcePort != null) {
-      this.SetDraggingFlag(e)
+      this.setDraggingFlag(e)
       if (this.dragging) {
-        const loosePolylineBox: {loosePolyline: Polyline} = {loosePolyline: null}
-        if (this.TrySetNodePort(e, this.targetOfInsertedEdge, this.targetPort, loosePolylineBox)) {
-          this.viewer.SetTargetPortForEdgeRouting(this.targetPort.port.Location)
-          if (this.DraggingStraightLine()) {
-            this.viewer.DrawRubberLine(this.TargetPort.Location)
-          } else {
-            this.DrawEdgeInteractivelyToPort(this.TargetPort, loosePolylineBox.loosePolyline)
-          }
+        const loosePolylineWr: {loosePolyline: Polyline} = {loosePolyline: null}
+        if (this.TrySetNodePort(e, this.targetOfInsertedEdgeWrap, this.targetPortWrap, loosePolylineWr)) {
+          this.viewer.setTargetPortForEdgeRouting(this.targetPortWrap.port.Location)
+          this.drawEdgeInteractivelyToPort(loosePolylineWr.loosePolyline, this.DraggingStraightLine())
         } else {
           this.viewer.RemoveTargetPortEdgeRouting()
-          if (this.DraggingStraightLine()) {
-            this.viewer.DrawRubberLine(e)
-          } else {
-            this.DrawEdgeInteractivelyToLocation(e)
-          }
+          this.DrawEdgeInteractivelyToLocation(e, this.DraggingStraightLine())
         }
       }
 
@@ -1314,24 +1310,33 @@ export class LayoutEditor {
     }
   }
 
-  DrawEdgeInteractivelyToLocation(e: MouseEvent) {
-    this.DrawEdgeInteractivelyToLocationP(this.viewer.screenToSource(e))
+  DrawEdgeInteractivelyToLocation(e: MouseEvent, straightLine: boolean) {
+    this.DrawEdgeInteractivelyToLocationP(this.viewer.screenToSource(e), straightLine)
   }
 
-  DrawEdgeInteractivelyToLocationP(point: Point) {
-    this.viewer.drawRubberEdge((this.geomEdge = this.CalculateEdgeInteractivelyToLocation(point)))
+  DrawEdgeInteractivelyToLocationP(point: Point, straightLine: boolean) {
+    this.geomEdge = straightLine ? this.getStraightLineEdge(point) : this.CalculateEdgeInteractivelyToLocation(point)
+    this.viewer.drawRubberEdge(this.geomEdge)
+  }
+  getStraightLineEdge(point: Point): GeomEdge {
+    const g = new GeomEdge(null)
+    g.curve = LineSegment.mkPP(this.SourcePort.Location, point)
+    return g
   }
 
   CalculateEdgeInteractivelyToLocation(location: Point): GeomEdge {
     if (this.interactiveEdgeRouter.SourcePort == null) {
-      this.interactiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolyline.loosePolyline)
+      this.interactiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolylineWrap.loosePolyline)
     }
 
     return this.interactiveEdgeRouter.RouteEdgeToLocation(location)
   }
 
-  DrawEdgeInteractivelyToPort(targetPortParameter: Port, portLoosePolyline: Polyline) {
-    this.viewer.drawRubberEdge((this.geomEdge = this.CalculateEdgeInteractively(targetPortParameter, portLoosePolyline)))
+  drawEdgeInteractivelyToPort(portLoosePolyline: Polyline, straightLine: boolean) {
+    this.geomEdge = straightLine
+      ? this.getStraightLineEdge(this.TargetPort.Location)
+      : this.CalculateEdgeInteractively(this.TargetPort, portLoosePolyline)
+    this.viewer.drawRubberEdge(this.geomEdge)
   }
 
   DraggingStraightLine(): boolean {
@@ -1344,7 +1349,7 @@ export class LayoutEditor {
 
   CalculateEdgeInteractively(targetPortParameter: Port, portLoosePolyline: Polyline): GeomEdge {
     if (this.interactiveEdgeRouter.SourcePort == null) {
-      this.interactiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolyline.loosePolyline)
+      this.interactiveEdgeRouter.SetSourcePortAndSourceLoosePolyline(this.SourcePort, this.sourceLoosePolylineWrap.loosePolyline)
     }
 
     let curve: ICurve

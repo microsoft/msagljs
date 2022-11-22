@@ -104,26 +104,7 @@ export interface IViewer {
 
   graph: Graph
 
-  //  prepare to draw the rubber line
-
-  StartDrawingRubberLine(startingPoint: Point): void
-
-  //  draw the rubber line to the current mouse position
-
-  DrawRubberLine(args: any): void
-
-  //  draw rubber line to a given point
-
-  DrawRubberLine(point: Point): void
-
-  //  stop drawing the rubber line
-
-  StopDrawingRubberLine(): void
-
-  //  add an edge to the viewer graph
-
-  //  <returns></returns>
-  AddEdge(edge: IViewerEdge, registerForUndo: boolean): void
+  addEdge(edge: IViewerEdge, registerForUndo: boolean): void
 
   //  drawing edge already has its geometry in place
 
@@ -156,7 +137,7 @@ export interface IViewer {
 
   //  creates the port visual if it does not exist, and sets the port location
 
-  SetTargetPortForEdgeRouting(portLocation: Point): void
+  setTargetPortForEdgeRouting(portLocation: Point): void
 
   //  removes the port
 

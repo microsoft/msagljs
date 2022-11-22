@@ -164,7 +164,7 @@ class FakeViewer implements IViewer {
   }
   smoothedPolylineCircleRadius = 5
   graph: Graph
-  StartDrawingRubberLine(startingPoint: Point): void {
+  startDrawingRubberLine(startingPoint: Point): void {
     throw new Error('Method not implemented.')
   }
   DrawRubberLine(args: any): void
@@ -175,11 +175,11 @@ class FakeViewer implements IViewer {
   StopDrawingRubberLine(): void {
     throw new Error('Method not implemented.')
   }
-  AddEdge(edge: IViewerEdge, registerForUndo: boolean): void {
-    throw new Error('Method not implemented.')
+  addEdge(edge: IViewerEdge, registerForUndo: boolean): void {
+    // throw new Error('Method not implemented.')
   }
   createEdgeWithGivenGeometry(drawingEdge: Edge): IViewerEdge {
-    throw new Error('Method not implemented.')
+    return null
   }
   addNode(node: IViewerNode, registerForUndo: boolean): void {
     throw new Error('Method not implemented.')
@@ -195,11 +195,11 @@ class FakeViewer implements IViewer {
   SetSourcePortForEdgeRouting(portLocation: Point): void {
     // throw new Error('Method not implemented.')
   }
-  SetTargetPortForEdgeRouting(portLocation: Point): void {
+  setTargetPortForEdgeRouting(portLocation: Point): void {
     // throw new Error('Method not implemented.')
   }
   RemoveSourcePortEdgeRouting(): void {
-    throw new Error('Method not implemented.')
+    //throw new Error('Method not implemented.')
   }
   RemoveTargetPortEdgeRouting(): void {
     //throw new Error('Method not implemented.')
@@ -226,7 +226,7 @@ function routeEdge(source: Node, target: Node, layoutEditor: LayoutEditor) {
   mouseEvent.clientY = sourceGeom.center.y
   mouseEvent.buttons = 0 // the buttons are off
   mouseEvent.buttons = 1 // left button is on
-  layoutEditor.HandleMouseMoveWhenInsertingEdgeAndNotPressingLeftButton(mouseEvent)
+  layoutEditor.mouseMoveInsertEdgeNoButtons(mouseEvent)
   mouseEvent.buttons = 1 // left button is on
 
   layoutEditor.viewerMouseDown(null, mouseEvent)
@@ -282,6 +282,44 @@ test('clusters_1 drag', () => {
   expect(edgesAreAttached(graph)).toBe(true)
 })
 
+test('clusters insert edge', () => {
+  const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
+  dg.createGeometry()
+  layoutGraphWithSugiayma(GeomGraph.getGeom(dg.graph), null, false)
+  const graph = dg.graph
+  const viewer = new FakeViewer(graph)
+  viewer.insertionMode = InsertionMode.Edge
+  const layoutEditor = new LayoutEditor(viewer)
+  layoutEditor.viewer.graph = layoutEditor.graph = dg.entity as Graph
+  const top = graph.findNodeRecursive('top')
+  const vTop = new SvgViewerNode(top, null)
+  viewer.objectUnderMouseCursor = vTop
+  const topGeom = top.getAttr(AttributeRegistry.GeomObjectIndex)
+  const mouseEvent = new FakeMouseEvent()
+  mouseEvent.clientX = topGeom.center.x
+  mouseEvent.clientY = topGeom.center.y
+  mouseEvent.buttons = 0 // left button is off
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  mouseEvent.buttons = 1 // left button is on
+  layoutEditor.viewerMouseDown(null, mouseEvent)
+  const del = 4
+  mouseEvent.clientX += del
+  mouseEvent.clientY += del
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  expect(layoutEditor.geomEdge != null).toBe(true)
+  const cluster_0 = graph.findNode('cluster_0')
+  const cluster0_geom = GeomGraph.getGeom(cluster_0 as Graph)
+  mouseEvent.clientX = cluster0_geom.center.x
+  mouseEvent.clientY = cluster0_geom.center.y
+  const clusterO_v = new SvgViewerNode(cluster_0, null)
+  viewer.objectUnderMouseCursor = clusterO_v
+  layoutEditor.viewerMouseMove(null, mouseEvent)
+  layoutEditor.viewerMouseUp(null, mouseEvent)
+
+  //  SvgDebugWriter.writeGeomGraph('./tmp/clusters_x.svg', GeomGraph.getGeom(graph))
+  expect(top.outEdges.size == 3).toBe(true)
+})
+
 test('clusters x drag', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   dg.createGeometry()
@@ -311,7 +349,7 @@ test('clusters x drag', () => {
   mouseEvent.clientY += del
   layoutEditor.viewerMouseMove(null, mouseEvent)
   inters = cluster_1G.boundingBox.intersection_rect(cluster_0.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
-  SvgDebugWriter.writeGeomGraph('./tmp/clusters_x.svg', GeomGraph.getGeom(graph))
+  //SvgDebugWriter.writeGeomGraph('./tmp/clusters_x.svg', GeomGraph.getGeom(graph))
   expect(inters.isEmpty()).toBe(true)
   expect(Point.closeDistEps(xg.center, xg_center)).toBe(false)
   expect(edgesAreAttached(graph)).toBe(true)

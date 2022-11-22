@@ -22,7 +22,7 @@ viewer.addEventListener('dblclick', (e) => {
 
 /** setup the viewer */
 svgRenderer.addKeyDownListener((e: KeyboardEvent) => {
-  console.log('svg keydown: ', e.key)
+  //console.log('svg keydown: ', e.key)
   if (e.ctrlKey) {
     switch (e.key.toLowerCase()) {
       case 'e':

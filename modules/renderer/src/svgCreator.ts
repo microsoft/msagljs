@@ -105,7 +105,6 @@ export class SvgCreator {
   /** changes color and shape depending on inside parameter */
   positionEdgeInsertionElement(cursorPosition: Point, inside: boolean) {
     const color = inside ? 'brown' : 'blue'
-
     const rad = this.getSmoothedPolylineRadius() / 2
 
     const pathValue = curveString(inside ? CurveFactory.mkCircle(rad, cursorPosition) : CurveFactory.mkDiamond(rad, rad, cursorPosition))
