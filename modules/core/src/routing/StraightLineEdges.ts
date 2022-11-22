@@ -168,12 +168,12 @@ export class StraightLineEdges extends Algorithm {
     if (intersects.length > 0) {
       let c = line.trim(intersects[0].par1, 1)
       if (c instanceof LineSegment) {
-        line = <LineSegment>c
+        line = c
         intersects = Curve.getAllIntersections(targetBox, line, false)
         if (intersects.length > 0) {
           c = line.trim(0, intersects[0].par1)
           if (c instanceof LineSegment) {
-            line = <LineSegment>c
+            line = c
           }
         }
       }
@@ -183,26 +183,20 @@ export class StraightLineEdges extends Algorithm {
   }
 
   // creates an geomedge curve based only on the source and target geometry
-  public static CreateSimpleEdgeCurveWithUnderlyingPolyline(geomedge: GeomEdge) {
-    const a = geomedge.source.center
-    const b = geomedge.target.center
-    if (geomedge.source === geomedge.target) {
-      const dx = 2 / (3 * geomedge.source.boundaryCurve.boundingBox.width)
-      const dy = geomedge.source.boundingBox.height / 4
-      geomedge.smoothedPolyline = StraightLineEdges.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
-      geomedge.curve = geomedge.smoothedPolyline.createCurve()
+  public static CreateSimpleEdgeCurveWithUnderlyingPolyline(ge: GeomEdge) {
+    const a = ge.sourcePort ? ge.sourcePort.Location : ge.source.center
+    const b = ge.targetPort ? ge.targetPort.Location : ge.target.center
+    if (ge.source === ge.target) {
+      const dx = 2 / (3 * ge.source.boundaryCurve.boundingBox.width)
+      const dy = ge.source.boundingBox.height / 4
+      ge.smoothedPolyline = StraightLineEdges.CreateUnderlyingPolylineForSelfEdge(a, dx, dy)
+      ge.curve = ge.smoothedPolyline.createCurve()
     } else {
-      geomedge.smoothedPolyline = SmoothedPolyline.mkFromPoints([a, b])
-      geomedge.curve = geomedge.smoothedPolyline.createCurve()
+      ge.smoothedPolyline = SmoothedPolyline.mkFromPoints([a, b])
+      ge.curve = ge.smoothedPolyline.createCurve()
     }
 
-    Arrowhead.trimSplineAndCalculateArrowheadsII(
-      geomedge,
-      geomedge.source.boundaryCurve,
-      geomedge.target.boundaryCurve,
-      geomedge.curve,
-      false,
-    )
+    Arrowhead.trimSplineAndCalculateArrowheadsII(ge, ge.source.boundaryCurve, ge.target.boundaryCurve, ge.curve, false)
   }
 
   private static CreateUnderlyingPolylineForSelfEdge(p0: Point, dx: number, dy: number): SmoothedPolyline {

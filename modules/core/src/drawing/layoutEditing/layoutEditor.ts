@@ -991,26 +991,13 @@ export class LayoutEditor {
   edgeAttr: DrawingEdge = new DrawingEdge(null, true)
 
   InsertEdgeOnMouseUp() {
-    if (this.DraggingStraightLine() && false) {
-      this.viewer.stopDrawingRubberEdge()
-      this.viewer.RemoveSourcePortEdgeRouting()
-      this.viewer.RemoveTargetPortEdgeRouting()
-      if (this.SourcePort != null && this.TargetOfInsertedEdge != null && this.TargetPort != null) {
-        const edge = new Edge(<Node>this.SourceOfInsertedEdge.entity, <Node>this.TargetOfInsertedEdge.entity)
-        edge.setAttr(AttributeRegistry.DrawingObjectIndex, this.EdgeAttr.clone())
-        const iEdge: IViewerEdge = this.viewer.RouteEdge(edge)
-        this.viewer.addEdge(iEdge, true)
-        // take care of undo() : TODO
-      }
-    } else {
-      this.viewer.stopDrawingRubberEdge()
-      if (this.TargetPort != null) {
-        const e = this.FinishRoutingEdge()
-        this.addEdgeToTheViewer(e)
-      }
-
-      this.interactiveEdgeRouter.Clean()
+    this.viewer.stopDrawingRubberEdge()
+    if (this.TargetPort != null) {
+      const e = this.FinishRoutingEdge()
+      this.addEdgeToTheViewer(e)
     }
+
+    this.interactiveEdgeRouter.Clean()
   }
 
   addEdgeToTheViewer(e: Edge) {

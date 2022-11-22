@@ -4,6 +4,7 @@ import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from '../../layout/core'
 import {Arrowhead} from '../../layout/core/arrowhead'
 
 import {GeomObject} from '../../layout/core/geomObject'
+import {RelativeFloatingPort} from '../../layout/core/relativeFloatingPort'
 import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
 import {ILayoutSettings} from '../../layout/iLayoutSettings'
 import {Point, Curve, LineSegment, ICurve, PointLocation} from '../../math/geometry'
@@ -306,8 +307,26 @@ export class GeometryGraphEditor {
 
   static createCurveOnChangedPolyline(e: GeomEdge) {
     const curve: Curve = e.smoothedPolyline.createCurve()
+
     if (!Arrowhead.trimSplineAndCalculateArrowheadsII(e, e.source.boundaryCurve, e.target.boundaryCurve, curve, false)) {
       Arrowhead.createBigEnoughSpline(e)
+    }
+
+    e.sourcePort = new RelativeFloatingPort(
+      () => e.source.boundaryCurve,
+      () => e.source.center,
+      edgeStart().sub(e.source.center),
+    )
+    e.targetPort = new RelativeFloatingPort(
+      () => e.target.boundaryCurve,
+      () => e.target.center,
+      edgeEnd().sub(e.target.center),
+    )
+    function edgeStart(): Point {
+      return e.sourceArrowhead ? e.sourceArrowhead.tipPosition : e.curve.start
+    }
+    function edgeEnd(): Point {
+      return e.targetArrowhead ? e.targetArrowhead.tipPosition : e.curve.end
     }
   }
 
