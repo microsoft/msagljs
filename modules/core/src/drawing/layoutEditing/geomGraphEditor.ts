@@ -342,9 +342,6 @@ export class GeometryGraphEditor {
   }
 
   private addToObjectsToDrag(geomObj: GeomObject) {
-    if (geomObj instanceof GeomLabel) {
-      console.log()
-    }
     this.objectsToDrag.add(geomObj)
   }
 

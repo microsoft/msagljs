@@ -109,6 +109,10 @@ export class UndoRedoAction {
           attr.rebind(e)
         }
       }
+    } else if ('insertedEnts' in this.data) {
+      for (const ent of this.data.insertedEnts) {
+        restoreDeletedEntity(ent)
+      }
     } else {
       throw new Error('not implemented')
     }
