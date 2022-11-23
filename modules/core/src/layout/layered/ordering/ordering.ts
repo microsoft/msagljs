@@ -205,7 +205,7 @@ export class Ordering extends Algorithm {
 
       revOrdering.run()
 
-      if (revOrdering.measure < this.measure) {
+      if (OrderingMeasure.less(revOrdering.measure, this.measure)) {
         for (let j = 0; j < this.nOfLayers; j++) copyTo(secondLayers.Layers[j], this.layerArrays.Layers[this.nOfLayers - 1 - j])
 
         this.layerArrays.UpdateXFromLayers()
