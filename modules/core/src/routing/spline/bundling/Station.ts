@@ -78,15 +78,6 @@ export class Station {
   // curve of the hub
   BoundaryCurve: ICurve
 
-  public static less(a: Station, b: Station): boolean {
-    //Assert.assert(a === b || a.SerialNumber !== b.SerialNumber)
-    return a.SerialNumber < b.SerialNumber
-  }
-
-  public static greater(a: Station, b: Station): boolean {
-    return a.SerialNumber > b.SerialNumber
-  }
-
   CdtTriangle: CdtTriangle
 
   cachedRadiusCost: number

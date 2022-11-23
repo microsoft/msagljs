@@ -40,6 +40,7 @@ import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
 import {ILayoutSettings} from '../iLayoutSettings'
+import {straightLineEdgePatcher} from '../../routing/StraightLineEdges'
 function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
@@ -72,6 +73,12 @@ export class LayeredLayout extends Algorithm {
   LayersAreDoubled = false
   anchors: Anchor[]
   xLayoutGraph: XLayoutGraph
+  /** return true if the ratio is less than 1/50 or greater than 50 */
+  get extremeAspectRatio(): boolean {
+    const bb = this.originalGraph.boundingBox
+    const ratio = bb.width / bb.height
+    return ratio < 1 / 50 || ratio > 50
+  }
 
   get verticalConstraints() {
     return this.sugiyamaSettings.verticalConstraints
@@ -130,7 +137,9 @@ export class LayeredLayout extends Algorithm {
     const routingSettings: EdgeRoutingSettings = this.sugiyamaSettings.commonSettings.edgeRoutingSettings
     const mode = this.constrainedOrdering != null ? EdgeRoutingMode.Spline : routingSettings.EdgeRoutingMode
 
-    if (mode === EdgeRoutingMode.SugiyamaSplines) {
+    if (this.extremeAspectRatio) {
+      straightLineEdgePatcher(this.originalGraph, Array.from(this.originalGraph.deepEdges), this.cancelToken)
+    } else if (mode === EdgeRoutingMode.SugiyamaSplines) {
       this.calculateEdgeSplines()
     } else {
       routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges), this.cancelToken)

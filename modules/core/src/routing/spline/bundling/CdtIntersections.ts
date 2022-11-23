@@ -222,10 +222,6 @@ export class CdtIntersections {
     return this.ThreadLineSegmentThroughTriangles(v.CdtTriangle, vPosition, uPosition, obstaclesToIgnore, list)
   }
 
-  static closedeb(u: Station, v: Station) {
-    return u.Position.sub(new Point(360.561, 428.416)).length < 0.1 && v.Position.sub(new Point(414.281, 440.732)).length < 0.1
-  }
-
   // checks if an edge intersects obstacles
   // otherwise it calulates distances to the closest obstacles
   EdgeIsLegalSSPPS(v: Station, u: Station, obstaclesToIgnore: Set<Polyline>): boolean {
