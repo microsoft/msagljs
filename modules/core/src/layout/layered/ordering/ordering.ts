@@ -238,10 +238,10 @@ export class Ordering extends Algorithm {
         this.startOfVirtNodes,
       )
 
-      if (this.measure < newMeasure) {
+      if (OrderingMeasure.less(this.measure, newMeasure)) {
         this.Restore()
         countOfNoGainSteps++
-      } else if (newMeasure < this.measure || HeadOfTheCoin()) {
+      } else if (OrderingMeasure.less(newMeasure, this.measure) || HeadOfTheCoin()) {
         countOfNoGainSteps = 0
         this.layerArraysCopy = Ordering.CloneLayers(this.layers, this.layerArraysCopy)
         this.measure = newMeasure
