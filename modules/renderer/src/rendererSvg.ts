@@ -304,14 +304,8 @@ export class RendererSvg implements IViewer {
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
     this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
+    this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
     this.layoutEditor.viewerGraphChanged()
-    const svg = this._svgCreator.svg
-    /**  debug !!!*/
-    svg.addEventListener('keydown', (event) => {
-      this.keyDownListener(event)
-    })
-    svg.setAttribute('tabindex', '0')
-    /** end debug !!!*/
   }
   /** maps the screen coordinates to the graph coordinates */
   screenToSource(e: MouseEvent): Point {
