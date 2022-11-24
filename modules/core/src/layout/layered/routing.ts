@@ -23,6 +23,8 @@ import {SmoothedPolylineCalculator} from './smoothedPolylineCalculator'
 import {GeomEdge} from '../core/geomEdge'
 
 import {StraightLineEdges} from '../../routing/StraightLineEdges'
+import {SplineRouter} from '../../routing/splineRouter'
+import {EdgeLabelPlacement} from '../edgeLabelPlacement'
 
 // The class responsible for the routing of splines
 export class Routing extends Algorithm {
@@ -74,11 +76,24 @@ export class Routing extends Algorithm {
   }
 
   RouteUnroutedEdges() {
-    for (const n of this.OriginalGraph.nodesBreadthFirst) {
-      for (const e of n.outEdges()) {
-        if (!e.curve) StraightLineEdges.RouteEdge(e, Math.max(e.source.padding, e.target.padding))
-      }
+    const edgesToRoute = []
+    for (const e of this.OriginalGraph.deepEdges) {
+      if (!e.curve) edgesToRoute.push(e)
     }
+    const sugSettings = this.OriginalGraph.layoutSettings ? this.OriginalGraph.layoutSettings : new SugiyamaLayoutSettings()
+    const ers = sugSettings.commonSettings.edgeRoutingSettings
+    const sr = new SplineRouter(
+      this.OriginalGraph,
+      edgesToRoute,
+      ers.padding,
+      ers.polylinePadding,
+      ers.coneAngle,
+      ers.bundlingSettings,
+      this.cancelToken,
+    )
+    sr.run()
+    const elp = EdgeLabelPlacement.constructorGA(this.OriginalGraph, edgesToRoute)
+    elp.run()
   }
 
   RouteFlatEdges() {
@@ -89,6 +104,7 @@ export class Routing extends Algorithm {
 
   createRegularSplines() {
     for (const intEdgeList of this.Database.RegularMultiedges()) {
+      if (betterRouteAsSplines(intEdgeList)) continue
       // Here we try to optimize multi-edge routing
       const m = intEdgeList.length
       const optimizeShortEdges: boolean = m === 1 && !this.FanAtSourceOrTarget(intEdgeList[0])
@@ -284,4 +300,9 @@ export class Routing extends Algorithm {
   static GetNodeKind(vertexOffset: number, edgePath: PolyIntEdge): NodeKind {
     return vertexOffset === 0 ? NodeKind.Top : vertexOffset < edgePath.count ? NodeKind.Internal : NodeKind.Bottom
   }
+}
+function betterRouteAsSplines(intEdgeList: PolyIntEdge[]) {
+  if (intEdgeList.length < 4) return false
+  for (const pie of intEdgeList) if (pie.edge.label) return false
+  return true
 }

@@ -69,15 +69,7 @@ export class SplineRouter extends Algorithm {
     this.continueOnOverlaps = value
   }
 
-  rootShapes: Shape[];
-
-  *edges(): IterableIterator<GeomEdge> {
-    if (this._edges != null) {
-      for (const e of this._edges) {
-        yield e
-      }
-    }
-  }
+  rootShapes: Shape[]
 
   coneAngle: number
 
@@ -115,7 +107,7 @@ export class SplineRouter extends Algorithm {
 
   geomGraph: GeomGraph
 
-  multiEdgesSeparation = 5
+  multiEdgesSeparation = 0.5
 
   routeMultiEdgesAsBundles = true
 
@@ -166,7 +158,7 @@ export class SplineRouter extends Algorithm {
     cancelToken: CancelToken = null,
   ) {
     super(cancelToken)
-    this._edges = edges
+    this.edges = edges
     this.BundlingSettings = bundlingSettings
     this.geomGraph = graph
     this.LoosePadding = loosePadding
@@ -174,7 +166,7 @@ export class SplineRouter extends Algorithm {
     this.coneAngle = coneAngle
   }
 
-  _edges: GeomEdge[]
+  private edges: GeomEdge[]
   static mk6(
     graph: GeomGraph,
     tightPadding: number,
@@ -198,10 +190,14 @@ export class SplineRouter extends Algorithm {
 
   // Executes the algorithm.
   run() {
+    if (this.edges.length == 0) {
+      return
+    }
+
     if (this.geomGraph.isEmpty()) {
       return
     }
-    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this._edges)
+    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
     if (
       this.BundlingSettings == null &&
       this.geomGraph.layoutSettings &&
@@ -331,7 +327,7 @@ export class SplineRouter extends Algorithm {
     edges: Array<GeomEdge>
   }> {
     const ret = new Array<{passport: Set<Shape>; edges: Array<GeomEdge>}>()
-    for (const edge of this._edges) {
+    for (const edge of this.edges) {
       const edgePassport = this.EdgePassport(edge) // todo : is ret.find() too slow?
       let pair = ret.find((p) => setsAreEqual(p.passport, edgePassport))
       if (!pair) {
@@ -572,7 +568,7 @@ export class SplineRouter extends Algorithm {
     // CdtSweeper.ShowFront(cdt.GetTriangles(), null, null,this.visGraph.Edges.Select(e=>new LineSegment(e.SourcePoint,e.TargetPoint)));
     const shortestPath = new SdShortestPath((a) => this.MakeTransparentShapesOfEdgeGeometryAndGetTheShapes(a), cdt, this.FindCdtGates(cdt))
     const bundleRouter = new BundleRouter(
-      this._edges,
+      this.edges,
       shortestPath,
       this.visGraph,
       this.BundlingSettings,
@@ -630,7 +626,7 @@ export class SplineRouter extends Algorithm {
   CalculateEdgeEnterablePolylines() {
     this.enterableLoose = new Map<GeomEdge, Set<Polyline>>()
     this.enterableTight = new Map<GeomEdge, Set<Polyline>>()
-    for (const edge of this.edges()) {
+    for (const edge of this.edges) {
       const looseSet = new Set<Polyline>()
       const tightSet = new Set<Polyline>()
       this.GetEdgeEnterablePolylines(edge, looseSet, tightSet)
@@ -719,7 +715,7 @@ export class SplineRouter extends Algorithm {
   }
 
   *AllPorts(): IterableIterator<Port> {
-    for (const edge of this.edges()) {
+    for (const edge of this.edges) {
       yield edge.sourcePort
       yield edge.targetPort
     }
@@ -958,7 +954,7 @@ export class SplineRouter extends Algorithm {
     // SvgDebugWriter.dumpDebugCurves(fileName, l)
   }
   private ProcessHookAnyWherePorts(setOfPortLocations: PointSet) {
-    for (const edge of this.edges()) {
+    for (const edge of this.edges) {
       if (!(edge.sourcePort instanceof HookUpAnywhereFromInsidePort || edge.sourcePort instanceof ClusterBoundaryPort)) {
         setOfPortLocations.add(edge.sourcePort.Location)
       }

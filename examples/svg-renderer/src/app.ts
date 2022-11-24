@@ -10,7 +10,7 @@ import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 
 const viewer = document.getElementById('viewer')
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/clust.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/awilliams.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
