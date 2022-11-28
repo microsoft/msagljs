@@ -466,3 +466,31 @@ export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RT
   const t = nodes.concat(edgesPlusEdgeLabels)
   return mkRTree(t)
 }
+
+export function edgesAreAttached(graph: Graph): boolean {
+  for (const e of graph.deepEdges) {
+    if (edgeIsAttached(e) == false) {
+      edgeIsAttached(e)
+      return false
+    }
+  }
+  return true
+}
+function edgeIsAttached(e: Edge): boolean {
+  return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)
+}
+function pointIsAttached(p: Point, target: Node): boolean {
+  const bc = (GeomNode.getGeom(target) as GeomNode).boundaryCurve
+  const loc = Curve.PointRelativeToCurveLocation(p, bc)
+  return loc == PointLocation.Boundary
+}
+function edgeStart(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.sourceArrowhead) return ge.sourceArrowhead.tipPosition
+  return ge.curve.start
+}
+function edgeEnd(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
+  return ge.curve.end
+}

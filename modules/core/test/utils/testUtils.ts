@@ -14,6 +14,7 @@ import {
   Node,
   Edge,
   layoutGeomGraph,
+  Curve,
 } from '../../src'
 import {SvgDebugWriter} from './svgDebugWriter'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
@@ -28,6 +29,7 @@ import {Queue} from 'queue-typescript'
 import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
 import {IPsepColaSetting} from '../../src/layout/incremental/iPsepColaSettings'
+import {PointLocation} from '../../src/math/geometry'
 
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {

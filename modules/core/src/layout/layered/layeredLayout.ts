@@ -13,7 +13,7 @@ import {GeomNode} from '../core/geomNode'
 import {Database} from './Database'
 import {LayerArrays} from './LayerArrays'
 import {GeomEdge} from '../core/geomEdge'
-import {GeomGraph, optimalPackingRunner} from '../core/geomGraph'
+import {edgesAreAttached, GeomGraph, optimalPackingRunner} from '../core/geomGraph'
 import {IntPairMap} from '../../utils/IntPairMap'
 import {IntPairSet} from '../../utils/IntPairSet'
 import {IntPair} from '../../utils/IntPair'
@@ -41,6 +41,7 @@ import {EdgeRoutingSettings} from '../../routing/EdgeRoutingSettings'
 import {routeEdges, enforceLayoutSettings, layoutGeomGraphDetailed} from '../driver'
 import {ILayoutSettings} from '../iLayoutSettings'
 import {straightLineEdgePatcher} from '../../routing/StraightLineEdges'
+import {Assert} from '../../utils/assert'
 function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
   ll.run()
@@ -144,6 +145,7 @@ export class LayeredLayout extends Algorithm {
     } else {
       routeEdges(this.originalGraph, Array.from(this.originalGraph.deepEdges), this.cancelToken)
     }
+    //   Assert.assert(this.originalGraph.graph.parent != null || edgesAreAttached(this.originalGraph.graph))
   }
 
   SetLabels() {

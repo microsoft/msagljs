@@ -35,6 +35,7 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
+import {edgesAreAttached} from '../../../src/layout/core/geomGraph'
 type P = [number, number]
 
 test('map test', () => {
@@ -377,6 +378,9 @@ function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {
   const gg = createGeometry(dg, measureTextSize)
   if (settings) {
     gg.layoutSettings = settings
+    if (dg.rankdir && gg.layoutSettings instanceof SugiyamaLayoutSettings) {
+      gg.layoutSettings.layerDirection = dg.rankdir
+    }
   } else {
     const ss = new SugiyamaLayoutSettings()
     gg.layoutSettings = ss
@@ -648,3 +652,9 @@ function segCoverPoint(c: ICurve, p: Point, eps: number): boolean {
   }
   return false
 }
+test('train11.gv', () => {
+  const ss = new SugiyamaLayoutSettings()
+  const dg = runLayout('graphvis/train11.gv', ss)
+  expect(edgesAreAttached(dg.graph)).toBe(true)
+  SvgDebugWriter.writeGeomGraph('./tmp/train11.gv.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+})

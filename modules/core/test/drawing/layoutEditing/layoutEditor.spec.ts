@@ -22,6 +22,7 @@ import {Entity} from '../../../src/structs/entity'
 import {Graph} from '../../../src/structs/graph'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseDotGraph} from '../../utils/testUtils'
+import {edgesAreAttached} from '../../../src/layout/core/geomGraph'
 
 class FakeMouseEvent implements MouseEvent {
   preventDefault(): any {
@@ -442,32 +443,7 @@ function getPoly(center: Point, size: number): Polyline {
   const rect = Rectangle.mkSizeCenter(new Size(size, size), center)
   return rect.perimeter()
 }
-function edgesAreAttached(graph: Graph): boolean {
-  for (const e of graph.deepEdges) {
-    if (edgeIsAttached(e) == false) {
-      return false
-    }
-  }
-  return true
-}
-function edgeIsAttached(e: Edge): boolean {
-  return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)
-}
-function pointIsAttached(p: Point, target: Node): boolean {
-  const bc = (GeomNode.getGeom(target) as GeomNode).boundaryCurve
-  const loc = Curve.PointRelativeToCurveLocation(p, bc)
-  return loc == PointLocation.Boundary
-}
-function edgeStart(e: Edge): Point {
-  const ge = GeomEdge.getGeom(e)
-  if (ge.sourceArrowhead) return ge.sourceArrowhead.tipPosition
-  return ge.curve.start
-}
-function edgeEnd(e: Edge): Point {
-  const ge = GeomEdge.getGeom(e)
-  if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
-  return ge.curve.end
-}
+
 function checkThatPositionsAreTranslated(cluster_1g: GeomGraph, positions: Map<Entity, Point>, del: number) {
   const dp = new Point(del, del)
   for (const n of cluster_1g.nodesBreadthFirst) {

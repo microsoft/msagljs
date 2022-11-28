@@ -5,7 +5,7 @@ import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
 import {SugiyamaLayoutSettings} from './layered/sugiyamaLayoutSettings'
-import {GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
+import {FastIncrementalLayoutSettings, GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
 import {PivotMDS} from './mds/pivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
 import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
@@ -43,8 +43,24 @@ import {ILayoutSettings} from './iLayoutSettings'
 //  }
 // }
 
+function settingsTag(ss: ILayoutSettings): number {
+  if (ss instanceof SugiyamaLayoutSettings) {
+    return 0
+  }
+  if (ss instanceof IPsepColaSetting) {
+    return 1
+  }
+  if (ss instanceof MdsLayoutSettings) {
+    return 2
+  }
+  if (ss instanceof FastIncrementalLayoutSettings) {
+    return 3
+  }
+  throw new Error('not implemented')
+}
+
 export function enforceLayoutSettings(geomGraph: GeomGraph, ss: ILayoutSettings) {
-  if (!geomGraph.layoutSettings) geomGraph.layoutSettings = ss
+  if (!geomGraph.layoutSettings || settingsTag(geomGraph.layoutSettings) !== settingsTag(ss)) geomGraph.layoutSettings = ss
 
   for (const n of geomGraph.shallowNodes) {
     if (n instanceof GeomGraph) {

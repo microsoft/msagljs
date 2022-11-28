@@ -14,6 +14,7 @@ import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
 import {ShapeEnum} from './shapeEnum'
 import {Label} from '../structs/label'
+import {SugiyamaLayoutSettings} from '../layout/layered/sugiyamaLayoutSettings'
 
 type GraphVisData = {
   sameRanks: string[][]
@@ -85,6 +86,11 @@ export class DrawingGraph extends DrawingNode {
     }
     for (const e of this.graph.deepEdges) {
       this.createEdgeGeometry(e)
+    }
+    if (this.rankdir) {
+      // we must have the Sugiyama scheme here
+      const ss: SugiyamaLayoutSettings = (geomGraph.layoutSettings = new SugiyamaLayoutSettings())
+      ss.layerDirection = this.rankdir
     }
     return geomGraph
   }

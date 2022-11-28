@@ -20,9 +20,9 @@ export class Size {
 export type RectJSON = {left: number; right: number; top: number; bottom: number}
 
 export class Rectangle implements IRectangle<Point> {
+  /** this function will not work correctly for transformations that are not translations, or rotations by n*90, or a combination of those */
   transform(m: PlaneTransformation): Rectangle {
-    const newCenter = m.multiplyPoint(this.center)
-    return Rectangle.mkSizeCenter(this.size, newCenter)
+    return Rectangle.mkPP(m.multiplyPoint(this.leftTop), m.multiplyPoint(this.rightBottom))
   }
   translate(m: Point): Rectangle {
     return Rectangle.mkSizeCenter(this.size, this.center.add(m))

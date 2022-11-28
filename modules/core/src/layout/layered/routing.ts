@@ -107,7 +107,7 @@ export class Routing extends Algorithm {
       if (betterRouteAsSplines(intEdgeList)) continue
       // Here we try to optimize multi-edge routing
       const m = intEdgeList.length
-      const optimizeShortEdges: boolean = m === 1 && !this.FanAtSourceOrTarget(intEdgeList[0])
+      const optimizeShortEdges = m === 1 && this.MayOptimizeEdge(intEdgeList[0])
       for (let i: number = Math.floor(m / 2); i < m; i++) {
         this.createSplineForNonSelfEdge(intEdgeList[i], optimizeShortEdges)
       }
@@ -118,8 +118,13 @@ export class Routing extends Algorithm {
     }
   }
 
-  FanAtSourceOrTarget(intEdge: PolyIntEdge): boolean {
-    return this.ProperLayeredGraph.OutDegreeIsMoreThanOne(intEdge.source) || this.ProperLayeredGraph.InDegreeIsMoreThanOne(intEdge.target)
+  MayOptimizeEdge(intEdge: PolyIntEdge): boolean {
+    return !(
+      this.ProperLayeredGraph.OutDegreeIsMoreThanOne(intEdge.source) ||
+      this.ProperLayeredGraph.InDegreeIsMoreThanOne(intEdge.target) ||
+      hasSelfEdge(intEdge.edge.source) ||
+      hasSelfEdge(intEdge.edge.target)
+    )
   }
 
   createSelfSplines() {
@@ -305,4 +310,8 @@ function betterRouteAsSplines(intEdgeList: PolyIntEdge[]) {
   if (intEdgeList.length < 4) return false
   for (const pie of intEdgeList) if (pie.edge.label) return false
   return true
+}
+
+function hasSelfEdge(geomNode: GeomNode): boolean {
+  return geomNode.node.selfEdges.size > 0
 }
