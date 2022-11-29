@@ -1,10 +1,11 @@
-import {Curve, CurveFactory, ICurve, LineSegment, Point, Rectangle, Size} from '../../../src/math/geometry'
+import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, Rectangle, Size} from '../../../src/math/geometry'
 import {BezierSeg} from '../../../src/math/geometry/bezierSeg'
 import {clipWithRectangle, interpolateICurve} from '../../../src/math/geometry/curve'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {Ellipse} from '../../../src/math/geometry/ellipse'
 import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
 import {closeDistEps} from '../../../src/utils/compare'
+import {initRandom, randomInt} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 //todo : test intersections of circle and curve on this data
@@ -203,7 +204,42 @@ test('bezier bezier rect intersections', () => {
   }
   // exp(false);
 })
+test('clipWithRect random', () => {
+  const w = 300
+  const h = 200
+  let n = 40000
+  initRandom(0)
+  for (; n > 0; n--) {
+    const line = getLineSeg(w, h)
+    const rect = getRect(w, h)
+    const inters = Array.from(clipWithRectangle(line, rect))
+    const t = naiveInters(line, rect)
+    if (!t) continue
+    expect(inters.length > 0).toBe(true)
+  }
+})
+function naiveInters(c: ICurve, rect: Rectangle): boolean {
+  const n = 100
+  const del = parameterSpan(c) / n
 
+  for (let i = 0; i <= n; i++) {
+    const p = c.value(c.parStart + i * del)
+    if (rect.contains_point(p)) {
+      return true
+    }
+  }
+  return false
+}
+function getRect(w: number, h: number): Rectangle {
+  return Rectangle.mkPP(getPoint(w, h), getPoint(w, h))
+}
+
+function getLineSeg(w: number, h: number): ICurve {
+  return LineSegment.mkPP(getPoint(w, h), getPoint(w, h))
+}
+function getPoint(w: number, h: number): Point {
+  return new Point(randomInt(w), randomInt(h))
+}
 test('clipWithRect', () => {
   const rect = Rectangle.mkSizeCenter(new Size(20, 20), new Point(0, 0))
   const circle = CurveFactory.mkCircle(rect.width / 2 + 2, new Point(0, 0))
