@@ -16,7 +16,7 @@
     <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
     <script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
     <script>
-      fetch('https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/badvoro.gv')
+      fetch('https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv')
         .then((resp) => resp.text())
         .then((data) => {
           const graph = msagl.parseDot(data)
