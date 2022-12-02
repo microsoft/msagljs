@@ -12,7 +12,7 @@ import {DrawingNode} from 'msagl-js/drawing'
 
 const viewer = document.getElementById('viewer')
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/train11.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/awilliams.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
