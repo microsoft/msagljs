@@ -125,9 +125,9 @@ export class DrawingGraph extends DrawingNode {
     }
   }
 
-  curveByShape(width: number, height: number, center: Point, shape: ShapeEnum, drawingNode: DrawingNode): ICurve {
+  curveByShape(width: number, height: number, center: Point, drawingNode: DrawingNode): ICurve {
     let curve: ICurve
-    switch (shape) {
+    switch (drawingNode.shape) {
       case ShapeEnum.diamond:
         curve = CurveFactory.mkDiamond(width, height, center)
         break
@@ -198,7 +198,7 @@ export class DrawingGraph extends DrawingNode {
       const geomNode = new GeomNode(n)
       const width = textSize.width + drawingNode.LabelMargin * 2
       const height = textSize.height + drawingNode.LabelMargin * 2
-      geomNode.boundaryCurve = this.curveByShape(width, height, center, drawingNode.shape, drawingNode)
+      geomNode.boundaryCurve = this.curveByShape(width, height, center, drawingNode)
     }
   }
   measureLabelSizes(textMeasure: (text: string, opts: Partial<TextMeasurerOptions>) => Size) {
