@@ -144,6 +144,27 @@ The renderer options accept the following fields:
   - `fontWeight: string | number` - CSS font-weight value, default `'normal'`.
 - `edgeRoutingMode: EdgeRoutingMode` - Enum for supported routing modes, including `Spline`, `SplineBundling` `StraightLine`, `SugiyamaSplines`, `Rectilinear`, `RectilinearToCenter`, `None`. Default varies by `layoutType`.
 
+## Layout Editing
+
+There are some layout editing capabilities that are demonstrated by
+[![video](https://github.com/microsoft/msagljs/blob/main/docs/video.png)](https://github.com/microsoft/msagljs/blob/main/docs/layoutedit.mp4):
+They include:
+
+- dragging of the entities; one can select and drag a group of entities as well
+- deletion of the entities
+- node insertion
+- edge insertion
+- editing the node label
+- edge curve editing
+- undo/redo
+
+  The current limitations are:
+
+- the edge routing switches to straight lines when dragging
+- undo/redo does not work for node label text editing
+- the node does not resize for the new label text
+- only [the viewer with SVG](https://microsoft.github.io/msagljs/svg_backend/index.html) supports editing.
+
 ## Examples
 
 Renderings graphs with Deck.gl and with SVG can be seen at https://microsoft.github.io/msagljs/.
