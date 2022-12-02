@@ -55,6 +55,11 @@ function isIViewerNode(obj: IViewerObject): boolean {
 type MouseAndKeysAnalyzer = (mouseEvent: MouseEvent) => boolean
 
 export class LayoutEditor {
+  resizeLabel(innerText: string, objectWithEditedLabel: Entity) {
+    const dro = objectWithEditedLabel.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingObject
+    dro.labelText = innerText
+    this.viewer.invalidate(objectWithEditedLabel.getAttr(AttributeRegistry.ViewerIndex))
+  }
   get hasEdgeInsertionPort(): boolean {
     return this.SourcePort != null || this.TargetPort != null
   }

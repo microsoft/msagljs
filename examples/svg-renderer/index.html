@@ -120,23 +120,16 @@
         margin: 0 12px;
       }
 
-      .menu_class {
-        width: 120px;
-        box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+      .textedit_class {
+        white-space: pre;
+        word-wrap: normal;
         position: relative;
         display: none;
         background-color: #ddd;
         z-index: 2;
-      }
-      .menu-options {
-        list-style-type: none;
-        padding: 10px 0;
-      }
-      .menu-option {
-        font-weight: 500;
-        font-size: 12x;
-        padding: 10px 40px 10px 20px;
-        cursor: pointer;
+        font-size: x-large;
+        padding: 3;
+        border: darkolivegreen;
       }
     </style>
   </head>
@@ -160,6 +153,8 @@
           <path d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
         </svg>
       </div>
+      <p id="textedit" class="textedit_class" contenteditable="true"></p>
+
       <div id="drop-target">
         <label
           >Load<br />

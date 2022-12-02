@@ -37,10 +37,10 @@ function svgViewerObj(ent: Entity): SvgViewerObject {
  */
 export class RendererSvg implements IViewer {
   /** debug feature : TODO - redesign */
-  keyDownListener: (e: KeyboardEvent) => void
   rubberEdgeStart: Point
   sourcePortLocatiton: Point
   targetPortLocatiton: Point
+  keyDownListener: (e: KeyboardEvent) => void
   addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
     this.keyDownListener = callback
   }

@@ -445,9 +445,11 @@ export class SvgCreator {
   private createTspans(text: string, textEl: SVGTextElement, fontSize: number, rect: Rectangle) {
     const endOfLine = '\n'
     const textLines = text.split(endOfLine)
-
+    while (textEl.children.length) {
+      textEl.removeChild(textEl.children.item(0))
+    }
     if (textLines.length == 1) {
-      const tspan = this.createOrGetWithId(textEl, 'tspan', 'singleTspan')
+      const tspan = this.createOrGetWithId(textEl, 'tspan', '0')
       tspan.textContent = text
       tspan.setAttribute('text-anchor', 'middle')
       tspan.setAttribute('x', rect.center.x.toString())

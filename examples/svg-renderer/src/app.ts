@@ -1,12 +1,14 @@
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, GeomGraph} from 'msagl-js'
+import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, GeomGraph, Entity, GeomNode, Node} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
 import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
+import {AttributeRegistry} from 'msagl-js'
+import {DrawingNode} from 'msagl-js/drawing'
 
 const viewer = document.getElementById('viewer')
 
@@ -14,14 +16,22 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/m
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
-
+let objectWithEditedLabel: Entity
 viewer.addEventListener('dblclick', (e) => {
   // to disable the double click zoom under panZoom of anvaka
   e.stopImmediatePropagation()
 })
 
+window.addEventListener('click', (e) => {
+  if (e.target !== textedit && textedit.style.display === 'table-cell') {
+    displayHideElement(textedit, 'hide')
+    svgRenderer.layoutEditor.resizeLabel(textedit.innerText, objectWithEditedLabel)
+    objectWithEditedLabel = null
+  }
+})
+
 /** setup the viewer */
-svgRenderer.addKeyDownListener((e: KeyboardEvent) => {
+viewer.addEventListener('keydown', (e: KeyboardEvent) => {
   //console.log('svg keydown: ', e.key)
   if (e.ctrlKey) {
     switch (e.key.toLowerCase()) {
@@ -50,8 +60,7 @@ svgRenderer.addKeyDownListener((e: KeyboardEvent) => {
         e.preventDefault()
         break
     }
-  }
-  if (e.key == 'Delete') {
+  } else if (e.key == 'Delete') {
     let first = true
     for (const v of svgRenderer.selectedEntities()) {
       if (first) {
@@ -59,6 +68,10 @@ svgRenderer.addKeyDownListener((e: KeyboardEvent) => {
         first = false
       }
       svgRenderer.remove(v, true)
+    }
+  } else {
+    if (svgRenderer.objectUnderMouseCursor != null) {
+      editLabel(svgRenderer.objectUnderMouseCursor.entity, svgRenderer, textedit, e)
     }
   }
 })
@@ -72,6 +85,8 @@ dotFileSelect.onchange = () => {
     })
     .then((id) => (document.getElementById('graph-name').innerText = id))
 }
+
+const textedit = document.getElementById('textedit')
 
 const edgeRoutingSelect = createEdgeRoutingSelect()
 edgeRoutingSelect.onchange = () => {
@@ -233,15 +248,30 @@ function getLayoutOptions(): LayoutOptions {
   }
   return opts
 }
-function setPositionAndShow(e: MouseEvent, contextmenu: HTMLElement) {
-  contextmenu.style.left = `${e.pageX}px`
-  contextmenu.style.top = `${e.pageY}px`
-  toggleContextMenu(contextmenu, 'show')
+function setPositionAndShow(e: MouseEvent, elem: HTMLElement) {
+  elem.style.left = `${e.pageX}px`
+  elem.style.top = `${e.pageY}px`
+  displayHideElement(elem, 'show')
 }
-function toggleContextMenu(contextmenu: HTMLElement, command: string) {
+function displayHideElement(elem: HTMLElement, command: string) {
   if (command === 'show') {
-    contextmenu.style.display = 'block'
+    elem.style.display = 'table-cell'
   } else {
-    contextmenu.style.display = 'none'
+    elem.style.display = 'none'
+  }
+}
+
+function editLabel(entity: Entity, svgRenderer: RendererSvg, elem: HTMLElement, e: KeyboardEvent) {
+  if (entity instanceof Node) {
+    const gNode = entity.getAttr(AttributeRegistry.GeomObjectIndex) as GeomNode
+    const m = svgRenderer.Transform
+    const pos = m.multiplyPoint(gNode.boundingBox.leftTop)
+    elem.style.left = `${pos.x}px`
+    elem.style.top = `${pos.y}px`
+    const dn = entity.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingNode
+    elem.innerText = dn.labelText
+    objectWithEditedLabel = entity
+    displayHideElement(elem, 'show')
+    e.stopImmediatePropagation()
   }
 }
