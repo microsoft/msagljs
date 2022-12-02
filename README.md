@@ -146,8 +146,8 @@ The renderer options accept the following fields:
 
 ## Layout Editing
 
-There are some layout editing capabilities that are demonstrated by
-[![video](https://github.com/microsoft/msagljs/blob/main/docs/video.png)](https://github.com/microsoft/msagljs/blob/main/docs/layoutedit.mp4):
+There are some layout editing capabilities that are demonstrated by the video below:
+[![video](./docs/video.png)](./docs/layoutedit.mp4)
 They include:
 
 - dragging of the entities; one can select and drag a group of entities as well
