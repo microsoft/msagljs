@@ -25,12 +25,14 @@ import {
   EdgeRoutingMode,
   layoutGraphWithMds,
   clipWithRectangle,
+  BezierSeg,
+  PlaneTransformation,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point} from '../../../src/math/geometry'
+import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, Polyline} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
@@ -370,6 +372,41 @@ test('layered layout nodes only', () => {
   const ll = new LayeredLayout(g, ss, new CancelToken())
   ll.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/nodes_only.svg', g)
+})
+
+test('show node bounds', () => {
+  // Create a new geometry graph
+  const graph = new Graph()
+  const geomGraph = new GeomGraph(graph)
+  // Add nodes to the graph. The first argument is the node id. The second is the size string
+  const rombusNode = geomGraph.graph.addNode(new Node('rombus'))
+  const rombusGeom = new GeomNode(rombusNode)
+
+  const rombusCurve = Polyline.mkFromPoints([new Point(0, 0), new Point(80, -10), new Point(180, 0), new Point(80, 10)])
+  rombusCurve.closed = true
+  rombusGeom.boundaryCurve = rombusCurve
+
+  const eye = setNode(geomGraph, 'eye', 10, 10)
+  const e = (eye.boundaryCurve = new Curve())
+  e.addSegment(new BezierSeg(new Point(-20, 0), new Point(-40, -20), new Point(40, -20), new Point(20, 0)))
+  e.addSegment(new BezierSeg(new Point(20, 0), new Point(10, -5), new Point(-10, -5), new Point(-20, 0)))
+
+  setNode(geomGraph, 'hford', 10, 10)
+  setNode(geomGraph, 'lwilson', 10, 10)
+  const rr = setNode(geomGraph, 'rotateRect', 10, 10)
+  rr.boundaryCurve = rr.boundaryCurve.transform(PlaneTransformation.rotation(Math.PI / 3))
+
+  // Add edges to the graph.
+  geomGraph.setEdge('star', 'rombus')
+  geomGraph.setEdge('rombus', 'rotateRect')
+  geomGraph.setEdge('eye', 'rotateRect')
+  geomGraph.setEdge('hford', 'lwilson')
+  geomGraph.setEdge('lwilson', 'rotateRect')
+  const ss = new SugiyamaLayoutSettings()
+  geomGraph.layoutSettings = ss
+  layoutGraphWithSugiayma(geomGraph, null, false)
+  outputGraph(geomGraph, 'TB')
+  //SvgDebugWriter.writeGeomGraph('./tmp/' + 'bounds.svg', geomGraph)
 })
 
 function runLayout(fname: string, settings: SugiyamaLayoutSettings = null) {

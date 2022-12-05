@@ -40,7 +40,11 @@ export class GeomNode extends GeomObject {
     return this._boundaryCurve
   }
   public set boundaryCurve(value: ICurve) {
-    if ((value != null && value.boundingBox.height < GeomNode.minHeight) || value.boundingBox.width < GeomNode.minWidth) {
+    if (
+      value != null &&
+      value.boundingBox &&
+      (value.boundingBox.height < GeomNode.minHeight || value.boundingBox.width < GeomNode.minWidth)
+    ) {
       value = CurveFactory.mkCircle(GeomNode.minWidth, value.boundingBox.center)
     }
 

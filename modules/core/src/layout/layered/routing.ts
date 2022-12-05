@@ -80,6 +80,9 @@ export class Routing extends Algorithm {
     for (const e of this.OriginalGraph.deepEdges) {
       if (!e.curve) edgesToRoute.push(e)
     }
+    if (edgesToRoute.length == 0) {
+      return
+    }
     const sugSettings = this.OriginalGraph.layoutSettings ? this.OriginalGraph.layoutSettings : new SugiyamaLayoutSettings()
     const ers = sugSettings.commonSettings.edgeRoutingSettings
     const sr = new SplineRouter(
