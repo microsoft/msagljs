@@ -1724,7 +1724,6 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
     yield curve
     return
   }
-  const eps = Math.max(Math.min(rect.width, rect.height) / 20, 1)
   const perimeter = rect.perimeter()
   const x = Curve.getAllIntersections(curve, perimeter, true)
   if (x.length == 0) {
