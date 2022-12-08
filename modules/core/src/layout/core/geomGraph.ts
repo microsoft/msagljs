@@ -509,7 +509,7 @@ export type TileData = {
   arrowheads: {arrowhead: Arrowhead; edge: Edge}[]
   nodes: GeomNode[]
   labels: GeomLabel[]
-  rect: Rectangle
+  rect: Rectangle // it seems needed only for debug
 }
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
