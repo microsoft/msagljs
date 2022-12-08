@@ -6,6 +6,7 @@ import {
   HitTreeNodeType,
   getGeomIntersectedObjects,
   intersectedObjects,
+  TileMap,
 } from './layout/core/geomGraph'
 import {GeomLabel} from './layout/core/geomLabel'
 import {GeomNode} from './layout/core/geomNode'
@@ -15,8 +16,10 @@ import {PlaneTransformation} from './math/geometry/planeTransformation'
 import {RTree} from './math/geometry/RTree/rTree'
 import {SmoothedPolyline} from './math/geometry/smoothedPolyline'
 import {Attribute} from './structs/attribute'
+import {pageRank} from './structs/graph'
 import {Label} from './structs/label'
 import {Assert} from './utils/assert'
+import {IntPairMap} from './utils/IntPairMap'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -69,4 +72,7 @@ export {
   Assert,
   Attribute,
   SmoothedPolyline,
+  IntPairMap,
+  pageRank,
+  TileMap,
 }

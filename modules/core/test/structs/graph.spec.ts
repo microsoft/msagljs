@@ -1,7 +1,13 @@
 import {Graph, Node, Edge, Rectangle} from '../../src'
-import {shallowConnectedComponents} from '../../src/structs/graph'
+import {pageRank, shallowConnectedComponents} from '../../src/structs/graph'
 import {setsAreEqual} from '../../src/utils/setOperations'
 import {parseDotGraph} from '../utils/testUtils'
+
+test('pagerank', () => {
+  const graph = parseDotGraph('graphvis/clust3.gv')
+  const rank = pageRank(graph, 0.85)
+  expect(rank.size).toBe(graph.nodeCountDeep)
+})
 
 test('graph create', () => {
   const g = new Graph()

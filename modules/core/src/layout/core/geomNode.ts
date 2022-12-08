@@ -8,6 +8,8 @@ import {PlaneTransformation} from './../../math/geometry/planeTransformation'
 import {Node} from './../../structs/node'
 import {GeomObject} from './geomObject'
 import {GeomEdge} from './geomEdge'
+import {AttributeRegistry} from '../../structs/attributeRegistry'
+import {Entity} from '../../structs/entity'
 
 export type GeomNodeJSON = {
   boundaryCurve: ICurveJSON
@@ -99,6 +101,10 @@ export class GeomNode extends GeomObject {
         )
       }
     }
+  }
+
+  static getGeom(attrCont: Entity): GeomNode {
+    return attrCont.getAttr(AttributeRegistry.GeomObjectIndex)
   }
 
   *inEdges(): IterableIterator<GeomEdge> {

@@ -13,16 +13,15 @@ import {
   AttributeRegistry,
   GeomEdge,
   Point,
-  CurveFactory,
-  LineSegment,
+  TileMap,
   Rectangle,
-  ICurve,
   Entity,
   GeomObject,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects, HitTreeNodeType} from '../../../src/layout/core/geomGraph'
+import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {PointPair} from '../../../src/math/geometry/pointPair'
 import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
@@ -199,3 +198,33 @@ test('intersectedEnities', () => {
     expect(intersected_e.indexOf(e.edge.target)).toBeGreaterThan(-1)
   }
 })
+test('clipWithRectangleInsideInterval', () => {
+  const g = parseDotGraph('graphvis/abstract.gv')
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  const geomGraph = dg.createGeometry(() => new Size(20, 20))
+  const ss = new SugiyamaLayoutSettings()
+  const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
+  ll.run()
+  const rect = geomGraph.boundingBox
+  const tileMap = new TileMap(geomGraph, rect)
+  tileMap.buildUpToLevel(5)
+
+  // dumpTiles(tileMap)
+})
+function dumpTiles(tileMap: TileMap) {
+  for (let z = 0; ; z++) {
+    const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
+    if (tilesOfLevel.length == 0) {
+      break
+    }
+    for (const t of tilesOfLevel) {
+      SvgDebugWriter.dumpDebugCurves(
+        './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
+        t.data.curveClips
+          .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve.trim(c.startPar, c.endPar)))
+          .concat([DebugCurve.mkDebugCurveCI('Black', t.data.rect.perimeter())])
+          .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve))),
+      )
+    }
+  }
+}

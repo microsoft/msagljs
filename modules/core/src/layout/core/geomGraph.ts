@@ -1,4 +1,4 @@
-import {Graph} from '../../structs/graph'
+import {Graph, pageRank} from '../../structs/graph'
 import {Rectangle, Size} from '../../math/geometry/rectangle'
 import {GeomObject} from './geomObject'
 import {GeomNode} from './geomNode'
@@ -16,6 +16,11 @@ import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Edge} from '../../structs/edge'
 import {Node} from '../../structs/node'
 import {PointPair} from '../../math/geometry/pointPair'
+import {IntPairMap} from '../../utils/IntPairMap'
+import {Arrowhead} from './arrowhead'
+import {GeomLabel} from './geomLabel'
+import {clipWithRectangleInsideInterval} from '../../math/geometry/curve'
+import {Assert} from '../../utils/assert'
 // packs the subgraphs and set the bounding box of the parent graph
 export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[]) {
   const subgraphsRects = subGraphs.map((g) => [g, g.boundingBox] as [GeomGraph, Rectangle]) // g.boundingBox is a clone of the graph rectangle
@@ -493,4 +498,165 @@ function edgeEnd(e: Edge): Point {
   const ge = GeomEdge.getGeom(e)
   if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
   return ge.curve.end
+}
+/** Represents a part of the curve containing in a tile.
+ * One tile can have several parts of clips corresponding to the same curve.
+ */
+export type CurveClip = {startPar: number; endPar: number; curve: ICurve}
+/** keeps all the data needed to render a tile */
+export type TileData = {
+  curveClips: CurveClip[] // the curves are ranked
+  arrowheads: {arrowhead: Arrowhead; edge: Edge}[]
+  nodes: GeomNode[]
+  labels: GeomLabel[]
+  rect: Rectangle
+}
+/** keeps the data needed to render the tile hierarchy */
+export class TileMap {
+  private dataArray: IntPairMap<TileData>[] = []
+  /** retrieves the data for a single tile(x-y-z) */
+  getTileData(x: number, y: number, z: number): TileData {
+    const mapOnLevel = this.dataArray[z]
+    if (!mapOnLevel) return null
+    return mapOnLevel.get(x, y)
+  }
+
+  *getTilesOfLevel(z: number): IterableIterator<{x: number; y: number; data: TileData}> {
+    const tm = this.dataArray[z]
+    if (tm == null) return
+    for (const [key, val] of tm.keyValues()) {
+      yield {x: key.x, y: key.y, data: val}
+    }
+  }
+
+  geomGraph: GeomGraph
+  topLevelTileRect: Rectangle
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
+    this.geomGraph = geomGraph
+    this.topLevelTileRect = topLevelTileRect
+    this.fillTopLevelTile()
+  }
+
+  fillTopLevelTile() {
+    const tileMap = new IntPairMap<TileData>(1)
+    let edges = Array.from(this.geomGraph.graph.deepEdges)
+    const rank = pageRank(this.geomGraph.graph, 0.85)
+    edges = edges.sort((u: Edge, v: Edge) => {
+      const rv = rank.get(v.source) + rank.get(v.target)
+      const ru = rank.get(u.source) + rank.get(u.target)
+      return ru - rv
+    })
+    // inject edges to curves
+    for (const e of edges) {
+      const c = GeomEdge.getGeom(e).curve
+      // @ts-ignore
+      c.edge = e
+    }
+    const curveClips = edges
+      .map((e) => GeomEdge.getGeom(e).curve)
+      .map((c) => {
+        return {startPar: c.parStart, endPar: c.parEnd, curve: c}
+      })
+
+    const arrows = []
+    const geomLabels = []
+    for (const e of edges) {
+      const geomEdge = GeomEdge.getGeom(e)
+      if (geomEdge.sourceArrowhead) {
+        arrows.push({edge: geomEdge.edge, arrowhead: geomEdge.sourceArrowhead})
+      }
+      if (geomEdge.targetArrowhead) {
+        arrows.push({edge: geomEdge.edge, arrowhead: geomEdge.targetArrowhead})
+      }
+      if (geomEdge.label) {
+        geomLabels.push(geomEdge.label)
+      }
+    }
+    const data: TileData = {
+      curveClips: curveClips,
+      arrowheads: arrows,
+      nodes: Array.from(rank.keys()).map((n) => GeomNode.getGeom(n)),
+      labels: geomLabels,
+      rect: this.topLevelTileRect,
+    }
+    tileMap.set(0, 0, data)
+    this.dataArray.push(tileMap)
+  }
+  /** creates tilings for levels from 0 to z, including the level z
+   */
+  buildUpToLevel(z: number) {
+    // the 0 level is filled in the constructor
+    for (let i = 1; i <= z; i++) {
+      this.subdivideToLevel(i)
+    }
+  }
+  /** it is assumed that the previous levels have been calculated */
+  private subdivideToLevel(z: number) {
+    const tilesInRow = Math.pow(2, z)
+    const levelTiles = (this.dataArray[z] = new IntPairMap<TileData>(tilesInRow))
+    /** the width and the height of the previous level tile */
+    let w = this.topLevelTileRect.width
+    let h = this.topLevelTileRect.height
+    for (let i = 0; i < z - 1; i++) {
+      w /= 2
+      h /= 2
+    }
+    /** the width and the height of z-th level tile */
+    const wz = w / 2
+    const hz = h / 2
+
+    for (const [key, tile] of this.dataArray[z - 1].keyValues()) {
+      const xp = key.x
+      const yp = key.y
+      const left = this.topLevelTileRect.left + xp * w
+      const bottom = this.topLevelTileRect.bottom + yp * h
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 2; j++) {
+          const tileRect = new Rectangle({
+            left: left + wz * i,
+            right: left + wz * (i + 1),
+            bottom: bottom + hz * j,
+            top: bottom + hz * (j + 1),
+          })
+          const tileData: TileData = this.generateSubTile(tile, tileRect)
+          if (tileData) {
+            levelTiles.set(2 * xp + i, 2 * yp + j, tileData)
+          }
+        }
+    }
+  }
+
+  generateSubTile(upperTile: TileData, tileRect: Rectangle): TileData {
+    const sd: TileData = {nodes: [], arrowheads: [], labels: [], curveClips: [], rect: tileRect}
+    for (const n of upperTile.nodes) {
+      if (n.boundingBox.intersects(tileRect)) {
+        sd.nodes.push(n)
+      }
+    }
+
+    for (const lab of upperTile.labels) {
+      if (lab.boundingBox.intersects(tileRect)) {
+        sd.labels.push(lab)
+      }
+    }
+    for (const clip of upperTile.curveClips) {
+      for (const newClip of clipWithRectangleInsideInterval(clip.curve, clip.startPar, clip.endPar, tileRect)) {
+        sd.curveClips.push({curve: clip.curve, startPar: newClip.start, endPar: newClip.end})
+      }
+    }
+    for (const clip of sd.curveClips) {
+      // @ts-ignore
+      const geomEdge = clip.curve.edge as GeomEdge
+      if (geomEdge.sourceArrowhead && geomEdge.curve.parStart === clip.startPar)
+        sd.arrowheads.push({arrowhead: geomEdge.sourceArrowhead, edge: geomEdge.edge})
+      if (geomEdge.targetArrowhead && geomEdge.curve.parStart === clip.startPar)
+        sd.arrowheads.push({arrowhead: geomEdge.targetArrowhead, edge: geomEdge.edge})
+    }
+    if (!emptyTile(sd)) {
+      return sd
+    }
+  }
+}
+function emptyTile(sd: TileData): boolean {
+  return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
 }

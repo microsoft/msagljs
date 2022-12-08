@@ -364,3 +364,36 @@ export function setNewParent(newParent: Graph, node: Node) {
   // while (p.parent) p = p.parent as Graph
   // Assert.assert(p.isConsistent())
 }
+
+/** implements the google PageRank.
+ * omega is the probability of following a link
+ * */
+export function pageRank(graph: Graph, omega: number): Map<Node, number> {
+  let p = new Map<Node, number>()
+  const n = graph.nodeCountDeep
+  let initialVal = 1 / n
+  for (const v of graph.nodesBreadthFirst) {
+    p.set(v, initialVal)
+  }
+  // repeat 50 times
+  for (let c = 0; c < 50; c++) {
+    initialVal = (1 - omega) / n
+    const q = new Map<Node, number>()
+    for (const v of graph.nodesBreadthFirst) {
+      q.set(v, initialVal)
+    }
+
+    //  forward propagation
+    for (const v of graph.nodesBreadthFirst) {
+      let qv = q.get(v)
+      for (const edge of v.inEdges) {
+        const u = edge.source
+        qv += omega * (p.get(u) / u.outDegree)
+      }
+      q.set(v, qv)
+    }
+    p = q
+  }
+
+  return p
+}

@@ -18,6 +18,7 @@ import {BezierSeg} from './bezierSeg'
 import {CornerSite} from './cornerSite'
 
 import {closeDistEps} from '../../utils/compare'
+import {Assert} from '../../utils/assert'
 type Params = {
   start: number
   end: number
@@ -366,8 +367,8 @@ export class Curve implements ICurve {
 
     return Curve.getAllIntersectionsInternal(lineSeg, iCurve, liftIntersections)
   }
-  // empty comment for testing
-  static getAllIntersectionsOfLineAndCurve(lineSeg: LineSegment, curve: Curve, liftIntersections: boolean): IntersectionInfo[] {
+
+  private static getAllIntersectionsOfLineAndCurve(lineSeg: LineSegment, curve: Curve, liftIntersections: boolean): IntersectionInfo[] {
     const ret: IntersectionInfo[] = []
     const lineParallelogram = lineSeg.pNodeOverICurve()
     const curveParallelogramRoot = curve.pNodeOverICurve()
@@ -1354,6 +1355,9 @@ export class Curve implements ICurve {
       const dd = d.dot(d)
       if (dd < dist) {
         par = offset + t - c.parStart
+        if (dd === 0) {
+          break // cannot beat 0!
+        }
         dist = dd
       }
       offset += Curve.paramSpan(c)
@@ -1711,6 +1715,8 @@ export function interpolateICurve(s: ICurve, eps: number): Point[] {
 /** Iterate over all icurve subsegments that intersect the given rectangle.
  * The function might return subsegments that are running outside of the rectangle
  *  but still close to its border.
+ *
+ * Should be removed
  */
 
 export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
@@ -1740,29 +1746,70 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
   }
 
   for (i = 0; i < xs.length - 1; i++) {
-    if (segmentShouldBeIncluded(xs[i], xs[i + 1])) {
+    if (segmentShouldBeIncluded(curve, xs[i], xs[i + 1], rect)) {
       const seg = curve.trim(xs[i], xs[i + 1])
       yield seg
     }
   }
-
-  function segmentShouldBeIncluded(a: number, b: number): boolean {
-    const ap = curve.value(a)
-    const bp = curve.value(b)
-
-    const e = Math.min(eps, ap.sub(bp).length / 10)
-    const ps = interpolate(a, ap, b, bp, curve, e)
-    if (ps.length === 2) return true
-
-    for (let i = 1; i < ps.length - 1; i++) {
-      const p = ps[i]
-      if (rect.containsWithPadding(p, -GeomConstants.distanceEpsilon)) {
-        return true
-      }
-      if (!rect.containsWithPadding(p, rect.diagonal / 10)) {
-        return false
-      }
-    }
-    return true
+}
+/** Looking for all subsegments of of 'curve' intersecting 'rect'
+ *  For each such a segment return {start:a, end:b} such that segment = curve.trim(a,b)
+ */
+export function* clipWithRectangleInsideInterval(
+  curve: ICurve,
+  start: number,
+  end: number,
+  rect: Rectangle,
+): IterableIterator<{start: number; end: number}> {
+  const origCurve = curve
+  curve = curve.trim(start, end)
+  if (rect.containsRectWithPadding(curve.boundingBox, 1)) {
+    yield {start: start, end: end}
+    return
   }
+  const xs = Curve.getAllIntersections(curve, rect.perimeter(), true)
+  // debug
+  for (const x of xs) {
+    Assert.assert(Point.closeDistEps(x.x, curve.value(x.par0)))
+    // Assert.assert(Point.closeDistEps(x.x, origCurvDebug.value(x.par0)))
+  }
+  if (xs.length == 0) {
+    if (rect.contains(curve.start)) yield {start: start, end: end}
+    return
+  }
+  xs.sort((x: IntersectionInfo, y: IntersectionInfo) => x.par0 - y.par0)
+  const filteredXs = [curve.parStart]
+
+  let i = 0
+  for (; i < xs.length; i++) {
+    const ii = xs[i]
+    if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+      filteredXs.push(ii.par0)
+    }
+  }
+  if (curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+    filteredXs.push(curve.parEnd)
+  }
+
+  for (i = 0; i < filteredXs.length - 1; i++) {
+    if (segmentShouldBeIncluded(curve, filteredXs[i], filteredXs[i + 1], rect)) {
+      yield {start: liftLocal(filteredXs[i]), end: liftLocal(filteredXs[i + 1])}
+    }
+  }
+  function liftLocal(x: number): number {
+    const t = origCurve.closestParameter(curve.value(x))
+    Assert.assert(Point.closeDistEps(origCurve.value(t), curve.value(x)))
+    return t
+  }
+}
+/** Check the points curve[a+(b-a)/5],[a+2*(b-a)/5], [a+3*(b-a)/5], [a+4*(b-a)/5]
+ *  If at least one of them is inside of the rect return true, otherwise return false
+ */
+function segmentShouldBeIncluded(curve: ICurve, a: number, b: number, rect: Rectangle): boolean {
+  const del = (b - a) / 5
+  for (let i = 1; i < 5; i++) {
+    const t = a + del * i
+    if (rect.contains(curve.value(t))) return true
+  }
+  return false
 }

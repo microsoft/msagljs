@@ -374,7 +374,7 @@ test('cluster0 a->b edit edge', () => {
   }
   const vab = new SvgViewerEdge(ab, null)
   viewer.objectUnderMouseCursor = vab
-  const geom_ag = GeomNode.getGeom(ab) as GeomEdge
+  const geom_ag = GeomEdge.getGeom(ab)
   const curve = geom_ag.curve
   const pos = curve.value((curve.parEnd + curve.parStart) / 2)
   const mouseEvent = new FakeMouseEvent()

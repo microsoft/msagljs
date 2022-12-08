@@ -1,5 +1,5 @@
 import {parseJSON, graphToJSON} from '@msagl/parser'
-import {GeomGraph} from 'msagl-js'
+import {Arrowhead, GeomGraph, GeomLabel, Graph, ICurve, IntPairMap, Rectangle, Node, pageRank, Edge, GeomEdge, GeomNode} from 'msagl-js'
 import {DrawingGraph} from 'msagl-js/drawing'
 
 import {layoutGraph} from '../layout'

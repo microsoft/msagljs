@@ -204,7 +204,7 @@ test('bezier bezier rect intersections', () => {
   }
   // exp(false);
 })
-test('clipWithRect random', () => {
+xtest('clipWithRect random', () => {
   const w = 300
   const h = 200
   let n = 40000
@@ -218,6 +218,7 @@ test('clipWithRect random', () => {
     expect(inters.length > 0).toBe(true)
   }
 })
+
 function naiveInters(c: ICurve, rect: Rectangle): boolean {
   const n = 100
   const del = parameterSpan(c) / n

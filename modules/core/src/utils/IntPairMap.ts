@@ -1,7 +1,16 @@
 import {IntPair} from './IntPair'
 
 export class IntPairMap<T> {
-  arrayOfMaps: Map<number, T>[]
+  isEmpty(): boolean {
+    if (this.arrayOfMaps.length === 0) return true
+    for (const t of this.arrayOfMaps) {
+      if (t.size > 0) {
+        return false
+      }
+    }
+    return true
+  }
+  private arrayOfMaps: Map<number, T>[]
   set(x: number, y: number, v: T) {
     this.arrayOfMaps[x].set(y, v)
   }
@@ -31,6 +40,7 @@ export class IntPairMap<T> {
   getI(p: IntPair) {
     return this.get(p.x, p.y)
   }
+  /** n is the maximum of (x + 1) where (x, *) runs over the keys  */
   constructor(n: number) {
     this.arrayOfMaps = new Array<Map<number, T>>(n)
     for (let i = 0; i < n; i++) this.arrayOfMaps[i] = new Map<number, T>()
