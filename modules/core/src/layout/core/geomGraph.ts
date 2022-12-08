@@ -506,7 +506,7 @@ export type CurveClip = {startPar: number; endPar: number; curve: ICurve}
 /** keeps all the data needed to render a tile */
 export type TileData = {
   curveClips: CurveClip[] // the curves are ranked
-  arrowheads: {arrowhead: Arrowhead; edge: Edge; atSource: boolean}[]
+  arrowheads: {tip: Point; edge: Edge; base: Point}[]
   nodes: GeomNode[]
   labels: GeomLabel[]
   rect: Rectangle // it seems needed only for debug
@@ -563,10 +563,10 @@ export class TileMap {
     for (const e of edges) {
       const geomEdge = GeomEdge.getGeom(e)
       if (geomEdge.sourceArrowhead) {
-        arrows.push({edge: geomEdge.edge, arrowhead: geomEdge.sourceArrowhead, atSource: true})
+        arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
       if (geomEdge.targetArrowhead) {
-        arrows.push({edge: geomEdge.edge, arrowhead: geomEdge.targetArrowhead, atSource: false})
+        arrows.push({edge: geomEdge.edge, tip: geomEdge.targetArrowhead.tipPosition, base: geomEdge.curve.end})
       }
       if (geomEdge.label) {
         geomLabels.push(geomEdge.label)
@@ -648,9 +648,9 @@ export class TileMap {
       // @ts-ignore
       const geomEdge = clip.curve.edge as GeomEdge
       if (geomEdge.sourceArrowhead && geomEdge.curve.parStart === clip.startPar)
-        sd.arrowheads.push({arrowhead: geomEdge.sourceArrowhead, edge: geomEdge.edge, atSource: true})
+        sd.arrowheads.push({tip: geomEdge.sourceArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.start})
       if (geomEdge.targetArrowhead && geomEdge.curve.parStart === clip.startPar)
-        sd.arrowheads.push({arrowhead: geomEdge.targetArrowhead, edge: geomEdge.edge, atSource: false})
+        sd.arrowheads.push({tip: geomEdge.targetArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.start})
     }
     if (!emptyTile(sd)) {
       return sd
