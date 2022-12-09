@@ -158,8 +158,8 @@ export class TileMap {
       const geomEdge = GeomEdge.getGeom(clip.curve.edge as GeomEdge)
       if (geomEdge.sourceArrowhead && geomEdge.curve.parStart === clip.startPar)
         sd.arrowheads.push({tip: geomEdge.sourceArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.start})
-      if (geomEdge.targetArrowhead && geomEdge.curve.parStart === clip.startPar)
-        sd.arrowheads.push({tip: geomEdge.targetArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.start})
+      if (geomEdge.targetArrowhead && geomEdge.curve.parEnd === clip.endPar)
+        sd.arrowheads.push({tip: geomEdge.targetArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.end})
     }
     if (!tileIsEmpty(sd)) {
       return sd

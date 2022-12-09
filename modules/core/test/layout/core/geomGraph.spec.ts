@@ -1,3 +1,6 @@
+import {parseJSON} from '../../../../parser/src/jsonparser'
+import * as fs from 'fs'
+import * as path from 'path'
 import {
   SugiyamaLayoutSettings,
   LayeredLayout,
@@ -199,6 +202,24 @@ test('intersectedEnities', () => {
     expect(intersected_e.indexOf(e.edge.target)).toBeGreaterThan(-1)
   }
 })
+
+test('tiles gameofthrones', () => {
+  const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
+  const graphStr = fs.readFileSync(fpath, 'utf-8')
+  //const json = JSON.parse(fn)
+  //const g = parseJSON()
+  // const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  // const geomGraph = dg.createGeometry(() => new Size(20, 20))
+  // const ss = new SugiyamaLayoutSettings()
+  // const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
+  // ll.run()
+  // const rect = geomGraph.boundingBox
+  // const tileMap = new TileMap(geomGraph, rect)
+  // tileMap.buildUpToLevel(6)
+
+  // dumpTiles(tileMap)
+})
+
 test('clipWithRectangleInsideInterval', () => {
   const g = parseDotGraph('graphvis/abstract.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
@@ -224,7 +245,7 @@ function dumpTiles(tileMap: TileMap) {
           './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
           t.data.curveClips
             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve.trim(c.startPar, c.endPar)))
-            .concat([DebugCurve.mkDebugCurveCI('Black', t.data.rect.perimeter())])
+            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
             .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
             .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
         )
