@@ -153,13 +153,13 @@ export class TileMap {
         sd.curveClips.push({curve: clip.curve, startPar: newClip.start, endPar: newClip.end})
       }
     }
-    for (const clip of sd.curveClips) {
-      // @ts-ignore
-      const geomEdge = GeomEdge.getGeom(clip.curve.edge as GeomEdge)
-      if (geomEdge.sourceArrowhead && geomEdge.curve.parStart === clip.startPar)
-        sd.arrowheads.push({tip: geomEdge.sourceArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.start})
-      if (geomEdge.targetArrowhead && geomEdge.curve.parEnd === clip.endPar)
-        sd.arrowheads.push({tip: geomEdge.targetArrowhead.tipPosition, edge: geomEdge.edge, base: geomEdge.curve.end})
+    for (const arrowhead of upperTile.arrowheads) {
+      const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
+      const d = arrowhead.tip.sub(arrowhead.base).div(3)
+      const dRotated = d.rotate90Cw()
+      arrowheadBox.add(arrowhead.base.add(dRotated))
+      arrowheadBox.add(arrowhead.base.sub(dRotated))
+      if (arrowheadBox.intersects(tileRect)) sd.arrowheads.push(arrowhead)
     }
     if (!tileIsEmpty(sd)) {
       return sd
