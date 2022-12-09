@@ -210,7 +210,7 @@ test('clipWithRectangleInsideInterval', () => {
   const tileMap = new TileMap(geomGraph, rect)
   tileMap.buildUpToLevel(6)
 
-  dumpTiles(tileMap)
+  // dumpTiles(tileMap)
 })
 function dumpTiles(tileMap: TileMap) {
   for (let z = 0; ; z++) {
