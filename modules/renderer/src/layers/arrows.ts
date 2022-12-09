@@ -1,5 +1,6 @@
 import {load} from '@loaders.gl/core'
 import {ImageLoader} from '@loaders.gl/images'
+import {Texture2D} from '@luma.gl/webgl'
 
 const iconAtlasRaw =
   `data:image/svg+xml;base64,` +
@@ -7,14 +8,34 @@ const iconAtlasRaw =
 
 const imageScale = 4
 
-export const iconAtlas =
-  typeof Image !== 'undefined' &&
-  load(iconAtlasRaw, ImageLoader, {
-    imagebitmap: {
-      resizeWidth: 256 * imageScale,
-      resizeHeight: 128 * imageScale,
-    },
-  })
+let iconAtlas: Promise<Texture2D> | Texture2D
+
+export function getIconAtlas(gl: WebGLRenderingContext): Promise<Texture2D> | Texture2D {
+  if (!iconAtlas) {
+    iconAtlas =
+      typeof Image !== 'undefined' &&
+      load(iconAtlasRaw, ImageLoader, {
+        imagebitmap: {
+          resizeWidth: 256 * imageScale,
+          resizeHeight: 128 * imageScale,
+        },
+      }).then((data) => {
+        const texture = new Texture2D(gl, {
+          data,
+          parameters: {
+            [gl.TEXTURE_MIN_FILTER]: gl.LINEAR_MIPMAP_LINEAR,
+            [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+            [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+            [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE,
+          },
+        })
+        iconAtlas = texture
+        return texture
+      })
+  }
+
+  return iconAtlas
+}
 
 export const iconMapping = scale(
   {

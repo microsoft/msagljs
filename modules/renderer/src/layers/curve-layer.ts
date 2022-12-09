@@ -35,6 +35,7 @@ export type CurveLayerProps<DataT> = {
   getCurveType?: Accessor<DataT, CURVE>
   getResolution?: Accessor<DataT, number>
   getControlPoints?: Accessor<DataT, number[]>
+  getRange?: Accessor<DataT, [number, number]>
   getWidth?: Accessor<DataT, number>
   getColor?: Accessor<DataT, Color>
 } & LayerProps<DataT>
@@ -53,6 +54,7 @@ const defaultProps: DefaultProps<CurveLayerProps<any>> = {
   getControlPoints: {type: 'accessor', value: (d) => d.points},
   getCurveType: {type: 'accessor', value: CURVE.Line},
   getResolution: {type: 'accessor', value: 4},
+  getRange: {type: 'accessor', value: [0, 1]},
   getWidth: {type: 'accessor', value: 1},
   getColor: {type: 'accessor', value: [0, 0, 0, 255]},
 }
@@ -94,9 +96,8 @@ void interpolateBezierCurve(float t, vec2 start, vec2 c1, vec2 c2, vec2 end, out
   point = l * t3 + e * t2 + c * t + start;
 }
 
-void interpolateArc(float t, vec2 center, vec2 aAxis, vec2 bAxis, float startAngle, float endAngle, out vec2 point) {
-  float a = mix(startAngle, endAngle, t);
-  point = center + cos(a) * aAxis + sin(a) * bAxis;
+void interpolateArc(float t, vec2 center, vec2 aAxis, vec2 bAxis, out vec2 point) {
+  point = center + cos(t) * aAxis + sin(t) * bAxis;
 }
 
 vec2 getExtrusionOffset(vec2 line, float offset_direction, float width) {
@@ -120,16 +121,16 @@ void main(void) {
   vec2 pointOnCurve;
   vec2 nextPointOnCurve;
   vec2 pointOnCurve64Low = vec2(0.0);
-  float r = (instanceSegments.x + positions.x) / instanceSegments.y;
-  float rNext = r + 1.0 / instanceSegments.y;
+  float r = instanceSegments.x + positions.x * instanceSegments.y;
+  float rNext = r + instanceSegments.y;
 
   if (instanceTypes == BEZIER) {
     interpolateBezierCurve(r, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, instancePositions2.zw, pointOnCurve);
     interpolateBezierCurve(rNext, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, instancePositions2.zw, nextPointOnCurve);
   }
   else if (instanceTypes == ARC) {
-    interpolateArc(r, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, instancePositions2.z, instancePositions2.w, pointOnCurve);
-    interpolateArc(rNext, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, instancePositions2.z, instancePositions2.w, nextPointOnCurve);
+    interpolateArc(r, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, pointOnCurve);
+    interpolateArc(rNext, instancePositions1.xy, instancePositions1.zw, instancePositions2.xy, nextPointOnCurve);
   }
   else {
     interpolateLine(r, instancePositions1.xy, instancePositions1.zw, pointOnCurve);
@@ -199,7 +200,6 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
       },
       instanceSegments: {
         size: 2,
-        type: GL.UNSIGNED_SHORT,
         update: this._getSegments,
       },
       instanceTypes: {
@@ -241,7 +241,7 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
   }
 
   updateGeometry() {
-    const {data, getResolution, getCurveType} = this.props
+    const {data, getResolution, getCurveType, getRange} = this.props
     const {iterable, objectInfo} = createIterable(data)
     const startIndices = [0]
     let numInstances = 0
@@ -250,39 +250,32 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
     for (const object of iterable) {
       objectInfo.index++
       const type = typeof getCurveType === 'function' ? getCurveType(object, objectInfo) : getCurveType
+      const range = typeof getRange === 'function' ? getRange(object, objectInfo) : getRange
       const res =
         type === CURVE.Line ? 1 : Math.ceil(typeof getResolution === 'function' ? getResolution(object, objectInfo) : getResolution)
       numInstances += res
+      const step = (range[1] - range[0]) / res
       startIndices.push(numInstances)
       for (let i = 0; i < res; i++) {
-        segments.push(i, res)
+        segments.push(range[0] + step * i, step)
       }
     }
 
-    this.setState({startIndices, numInstances, segments: new Uint16Array(segments)})
+    this.setState({startIndices, numInstances, segments: new Float32Array(segments)})
   }
 
   draw({uniforms}: any) {
     const {widthUnits, widthScale, widthMinPixels, widthMaxPixels} = this.props
-    const segCountScale = Math.min(this.context.viewport.scale, MAX_DRAW_COUNT)
 
-    this.state.model.setUniforms(uniforms).setUniforms({
-      skip: Math.ceil(1 / segCountScale),
-      widthUnits: UNIT[widthUnits],
-      widthScale,
-      widthMinPixels,
-      widthMaxPixels,
-    })
-
-    const drawCount = Math.ceil(segCountScale)
-
-    for (let i = 0; i < drawCount; i++) {
-      this.state.model
-        .setUniforms({
-          iteration: [i, drawCount],
-        })
-        .draw()
-    }
+    this.state.model
+      .setUniforms(uniforms)
+      .setUniforms({
+        widthUnits: UNIT[widthUnits],
+        widthScale,
+        widthMinPixels,
+        widthMaxPixels,
+      })
+      .draw()
   }
 
   protected _getModel(gl: WebGLRenderingContext): Model {
@@ -302,7 +295,7 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
     })
   }
 
-  private _getSegments(attribute) {
+  private _getSegments(attribute: any) {
     attribute.value = this.state.segments
   }
 }

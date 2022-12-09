@@ -15,7 +15,6 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import {parseJSON, graphToJSON} from '@msagl/parser'
 
 import type {LayoutOptions} from './renderer'
-import {IPsepColaSetting} from 'msagl-js/src/layout/incremental/iPsepColaSettings'
 
 let layoutWorker: Worker = null
 let layoutInProgress = false
@@ -156,7 +155,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
         }
       } else {
         // the graph is more suitable for the pivot mds layout
-        layoutSettings = new IPsepColaSetting()
+        layoutSettings = new FastIncrementalLayoutSettings()
       }
     }
   }
