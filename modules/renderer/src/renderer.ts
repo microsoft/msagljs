@@ -31,7 +31,7 @@ export type LayoutOptions = {
   edgeRoutingMode?: EdgeRoutingMode
 }
 
-const MaxZoom = 4
+const MaxZoom = 2
 
 /**
  * Renders an MSAGL graph with WebGL
@@ -230,11 +230,12 @@ export default class Renderer extends EventSource {
       return
     }
 
-    console.time('initial render')
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
     const boundingBox = geomGraph.boundingBox
+
+    console.time('Generate tiles')
     const rootTileSize = 2 ** Math.ceil(Math.log2(Math.max(boundingBox.width, boundingBox.height)))
     const startZoom = Math.min(MaxZoom, Math.round(9 - Math.log2(rootTileSize))) // tileSize 512 = 2 ** 9
     // Pad boundingBox to square
@@ -246,10 +247,11 @@ export default class Renderer extends EventSource {
     })
     const tileMap = new TileMap(geomGraph, rootTile)
     tileMap.buildUpToLevel(MaxZoom - startZoom)
+    console.timeEnd('Generate tiles')
 
-    const modelMatrix = new Matrix4()
-      // .scale([2 ** (-startZoom), 2 ** (-startZoom), 2 ** (-startZoom)])
-      .translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
+    console.time('initial render')
+
+    const modelMatrix = new Matrix4().translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
 
     const layer = new TileLayer<TileData>({
       extent: [0, 0, rootTileSize, rootTileSize],
@@ -337,22 +339,22 @@ export default class Renderer extends EventSource {
         minZoom: startZoom,
         maxZoom: MaxZoom,
       },
+      onAfterRender: () => {
+        if (layer.isLoaded) {
+          console.timeEnd('initial render')
+          this._deck.setProps({
+            onAfterRender: noop,
+          })
+        }
+      },
     })
 
     this.emit({
       type: 'graphload',
       data: this._graph,
     } as Event)
+  }
+}
 
-    console.timeEnd('initial render')
-  }
-}
-function depth(a: GeomNode) {
-  let d = 0
-  let p = a.node.parent
-  while (p) {
-    d++
-    p = p.parent
-  }
-  return d
-}
+// eslint-disable-next-line
+function noop() {}

@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, Accessor, GetPickingInfoParams} from '@deck.gl/core/typed'
 import {IconLayer, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomLabel, TileData, Point, Edge, Label, GeomEdge, AttributeRegistry} from 'msagl-js'
+import {GeomNode, GeomLabel, TileData, Point, Edge, GeomEdge} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 import {iconMapping} from './arrows'
 
@@ -91,11 +91,14 @@ export default class GraphLayer extends CompositeLayer<NodeLayerProps> {
           }),
           {
             data: data.labels,
-            getText: getLabelText,
+            getText: (d: GeomLabel) => getDrawingLabel(d).labelText,
+            getSize: (d: GeomLabel) => getDrawingLabel(d).fontsize,
+            getColor: getLabelColor,
             getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
             fontFamily,
             fontWeight,
             lineHeight,
+            sizeUnits: 'common',
           },
         ),
     ]
@@ -127,8 +130,16 @@ function getArrowAngle(tip: Point, end: Point): number {
   return (Math.atan2(dy, dx) / Math.PI) * 180
 }
 
-function getLabelText(l: GeomLabel): string {
+function getDrawingLabel(l: GeomLabel): DrawingObject {
   const geomEdge = l.parent as GeomEdge
-  const edge = geomEdge.entity
-  return edge.getAttr(AttributeRegistry.DrawingObjectIndex).labelText
+  const edge = geomEdge.entity as Edge
+  return DrawingObject.getDrawingObj(edge)
+}
+
+function getLabelColor(l: GeomLabel): [number, number, number] {
+  const color = getDrawingLabel(l).labelfontcolor
+  if (color) {
+    return [color.R, color.G, color.B]
+  }
+  return [0, 0, 0]
 }
