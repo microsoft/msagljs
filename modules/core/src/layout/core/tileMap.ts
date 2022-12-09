@@ -83,12 +83,12 @@ export class TileMap {
   /** creates tilings for levels from 0 to z, including the level z
    */
   buildUpToLevel(z: number) {
-    // the 0 level is filled in the constructor
+    // level 0 is filled in the constructor
     for (let i = 1; i <= z; i++) {
       this.subdivideToLevel(i)
     }
   }
-  /** it is assumed that the previous levels have been calculated.
+  /** It is assumed that the previous levels have been calculated.
    * Returns true if every edge is appears in some tile as the first edge
    */
   private subdivideToLevel(z: number): boolean {

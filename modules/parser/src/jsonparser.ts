@@ -1,5 +1,5 @@
 import {Graph, Node} from 'msagl-js'
-import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum} from 'msagl-js/drawing'
+import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum, DrawingGraph} from 'msagl-js/drawing'
 import {Graph as JSONGraph} from 'dotparser'
 
 import {parseJSONGraph} from './dotparser'
@@ -81,6 +81,8 @@ export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
       de.color = parseColor(edge.color)
     }
   }
+
+  new DrawingGraph(g) // create the DrawingAttribute on the graph
 
   return g
 }

@@ -21,6 +21,7 @@ import {
   Entity,
   GeomObject,
   LineSegment,
+  layoutGeomGraph,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -206,7 +207,14 @@ test('intersectedEnities', () => {
 test('tiles gameofthrones', () => {
   const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
-  //const json = JSON.parse(fn)
+
+  const json = JSON.parse(graphStr)
+  const graph = parseJSON(json)
+  const dg = graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
+  dg.createGeometry()
+  const gg = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
+  layoutGeomGraph(gg)
+  expect(gg.boundingBox.width).toBeGreaterThan(0)
   //const g = parseJSON()
   // const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   // const geomGraph = dg.createGeometry(() => new Size(20, 20))
