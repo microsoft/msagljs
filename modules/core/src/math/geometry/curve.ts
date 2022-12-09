@@ -1767,11 +1767,11 @@ export function* clipWithRectangleInsideInterval(
     return
   }
   const xs = Curve.getAllIntersections(curve, rect.perimeter(), true)
-  // debug
-  for (const x of xs) {
-    Assert.assert(Point.closeDistEps(x.x, curve.value(x.par0)))
-    // Assert.assert(Point.closeDistEps(x.x, origCurvDebug.value(x.par0)))
-  }
+  // // debug
+  // for (const x of xs) {
+  //   Assert.assert(Point.closeDistEps(x.x, curve.value(x.par0)))
+  //   // Assert.assert(Point.closeDistEps(x.x, origCurvDebug.value(x.par0)))
+  // }
   if (xs.length == 0) {
     if (rect.contains(curve.start)) yield {start: start, end: end}
     return
@@ -1797,7 +1797,9 @@ export function* clipWithRectangleInsideInterval(
   }
   function liftLocal(x: number): number {
     const t = origCurve.closestParameter(curve.value(x))
-    Assert.assert(Point.closeDistEps(origCurve.value(t), curve.value(x)))
+    // const a = origCurve.value(t)
+    // const b = curve.value(x)
+    // Assert.assert(Point.closeDistEps(a, b))
     return t
   }
 }
