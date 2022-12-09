@@ -871,7 +871,7 @@ export class Curve implements ICurve {
       par: lastSeg.parEnd,
     }
   }
-
+  /** return the segment index and the parameter inside of the segment */
   getSegIndexParam(t: number): SegIndexParam {
     let u = 0 //u is the sum of param domains
     const segLen = this.segs.length
