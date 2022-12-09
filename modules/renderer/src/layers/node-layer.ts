@@ -59,7 +59,6 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
           getColor: getNodeColor,
           getSize: this.props.getTextSize,
           billboard: false,
-          sizeMaxPixels: 48,
           sizeUnits: 'common',
           characterSet: 'auto',
           // TODO - fix in ClipExtension
