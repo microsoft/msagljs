@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, Accessor, GetPickingInfoParams} from '@deck.gl/core/typed'
 import {IconLayer, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomLabel, TileData, Point, Edge, Label} from 'msagl-js'
+import {GeomNode, GeomLabel, TileData, Point, Edge, Label, GeomEdge, AttributeRegistry} from 'msagl-js'
 import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 import {iconMapping} from './arrows'
 
@@ -128,6 +128,7 @@ function getArrowAngle(tip: Point, end: Point): number {
 }
 
 function getLabelText(l: GeomLabel): string {
-  const label = l.entity as Label
-  return 'label'
+  const geomEdge = l.parent as GeomEdge
+  const edge = geomEdge.entity
+  return edge.getAttr(AttributeRegistry.DrawingObjectIndex).labelText
 }
