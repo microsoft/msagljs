@@ -1,32 +1,23 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
-import {TileLayer} from '@deck.gl/geo-layers/typed'
+import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
+import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 
-import NodeLayer from './layers/node-layer'
-import EdgeLayer from './layers/edge-layer'
+import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker} from './layout'
-import {
-  Node,
-  Graph,
-  GeomGraph,
-  Rectangle,
-  EdgeRoutingMode,
-  GeomNode,
-  GeomEdge,
-  AttributeRegistry,
-  Edge,
-  buildRTree,
-  intersectedObjects,
-} from 'msagl-js'
+import {Node, Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, TileMap, TileData} from 'msagl-js'
+
+import {Matrix4} from '@math.gl/core'
 
 import EventSource, {Event} from './event-source'
 import TextMeasurer from './text-measurer'
 import {deepEqual} from './utils'
 
-import GraphHighlighter, {nodeDepthModuleVs} from './layers/graph-highlighter'
+import GraphHighlighter from './layers/graph-highlighter'
+import {getIconAtlas} from './layers/arrows'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -91,6 +82,12 @@ export default class Renderer extends EventSource {
       controller: true,
       onLoad: () => {
         this.emit('load')
+
+        const {gl} = this._deck.deckRenderer
+        this._deck._addResources({
+          arrowAtlas: getIconAtlas(gl),
+        })
+
         this._update()
       },
       onClick: ({object}) => {
@@ -237,25 +234,33 @@ export default class Renderer extends EventSource {
     this._graphHighlighter = this._graphHighlighter || new GraphHighlighter(this._deck.deckRenderer.gl)
     this._graphHighlighter.setGraph(geomGraph)
 
-    const rtree = buildRTree(geomGraph.graph)
     const boundingBox = geomGraph.boundingBox
-    const layer = new TileLayer<{nodes: GeomNode[]; edges: GeomEdge[]}>({
-      extent: [boundingBox.left, boundingBox.bottom, boundingBox.right, boundingBox.top],
+    const rootTileSize = 2 ** Math.ceil(Math.log2(Math.max(boundingBox.width, boundingBox.height)))
+    const startZoom = Math.min(MaxZoom, Math.round(9 - Math.log2(rootTileSize))) // tileSize 512 = 2 ** 9
+    // Pad boundingBox to square
+    const rootTile = new Rectangle({
+      left: boundingBox.left - (rootTileSize - boundingBox.width) / 2,
+      bottom: boundingBox.bottom - (rootTileSize - boundingBox.height) / 2,
+      right: boundingBox.right + (rootTileSize - boundingBox.width) / 2,
+      top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
+    })
+    const tileMap = new TileMap(geomGraph, rootTile)
+    tileMap.buildUpToLevel(MaxZoom - startZoom)
+
+    const modelMatrix = new Matrix4()
+      // .scale([2 ** (-startZoom), 2 ** (-startZoom), 2 ** (-startZoom)])
+      .translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
+
+    const layer = new TileLayer<TileData>({
+      extent: [0, 0, rootTileSize, rootTileSize],
       refinementStrategy: 'no-overlap',
-      getTileData: ({bbox}) => {
-        // @ts-ignore
-        const rect = new Rectangle({left: bbox.left, right: bbox.right, bottom: bbox.top, top: bbox.bottom})
-        const nodes: GeomNode[] = []
-        const edges: GeomEdge[] = []
-        for (const obj of intersectedObjects(rtree, rect, false)) {
-          if (obj instanceof Node) {
-            nodes.push(obj.getAttr(AttributeRegistry.GeomObjectIndex))
-          } else if (obj instanceof Edge) {
-            edges.push(obj.getAttr(AttributeRegistry.GeomObjectIndex))
-          }
-        }
-        nodes.sort((a, b) => depth(a) - depth(b))
-        return {nodes, edges}
+      minZoom: startZoom,
+      maxZoom: MaxZoom,
+      tileSize: 512,
+      getTileData: (tile) => {
+        const {x, y, z} = tile.index
+        const bbox = tile.bbox as NonGeoBoundingBox
+        return tileMap.getTileData(x, y, z - startZoom)
       },
       parameters: {
         depthTest: false,
@@ -268,7 +273,7 @@ export default class Renderer extends EventSource {
       autoHighlight: true,
       onHover: ({object, sourceLayer}) => {
         if (!this._highlightedNodeId) {
-          if (sourceLayer.id.endsWith('nodes') && object && !(object instanceof GeomGraph)) {
+          if (object instanceof GeomNode) {
             this._highlight(object.id)
           } else {
             this._highlight(null)
@@ -276,12 +281,14 @@ export default class Renderer extends EventSource {
         }
       },
       renderSubLayers: ({data, id, tile}) => {
-        // @ts-ignore
-        const {left, right, top, bottom} = tile.bbox
-        const rect = new Rectangle({left: left, right: right, bottom: top, top: bottom})
+        if (!data) return null
+
+        const bbox = data.rect
+        // const { left, right, top, bottom } = tile.bbox as NonGeoBoundingBox
+
         return [
           // For debugging
-          // new PolygonLayer({
+          // const border = new PolygonLayer({
           //   id: id + 'bounds',
           //   data: [0],
           //   getPolygon: (_) => [
@@ -299,35 +306,21 @@ export default class Renderer extends EventSource {
           //   lineWidthUnits: 'pixels',
           // }),
 
-          new NodeLayer({
-            id: id + 'nodes',
-            data: data.nodes,
-            getPickingColor: (n, {target}) => this._graphHighlighter.encodeNodeIndex(n, target),
-            fromIndex: (i) => this._graphHighlighter.getNode(i),
-            nodeDepth: this._graphHighlighter.nodeDepth,
-            getLineWidth: 1,
+          new GraphLayer({
+            id: id,
+            data,
+            modelMatrix,
+            highlighter: this._graphHighlighter,
             fontFamily: fontSettings.fontFamily,
             fontWeight: fontSettings.fontWeight,
             lineHeight: fontSettings.lineHeight,
             getTextSize: fontSettings.fontSize,
+            resolution: 2 ** (tile.index.z - 2),
             pickable: true,
             // @ts-ignore
-            clipBounds: [left, top, right, bottom],
+            clipBounds: [bbox.left, bbox.bottom, bbox.right, bbox.top],
             clipByInstance: false,
             extensions: [new ClipExtension()],
-          }),
-
-          new EdgeLayer({
-            id: id + 'edges',
-            data: data.edges,
-            clipBounds: rect,
-            getWidth: 1,
-            getDepth: this._graphHighlighter.edgeDepth,
-            resolution: 2 ** (tile.index.z - 2),
-            fontFamily: fontSettings.fontFamily,
-            fontWeight: fontSettings.fontWeight,
-            lineHeight: fontSettings.lineHeight,
-            getTextSize: fontSettings.fontSize,
           }),
         ]
       },
@@ -338,6 +331,12 @@ export default class Renderer extends EventSource {
 
     this._deck.setProps({
       layers: [layer],
+      initialViewState: {
+        target: [rootTileSize / 2, rootTileSize / 2, 0],
+        zoom: startZoom,
+        minZoom: startZoom,
+        maxZoom: MaxZoom,
+      },
     })
 
     this.emit({
@@ -345,7 +344,6 @@ export default class Renderer extends EventSource {
       data: this._graph,
     } as Event)
 
-    this.zoomTo(geomGraph.boundingBox)
     console.timeEnd('initial render')
   }
 }

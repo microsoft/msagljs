@@ -6,6 +6,8 @@ import {
   HitTreeNodeType,
   getGeomIntersectedObjects,
   intersectedObjects,
+  TileData,
+  CurveClip,
 } from './layout/core/geomGraph'
 import {TileMap} from './layout/core/tileMap'
 import {GeomLabel} from './layout/core/geomLabel'
@@ -75,4 +77,6 @@ export {
   IntPairMap,
   pageRank,
   TileMap,
+  TileData,
+  CurveClip,
 }

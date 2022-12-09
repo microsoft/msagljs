@@ -41,7 +41,7 @@ export default class NodeLayer extends CompositeLayer<NodeLayerProps> {
           getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
           getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
           getShape: (e: GeomNode) => getShapeFromNode(e.node),
-          cornerRadius: getCornerRadius(this.props.data[0]),
+          cornerRadius: getCornerRadius((this.props.data as GeomNode[])[0]),
           getLineColor: getNodeColor,
           getFillColor: getNodeFillColor,
         },

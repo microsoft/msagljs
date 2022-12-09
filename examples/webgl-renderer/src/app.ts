@@ -7,7 +7,8 @@ import {EdgeRoutingMode, geometryIsCreated, GeomGraph, Graph} from 'msagl-js'
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+// const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/awilliams.gv'
 
 /// Debug on main thread
 const renderer = new Renderer(document.getElementById('viewer'), null)
