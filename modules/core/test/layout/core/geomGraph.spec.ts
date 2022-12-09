@@ -17,6 +17,7 @@ import {
   Rectangle,
   Entity,
   GeomObject,
+  LineSegment,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -207,9 +208,9 @@ test('clipWithRectangleInsideInterval', () => {
   ll.run()
   const rect = geomGraph.boundingBox
   const tileMap = new TileMap(geomGraph, rect)
-  tileMap.buildUpToLevel(5)
+  tileMap.buildUpToLevel(6)
 
-  // dumpTiles(tileMap)
+  dumpTiles(tileMap)
 })
 function dumpTiles(tileMap: TileMap) {
   for (let z = 0; ; z++) {
@@ -218,13 +219,18 @@ function dumpTiles(tileMap: TileMap) {
       break
     }
     for (const t of tilesOfLevel) {
-      SvgDebugWriter.dumpDebugCurves(
-        './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
-        t.data.curveClips
-          .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve.trim(c.startPar, c.endPar)))
-          .concat([DebugCurve.mkDebugCurveCI('Black', t.data.rect.perimeter())])
-          .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve))),
-      )
+      try {
+        SvgDebugWriter.dumpDebugCurves(
+          './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
+          t.data.curveClips
+            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve.trim(c.startPar, c.endPar)))
+            .concat([DebugCurve.mkDebugCurveCI('Black', t.data.rect.perimeter())])
+            .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+            .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+        )
+      } catch (Error) {
+        console.log(Error.message)
+      }
     }
   }
 }

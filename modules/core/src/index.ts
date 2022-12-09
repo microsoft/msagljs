@@ -6,8 +6,8 @@ import {
   HitTreeNodeType,
   getGeomIntersectedObjects,
   intersectedObjects,
-  TileMap,
 } from './layout/core/geomGraph'
+import {TileMap} from './layout/core/tileMap'
 import {GeomLabel} from './layout/core/geomLabel'
 import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'
