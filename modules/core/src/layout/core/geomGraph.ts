@@ -497,18 +497,3 @@ function edgeEnd(e: Edge): Point {
   if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
   return ge.curve.end
 }
-/** Represents a part of the curve containing in a tile.
- * One tile can have several parts of clips corresponding to the same curve.
- */
-export type CurveClip = {startPar: number; endPar: number; curve: ICurve}
-/** keeps all the data needed to render a tile */
-export type TileData = {
-  curveClips: CurveClip[] // the curves are ranked
-  arrowheads: {tip: Point; edge: Edge; base: Point}[]
-  nodes: GeomNode[]
-  labels: GeomLabel[]
-  rect: Rectangle // it seems needed only for debug
-}
-export function tileIsEmpty(sd: TileData): boolean {
-  return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
-}

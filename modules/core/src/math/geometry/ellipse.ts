@@ -80,6 +80,11 @@ export class Ellipse implements ICurve {
     this.center = center
     this.pNode = null
     this.setBoundingBox()
+    // this.parStart has to be nonnegative because of the way curve searches for the segment of a parameter
+    while (this.parStart < 0) {
+      this.parStart += Math.PI * 2
+      this.parEnd += Math.PI * 2
+    }
   }
 
   get start() {

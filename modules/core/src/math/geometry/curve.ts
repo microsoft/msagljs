@@ -873,6 +873,7 @@ export class Curve implements ICurve {
   }
   /** return the segment index and the parameter inside of the segment */
   getSegIndexParam(t: number): SegIndexParam {
+    // because of this implementation we alwais should have seg.parStart >= 0: otherwise the function can return a wrong segment
     let u = 0 //u is the sum of param domains
     const segLen = this.segs.length
     for (let i = 0; i < segLen; i++) {

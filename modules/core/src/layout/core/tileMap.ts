@@ -5,10 +5,29 @@ import {GeomEdge} from './geomEdge'
 import {Edge} from '../../structs/edge'
 import {IntPairMap} from '../../utils/IntPairMap'
 import {clipWithRectangleInsideInterval} from '../../math/geometry/curve'
-import {TileData, GeomGraph, tileIsEmpty} from './geomGraph'
+import {GeomLabel} from './geomLabel'
+import {Point} from '../../math/geometry/point'
+import {GeomGraph} from '.'
+import {ICurve} from '../../math/geometry'
+/** Represents a part of the curve containing in a tile.
+ * One tile can have several parts of clips corresponding to the same curve.
+ */
+export type CurveClip = {startPar: number; endPar: number; curve: ICurve; edge: Edge}
+/** keeps all the data needed to render a tile */
+export type TileData = {
+  curveClips: CurveClip[] // the curves are ranked
+  arrowheads: {tip: Point; edge: Edge; base: Point}[]
+  nodes: GeomNode[]
+  labels: GeomLabel[]
+  rect: Rectangle // it seems needed only for debug
+}
+export function tileIsEmpty(sd: TileData): boolean {
+  return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
+}
 
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
+  superPixesCapacity = 400
   private dataArray: IntPairMap<TileData>[] = []
   edgeCount: number
   /** retrieves the data for a single tile(x-y-z) */
@@ -44,17 +63,10 @@ export class TileMap {
       const ru = rank.get(u.source) + rank.get(u.target)
       return ru - rv
     })
-    // inject edges to curves
-    for (const e of edges) {
+    const curveClips = edges.map((e) => {
       const c = GeomEdge.getGeom(e).curve
-      // @ts-ignore
-      c.edge = e
-    }
-    const curveClips = edges
-      .map((e) => GeomEdge.getGeom(e).curve)
-      .map((c) => {
-        return {startPar: c.parStart, endPar: c.parEnd, curve: c}
-      })
+      return {startPar: c.parStart, endPar: c.parEnd, curve: c, edge: e}
+    })
 
     const arrows = []
     const geomLabels = []
@@ -91,7 +103,7 @@ export class TileMap {
   /** It is assumed that the previous levels have been calculated.
    * Returns true if every edge is appears in some tile as the first edge
    */
-  private subdivideToLevel(z: number): boolean {
+  subdivideToLevel(z: number): boolean {
     const firstEdges = new Set<Edge>()
     const tilesInRow = Math.pow(2, z)
     const levelTiles = (this.dataArray[z] = new IntPairMap<TileData>(tilesInRow))
@@ -122,13 +134,14 @@ export class TileMap {
           const tileData: TileData = this.generateSubTile(tile, tileRect)
           if (tileData) {
             levelTiles.set(2 * xp + i, 2 * yp + j, tileData)
-            if (tileData.curveClips.length > 0)
-              // @ts-ignore
-              firstEdges.add(tileData.curveClips[0].curve.edge)
+            for (let k = 0; k < this.superPixesCapacity && k < tileData.curveClips.length; k++) {
+              firstEdges.add(tileData.curveClips[k].edge)
+            }
           }
         }
     }
     const ret = this.edgeCount === firstEdges.size
+    console.log(this.edgeCount, 'firstEdges=', firstEdges.size, 'level=', z, 'tileSize = ', wz, hz)
     if (ret) {
       console.log('full at level', z)
     }
@@ -150,7 +163,7 @@ export class TileMap {
     }
     for (const clip of upperTile.curveClips) {
       for (const newClip of clipWithRectangleInsideInterval(clip.curve, clip.startPar, clip.endPar, tileRect)) {
-        sd.curveClips.push({curve: clip.curve, startPar: newClip.start, endPar: newClip.end})
+        sd.curveClips.push({curve: clip.curve, startPar: newClip.start, endPar: newClip.end, edge: clip.edge})
       }
     }
     for (const arrowhead of upperTile.arrowheads) {

@@ -96,7 +96,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   } else if (needsReroute) {
     console.time('routeEdges')
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
-    console.time('routeEdges')
+    console.timeEnd('routeEdges')
   }
   return graph
 }

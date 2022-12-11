@@ -22,6 +22,8 @@ import {
   GeomObject,
   LineSegment,
   layoutGeomGraph,
+  Assert,
+  Curve,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -32,6 +34,7 @@ import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
+import {graphToJSON} from '../../../../parser/src/dotparser'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
@@ -204,31 +207,42 @@ test('intersectedEnities', () => {
   }
 })
 
-test('tiles gameofthrones', () => {
-  const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
+xtest('tiles gameofthrones', () => {
+  /*  const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
 
   const json = JSON.parse(graphStr)
   const graph = parseJSON(json)
   const dg = graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
   dg.createGeometry()
-  const gg = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  layoutGeomGraph(gg)
-  expect(gg.boundingBox.width).toBeGreaterThan(0)
-  //const g = parseJSON()
-  // const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
-  // const geomGraph = dg.createGeometry(() => new Size(20, 20))
-  // const ss = new SugiyamaLayoutSettings()
-  // const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
-  // ll.run()
-  // const rect = geomGraph.boundingBox
-  // const tileMap = new TileMap(geomGraph, rect)
-  // tileMap.buildUpToLevel(6)
-
-  // dumpTiles(tileMap)
+  const t = graphToJSON(graph)
+  const content = JSON.stringify(t, null, 2)
+  const ws = fs.openSync('./tmp/got.JSON', 'w', 0o666)
+  fs.writeFileSync(ws, content)
+  fs.close(ws)
+  const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
+  layoutGeomGraph(geomGraph)*/
+  const fpath = path.join(__dirname, '../../data/JSONfiles/gameofthrones_with_geometry.JSON')
+  const str = fs.readFileSync(fpath, 'utf-8')
+  const json = JSON.parse(str)
+  const graph = parseJSON(json)
+  //Curve.dumper = SvgDebugWriter.dumpDebugCurves
+  const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
+  geomGraph.pumpTheBoxToTheGraphWithMargins()
+  for (const e of geomGraph.deepEdges) {
+    Assert.assert(isLegal(e))
+  }
+  expect(geomGraph.boundingBox.width).toBeGreaterThan(0)
+  const rect = geomGraph.boundingBox
+  const tileMap = new TileMap(geomGraph, rect)
+  for (let z = 1; z < 20; z++) {
+    if (tileMap.subdivideToLevel(z)) {
+      break
+    }
+  }
 })
 
-test('clipWithRectangleInsideInterval', () => {
+xtest('clipWithRectangleInsideInterval', () => {
   const g = parseDotGraph('graphvis/abstract.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   const geomGraph = dg.createGeometry(() => new Size(20, 20))
@@ -261,5 +275,17 @@ function dumpTiles(tileMap: TileMap) {
         console.log(Error.message)
       }
     }
+  }
+}
+function isLegal(e: GeomEdge): boolean {
+  const c = e.curve
+  if (c instanceof Curve) {
+    for (let i = 0; i < c.segs.length - 1; i++) {
+      if (Point.closeDistEps(c.segs[i].end, c.segs[i + 1].start)) continue
+      Assert.assert(false)
+    }
+    return true
+  } else {
+    return true
   }
 }
