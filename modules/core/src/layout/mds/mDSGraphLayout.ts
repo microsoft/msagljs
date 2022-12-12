@@ -11,7 +11,7 @@ import {GeomEdge} from '../core/geomEdge'
 import {MultidimensionalScaling} from './multiDimensionalScaling'
 import {CommonLayoutSettings} from '../commonLayoutSettings'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
-import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
+import {GTreeOverlapRemoval} from '../gTreeOverlapRemoval/gTreeOverlapRemoval'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
 
 // Class for graph layout with multidimensional scaling.

@@ -92,8 +92,8 @@ export class MdsLayoutSettings implements ILayoutSettings {
 
   private _removeOverlaps = true
 
-  //
-  _callIterationsWithMajorizationThreshold = 3000
+  /** do not call iterations with majorization, the local layout improvement heuristic, for graph with at least 2000 nodes */
+  _callIterationsWithMajorizationThreshold = 2000
 
   // remove overlaps between node boundaries
   get removeOverlaps(): boolean {

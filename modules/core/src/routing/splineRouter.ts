@@ -364,7 +364,10 @@ export class SplineRouter extends Algorithm {
     }
     if (this.RouteMultiEdgesAsBundles) {
       this.SplitOnRegularAndMultiedges(edgeGeometryGroup.edges, t)
-      for (const edge of t.regularEdges) {
+
+      for (let i = 0; i < t.regularEdges.length; i++) {
+        const edge = t.regularEdges[i]
+
         this.RouteEdge(interactiveEdgeRouter, edge)
       }
 

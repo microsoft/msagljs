@@ -1,6 +1,6 @@
 import {GeomNode, Point} from '../../../src'
-import {GTreeOverlapRemoval} from '../../../src/layout/GTreeOverlapRemoval/GTreeOverlapRemoval'
-import {MstOnDelaunayTriangulation} from '../../../src/layout/GTreeOverlapRemoval/MstOnDelaunayTriangulation'
+import {GTreeOverlapRemoval} from '../../../src/layout/gTreeOverlapRemoval/gTreeOverlapRemoval'
+import {MstOnDelaunayTriangulation} from '../../../src/layout/gTreeOverlapRemoval/MstOnDelaunayTriangulation'
 import {CurveFactory, LineSegment} from '../../../src/math/geometry'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {Cdt} from '../../../src/routing/ConstrainedDelaunayTriangulation/Cdt'

@@ -7,7 +7,7 @@ import {IGeomGraph} from './iGeomGraph'
 import {GeomConnectedComponent} from './geomConnectedComponent'
 import {LayoutAlgorithmHelpers} from './layoutAlgorithmHelpers'
 import {Assert} from '../../utils/assert'
-import {GTreeOverlapRemoval} from '../GTreeOverlapRemoval/GTreeOverlapRemoval'
+import {GTreeOverlapRemoval} from '../gTreeOverlapRemoval/gTreeOverlapRemoval'
 import {GeomGraph} from '../core/geomGraph'
 import {MdsLayoutSettings} from '../mds/mDSLayoutSettings'
 
