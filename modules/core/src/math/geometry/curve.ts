@@ -1763,7 +1763,8 @@ export function* clipWithRectangleInsideInterval(
 ): IterableIterator<{start: number; end: number}> {
   const origCurve = curve
   curve = curve.trim(start, end)
-  if (rect.containsRectWithPadding(curve.boundingBox, 1)) {
+  if (curve == null) return
+  if (rect.containsRect(curve.boundingBox)) {
     yield {start: start, end: end}
     return
   }
