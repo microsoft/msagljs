@@ -41,10 +41,7 @@ export class TileData {
     t.rect = rect
     return t
   }
-  /** The arrays curveClips, arrowheads, nodes and labels below are initially sorted according to PageRank.
-   * Later the sorting changes.
-   *
-   */
+
   curveClips: CurveClip[]
   arrowheads: {tip: Point; edge: Edge; base: Point}[]
   nodes: GeomNode[]
