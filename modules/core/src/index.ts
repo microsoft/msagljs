@@ -7,7 +7,8 @@ import {
   getGeomIntersectedObjects,
   intersectedObjects,
 } from './layout/core/geomGraph'
-import {CurveClip, TileData, TileMap} from './layout/core/tileMap'
+import {CurveClip, TileMap} from './layout/core/tileMap'
+import {TileData} from './layout/core/tileData'
 import {GeomLabel} from './layout/core/geomLabel'
 import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'

@@ -8,7 +8,7 @@ import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker} from './layout'
-import {Node, Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, TileMap, TileData} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, EdgeRoutingMode, GeomNode, TileMap, TileData, geometryIsCreated} from 'msagl-js'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -140,7 +140,7 @@ export default class Renderer extends EventSource {
     } else {
       this._graph = graph
 
-      if (options) {
+      if (options && !geometryIsCreated(graph)) {
         this._layoutOptions = options
         this._textMeasurer.setOptions(options.label || {})
         this._highlightedNodeId = null
@@ -246,7 +246,7 @@ export default class Renderer extends EventSource {
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
     const tileMap = new TileMap(geomGraph, rootTile)
-    tileMap.buildUpToLevel(30) // MaxZoom - startZoom)
+    tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')

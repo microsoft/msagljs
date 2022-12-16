@@ -23,7 +23,7 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
   const content: string = await file.text()
   let graph: Graph
 
-  if (file.name.endsWith('.json')) {
+  if (file.name.toLowerCase().endsWith('.json')) {
     graph = parseJSON(JSON.parse(content))
   } else {
     graph = parseDot(content)

@@ -208,35 +208,24 @@ test('intersectedEnities', () => {
 })
 
 xtest('tiles composers', () => {
-  const fpath = path.join(__dirname, '../../../../../examples/data/composers.json')
+  const fpath = path.join(__dirname, '../../data/JSONfiles/composersWithGeom.JSON')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
 
   const json = JSON.parse(graphStr)
   const graph = parseJSON(json)
-  const dg = graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
-  dg.createGeometry()
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
 
-  layoutGeomGraph(geomGraph)
-  geomGraph.pumpTheBoxToTheGraphWithMargins()
   for (const e of geomGraph.deepEdges) {
     Assert.assert(isLegal(e))
   }
   expect(geomGraph.boundingBox.width).toBeGreaterThan(0)
-  const t = graphToJSON(graph)
-  const content = JSON.stringify(t, null, 2)
-  const ws = fs.openSync('./tmp/composersWithGeom.JSON', 'w', 0o666)
-  fs.writeFileSync(ws, content)
-  fs.close(ws)
   const rect = geomGraph.boundingBox
   const tileMap = new TileMap(geomGraph, rect)
-  for (let z = 1; z < 6; z++) {
-    if (tileMap.subdivideToLevel(z)) {
-      break
-    }
-  }
+  console.time('buildUpToLevel')
+  tileMap.buildUpToLevel(20)
+  console.timeEnd('buildUpToLevel')
 })
-test('tiles gameofthrones', () => {
+xtest('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
@@ -266,11 +255,7 @@ test('tiles gameofthrones', () => {
   expect(geomGraph.boundingBox.width).toBeGreaterThan(0)
   const rect = geomGraph.boundingBox
   const tileMap = new TileMap(geomGraph, rect)
-  for (let z = 1; z < 5; z++) {
-    if (tileMap.subdivideToLevel(z)) {
-      break
-    }
-  }
+  tileMap.buildUpToLevel(20)
 })
 
 xtest('clipWithRectangleInsideInterval', () => {
