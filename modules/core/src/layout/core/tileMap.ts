@@ -34,7 +34,7 @@ export class TileMap {
    */
   private tileCapacityMin = 100
   /** the maximal number entities vizible in a tile */
-  private tileCapacity = 1000
+  private tileCapacity = 750
   /**
    * To choose entities visible on level z we iterate over all non-empty tiles from the level z+1, and pick the most ranked entity from each such tile of this level. If we pick an edge we also pick its source and target
    *
