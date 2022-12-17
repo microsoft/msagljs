@@ -28,39 +28,31 @@ export class TileMap {
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
   private minTileSize: Size
-  /** Stop generating new tiles when every subdivided tile has at most tileCapacityMin elements.
-   *  In addition, the tiles containing not more than tileCapacityMin are not subdivided anymore:
-   *  their elements are reused.
-   */
   private tileCapacityMin = 100
   /** the maximal number entities vizible in a tile */
   private tileCapacity = 750
-  /**
-   * To choose entities visible on level z we iterate over all non-empty tiles from the level z+1, and pick the most ranked entity from each such tile of this level. If we pick an edge we also pick its source and target
-   *
-   */
-  private dataArray: IntPairMap<TileData>[] = []
+  /** the tiles of level z is represented by levels[z] */
+  private levels: IntPairMap<TileData>[] = []
 
   edgeCount: number
   pageRank: Map<Entity, number>
-  entsSortedByVisualAndPageRank: Entity[]
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): TileData {
-    const mapOnLevel = this.dataArray[z]
+    const mapOnLevel = this.levels[z]
     if (!mapOnLevel) return null
     return mapOnLevel.get(x, y)
   }
-
+  /** retrieves all the tiles of z-th level */
   *getTilesOfLevel(z: number): IterableIterator<{x: number; y: number; data: TileData}> {
-    const tm = this.dataArray[z]
+    const tm = this.levels[z]
     if (tm == null) return
     for (const [key, val] of tm.keyValues()) {
       yield {x: key.x, y: key.y, data: val}
     }
   }
 
-  geomGraph: GeomGraph
-  topLevelTileRect: Rectangle
+  private geomGraph: GeomGraph
+  private topLevelTileRect: Rectangle
   constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
@@ -68,7 +60,7 @@ export class TileMap {
     this.edgeCount = geomGraph.graph.deepEdgesCount()
     this.minTileSize = this.getMinTileSize()
   }
-  getMinTileSize(): Size {
+  private getMinTileSize(): Size {
     let w = 0
     let h = 0
     let n = 0
@@ -127,7 +119,7 @@ export class TileMap {
     topLevelTile.rect = this.topLevelTileRect
 
     tileMap.set(0, 0, topLevelTile)
-    this.dataArray.push(tileMap)
+    this.levels.push(tileMap)
   }
   /**
    * Creates tilings for levels from 0 to z, including the level z.
@@ -135,19 +127,29 @@ export class TileMap {
    *  if all tiles either has size smaller or equal than this.minTileSize or have at most this.tileCapacityMin elements
    */
   buildUpToLevel(z: number) {
-    // level 0 is filled in the constructor
+    let noNeedToSubdivide = true
+    // level 0 is filled in the constructor: maybe it is small enough
+    for (const tile of this.levels[0].values()) {
+      if (tile.elementCount > this.tileCapacity) {
+        noNeedToSubdivide = false
+        break
+      }
+    }
+    if (noNeedToSubdivide) return
+
     for (let i = 1; i <= z; i++) {
-      if (this.subdivideToLevel(i)) {
+      if (this.subdivideLevel(i)) {
         break
       }
     }
     this.calculateVisualRank()
-    this.entsSortedByVisualAndPageRank = Array.from(this.visualRank.keys()).sort((u, v) => this.compareByVisPageRanks(u, v))
-    for (let i = this.dataArray.length - 1; i > 0; i--) {
-      this.filterOutEntities(this.dataArray[i - 1])
+    const entsSortedByVisualAndPageRank = Array.from(this.visualRank.keys()).sort((u, v) => this.compareByVisPageRanks(u, v))
+    // do not filter the lowest layer: it should show everything
+    for (let i = 0; i < this.levels.length - 1; i++) {
+      this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank)
     }
   }
-  compareByVisPageRanks(u: Entity, v: Entity): number {
+  private compareByVisPageRanks(u: Entity, v: Entity): number {
     const uVis = this.visualRank.get(u)
     const vVis = this.visualRank.get(v)
     if (uVis > vVis) {
@@ -159,14 +161,12 @@ export class TileMap {
     return this.pageRank.get(v) - this.pageRank.get(u)
   }
 
-  calculateVisualRank() {
-    for (const level of this.dataArray) {
-      for (const tile of level.values()) {
-        this.calculateVisualRankOnTile(tile)
-      }
+  private calculateVisualRank() {
+    for (const tile of this.levels[this.levels.length - 1].values()) {
+      this.calculateVisualRankOnTile(tile)
     }
   }
-  calculateVisualRankOnTile(tile: TileData) {
+  private calculateVisualRankOnTile(tile: TileData) {
     const rankAdditionOfTile = 1 / tile.elementCount
     for (const e of tile.entitiesOfTile()) {
       const rank = this.visualRank.get(e)
@@ -178,13 +178,13 @@ export class TileMap {
     }
   }
 
-  filterOutEntities(levelToReduce: IntPairMap<TileData>) {
+  private filterOutEntities(levelToReduce: IntPairMap<TileData>, entsSortedByVisualAndPageRank: Entity[]) {
     const addedSet = new Set<Entity>()
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
     const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
-    for (let k = 0; k < this.entsSortedByVisualAndPageRank.length; k++) {
-      const e = this.entsSortedByVisualAndPageRank[k]
+    for (let k = 0; k < entsSortedByVisualAndPageRank.length; k++) {
+      const e = entsSortedByVisualAndPageRank[k]
       if (!this.tryAddToLevel(levelToReduce, e, dataByEntity.get(e))) {
         break
       }
@@ -209,7 +209,7 @@ export class TileMap {
   }
 
   /** goes over all tiles where 'ent' had a presence and tries to add the corresponding rendering data into it */
-  tryAddToLevel(levelToReduce: IntPairMap<TileData>, ent: Entity, entityToData: EntityDataInTile[], force = false) {
+  private tryAddToLevel(levelToReduce: IntPairMap<TileData>, ent: Entity, entityToData: EntityDataInTile[], force = false) {
     if (!force) {
       for (const edt of entityToData) {
         const tile = edt.tile
@@ -226,7 +226,7 @@ export class TileMap {
     return true
   }
 
-  transferDataOfLevelToMap(levelToReduce: IntPairMap<TileData>): Map<Entity, EntityDataInTile[]> {
+  private transferDataOfLevelToMap(levelToReduce: IntPairMap<TileData>): Map<Entity, EntityDataInTile[]> {
     const m = new Map<Entity, EntityDataInTile[]>()
     for (const v of levelToReduce.values()) {
       for (const cc of v.curveClips) {
@@ -262,26 +262,15 @@ export class TileMap {
       return arr
     }
   }
-  private rankEntitiesOfThePreviousLevel(prevLevel: IntPairMap<TileData>) {
-    return
-    const edgeToIndexOfPrevLevel = new Map<Edge, number>()
-    for (const tile of prevLevel.values()) {
-      for (let i = 0; i < tile.curveClips.length; i++) {
-        const e = tile.curveClips[i].edge
-        const ii = edgeToIndexOfPrevLevel.get(e)
-        if (ii != undefined) edgeToIndexOfPrevLevel.set(e, Math.min(i, ii))
-      }
-    }
-    return
-  }
 
-  /** It is assumed that the previous levels have been calculated.
+  /** It is assumed that the previous level z-1 have been calculated.
    * Returns true if every edge is appears in some tile as the first edge
    */
-  subdivideToLevel(z: number): boolean {
+
+  private subdivideLevel(z: number): boolean {
     let allTilesAreSmall = true
     const tilesInRow = Math.pow(2, z)
-    const levelTiles = (this.dataArray[z] = new IntPairMap<TileData>(tilesInRow))
+    const levelTiles = (this.levels[z] = new IntPairMap<TileData>(tilesInRow))
     /** the width and the height of the previous level tile */
     let w = this.topLevelTileRect.width
     let h = this.topLevelTileRect.height
@@ -293,7 +282,7 @@ export class TileMap {
     const wz = w / 2
     const hz = h / 2
 
-    for (const [key, tile] of this.dataArray[z - 1].keyValues()) {
+    for (const [key, tile] of this.levels[z - 1].keyValues()) {
       const xp = key.x
       const yp = key.y
       const left = this.topLevelTileRect.left + xp * w
@@ -334,11 +323,7 @@ export class TileMap {
     return false
   }
 
-  generateSubTile(upperTile: TileData, tileRect: Rectangle): TileData {
-    if (upperTile.elementCount <= this.tileCapacityMin && false) {
-      // just reuse the arrays from the upper tile
-      return TileData.mk(upperTile.curveClips, upperTile.arrowheads, upperTile.nodes, upperTile.labels, tileRect)
-    }
+  private generateSubTile(upperTile: TileData, tileRect: Rectangle): TileData {
     const sd = TileData.mk([], [], [], [], tileRect)
     for (const n of upperTile.nodes) {
       if (n.boundingBox.intersects(tileRect)) {
