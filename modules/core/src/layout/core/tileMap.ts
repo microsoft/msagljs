@@ -11,6 +11,7 @@ import {GeomGraph} from '.'
 import {ICurve} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
 import {TileData} from './tileData'
+import {Node} from '../../structs/node'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
