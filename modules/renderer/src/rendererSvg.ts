@@ -306,6 +306,9 @@ export class RendererSvg implements IViewer {
     this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
     this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
     this.layoutEditor.viewerGraphChanged()
+    if (this.graph.deepEdgesCount() > 2000 && this.graph.nodeCountDeep > 1000) {
+      this.layoutEditingEnabled = false
+    }
   }
   /** maps the screen coordinates to the graph coordinates */
   screenToSource(e: MouseEvent): Point {

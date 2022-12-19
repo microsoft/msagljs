@@ -29,9 +29,9 @@ export class TileMap {
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
   private minTileSize: Size
-  private tileCapacityMin = 100
-  /** the maximal number entities vizible in a tile */
-  private tileCapacity = 1500
+  private tileCapacityMin = 200
+  /** the maximal number visual elements vizible in a tile */
+  private tileCapacity = 16000
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<TileData>[] = []
 
@@ -78,7 +78,7 @@ export class TileMap {
       }
       n++
     }
-    return new Size(w * 1.5, h * 1.5)
+    return new Size(w * 8, h * 8)
   }
 
   private fillTopLevelTile() {
@@ -156,7 +156,7 @@ export class TileMap {
     const entsSortedByVisualAndPageRank = Array.from(this.visualRank.keys()).sort((u, v) => this.compareByVisPageRanks(u, v))
     // do not filter the lowest layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank)
+      this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank, i)
     }
   }
   pushUpNodeRanksAboveTheirEdges() {
@@ -164,12 +164,19 @@ export class TileMap {
       if (n instanceof GeomGraph) continue
       let maxVisRank = this.visualRank.get(n.node)
       let maxPageRank = this.pageRank.get(n.node)
+      let hasEdge = false
       for (const e of n.node.edges) {
         maxVisRank = Math.max(maxVisRank, this.visualRank.get(e))
         maxPageRank = Math.max(maxPageRank, this.pageRank.get(e))
+        hasEdge = true
       }
-      this.visualRank.set(n.node, maxVisRank)
-      this.pageRank.set(n.node, maxPageRank)
+      if (hasEdge) {
+        this.visualRank.set(n.node, maxVisRank)
+        this.pageRank.set(n.node, maxPageRank)
+      } else {
+        this.visualRank.set(n.node, 2 * maxVisRank)
+        this.pageRank.set(n.node, 2 * maxPageRank)
+      }
     }
   }
   private compareByVisPageRanks(u: Entity, v: Entity): number {
@@ -210,17 +217,18 @@ export class TileMap {
     }
   }
 
-  private filterOutEntities(levelToReduce: IntPairMap<TileData>, entsSortedByVisualAndPageRank: Entity[]) {
+  private filterOutEntities(levelToReduce: IntPairMap<TileData>, entsSortedByVisualAndPageRank: Entity[], z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
     const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
-    for (let k = 0; k < entsSortedByVisualAndPageRank.length; k++) {
+    let k = 0
+    for (; k < entsSortedByVisualAndPageRank.length; k++) {
       const e = entsSortedByVisualAndPageRank[k]
       if (!this.tryAddToLevel(levelToReduce, e, dataByEntity.get(e))) {
-        console.log('added', k, 'entities to level')
         break
       }
     }
+    console.log('added', k, 'visual elements to level', z)
   }
 
   /** goes over all tiles where 'ent' had a presence and tries to add the corresponding rendering data into it */
