@@ -23,7 +23,7 @@ export function tileIsEmpty(sd: TileData): boolean {
 
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
-  visualRank = new Map<Entity, number>()
+  private visualRank = new Map<Entity, number>()
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
@@ -34,8 +34,7 @@ export class TileMap {
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<TileData>[] = []
 
-  edgeCount: number
-  pageRank: Map<Entity, number>
+  private pageRank: Map<Entity, number>
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): TileData {
     const mapOnLevel = this.levels[z]
@@ -50,6 +49,10 @@ export class TileMap {
       yield {x: key.x, y: key.y, data: val}
     }
   }
+  /** returns the number of levels */
+  get numberOfLevels(): number {
+    return this.levels.length
+  }
 
   private geomGraph: GeomGraph
   private topLevelTileRect: Rectangle
@@ -57,7 +60,6 @@ export class TileMap {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
     this.fillTopLevelTile()
-    this.edgeCount = geomGraph.graph.deepEdgesCount()
     this.minTileSize = this.getMinTileSize()
   }
   private getMinTileSize(): Size {

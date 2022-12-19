@@ -21,7 +21,6 @@ import {
   Entity,
   GeomObject,
   LineSegment,
-  layoutGeomGraph,
   Assert,
   Curve,
 } from '../../../src'
