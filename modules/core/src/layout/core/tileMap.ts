@@ -4,7 +4,7 @@ import {GeomNode} from './geomNode'
 import {GeomEdge} from './geomEdge'
 import {Edge} from '../../structs/edge'
 import {IntPairMap} from '../../utils/IntPairMap'
-import {clipWithRectangleInsideInterval} from '../../math/geometry/curve'
+import {clipWithRectangleInsideInterval, Curve} from '../../math/geometry/curve'
 import {GeomLabel} from './geomLabel'
 import {Point} from '../../math/geometry/point'
 import {GeomGraph} from '.'
@@ -30,7 +30,7 @@ export class TileMap {
   private minTileSize: Size
   private tileCapacityMin = 100
   /** the maximal number entities vizible in a tile */
-  private tileCapacity = 750
+  private tileCapacity = 1500
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<TileData>[] = []
 
@@ -104,7 +104,13 @@ export class TileMap {
     for (const e of this.geomGraph.graph.deepEdges) {
       const geomEdge = GeomEdge.getGeom(e)
       const c = GeomEdge.getGeom(e).curve
-      topLevelTile.curveClips.push({startPar: c.parStart, endPar: c.parEnd, curve: c, edge: e})
+      if (c instanceof Curve) {
+        for (const seg of c.segs) {
+          topLevelTile.curveClips.push({startPar: seg.parStart, endPar: seg.parEnd, curve: seg, edge: e})
+        }
+      } else {
+        topLevelTile.curveClips.push({startPar: c.parStart, endPar: c.parEnd, curve: c, edge: e})
+      }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -145,10 +151,24 @@ export class TileMap {
       }
     }
     this.calculateVisualRank()
+    this.pushUpNodeRanksAboveTheirEdges()
     const entsSortedByVisualAndPageRank = Array.from(this.visualRank.keys()).sort((u, v) => this.compareByVisPageRanks(u, v))
     // do not filter the lowest layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
       this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank)
+    }
+  }
+  pushUpNodeRanksAboveTheirEdges() {
+    for (const n of this.geomGraph.nodesBreadthFirst) {
+      if (n instanceof GeomGraph) continue
+      let maxVisRank = this.visualRank.get(n.node)
+      let maxPageRank = this.pageRank.get(n.node)
+      for (const e of n.node.edges) {
+        maxVisRank = Math.max(maxVisRank, this.visualRank.get(e))
+        maxPageRank = Math.max(maxPageRank, this.pageRank.get(e))
+      }
+      this.visualRank.set(n.node, maxVisRank)
+      this.pageRank.set(n.node, maxPageRank)
     }
   }
   private compareByVisPageRanks(u: Entity, v: Entity): number {
@@ -160,7 +180,16 @@ export class TileMap {
     if (uVis < vVis) {
       return 1
     }
-    return this.pageRank.get(v) - this.pageRank.get(u)
+    const del = this.pageRank.get(v) - this.pageRank.get(u)
+    if (del) return del
+    // A Node has to be returned before any of its edges
+    if (v instanceof Node && u instanceof Edge) {
+      return 1
+    }
+    if (v instanceof Edge && u instanceof Node) {
+      return -1
+    }
+    return 0
   }
 
   private calculateVisualRank() {
@@ -181,33 +210,16 @@ export class TileMap {
   }
 
   private filterOutEntities(levelToReduce: IntPairMap<TileData>, entsSortedByVisualAndPageRank: Entity[]) {
-    const addedSet = new Set<Entity>()
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
     const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
     for (let k = 0; k < entsSortedByVisualAndPageRank.length; k++) {
       const e = entsSortedByVisualAndPageRank[k]
       if (!this.tryAddToLevel(levelToReduce, e, dataByEntity.get(e))) {
+        console.log('added', k, 'entities to level')
         break
       }
-      addedSet.add(e)
     }
-    // add forgotten nodes: this can go over by tileCapacity, but not too dramatically
-    for (const e of addedSet) {
-      if (e instanceof Edge) {
-        if (!addedSet.has(e.source)) {
-          addedSet.add(e.source)
-          this.tryAddToLevel(levelToReduce, e.source, dataByEntity.get(e.source), true) // true for force add
-        }
-        if (!addedSet.has(e.target)) {
-          addedSet.add(e.target)
-          this.tryAddToLevel(levelToReduce, e.target, dataByEntity.get(e.target), true) // true for force add
-        }
-      }
-    }
-
-    // TODO, bug, add arrowheads!!!!!
-    console.log('added', addedSet.size, 'entities to level')
   }
 
   /** goes over all tiles where 'ent' had a presence and tries to add the corresponding rendering data into it */
@@ -230,28 +242,28 @@ export class TileMap {
 
   private transferDataOfLevelToMap(levelToReduce: IntPairMap<TileData>): Map<Entity, EntityDataInTile[]> {
     const m = new Map<Entity, EntityDataInTile[]>()
-    for (const v of levelToReduce.values()) {
-      for (const cc of v.curveClips) {
+    for (const tile of levelToReduce.values()) {
+      for (const cc of tile.curveClips) {
         const edge = cc.edge
         const arr = getEntityDataArray(edge)
-        arr.push({tile: v, data: cc})
+        arr.push({tile: tile, data: cc})
       }
-      for (const label of v.labels) {
+      for (const label of tile.labels) {
         const edge = (label.parent as GeomEdge).edge
         const arr = getEntityDataArray(edge)
-        arr.push({tile: v, data: label})
+        arr.push({tile: tile, data: label})
       }
-      for (const gnode of v.nodes) {
+      for (const gnode of tile.nodes) {
         const node = gnode.node
         const arr = getEntityDataArray(node)
-        arr.push({tile: v, data: gnode})
+        arr.push({tile: tile, data: gnode})
       }
-      for (const arrowhead of v.arrowheads) {
+      for (const arrowhead of tile.arrowheads) {
         const edge = arrowhead.edge
         const arr = getEntityDataArray(edge)
-        arr.push({tile: v, data: arrowhead})
+        arr.push({tile: tile, data: arrowhead})
       }
-      v.clear()
+      tile.clear()
     }
 
     return m
