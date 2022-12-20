@@ -1755,17 +1755,10 @@ export function* clipWithRectangle(curve: ICurve, rect: Rectangle): IterableIter
 /** Looking for all subsegments of of 'curve' intersecting 'rect'
  *  For each such a segment return {start:a, end:b} such that segment = curve.trim(a,b)
  */
-export function* clipWithRectangleInsideInterval(
-  curve: ICurve,
-  start: number,
-  end: number,
-  rect: Rectangle,
-): IterableIterator<{start: number; end: number}> {
-  const origCurve = curve
-  curve = curve.trim(start, end)
+export function* clipWithRectangleInsideInterval(curve: ICurve, rect: Rectangle): IterableIterator<ICurve> {
   if (curve == null) return
   if (rect.containsRect(curve.boundingBox)) {
-    yield {start: start, end: end}
+    yield curve
     return
   }
   const xs = Curve.getAllIntersections(curve, rect.perimeter(), true)
@@ -1775,7 +1768,7 @@ export function* clipWithRectangleInsideInterval(
   //   // Assert.assert(Point.closeDistEps(x.x, origCurvDebug.value(x.par0)))
   // }
   if (xs.length == 0) {
-    if (rect.contains(curve.start)) yield {start: start, end: end}
+    if (rect.contains(curve.start)) yield curve
     return
   }
   xs.sort((x: IntersectionInfo, y: IntersectionInfo) => x.par0 - y.par0)
@@ -1794,15 +1787,9 @@ export function* clipWithRectangleInsideInterval(
 
   for (i = 0; i < filteredXs.length - 1; i++) {
     if (segmentShouldBeIncluded(curve, filteredXs[i], filteredXs[i + 1], rect)) {
-      yield {start: liftLocal(filteredXs[i]), end: liftLocal(filteredXs[i + 1])}
+      const tr = curve.trim(filteredXs[i], filteredXs[i + 1])
+      if (tr) yield tr
     }
-  }
-  function liftLocal(x: number): number {
-    const t = origCurve.closestParameter(curve.value(x))
-    // const a = origCurve.value(t)
-    // const b = curve.value(x)
-    // Assert.assert(Point.closeDistEps(a, b))
-    return t
   }
 }
 /** Check the points curve[a+(b-a)/5],[a+2*(b-a)/5], [a+3*(b-a)/5], [a+4*(b-a)/5]

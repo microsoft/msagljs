@@ -9,6 +9,9 @@ import {CurveClip, ArrowHeadData} from './tileMap'
 
 /** keeps all the data needed to render a tile */
 export class TileData {
+  isEmpty(): boolean {
+    return this.curveClips.length == 0 && this.arrowheads.length == 0 && this.nodes.length == 0 && this.labels.length == 0
+  }
   /** an edge can be returned several times, once for every element pointing at it */
   *entitiesOfTile(): IterableIterator<Entity> {
     for (const cc of this.curveClips) {

@@ -224,7 +224,7 @@ xtest('tiles composers', () => {
   tileMap.buildUpToLevel(20)
   console.timeEnd('buildUpToLevel')
 })
-test('tiles gameofthrones', () => {
+xtest('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
