@@ -13,6 +13,7 @@ import {Entity} from '../../structs/entity'
 import {TileData} from './tileData'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
+import {Assert} from '../../utils/assert'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -340,7 +341,8 @@ export class TileMap {
     const yp = key.y
     const left = this.topLevelTileRect.left + xp * w * 2
     const bottom = this.topLevelTileRect.bottom + yp * h * 2
-    const tdArr = []
+    const tdArr = new Array<TileData>(4)
+
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++) {
         const tileRect = new Rectangle({
@@ -349,46 +351,13 @@ export class TileMap {
           bottom: bottom + h * j,
           top: bottom + h * (j + 1),
         })
-        tdArr.push(this.generateSubTileWithoutEdgeClips(upperTile, tileRect))
+        tdArr[i * 2 + j] = this.generateSubTileWithoutEdgeClips(upperTile, tileRect)
       }
 
-    const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
-    const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
-    for (const cs of upperTile.curveClips) {
-      const xs = Array.from(Curve.getAllIntersections(cs.curve, horizontalMiddleLine, false)).concat(
-        Array.from(Curve.getAllIntersections(cs.curve, verticalMiddleLine, false)),
-      )
-      xs.sort((a, b) => a.par0 - b.par0)
-      const filteredXs = [cs.curve.parStart]
-      for (let i = 0; i < xs.length; i++) {
-        const ii = xs[i]
-        if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-          filteredXs.push(ii.par0)
-        }
-      }
-      if (cs.curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-        filteredXs.push(cs.curve.parEnd)
-      }
-      let k = 0
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const tile = tdArr[k]
-
-          for (let u = 0; u < filteredXs.length - 1; u++) {
-            if (segmentShouldBeIncluded(cs.curve, filteredXs[u], filteredXs[u + 1], tile.rect)) {
-              const tr = cs.curve.trim(filteredXs[u], filteredXs[u + 1])
-              if (tr) tile.curveClips.push({curve: tr, edge: cs.edge, startPar: tr.parStart, endPar: tr.parEnd})
-            }
-          }
-
-          k++
-        }
-    }
-
-    let k = 0
+    cycleOverAllCurveClips()
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++) {
-        const tile = tdArr[k]
+        const tile = tdArr[i * 2 + j]
 
         if (!tile.isEmpty()) {
           levelTiles.set(2 * xp + i, 2 * yp + j, tile)
@@ -397,11 +366,52 @@ export class TileMap {
             allTilesAreSmall = false
           }
         }
-        k++
       }
-
     return allTilesAreSmall
+
+    function cycleOverAllCurveClips() {
+      const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
+      const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
+      for (const cs of upperTile.curveClips) {
+        // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
+        const xs = Array.from(Curve.getAllIntersections(cs.curve, horizontalMiddleLine, false)).concat(
+          Array.from(Curve.getAllIntersections(cs.curve, verticalMiddleLine, false)),
+        )
+        xs.sort((a, b) => a.par0 - b.par0)
+        const filteredXs = [cs.curve.parStart]
+        for (let i = 0; i < xs.length; i++) {
+          const ii = xs[i]
+          if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+            filteredXs.push(ii.par0)
+          }
+        }
+        if (cs.curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+          filteredXs.push(cs.curve.parEnd)
+        }
+        for (let u = 0; u < filteredXs.length - 1; u++) {
+          const tr = filteredXs.length > 2 ? cs.curve.trim(filteredXs[u], filteredXs[u + 1]) : cs.curve
+          if (!tr) continue // could no trim!
+          const del = (tr.parEnd - tr.parStart) / 5
+
+          let t = tr.parStart
+          const trBb = tr.boundingBox
+          for (let r = 0; r < 6; r++, t += del) {
+            const p = tr.value(t)
+            const i = p.x <= left + w ? 0 : 1
+            const j = p.y <= bottom + h ? 0 : 1
+            const k = 2 * i + j
+            const tile = tdArr[k]
+
+            if (!tile.rect.containsRect(trBb)) continue
+            //   Assert.assert(tile.rect.contains(p))
+            tile.curveClips.push({curve: tr, edge: cs.edge, startPar: tr.parStart, endPar: tr.parEnd})
+            break
+          }
+        }
+      }
+    }
   }
+
   private generateSubTileWithoutEdgeClips(upperTile: TileData, tileRect: Rectangle): TileData {
     const sd = TileData.mk([], [], [], [], tileRect)
     for (const n of upperTile.nodes) {
@@ -426,16 +436,4 @@ export class TileMap {
     }
     return sd
   }
-}
-
-/** Check the points curve[a+(b-a)/5],[a+2*(b-a)/5], [a+3*(b-a)/5], [a+4*(b-a)/5]
- *  If at least one of them is inside of the rect return true, otherwise return false
- */
-function segmentShouldBeIncluded(curve: ICurve, a: number, b: number, rect: Rectangle): boolean {
-  const del = (b - a) / 5
-  for (let i = 1; i < 5; i++) {
-    const t = a + del * i
-    if (rect.contains(curve.value(t))) return true
-  }
-  return false
 }
