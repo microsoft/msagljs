@@ -51,10 +51,6 @@ export class TileMap {
       yield {x: key.x, y: key.y, data: val}
     }
   }
-  /** returns the number of levels */
-  get numberOfLevels(): number {
-    return this.levels.length
-  }
 
   private geomGraph: GeomGraph
   private topLevelTileRect: Rectangle
