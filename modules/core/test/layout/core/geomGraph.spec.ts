@@ -281,7 +281,7 @@ function dumpTiles(tileMap: TileMap) {
         SvgDebugWriter.dumpDebugCurves(
           './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
           t.data.curveClips
-            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve.trim(c.startPar, c.endPar)))
+            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
             .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
             .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),

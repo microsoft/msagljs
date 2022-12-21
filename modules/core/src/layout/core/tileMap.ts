@@ -13,11 +13,10 @@ import {Entity} from '../../structs/entity'
 import {TileData} from './tileData'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
-import {Assert} from '../../utils/assert'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
-export type CurveClip = {startPar: number; endPar: number; curve: ICurve; edge: Edge}
+export type CurveClip = {curve: ICurve; edge: Edge}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: TileData; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
 export function tileIsEmpty(sd: TileData): boolean {
@@ -109,10 +108,10 @@ export class TileMap {
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
         for (const seg of c.segs) {
-          topLevelTile.curveClips.push({startPar: seg.parStart, endPar: seg.parEnd, curve: seg, edge: e})
+          topLevelTile.curveClips.push({curve: seg, edge: e})
         }
       } else {
-        topLevelTile.curveClips.push({startPar: c.parStart, endPar: c.parEnd, curve: c, edge: e})
+        topLevelTile.curveClips.push({curve: c, edge: e})
       }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -135,9 +134,10 @@ export class TileMap {
   /**
    * Creates tilings for levels from 0 to z, including the level z.
    * The method does not necesserely creates all levels until z, but can exit earlier
-   *  if all tiles either has size smaller or equal than this.minTileSize or have at most this.tileCapacityMin elements
+   *  if all tiles either has size smaller or equal than this.minTileSize or have at most this.tileCapacityMin elements.
+   * Returns the number of created levels.
    */
-  buildUpToLevel(z: number) {
+  buildUpToLevel(z: number): number {
     let noNeedToSubdivide = true
     // level 0 is filled in the constructor: maybe it is small enough
     for (const tile of this.levels[0].values()) {
@@ -146,7 +146,7 @@ export class TileMap {
         break
       }
     }
-    if (noNeedToSubdivide) return
+    if (noNeedToSubdivide) return this.levels.length
 
     for (let i = 1; i <= z; i++) {
       if (this.subdivideLevel(i)) {
@@ -160,8 +160,9 @@ export class TileMap {
     for (let i = 0; i < this.levels.length - 1; i++) {
       this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank, i)
     }
+    return this.levels.length
   }
-  pushUpNodeRanksAboveTheirEdges() {
+  private pushUpNodeRanksAboveTheirEdges() {
     for (const n of this.geomGraph.nodesBreadthFirst) {
       if (n instanceof GeomGraph) continue
       let maxVisRank = this.visualRank.get(n.node)
@@ -404,7 +405,7 @@ export class TileMap {
 
             if (!tile.rect.containsRect(trBb)) continue
             //   Assert.assert(tile.rect.contains(p))
-            tile.curveClips.push({curve: tr, edge: cs.edge, startPar: tr.parStart, endPar: tr.parEnd})
+            tile.curveClips.push({curve: tr, edge: cs.edge})
             break
           }
         }

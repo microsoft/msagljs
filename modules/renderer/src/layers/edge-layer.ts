@@ -74,15 +74,13 @@ export default class EdgeLayer extends CompositeLayer<EdgeLayerProps> {
           getControlPoints,
           getRange: (d: ICurve) => {
             // @ts-ignore
-            return d.__range
+            return [d.parStart, d.parEnd]
           },
           widthUnits: 'pixels',
           // one vertex per 4 pixels
           getResolution: (d: ICurve) => {
             // @ts-ignore
-            const [t0, t1] = d.__range
-            const r = (t1 - t0) / (d.parEnd - d.parStart)
-            return d.length * r * resolution
+            return d.length * resolution
           },
           // @ts-ignore
           clipByInstance: false,
@@ -115,31 +113,11 @@ function getControlPoints(c: ICurve): number[] {
 function* getCurves(data: Iterable<CurveClip>, transform: (segment: ICurve, datum: CurveClip, index: number) => ICurve): Generator<ICurve> {
   let j = 0
   for (const cc of data) {
-    const {curve, startPar, endPar} = cc
-    if (curve instanceof Curve) {
-      const t0 = curve.getSegIndexParam(startPar)
-      const t1 = curve.getSegIndexParam(endPar)
+    const {curve} = cc
+    // @ts-ignore
+    transform(curve, cc, j)
+    yield curve
 
-      for (let i = t0.segIndex; i <= t1.segIndex; i++) {
-        const seg = curve.segs[i]
-        const range = [seg.parStart, seg.parEnd]
-        if (t0.segIndex === i) {
-          range[0] = t0.par
-        }
-        if (t1.segIndex === i) {
-          range[1] = t1.par
-        }
-        // @ts-ignore
-        seg.__range = range
-        transform(seg, cc, j)
-        yield seg
-      }
-    } else {
-      // @ts-ignore
-      curve.__range = [cc.startPar, cc.endPar]
-      transform(curve, cc, j)
-      yield curve
-    }
     j++
   }
 }
