@@ -246,7 +246,7 @@ export default class Renderer extends EventSource {
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
     const tileMap = new TileMap(geomGraph, rootTile)
-    tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
+    const numberOfLevels = tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')
@@ -257,11 +257,11 @@ export default class Renderer extends EventSource {
       extent: [0, 0, rootTileSize, rootTileSize],
       refinementStrategy: 'no-overlap',
       minZoom: startZoom,
-      maxZoom: MaxZoom,
+      maxZoom: numberOfLevels - 1 + startZoom,
       tileSize: 512,
       getTileData: (tile) => {
         const {x, y, z} = tile.index
-        const bbox = tile.bbox as NonGeoBoundingBox
+        tile.bbox as NonGeoBoundingBox
         return tileMap.getTileData(x, y, z - startZoom)
       },
       parameters: {
