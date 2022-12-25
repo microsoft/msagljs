@@ -1,6 +1,6 @@
 {
   "name": "msagl-js",
-  "version": "0.0.83",
+  "version": "1.0.0",
   "description": "MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
