@@ -164,6 +164,8 @@ export class SplineRouter extends Algorithm {
     this.LoosePadding = loosePadding
     this.tightPadding = tightPadding
     this.coneAngle = coneAngle
+    /**  */
+    this.routeMultiEdgesAsBundles = edges.length < 1000 && graph.deepNodeCount < 1000
   }
 
   private edges: GeomEdge[]
