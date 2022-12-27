@@ -1,14 +1,14 @@
 import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer'
 
-import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, GeomGraph, Entity, GeomNode, Node} from 'msagl-js'
+import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Entity, GeomNode, Node} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {RendererSvg} from '@msagl/renderer'
-import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 import {AttributeRegistry} from 'msagl-js'
 import {DrawingNode} from 'msagl-js/drawing'
+import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
 const viewer = document.getElementById('viewer')
 

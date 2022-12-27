@@ -1,4 +1,3 @@
-import {loadGraphFromFile, loadGraphFromUrl} from './load-data'
 import {dropZone} from './drag-n-drop'
 import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
 
@@ -6,6 +5,7 @@ import {EdgeRoutingMode, geometryIsCreated, GeomGraph, Graph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
+import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 // const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'

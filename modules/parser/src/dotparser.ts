@@ -36,6 +36,7 @@ import {
 } from 'msagl-js/drawing'
 
 import {parseColor} from './utils'
+import {parseJSON} from './jsonparser'
 // import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
@@ -1033,4 +1034,40 @@ function addOrGetNodeWithDrawingAttr(graph: Graph, id: string): Node {
     new DrawingNode(node)
   }
   return node
+}
+
+export async function loadGraphFromFile(file: File): Promise<Graph> {
+  const content: string = await file.text()
+  let graph: Graph
+
+  if (file.name.toLowerCase().endsWith('.json')) {
+    graph = parseJSON(JSON.parse(content))
+  } else if (file.name.toLowerCase().endsWith('.txt')) {
+    graph = parseTXT(content)
+  } else {
+    graph = parseDot(content)
+  }
+  if (graph) {
+    graph.id = file.name
+  }
+  return graph
+}
+
+export async function loadGraphFromUrl(url: string): Promise<Graph> {
+  const fileName = url.slice(url.lastIndexOf('/') + 1)
+  const resp = await fetch(url)
+  let graph: Graph
+
+  if (fileName.endsWith('.json')) {
+    const json = await resp.json()
+    graph = parseJSON(json)
+  } else if (fileName.endsWith('.txt')) {
+    const content = await resp.text()
+    graph = parseTXT(content)
+  } else {
+    const content = await resp.text()
+    graph = parseDot(content)
+  }
+  if (graph) graph.id = fileName
+  return graph
 }
