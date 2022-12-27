@@ -997,3 +997,40 @@ function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }
+/** Each line of the file is a string in format sourceId\ttargetId. That is two words separated by a tabulation symbol.
+ * The edges are considered directed.
+ */
+export function parseTXT(content: string): Graph {
+  const graph = new Graph()
+  try {
+    const lines = content.split(/\r\n|\r|\n/)
+    for (const l of lines) {
+      if (l.length == 0) continue
+      if (l.charAt(0) == '#') continue
+      const st = l.split(/\t/)
+      if (st.length != 2) {
+        console.log('cannot parse', l)
+        return null
+      }
+      const s = st[0]
+      const t = st[1]
+      const sn = addOrGetNodeWithDrawingAttr(graph, s)
+
+      const tn = addOrGetNodeWithDrawingAttr(graph, t)
+      const e = new Edge(sn, tn)
+      new DrawingEdge(e, true) // true for directed
+    }
+  } catch (e) {
+    console.log(e.message)
+  }
+  new DrawingGraph(graph)
+  return graph
+}
+function addOrGetNodeWithDrawingAttr(graph: Graph, id: string): Node {
+  let node = graph.findNode(id)
+  if (node == null) {
+    node = graph.addNode(new Node(id))
+    new DrawingNode(node)
+  }
+  return node
+}

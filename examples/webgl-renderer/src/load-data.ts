@@ -1,9 +1,9 @@
 import {Graph} from 'msagl-js'
 
-import {parseDot, parseJSON} from '@msagl/parser'
+import {parseDot, parseJSON, parseTXT} from '@msagl/parser'
 
 export async function loadGraphFromUrl(url: string): Promise<Graph> {
-  const fileName = url.slice(url.lastIndexOf('/') + 1)
+  const fileName = url.slice(url.lastIndexOf('/') + 1).toLowerCase()
   const resp = await fetch(url)
   let graph: Graph
 
@@ -25,6 +25,8 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
 
   if (file.name.toLowerCase().endsWith('.json')) {
     graph = parseJSON(JSON.parse(content))
+  } else if (file.name.toLowerCase().endsWith('.txt')) {
+    graph = parseTXT(content)
   } else {
     graph = parseDot(content)
   }

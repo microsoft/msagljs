@@ -90,9 +90,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   }
 
   if (needsLayout) {
-    console.time('layoutGeomGraph')
     layoutGeomGraph(geomGraph, null)
-    console.timeEnd('layoutGeomGraph')
   } else if (needsReroute) {
     console.time('routeEdges')
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)

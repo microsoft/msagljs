@@ -168,6 +168,8 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.isEmpty()) {
     return
   }
+  console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount(), 'edges')
+  console.time('layout')
   if (geomG.parent == null) {
     // go over some intitial settings only on the top level
     initRandom(randomSeed)
@@ -192,10 +194,13 @@ export function layoutGeomGraphDetailed(
   removedEdges.forEach((e) => e.add())
   //the final touches
   if (geomG.graph.parent == null) {
+    console.timeEnd('layout')
+    console.time('routing')
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG, edgesToRoute)
     geomG.pumpTheBoxToTheGraphWithMargins()
+    console.timeEnd('routing')
   }
 
   // end of layoutGeomGraphDetailed body

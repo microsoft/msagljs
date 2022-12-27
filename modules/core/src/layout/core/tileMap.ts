@@ -31,7 +31,7 @@ export class TileMap {
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 16000
+  private tileCapacity = 10000
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<TileData>[] = []
 
