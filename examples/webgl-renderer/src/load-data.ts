@@ -30,7 +30,8 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
   } else {
     graph = parseDot(content)
   }
-
-  graph.id = file.name
+  if (graph) {
+    graph.id = file.name
+  }
   return graph
 }

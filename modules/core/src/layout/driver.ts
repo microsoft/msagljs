@@ -168,9 +168,9 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.isEmpty()) {
     return
   }
-  console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount(), 'edges')
-  console.time('layout')
   if (geomG.parent == null) {
+    console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount(), 'edges')
+    console.time('layout')
     // go over some intitial settings only on the top level
     initRandom(randomSeed)
     requireLabelPositioning(geomG)

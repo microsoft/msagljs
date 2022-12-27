@@ -36,6 +36,14 @@ export class TileMap {
   private levels: IntPairMap<TileData>[] = []
 
   private pageRank: Map<Entity, number>
+
+  /** the integer corresponding to the most important rank */
+  highestRank = 26
+  /** the integer corresponding to the least important rank */
+  lowestRank = 1
+  /** the more rank is the more important the entity is */
+  entityRank: Map<Entity, number>
+
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): TileData {
     const mapOnLevel = this.levels[z]
@@ -53,6 +61,9 @@ export class TileMap {
 
   private geomGraph: GeomGraph
   private topLevelTileRect: Rectangle
+  /** geomGraph  - the graph to work with.
+   * The topLevelTileRect serves as the only tile of the top level.
+   */
   constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
@@ -155,7 +166,22 @@ export class TileMap {
     for (let i = 0; i < this.levels.length - 1; i++) {
       this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank, i)
     }
+    this.calculateRank(entsSortedByVisualAndPageRank)
     return this.levels.length
+  }
+  private calculateRank(entsSortedByVisualAndPageRank: Entity[]) {
+    const nOfRanks = this.highestRank - this.lowestRank
+    this.entityRank = new Map<Entity, number>()
+    const chunkLen = Math.floor(entsSortedByVisualAndPageRank.length / nOfRanks)
+    let rank = this.highestRank
+    let j = 0
+    for (let i = 0; i < entsSortedByVisualAndPageRank.length; i++, j++) {
+      this.entityRank.set(entsSortedByVisualAndPageRank[i], rank)
+      if (j == chunkLen && rank > this.lowestRank) {
+        j = 0
+        rank--
+      }
+    }
   }
   private pushUpNodeRanksAboveTheirEdges() {
     for (const n of this.geomGraph.nodesBreadthFirst) {

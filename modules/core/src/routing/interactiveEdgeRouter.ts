@@ -657,10 +657,9 @@ export class InteractiveEdgeRouter extends Algorithm {
       v = 2
       // this will allow to the segment to end at site "c"
     } else {
-      v = 1
+      u = v = 1
     }
 
-    u = 1
     do {
       seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
       b.previouisBezierCoefficient = k * u
@@ -681,7 +680,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     return b
   }
-
   TryToRemoveInflectionsAndCollinearSegments(underlyingPolyline: SmoothedPolyline) {
     let progress = true
     const t: {s: CornerSite} = {s: null}
@@ -1034,16 +1032,23 @@ export class InteractiveEdgeRouter extends Algorithm {
     this.TryShortcutPolylineEnd()
   }
 
-  TryShortcutPolylineEnd() {
+  TryShortcutPolylineEnd(): boolean {
     const a: PolylinePoint = this._polyline.endPoint
     const b: PolylinePoint = a.prev
     if (b == null) {
-      return
+      return false
     }
 
     const c: PolylinePoint = b.prev
     if (c == null) {
-      return
+      return false
+    }
+
+    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
+      a.prev = c
+      c.next = a
+      a.polyline.setInitIsRequired()
+      return true
     }
 
     const m: Point = Point.middle(b.point, c.point)
@@ -1053,10 +1058,13 @@ export class InteractiveEdgeRouter extends Algorithm {
       p.prev = c
       a.prev = p
       c.next = p
+      a.polyline.setInitIsRequired()
+      return true
     }
+    return false
   }
 
-  TryShortcutPolylineStart() {
+  TryShortcutPolylineStart(): boolean {
     const a: PolylinePoint = this._polyline.startPoint
     const b: PolylinePoint = a.next
     if (b == null) {
@@ -1067,6 +1075,12 @@ export class InteractiveEdgeRouter extends Algorithm {
     if (c == null) {
       return
     }
+    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
+      a.next = c
+      c.prev = a
+      a.polyline.setInitIsRequired()
+      return true
+    }
 
     const m: Point = Point.middle(b.point, c.point)
     if (this.LineAvoidsTightHierarchyPPPP(a.point, m, this._sourceTightPolyline, this.targetTightPolyline)) {
@@ -1075,6 +1089,8 @@ export class InteractiveEdgeRouter extends Algorithm {
       p.next = c
       a.next = p
       c.prev = p
+      a.polyline.setInitIsRequired()
+      return true
     }
   }
 
