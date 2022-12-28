@@ -45,7 +45,7 @@ export class IntersectionCache {
 
   UpdateCostCache(node: Station) {
     const cdtTree: RectangleNode<CdtTriangle, Point> = this.cdt.GetCdtTree()
-    node.CdtTriangle = cdtTree.FirstHitNodeWithPredicate(node.Position, IntersectionCache.testPointInside).UserData
+    node.cdtTriangle = cdtTree.FirstHitNodeWithPredicate(node.Position, IntersectionCache.testPointInside).UserData
     node.cachedIdealRadius = HubRadiiCalculator.CalculateIdealHubRadiusWithNeighborsMBS(this.metroGraphData, this.bundlingSettings, node)
     node.cachedRadiusCost = this.costCalculator.RadiusCost(node, node.Position)
     node.cachedBundleCost = 0

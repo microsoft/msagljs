@@ -44,7 +44,7 @@ export class SimulatedAnnealing {
     this.metroGraphData = metroGraphData
     this.bundlingSettings = bundlingSettings
     this.costCalculator = new CostCalculator(this.metroGraphData, this.bundlingSettings)
-    this.cache = new IntersectionCache(this.metroGraphData, this.bundlingSettings, this.costCalculator, this.metroGraphData.Cdt)
+    this.cache = new IntersectionCache(this.metroGraphData, this.bundlingSettings, this.costCalculator, this.metroGraphData.cdt)
   }
 
   static MaxIterations = 100
@@ -241,7 +241,7 @@ export class SimulatedAnnealing {
     }
     for (const t of s.Neighbors) {
       const obstaclesToIgnore = this.metroGraphData.looseIntersections.ObstaclesToIgnoreForBundle(t, s)
-      if (!this.metroGraphData.cdtIntersections.EdgeIsLegal_(t.Position, sNewPosition, t.CdtTriangle, obstaclesToIgnore)) return false
+      if (!this.metroGraphData.cdtIntersections.EdgeIsLegal_(t.Position, sNewPosition, t.cdtTriangle, obstaclesToIgnore)) return false
     }
     return true
   }

@@ -204,14 +204,14 @@ export class TileMap {
     }
   }
   private compareByVisPageRanks(u: Entity, v: Entity): number {
-    const uVis = this.visualRank.get(u)
-    const vVis = this.visualRank.get(v)
-    if (uVis > vVis) {
-      return -1
-    }
-    if (uVis < vVis) {
-      return 1
-    }
+    // const uVis = this.visualRank.get(u)
+    // const vVis = this.visualRank.get(v)
+    // if (uVis > vVis) {
+    //   return -1
+    // }
+    // if (uVis < vVis) {
+    //   return 1
+    // }
     const del = this.pageRank.get(v) - this.pageRank.get(u)
     if (del) return del
     // A Node has to be returned before any of its edges
@@ -230,13 +230,18 @@ export class TileMap {
     }
   }
   private calculateVisualRankOnTile(tile: TileData) {
-    const rankAdditionOfTile = 1 / tile.elementCount
-    for (const e of tile.entitiesOfTile()) {
+    const ents = Array.from(new Set<Entity>(tile.entitiesOfTile()))
+    let rankAdditionOfTile = 2 / ents.length
+    const rankDel = rankAdditionOfTile / (2 * ents.length)
+    ents.sort((a, b) => this.pageRank.get(b) - this.pageRank.get(b))
+    for (let i = 0; i < ents.length; i++) {
+      const e = ents[i]
       const rank = this.visualRank.get(e)
       if (!rank) {
         this.visualRank.set(e, rankAdditionOfTile)
       } else {
         this.visualRank.set(e, rankAdditionOfTile + rank)
+        rankAdditionOfTile -= rankDel
       }
     }
   }

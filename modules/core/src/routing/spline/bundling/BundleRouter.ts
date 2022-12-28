@@ -109,7 +109,7 @@ export class BundleRouter extends Algorithm {
       this.LooseHierarchy,
       this.TightHierarchy,
       this.bundlingSettings,
-      this.shortestPathRouter.CdtProperty,
+      this.shortestPathRouter.cdt,
       this.EdgeLooseEnterable,
       this.EdgeTightEnterable,
       this.loosePolylineOfPort,
@@ -240,7 +240,7 @@ export class BundleRouter extends Algorithm {
     this.shortestPathRouter.ObstacleHierarchy = this.LooseHierarchy
     this.shortestPathRouter.RouteEdges()
     // find appropriate edge separation
-    if (this.shortestPathRouter.CdtProperty != null) {
+    if (this.shortestPathRouter.cdt != null) {
       this.AdjustEdgeSeparation()
     }
   }

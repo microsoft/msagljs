@@ -1,7 +1,7 @@
 ﻿import {GeomEdge, ICurve, Point, Rectangle} from '../../..'
 import {HookUpAnywhereFromInsidePort} from '../../../layout/core/hookUpAnywhereFromInsidePort'
 import {Port} from '../../../layout/core/port'
-import {Polyline, LineSegment} from '../../../math/geometry'
+import {Polyline} from '../../../math/geometry'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 import {CrossRectangleNodes} from '../../../math/geometry/RTree/rectangleNodeUtils'
 import {GenericBinaryHeapPriorityQueue} from '../../../structs/genericBinaryHeapPriorityQueue'
@@ -13,7 +13,6 @@ import {Cdt} from '../../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from '../../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtTriangle} from '../../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {Shape} from '../../shape'
-import {SplineRouter} from '../../splineRouter'
 import {Polygon} from '../../visibility/Polygon'
 import {VisibilityGraph} from '../../visibility/VisibilityGraph'
 import {VisibilityVertex} from '../../visibility/VisibilityVertex'
@@ -34,7 +33,7 @@ export class SdShortestPath {
 
   vertexArray: SdVertex[]
 
-  CdtProperty: Cdt
+  cdt: Cdt
 
   Gates: Set<CdtEdge>
 
@@ -62,7 +61,7 @@ export class SdShortestPath {
 
   constructor(makeTransparentShapesOfEdgeGeometryAndGetTheShapes: (e: GeomEdge) => Array<Shape>, cdt: Cdt, gates: Set<CdtEdge>) {
     this.MakeTransparentShapesOfEdgeGeometry = makeTransparentShapesOfEdgeGeometryAndGetTheShapes
-    this.CdtProperty = cdt
+    this.cdt = cdt
     this.Gates = gates
   }
 
@@ -148,8 +147,8 @@ export class SdShortestPath {
   }
 
   RestoreCapacities() {
-    if (this.CdtProperty != null) {
-      this.CdtProperty.RestoreEdgeCapacities()
+    if (this.cdt != null) {
+      this.cdt.RestoreEdgeCapacities()
     }
   }
 
@@ -300,7 +299,7 @@ export class SdShortestPath {
 
   RegisterPathInBoneEdge(boneEdge: SdBoneEdge) {
     boneEdge.AddOccupiedEdge()
-    if (this.CdtProperty != null && this.BundlingSettings.CapacityOverflowCoefficient !== 0) {
+    if (this.cdt != null && this.BundlingSettings.CapacityOverflowCoefficient !== 0) {
       this.UpdateResidualCostsOfCrossedCdtEdges(boneEdge)
     }
   }
@@ -331,7 +330,7 @@ export class SdShortestPath {
   }
 
   CapacityOverflowCost(boneEdge: SdBoneEdge): number {
-    if (this.CdtProperty == null || this.BundlingSettings.CapacityOverflowCoefficient === 0) return 0
+    if (this.cdt == null || this.BundlingSettings.CapacityOverflowCoefficient === 0) return 0
     let ret = 0
     for (const cdtEdge of this.CrossedCdtEdgesOfBoneEdge(boneEdge)) {
       ret += this.CostOfCrossingCdtEdgeLocal(
@@ -483,7 +482,7 @@ export class SdShortestPath {
 
   Initialize() {
     this.CreateRoutingGraph()
-    if (this.CdtProperty != null) {
+    if (this.cdt != null) {
       this.capacityOverlowPenaltyMultiplier = SdShortestPath.CapacityOverflowPenaltyMultiplier(this.BundlingSettings)
       this.SetVertexTriangles()
       this.CalculateCapacitiesOfTrianglulation()
@@ -515,7 +514,7 @@ export class SdShortestPath {
 
   SetVertexTriangles() {
     const triangleTree = CreateRectNodeOnArrayOfRectNodes(
-      Array.from(this.CdtProperty.GetTriangles()).map((t) => mkRectangleNode(t, t.BoundingBox())),
+      Array.from(this.cdt.GetTriangles()).map((t) => mkRectangleNode(t, t.BoundingBox())),
     )
     const vertexTree = CreateRectNodeOnArrayOfRectNodes(this.vertexArray.map((v) => mkRectangleNode(v, Rectangle.mkOnPoints([v.Point]))))
 

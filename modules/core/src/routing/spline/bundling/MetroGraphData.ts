@@ -59,7 +59,7 @@ export class MetroGraphData {
   LoosePolylineOfPort: (p: Port) => Polyline
 
   // triangulation
-  Cdt: Cdt
+  cdt: Cdt
   bundlingSettings: BundlingSettings
   constructor(
     regularEdges: GeomEdge[],
@@ -75,9 +75,9 @@ export class MetroGraphData {
     // Assert.assert(cdt != null);
     this.regularEdges = regularEdges
     if (cdt != null) {
-      this.Cdt = cdt
+      this.cdt = cdt
     } else {
-      this.Cdt = BundleRouter.CreateConstrainedDelaunayTriangulation(looseTree)
+      this.cdt = BundleRouter.CreateConstrainedDelaunayTriangulation(looseTree)
     }
 
     this.EdgeLooseEnterable = edgeLooseEnterable
@@ -444,9 +444,9 @@ export class MetroGraphData {
   }
 
   InitializeCdtInfo() {
-    const cdtTree = this.Cdt.GetCdtTree()
+    const cdtTree = this.cdt.GetCdtTree()
     for (const station of this.Stations) {
-      station.CdtTriangle = cdtTree.FirstHitNodeWithPredicate(station.Position, IntersectionCache.testPointInside).UserData
+      station.cdtTriangle = cdtTree.FirstHitNodeWithPredicate(station.Position, IntersectionCache.testPointInside).UserData
       //Debug.Assert(station.CdtTriangle != null);
     }
   }

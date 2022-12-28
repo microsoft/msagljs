@@ -54,7 +54,7 @@ export class CdtIntersections {
     t.closestDist = new Array<[Point, Point]>()
     const obstaclesToIgnore: Set<Polyline> = this.metroGraphData.looseIntersections.ObstaclesToIgnoreForBundle(v, u)
     const closeObstacles: Map<Polyline, [Point, Point]> = this.FindCloseObstaclesForBundle(
-      u.CdtTriangle,
+      u.cdtTriangle,
       uPosition,
       vPosition,
       obstaclesToIgnore,
@@ -219,7 +219,7 @@ export class CdtIntersections {
   EdgeIsLegal(v: Station, u: Station, vPosition: Point, uPosition: Point): boolean {
     const list: Array<CdtTriangle> = []
     const obstaclesToIgnore: Set<Polyline> = this.metroGraphData.looseIntersections.ObstaclesToIgnoreForBundle(v, u)
-    return this.ThreadLineSegmentThroughTriangles(v.CdtTriangle, vPosition, uPosition, obstaclesToIgnore, list)
+    return this.ThreadLineSegmentThroughTriangles(v.cdtTriangle, vPosition, uPosition, obstaclesToIgnore, list)
   }
 
   // checks if an edge intersects obstacles
@@ -229,7 +229,7 @@ export class CdtIntersections {
     //  console.log(this)
     // }
     const start = v.Position
-    const currentTriangle: CdtTriangle = v.CdtTriangle
+    const currentTriangle: CdtTriangle = v.cdtTriangle
     //Assert.assert(Cdt.PointIsInsideOfTriangle(start, currentTriangle))
     const end: Point = u.Position
     if (Cdt.PointIsInsideOfTriangle(end, currentTriangle)) {

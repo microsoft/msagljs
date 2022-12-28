@@ -78,7 +78,7 @@ export class Station {
   // curve of the hub
   BoundaryCurve: ICurve
 
-  CdtTriangle: CdtTriangle
+  cdtTriangle: CdtTriangle
 
   cachedRadiusCost: number
 
