@@ -14,8 +14,7 @@ import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 import {PointMap} from '../../../utils/PointMap'
 import {PointSet} from '../../../utils/PointSet'
 import {BundlingSettings} from '../../BundlingSettings'
-import {Cdt} from '../../ConstrainedDelaunayTriangulation/Cdt'
-import {BundleRouter} from './BundleRouter'
+import {Cdt, createCDTOnPolylineRectNode} from '../../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtIntersections} from './CdtIntersections'
 import {Intersections} from './Intersections'
 import {Metroline} from './MetroLine'
@@ -77,7 +76,7 @@ export class MetroGraphData {
     if (cdt != null) {
       this.cdt = cdt
     } else {
-      this.cdt = BundleRouter.CreateConstrainedDelaunayTriangulation(looseTree)
+      this.cdt = createCDTOnPolylineRectNode(looseTree)
     }
 
     this.EdgeLooseEnterable = edgeLooseEnterable
@@ -444,7 +443,7 @@ export class MetroGraphData {
   }
 
   InitializeCdtInfo() {
-    const cdtTree = this.cdt.GetCdtTree()
+    const cdtTree = this.cdt.getRectangleNodeOnTriangles()
     for (const station of this.Stations) {
       station.cdtTriangle = cdtTree.FirstHitNodeWithPredicate(station.Position, IntersectionCache.testPointInside).UserData
       //Debug.Assert(station.CdtTriangle != null);

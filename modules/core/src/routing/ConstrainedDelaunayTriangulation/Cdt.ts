@@ -131,7 +131,7 @@ export class Cdt extends Algorithm {
     }
 
     const edge = Cdt.CreateEdgeOnOrderedCouple(upperPoint, lowerPoint)
-    edge.Constrained = true
+    edge.constrained = true
     /*Assert.assert(this.EdgeIsCorrect(edge))*/
   }
 
@@ -206,7 +206,7 @@ export class Cdt extends Algorithm {
   RestoreEdgeCapacities() {
     for (const site of this.allInputSites) {
       for (const e of site.Edges) {
-        if (!e.Constrained) {
+        if (!e.constrained) {
           e.ResidualCapacity = e.Capacity
         }
       }
@@ -239,15 +239,15 @@ export class Cdt extends Algorithm {
     return true
   }
 
-  cdtTree: RectangleNode<CdtTriangle, Point> = null
+  rectangleNodeOnTriangles: RectangleNode<CdtTriangle, Point> = null
 
-  GetCdtTree(): RectangleNode<CdtTriangle, Point> {
-    if (this.cdtTree == null) {
-      this.cdtTree = CreateRectNodeOnArrayOfRectNodes(
+  getRectangleNodeOnTriangles(): RectangleNode<CdtTriangle, Point> {
+    if (this.rectangleNodeOnTriangles == null) {
+      this.rectangleNodeOnTriangles = CreateRectNodeOnArrayOfRectNodes(
         Array.from(this.GetTriangles().values()).map((t) => mkRectangleNode<CdtTriangle, Point>(t, t.BoundingBox())),
       )
     }
-    return this.cdtTree
+    return this.rectangleNodeOnTriangles
   }
   EdgeIsCorrect(edge: CdtEdge): boolean {
     const us = edge.upperSite
@@ -264,4 +264,19 @@ export class Cdt extends Algorithm {
     const usShouldBe = this.PointsToSites.get(us.point)
     return usShouldBe === us
   }
+}
+
+export function createCDTOnPolylineRectNode(polylineHierarchy: RectangleNode<Polyline, Point>): Cdt {
+  const obstacles = Array.from(polylineHierarchy.GetAllLeaves())
+  const rectangle = <Rectangle>polylineHierarchy.irect
+  const del = rectangle.diagonal / 4
+  const nRect = rectangle.clone()
+  nRect.pad(del)
+  return getConstrainedDelaunayTriangulation(obstacles.concat([nRect.perimeter()]))
+}
+
+function getConstrainedDelaunayTriangulation(obstacles: Array<Polyline>): Cdt {
+  const constrainedDelaunayTriangulation = new Cdt(null, obstacles, null)
+  constrainedDelaunayTriangulation.run()
+  return constrainedDelaunayTriangulation
 }

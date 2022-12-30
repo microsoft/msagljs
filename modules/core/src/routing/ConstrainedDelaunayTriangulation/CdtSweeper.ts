@@ -204,7 +204,7 @@ export class CdtSweeper extends Algorithm {
     this.PointEvent(site)
     for (let i = 0; i < site.Edges.length; i++) {
       const edge = site.Edges[i]
-      if (edge.Constrained) {
+      if (edge.constrained) {
         this.EdgeEvent(edge)
       }
     }
@@ -241,7 +241,7 @@ export class CdtSweeper extends Algorithm {
     if (site.Edges != null) {
       for (const e of site.Edges) {
         ls.push(
-          DebugCurve.mkDebugCurveTWCI(200, 0.8, e.Constrained ? 'Pink' : 'Brown', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)),
+          DebugCurve.mkDebugCurveTWCI(200, 0.8, e.constrained ? 'Pink' : 'Brown', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)),
         )
       }
     }
@@ -252,9 +252,9 @@ export class CdtSweeper extends Algorithm {
         const e = t.TriEdges.getItem(i)
         ls.push(
           DebugCurve.mkDebugCurveTWCI(
-            e.Constrained ? 155 : 100,
-            e.Constrained ? 0.8 : 0.4,
-            e.Constrained ? 'Pink' : 'Navy',
+            e.constrained ? 155 : 100,
+            e.constrained ? 0.8 : 0.4,
+            e.constrained ? 'Pink' : 'Navy',
             LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
           ),
         )
@@ -331,13 +331,13 @@ export class CdtSweeper extends Algorithm {
       return DebugCurve.mkDebugCurveTWCI(
         255,
         0.5,
-        e.Constrained ? 'Brown' : 'Black',
+        e.constrained ? 'Brown' : 'Black',
         LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
       )
     return DebugCurve.mkDebugCurveTWCI(
       200,
-      e.Constrained ? 0.8 : 0.2,
-      e.Constrained ? 'Pink' : 'Navy',
+      e.constrained ? 0.8 : 0.2,
+      e.constrained ? 'Pink' : 'Navy',
       LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
     )
   }
@@ -647,7 +647,7 @@ export class CdtSweeper extends Algorithm {
 
   LegalizeEdge(pi: CdtSite, edge: CdtEdge) {
     /*Assert.assert(pi !== edge.upperSite && pi !== edge.lowerSite)*/
-    if (edge.Constrained || edge.CcwTriangle == null || edge.CwTriangle == null) {
+    if (edge.constrained || edge.CcwTriangle == null || edge.CwTriangle == null) {
       return
     }
 

@@ -9,14 +9,14 @@ export class CdtEdge {
 
   public lowerSite: CdtSite
 
+  /**  in this triangle the edge goes counterclockwise*/
   ccwTriangle: CdtTriangle
 
-  // in this triangle the edge goes counterclockwise
+  /** in this triangle the edge goes clockwise, against the triangle orientation */
   cwTriangle: CdtTriangle
 
-  // in this triangle the edge goes clockwise, against the triangle orientation
   // is an obstacle side, or a given segment
-  public Constrained = false
+  public constrained = false
 
   public constructor(a: CdtSite, b: CdtSite) {
     const above = Cdt.AbovePP(a.point, b.point)

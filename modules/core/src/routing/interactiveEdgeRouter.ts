@@ -1004,6 +1004,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     // we need to route through the visibility graph
     this.ExtendVisibilityGraphToLocationOfTargetFloatingPort(portLoosePolyline)
     this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
+    //return this._polyline // DEBUG!!!!!!!!!!!!!!
     if (this._polyline == null) {
       return null
     }

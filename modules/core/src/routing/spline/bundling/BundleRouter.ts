@@ -1,7 +1,7 @@
 // The class is responsible for general edge bundling with ordered bundles.
 // Currently the router will fail if there are node overlaps.
 
-import {Point, Rectangle, GeomEdge} from '../../..'
+import {Point, GeomEdge} from '../../..'
 import {HookUpAnywhereFromInsidePort} from '../../../layout/core/hookUpAnywhereFromInsidePort'
 import {Polyline, Curve, LineSegment} from '../../../math/geometry'
 import {IntersectionInfo} from '../../../math/geometry/intersectionInfo'
@@ -9,7 +9,6 @@ import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
 import {SmoothedPolyline} from '../../../math/geometry/smoothedPolyline'
 import {BundlingSettings} from '../../BundlingSettings'
 import {ClusterBoundaryPort} from '../../ClusterBoundaryPort'
-import {Cdt} from '../../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from '../../ConstrainedDelaunayTriangulation/CdtEdge'
 import {SingleSourceMultipleTargetsShortestPathOnVisibilityGraph} from '../../SingleSourceMultipleTargetsShortestPathOnVisibilityGraph'
 import {VisibilityGraph} from '../../visibility/VisibilityGraph'
@@ -137,21 +136,6 @@ export class BundleRouter extends Algorithm {
         poly.endPoint.point = ii.x
       }
     }
-  }
-
-  static CreateConstrainedDelaunayTriangulation(looseHierarchy: RectangleNode<Polyline, Point>): Cdt {
-    const obstacles = Array.from(looseHierarchy.GetAllLeaves())
-    const rectangle: Rectangle = <Rectangle>looseHierarchy.irect
-    const del = rectangle.diagonal / 4
-    const nRect = rectangle.clone()
-    nRect.pad(del)
-    return BundleRouter.GetConstrainedDelaunayTriangulation(obstacles.concat([nRect.perimeter()]))
-  }
-
-  static GetConstrainedDelaunayTriangulation(obstacles: Array<Polyline>): Cdt {
-    const constrainedDelaunayTriangulation = new Cdt(null, obstacles, null)
-    constrainedDelaunayTriangulation.run()
-    return constrainedDelaunayTriangulation
   }
 
   // ReSharper disable UnusedMember.Local

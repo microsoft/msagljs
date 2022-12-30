@@ -52,7 +52,7 @@ import {PointPair} from '../math/geometry/pointPair'
 import {MultiEdgeRouter} from './MultiEdgeRouter'
 import {BundleRouter} from './spline/bundling/BundleRouter'
 import {SdShortestPath} from './spline/bundling/SdShortestPath'
-import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
+import {Cdt, createCDTOnPolylineRectNode} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
 
@@ -61,6 +61,8 @@ export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
   //
   continueOnOverlaps = true
+  obstacleCalculator: ShapeObstacleCalculator
+  cdtOnLooseHierarchy: Cdt
 
   get ContinueOnOverlaps(): boolean {
     return this.continueOnOverlaps
@@ -222,6 +224,7 @@ export class SplineRouter extends Algorithm {
     if (this.OverlapsDetected && !this.ContinueOnOverlaps) {
       return
     }
+
     this.BindLooseShapes()
     this.SetLoosePolylinesForAnywherePorts()
     this.CalculateVisibilityGraph()
@@ -302,14 +305,14 @@ export class SplineRouter extends Algorithm {
       this.CalculateShapeToBoundaries(child)
     }
 
-    const obstacleCalculator = new ShapeObstacleCalculator(
+    this.obstacleCalculator = new ShapeObstacleCalculator(
       shape,
       this.tightPadding,
       this.AdjustedLoosePadding,
       this.shapesToTightLooseCouples,
     )
-    obstacleCalculator.Calculate()
-    this.OverlapsDetected ||= obstacleCalculator.OverlapsDetected
+    this.obstacleCalculator.Calculate()
+    this.OverlapsDetected ||= this.obstacleCalculator.OverlapsDetected
   }
 
   private _overlapsDetected = false
@@ -344,6 +347,15 @@ export class SplineRouter extends Algorithm {
   RouteOnVisGraph() {
     this.ancestorSets = SplineRouter.GetAncestorSetsMap(Array.from(this.root.Descendants()))
     if (this.BundlingSettings == null) {
+      console.time('cdt on loose')
+      this.cdtOnLooseHierarchy = new Cdt(
+        [],
+        Array.from(this.obstacleCalculator.coupleHierarchy.GetAllLeaves()).map((s) => s.LooseShape.BoundaryCurve as Polyline),
+        [],
+      )
+      this.cdtOnLooseHierarchy.run()
+      console.timeEnd('cdt on loose')
+
       for (const edgeGroup of this.GroupEdgesByPassport()) {
         const passport = edgeGroup.passport
         const obstacleShapes: Set<Shape> = this.GetObstaclesFromPassport(passport)
@@ -353,7 +365,24 @@ export class SplineRouter extends Algorithm {
     } else {
       this.RouteBundles()
     }
+    //    SvgDebugWriter.dumpDebugCurves('/tmp/cdt_edges.svg', this.getDebugCurvesFromEdgesAndCdt())
   }
+  // getDebugCurvesFromEdgesAndCdt(): DebugCurve[] {
+  //   const ret = Array.from(this.geomGraph.deepEdges)
+  //     .map((e) => e.curve as Polyline)
+  //     .filter((c) => c != null)
+  //     .filter((c) => c.count > 5)
+  //     .map((c) => DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c))
+  //   for (const s of this.cdtOnLooseHierarchy.PointsToSites.values()) {
+  //     for (const e of s.Edges) {
+  //       ret.push(
+  //         DebugCurve.mkDebugCurveTWCI(200, 0.5, e.constrained ? 'Blue' : 'Green', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)),
+  //       )
+  //     }
+  //   }
+
+  //   return ret
+  // }
 
   RouteEdgesWithTheSamePassport(
     edgeGeometryGroup: {passport: Set<Shape>; edges: Iterable<GeomEdge>},
@@ -483,17 +512,20 @@ export class SplineRouter extends Algorithm {
       this.loosePadding,
       false,
     )
-    ;(router.VisibilityGraph = this.visGraph), (router.TightHierarchy = this.CreateTightObstacleHierarachy(obstacleShapes))
+
+    router.VisibilityGraph = this.visGraph
+    router.TightHierarchy = this.CreateTightObstacleHierarachy(obstacleShapes)
     router.LooseHierarchy = SplineRouter.CreateLooseObstacleHierarachy(Array.from(loosePolys))
-    ;(router.UseSpanner = true),
-      (router.LookForRoundedVertices = true),
-      (router.TightPadding = this.tightPadding),
-      (router.LoosePadding = this.LoosePadding),
-      (router.UseEdgeLengthMultiplier = this.UseEdgeLengthMultiplier),
-      (router.UsePolylineEndShortcutting = this.UsePolylineEndShortcutting),
-      (router.UseInnerPolylingShortcutting = this.UseInnerPolylingShortcutting),
-      (router.AllowedShootingStraightLines = this.AllowedShootingStraightLines),
-      router.AddActivePolygons(Array.from(loosePolys).map((polyline) => new Polygon(polyline)))
+    router.UseSpanner = true
+    router.LookForRoundedVertices = true
+    router.TightPadding = this.tightPadding
+    router.LoosePadding = this.LoosePadding
+    router.UseEdgeLengthMultiplier = this.UseEdgeLengthMultiplier
+
+    router.UsePolylineEndShortcutting = this.UsePolylineEndShortcutting
+    router.UseInnerPolylingShortcutting = this.UseInnerPolylingShortcutting
+    router.AllowedShootingStraightLines = this.AllowedShootingStraightLines
+    router.AddActivePolygons(Array.from(loosePolys).map((polyline) => new Polygon(polyline)))
 
     return router
   }
@@ -569,7 +601,7 @@ export class SplineRouter extends Algorithm {
     this.ScaleLooseShapesDown()
     this.CalculateEdgeEnterablePolylines()
     const looseHierarchy = this.GetLooseHierarchy()
-    const cdt = BundleRouter.CreateConstrainedDelaunayTriangulation(looseHierarchy)
+    const cdt = createCDTOnPolylineRectNode(looseHierarchy)
     // CdtSweeper.ShowFront(cdt.GetTriangles(), null, null,this.visGraph.Edges.Select(e=>new LineSegment(e.SourcePoint,e.TargetPoint)));
     const shortestPath = new SdShortestPath((a) => this.MakeTransparentShapesOfEdgeGeometryAndGetTheShapes(a), cdt, this.FindCdtGates(cdt))
     const bundleRouter = new BundleRouter(

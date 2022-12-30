@@ -493,7 +493,7 @@ const socialEdges = [
   [88, 85],
 ]
 
-test('data_social', () => {
+test('game of thrones', () => {
   const g = new Graph()
   const gnodes = []
   for (const n of socialNodes) {
