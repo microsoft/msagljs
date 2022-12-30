@@ -494,7 +494,7 @@ export class SdShortestPath {
   }
 
   static CalculateCdtEdgeCapacityForEdge(e: CdtEdge) {
-    if (e.Constrained || e.CwTriangle == null || e.CcwTriangle == null) {
+    if (e.constrained || e.CwTriangle == null || e.CcwTriangle == null) {
       return
     }
 

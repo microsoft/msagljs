@@ -21,7 +21,7 @@ export class CdtIntersections {
     const threader = new CdtThreader(currentTriangle, start, end)
     while (threader.MoveNext()) {
       const piercedEdge = threader.CurrentPiercedEdge
-      if (piercedEdge.Constrained) {
+      if (piercedEdge.constrained) {
         //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
@@ -154,7 +154,7 @@ export class CdtIntersections {
     while (threader.MoveNext()) {
       triangles.push(threader.CurrentTriangle)
       const piercedEdge = threader.CurrentPiercedEdge
-      if (piercedEdge.Constrained) {
+      if (piercedEdge.constrained) {
         //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
@@ -239,7 +239,7 @@ export class CdtIntersections {
     const threader = new CdtThreader(currentTriangle, start, end)
     while (threader.MoveNext()) {
       const piercedEdge = threader.CurrentPiercedEdge
-      if (piercedEdge.Constrained) {
+      if (piercedEdge.constrained) {
         //Assert.assert(piercedEdge.lowerSite.Owner === piercedEdge.upperSite.Owner)
         const poly = <Polyline>piercedEdge.lowerSite.Owner
         if (!obstaclesToIgnore.has(poly)) {
