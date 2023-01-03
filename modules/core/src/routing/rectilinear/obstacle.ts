@@ -167,7 +167,7 @@ export class Obstacle {
       polyline.RemoveStartPoint()
     }
 
-    InteractiveEdgeRouter.RemoveCollinearVertices(polyline)
+    polyline = polyline.RemoveCollinearVertices()
 
     if (
       polyline.endPoint.prev != null &&

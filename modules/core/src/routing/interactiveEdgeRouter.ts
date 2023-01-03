@@ -760,7 +760,7 @@ export class InteractiveEdgeRouter extends Algorithm {
       ret.addPoint(v.point)
     }
 
-    ret = InteractiveEdgeRouter.RemoveCollinearVertices(ret)
+    ret = ret.RemoveCollinearVertices()
     this.pathOptimizer.run(ret)
     return ret
   }
@@ -788,17 +788,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   CleanTheGraphForShortestPath() {
     this.visibilityGraph.ClearPrevEdgesTable()
-  }
-
-  static RemoveCollinearVertices(ret: Polyline): Polyline {
-    for (let pp: PolylinePoint = ret.startPoint.next; pp.next != null; pp = pp.next) {
-      if (Point.getTriangleOrientation(pp.prev.point, pp.point, pp.next.point) === TriangleOrientation.Collinear) {
-        pp.prev.next = pp.next
-        pp.next.prev = pp.prev
-      }
-    }
-
-    return ret
   }
 
   // returns true if the nodes overlap or just positioned too close
@@ -1788,7 +1777,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
       ret.addPoint(v.point)
     }
 
-    return InteractiveEdgeRouter.RemoveCollinearVertices(ret)
+    return ret.RemoveCollinearVertices()
   }
 
   Targets(targetLoosePoly: Polyline): Array<VisibilityVertex> {
