@@ -93,9 +93,9 @@ export class EdgeTracer {
   FindPiercedTriangle(v: RBNode<CdtFrontElement>) {
     const e = v.item.Edge
     const t = e.CcwTriangle ?? e.CwTriangle
-    const eIndex = t.TriEdges.index(e)
+    const eIndex = t.Edges.index(e)
     for (let i = 1; i <= 2; i++) {
-      const ei = t.TriEdges.getItem(i + eIndex)
+      const ei = t.Edges.getItem(i + eIndex)
       const signedArea0 = RealNumberSpan.sign(Point.signedDoubledTriangleArea(ei.lowerSite.point, this.a.point, this.b.point))
       const signedArea1 = RealNumberSpan.sign(Point.signedDoubledTriangleArea(ei.upperSite.point, this.a.point, this.b.point))
       if (signedArea1 * signedArea0 <= 0) {
@@ -108,7 +108,7 @@ export class EdgeTracer {
 
   FindMoreRemovedFromFrontElements() {
     for (const triangle of this.removedTriangles) {
-      for (const e of triangle.TriEdges) {
+      for (const e of triangle.Edges) {
         if (e.CcwTriangle == null && e.CwTriangle == null) {
           const site = e.upperSite.point.x < e.lowerSite.point.x ? e.upperSite : e.lowerSite
           const frontNode = CdtSweeper.FindNodeInFrontBySite(this.front, site)
@@ -137,9 +137,9 @@ export class EdgeTracer {
 
   PrepareNextStateAfterPiercedEdge() {
     const t = this.piercedEdge.CwTriangle ?? this.piercedEdge.CcwTriangle
-    const eIndex = t.TriEdges.index(this.piercedEdge)
+    const eIndex = t.Edges.index(this.piercedEdge)
     for (let i = 1; i <= 2; i++) {
-      const e = t.TriEdges.getItem(i + eIndex)
+      const e = t.Edges.getItem(i + eIndex)
       const signedArea0 = RealNumberSpan.sign(Point.signedDoubledTriangleArea(e.lowerSite.point, this.a.point, this.b.point))
       const signedArea1 = RealNumberSpan.sign(Point.signedDoubledTriangleArea(e.upperSite.point, this.a.point, this.b.point))
       if (signedArea1 * signedArea0 <= 0) {
@@ -169,7 +169,7 @@ export class EdgeTracer {
 
   removePiercedTriangle(t: CdtTriangle) {
     this.triangles.delete(t)
-    for (const e of t.TriEdges) {
+    for (const e of t.Edges) {
       if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
@@ -246,10 +246,10 @@ export class EdgeTracer {
           continue
         }
 
-        const eIndex = t.TriEdges.index(e)
+        const eIndex = t.Edges.index(e)
         const site = t.Sites.getItem(eIndex + 2)
         if (Point.pointToTheLeftOfLineOrOnLine(this.b.point, site.point, e.upperSite.point)) {
-          this.piercedEdge = t.TriEdges.getItem(eIndex + 1)
+          this.piercedEdge = t.Edges.getItem(eIndex + 1)
           this.piercedTriangle = t
           // CdtSweeper.ShowFront(triangles, front, new[] { new LineSegment(e.upperSite.point, e.lowerSite.point) },
           // new[] { new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point) });

@@ -43,8 +43,8 @@ export class CdtSweeper extends Algorithm {
 
     const firstTriangle = CdtTriangle.mkSSSD(p_1, p_2, this.listOfSites[0], createEdgeDelegate)
     this.triangles.add(firstTriangle)
-    this.front.insert(new CdtFrontElement(p_1, firstTriangle.TriEdges.getItem(2)))
-    this.front.insert(new CdtFrontElement(this.listOfSites[0], firstTriangle.TriEdges.getItem(1)))
+    this.front.insert(new CdtFrontElement(p_1, firstTriangle.Edges.getItem(2)))
+    this.front.insert(new CdtFrontElement(this.listOfSites[0], firstTriangle.Edges.getItem(1)))
     //this.Show('./tmp/front.svg')
   }
 
@@ -104,7 +104,7 @@ export class CdtSweeper extends Algorithm {
 
   FindFirsePerimeterEdge() {
     for (const t of this.triangles) {
-      for (const e of t.TriEdges) {
+      for (const e of t.Edges) {
         if (e.GetOtherTriangle_T(t) == null) return e
       }
     }
@@ -140,10 +140,10 @@ export class CdtSweeper extends Algorithm {
 
   static FindNextEdgeOnPerimeter(e: CdtEdge): CdtEdge {
     let t: CdtTriangle = e.CwTriangle ?? e.CcwTriangle
-    e = t.TriEdges.getItem(t.TriEdges.index(e) + 2)
+    e = t.Edges.getItem(t.Edges.index(e) + 2)
     while (e.CwTriangle != null && e.CcwTriangle != null) {
       t = e.GetOtherTriangle_T(t)
-      e = t.TriEdges.getItem(t.TriEdges.index(e) + 2)
+      e = t.Edges.getItem(t.Edges.index(e) + 2)
     }
     return e
   }
@@ -176,7 +176,7 @@ export class CdtSweeper extends Algorithm {
 
   static RemoveTriangleWithEdges(cdtTriangles: Set<CdtTriangle>, t: CdtTriangle) {
     cdtTriangles.delete(t)
-    for (const e of t.TriEdges) {
+    for (const e of t.Edges) {
       if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
@@ -191,7 +191,7 @@ export class CdtSweeper extends Algorithm {
 
   static RemoveTriangleButLeaveEdges(cdtTriangles: Set<CdtTriangle>, t: CdtTriangle) {
     cdtTriangles.delete(t)
-    for (const e of t.TriEdges) {
+    for (const e of t.Edges) {
       if (e.CwTriangle === t) {
         e.CwTriangle = null
       } else {
@@ -249,7 +249,7 @@ export class CdtSweeper extends Algorithm {
     ls.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', Ellipse.mkFullEllipseNNP(0.5, 0.5, site.point)))
     for (const t of this.triangles) {
       for (let i = 0; i < 3; i++) {
-        const e = t.TriEdges.getItem(i)
+        const e = t.Edges.getItem(i)
         ls.push(
           DebugCurve.mkDebugCurveTWCI(
             e.constrained ? 155 : 100,
@@ -318,7 +318,7 @@ export class CdtSweeper extends Algorithm {
 
     for (const t of cdtTriangles) {
       for (let i = 0; i < 3; i++) {
-        const e = t.TriEdges.getItem(i)
+        const e = t.Edges.getItem(i)
         ls.push(CdtSweeper.GetDebugCurveOfCdtEdge(e))
       }
     }
@@ -443,7 +443,7 @@ export class CdtSweeper extends Algorithm {
     /*Assert.assert(a.End === b.Start)*/
     let t = CdtTriangle.mkSSSEE(a.Start, a.End, b.End, a.Edge, b.Edge, this.createEdgeDelegate)
     this.triangles.add(t)
-    const newEdge = t.TriEdges.getItem(2)
+    const newEdge = t.Edges.getItem(2)
     /*Assert.assert(newEdge.IsAdjacent(a.Start) && newEdge.IsAdjacent(b.End))*/
     this.LegalizeEdge(a.Start, t.OppositeEdge(a.Start))
     t = newEdge.CcwTriangle ?? newEdge.CwTriangle
@@ -475,7 +475,7 @@ export class CdtSweeper extends Algorithm {
     this.front.deleteNodeInternal(aNode)
     // now bNode might b not valid anymore
     this.front.remove(bElem)
-    const newEdge = t.TriEdges.getItem(2)
+    const newEdge = t.Edges.getItem(2)
     /*Assert.assert(
       newEdge.IsAdjacent(aElem.LeftSite) && newEdge.IsAdjacent(bElem.RightSite),
     )*/
@@ -627,7 +627,7 @@ export class CdtSweeper extends Algorithm {
     ) {
       const tr = CdtTriangle.mkSED(pi, frontElement.Edge, this.createEdgeDelegate)
       this.triangles.add(tr)
-      this.LegalizeEdge(pi, tr.TriEdges.getItem(0))
+      this.LegalizeEdge(pi, tr.Edges.getItem(0))
     } else {
       // we need to split the triangle below the element of to two triangles and legalize the old edges
       // we also delete, that is forget, the frontElement.Edge
@@ -659,7 +659,7 @@ export class CdtSweeper extends Algorithm {
   }
 
   LegalizeEdgeForOtherCwTriangle(pi: CdtSite, edge: CdtEdge) {
-    const i = edge.CwTriangle.TriEdges.index(edge)
+    const i = edge.CwTriangle.Edges.index(edge)
     //           if (i === -1)
     //           {
     //               Array<DebugCurve> ls = new Array<DebugCurve>();
@@ -684,7 +684,7 @@ export class CdtSweeper extends Algorithm {
   }
 
   LegalizeEdgeForOtherCcwTriangle(pi: CdtSite, edge: CdtEdge) {
-    const i = edge.CcwTriangle.TriEdges.index(edge)
+    const i = edge.CcwTriangle.Edges.index(edge)
     if (IsIllegal(pi, edge.lowerSite, edge.CcwTriangle.Sites.getItem(i + 2), edge.upperSite)) {
       const e: CdtEdge = Flip(pi, edge)
       this.LegalizeEdge(pi, e.CwTriangle.OppositeEdge(pi))
@@ -775,7 +775,7 @@ function TriangleIsCorrect(t: CdtTriangle) {
     return false
   }
   for (let i = 0; i < 3; i++) {
-    const e = t.TriEdges.getItem(i)
+    const e = t.Edges.getItem(i)
     const a = t.Sites.getItem(i)
     const b = t.Sites.getItem(i + 1)
     if (!e.IsAdjacent(a) || !e.IsAdjacent(b)) return false
@@ -800,22 +800,22 @@ function Flip(pi: CdtSite, edge: CdtEdge): CdtEdge {
     ot = edge.CcwTriangle
   }
   /*Assert.assert(t.Contains(pi))*/
-  const eIndex = t.TriEdges.index(edge)
-  const eOtherIndex = ot.TriEdges.index(edge)
+  const eIndex = t.Edges.index(edge)
+  const eOtherIndex = ot.Edges.index(edge)
   /*Assert.assert(eIndex > -1 && eOtherIndex > -1)*/
   const pl = ot.Sites.getItem(eOtherIndex + 2)
-  const edgeBeforPi = t.TriEdges.getItem(eIndex + 1)
-  const edgeBeforPl = ot.TriEdges.getItem(eOtherIndex + 1)
+  const edgeBeforPi = t.Edges.getItem(eIndex + 1)
+  const edgeBeforPl = ot.Edges.getItem(eOtherIndex + 1)
 
   //changing t
   const newEdge = Cdt.GetOrCreateEdge(pi, pl)
   t.Sites.setItem(eIndex + 1, pl)
-  t.TriEdges.setItem(eIndex, edgeBeforPl)
-  t.TriEdges.setItem(eIndex + 1, newEdge)
+  t.Edges.setItem(eIndex, edgeBeforPl)
+  t.Edges.setItem(eIndex + 1, newEdge)
   //changing ot
   ot.Sites.setItem(eOtherIndex + 1, pi)
-  ot.TriEdges.setItem(eOtherIndex, edgeBeforPi)
-  ot.TriEdges.setItem(eOtherIndex + 1, newEdge)
+  ot.Edges.setItem(eOtherIndex, edgeBeforPi)
+  ot.Edges.setItem(eOtherIndex + 1, newEdge)
   //orient the new edge and the two edges that move from one triangle to another
   if (edgeBeforPl.lowerSite === pl) edgeBeforPl.CcwTriangle = t
   else edgeBeforPl.CwTriangle = t
