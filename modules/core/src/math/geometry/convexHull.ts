@@ -229,11 +229,11 @@ function hullPointComparer(pivot: Point): (i: HullPoint, j: HullPoint) => number
         // because of the double point error pi and pj can be on different sizes of the pivot on the horizontal line passing through the pivot, or rather just above it
         const piDelX = i.point.x - pivot.x
         const pjDelX = j.point.x - pivot.x
-        if (piDelX > GeomConstants.distanceEpsilon && pjDelX < GeomConstants.distanceEpsilon * -1) {
+        if (piDelX > GeomConstants.distanceEpsilon && pjDelX < -GeomConstants.distanceEpsilon) {
           return -1
         }
 
-        if (piDelX < GeomConstants.distanceEpsilon * -1 && pjDelX > GeomConstants.distanceEpsilon) {
+        if (piDelX < -GeomConstants.distanceEpsilon && pjDelX > GeomConstants.distanceEpsilon) {
           return 1
         }
 

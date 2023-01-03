@@ -142,8 +142,8 @@ export class Routing extends Algorithm {
           const p0: Point = anchor.origin
           const p1: Point = p0.add(new Point(0, dy))
           const p2: Point = p0.add(new Point(dx, dy))
-          const p3: Point = p0.add(new Point(dx, dy * -1))
-          const p4: Point = p0.add(new Point(0, dy * -1))
+          const p3: Point = p0.add(new Point(dx, -dy))
+          const p4: Point = p0.add(new Point(0, -dy))
           let s = CornerSite.mkSiteP(p0)
           const polyline = new SmoothedPolyline(s)
           s = CornerSite.mkSiteSP(s, p1)

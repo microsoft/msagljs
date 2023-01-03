@@ -255,8 +255,11 @@ return xx;
   static IntersectPPPP(a: Point, b: Point, c: Point, d: Point): Point | undefined {
     const r = Point.lineLineIntersection(a, b, c, d)
     if (r == null) return
-    if (LineSegment.xIsBetweenPoints(a, b, r) && LineSegment.xIsBetweenPoints(c, d, r)) return r
-    else return
+    if (LineSegment.xIsBetweenPoints(a, b, r) && LineSegment.xIsBetweenPoints(c, d, r)) {
+      return r
+    } else {
+      return undefined
+    }
   }
 
   static xIsBetweenPoints(a: Point, b: Point, x: Point): boolean {

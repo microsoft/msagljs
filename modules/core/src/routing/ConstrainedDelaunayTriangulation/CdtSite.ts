@@ -52,10 +52,6 @@ export class CdtSite {
   }
 
   AddInEdge(e: CdtEdge) {
-    if (this.InEdges == null) {
-      this.InEdges = new Array<CdtEdge>()
-    }
-
     this.InEdges.push(e)
   }
   *Triangles(): IterableIterator<CdtTriangle> {

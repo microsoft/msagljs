@@ -30,9 +30,11 @@ import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
+import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
 
 export class InteractiveEdgeRouter extends Algorithm {
+  pathOptimizer: PathOptimizer
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
     return InteractiveEdgeRouter.constructorANNNB(obstacles, padding, loosePadding, coneSpannerAngle, false)
   }
@@ -753,12 +755,14 @@ export class InteractiveEdgeRouter extends Algorithm {
     }
 
     // Assert.assert(path[0] === sourceVisVertex && path[path.length - 1] === _targetVisVertex)
-    const ret = new Polyline()
+    let ret = new Polyline()
     for (const v of path) {
       ret.addPoint(v.point)
     }
 
-    return InteractiveEdgeRouter.RemoveCollinearVertices(ret)
+    ret = InteractiveEdgeRouter.RemoveCollinearVertices(ret)
+    this.pathOptimizer.run(ret)
+    return ret
   }
 
   // private ShowIsPassable(sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex) {
@@ -1004,11 +1008,9 @@ export class InteractiveEdgeRouter extends Algorithm {
     // we need to route through the visibility graph
     this.ExtendVisibilityGraphToLocationOfTargetFloatingPort(portLoosePolyline)
     this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
-    //return this._polyline // DEBUG!!!!!!!!!!!!!!
     if (this._polyline == null) {
       return null
     }
-
     if (this.UseSpanner) {
       this.TryShortcutPolyline()
     }

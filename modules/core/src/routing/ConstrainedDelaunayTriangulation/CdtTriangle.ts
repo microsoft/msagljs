@@ -1,4 +1,5 @@
-﻿import {Point, TriangleOrientation} from '../../math/geometry/point'
+﻿import {PointLocation, GeomConstants, LineSegment} from '../../math/geometry'
+import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
 
 import {CdtEdge} from './CdtEdge'
@@ -7,6 +8,33 @@ import {ThreeArray} from './ThreeArray'
 
 // a trianlge oriented counterclockwise
 export class CdtTriangle {
+  containsPoint(p: Point): boolean {
+    return CdtTriangle.PointLocationForTriangle(p, this) !== PointLocation.Outside
+  }
+  static PointLocationForTriangle(p: Point, triangle: CdtTriangle): PointLocation {
+    let seenBoundary = false
+    for (let i = 0; i < 3; i++) {
+      const area = Point.signedDoubledTriangleArea(p, triangle.Sites.getItem(i).point, triangle.Sites.getItem(i + 1).point)
+      if (area < -GeomConstants.distanceEpsilon) {
+        return PointLocation.Outside
+      }
+
+      if (area < GeomConstants.distanceEpsilon) {
+        seenBoundary = true
+      }
+    }
+
+    return seenBoundary ? PointLocation.Boundary : PointLocation.Inside
+  }
+  intersectsLine(a: Point, b: Point): boolean {
+    if (CdtTriangle.PointLocationForTriangle(a, this) != PointLocation.Outside) return true
+    if (CdtTriangle.PointLocationForTriangle(b, this) != PointLocation.Outside) return true
+
+    for (const e of this.TriEdges) {
+      if (LineSegment.IntersectPPPP(a, b, e.lowerSite.point, e.upperSite.point)) return true
+    }
+    return false
+  }
   // the edges
   public TriEdges: ThreeArray<CdtEdge> = new ThreeArray<CdtEdge>()
 

@@ -10,10 +10,10 @@ export class CdtEdge {
   public lowerSite: CdtSite
 
   /**  in this triangle the edge goes counterclockwise*/
-  ccwTriangle: CdtTriangle
+  private ccwTriangle: CdtTriangle
 
   /** in this triangle the edge goes clockwise, against the triangle orientation */
-  cwTriangle: CdtTriangle
+  private cwTriangle: CdtTriangle
 
   // is an obstacle side, or a given segment
   public constrained = false
