@@ -46,7 +46,7 @@ export class CdtThreader {
       ) {
         this.positiveSign = sign0
         this.negativeSign = sign1
-        return this.currentTriangle.TriEdges.item0
+        return this.currentTriangle.Edges.item0
       }
     }
 
@@ -58,14 +58,14 @@ export class CdtThreader {
       ) {
         this.positiveSign = sign1
         this.negativeSign = sign2
-        return this.currentTriangle.TriEdges.item1
+        return this.currentTriangle.Edges.item1
       }
     }
 
     this.positiveSign = sign2
     this.negativeSign = sign0
     //Assert.assert(this.positiveSign > this.negativeSign)
-    return this.currentTriangle.TriEdges.item2
+    return this.currentTriangle.Edges.item2
   }
 
   private FindNextPierced() {
@@ -77,7 +77,7 @@ export class CdtThreader {
       return
     }
 
-    const i = this.currentTriangle.TriEdges.index(this.currentPiercedEdge)
+    const i = this.currentTriangle.Edges.index(this.currentPiercedEdge)
     let j: number
     // pierced index
     const oppositeSite = this.currentTriangle.Sites.getItem(i + 2)
@@ -113,7 +113,7 @@ export class CdtThreader {
         this.currentTriangle.Sites.getItem(j).point,
         this.currentTriangle.Sites.getItem(j + 1).point,
       ) < -GeomConstants.distanceEpsilon
-        ? this.currentTriangle.TriEdges.getItem(j)
+        ? this.currentTriangle.Edges.getItem(j)
         : null
   }
 

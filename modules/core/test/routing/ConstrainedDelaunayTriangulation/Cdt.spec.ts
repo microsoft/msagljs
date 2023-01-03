@@ -78,24 +78,24 @@ test('TriangleCreationTest', () => {
   const b = new CdtSite(new Point(2, 0))
   const c = new CdtSite(new Point(1, 2))
   const tri = CdtTriangle.mkSSSD(a, b, c, Cdt.GetOrCreateEdge)
-  let e = tri.TriEdges.getItem(0)
+  let e = tri.Edges.getItem(0)
   expect(e.upperSite === a).toBe(true)
   expect(e.lowerSite === b).toBe(true)
   expect(e.CcwTriangle === tri && e.CwTriangle == null).toBe(true)
 
-  e = tri.TriEdges.getItem(1)
+  e = tri.Edges.getItem(1)
   expect(e.upperSite === c).toBe(true)
   expect(e.lowerSite === b).toBe(true)
   expect(e.CwTriangle === tri && e.CcwTriangle == null).toBe(true)
 
-  e = tri.TriEdges.getItem(2)
+  e = tri.Edges.getItem(2)
   expect(e.upperSite === c).toBe(true)
   expect(e.lowerSite === a).toBe(true)
   expect(e.CcwTriangle === tri && e.CwTriangle == null).toBe(true)
 
-  const tri0 = CdtTriangle.mkSED(new CdtSite(new Point(2, 2)), tri.TriEdges.getItem(1), Cdt.GetOrCreateEdge)
-  expect(tri0.TriEdges.getItem(0) === tri.TriEdges.getItem(1)).toBe(true)
-  expect(tri.TriEdges.getItem(1).CcwTriangle != null && tri.TriEdges.getItem(1).CwTriangle != null).toBe(true)
+  const tri0 = CdtTriangle.mkSED(new CdtSite(new Point(2, 2)), tri.Edges.getItem(1), Cdt.GetOrCreateEdge)
+  expect(tri0.Edges.getItem(0) === tri.Edges.getItem(1)).toBe(true)
+  expect(tri.Edges.getItem(1).CcwTriangle != null && tri.Edges.getItem(1).CwTriangle != null).toBe(true)
 })
 
 test('SmallTriangulation', () => {

@@ -71,7 +71,7 @@ export class CdtSite {
         break
       }
       yield t
-      e = t.TriEdges.getItem(t.TriEdges.index(e) + 2)
+      e = t.Edges.getItem(t.Edges.index(e) + 2)
     } while (e !== edge) //full circle
 
     if (e !== edge) {
@@ -83,7 +83,7 @@ export class CdtSite {
           break
         }
         yield t
-        e = t.TriEdges.getItem(t.TriEdges.index(e) + 1)
+        e = t.Edges.getItem(t.Edges.index(e) + 1)
       } while (true) // we will hit a null triangle for the convex hull border edge
     }
   }

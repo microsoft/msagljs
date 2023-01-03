@@ -30,13 +30,13 @@ export class CdtTriangle {
     if (CdtTriangle.PointLocationForTriangle(a, this) != PointLocation.Outside) return true
     if (CdtTriangle.PointLocationForTriangle(b, this) != PointLocation.Outside) return true
 
-    for (const e of this.TriEdges) {
+    for (const e of this.Edges) {
       if (LineSegment.IntersectPPPP(a, b, e.lowerSite.point, e.upperSite.point)) return true
     }
     return false
   }
   // the edges
-  public TriEdges: ThreeArray<CdtEdge> = new ThreeArray<CdtEdge>()
+  public Edges: ThreeArray<CdtEdge> = new ThreeArray<CdtEdge>()
 
   // the sites
   public Sites: ThreeArray<CdtSite> = new ThreeArray<CdtSite>()
@@ -75,7 +75,7 @@ export class CdtTriangle {
         throw new Error()
     }
 
-    tri.TriEdges.setItem(0, edge)
+    tri.Edges.setItem(0, edge)
     tri.Sites.setItem(2, pi)
     tri.CreateEdge(1, createEdgeDelegate)
     tri.CreateEdge(2, createEdgeDelegate)
@@ -96,8 +96,8 @@ export class CdtTriangle {
         TriangleOrientation.Counterclockwise,
     )*/
     const tri = CdtTriangle.mkSSSD(aLeft, aRight, bRight, createEdgeDelegate)
-    tri.TriEdges.setItem(0, a)
-    tri.TriEdges.setItem(1, b)
+    tri.Edges.setItem(0, a)
+    tri.Edges.setItem(1, b)
     tri.BindEdgeToTriangle(aLeft, a)
     tri.BindEdgeToTriangle(aRight, b)
     tri.CreateEdge(2, createEdgeDelegate)
@@ -127,7 +127,7 @@ export class CdtTriangle {
     const a = this.Sites.getItem(i)
     const b = this.Sites.getItem(i + 1)
     const edge: CdtEdge = createEdgeDelegate(a, b)
-    this.TriEdges.setItem(i, edge)
+    this.Edges.setItem(i, edge)
     this.BindEdgeToTriangle(a, edge)
   }
 
@@ -138,7 +138,7 @@ export class CdtTriangle {
   OppositeEdge(pi: CdtSite): CdtEdge {
     const index = this.Sites.index(pi)
     /*Assert.assert(index !== -1)*/
-    return this.TriEdges.getItem(index + 1)
+    return this.Edges.getItem(index + 1)
   }
 
   // #if TEST_MSAGL&&TEST_MSAGL
@@ -150,7 +150,7 @@ export class CdtTriangle {
   //         }
   // #endif
   OppositeSite(cdtEdge: CdtEdge): CdtSite {
-    const i = this.TriEdges.index(cdtEdge)
+    const i = this.Edges.index(cdtEdge)
     return this.Sites.getItem(i + 2)
   }
 
@@ -172,8 +172,8 @@ export class CdtTriangle {
     t.Sites.setItem(0, aLeft)
     t.Sites.setItem(1, aRight)
     t.Sites.setItem(2, bRight)
-    t.TriEdges.setItem(0, a)
-    t.TriEdges.setItem(1, b)
+    t.Edges.setItem(0, a)
+    t.Edges.setItem(1, b)
     t.BindEdgeToTriangle(aLeft, a)
     t.BindEdgeToTriangle(aRight, b)
     t.CreateEdge(2, createEdgeDelegate)
