@@ -414,4 +414,16 @@ export class Polyline implements ICurve {
     if (this.closed) Curve.continueWithLineSegmentP(c, this.startPoint.point)
     return c
   }
+  RemoveCollinearVertices(): Polyline {
+    for (let pp: PolylinePoint = this.startPoint.next; pp.next != null; pp = pp.next) {
+      if (Point.getTriangleOrientation(pp.prev.point, pp.point, pp.next.point) === TriangleOrientation.Collinear) {
+        pp.prev.next = pp.next
+        pp.next.prev = pp.prev
+      }
+    }
+
+    this.setInitIsRequired()
+
+    return this
+  }
 }

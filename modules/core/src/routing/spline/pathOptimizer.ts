@@ -1,9 +1,10 @@
 import {Queue} from 'queue-typescript'
-//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 import {CurveFactory, GeomConstants, LineSegment, Point, Polyline} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {Assert} from '../../utils/assert'
+import {PointMap} from '../../utils/PointMap'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
@@ -13,7 +14,7 @@ import {CdtThreader} from './bundling/CdtThreader'
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-const debCount = 0
+let debCount = 0
 export class PathOptimizer {
   cdt: Cdt
   poly: Polyline
@@ -68,6 +69,43 @@ export class PathOptimizer {
     Assert.assert(this.poly.count >= 4)
     this.findTrianglesIntersectingThePolyline()
 
+    const perimeter = this.getPerimeterEdges()
+    const perimeterPoly = this.getPerimeterPoly(perimeter)
+    const dc = getDebugCurvesFromEdgesAndCdt(this.poly, this.cdt)
+    for (let pp = perimeterPoly.startPoint; pp.next; pp = pp.next) {
+      dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(pp.point, pp.next.point)))
+    }
+
+    SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
+  }
+  getPerimeterPoly(perimeter: Set<CdtEdge>): Polyline {
+    const adjSites = new Map<CdtSite, CdtEdge[]>() // actually, each value array whill have exactly two elements
+    for (const e of perimeter) {
+      adjSites.set(e.lowerSite, [])
+      adjSites.set(e.upperSite, [])
+    }
+    for (const e of perimeter) {
+      adjSites.get(e.lowerSite).push(e)
+      adjSites.get(e.upperSite).push(e)
+    }
+    let e = perimeter.values().next().value
+    const poly = Polyline.mkFromPoints([e.lowerSite.point, e.upperSite.point])
+    const n = perimeter.size
+    let lastSite = e.upperSite
+    // we should create n-2 edge and then close the polyline
+    for (let k = 1; k < n; k++) {
+      const ens = adjSites.get(lastSite)
+      const en = ens[0] === e ? ens[1] : ens[0]
+      lastSite = en.upperSite === lastSite ? en.lowerSite : en.upperSite
+      poly.addPoint(lastSite.point)
+      e = en
+    }
+    poly.closed = true
+    poly.RemoveCollinearVertices()
+    return poly
+  }
+
+  private getPerimeterEdges(): Set<CdtEdge> {
     const perimeter = new Set<CdtEdge>()
     for (const t of this.triangles) {
       for (const e of t.TriEdges) {
@@ -76,13 +114,7 @@ export class PathOptimizer {
         }
       }
     }
-
-    const dc = getDebugCurvesFromEdgesAndCdt(this.poly, this.cdt)
-    for (const e of perimeter) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-    }
-
-    //SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
+    return perimeter
   }
 
   findTrianglesIntersectingThePolyline_() {
