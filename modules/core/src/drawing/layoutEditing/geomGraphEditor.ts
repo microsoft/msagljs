@@ -514,7 +514,7 @@ export class GeometryGraphEditor {
     const even: boolean = k * 2 === edges.length
     let off: number
     if (even) {
-      off = (separation / 2) * -1
+      off = -(separation / 2)
       for (let j: number = k - 1; j >= 0; j--) {
         const edge: GeomEdge = edges[j]
         offsetsInsideOfMultiedge.set(edge, off)

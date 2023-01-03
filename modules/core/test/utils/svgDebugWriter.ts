@@ -9,12 +9,11 @@ import {DebugCurve} from '../../src/math/geometry/debugCurve'
 import {Ellipse} from '../../src/math/geometry/ellipse'
 import {allVerticesOfParall} from '../../src/math/geometry/parallelogram'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
-import {DrawingObject} from '../../src/drawing/drawingObject'
-import {DrawingEdge, DrawingNode} from '../../src/drawing'
 import {fontHeight} from './testUtils'
 import {GeomEdge} from '../../src/layout/core/geomEdge'
 import {GeomGraph} from '../../src/layout/core/geomGraph'
 import {Node} from '../../src/structs/node'
+import {AttributeRegistry} from '../../src/structs/attributeRegistry'
 // this function would be called by jest whenever it uses SvgDebugWriter
 beforeAll(() => {
   const dir = 'tmp'
@@ -305,10 +304,10 @@ export class SvgDebugWriter {
     return ret.join('')
   }
   private writeLabel(node: Node, label: Rectangle) {
-    const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
+    const drawingNode = node.getAttr(AttributeRegistry.DrawingObjectIndex)
+
     const text = drawingNode ? drawingNode.labelText ?? node.id : node.id
     const margin = drawingNode ? drawingNode.LabelMargin : 2
-
     this.writeLabelTextWithMargin(label, margin, text)
   }
 
@@ -341,7 +340,7 @@ export class SvgDebugWriter {
     if (edge != null && edge.targetArrowhead != null) this.addArrow(icurve.end, edge.targetArrowhead.tipPosition)
 
     if (edge.label != null) {
-      const de = DrawingEdge.getDrawingObj(edge.edge) as DrawingEdge
+      const de = edge.edge.getAttr(AttributeRegistry.DrawingObjectIndex)
       if (de) {
         this.writeLabelTextWithMargin(edge.label.boundingBox, 1, de.labelText)
       }

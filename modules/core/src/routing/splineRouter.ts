@@ -55,6 +55,7 @@ import {SdShortestPath} from './spline/bundling/SdShortestPath'
 import {Cdt, createCDTOnPolylineRectNode} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
+import {PathOptimizer} from './spline/pathOptimizer'
 
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
@@ -384,7 +385,7 @@ export class SplineRouter extends Algorithm {
   //   return ret
   // }
 
-  RouteEdgesWithTheSamePassport(
+  private RouteEdgesWithTheSamePassport(
     edgeGeometryGroup: {passport: Set<Shape>; edges: Iterable<GeomEdge>},
     interactiveEdgeRouter: InteractiveEdgeRouter,
     obstacleShapes: Set<Shape>,
@@ -394,6 +395,7 @@ export class SplineRouter extends Algorithm {
       multiEdges: [],
     }
     if (this.RouteMultiEdgesAsBundles) {
+      interactiveEdgeRouter.pathOptimizer = new PathOptimizer(this.cdtOnLooseHierarchy)
       this.SplitOnRegularAndMultiedges(edgeGeometryGroup.edges, t)
 
       for (let i = 0; i < t.regularEdges.length; i++) {

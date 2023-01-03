@@ -1,4 +1,4 @@
-import {Point} from '../../..'
+import {Assert, Point} from '../../..'
 import {PointLocation, GeomConstants} from '../../../math/geometry'
 import {TriangleOrientation} from '../../../math/geometry/point'
 
@@ -31,16 +31,12 @@ export class CdtThreader {
     this.currentTriangle = startTriangle
     this.start = start
     this.end = end
-    //Assert.assert(CdtThreader.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
+    Assert.assert(CdtTriangle.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
   }
 
-  *Triangles(): IterableIterator<CdtTriangle> {
-    while (this.MoveNext()) yield this.CurrentTriangle
-  }
-
-  FindFirstPiercedEdge(): CdtEdge {
-    //Assert.assert(CdtThreader.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)
-    //Assert.assert(CdtThreader.PointLocationForTriangle(this.end, this.currentTriangle) === PointLocation.Outside)
+  private FindFirstPiercedEdge(): CdtEdge {
+    //Assert.assert(CdtTriangle.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)
+    //Assert.assert(CdtTriangle.PointLocationForTriangle(this.end, this.currentTriangle) === PointLocation.Outside)
     const sign0 = this.GetHyperplaneSign(this.currentTriangle.Sites.item0)
     const sign1 = this.GetHyperplaneSign(this.currentTriangle.Sites.item1)
     if (sign0 !== sign1) {
@@ -72,23 +68,7 @@ export class CdtThreader {
     return this.currentTriangle.TriEdges.item2
   }
 
-  static PointLocationForTriangle(p: Point, triangle: CdtTriangle): PointLocation {
-    let seenBoundary = false
-    for (let i = 0; i < 3; i++) {
-      const area = Point.signedDoubledTriangleArea(p, triangle.Sites.getItem(i).point, triangle.Sites.getItem(i + 1).point)
-      if (area < GeomConstants.distanceEpsilon * -1) {
-        return PointLocation.Outside
-      }
-
-      if (area < GeomConstants.distanceEpsilon) {
-        seenBoundary = true
-      }
-    }
-
-    return seenBoundary ? PointLocation.Boundary : PointLocation.Inside
-  }
-
-  FindNextPierced() {
+  private FindNextPierced() {
     //Assert.assert(this.negativeSign < this.positiveSign)
     this.currentTriangle = this.currentPiercedEdge.GetOtherTriangle_T(this.currentTriangle)
     //            ShowDebug(null,currentPiercedEdge,currentTriangle);
@@ -150,13 +130,13 @@ export class CdtThreader {
   //                debugCurves.Add(new DebugCurve(transparency,width,color,new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
   //            }
   //        }
-  GetHyperplaneSign(cdtSite: CdtSite): number {
+  private GetHyperplaneSign(cdtSite: CdtSite): number {
     const area = Point.signedDoubledTriangleArea(this.start, cdtSite.point, this.end)
     if (area > GeomConstants.distanceEpsilon) {
       return 1
     }
 
-    if (area < GeomConstants.distanceEpsilon * -1) {
+    if (area < -GeomConstants.distanceEpsilon) {
       return -1
     }
 
