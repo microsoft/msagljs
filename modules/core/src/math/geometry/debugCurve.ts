@@ -10,6 +10,17 @@ export class DebugCurve {
   dashArray: number[]
   label: any
   drawPN: boolean
+  clone(): DebugCurve {
+    const r = new DebugCurve()
+    r.transparency = this.transparency
+    r.width = this.width
+    r.color = this.color
+    r.icurve = this.icurve.clone()
+    r.label = this.label
+    r.dashArray = this.dashArray
+    r.drawPN = this.drawPN
+    return r
+  }
   static mkDebugCurveTWCILD(
     transparency: number,
     width: number,
