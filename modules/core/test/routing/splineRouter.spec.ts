@@ -680,7 +680,7 @@ test('one edge with two obstacles', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/one_edge_with_two_obstacles.svg', g)
 })
 
-test('edges with three obstacles', () => {
+test('edges with five obstacles', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const as = g.graph.addNode(new Node('a'))
   const bs = g.graph.addNode(new Node('b'))
@@ -690,7 +690,7 @@ test('edges with three obstacles', () => {
   const a = new GeomNode(as)
   a.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 3, 3, new Point(0, 0))
   const b = new GeomNode(bs)
-  b.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(40, 20, 3, 3, new Point(-10, 200))
+  b.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(40, 20, 3, 3, new Point(-10, 210))
   const c = new GeomNode(cs)
   c.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(60, 20, 3, 3, new Point(35, 170))
   const d = new GeomNode(ds)
