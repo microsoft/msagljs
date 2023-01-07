@@ -59,7 +59,8 @@ export class PathOptimizer {
       this.addToTriangles(t)
       for (const e of t.Edges) {
         const ot = e.GetOtherTriangle_T(t)
-        if (trs.has(ot)) continue
+
+        if (ot == null || trs.has(ot)) continue
         if (ot.intersectsLine(start, end)) {
           addTriangle(ot)
         }
