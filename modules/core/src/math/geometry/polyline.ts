@@ -9,6 +9,7 @@ import {PolylinePoint} from './polylinePoint'
 import {Parallelogram} from './parallelogram'
 import {LineSegment} from './lineSegment'
 import {Curve} from './curve'
+import {random} from '../../utils/random'
 
 type AdjustedPar = {
   a: Point
@@ -119,7 +120,9 @@ export class Polyline implements ICurve {
 
   static mkFromPoints(ps: Iterable<Point>): Polyline {
     const r = new Polyline()
-    for (const p of ps) r.addPoint(p)
+    for (const p of ps) {
+      r.addPoint(p)
+    }
     return r
   }
 

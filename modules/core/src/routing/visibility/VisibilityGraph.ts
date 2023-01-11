@@ -7,7 +7,7 @@ import {VisibilityEdge} from './VisibilityEdge'
 import {VisibilityVertex} from './VisibilityVertex'
 
 export class VisibilityGraph {
-  *edges_(): IterableIterator<VisibilityEdge> {
+  private *edges_(): IterableIterator<VisibilityEdge> {
     for (const u of this.pointToVertexMap.values()) {
       for (const e of u.OutEdges) yield e
     }

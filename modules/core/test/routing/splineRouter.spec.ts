@@ -702,7 +702,7 @@ test('edges with five obstacles', () => {
 
   const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
   sr.run()
-  // SvgDebugWriter.writeGeomGraph('./tmp/edges_with_three_obstacles.svg', g)
+  SvgDebugWriter.writeGeomGraph('./tmp/edges_with_three_obstacles.svg', g)
 })
 
 test('two edges with obstacle', () => {

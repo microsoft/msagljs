@@ -761,8 +761,11 @@ export class InteractiveEdgeRouter extends Algorithm {
     }
 
     ret = ret.RemoveCollinearVertices()
-    this.pathOptimizer.run(ret, this.SourceLoosePolyline, this.targetLoosePolyline)
-    return this.pathOptimizer.poly
+    if (this.pathOptimizer) {
+      this.pathOptimizer.run(ret, this.SourceLoosePolyline, this.targetLoosePolyline)
+      return this.pathOptimizer.poly
+    }
+    return ret
   }
 
   // private ShowIsPassable(sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex) {

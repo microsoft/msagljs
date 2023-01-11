@@ -519,9 +519,6 @@ export class SdShortestPath {
     const vertexTree = CreateRectNodeOnArrayOfRectNodes(this.vertexArray.map((v) => mkRectangleNode(v, Rectangle.mkOnPoints([v.Point]))))
 
     CrossRectangleNodes(triangleTree, vertexTree, (a, b) => this.TryToAssigenTriangleToVertex(a, b))
-    for (const v of this.vertexArray) {
-      //Assert.assert(v.Triangle != null)
-    }
   }
 
   TryToAssigenTriangleToVertex(triangle: CdtTriangle, vertex: SdVertex) {

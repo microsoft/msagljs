@@ -242,7 +242,7 @@ test('b56.gv', () => {
 test('smlred.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/smlred.gv', ss)
-  // SvgDebugWriter.writeGeomGraph('./tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+  SvgDebugWriter.writeGeomGraph('./tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
 })
 
 test('b51.gv', () => {

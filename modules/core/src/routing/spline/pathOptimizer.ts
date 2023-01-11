@@ -1,9 +1,7 @@
 import {Queue} from 'queue-typescript'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-import {CurveFactory, GeomConstants, LineSegment, Point, Polyline} from '../../math/geometry'
+import {LineSegment, Point, Polyline} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
-import {PolylinePoint} from '../../math/geometry/polylinePoint'
 import {HitTestBehavior} from '../../math/geometry/RTree/hitTestBehavior'
 import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {Assert} from '../../utils/assert'
@@ -28,21 +26,23 @@ export class PathOptimizer {
   targetPoly: Polyline
   d: Diagonal[]
   cdtTree: RectangleNode<T, Point>
-  constructor(cdt: Cdt) {
+  setCdt(cdt: Cdt) {
     this.cdt = cdt
-    cdt.SetInEdges()
-    this.cdtTree = this.cdt.getRectangleNodeOnTriangles()
+    if (cdt) {
+      cdt.SetInEdges()
+      this.cdtTree = this.cdt.getRectangleNodeOnTriangles()
+    }
   }
+
   triangles = new Set<T>()
   findTrianglesIntersectingThePolyline() {
-    if (this.poly.count <= 2) return
-    Assert.assert(this.poly.count >= 4)
-    let t = this.getPointTriangle(this.poly.start)
+    this.triangles.clear()
+    let t = this.getPointTriangleInTheGlobalCdt(this.poly.start)
     for (let p = this.poly.startPoint; p.next; p = p.next) {
       t = this.addLineSeg(t, p.point, p.next.point)
     }
   }
-  getPointTriangle(start: Point): T {
+  getPointTriangleInTheGlobalCdt(start: Point): T {
     return this.cdtTree.FirstHitNodeWithPredicate(start, (p, t) => (t.containsPoint(p) ? HitTestBehavior.Stop : HitTestBehavior.Continue))
       .UserData
   }
@@ -52,7 +52,7 @@ export class PathOptimizer {
     let t = startTri
     const trs = new Set<T>()
     let retTri: CdtTriangle = null
-    addTriangle(t)
+    enqueueTriangle(t, (t) => this.canBelongToTriangles(t))
 
     while (q.length > 0) {
       t = q.dequeue()
@@ -62,38 +62,42 @@ export class PathOptimizer {
 
         if (ot == null || trs.has(ot)) continue
         if (ot.intersectsLine(start, end)) {
-          addTriangle(ot)
+          enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
         }
       }
     }
     return retTri
 
-    function addTriangle(tr: T) {
+    function enqueueTriangle(tr: T, test: (t: T) => boolean) {
       q.enqueue(tr)
       trs.add(tr)
-      if (retTri == null && tr.containsPoint(end)) {
+
+      if (retTri == null && test(tr) && tr.containsPoint(end)) {
         retTri = tr
       }
     }
   }
-  private addToTriangles(t: T) {
+  private canBelongToTriangles(t: T): boolean {
     const owner = t.Sites.item0.Owner
-    if (owner === this.sourcePoly || owner === this.targetPoly || !triangIsInsideOfObstacle(t)) {
+    return owner === this.sourcePoly || owner === this.targetPoly || !triangIsInsideOfObstacle(t)
+  }
+  private addToTriangles(t: T) {
+    if (this.canBelongToTriangles(t)) {
       this.triangles.add(t)
     }
   }
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
+    ++debCount
     this.poly = poly
+    if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
-    if (this.poly.count <= 2) return poly
-    Assert.assert(this.poly.count >= 4)
     this.findTrianglesIntersectingThePolyline()
 
     const perimeter = this.getPerimeterEdges()
     const perimeterPoly = this.getPerimeterPoly(perimeter)
-
+    //if (debCount == 46) this.drawInitialPolyDebuggg(perimeter, perimeterPoly, poly)
     const localCdt = new Cdt([], [perimeterPoly], [])
     localCdt.run()
 
@@ -107,44 +111,44 @@ export class PathOptimizer {
     }
 
     const sleeve: SleeveEdge[] = this.getSleeve(sourceTriangle)
-
+    if (sleeve == null) {
+      // this.poly remains unchanged in this case
+      // in one case the original polyline was crossing a wrong obstacle and it caused the peremiter polyline
+      // not having the end inside
+      return
+    }
     this.initDiagonals(sleeve)
-    this.drawInitialPolyDebuggg()
-    let dc = getDebugCurvesFromCdt(localCdt)
-    this.refineFunnel(dc)
-    const c = this.poly
-    dc = dc.concat([
-      DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c),
-      DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', CurveFactory.mkCircle(5, c.start)),
-    ])
-    for (const d of this.d) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Magenta', CurveFactory.mkCircle(3, d.left)))
-      dc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Navy', CurveFactory.mkCircle(3, d.right)))
-    }
 
-    for (let pp = perimeterPoly.startPoint; pp.next; pp = pp.next) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(pp.point, pp.next.point)))
-    }
+    // let dc = getDebugCurvesFromCdt(localCdt)
+    this.refineFunnel(/*dc*/)
+    //  const c = this.poly
+    // dc = dc.concat([
+    //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c),
+    //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', CurveFactory.mkCircle(5, c.start)),
+    // ])
 
-    SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
+    // for (let pp = perimeterPoly.startPoint; pp.next; pp = pp.next) {
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(pp.point, pp.next.point)))
+    // }
+
+    // SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
   }
-  drawInitialPolyDebuggg() {
-    const sites = this.cdt.PointsToSites.values()
-    const polys = Array.from(
-      new Set<Polyline>(
-        Array.from(sites)
-          .map((s) => s.Owner as Polyline)
-          .filter((e) => e != null),
-      ),
-    )
-
-    SvgDebugWriter.dumpDebugCurves(
-      '/tmp/poly.svg',
-      polys.map((p) => DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', p)).concat([DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', this.poly)]),
-    )
+  drawInitialPolyDebuggg(perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+    // const dc = []
+    // for (const t of this.cdt.GetTriangles()) {
+    //   for (const e of t.Edges) {
+    //     dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 3 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+    //   }
+    // }
+    // for (const e of perimEdges) {
+    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+    // }
+    // if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
+    // if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Brown', originalPoly))
+    // SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++debCount + '.svg', dc)
   }
 
-  refineFunnel(dc: Array<DebugCurve>) {
+  refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
     const prefix: Point[] = [] // the path befor apex
     let v = this.poly.start // the apex point
@@ -175,7 +179,7 @@ export class PathOptimizer {
       Assert.assert(leftStep || d[i - 1].right !== d[i].right)
       if (leftStep) {
         z = d[i].left
-        draw(d[i - 1], d[i], dc)
+        //draw(d[i - 1], d[i], dc)
         let p = leftChainEnd
         for (; !(isApex(p) || reflexLeft(p)); p = p.prev) {
           // just stepping back on the left chain
@@ -198,32 +202,32 @@ export class PathOptimizer {
           extendRightChainFromP(p)
         }
       }
-      draw(d[i - 1], d[i], dc)
+      //draw(d[i - 1], d[i], dc)
     }
 
-    function draw(d: Diagonal, dn: Diagonal, dc: DebugCurve[]) {
-      const ldc = dc.map((d) => d.clone())
+    // function draw(d: Diagonal, dn: Diagonal, dc: DebugCurve[]) {
+    //   const ldc = dc.map((d) => d.clone())
 
-      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Yellow', LineSegment.mkPP(d.left, d.right)))
-      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'cyan', LineSegment.mkPP(dn.left, dn.right)))
-      for (let l: PathPoint = leftChainStart; l && l.next; l = l.next) {
-        ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Magenta', LineSegment.mkPP(l.point, l.next.point)))
-      }
-      for (let r: PathPoint = rightChainStart; r && r.next; r = r.next) {
-        ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Navy', LineSegment.mkPP(r.point, r.next.point)))
-      }
+    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Yellow', LineSegment.mkPP(d.left, d.right)))
+    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'cyan', LineSegment.mkPP(dn.left, dn.right)))
+    //   for (let l: PathPoint = leftChainStart; l && l.next; l = l.next) {
+    //     ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Magenta', LineSegment.mkPP(l.point, l.next.point)))
+    //   }
+    //   for (let r: PathPoint = rightChainStart; r && r.next; r = r.next) {
+    //     ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Navy', LineSegment.mkPP(r.point, r.next.point)))
+    //   }
 
-      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'red', CurveFactory.mkCircle(3, v)))
+    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'red', CurveFactory.mkCircle(3, v)))
 
-      if (prefix.length) {
-        for (let i = 0; i < prefix.length - 1; i++) {
-          ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[i], prefix[i + 1])))
-        }
-        ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[prefix.length - 1], v)))
-      }
+    //   if (prefix.length) {
+    //     for (let i = 0; i < prefix.length - 1; i++) {
+    //       ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[i], prefix[i + 1])))
+    //     }
+    //     ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[prefix.length - 1], v)))
+    //   }
 
-      SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
-    }
+    //   SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
+    // }
     function visibleRight(pp: PathPoint) {
       if (pp.next == null) {
         return true
@@ -332,7 +336,7 @@ export class PathOptimizer {
   getSleeve(sourceTriangle: T): SleeveEdge[] {
     const q = new Queue<T>()
     q.enqueue(sourceTriangle)
-
+    Assert.assert(sourceTriangle != null)
     const edgeMap = new Map<T, SleeveEdge | undefined>()
     edgeMap.set(sourceTriangle, undefined)
     while (q.length > 0) {
@@ -363,29 +367,57 @@ export class PathOptimizer {
     }
     return ret.reverse()
   }
-  /** the main purpose of this method is to shorcut collinear vertices */
+  /** creates a simple polygon containing the polyline */
   getPerimeterPoly(perimeter: Set<E>): Polyline {
-    const adjSites = new Map<S, E[]>() // actually, each value array whill have exactly two elements
+    const siteMap = new Map<S, E[]>()
+    let firstEdge: E = null
     for (const e of perimeter) {
-      adjSites.set(e.lowerSite, [])
-      adjSites.set(e.upperSite, [])
+      if (firstEdge == null) {
+        firstEdge = e
+        continue
+      }
+      let edges = siteMap.get(e.lowerSite)
+      if (edges == null) {
+        siteMap.set(e.lowerSite, (edges = []))
+      }
+      edges.push(e)
+      edges = siteMap.get(e.upperSite)
+      if (edges == null) {
+        siteMap.set(e.upperSite, (edges = []))
+      }
+      edges.push(e)
     }
-    for (const e of perimeter) {
-      adjSites.get(e.lowerSite).push(e)
-      adjSites.get(e.upperSite).push(e)
-    }
-    let e = perimeter.values().next().value
-    const poly = Polyline.mkFromPoints([e.lowerSite.point, e.upperSite.point])
-    const n = perimeter.size
-    let lastSite = e.upperSite
-    // we should create n-2 edge and then close the polyline
-    for (let k = 2; k < n; k++) {
-      const ens = adjSites.get(lastSite)
-      const en = ens[0] === e ? ens[1] : ens[0]
-      lastSite = en.upperSite === lastSite ? en.lowerSite : en.upperSite
+
+    // firstEdge.upperSite will be the start point of the polyline
+
+    const poly = Polyline.mkFromPoints([firstEdge.upperSite.point, firstEdge.lowerSite.point])
+    siteMap.delete(firstEdge.upperSite)
+    let e: E
+    let lastSite = firstEdge.lowerSite
+    do {
+      let es = siteMap.get(lastSite)
+
+      Assert.assert(es.length == 1)
+      e = es[0]
+      lastSite = e.OtherSite(lastSite)
+      if (lastSite == firstEdge.upperSite) {
+        break
+      }
       poly.addPoint(lastSite.point)
-      e = en
-    }
+
+      es = siteMap.get(lastSite)
+      if (es.length != 2) {
+        return null // in some case the perimeter polygon is generated to a narrow canal th
+        // this.drawInitialPolyDebuggg(perimeter, null, null)
+      }
+      Assert.assert(es.length == 2)
+      if (es[0] === e) {
+        es[0] = es[1]
+      } else {
+        Assert.assert(es[1] === e)
+      }
+      es.pop()
+    } while (true)
     poly.closed = true
     poly.RemoveCollinearVertices()
     return poly
