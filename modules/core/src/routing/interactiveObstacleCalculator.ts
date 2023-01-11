@@ -1,4 +1,4 @@
-import {Rectangle} from '..'
+import {Assert, Rectangle} from '..'
 import {LineSegment} from '../math/geometry'
 import {ConvexHull} from '../math/geometry/convexHull'
 import {Curve, PointLocation} from '../math/geometry/curve'
@@ -12,6 +12,7 @@ import {CrossRectangleNodesSameType} from '../math/geometry/RTree/rectangleNodeU
 import {GetConnectedComponents} from '../math/graphAlgorithms/ConnectedComponentCalculator'
 import {mkGraphOnEdgesArray} from '../structs/basicGraphOnEdges'
 import {IntPair} from '../utils/IntPair'
+import {random} from '../utils/random'
 import {flattenArray} from '../utils/setOperations'
 import {Polygon} from './visibility/Polygon'
 
@@ -25,15 +26,15 @@ export class InteractiveObstacleCalculator {
   LooseObstacles: Polyline[]
   TightObstacles = new Set<Polyline>()
   OverlapsDetected: boolean
-  private static PadCorner(poly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number): boolean {
+  private static PadCorner(localpoly: Polyline, p0: PolylinePoint, p1: PolylinePoint, p2: PolylinePoint, padding: number): boolean {
     const padInfo = InteractiveObstacleCalculator.GetPaddedCorner(p0, p1, p2, padding)
     if (padInfo.numberOfPoints === -1) {
       return false
     }
 
-    poly.addPoint(padInfo.a)
+    localpoly.addPoint(padInfo.a)
     if (padInfo.numberOfPoints === 2) {
-      poly.addPoint(padInfo.b)
+      localpoly.addPoint(padInfo.b)
     }
 
     return true
@@ -45,20 +46,32 @@ export class InteractiveObstacleCalculator {
       TriangleOrientation.Clockwise
     )
   }
-  static PaddedPolylineBoundaryOfNode(curve: ICurve, padding: number): Polyline {
-    return InteractiveObstacleCalculator.CreatePaddedPolyline(Curve.polylineAroundClosedCurve(curve), padding)
+  static PaddedPolylineBoundaryOfNode(curve: ICurve, padding: number, randomizePoints = false): Polyline {
+    return InteractiveObstacleCalculator.CreatePaddedPolyline(Curve.polylineAroundClosedCurve(curve), padding, randomizePoints)
   }
 
-  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number): Polyline {
+  /** surrounds the given polyline with the given offset, optionally randomizes the output */
+  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number, randomize = true): Polyline {
+    Assert.assert(randomize) // debug
     if (p < GeomConstants.distanceEpsilon) {
       return tightPolyline
     }
 
-    return InteractiveObstacleCalculator.CreateLoosePolylineOnBisectors(tightPolyline, p)
+    return InteractiveObstacleCalculator.CreateLoosePolylineOnBisectors(tightPolyline, p, randomize)
   }
 
-  static CreateLoosePolylineOnBisectors(tightPolyline: Polyline, offset: number): Polyline {
-    return Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(InteractiveObstacleCalculator.BisectorPoints(tightPolyline, offset)))
+  static CreateLoosePolylineOnBisectors(tightPolyline: Polyline, offset: number, randomize: boolean): Polyline {
+    const ps = Array.from(InteractiveObstacleCalculator.BisectorPoints(tightPolyline, offset))
+    if (randomize) randomizePoints()
+    const convHull = ConvexHull.CalculateConvexHull(ps)
+    return Polyline.mkClosedFromPoints(convHull)
+
+    function randomizePoints() {
+      for (let i = 0; i < ps.length; i++) {
+        const p = ps[i]
+        ps[i] = new Point(p.x + 0.001 * random(), p.y + 0.001 * random())
+      }
+    }
   }
   static CreateRectNodeOfPolyline(polyline: Polyline): RectangleNode<Polyline, Point> {
     return mkRectangleNode<Polyline, Point>(polyline, (<ICurve>polyline).boundingBox)
@@ -147,8 +160,8 @@ export class InteractiveObstacleCalculator {
 
       this.RootOfTightHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(Array.from(this.TightObstacles))
     } else {
-      for (const poly of polysWithoutPadding) {
-        this.TightObstacles.add(InteractiveObstacleCalculator.CreatePaddedPolyline(poly, this.TightPadding))
+      for (const localpoly of polysWithoutPadding) {
+        this.TightObstacles.add(InteractiveObstacleCalculator.CreatePaddedPolyline(localpoly, this.TightPadding))
       }
 
       if (!this.IsEmpty()) {
@@ -224,8 +237,8 @@ export class InteractiveObstacleCalculator {
       const polys = component.map((i) => intToPoly[i])
       const points = flattenArray(polys, (p) => p)
       const convexHull = ConvexHull.createConvexHullAsClosedPolyline(points)
-      for (const poly of polys) {
-        tightObsts.delete(poly)
+      for (const localpoly of polys) {
+        tightObsts.delete(localpoly)
       }
 
       tightObsts.add(convexHull)
@@ -257,17 +270,14 @@ export class InteractiveObstacleCalculator {
     })
     return overlappingPairSet
   }
-  static BisectorPoints(tightPolyline: Polyline, offset: number): Array<Point> {
-    const ret: Array<Point> = new Array<Point>()
+  static *BisectorPoints(tightPolyline: Polyline, offset: number): IterableIterator<Point> {
     for (let pp: PolylinePoint = tightPolyline.startPoint; pp != null; pp = pp.next) {
       const t = {skip: false}
       const currentSticking: Point = InteractiveObstacleCalculator.GetStickingVertexOnBisector(pp, offset, t)
       if (!t.skip) {
-        ret.push(currentSticking)
+        yield currentSticking
       }
     }
-
-    return ret
   }
 
   static GetStickingVertexOnBisector(pp: PolylinePoint, p: number, t: {skip: boolean}): Point {
@@ -291,8 +301,8 @@ export class InteractiveObstacleCalculator {
     const polygon = new Polygon(polyline)
     const boundingBox = polyline.boundingBox.clone()
     boundingBox.pad(2 * desiredPadding)
-    for (const poly of Array.from(hierarchy.GetNodeItemsIntersectingRectangle(boundingBox)).filter((p) => p !== polyline)) {
-      const separation = Polygon.Distance(polygon, new Polygon(poly)).dist
+    for (const localpoly of Array.from(hierarchy.GetNodeItemsIntersectingRectangle(boundingBox)).filter((p) => p !== polyline)) {
+      const separation = Polygon.Distance(polygon, new Polygon(localpoly)).dist
       dist = Math.min(dist, separation / InteractiveObstacleCalculator.LooseDistCoefficient)
     }
 
@@ -351,34 +361,35 @@ export class InteractiveObstacleCalculator {
     return Point.getTriangleOrientation(v, a, w) === TriangleOrientation.Counterclockwise
     //   return Point.Angle(u, v, w) > Math.PI / 4;
   }
-  static CreatePaddedPolyline(poly: Polyline, padding: number): Polyline {
+  static CreatePaddedPolyline(poly: Polyline, padding: number, randomizePoints = false): Polyline {
     /*Assert.assert(
       Point.getTriangleOrientation(
-        poly.start,
-        poly.startPoint.next.point,
-        poly.startPoint.next.next.point,
+        localpoly.start,
+        localpoly.startPoint.next.point,
+        localpoly.startPoint.next.next.point,
       ) === TriangleOrientation.Clockwise,
       'Unpadded polyline is not clockwise',
     )*/
     const ret = new Polyline()
-    if (!InteractiveObstacleCalculator.PadCorner(ret, poly.endPoint.prev, poly.endPoint, poly.startPoint, padding)) {
+    const localPoly = randomizePoints ? getPolyRandom(poly) : poly
+    if (!InteractiveObstacleCalculator.PadCorner(ret, localPoly.endPoint.prev, localPoly.endPoint, localPoly.startPoint, padding)) {
       return InteractiveObstacleCalculator.CreatePaddedPolyline(
-        Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(poly))),
+        Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(localPoly))),
         padding,
       )
     }
 
-    if (!InteractiveObstacleCalculator.PadCorner(ret, poly.endPoint, poly.startPoint, poly.startPoint.next, padding)) {
+    if (!InteractiveObstacleCalculator.PadCorner(ret, localPoly.endPoint, localPoly.startPoint, localPoly.startPoint.next, padding)) {
       return InteractiveObstacleCalculator.CreatePaddedPolyline(
-        Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(poly))),
+        Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(localPoly))),
         padding,
       )
     }
 
-    for (let pp = poly.startPoint; pp.next.next != null; pp = pp.next) {
+    for (let pp = localPoly.startPoint; pp.next.next != null; pp = pp.next) {
       if (!InteractiveObstacleCalculator.PadCorner(ret, pp, pp.next, pp.next.next, padding)) {
         return InteractiveObstacleCalculator.CreatePaddedPolyline(
-          Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(poly))),
+          Polyline.mkClosedFromPoints(Array.from(ConvexHull.CalculateConvexHull(localPoly))),
           padding,
         )
       }
@@ -395,4 +406,15 @@ export class InteractiveObstacleCalculator {
     ret.closed = true
     return ret
   }
+}
+function getPolyRandom(poly: Polyline): Polyline {
+  const ret = new Polyline()
+  const eps = 0.01
+  for (let p = poly.startPoint; p; p = p.next) {
+    const x = p.point.x + eps * random()
+    const y = p.point.y + eps * random()
+    ret.addPointXY(x, y)
+  }
+  ret.closed = poly.closed
+  return ret
 }
