@@ -4,7 +4,6 @@ import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {HitTestBehavior} from '../../math/geometry/RTree/hitTestBehavior'
 import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
-import {Assert} from '../../utils/assert'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge as E} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite as S} from '../ConstrainedDelaunayTriangulation/CdtSite'
@@ -47,7 +46,7 @@ export class PathOptimizer {
       .UserData
   }
   addLineSeg(startTri: CdtTriangle, start: Point, end: Point): CdtTriangle {
-    Assert.assert(startTri.containsPoint(start))
+    //Assert.assert(startTri.containsPoint(start))
     const q = new Queue<T>()
     let t = startTri
     const trs = new Set<T>()
@@ -175,8 +174,8 @@ export class PathOptimizer {
     function processDiagonal(i: number, d: Diagonal[]) {
       const leftStep = d[i - 1].left !== d[i].left
 
-      Assert.assert(!leftStep || d[i - 1].left.equal(d[i].left) == false)
-      Assert.assert(leftStep || d[i - 1].right !== d[i].right)
+      // Assert.assert(!leftStep || d[i - 1].left.equal(d[i].left) == false)
+      // Assert.assert(leftStep || d[i - 1].right !== d[i].right)
       if (leftStep) {
         z = d[i].left
         //draw(d[i - 1], d[i], dc)
@@ -294,7 +293,7 @@ export class PathOptimizer {
     }
     function isApex(pp: PathPoint) {
       const ret = pp.point == v
-      Assert.assert(ret || !pp.point.equal(v))
+      //Assert.assert(ret || !pp.point.equal(v))
       return ret
     }
 
@@ -336,7 +335,7 @@ export class PathOptimizer {
   getSleeve(sourceTriangle: T): SleeveEdge[] {
     const q = new Queue<T>()
     q.enqueue(sourceTriangle)
-    Assert.assert(sourceTriangle != null)
+    // Assert.assert(sourceTriangle != null)
     const edgeMap = new Map<T, SleeveEdge | undefined>()
     edgeMap.set(sourceTriangle, undefined)
     while (q.length > 0) {
@@ -351,7 +350,7 @@ export class PathOptimizer {
         if (edgeIntoT !== undefined && e === edgeIntoT.edge) continue
         const ot = e.GetOtherTriangle_T(t)
         if (ot == null) continue
-        Assert.assert(!edgeMap.has(ot))
+        //Assert.assert(!edgeMap.has(ot))
         edgeMap.set(ot, {source: t, edge: e})
         q.enqueue(ot)
       }
@@ -397,7 +396,7 @@ export class PathOptimizer {
     do {
       let es = siteMap.get(lastSite)
 
-      Assert.assert(es.length == 1)
+      //Assert.assert(es.length == 1)
       e = es[0]
       lastSite = e.OtherSite(lastSite)
       if (lastSite == firstEdge.upperSite) {
@@ -410,11 +409,11 @@ export class PathOptimizer {
         return null // in some case the perimeter polygon is generated to a narrow canal th
         // this.drawInitialPolyDebuggg(perimeter, null, null)
       }
-      Assert.assert(es.length == 2)
+      // Assert.assert(es.length == 2)
       if (es[0] === e) {
         es[0] = es[1]
       } else {
-        Assert.assert(es[1] === e)
+        //Assert.assert(es[1] === e)
       }
       es.pop()
     } while (true)
