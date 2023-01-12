@@ -312,7 +312,7 @@ export class SplineRouter extends Algorithm {
       this.AdjustedLoosePadding,
       this.shapesToTightLooseCouples,
     )
-    this.obstacleCalculator.Calculate()
+    this.obstacleCalculator.Calculate(true)
     this.OverlapsDetected ||= this.obstacleCalculator.OverlapsDetected
   }
 
@@ -448,6 +448,7 @@ export class SplineRouter extends Algorithm {
         InteractiveObstacleCalculator.LoosePolylineWithFewCorners(
           tl.TightPolyline,
           tl.Distance / 1.1, // 1.1 is BundleRouter.SuperLoosePaddingCoefficient,
+          false,
         ),
       )
     }
@@ -728,6 +729,7 @@ export class SplineRouter extends Algorithm {
       tl.LooseShape.BoundaryCurve = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(
         tl.TightPolyline,
         tl.Distance / BundleRouter.SuperLoosePaddingCoefficient,
+        false,
       )
     }
   }

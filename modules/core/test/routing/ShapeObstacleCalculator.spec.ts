@@ -13,11 +13,11 @@ test('initialTightPolyline', () => {
   SvgDebugWriter.dumpICurves('./tmp/initialTight.svg', [shape.BoundaryCurve, tightPolyline])
 })
 
-test('calculate', () => {
+test('calculate no children', () => {
   const shape = new Shape(CurveFactory.mkRectangleWithRoundedCorners(20, 20, 5, 5))
   const shObstCalc = new ShapeObstacleCalculator(shape, 2, 4, new Map<Shape, TightLooseCouple>())
-  shObstCalc.Calculate()
-  expect(!shObstCalc.tightHierarchy).toBe(true)
+  shObstCalc.Calculate(false)
+  expect(shObstCalc.tightHierarchy == undefined).toBe(true)
 })
 
 test('calculate with two children', () => {
@@ -30,7 +30,7 @@ test('calculate with two children', () => {
   root.AddChild(ch0)
   root.AddChild(ch1)
   const shObstCalc = new ShapeObstacleCalculator(root, 2, 4, new Map<Shape, TightLooseCouple>())
-  shObstCalc.Calculate()
+  shObstCalc.Calculate(false)
   const tightPolylines = Array.from(shObstCalc.tightHierarchy.GetAllLeaves())
   expect(tightPolylines.length === 2).toBe(true)
 })
@@ -45,7 +45,7 @@ test('overlap: two children', () => {
   root.AddChild(ch0)
   root.AddChild(ch1)
   const shObstCalc = new ShapeObstacleCalculator(root, 2, 4, new Map<Shape, TightLooseCouple>())
-  shObstCalc.Calculate()
+  shObstCalc.Calculate(false)
   const tightPolylines = Array.from(shObstCalc.tightHierarchy.GetAllLeaves())
   expect(tightPolylines.length === 1).toBe(true)
   // const dc = []
@@ -66,7 +66,7 @@ test('overlap: random', () => {
     root.AddChild(ch0)
   }
   const shObstCalc = new ShapeObstacleCalculator(root, 2, 4, new Map<Shape, TightLooseCouple>())
-  shObstCalc.Calculate()
+  shObstCalc.Calculate(false)
   //const dc = []
   //for (const p of shObstCalc.coupleHierarchy.GetAllLeaves()) {
   // dc.push(DebugCurve.mkDebugCurveWCI(0.1, 'Red', p.TightPolyline))
