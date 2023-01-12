@@ -154,8 +154,8 @@ export class SplineRouter extends Algorithm {
   constructor(
     graph: GeomGraph,
     edges: Array<GeomEdge>,
-    tightPadding = 2,
-    loosePadding = 1.5,
+    tightPadding = 1,
+    loosePadding = 2,
     coneAngle = 30 * (Math.PI / 180),
     bundlingSettings: BundlingSettings = null,
     cancelToken: CancelToken = null,

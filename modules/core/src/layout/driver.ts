@@ -195,12 +195,12 @@ export function layoutGeomGraphDetailed(
   //the final touches
   if (geomG.graph.parent == null) {
     //console.timeEnd('layout')
-    //console.time('routing')
+    console.time('routing')
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG, edgesToRoute)
     geomG.pumpTheBoxToTheGraphWithMargins()
-    //console.timeEnd('routing')
+    console.timeEnd('routing')
   }
 
   // end of layoutGeomGraphDetailed body

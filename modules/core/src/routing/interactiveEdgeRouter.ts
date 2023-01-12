@@ -667,21 +667,27 @@ export class InteractiveEdgeRouter extends Algorithm {
       b.previouisBezierCoefficient = k * u
       b.nextBezierCoefficient = k * v
       k /= mult
-    } while (this.ObstacleCalculator.ObstaclesIntersectICurve(seg) && k > kMin)
+    } while (distFromCornerToSeg() > this.loosePadding && k > kMin)
     k *= mult
     // that was the last k
     if (k < 0.5 && k > kMin) {
       // one time try a smoother seg
       k = 0.5 * (k + k * mult)
       seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
-      if (!this.ObstacleCalculator.ObstaclesIntersectICurve(seg)) {
+      if (distFromCornerToSeg() > this.loosePadding) {
         b.previouisBezierCoefficient = k * u
         b.nextBezierCoefficient = k * v
       }
     }
 
     return b
+
+    function distFromCornerToSeg(): number {
+      const t = seg.closestParameter(b.point)
+      return b.point.sub(seg.value(t)).length
+    }
   }
+
   TryToRemoveInflectionsAndCollinearSegments(underlyingPolyline: SmoothedPolyline) {
     let progress = true
     const t: {s: CornerSite} = {s: null}
