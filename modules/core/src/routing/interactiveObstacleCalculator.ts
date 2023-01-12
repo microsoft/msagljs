@@ -18,6 +18,8 @@ import {Polygon} from './visibility/Polygon'
 
 export class InteractiveObstacleCalculator {
   IgnoreTightPadding: boolean
+  /** if set to true the vertices of the loose polylines would be randomly shifted by a small amont */
+  randomizeLoosePolylines = false
   ObstaclesIntersectLine(a: Point, b: Point) {
     return this.ObstaclesIntersectICurve(LineSegment.mkPP(a, b))
   }
@@ -51,8 +53,7 @@ export class InteractiveObstacleCalculator {
   }
 
   /** surrounds the given polyline with the given offset, optionally randomizes the output */
-  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number, randomize = true): Polyline {
-    Assert.assert(randomize) // debug
+  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number, randomize: boolean): Polyline {
     if (p < GeomConstants.distanceEpsilon) {
       return tightPolyline
     }
@@ -87,7 +88,9 @@ export class InteractiveObstacleCalculator {
         this.LoosePadding,
       )
       this.tightPolylinesToLooseDistances.set(tightPolyline, distance)
-      this.LooseObstacles.push(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance))
+      this.LooseObstacles.push(
+        InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, this.randomizeLoosePolylines),
+      )
     }
 
     this.RootOfLooseHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(this.LooseObstacles)
@@ -155,7 +158,7 @@ export class InteractiveObstacleCalculator {
     if (overlappingPairSet.size === 0) {
       for (const polyline of polysWithoutPadding) {
         const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(polylineHierarchy, polyline, this.TightPadding)
-        this.TightObstacles.add(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(polyline, distance))
+        this.TightObstacles.add(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(polyline, distance, this.randomizeLoosePolylines))
       }
 
       this.RootOfTightHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(Array.from(this.TightObstacles))
