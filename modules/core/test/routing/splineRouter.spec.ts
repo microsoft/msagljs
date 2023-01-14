@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import {
   Node,
   GeomGraph,
@@ -13,6 +15,7 @@ import {
   layoutGraphWithMds,
   GeomEdge,
   BundlingSettings,
+  AttributeRegistry,
 } from '../../src'
 import {DrawingEdge, DrawingGraph, DrawingNode} from '../../src/drawing'
 import {GeomObject} from '../../src/layout/core/geomObject'
@@ -27,6 +30,7 @@ import {ShapeEnum} from '../../src/drawing/shapeEnum'
 import {initRandom} from '../../src/utils/random'
 import {EdgeRoutingSettings} from '../../src/routing/EdgeRoutingSettings'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
+import {parseJSON} from '../../../parser/src/jsonparser'
 
 const socialNodes = [
   'Grenn',
@@ -732,7 +736,20 @@ function checkEdges(gg: GeomGraph) {
     }
   }
 }
-
+test('compound routing', () => {
+  const fpath = path.join(__dirname, '../data/JSONfiles/compound.gv.JSON')
+  const graphStr = fs.readFileSync(fpath, 'utf-8')
+  const graph = parseJSON(JSON.parse(graphStr))
+  const gg = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
+  let edges = Array.from(gg.deepEdges)
+  for (const e of edges) {
+    e.curve = null
+  }
+  edges = Array.from(gg.deepEdges).filter((e) => e.source.id == 'c2')
+  const sr = new SplineRouter(gg, edges)
+  sr.run()
+  SvgDebugWriter.writeGeomGraph('./tmp/comp.gv.svg', gg)
+})
 test('edge to a parent', () => {
   // create a graph with a subgraph and a node inside of it
   const g = new Graph('graph')

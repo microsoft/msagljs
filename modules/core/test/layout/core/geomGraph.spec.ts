@@ -33,7 +33,6 @@ import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
-import {graphToJSON} from '../../../../parser/src/dotparser'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')

@@ -983,6 +983,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     this.SourceTightPolyline = tmp
     this.RelaxPolyline()
     this._polyline.PrependPoint(sourcePortLocation)
+    //  return this._polyline
     return this.SmoothCornersAndReturnCurve(smooth, t)
   }
 
@@ -1019,6 +1020,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   TryShortcutPolyline() {
+    return
     if (this.UseInnerPolylingShortcutting) {
       while (this.ShortcutPolylineOneTime()) {}
     }

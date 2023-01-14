@@ -5,7 +5,6 @@ import {Cdt} from '../../../src/routing/ConstrainedDelaunayTriangulation/Cdt'
 import {CdtSite} from '../../../src/routing/ConstrainedDelaunayTriangulation/CdtSite'
 import {InCircle, CdtSweeper} from '../../../src/routing/ConstrainedDelaunayTriangulation/CdtSweeper'
 import {CdtTriangle} from '../../../src/routing/ConstrainedDelaunayTriangulation/CdtTriangle'
-import {SymmetricTuple} from '../../../src/structs/SymmetricTuple'
 
 test('cdt inCircle ', () => {
   let a = new CdtSite(new Point(0, 0))
@@ -103,8 +102,8 @@ test('SmallTriangulation', () => {
   //            GraphViewerGdi.DisplayGeometryGraph.SetShowFunctions();
   // #endif
   const isolatedObstacles = [
-    new SymmetricTuple<Point>(new Point(109, 202), new Point(506, 135)),
-    new SymmetricTuple<Point>(new Point(139, 96), new Point(452, 96)),
+    {A: new Point(109, 202), B: new Point(506, 135)},
+    {A: new Point(139, 96), B: new Point(452, 96)},
   ]
   const cdt = new Cdt(Array.from(Points()), null, isolatedObstacles)
   cdt.run()
@@ -127,17 +126,17 @@ function* Points() {
 }
 
 function* Segments() {
-  yield new SymmetricTuple<Point>(new Point(181, 186), new Point(242, 73))
-  yield new SymmetricTuple<Point>(new Point(236, 122), new Point(268, 202))
-  yield new SymmetricTuple<Point>(new Point(274, 167), new Point(343, 76))
-  yield new SymmetricTuple<Point>(new Point(352, 131), new Point(361, 201))
-  yield new SymmetricTuple<Point>(new Point(200, 209), new Point(323, 237))
-  yield new SymmetricTuple<Point>(new Point(372, 253), new Point(451, 185))
-  yield new SymmetricTuple<Point>(new Point(448, 133), new Point(517, 272))
-  yield new SymmetricTuple<Point>(new Point(339, 327), new Point(327, 145))
-  yield new SymmetricTuple<Point>(new Point(185, 220), new Point(207, 172))
-  yield new SymmetricTuple<Point>(new Point(61, 226), new Point(257, 253))
-  yield new SymmetricTuple<Point>(new Point(515, 228), new Point(666, 258))
+  yield createAB(new Point(181, 186), new Point(242, 73))
+  yield createAB(new Point(236, 122), new Point(268, 202))
+  yield createAB(new Point(274, 167), new Point(343, 76))
+  yield createAB(new Point(352, 131), new Point(361, 201))
+  yield createAB(new Point(200, 209), new Point(323, 237))
+  yield createAB(new Point(372, 253), new Point(451, 185))
+  yield createAB(new Point(448, 133), new Point(517, 272))
+  yield createAB(new Point(339, 327), new Point(327, 145))
+  yield createAB(new Point(185, 220), new Point(207, 172))
+  yield createAB(new Point(61, 226), new Point(257, 253))
+  yield createAB(new Point(515, 228), new Point(666, 258))
 }
 
 test('two holes and one isolated segment', () => {
@@ -157,7 +156,7 @@ test('two holes and one isolated segment', () => {
     triangle.closed = true
 
     const holes = [Rectangle.mkPP(new Point(10, 10).rotate(ang), new Point(20, 20).rotate(ang)).perimeter(), triangle]
-    const cut = [new SymmetricTuple<Point>(new Point(80, 80).rotate(ang), new Point(90, 75).rotate(ang))]
+    const cut = [createAB(new Point(80, 80).rotate(ang), new Point(90, 75).rotate(ang))]
     const cdt = new Cdt(corners, holes, cut)
     cdt.run()
     // CdtSweeper.ShowCdt(
@@ -193,8 +192,8 @@ test('three holes and two isolated segments', () => {
 
     const holes = [rect, triangle, anotherRect]
     const cut = [
-      new SymmetricTuple<Point>(new Point(80, 80).rotate(ang), new Point(90, 75).rotate(ang)),
-      new SymmetricTuple<Point>(new Point(80, 75).rotate(ang), new Point(90, 70).rotate(ang)),
+      createAB(new Point(80, 80).rotate(ang), new Point(90, 75).rotate(ang)),
+      createAB(new Point(80, 75).rotate(ang), new Point(90, 70).rotate(ang)),
     ]
     const cdt = new Cdt(Array.from(corners), holes, cut)
     cdt.run()
@@ -233,3 +232,6 @@ test('grid rotated', () => {
     CdtSweeper.ShowCdt([...cdt.GetTriangles()], null, null, null, [], './tmp/gridRotated' + k + '.svg')
   }
 })
+function createAB(arg0: Point, arg1: Point): {A: Point; B: Point} {
+  return {A: arg0, B: arg1}
+}

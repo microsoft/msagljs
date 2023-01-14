@@ -12,11 +12,10 @@ import {Algorithm} from './../../utils/algorithm'
 import {CdtEdge} from './CdtEdge'
 import {CdtSite} from './CdtSite'
 import {CdtTriangle} from './CdtTriangle'
-import {SymmetricTuple} from './../../structs/SymmetricTuple'
 import {CdtSweeper} from './CdtSweeper'
 import {RectangleNode, CreateRectNodeOnArrayOfRectNodes, mkRectangleNode} from '../../math/geometry/RTree/rectangleNode'
 
-type SymmetricSegment = SymmetricTuple<Point>
+export type SymmetricSegment = {A: Point; B: Point}
 export class Cdt extends Algorithm {
   isolatedSitesWithObject: Array<[Point, unknown]>
 

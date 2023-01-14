@@ -1,5 +1,6 @@
 import {Queue} from 'queue-typescript'
-import {LineSegment, Point, Polyline} from '../../math/geometry'
+//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+import {LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {HitTestBehavior} from '../../math/geometry/RTree/hitTestBehavior'
@@ -12,7 +13,7 @@ import {CdtTriangle, CdtTriangle as T} from '../ConstrainedDelaunayTriangulation
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-let debCount = 0
+//const debCount = 0
 type SleeveEdge = {source: T; edge: E} // the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source)
 /** nextR and nextL are defined only for an apex */
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
@@ -36,23 +37,39 @@ export class PathOptimizer {
   triangles = new Set<T>()
   findTrianglesIntersectingThePolyline() {
     this.triangles.clear()
-    let t = this.getPointTriangleInTheGlobalCdt(this.poly.start)
+    const passedTriSet = this.getPointTrianglesInTheGlobalCdt(this.poly.start)
     for (let p = this.poly.startPoint; p.next; p = p.next) {
-      t = this.addLineSeg(t, p.point, p.next.point)
+      this.addLineSeg(passedTriSet, p.point, p.next.point)
     }
   }
-  getPointTriangleInTheGlobalCdt(start: Point): T {
-    return this.cdtTree.FirstHitNodeWithPredicate(start, (p, t) => (t.containsPoint(p) ? HitTestBehavior.Stop : HitTestBehavior.Continue))
-      .UserData
+  getPointTrianglesInTheGlobalCdt(start: Point): Set<T> {
+    const ts = new Set<T>()
+    for (const t of this.cdtTree.AllHitItems(Rectangle.mkOnPoints([start]), (t) => t.containsPoint(start))) {
+      ts.add(t)
+    }
+    return ts
   }
-  addLineSeg(startTri: CdtTriangle, start: Point, end: Point): CdtTriangle {
+  addLineSeg(passedTriSet: Set<T>, start: Point, end: Point): Set<T> {
     //Assert.assert(startTri.containsPoint(start))
-    const q = new Queue<T>()
-    let t = startTri
-    const trs = new Set<T>()
-    let retTri: CdtTriangle = null
-    enqueueTriangle(t, (t) => this.canBelongToTriangles(t))
 
+    const q = new Queue<T>()
+    const trs = new Set<T>()
+
+    const containingEnd = []
+
+    for (const t of passedTriSet) {
+      enqueueTriangle(t, () => true)
+      if (t.containsPoint(end)) {
+        containingEnd.push(t)
+      }
+    }
+
+    passedTriSet.clear()
+    for (const t of containingEnd) {
+      passedTriSet.add(t)
+    }
+
+    let t: T
     while (q.length > 0) {
       t = q.dequeue()
       this.addToTriangles(t)
@@ -65,14 +82,14 @@ export class PathOptimizer {
         }
       }
     }
-    return retTri
+    return passedTriSet
 
     function enqueueTriangle(tr: T, test: (t: T) => boolean) {
       q.enqueue(tr)
       trs.add(tr)
 
-      if (retTri == null && test(tr) && tr.containsPoint(end)) {
-        retTri = tr
+      if (test(tr) && tr.containsPoint(end)) {
+        passedTriSet.add(tr)
       }
     }
   }
@@ -87,29 +104,27 @@ export class PathOptimizer {
   }
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
-    ++debCount
+    //++debCount
     this.poly = poly
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
+    //this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findTrianglesIntersectingThePolyline()
 
     const perimeter = this.getPerimeterEdges()
-    const perimeterPoly = this.getPerimeterPoly(perimeter)
-    //if (debCount == 46) this.drawInitialPolyDebuggg(perimeter, perimeterPoly, poly)
-    const localCdt = new Cdt([], [perimeterPoly], [])
+    //this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    const localCdt = new Cdt(
+      [],
+      [],
+      Array.from(perimeter).map((e) => {
+        return {A: e.lowerSite.point, B: e.upperSite.point}
+      }),
+    )
     localCdt.run()
+    //this.drawInitialPolyDebuggg(Array.from(localCdt.GetTriangles()), perimeter, null, poly)
 
-    //looking for the sleeve
-    let sourceTriangle: T
-    for (const t of localCdt.GetTriangles()) {
-      if (t.containsPoint(this.poly.start)) {
-        sourceTriangle = t
-        break
-      }
-    }
-
-    const sleeve: SleeveEdge[] = this.getSleeve(sourceTriangle)
+    const sleeve: SleeveEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {
       // this.poly remains unchanged in this case
       // in one case the original polyline was crossing a wrong obstacle and it caused the peremiter polyline
@@ -132,20 +147,33 @@ export class PathOptimizer {
 
     // SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
   }
-  drawInitialPolyDebuggg(perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
-    // const dc = []
-    // for (const t of this.cdt.GetTriangles()) {
-    //   for (const e of t.Edges) {
-    //     dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 3 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
-    //   }
-    // }
-    // for (const e of perimEdges) {
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-    // }
-    // if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
-    // if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Brown', originalPoly))
-    // SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++debCount + '.svg', dc)
+  private findSourceTriangle(localCdt: Cdt) {
+    let sourceTriangle: T
+    for (const t of localCdt.GetTriangles()) {
+      if (t.containsPoint(this.poly.start)) {
+        sourceTriangle = t
+        break
+      }
+    }
+    return sourceTriangle
   }
+
+  // drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+  //   const dc = []
+  //   for (const t of triangles) {
+  //     for (const e of t.Edges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 3 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Brown', originalPoly))
+  //   SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++debCount + '.svg', dc)
+  // }
 
   refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
@@ -366,61 +394,6 @@ export class PathOptimizer {
     }
     return ret.reverse()
   }
-  /** creates a simple polygon containing the polyline */
-  getPerimeterPoly(perimeter: Set<E>): Polyline {
-    const siteMap = new Map<S, E[]>()
-    let firstEdge: E = null
-    for (const e of perimeter) {
-      if (firstEdge == null) {
-        firstEdge = e
-        continue
-      }
-      let edges = siteMap.get(e.lowerSite)
-      if (edges == null) {
-        siteMap.set(e.lowerSite, (edges = []))
-      }
-      edges.push(e)
-      edges = siteMap.get(e.upperSite)
-      if (edges == null) {
-        siteMap.set(e.upperSite, (edges = []))
-      }
-      edges.push(e)
-    }
-
-    // firstEdge.upperSite will be the start point of the polyline
-
-    const poly = Polyline.mkFromPoints([firstEdge.upperSite.point, firstEdge.lowerSite.point])
-    siteMap.delete(firstEdge.upperSite)
-    let e: E
-    let lastSite = firstEdge.lowerSite
-    do {
-      let es = siteMap.get(lastSite)
-
-      //Assert.assert(es.length == 1)
-      e = es[0]
-      lastSite = e.OtherSite(lastSite)
-      if (lastSite == firstEdge.upperSite) {
-        break
-      }
-      poly.addPoint(lastSite.point)
-
-      es = siteMap.get(lastSite)
-      if (es.length != 2) {
-        return null // in some case the perimeter polygon is generated to a narrow canal th
-        // this.drawInitialPolyDebuggg(perimeter, null, null)
-      }
-      // Assert.assert(es.length == 2)
-      if (es[0] === e) {
-        es[0] = es[1]
-      } else {
-        //Assert.assert(es[1] === e)
-      }
-      es.pop()
-    } while (true)
-    poly.closed = true
-    poly.RemoveCollinearVertices()
-    return poly
-  }
 
   private getPerimeterEdges(): Set<E> {
     const perimeter = new Set<E>()
@@ -433,25 +406,6 @@ export class PathOptimizer {
     }
     return perimeter
   }
-}
-
-function getDebugCurvesFromCdt(cdt: Cdt): DebugCurve[] {
-  const ret = []
-  for (const s of cdt.PointsToSites.values()) {
-    for (const e of s.Edges) {
-      const constr = e.constrained
-      ret.push(
-        DebugCurve.mkDebugCurveTWCI(
-          100,
-          constr ? 2 : 0.5,
-          constr ? 'Blue' : 'Green',
-          LineSegment.mkPP(e.lowerSite.point, e.upperSite.point),
-        ),
-      )
-    }
-  }
-
-  return ret
 }
 
 function triangIsInsideOfObstacle(t: T): boolean {
