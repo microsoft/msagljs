@@ -559,7 +559,7 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-test('pathOpt', () => {
+xtest('pathOpt', () => {
   const graph = parseJSONFile('/tmp/gameofthrones.json.JSON')
   const geomEdges = Array.from(graph.deepEdges)
     .filter((e) => e.source.id === 'FREY_DAUGHTER')
