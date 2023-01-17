@@ -413,10 +413,10 @@ export class PathOptimizer {
 function triangIsInsideOfObstacle(t: T): boolean {
   return t.Sites.item0.Owner != null && t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
 }
-function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
-  const es = new Set<E>()
-  for (const t of localCdt.GetTriangles()) {
-    for (const e of t.Edges) es.add(e)
-  }
-  return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-}
+// function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
+//   const es = new Set<E>()
+//   for (const t of localCdt.GetTriangles()) {
+//     for (const e of t.Edges) es.add(e)
+//   }
+//   return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+// }
