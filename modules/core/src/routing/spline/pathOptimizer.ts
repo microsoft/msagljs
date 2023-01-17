@@ -1,19 +1,18 @@
 import {Queue} from 'queue-typescript'
 //import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-import {LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
+import {CurveFactory, LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
-import {HitTestBehavior} from '../../math/geometry/RTree/hitTestBehavior'
 import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge as E} from '../ConstrainedDelaunayTriangulation/CdtEdge'
-import {CdtSite as S} from '../ConstrainedDelaunayTriangulation/CdtSite'
-import {CdtTriangle, CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
+import {CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-//const debCount = 0
+//let debCount = 0
+//const drawCount = 0
 type SleeveEdge = {source: T; edge: E} // the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source)
 /** nextR and nextL are defined only for an apex */
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
@@ -29,7 +28,6 @@ export class PathOptimizer {
   setCdt(cdt: Cdt) {
     this.cdt = cdt
     if (cdt) {
-      cdt.SetInEdges()
       this.cdtTree = this.cdt.getRectangleNodeOnTriangles()
     }
   }
@@ -105,15 +103,15 @@ export class PathOptimizer {
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
     //++debCount
-    this.poly = poly
     if (poly.count <= 2 || this.cdt == null) return
+    this.poly = poly
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
     //this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findTrianglesIntersectingThePolyline()
 
     const perimeter = this.getPerimeterEdges()
-    //this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    // this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -133,7 +131,7 @@ export class PathOptimizer {
     }
     this.initDiagonals(sleeve)
 
-    // let dc = getDebugCurvesFromCdt(localCdt)
+    //    const dc = getDebugCurvesFromCdt(localCdt)
     this.refineFunnel(/*dc*/)
     //  const c = this.poly
     // dc = dc.concat([
@@ -162,7 +160,7 @@ export class PathOptimizer {
   //   const dc = []
   //   for (const t of triangles) {
   //     for (const e of t.Edges) {
-  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 3 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
   //     }
   //   }
   //   if (perimEdges) {
@@ -171,8 +169,11 @@ export class PathOptimizer {
   //     }
   //   }
   //   if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
-  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Brown', originalPoly))
-  //   SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++debCount + '.svg', dc)
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
+
+  //   //SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
   // }
 
   refineFunnel(/*dc: Array<DebugCurve>*/) {
@@ -229,7 +230,7 @@ export class PathOptimizer {
           extendRightChainFromP(p)
         }
       }
-      //draw(d[i - 1], d[i], dc)
+      //      draw(d[i - 1], d[i], dc)
     }
 
     // function draw(d: Diagonal, dn: Diagonal, dc: DebugCurve[]) {
@@ -362,6 +363,7 @@ export class PathOptimizer {
   }
   getSleeve(sourceTriangle: T): SleeveEdge[] {
     const q = new Queue<T>()
+    //Assert.assert(sourceTriangle != null)
     q.enqueue(sourceTriangle)
     // Assert.assert(sourceTriangle != null)
     const edgeMap = new Map<T, SleeveEdge | undefined>()
@@ -410,4 +412,11 @@ export class PathOptimizer {
 
 function triangIsInsideOfObstacle(t: T): boolean {
   return t.Sites.item0.Owner != null && t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
+}
+function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
+  const es = new Set<E>()
+  for (const t of localCdt.GetTriangles()) {
+    for (const e of t.Edges) es.add(e)
+  }
+  return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
 }

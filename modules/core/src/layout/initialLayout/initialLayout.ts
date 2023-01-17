@@ -6,7 +6,6 @@ import {PivotMDS} from '../mds/pivotMDS'
 import {IGeomGraph} from './iGeomGraph'
 import {GeomConnectedComponent} from './geomConnectedComponent'
 import {LayoutAlgorithmHelpers} from './layoutAlgorithmHelpers'
-import {Assert} from '../../utils/assert'
 import {GTreeOverlapRemoval} from '../gTreeOverlapRemoval/gTreeOverlapRemoval'
 import {GeomGraph} from '../core/geomGraph'
 import {MdsLayoutSettings} from '../mds/mDSLayoutSettings'
@@ -87,7 +86,7 @@ export class InitialLayout extends Algorithm {
       }
 
       const fil: IPsepCola = new IPsepCola(component, this.settings, this.settings.MinConstraintLevel)
-      Assert.assert(this.settings.Iterations == 0)
+      //Assert.assert(this.settings.Iterations == 0)
       for (const level of this.GetConstraintLevels(component)) {
         if (level > this.settings.MaxConstraintLevel) {
           break

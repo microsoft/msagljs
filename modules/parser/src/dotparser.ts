@@ -20,6 +20,7 @@ import {
   GeomLabel,
   Label,
   AttributeRegistry,
+  Assert,
 } from 'msagl-js'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
@@ -423,20 +424,21 @@ class DotParser {
   drawingGraph: DrawingGraph
   graphAttr: any
   nodeMap = new Map<string, Node>()
+
   constructor(ast: JSONGraph[]) {
     this.ast = ast
   }
 
   parseEdge(so: Subgraph | NodeId, to: Subgraph | NodeId, graph: Graph, directed: boolean, o: EdgeStmt): Edge[] {
-    const nc = graph.nodeCollection
     let sn: Node
     let tn: Node
     if (so.type === 'node_id') {
       const s = so.id.toString()
-      if (!nc.hasNode(s)) {
+      sn = this.nodeMap.get(s)
+      if (sn == null) {
         sn = this.newNode(s, graph, false)
       } else {
-        sn = nc.getNode(s)
+        this.tryToMoveToADeeperGraph(sn, graph)
       }
     } else {
       const drObjs = []
@@ -457,10 +459,11 @@ class DotParser {
     }
     if (to.type === 'node_id') {
       const t = to.id.toString()
-      if (!nc.hasNode(t)) {
+      tn = this.nodeMap.get(t)
+      if (tn == null) {
         tn = this.newNode(t, graph, false)
       } else {
-        tn = nc.getNode(t)
+        this.tryToMoveToADeeperGraph(tn, graph)
       }
     } else if (to.type === 'subgraph') {
       const subgraphEdges = new Array<Edge>()
@@ -480,11 +483,27 @@ class DotParser {
       return subgraphEdges
     }
     const edge = new Edge(sn, tn)
-    nc.addEdge(edge)
     new DrawingEdge(edge, directed)
     parseAttrs(o, edge)
 
     return [edge]
+  }
+  tryToMoveToADeeperGraph(sn: Node, graph: Graph) {
+    Assert.assert(sn.parent != null)
+    const snParent = sn.parent as Graph
+    if (snParent != graph && depth(snParent) < depth(graph)) {
+      snParent.remove(sn)
+      graph.addNode(sn)
+    }
+    function depth(a: Entity) {
+      let d = 0
+      let p = a.parent
+      while (p) {
+        d++
+        p = p.parent
+      }
+      return d
+    }
   }
 
   newNode(id: string, g: Graph, underSubgraph: boolean): Node {
@@ -550,9 +569,14 @@ class DotParser {
         if (ch.id != null) {
           const subg = new Graph(ch.id.toString())
           graph.addNode(subg)
+          this.nodeMap.set(subg.id, subg)
           const sdg = new DrawingGraph(subg)
           this.parseUnderGraph(ch.children, subg, directed, true)
           ret.push(sdg.graph)
+          if (subg.isEmpty) {
+            graph.removeNode(subg)
+            this.nodeMap.delete(subg.id)
+          }
         } else {
           ret = ret.concat(this.getEntitiesSubg(ch, graph, directed))
         }
@@ -584,9 +608,14 @@ class DotParser {
               applyAttributesToEntities(o, DrawingGraph.getDrawingGraph(graph), entities)
             } else {
               const subg = new Graph(o.id.toString())
+              this.nodeMap.set(o.id.toString(), subg)
+              graph.addNode(subg)
               new DrawingGraph(subg)
               this.parseUnderGraph(o.children, subg, directed, true)
-              if (!subg.isEmpty()) graph.addNode(subg)
+              if (subg.isEmpty()) {
+                graph.remove(subg)
+                this.nodeMap.delete(subg.id)
+              }
             }
           }
           break

@@ -23,7 +23,6 @@ import {closeDistEps} from '../utils/compare'
 import {PointSet} from '../utils/PointSet'
 import {RTree} from '../math/geometry/RTree/rTree'
 import {LineSweeper} from './spline/coneSpanner/LineSweeper'
-import {PointMap} from '../utils/PointMap'
 import {VisibilityGraph} from './visibility/VisibilityGraph'
 import {TightLooseCouple} from './TightLooseCouple'
 import {VisibilityEdge} from './visibility/VisibilityEdge'
@@ -33,7 +32,7 @@ import {ClusterBoundaryPort} from './ClusterBoundaryPort'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/rectangleNode'
 import {CurvePort} from '../layout/core/curvePort'
 import {BundlingSettings} from './BundlingSettings'
-import {Assert, CancelToken, GeomGraph} from '..'
+import {CancelToken, GeomGraph} from '..'
 import {EdgeRoutingSettings} from './EdgeRoutingSettings'
 import {ShapeCreatorForRoutingToParents} from './ShapeCreatorForRoutingToParents'
 import {Port} from '../layout/core/port'
@@ -57,9 +56,7 @@ import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
 import {PathOptimizer} from './spline/pathOptimizer'
 //import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
-import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
-import {EdgeInserter} from './ConstrainedDelaunayTriangulation/EdgeInserter'
-import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
+import {initRandom} from '../utils/random'
 
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
@@ -112,7 +109,7 @@ export class SplineRouter extends Algorithm {
 
   multiEdgesSeparation = 0.5
 
-  routeMultiEdgesAsBundles = true
+  private routeMultiEdgesAsBundles = true
 
   UseEdgeLengthMultiplier: boolean
 
@@ -167,7 +164,6 @@ export class SplineRouter extends Algorithm {
     this.LoosePadding = loosePadding
     this.tightPadding = tightPadding
     this.coneAngle = coneAngle
-    /**  */
     this.routeMultiEdgesAsBundles = edges.length < 1000 && graph.deepNodeCount < 1000
   }
 
@@ -219,6 +215,7 @@ export class SplineRouter extends Algorithm {
   }
 
   RouteOnRoot() {
+    initRandom(0)
     this.CalculatePortsToShapes()
     this.CalculatePortsToEnterableShapes()
     this.CalculateShapeToBoundaries(this.root)
@@ -384,16 +381,16 @@ export class SplineRouter extends Algorithm {
       regularEdges: [],
       multiEdges: [],
     }
+    try {
+      const cdtOnLooseObstacles = this.getCdtFromShapes(obstacleShapes)
+      interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
+    } catch (e: any) {
+      console.log(e)
+      interactiveEdgeRouter.pathOptimizer.setCdt(null)
+    }
     if (this.RouteMultiEdgesAsBundles) {
       this.SplitOnRegularAndMultiedges(edgeGeometryGroup.edges, t)
       if (t.regularEdges.length > 0) {
-        try {
-          const cdtOnLooseObstacles = this.getCdtFromShapes(obstacleShapes)
-          interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
-        } catch (e: any) {
-          console.log(e)
-          interactiveEdgeRouter.pathOptimizer.setCdt(null)
-        }
         for (let i = 0; i < t.regularEdges.length; i++) {
           this.RouteEdge(interactiveEdgeRouter, t.regularEdges[i])
         }
@@ -409,18 +406,21 @@ export class SplineRouter extends Algorithm {
     }
   }
   getCdtFromShapes(passport: Set<Shape>): Cdt {
-    const loosePolys = []
+    // we need a set here because a loose polyline could be the same for different shapes
+    // in the case of overlaps
+    const loosePolys = new Set<Polyline>()
     for (const shape of passport) {
       const lp = this.LoosePolyOfOriginalShape(shape)
       if (lp == null) continue
-      loosePolys.push(lp)
+      loosePolys.add(lp)
     }
 
     const bb = this.geomGraph.boundingBox.clone()
     bb.pad(Math.max(bb.diagonal / 4, 100))
 
-    loosePolys.push(bb.perimeter()) // this will give some space for the edges to be routed near the graph border
-    const cdt = new Cdt([], loosePolys, [])
+    const lps = Array.from(loosePolys)
+    lps.push(bb.perimeter()) // this will give some space for the edges to be routed near the graph border
+    const cdt = new Cdt([], lps, [])
     cdt.run()
     return cdt
   }

@@ -92,9 +92,9 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
   if (needsLayout) {
     layoutGeomGraph(geomGraph, null)
   } else if (needsReroute) {
-    console.time('routeEdges')
+    // console.time('routeEdges')
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
-    console.timeEnd('routeEdges')
+    // console.timeEnd('routeEdges')
   }
   return graph
 }
@@ -142,7 +142,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
       break
     default: {
       // figure out if the graph is too large for the layered layout
-      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 2000 || subgraph.graph.nodeCollection.edgeCount > 4000
+      const tooLargeForLayered = subgraph.graph.shallowNodeCount > 2000 || subgraph.graph.deepEdgesCount() > 4000
       if (directed && !tooLargeForLayered) {
         // the graph is not too large and has directed edges: use layered layout
         const ss = (layoutSettings = new SugiyamaLayoutSettings())

@@ -14,7 +14,7 @@ import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {Algorithm} from '../utils/algorithm'
 import {SplineRouter} from './splineRouter'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
-import {Assert, CancelToken} from '..'
+import {CancelToken} from '..'
 
 export function straightLineEdgePatcher(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken): void {
   if (edgesToRoute) {

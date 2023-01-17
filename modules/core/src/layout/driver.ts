@@ -89,7 +89,7 @@ export function getSettingsFromAncestor(geomGraph: GeomGraph): any {
 function figureOutSettings(geomGraph: GeomGraph): any {
   const settings = getSettingsFromAncestor(geomGraph)
   if (settings) return settings
-  const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.nodeCollection.edgeCount > 4000
+  const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.deepEdgesCount() > 4000
   if (tooLargeForLayered) {
     return new IPsepColaSetting()
   }
@@ -195,12 +195,12 @@ export function layoutGeomGraphDetailed(
   //the final touches
   if (geomG.graph.parent == null) {
     //console.timeEnd('layout')
-    console.time('routing')
+    //console.time('routing')
     const edgesToRoute: Array<GeomEdge> = getUnroutedEdges(geomG)
     edgeRouter(geomG, edgesToRoute, cancelToken)
     positionLabelsIfNeeded(geomG, edgesToRoute)
     geomG.pumpTheBoxToTheGraphWithMargins()
-    console.timeEnd('routing')
+    //console.timeEnd('routing')
   }
 
   // end of layoutGeomGraphDetailed body

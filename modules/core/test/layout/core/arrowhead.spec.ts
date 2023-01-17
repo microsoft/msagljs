@@ -35,8 +35,4 @@ test('trim edge with arrowheads', () => {
   gab.sourceArrowhead = new Arrowhead()
   gab.targetArrowhead = new Arrowhead()
   Arrowhead.trimSplineAndCalculateArrowheads(gab, curve, true)
-  const g = new Graph()
-  g.addEdge(ab)
-  const gg = new GeomGraph(g)
-  // SvgDebugWriter.writeGeomGraph('./tmp/gg.svg', gg)
 })

@@ -331,11 +331,11 @@ export class TileMap {
     }
     const allTilesAreSmall = this.subdivideTilesOnLevel(z, w, h, levelTiles)
     if (allTilesAreSmall) {
-      console.log('done at level', z, ' because each tile contains less than ', this.tileCapacity)
+      //console.log('done at level', z, ' because each tile contains less than ', this.tileCapacity)
       return true
     }
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
-      console.log('done at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
+      //console.log('done at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
       return true
     }
     return false
@@ -389,7 +389,7 @@ export class TileMap {
         if (!tile.isEmpty()) {
           levelTiles.set(2 * xp + i, 2 * yp + j, tile)
           if (allTilesAreSmall && tile.elementCount > this.tileCapacity) {
-            console.log('found a tile at level', z, ' with ', tile.elementCount, 'elements, which is greater than', this.tileCapacity)
+            //console.log('found a tile at level', z, ' with ', tile.elementCount, 'elements, which is greater than', this.tileCapacity)
             allTilesAreSmall = false
           }
         }

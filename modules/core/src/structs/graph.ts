@@ -9,6 +9,9 @@ import {NodeCollection} from './nodeCollection'
 
 /** This class keeps the connection between the nodes and the edges of the graph. The nodes of a Graph can also be Graphs.  */
 export class Graph extends Node {
+  remove(node: Node) {
+    this.nodeCollection.remove(node)
+  }
   /** Removes itself from under the parent.
    *  Also removes all the edges leading out of the graph.
    */
@@ -144,13 +147,11 @@ export class Graph extends Node {
   }
 
   setEdge(sourceId: string, targetId: string): Edge {
-    const s = this.nodeCollection.find(sourceId)
+    const s = this.nodeCollection.findShallow(sourceId)
     if (s == null) return
-    const t = this.nodeCollection.find(targetId)
+    const t = this.nodeCollection.findShallow(targetId)
     if (t == null) return
-    const e = new Edge(s, t)
-    this.addEdge(e)
-    return e
+    return new Edge(s, t)
   }
 
   /** Iterates over the nodes of the current graph but not entering the subgraphs.
@@ -163,7 +164,16 @@ export class Graph extends Node {
    * The iteration happens in the breadth first pattern.
    */
   get nodesBreadthFirst(): IterableIterator<Node> {
-    return this.nodeCollection.nodesBreadthFirst()
+    return this.nodesBreadthFirst_()
+  }
+  /** iterates breadth first  */
+  private *nodesBreadthFirst_(): IterableIterator<Node> {
+    for (const n of this.nodeCollection.nodesShallow) {
+      yield n
+      if (n instanceof Graph) {
+        yield* n.nodesBreadthFirst
+      }
+    }
   }
 
   constructor(id = '__graph__') {
@@ -173,7 +183,7 @@ export class Graph extends Node {
    * Finds the node with the givin id belonging to a graph or one of its subgraphs.
    */
   findNodeRecursive(id: string): Node {
-    const n = this.nodeCollection.find(id)
+    const n = this.nodeCollection.findShallow(id)
     if (n) {
       return n
     }
@@ -190,7 +200,7 @@ export class Graph extends Node {
    * To find such a deeper nested node use findNodeRecursive
    */
   findNode(id: string): Node {
-    return this.nodeCollection.find(id)
+    return this.nodeCollection.findShallow(id)
   }
   /** iterates over the edges of the graph which adjacent to the nodes of the graph:
    * not iterating over the subgraphs
@@ -230,30 +240,42 @@ export class Graph extends Node {
    * This method does not change the parent of the node.
    */
 
-  removeNode(n: Node): void {
-    this.nodeCollection.removeNode(n)
+  removeNode(node: Node): void {
+    for (const e of node.outEdges) {
+      e.target.inEdges.delete(e)
+    }
+    for (const e of node.inEdges) {
+      e.source.outEdges.delete(e)
+    }
+    this.nodeCollection.remove(node)
+    for (const p of this.subgraphsBreadthFirst()) {
+      p.removeNode(node)
+    }
   }
 
   /** adds a node to the graph */
   addNode(n: Node): Node {
+    Assert.assert(this.findNodeRecursive(n.id) == null)
     /*Assert.assert(n.parent == null  || n.parent === this)*/
     n.parent = this
     this.nodeCollection.addNode(n)
     // Assert.assert(this.isConsistent())
     return n
   }
-  /** adds an edge to the graph */
-  addEdge(n: Edge) {
-    this.nodeCollection.addEdge(n)
-    // Assert.assert(this.isConsistent())
-  }
-  nodeCollection: NodeCollection = new NodeCollection()
+
+  private nodeCollection: NodeCollection = new NodeCollection()
   get shallowNodeCount() {
     return this.nodeCollection.nodeShallowCount
   }
 
   get nodeCountDeep() {
-    return this.nodeCollection.nodeDeepCount
+    let count = this.nodeCollection.size
+    for (const p of this.shallowNodes) {
+      if (p instanceof Graph) {
+        count += p.nodeCountDeep
+      }
+    }
+    return count
   }
 
   get edgeCount() {
@@ -356,10 +378,10 @@ export function* shallowConnectedComponents(graph: Graph): IterableIterator<Node
 export function setNewParent(newParent: Graph, node: Node) {
   if (node.parent) {
     const oldParent = node.parent as Graph
-    oldParent.nodeCollection.nodeMap.delete(node.id)
+    oldParent.remove(node)
   }
-  newParent.nodeCollection.nodeMap.set(node.id, node)
-  node.parent = newParent
+  newParent.addNode(node)
+
   // let p = newParent
   // while (p.parent) p = p.parent as Graph
   // Assert.assert(p.isConsistent())

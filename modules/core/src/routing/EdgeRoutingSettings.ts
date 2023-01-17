@@ -93,7 +93,7 @@ export class EdgeRoutingSettings {
   }
 
   // Amount of space to leave around nodes
-  padding = 3
+  padding = 2
 
   // Amount of space to leave around nodes
   public get Padding(): number {
@@ -103,7 +103,7 @@ export class EdgeRoutingSettings {
     this.padding = value
   }
 
-  polylinePadding = 1.5
+  polylinePadding = 1
 
   // Additional amount of padding to leave around nodes when routing with polylines
   public get PolylinePadding(): number {

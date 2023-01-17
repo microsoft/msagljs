@@ -71,7 +71,8 @@ export class GeomEdge extends GeomObject {
       this.targetArrowhead.tipPosition = this.targetArrowhead.tipPosition.add(delta)
 
     if (this.edge.label) {
-      GeomLabel.getGeom(this.edge.label).translate(delta)
+      const geomLabel = GeomLabel.getGeom(this.edge.label)
+      if (geomLabel) geomLabel.translate(delta)
     }
   }
 

@@ -1,6 +1,6 @@
 import {Queue} from 'queue-typescript'
 import {Point} from '../../../math/geometry'
-import {Assert} from '../../../utils/assert'
+//import {Assert} from '../../../utils/assert'
 import {Disc} from './disc'
 import {MinimumEnclosingDisc} from './minimumEnclosingDisc'
 import {MultipoleCoefficients} from './multipoleCoefficients'
@@ -39,7 +39,7 @@ class InternalKdNode extends KdNode {
       if (this.parent.leftChild == left) {
         this.parent.leftChild = this
       } else {
-        Assert.assert(this.parent.rightChild == left)
+        //Assert.assert(this.parent.rightChild == left)
         this.parent.rightChild = this
       }
     }
@@ -68,7 +68,7 @@ class LeafKdNode extends KdNode {
 
   constructor(particles: Array<Array<Particle>>) {
     super()
-    Assert.assert(particles[0].length == particles[1].length)
+    //Assert.assert(particles[0].length == particles[1].length)
     this.particles = particles
     this.ComputeMinimumEnclosingDisc()
   }
@@ -134,8 +134,8 @@ class LeafKdNode extends KdNode {
       }
     }
 
-    Assert.assert(lCtr == nLeft)
-    Assert.assert(rCtr == nRight)
+    // Assert.assert(lCtr == nLeft)
+    // Assert.assert(rCtr == nRight)
     const parentMED: Disc = this.med
     this.particles = leftParticles
     this.ComputeMinimumEnclosingDisc()

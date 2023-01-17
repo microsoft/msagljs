@@ -26,7 +26,6 @@ import {Port} from '../layout/core/port'
 import {InteractiveTangentVisibilityGraphCalculator} from './visibility/InteractiveTangentVisibilityGraphCalculator'
 import {addRange} from '../utils/setOperations'
 import {PointVisibilityCalculator} from './visibility/PointVisibilityCalculator'
-import {RelaxedPolylinePoint} from './RelaxedPolylinePoint'
 
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
@@ -165,7 +164,9 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   _polyline: Polyline
 
-  OffsetForPolylineRelaxing: number
+  get OffsetForPolylineRelaxing() {
+    return this.TightPadding * 0.75
+  }
 
   // The expected number of progress steps this algorithm will take.
 
@@ -366,84 +367,6 @@ export class InteractiveEdgeRouter extends Algorithm {
     return addedPolygones
   }
 
-  RelaxPolyline() {
-    let relaxedPolylinePoint = InteractiveEdgeRouter.CreateRelaxedPolylinePoints(this._polyline)
-    for (
-      relaxedPolylinePoint = relaxedPolylinePoint.Next;
-      relaxedPolylinePoint.Next != null;
-      relaxedPolylinePoint = relaxedPolylinePoint.Next
-    ) {
-      this.RelaxPolylinePoint(relaxedPolylinePoint)
-    }
-  }
-
-  static CreateRelaxedPolylinePoints(polyline: Polyline): RelaxedPolylinePoint {
-    let p: PolylinePoint = polyline.startPoint
-    const ret = new RelaxedPolylinePoint(p, p.point)
-    let currentRelaxed: RelaxedPolylinePoint = ret
-    while (p.next != null) {
-      p = p.next
-      const r = new RelaxedPolylinePoint(p, p.point)
-      r.Prev = currentRelaxed
-      currentRelaxed.Next = r
-      currentRelaxed = r
-    }
-
-    return ret
-  }
-
-  RelaxPolylinePoint(relaxedPoint: RelaxedPolylinePoint) {
-    if (
-      relaxedPoint.PolylinePoint.prev.prev == null &&
-      this.SourcePort instanceof CurvePort &&
-      relaxedPoint.PolylinePoint.polyline !== this.SourceLoosePolyline
-    ) {
-      return
-    }
-
-    if (
-      relaxedPoint.PolylinePoint.next.next == null &&
-      this.TargetPort instanceof CurvePort &&
-      relaxedPoint.PolylinePoint.polyline !== this.TargetLoosePolyline
-    ) {
-      return
-    }
-
-    for (
-      let d: number = this.OffsetForPolylineRelaxing;
-      d > GeomConstants.distanceEpsilon && !this.RelaxWithGivenOffset(d, relaxedPoint);
-
-    ) {
-      d /= 2
-    }
-  }
-
-  RelaxWithGivenOffset(offset: number, relaxedPoint: RelaxedPolylinePoint): boolean {
-    // Assert.assert(offset > GeomConstants.distanceEpsilon)
-    // otherwise we are cycling infinitely here
-    InteractiveEdgeRouter.SetRelaxedPointLocation(offset, relaxedPoint)
-    if (this.StickingSegmentDoesNotIntersectTightObstacles(relaxedPoint)) {
-      return true
-    }
-
-    InteractiveEdgeRouter.PullCloserRelaxedPoint(relaxedPoint.Prev)
-    return false
-  }
-
-  static PullCloserRelaxedPoint(relaxedPolylinePoint: RelaxedPolylinePoint) {
-    relaxedPolylinePoint.PolylinePoint.point = relaxedPolylinePoint.OriginalPosition.mul(0.2).add(
-      relaxedPolylinePoint.PolylinePoint.point.mul(0.8),
-    )
-  }
-
-  StickingSegmentDoesNotIntersectTightObstacles(relaxedPoint: RelaxedPolylinePoint): boolean {
-    return (
-      !this.PolylineSegmentIntersectsTightHierarchy(relaxedPoint.PolylinePoint.point, relaxedPoint.Prev.PolylinePoint.point) &&
-      (relaxedPoint.Next == null ||
-        !this.PolylineSegmentIntersectsTightHierarchy(relaxedPoint.PolylinePoint.point, relaxedPoint.Next.PolylinePoint.point))
-    )
-  }
-
   PolylineSegmentIntersectsTightHierarchy(a: Point, b: Point): boolean {
     return this.PolylineIntersectsPolyRectangleNodeOfTightHierarchyPPR(a, b, this.ObstacleCalculator.RootOfTightHierarchy)
   }
@@ -580,19 +503,6 @@ export class InteractiveEdgeRouter extends Algorithm {
   GetPointOnTheLeftBoundaryPortConeSide(portLocation: Point, boundaryCurve: ICurve, curveIsClockwise: boolean, portParam: number): Point {
     const tan: Point = curveIsClockwise ? boundaryCurve.leftDerivative(portParam).neg() : boundaryCurve.rightDerivative(portParam)
     return portLocation.add(tan.rotate(-this.EnteringAngleBound))
-  }
-
-  static SetRelaxedPointLocation(offset: number, relaxedPoint: RelaxedPolylinePoint) {
-    const leftTurn: boolean =
-      Point.getTriangleOrientation(relaxedPoint.Next.OriginalPosition, relaxedPoint.OriginalPosition, relaxedPoint.Prev.OriginalPosition) ==
-      TriangleOrientation.Counterclockwise
-    let v: Point = relaxedPoint.Next.OriginalPosition.sub(relaxedPoint.Prev.OriginalPosition)
-      .normalize()
-      .mul(offset)
-      .rotate(Math.PI / 2)
-
-    if (!leftTurn) v = v.neg()
-    relaxedPoint.PolylinePoint.point = relaxedPoint.OriginalPosition.add(v)
   }
 
   // ShowPolylineAndObstacles(params curves: ICurve[]) {
@@ -844,7 +754,6 @@ export class InteractiveEdgeRouter extends Algorithm {
     ier.EnteringAngleBound = 80 * (Math.PI / 180)
     ier.TightPadding = padding
     ier.LoosePadding = loosePadding
-    ier.OffsetForPolylineRelaxing = 0.75 * padding
     if (coneSpannerAngle > 0) {
       Assert.assert(coneSpannerAngle > Math.PI / 180)
       Assert.assert(coneSpannerAngle <= 90 * (Math.PI / 180))
@@ -887,7 +796,6 @@ export class InteractiveEdgeRouter extends Algorithm {
         this._polyline.addPoint(this.SourcePort.Location)
         this._polyline.addPoint(ls.start)
         this._polyline.addPoint(ls.end)
-        // RelaxPolyline();
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
         edge.curve = edge.smoothedPolyline.createCurve()
         return edge
@@ -896,7 +804,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     this.ExtendVisibilityGraphToLocation(targetLocation)
     this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
-    this.RelaxPolyline()
     if (this.SourcePort instanceof CurvePort) {
       this._polyline.PrependPoint(this.SourcePort.Location)
     }
@@ -981,7 +888,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     this.TryShortcutPolyline()
     this.SourceTightPolyline = tmp
-    this.RelaxPolyline()
     this._polyline.PrependPoint(sourcePortLocation)
     //  return this._polyline
     return this.SmoothCornersAndReturnCurve(smooth, t)
@@ -1014,7 +920,6 @@ export class InteractiveEdgeRouter extends Algorithm {
       this.TryShortcutPolyline()
     }
 
-    this.RelaxPolyline()
     t.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
     return this.SmoothCornersAndReturnCurve(smooth, t)
   }
@@ -1296,7 +1201,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
             const tmpSourceTight: Polyline = this.HideSourceTargetTightsIfNeeded(r)
             this.TryShortcutPolyline()
             this.RecoverSourceTargetTights(tmpSourceTight, r.tmpTargetTight)
-            this.RelaxPolyline()
             this._polyline.PrependPoint(sourcePortLocation)
             this._polyline.addPoint(targetPortLocation)
             curve = this.SmoothCornersAndReturnCurve(smooth, t)
@@ -1354,7 +1258,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
 
     this.ExtendVisibilityGraphToTargetBoundaryPort(takenOutTargetPortLocation)
     this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
-    this.RelaxPolyline()
     this._polyline.addPoint(targetPortLocation)
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
     return this.SmoothCornersAndReturnCurve(smooth, t)
@@ -1624,7 +1527,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
       this.TryShortcutPolyline()
     }
 
-    this.RelaxPolyline()
     this.FixLastPolylinePointForAnywherePort(port)
     if (port.HookSize > 0) {
       this.BuildHook(port)

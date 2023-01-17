@@ -1,5 +1,5 @@
-import {Assert, Point} from '../../..'
-import {PointLocation, GeomConstants} from '../../../math/geometry'
+import {Point} from '../../..'
+import {GeomConstants} from '../../../math/geometry'
 import {TriangleOrientation} from '../../../math/geometry/point'
 
 import {CdtEdge} from '../../ConstrainedDelaunayTriangulation/CdtEdge'
@@ -31,7 +31,7 @@ export class CdtThreader {
     this.currentTriangle = startTriangle
     this.start = start
     this.end = end
-    Assert.assert(CdtTriangle.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
+    //Assert.assert(CdtTriangle.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
   }
 
   private FindFirstPiercedEdge(): CdtEdge {

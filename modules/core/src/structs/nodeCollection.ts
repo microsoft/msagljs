@@ -3,6 +3,12 @@ import {Edge} from './edge'
 import {Graph} from './graph'
 
 export class NodeCollection {
+  remove(node: Node) {
+    this.nodeMap.delete(node.id)
+  }
+  get size(): number {
+    return this.nodeMap.size
+  }
   private *nodes_(): IterableIterator<Node> {
     for (const p of this.nodeMap.values()) yield p
   }
@@ -15,23 +21,12 @@ export class NodeCollection {
     }
   }
 
-  find(id: string): Node {
+  findShallow(id: string): Node {
     return this.nodeMap.get(id)
   }
 
   get nodesShallow(): IterableIterator<Node> {
     return this.nodes_()
-  }
-  /** iterates breadth first  */
-  *nodesBreadthFirst(): IterableIterator<Node> {
-    for (const n of this.nodes_()) {
-      yield n
-      if (n instanceof Graph) {
-        for (const nn of (<Graph>n).nodeCollection.nodesBreadthFirst()) {
-          yield nn
-        }
-      }
-    }
   }
 
   get graphs(): IterableIterator<Graph> {
@@ -55,42 +50,11 @@ export class NodeCollection {
   interGraphEdges(): IterableIterator<Edge> {
     throw new Error('not implemented')
   }
-  /** this is a recursive search */
-  hasNode(id: string) {
-    if (this.nodeMap.has(id)) return true
-    for (const p of this.nodeMap) {
-      if (p[1] instanceof Graph && (p[1] as Graph).nodeCollection.hasNode(id)) return true
-    }
-    return false
-  }
-
-  getNode(id: string): Node {
-    let r = this.nodeMap.get(id)
-    if (r !== undefined) return r
-    for (const p of this.nodeMap) {
-      if (p[1] instanceof Graph) {
-        r = (p[1] as Graph).nodeCollection.getNode(id)
-        if (r !== undefined) {
-          return r
-        }
-      }
-    }
-    return undefined
-  }
 
   get nodeShallowCount(): number {
     return this.nodeMap.size
   }
 
-  get nodeDeepCount(): number {
-    let count = this.nodeMap.size
-    for (const p of this.nodeMap.values()) {
-      if (p instanceof Graph) {
-        count += (<Graph>p).nodeCollection.nodeDeepCount
-      }
-    }
-    return count
-  }
   // caution: it is a linear by the number of nodes method
   get edgeCount(): number {
     let count = 0
@@ -106,36 +70,7 @@ export class NodeCollection {
   }
 
   addNode(node: Node) {
-    /*Assert.assert(node.id != null)*/
-    if (this.getNode(node.id) == null) {
-      this.nodeMap.set(node.id, node)
-    }
-  }
-
-  addEdge(edge: Edge): void {
-    this.addNode(edge.source)
-    this.addNode(edge.target)
-    if (edge.source !== edge.target) {
-      edge.source.outEdges.add(edge)
-      edge.target.inEdges.add(edge)
-    } else {
-      edge.source.selfEdges.add(edge)
-    }
-  }
-  removeNode(node: Node) {
-    for (const e of node.outEdges) {
-      e.target.inEdges.delete(e)
-    }
-    for (const e of node.inEdges) {
-      e.source.outEdges.delete(e)
-    }
-    this.nodeMap.delete(node.id)
-    for (const p of this.nodeMap.values()) {
-      if (p instanceof Graph) {
-        const t = p as Graph
-        t.nodeCollection.nodeMap.delete(node.id)
-      }
-    }
+    this.nodeMap.set(node.id, node)
   }
 
   nodeIsConsistent(n: Node): boolean {

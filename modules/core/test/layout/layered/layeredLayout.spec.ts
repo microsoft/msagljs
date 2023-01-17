@@ -27,6 +27,8 @@ import {
   clipWithRectangle,
   BezierSeg,
   PlaneTransformation,
+  SplineRouter,
+  AttributeRegistry,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot} from '@msagl/parser'
@@ -557,14 +559,23 @@ function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: 
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-xtest('large clipWithRect', () => {
-  const graph = parseJSONFile('JSONfiles/gameofthrones_with_geometry.JSON')
-  const geomEdges = Array.from(graph.deepEdges).map((e) => <GeomEdge>GeomEdge.getGeom(e))
+test('pathOpt', () => {
+  const graph = parseJSONFile('/tmp/gameofthrones.json.JSON')
+  const geomEdges = Array.from(graph.deepEdges)
+    .filter((e) => e.source.id === 'FREY_DAUGHTER')
+    .map((e) => <GeomEdge>GeomEdge.getGeom(e))
+  const sr = new SplineRouter(graph.getAttr(AttributeRegistry.GeomObjectIndex), geomEdges)
+  sr.run()
   //  testEdgeCurve(geomEdges[359].curve, GeomGraph.getGeom(graph).boundingBox)
-  for (let i = 0; i < geomEdges.length; i++) {
-    console.log(i)
-    testEdgeCurve(geomEdges[i].curve, GeomGraph.getGeom(graph).boundingBox)
-  }
+  // for (let i = 0; i < geomEdges.length; i++) {
+  //   console.log(i)
+  //   testEdgeCurve(geomEdges[i].curve, GeomGraph.getGeom(graph).boundingBox)
+  // }
+  const geomEdges0 = Array.from(graph.deepEdges)
+    .filter((e) => e.source.id !== 'FREY_DAUGHTER')
+    .map((e) => <GeomEdge>GeomEdge.getGeom(e))
+  for (const e of geomEdges0) e.curve = null
+  SvgDebugWriter.writeGeomGraph('/tmp/gt.svg', graph.getAttr(AttributeRegistry.GeomObjectIndex))
 })
 
 test('clipWithRect', () => {
