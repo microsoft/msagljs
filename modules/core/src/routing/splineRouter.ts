@@ -379,7 +379,7 @@ export class SplineRouter extends Algorithm {
       this.SplitOnRegularAndMultiedges(edgeGeometryGroup.edges, t)
       if (t.regularEdges.length > 0) {
         for (let i = 0; i < t.regularEdges.length; i++) {
-          this.RouteEdge(interactiveEdgeRouter, t.regularEdges[i])
+          this.routeEdge(interactiveEdgeRouter, t.regularEdges[i])
         }
       }
       if (t.multiEdges != null) {
@@ -388,7 +388,7 @@ export class SplineRouter extends Algorithm {
       }
     } else {
       for (const eg of edgeGeometryGroup.edges) {
-        this.RouteEdge(interactiveEdgeRouter, eg)
+        this.routeEdge(interactiveEdgeRouter, eg)
       }
     }
   }
@@ -420,7 +420,7 @@ export class SplineRouter extends Algorithm {
     this.routeMultiEdgesAsBundles = value
   }
 
-  RouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
+  private routeEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
     const transparentShapes = this.makeTransparentShapesOfEdgeAndGetTheShapes(edge)
     this.ProgressStep()
     this.RouteEdgeInternal(edge, interactiveEdgeRouter)
