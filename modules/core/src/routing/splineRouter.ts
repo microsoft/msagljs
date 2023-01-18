@@ -1,21 +1,8 @@
 import {Shape} from './shape'
 import {mkRTree} from '../math/geometry/RTree/rTree'
-// import { Queue } from 'queue-typescript'
-// import { GeomGraph } from '../layout/core/GeomGraph'
-// import { IRectangle } from '../core/geometry/IRectangle'
-// import { RectangleNode } from '../core/geometry/RTree/rectangleNode'
-// import { RTree } from '../core/geometry/RTree/rTree'
-// import { BundlingSettings } from '../core/routing/BundlingSettings'
-// import { GeomEdge } from '../layout/core/edge'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
-// import { Curve } from '../math/geometry/curve'
-// import { ICurve } from '../math/geometry/icurve'
 import {Point} from '../math/geometry/point'
-// import { Polyline } from '../math/geometry/polyline'
-// import { PolylinePoint } from '../math/geometry/polylinePoint'
-// import { Rectangle } from '../math/geometry/rectangle'
-// import { SmoothedPolyline } from '../math/geometry/smoothedPolyline'
 import {Algorithm} from '../utils/algorithm'
 import {Curve, CurveFactory, ICurve, LineSegment, PointLocation, Polyline, Rectangle} from '../math/geometry'
 import {PolylinePoint} from '../math/geometry/polylinePoint'
@@ -405,7 +392,7 @@ export class SplineRouter extends Algorithm {
       }
     }
   }
-  getCdtFromShapes(passport: Set<Shape>): Cdt {
+  private getCdtFromShapes(passport: Set<Shape>): Cdt {
     // we need a set here because a loose polyline could be the same for different shapes
     // in the case of overlaps
     const loosePolys = new Set<Polyline>()
