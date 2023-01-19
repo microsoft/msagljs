@@ -103,8 +103,8 @@ export class PathOptimizer {
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
     //++debCount
-    if (poly.count <= 2 || this.cdt == null) return
     this.poly = poly
+    if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
     //this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
