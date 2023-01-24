@@ -27,7 +27,7 @@ npm i msagl-js @msagl/parser @msagl/renderer
 
 ```js
 import {Graph} from 'msagl-js'
-import {Renderer} from '@msagl-js/renderer'
+import {Renderer} from '@msagl/renderer'
 ```
 
 Using script tags:
@@ -47,8 +47,8 @@ const {Graph, Renderer} = msagl
 Render a graph from a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>) file:
 
 ```js
-import {parseDot} from '@msagl-js/parser'
-import {Renderer} from '@msagl-js/renderer'
+import {parseDot} from '@msagl/parser'
+import {Renderer} from '@msagl/renderer'
 
 const renderer = new Renderer()
 const graph = parseDot(`
@@ -65,7 +65,7 @@ renderer.setGraph(graph)
 Render a graph from JSON:
 
 ```js
-import {parseJSON} from '@msagl-js/parser'
+import {parseJSON} from '@msagl/parser'
 
 const graph = parseJSON({
   nodes: [{id: 'kspacey'}, {id: 'swilliams'}, {id: 'kbacon'}, {id: 'bpitt'}, {id: 'hford'}, {id: 'lwilson'}],
