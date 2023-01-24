@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
