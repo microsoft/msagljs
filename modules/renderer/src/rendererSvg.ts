@@ -19,7 +19,6 @@ import {
   Node,
   Label,
   Entity,
-  LineSegment,
 } from 'msagl-js'
 import {deepEqual} from './utils'
 import {LayoutOptions} from './renderer'
