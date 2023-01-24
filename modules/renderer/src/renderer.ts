@@ -1,6 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
 import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
-import {PolygonLayer} from '@deck.gl/layers/typed'
+//import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
 import {DrawingGraph, TextMeasurerOptions} from 'msagl-js/drawing'
