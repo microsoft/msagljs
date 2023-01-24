@@ -42,7 +42,7 @@ Using script tags:
 const {Graph, Renderer} = msagl
 ```
 
-## Usage
+## Usage of Deck.gl renderer
 
 Render a graph from a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>) file:
 
@@ -50,7 +50,7 @@ Render a graph from a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_descriptio
 import {parseDot} from '@msagl-js/parser'
 import {Renderer} from '@msagl-js/renderer'
 
-const renderer = new msagl.Renderer()
+const renderer = new Renderer()
 const graph = parseDot(`
 graph G {
 	kspacey -- swilliams;
@@ -98,6 +98,23 @@ To change the layout of the current graph:
 
 ```typescript
 renderer.setOptions(options: LayoutOptions)
+```
+
+## Usage of SVG Renderer
+
+```typescript
+import {parseDot} from '@msagl/parser'
+import {RendererSvg} from '@msagl/renderer'
+
+const renderer = new RendererSvg()
+const graph = parseDot(`
+graph G {
+	kspacey -- swilliams;
+	swilliams -- kbacon;
+	bpitt -- kbacon;
+	hford -- lwilson;
+	lwilson -- kbacon;
+}`)
 ```
 
 ## Renderer with SVG API

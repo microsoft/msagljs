@@ -12,7 +12,7 @@ import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
 const viewer = document.getElementById('viewer')
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
 
 const svgRenderer = new RendererSvg(viewer)
 const dotFileSelect = createDotGraphsSelect()
