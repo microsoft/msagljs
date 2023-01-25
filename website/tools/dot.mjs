@@ -3,7 +3,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import { parseDot } from "@msagl/parser";
 import { RendererSvg } from "@msagl/renderer";
-import { registerWindow } from '@svgdotjs/svg.js'
+
+const window = createSVGWindow();
+const document = window.document;
+globalThis.document = document
+globalThis.window = window
 
 async function run() {
     const input = readFileSync(`./input.dot`, { encoding: "utf8" });
@@ -11,10 +15,6 @@ async function run() {
         readFileSync(`./options.json`, { encoding: "utf8" })
     );
 
-    const window = createSVGWindow();
-    const document = window.document;
-
-    registerWindow(window, document)
 
     const container = document.createElement("div");
 
