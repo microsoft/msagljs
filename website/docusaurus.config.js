@@ -72,6 +72,25 @@ const config = configure({
       },
     }),
 }, {
+  sideEditor: {
+    editors: [
+      {
+        id: "dot",
+        type: "iframe",
+        language: "plaintext",
+        lightUrl: "./editors/msagl.html?theme=light",
+        darkUrl: "./editors/msagl.html?theme=dark",
+        message: {
+          type: "msagl",
+        },
+        messageTextFieldName: "dot",
+        readyMessage: {
+          type: "msagl",
+          state: "ready",
+        },
+      },
+    ]
+  }
 })
 
 module.exports = config;
