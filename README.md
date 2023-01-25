@@ -84,25 +84,25 @@ renderer.setGraph(graph)
 
 Constructor:
 
-```typescript
+```ts
 new Renderer(container?: HTMLDivElement)
 ```
 
 To layout and render a new graph:
 
-```typescript
+```ts
 renderer.setGraph(g: Graph, options: RenderOptions)
 ```
 
 To change the layout of the current graph:
 
-```typescript
+```ts
 renderer.setOptions(options: LayoutOptions)
 ```
 
 ## Usage of SVG Renderer
 
-```typescript
+```ts
 import {parseDot} from '@msagl/parser'
 import {RendererSvg} from '@msagl/renderer'
 
@@ -121,25 +121,25 @@ graph G {
 
 Constructor:
 
-```typescript
+```ts
 rendererSvg=new RendererSVG(container?: HTMLDivElement)
 ```
 
 To layout and render a new graph:
 
-```typescript
+```ts
 rendererSvg.setGraph(g: Graph, options: RenderOptions)
 ```
 
 To change the layout of the current graph:
 
-```typescript
+```ts
 rendererSvg.setOptions(options: LayoutOptions)
 ```
 
 To get the SVG representation of the graph:
 
-```typescript
+```ts
 getSvg(): SVGAElement
 ```
 
