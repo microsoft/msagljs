@@ -72,7 +72,17 @@ const config = configure({
       },
     }),
 }, {
-
+  compileCode: {
+    langs: [
+      {
+        lang: "dot",
+        command: "./tools/dot.mjs",
+        outputFiles: [
+          { name: "graph.svg", title: "generated graph" }
+        ]
+      },
+    ]
+  }
 })
 
 module.exports = config;

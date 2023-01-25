@@ -23,7 +23,7 @@ and for browsing and editing smaller graphs use [the SVG example](https://micros
 
 Using NPM packages:
 
-```bash
+```bash npm2yarn
 npm install msagl-js @msagl/parser @msagl/renderer
 ```
 
@@ -47,6 +47,16 @@ const {Graph, Renderer} = msagl
 ## Usage of Deck.gl renderer
 
 Render a graph from a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>) file:
+
+```dot
+graph G {
+	kspacey -- swilliams;
+	swilliams -- kbacon;
+	bpitt -- kbacon;
+	hford -- lwilson;
+	lwilson -- kbacon;
+}
+```
 
 ```js
 import {parseDot} from '@msagl/parser'
@@ -163,7 +173,8 @@ The renderer options accept the following fields:
 
 ![Alt text](/images/mdsShowAPI.svg#gh-light-mode-only)
 ![Alt text](/images/mdsShowAPI_dark.svg#gh-dark-mode-only)
-````
+
+```
 
 - `label`
   - `fontFamily: string` - CSS font-family value. Default `'sans-serif'`.
@@ -195,3 +206,4 @@ They include:
 - undo/redo does not work for node label text editing
 - the node does not resize for the new label text
 - only [the viewer with SVG](https://microsoft.github.io/msagljs/svg_backend/index.html) supports editing.
+```
