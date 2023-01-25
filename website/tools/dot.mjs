@@ -2,7 +2,8 @@ import { createSVGWindow } from "svgdom";
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { parseDot } from "@msagl/parser";
-import { RendererSVG } from "@msagl/renderer";
+import { RendererSvg } from "@msagl/renderer";
+import { registerWindow } from '@svgdotjs/svg.js'
 
 async function run() {
     const input = readFileSync(`./input.dot`, { encoding: "utf8" });
@@ -12,9 +13,12 @@ async function run() {
 
     const window = createSVGWindow();
     const document = window.document;
+
+    registerWindow(window, document)
+
     const container = document.createElement("div");
 
-    const renderer = new RendererSVG(container);
+    const renderer = new RendererSvg(container);
     const graph = parseDot(input);
     renderer.setGraph(graph, options);
 

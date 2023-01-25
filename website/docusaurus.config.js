@@ -77,6 +77,7 @@ const config = configure({
       {
         lang: "dot",
         command: "./tools/dot.mjs",
+        args: ["--experimental-specifier-resolution=node"],
         outputFiles: [
           { name: "graph.svg", title: "generated graph" }
         ]
