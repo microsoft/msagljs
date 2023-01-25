@@ -78,7 +78,6 @@ const config = configure({
       meta: "build",
       nodeBin: "tsc",
       npmPackage: "typescript",
-      ignoreErrors: true,
       inputFiles: {
         "tsconfig.json": {
           "compilerOptions": {
