@@ -227,9 +227,37 @@ Run "yarn". You might get an error message that the node version is incorrect.
 To mediate this run : nvm install 16.17.0, or other required version: you can check the available versions
 by issuing the "nvm ls-remote" instruction.
 
-To build, run "npm run build".
+```bash
+nvm install 18
+nvm use 18
+```
 
-To run tests, execute "npm run test".
+To build, run 
+
+```bash
+yarn build
+```
+
+To run tests,
+
+```bash
+yarn test
+```
+
+To edit the docs, start the dev server and update the markdown
+in `website/docs`.
+
+```bash
+cd website
+yarn start
+```
+
+To build the docs,
+
+```bash
+cd website
+yarn build
+```
 
 ## Contributing
 
