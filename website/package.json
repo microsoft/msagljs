@@ -23,10 +23,9 @@
     "prism-react-renderer": "^1.3.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "svgdom": "^0.1.11"
-  },
-  "devDependencies": {
-    "@docusaurus/module-type-aliases": "2.2.0"
+    "svgdom": "^0.1.11",
+    "@docusaurus/module-type-aliases": "^2.2.0",
+    "@tsconfig/docusaurus": "^1.0.6"
   },
   "browserslist": {
     "production": [

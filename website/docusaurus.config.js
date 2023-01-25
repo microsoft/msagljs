@@ -5,8 +5,8 @@ const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 const config = configure({
-  title: 'MSAGL',
-  tagline: 'Automatic Graph Layout',
+  title: 'MSAGL.js',
+  tagline: 'Automatic Graph Layout for JavaScript',
   url: 'https://microsoft.github.io',
   baseUrl: '/msagljs',
   onBrokenLinks: 'throw',
@@ -38,9 +38,9 @@ const config = configure({
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'MSAGL',
+        title: 'MSAGL.js',
         logo: {
-          alt: 'Microsoft Automatic Graph Layout',
+          alt: 'Microsoft Automatic Graph Layout for JavaScript',
           src: 'img/logo.svg',
         },
         items: [
