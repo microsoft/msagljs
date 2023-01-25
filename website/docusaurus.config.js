@@ -78,7 +78,21 @@ const config = configure({
       meta: "build",
       nodeBin: "tsc",
       npmPackage: "typescript",
-      ignoreErrors: true
+      ignoreErrors: true,
+      inputFiles: {
+        "tsconfig.json": {
+          "compilerOptions": {
+            "target": "es2018",
+            "moduleResolution": "node",
+            "allowJs": true,
+            "noImplicitAny": true,
+            "lib": ["dom", "es2018"],
+            "importHelpers": true,
+            "noEmit": true,
+            "esModuleInterop": true,
+          },
+        }
+      }
     }]
   },
   sideEditor: {
