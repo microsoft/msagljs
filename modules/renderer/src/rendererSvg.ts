@@ -26,7 +26,7 @@ import {SvgCreator, SvgViewerObject} from './svgCreator'
 import TextMeasurer from './text-measurer'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor, viewerObj, InsertionMode} from 'msagl-js/drawing'
-import {default as svgPanZoom, PanZoom} from 'panzoom'
+import {default as panZoom, PanZoom} from 'panzoom'
 
 function svgViewerObj(ent: Entity): SvgViewerObject {
   return viewerObj(ent) as SvgViewerObject
@@ -103,7 +103,7 @@ export class RendererSvg implements IViewer {
   //   this._objectTree = value
   // }
 
-  private processMouseMove(e: MouseEvent): void {
+  private processMouseMove(e: PointerEvent): void {
     this.mousePosition = new Point(e.clientX, e.clientY)
 
     if (this == null || this._svgCreator == null) {
@@ -126,6 +126,11 @@ export class RendererSvg implements IViewer {
         this.layoutEditor.hasEdgeInsertionPort,
       )
     }
+
+    this.setObjectUnderCursorFromEvent(e)
+  }
+
+  setObjectUnderCursorFromEvent(e: PointerEvent) {
     if (this._objectTree == null) {
       this._objectTree = buildRTreeWithInterpolatedEdges(this.graph, this.getHitSlack())
     }
@@ -168,21 +173,18 @@ export class RendererSvg implements IViewer {
     this._svgCreator = new SvgCreator(container)
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
 
-    container.addEventListener('mousedown', (e) => {
-      if (!this.layoutEditingEnabled) return
-
-      if (this.objectUnderMouseCursor != null && e.buttons == 1) {
+    container.addEventListener('pointerdown', (e) => {
+      if (this.layoutEditor.viewerMouseDown(this, e)) {
         this.panZoom.pause()
       }
-      this.layoutEditor.viewerMouseDown(this, e)
     })
 
-    container.addEventListener('mousemove', (e) => {
+    container.addEventListener('pointermove', (e) => {
       this.processMouseMove(e)
       if (this.layoutEditingEnabled) this.layoutEditor.viewerMouseMove(this, e)
     })
 
-    container.addEventListener('mouseup', (e) => {
+    container.addEventListener('pointerup', (e) => {
       if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
       this.panZoom.resume()
@@ -302,7 +304,13 @@ export class RendererSvg implements IViewer {
     if (!this._graph) return
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
-    this.panZoom = svgPanZoom(this._svgCreator.svg) // it seems enough for these operations this._svgCreator.svg
+    this.panZoom = panZoom(this._svgCreator.svg, {
+      onTouch: () => {
+        // `e` - is the current touch event.
+
+        return false // tells the library to not preventDefault.
+      },
+    })
     this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
     this.layoutEditor.viewerGraphChanged()
     if (this.graph.deepEdgesCount() > 2000 && this.graph.nodeCountDeep > 1000) {
@@ -310,7 +318,7 @@ export class RendererSvg implements IViewer {
     }
   }
   /** maps the screen coordinates to the graph coordinates */
-  screenToSource(e: MouseEvent): Point {
+  screenToSource(e: PointerEvent): Point {
     return this.ScreenToSourceP(e.clientX, e.clientY)
   }
 

@@ -1,0 +1,22 @@
+{
+  "name": "minimal-svg-renderer",
+  "version": "1.1.3",
+  "private": true,
+  "description": "Public demo for svg from msagl-js",
+  "main": "main.js",
+  "scripts": {
+    "start": "esbuild ./src/main.js --sourcemap --servedir=. --outfile=main.js --bundle",
+    "build": "rm -rf dist && esbuild ./src/main.js --outfile=dist/main.js --bundle --minify && cp src/index.html dist"
+  },
+  "author": "levnach@microsoft.com",
+  "license": "MIT",
+  "dependencies": {
+    "@msagl/parser": "^1.1.4",
+    "@msagl/renderer": "^1.1.5",
+    "msagl-js": "^1.1.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.4",
+    "typescript": "^4.5.5"
+  }
+}

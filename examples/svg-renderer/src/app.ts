@@ -11,7 +11,8 @@ import {DrawingNode} from 'msagl-js/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
 const viewer = document.getElementById('viewer')
-
+viewer.setAttribute('style', 'touch-action: none;')
+//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
 
 const svgRenderer = new RendererSvg(viewer)
@@ -248,7 +249,7 @@ function getLayoutOptions(): LayoutOptions {
   }
   return opts
 }
-function setPositionAndShow(e: MouseEvent, elem: HTMLElement) {
+function setPositionAndShow(e: PointerEvent, elem: HTMLElement) {
   elem.style.left = `${e.pageX}px`
   elem.style.top = `${e.pageY}px`
   displayHideElement(elem, 'show')

@@ -24,7 +24,23 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseDotGraph} from '../../utils/testUtils'
 import {edgesAreAttached} from '../../../src/layout/core/geomGraph'
 
-class FakeMouseEvent implements MouseEvent {
+class FakeMouseEvent implements PointerEvent {
+  height: number
+  isPrimary: boolean
+  pointerId: number
+  pointerType: string
+  pressure: number
+  tangentialPressure: number
+  tiltX: number
+  tiltY: number
+  twist: number
+  width: number
+  getCoalescedEvents(): PointerEvent[] {
+    throw new Error('Method not implemented.')
+  }
+  getPredictedEvents(): PointerEvent[] {
+    throw new Error('Method not implemented.')
+  }
   preventDefault(): any {
     return function () {
       return {}
@@ -119,13 +135,16 @@ class FakeViewer implements IViewer {
       new SvgViewerNode(n, null)
     }
   }
+  setObjectUnderCursorFromEvent(e: PointerEvent): void {
+    // throw new Error('Method not implemented.')
+  }
   createUndoPoint(): void {
     throw new Error('Method not implemented.')
   }
   selectedEntities(): IViewerObject[] {
     throw new Error('Method not implemented.')
   }
-  screenToSource(e: MouseEvent): Point {
+  screenToSource(e: PointerEvent): Point {
     return new Point(e.clientX, e.clientY)
   }
   IncrementalDraggingModeAlways: boolean
