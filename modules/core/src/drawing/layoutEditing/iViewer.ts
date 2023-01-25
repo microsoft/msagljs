@@ -18,12 +18,13 @@ export enum InsertionMode {
   Edge,
 }
 export interface IViewer {
+  setObjectUnderCursorFromEvent(e: PointerEvent): unknown
   /** creates an undo action to the current state */
   createUndoPoint(): void
   /** returns the array of the entities that are currently selected */
   selectedEntities(): Array<IViewerObject>
   /** maps a point in the screen coordinates to the point in the graph coordinates*/
-  screenToSource(e: MouseEvent): Point
+  screenToSource(e: PointerEvent): Point
   IncrementalDraggingModeAlways: boolean
 
   //  the scale to screen

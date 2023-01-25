@@ -1,7 +1,7 @@
 import {LinearSystem2} from './linearSystem'
 import {GeomConstants} from './geomConstants'
 import {compareNumbers} from '../../utils/compare'
-import {Assert} from '../../utils/assert'
+//import {Assert} from '../../utils/assert'
 
 export enum TriangleOrientation {
   Clockwise,
