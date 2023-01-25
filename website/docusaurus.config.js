@@ -72,6 +72,15 @@ const config = configure({
       },
     }),
 }, {
+  compileCode: {
+    langs: [{
+      lang: "ts",
+      meta: "build",
+      nodeBin: "tsc",
+      npmPackage: "typescript",
+      ignoreErrors: true
+    }]
+  },
   sideEditor: {
     editors: [
       {

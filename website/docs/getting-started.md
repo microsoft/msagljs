@@ -13,8 +13,8 @@ npm install msagl-js @msagl/parser @msagl/renderer
 ```
 
 ```js
-import {Graph} from 'msagl-js'
-import {Renderer} from '@msagl/renderer'
+import { Graph } from 'msagl-js'
+import { Renderer } from '@msagl/renderer'
 ```
 
 Using script tags:
@@ -26,7 +26,7 @@ Using script tags:
 ```
 
 ```js
-const {Graph, Renderer} = msagl
+const { Graph, Renderer } = msagl
 ```
 
 ## Usage of Deck.gl renderer
@@ -45,9 +45,9 @@ graph G {
 
 This code can be run in the browser.
 
-```js title="./script.js"
-import {parseDot} from '@msagl/parser'
-import {Renderer} from '@msagl/renderer'
+```ts build
+import { parseDot } from '@msagl/parser'
+import { Renderer } from '@msagl/renderer'
 
 const renderer = new Renderer()
 const graph = parseDot(`
@@ -63,17 +63,26 @@ renderer.setGraph(graph)
 
 Render a graph from JSON:
 
-```js
-import {parseJSON} from '@msagl/parser'
+```ts build
+import { parseJSON } from '@msagl/parser'
+import { Renderer } from '@msagl/renderer'
 
+const renderer = new Renderer()
 const graph = parseJSON({
-  nodes: [{id: 'kspacey'}, {id: 'swilliams'}, {id: 'kbacon'}, {id: 'bpitt'}, {id: 'hford'}, {id: 'lwilson'}],
+  nodes: [
+    { id: 'kspacey' },
+    { id: 'swilliams' },
+    { id: 'kbacon' },
+    { id: 'bpitt' },
+    { id: 'hford' },
+    { id: 'lwilson' },
+  ],
   edges: [
-    {source: 'kspacey', target: 'swilliams'},
-    {source: 'swilliams', target: 'kbacon'},
-    {source: 'bpitt', target: 'kbacon'},
-    {source: 'hford', target: 'lwilson'},
-    {source: 'lwilson', target: 'kbacon'},
+    { source: 'kspacey', target: 'swilliams' },
+    { source: 'swilliams', target: 'kbacon' },
+    { source: 'bpitt', target: 'kbacon' },
+    { source: 'hford', target: 'lwilson' },
+    { source: 'lwilson', target: 'kbacon' },
   ],
 })
 renderer.setGraph(graph)
