@@ -291,7 +291,7 @@ export class Graph extends Node {
     return n
   }
   /** return the number of all edges in the graph, including the subgraphs */
-  deepEdgesCount(): number {
+  get deepEdgesCount(): number {
     let count = 0
     for (const p of this.nodesBreadthFirst) {
       count += p.outDegree + p.selfDegree

@@ -1,7 +1,6 @@
 import {GeomGraph} from '../../src'
 import {DrawingGraph} from '../../src/drawing/drawingGraph'
 import {layoutGeomGraph} from '../../src/layout/driver'
-import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import * as testUtils from '../utils/testUtils'
 
 test('layoutGeomGraph', () => {

@@ -679,7 +679,6 @@ export class LayoutEditor {
     }
 
     if (LayoutEditor.LeftButtonIsPressed(e)) {
-      console.log('lefb')
       if (this.ActiveDraggedObject != null || this.activeCornerSite != null) {
         this.drag(e)
       } else if (this.insertingEdge) {

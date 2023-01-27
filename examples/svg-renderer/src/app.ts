@@ -82,9 +82,12 @@ dotFileSelect.onchange = () => {
   loadGraphFromUrl(url)
     .then((graph) => {
       svgRenderer.setGraph(graph, getLayoutOptions())
-      return graph.id
+      return graph
     })
-    .then((id) => (document.getElementById('graph-name').innerText = id))
+    .then(
+      (graph) =>
+        (document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'),
+    )
 }
 
 const textedit = document.getElementById('textedit')
@@ -139,15 +142,18 @@ dropZone('drop-target', async (f: File) => {
         }
       }
       svgRenderer.setGraph(graph, getLayoutOptions())
-      return graph.id
+      return graph
     })
-    .then((id) => (document.getElementById('graph-name').innerText = id))
+    .then(
+      (graph) =>
+        (document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'),
+    )
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   svgRenderer.setOptions(getLayoutOptions())
   svgRenderer.setGraph(graph)
-  document.getElementById('graph-name').innerText = graph.id
+  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })()
 
 function createFontSelect() {

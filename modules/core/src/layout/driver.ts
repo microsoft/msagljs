@@ -89,7 +89,7 @@ export function getSettingsFromAncestor(geomGraph: GeomGraph): any {
 function figureOutSettings(geomGraph: GeomGraph): any {
   const settings = getSettingsFromAncestor(geomGraph)
   if (settings) return settings
-  const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.deepEdgesCount() > 4000
+  const tooLargeForLayered = geomGraph.graph.shallowNodeCount > 2000 || geomGraph.graph.deepEdgesCount > 4000
   if (tooLargeForLayered) {
     return new IPsepColaSetting()
   }

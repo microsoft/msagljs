@@ -45,7 +45,8 @@ dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
     updateRender(graph)
-    document.getElementById('graph-name').innerText = graph.id
+    document.getElementById('graph-name').innerText =
+      graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString + ')'
   })
 }
 
@@ -90,13 +91,16 @@ fontSelect.onchange = () => {
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
   updateRender(graph)
-  document.getElementById('graph-name').innerText = graph.id
+  document.getElementById('graph-name').innerText =
+    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   const hasGeom = geometryIsCreated(graph)
   updateRender(graph, hasGeom ? null : getSettings())
-  document.getElementById('graph-name').innerText = graph.id
+
+  document.getElementById('graph-name').innerText =
+    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
 })()
 
 function getSettings(): LayoutOptions {
