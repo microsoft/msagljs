@@ -1,0 +1,24 @@
+<html>
+    <script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
+    <body>
+        <script type="module">
+            const renderer = new msagl.Renderer();
+            // handle rendering of dot sources
+            window.addEventListener("message", (ev) => {
+                const { type, dot } = ev.data
+                if (type === 'msagl') {
+                    const graph = msagl.parseDot(dot);
+                    renderer.setGraph(graph);
+                }
+            })
+            // tell parent, we're ready
+            if (window.parent && window.parent !== window)
+                window.parent.postMessage({
+                    type: 'msagl',
+                    state: 'ready'
+                })
+        </script>
+    </body>
+</html>
