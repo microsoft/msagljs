@@ -12,8 +12,8 @@
   "license": "MIT",
   "dependencies": {
     "@msagl/parser": "^1.1.4",
-    "@msagl/renderer": "^1.1.5",
-    "msagl-js": "^1.1.4"
+    "@msagl/webGLRenderer": "^1.1.5",
+    "msagl-js": "file:../../modules/core"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",

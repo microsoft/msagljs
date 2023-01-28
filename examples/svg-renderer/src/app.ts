@@ -1,10 +1,9 @@
 import {dropZone} from './drag-n-drop'
-import {LayoutOptions} from '@msagl/renderer'
+import {LayoutOptions, RendererSvg} from '@msagl/svgRenderer'
 
 import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Entity, GeomNode, Node} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
-import {RendererSvg} from '@msagl/renderer'
 import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 import {AttributeRegistry} from 'msagl-js'
 import {DrawingNode} from 'msagl-js/drawing'

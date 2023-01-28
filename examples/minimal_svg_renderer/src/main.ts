@@ -1,6 +1,5 @@
-import { parseDot } from "@msagl/parser"
-import { RendererSvg } from "@msagl/renderer"
-
+import {parseDot} from '@msagl/parser'
+import {RendererSvg} from '@msagl/svgRenderer'
 const renderer = new RendererSvg()
 const graph = parseDot(`
 graph G {

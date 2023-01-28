@@ -11,9 +11,13 @@
     "paths": {
       "msagl-js": ["./modules/core/src"],
       "msagl-js/drawing": ["./modules/core/src/drawing"],
-      "@msagl/parser": ["./modules/parser/src"],
-      "@msagl/renderer": ["./modules/renderer/src"]
+      "@msagl/parser": ["./modules/parser/src"]
     }
   },
-  "include": ["./modules/**/src/**/*", "./modules/**/test/**/*"]
+  "include": [
+    "./modules/**/src/**/*",
+    "./modules/**/test/**/*",
+    "modules/commonRenderer/src/text-measurer.ts",
+    "modules/commonRenderer/utils.ts"
+  ]
 }
