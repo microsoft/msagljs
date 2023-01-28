@@ -1,0 +1,34 @@
+{
+  "name": "@msagl/webGLRenderer",
+  "version": "1.1.5",
+  "description": "WebGL renderer for MSAGL in JavaScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "dist.min.js",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microsoft/msagljs"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc --build tsconfig.prod.json && npm run build-bundle && npm run build-worker",
+    "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js",
+    "build-worker": "esbuild ./worker.js --outfile=dist/worker.min.js --bundle --minify",
+    "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
+  },
+  "dependencies": {
+    "@msagl/parser": "^1.1.4",
+    "deck.gl": "^8.8.20",
+    "msagl-js": "^1.1.4",
+    "@msagl/commonRenderer": "^1.1.4"
+  },
+  "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
+}

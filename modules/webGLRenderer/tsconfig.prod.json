@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.prod.json",
+  "compilerOptions": {
+    "lib": ["dom", "es2018"],
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "references": [
+    {
+      "path": "../core/tsconfig.prod.json"
+    }
+  ],
+  "include": ["src/**/*"]
+}

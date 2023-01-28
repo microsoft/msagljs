@@ -1,0 +1,28 @@
+{
+  "name": "@msagl/commonRenderer",
+  "version": "1.1.5",
+  "description": "common utils for MSAGL renderers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "dist.min.js",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microsoft/msagljs"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc --build tsconfig.prod.json"
+  },
+  "dependencies": {
+    "msagl-js": "^1.1.4"
+  },
+  "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
+}
