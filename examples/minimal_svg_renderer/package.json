@@ -5,8 +5,7 @@
   "description": "Public demo for svg from msagl-js",
   "main": "main.js",
   "scripts": {
-    "start": "esbuild ./src/main.js --sourcemap --servedir=. --outfile=main.js --bundle",
-    "build": "rm -rf dist && esbuild ./src/main.js --outfile=dist/main.js --bundle --minify && cp src/index.html dist"
+    "build": "rm -rf dist && esbuild ./src/main.ts --outfile=dist/main.js --bundle --minify && cp src/index.html dist"
   },
   "author": "levnach@microsoft.com",
   "license": "MIT",
