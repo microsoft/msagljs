@@ -9,8 +9,8 @@ import {
   LayerDirectionEnum,
   FastIncrementalLayoutSettings,
   ILayoutSettings,
+  DrawingGraph,
 } from 'msagl-js'
-import {DrawingGraph} from 'msagl-js/drawing'
 
 import {parseJSON, graphToJSON} from '@msagl/parser'
 import {LayoutOptions} from '.'
