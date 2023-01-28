@@ -1,7 +1,7 @@
 import {dropZone} from './drag-n-drop'
-import {Renderer, SearchControl, LayoutOptions} from '@msagl/renderer'
+import {Renderer as WebGLRenderer, SearchControl, LayoutOptions} from '@msagl/webGLRenderer'
 
-import {EdgeRoutingMode, geometryIsCreated, GeomGraph, Graph} from 'msagl-js'
+import {EdgeRoutingMode, geometryIsCreated, Graph} from 'msagl-js'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
@@ -11,7 +11,7 @@ const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/e
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
 
 /// Debug on main thread
-const renderer = new Renderer(document.getElementById('viewer'), null)
+const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 /// Test worker with local build
 // const renderer = new Renderer(document.getElementById('viewer'), './worker.js')
 /// Test published version

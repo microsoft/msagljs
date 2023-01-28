@@ -446,9 +446,11 @@ export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RT
   const edgesPlusEdgeLabels: Array<[Rectangle, HitTreeNodeType]> = []
   for (const e of graph.deepEdges) {
     const ge = e.getAttr(AttributeRegistry.GeomObjectIndex) as GeomEdge
+    if (!ge) continue
     if (ge.label) {
       edgesPlusEdgeLabels.push([ge.label.boundingBox, e.label])
     }
+    if (!ge.curve) continue
     const poly = interpolateICurve(ge.curve, slack / 2)
     if (ge.sourceArrowhead) {
       edgesPlusEdgeLabels.push([
