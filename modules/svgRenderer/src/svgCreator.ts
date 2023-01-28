@@ -26,6 +26,7 @@ import {
   Attribute,
   SmoothedPolyline,
   GeomLabel,
+  Entity,
 } from 'msagl-js'
 import {
   DrawingEdge,
@@ -41,7 +42,6 @@ import {
   viewerObj,
 } from 'msagl-js/drawing'
 import {String} from 'typescript-string-operations'
-import {Entity} from '../../core/src/structs/entity'
 
 export class SvgViewerObject extends Attribute implements IViewerObject {
   clone(): Attribute {

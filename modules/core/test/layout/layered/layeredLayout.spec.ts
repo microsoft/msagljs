@@ -7,7 +7,7 @@ import * as fs from 'fs'
 
 import {sortedList} from '../sortedBySizeListOfgvFiles'
 
-import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize, parseJSONFile} from '../../utils/testUtils'
+import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize, parseJSONFile, edgesAreAttached} from '../../utils/testUtils'
 import {
   Node,
   GeomGraph,
@@ -34,12 +34,11 @@ import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../sr
 import {parseDot} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, Polyline} from '../../../src/math/geometry'
+import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, PointLocation, Polyline} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
-import {edgesAreAttached} from '../../../src/layout/core/geomGraph'
 type P = [number, number]
 
 test('map test', () => {

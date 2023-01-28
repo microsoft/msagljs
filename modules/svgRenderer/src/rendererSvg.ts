@@ -31,7 +31,7 @@ function svgViewerObj(ent: Entity): SvgViewerObject {
 /**
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
-export class RendererSvg implements IViewer {
+export class SvgRenderer implements IViewer {
   /** debug feature : TODO - redesign */
   rubberEdgeStart: Point
   sourcePortLocatiton: Point

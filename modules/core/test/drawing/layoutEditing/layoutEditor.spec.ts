@@ -1,31 +1,41 @@
+// import {
+//   AttributeRegistry,
+//   EventHandler,
+//   Graph,
+//   PlaneTransformation,
+//   Point,
+//   Node,
+//   DrawingGraph,
+//   layoutGraphWithSugiayma,
+//   GeomGraph,
+//   Rectangle,
+//   GeomEdge,
+//   Edge,
+//   GeomNode,
+//   Curve,
+//   Entity,
+// } from 'msagl-js'
+// import {
+//   InsertionMode,
+//   IViewer,
+//   IViewerEdge,
+//   IViewerGraph,
+//   IViewerNode,
+//   IViewerObject,
+//   LayoutEditor,
+//   ModifierKeysEnum,
+// } from 'msagl-js/drawing'
+// import {edgesAreAttached, parseDotGraph} from '../../utils/testUtils'
+// import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+// import {PointLocation, Polyline, Size} from '../../../src/math/geometry'
+// import {VisibilityGraph} from '../../../src/routing/visibility/VisibilityGraph'
+
+// import {Polygon} from '../../../src/routing/visibility/Polygon'
+// import {InteractiveTangentVisibilityGraphCalculator} from '../../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
+// import {SvgViewerEdge, SvgViewerNode} from '../../../../svgRenderer/src/svgCreator'
 test('blanktest', () => {
   console.log('uncomment the file')
 })
-// import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-// import {IViewer, InsertionMode} from '../../../src/drawing/layoutEditing/iViewer'
-// import {IViewerEdge} from '../../../src/drawing/layoutEditing/iViewerEdge'
-// import {IViewerGraph} from '../../../src/drawing/layoutEditing/iViewerGraph'
-// import {IViewerNode} from '../../../src/drawing/layoutEditing/iViewerNode'
-// import {IViewerObject} from '../../../src/drawing/layoutEditing/iViewerObject'
-// import {LayoutEditor} from '../../../src/drawing/layoutEditing/layoutEditor'
-// import {ModifierKeysEnum} from '../../../src/drawing/layoutEditing/modifierKeys'
-// import {GeomEdge, GeomNode, GeomGraph} from '../../../src/layout/core'
-// import {Node} from '../../../src/'
-// import {EventHandler} from '../../../src/layout/core/geomObject'
-// import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
-// import {Point, Rectangle, Polyline, Size} from '../../../src/math/geometry'
-// import {PlaneTransformation} from '../../../src/math/geometry/planeTransformation'
-// import {InteractiveTangentVisibilityGraphCalculator} from '../../../src/routing/visibility/InteractiveTangentVisibilityGraphCalculator'
-// import {Polygon} from '../../../src/routing/visibility/Polygon'
-// import {VisibilityGraph} from '../../../src/routing/visibility/VisibilityGraph'
-// import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
-// import {Edge} from '../../../src/structs/edge'
-// import {Entity} from '../../../src/structs/entity'
-// import {Graph} from '../../../src/structs/graph'
-// import {SvgDebugWriter} from '../../utils/svgDebugWriter'
-// import {parseDotGraph} from '../../utils/testUtils'
-// import {edgesAreAttached} from '../../../src/layout/core/geomGraph'
-// import {SvgViewerEdge, SvgViewerNode} from '../../../../svgRenderer/src/svgCreator'
 
 // class FakeMouseEvent implements PointerEvent {
 //   height: number

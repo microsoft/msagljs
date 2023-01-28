@@ -31,6 +31,35 @@ import {parseJSONGraph} from '../../../parser/src/dotparser'
 import {IPsepColaSetting} from '../../src/layout/incremental/iPsepColaSettings'
 import {PointLocation} from '../../src/math/geometry'
 
+function edgeIsAttached(e: Edge): boolean {
+  return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)
+}
+function pointIsAttached(p: Point, target: Node): boolean {
+  const bc = (GeomNode.getGeom(target) as GeomNode).boundaryCurve
+  const loc = Curve.PointRelativeToCurveLocation(p, bc)
+  return loc == PointLocation.Boundary
+}
+function edgeStart(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.sourceArrowhead) return ge.sourceArrowhead.tipPosition
+  return ge.curve.start
+}
+function edgeEnd(e: Edge): Point {
+  const ge = GeomEdge.getGeom(e)
+  if (ge.targetArrowhead) return ge.targetArrowhead.tipPosition
+  return ge.curve.end
+}
+
+export function edgesAreAttached(graph: Graph): boolean {
+  for (const e of graph.deepEdges) {
+    if (edgeIsAttached(e) == false) {
+      edgeIsAttached(e)
+      return false
+    }
+  }
+  return true
+}
+
 /** this measure function is tailored for SVG */
 export function measureTextSize(str: string, opts: Partial<TextMeasurerOptions>): Size {
   if (!str) {
