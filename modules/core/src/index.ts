@@ -21,8 +21,9 @@ import {pageRank} from './structs/graph'
 import {Label} from './structs/label'
 import {Assert} from './utils/assert'
 import {IntPairMap} from './utils/IntPairMap'
+import {DrawingGraph} from './drawing'
 
-export {GeomGraph, GeomLabel, GeomNode, GeomEdge}
+export {GeomGraph, GeomLabel, GeomNode, GeomEdge, DrawingGraph}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {CancelToken} from './utils/cancelToken'

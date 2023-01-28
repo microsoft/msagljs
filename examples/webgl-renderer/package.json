@@ -13,7 +13,7 @@
   "dependencies": {
     "@msagl/parser": "^1.1.4",
     "@msagl/webGLRenderer": "^1.1.5",
-    "msagl-js": "file:../../modules/core"
+    "msagl-js": "^1.1.4"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",

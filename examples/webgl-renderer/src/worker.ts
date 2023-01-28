@@ -1,3 +1,3 @@
-import {initLayoutWorker} from '@msagl/renderer'
+import {initLayoutWorker} from '@msagl/commonRenderer'
 
 initLayoutWorker()
