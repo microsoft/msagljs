@@ -22,7 +22,8 @@
     "build": "tsc --build tsconfig.prod.json"
   },
   "dependencies": {
-    "msagl-js": "^1.1.4"
+    "msagl-js": "^1.1.4",
+    "@msagl/parser": "^1.1.4"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }

@@ -13,6 +13,7 @@
   "dependencies": {
     "@msagl/parser": "^1.1.4",
     "@msagl/svgRenderer": "^1.1.5",
+    "@msagl/commonRenderer": "^1.1.4",
     "msagl-js": "^1.1.4"
   },
   "devDependencies": {

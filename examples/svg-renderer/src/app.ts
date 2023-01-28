@@ -1,5 +1,5 @@
 import {dropZone} from './drag-n-drop'
-import {LayoutOptions, RendererSvg} from '@msagl/svgRenderer'
+import {RendererSvg} from '@msagl/svgRenderer'
 
 import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Entity, GeomNode, Node} from 'msagl-js'
 
@@ -8,6 +8,7 @@ import {InsertionMode} from 'msagl-js/src/drawing/layoutEditing/iViewer'
 import {AttributeRegistry} from 'msagl-js'
 import {DrawingNode} from 'msagl-js/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
+import {LayoutOptions} from '@msagl/commonRenderer'
 
 const viewer = document.getElementById('viewer')
 viewer.setAttribute('style', 'touch-action: none;')
