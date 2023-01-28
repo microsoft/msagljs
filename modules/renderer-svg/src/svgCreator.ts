@@ -1,4 +1,4 @@
-import {TextMeasurer} from '@msagl/commonRenderer'
+import {TextMeasurer} from '@msagl/renderer-common'
 import {
   Edge,
   Ellipse,

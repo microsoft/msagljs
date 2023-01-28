@@ -17,7 +17,7 @@
   "include": [
     "./modules/**/src/**/*",
     "./modules/**/test/**/*",
-    "modules/commonRenderer/src/text-measurer.ts",
-    "modules/commonRenderer/utils.ts"
+    "modules/renderer-common/src/text-measurer.ts",
+    "modules/renderer-common/utils.ts"
   ]
 }
