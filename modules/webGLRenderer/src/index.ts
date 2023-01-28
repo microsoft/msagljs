@@ -1,6 +1,4 @@
-import {LayoutOptions, initLayoutWorker} from '@msagl/commonRenderer'
-
-export {LayoutOptions}
+import {initLayoutWorker} from '@msagl/commonRenderer'
 
 export {default as Renderer, IRendererControl} from './renderer'
 
