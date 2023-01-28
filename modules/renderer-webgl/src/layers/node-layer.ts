@@ -5,7 +5,7 @@ import {GeomNode, GeomGraph, Node} from 'msagl-js'
 import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
-import {getLabelPosition} from '@msagl/commonRenderer'
+import {getLabelPosition} from '@msagl/renderer-common'
 
 type NodeLayerProps = GeometryLayerProps<GeomNode> &
   TextLayerProps<GeomNode> & {

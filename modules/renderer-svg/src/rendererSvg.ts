@@ -23,7 +23,7 @@ import {SvgCreator, SvgViewerObject} from './svgCreator'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor, viewerObj, InsertionMode} from 'msagl-js/drawing'
 import {default as panZoom, PanZoom} from 'panzoom'
-import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/commonRenderer'
+import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/renderer-common'
 
 function svgViewerObj(ent: Entity): SvgViewerObject {
   return viewerObj(ent) as SvgViewerObject

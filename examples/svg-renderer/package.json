@@ -11,7 +11,7 @@
   "author": "levnach@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/svgRenderer": "^1.1.5",
+    "@msagl/renderer-svg": "^1.1.5",
     "msagl-js": "^1.1.4"
   },
   "devDependencies": {
