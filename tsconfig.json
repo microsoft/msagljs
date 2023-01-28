@@ -18,6 +18,6 @@
     "./modules/**/src/**/*",
     "./modules/**/test/**/*",
     "modules/renderer-common/src/text-measurer.ts",
-    "modules/renderer-common/utils.ts"
+    "modules/renderer-common/src/utils.ts"
   ]
 }
