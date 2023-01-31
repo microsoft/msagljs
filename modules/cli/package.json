@@ -1,0 +1,21 @@
+{
+  "name": "cli",
+  "version": "1.0.0",
+  "description": "command line interface to MSAGL-JS",
+  "main": "graphToSvg.js",
+  "repository": "https://github.com/microsoft/msagljs",
+  "author": "Lev Nachmanson",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@msagl/renderer-svg": "^1.1.5",
+    "msagl-js": "^1.1.4",
+    "puppeteer": "^19.6.2"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  }
+}
