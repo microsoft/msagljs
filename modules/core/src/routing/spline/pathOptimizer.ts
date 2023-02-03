@@ -380,7 +380,8 @@ export class PathOptimizer {
         if (edgeIntoT !== undefined && e === edgeIntoT.edge) continue
         const ot = e.GetOtherTriangle_T(t)
         if (ot == null) continue
-        //Assert.assert(!edgeMap.has(ot))
+        if (edgeMap.has(ot)) continue
+       
         edgeMap.set(ot, {source: t, edge: e})
         q.enqueue(ot)
       }

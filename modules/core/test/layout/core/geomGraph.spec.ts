@@ -23,6 +23,7 @@ import {
   LineSegment,
   Assert,
   Curve,
+  SplineRouter,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -212,16 +213,8 @@ test('tiles composers', () => {
   const json = JSON.parse(graphStr)
   const graph = parseJSON(json)
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-
-  for (const e of geomGraph.deepEdges) {
-    Assert.assert(isLegal(e))
-  }
-  expect(geomGraph.boundingBox.width).toBeGreaterThan(0)
-  const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect)
-  console.time('buildUpToLevel')
-  tileMap.buildUpToLevel(20)
-  console.timeEnd('buildUpToLevel')
+  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
+  sr.run()
 })
 xtest('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')

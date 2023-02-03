@@ -1,5 +1,6 @@
 import {Point} from '../../..'
 import {Polyline, Curve, PointLocation} from '../../../math/geometry'
+import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {Algorithm} from '../../../utils/algorithm'
 
 import {PointSet} from '../../../utils/PointSet'
@@ -12,8 +13,8 @@ export class ConeSpanner extends Algorithm {
   // double coneAngle = Math.PI / 9;// twenty degrees
   _visibilityGraph: VisibilityGraph
 
-  // thirty degrees
-  coneAngle: number = Math.PI / 6
+  /** the angle of the cone */
+  coneAngle: number =  Math.PI / 6
 
   _bidirectional: boolean
 

@@ -360,7 +360,7 @@ export class SplineRouter extends Algorithm {
   }
 
   private RouteEdgesWithTheSamePassport(
-    edgeGeometryGroup: {passport: Set<Shape>; edges: Iterable<GeomEdge>},
+    edgeGeometryGroup: {passport: Set<Shape>; edges: Array<GeomEdge>},
     interactiveEdgeRouter: InteractiveEdgeRouter,
     obstacleShapes: Set<Shape>,
   ) {
@@ -387,8 +387,8 @@ export class SplineRouter extends Algorithm {
         this.RouteMultiEdges(t.multiEdges, interactiveEdgeRouter, edgeGeometryGroup.passport)
       }
     } else {
-      for (const eg of edgeGeometryGroup.edges) {
-        this.routeEdge(interactiveEdgeRouter, eg)
+      for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
+        this.routeEdge(interactiveEdgeRouter, edgeGeometryGroup.edges[i])
       }
     }
   }
