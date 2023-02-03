@@ -377,7 +377,7 @@ export class Polyline implements ICurve {
     return ret
   }
 
-  clone(): ICurve {
+  clone(): Polyline {
     const r = new Polyline()
     r.closed = this.closed
     let p = this.startPoint
