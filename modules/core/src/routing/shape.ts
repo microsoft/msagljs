@@ -50,10 +50,8 @@ export class Shape {
     return new Shape(null)
   }
 
-  static debugCount = 0
   /**  Constructor taking the curve of the shape.*/
   public constructor(boundaryCurve: ICurve = null) {
-    this.id = Shape.debugCount++
     this.BoundaryCurve = boundaryCurve
   }
 
