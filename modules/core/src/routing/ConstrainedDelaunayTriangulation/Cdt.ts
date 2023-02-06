@@ -4,7 +4,7 @@ Following "Sweep-line algorithm for constrained Delaunay triangulation", by Domi
 //triangulates the space between point, line segment and polygons of the Delaunay fashion
 
 import {GeomConstants} from '../../math/geometry/geomConstants'
-import {Point} from '../../math/geometry/point'
+import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {Polyline} from '../../math/geometry/polyline'
 import {Rectangle} from '../../math/geometry/rectangle'
 import {PointMap} from '../../utils/PointMap'
@@ -34,6 +34,7 @@ export class Cdt extends Algorithm {
   PointsToSites: PointMap<CdtSite> = new PointMap<CdtSite>()
 
   allInputSites: Array<CdtSite>
+  simplifyObstacles: true
 
   // constructor
   constructor(isolatedSites: Point[], obstacles: Array<Polyline>, isolatedSegments: Array<SymmetricSegment>) {
@@ -106,11 +107,32 @@ export class Cdt extends Algorithm {
 
   AddPolylineToAllInputSites(poly: Polyline) {
     for (let pp = poly.startPoint; pp.next != null; pp = pp.next) {
-      this.AddConstrainedEdge(pp.point, pp.next.point, poly)
+      if (this.simplifyObstacles) {
+        let pend = pp.next
+        while (pend.next && Point.getTriangleOrientation(pp.point, pend.point, pend.next.point) === TriangleOrientation.Collinear) {
+          pend = pend.next
+        }
+
+        this.AddConstrainedEdge(pp.point, pend.point, poly)
+        pp = pend
+      } else {
+        this.AddConstrainedEdge(pp.point, pp.next.point, poly)
+      }
     }
 
     if (poly.closed) {
-      this.AddConstrainedEdge(poly.endPoint.point, poly.startPoint.point, poly)
+      if (this.simplifyObstacles) {
+        let pend = poly.startPoint
+        while (
+          pend.next &&
+          Point.getTriangleOrientation(poly.endPoint.point, pend.point, pend.next.point) === TriangleOrientation.Collinear
+        ) {
+          pend = pend.next
+        }
+        this.AddConstrainedEdge(poly.end, pend.point, poly)
+      } else {
+        this.AddConstrainedEdge(poly.endPoint.point, poly.startPoint.point, poly)
+      }
     }
   }
 
