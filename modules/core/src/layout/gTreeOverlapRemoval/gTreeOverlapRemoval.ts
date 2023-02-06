@@ -42,7 +42,7 @@ export class GTreeOverlapRemoval {
       return
     }
     const t = {nodePositions: new Array<Point>(), nodeSizes: new Array<Size>()}
-    InitNodePositionsAndBoxes(this._settings, this._nodes, t, this._settings.randomizeAllPointsOnStart)
+    InitNodePositionsAndBoxes(this._settings, this._nodes, t, this._settings.RandomizeAllPointsOnStart)
 
     this.lastRunNumberIterations = 0
     while (this.OneIteration(t.nodePositions, t.nodeSizes, false)) {
@@ -329,7 +329,7 @@ function InitNodePositionsAndBoxes(
   randomizeNodePositions: boolean,
 ) {
   t.nodePositions = nodes.map((v) => v.center)
-  randomizePoints(t.nodePositions, new Random(0, 0), 0.01, randomizeNodePositions)
+  randomizePoints(t.nodePositions, new Random(0, 0), 1)
   t.nodeSizes = nodes.map((n) => {
     const s = n.boundingBox.size
     s.width += overlapRemovalSettings.NodeSeparation // this pad with both sides by overlapRemovalSettings.NodeSeparation/2
@@ -340,14 +340,14 @@ function InitNodePositionsAndBoxes(
 /** When randomizeAll is true then the points are shifter randomly at the small distance between 0 and epsilon.
  * Otherwise the points are shifted just to avoid the exact repetition.
  */
-function randomizePoints(points: Point[], random: Random, epsilon: number, randomizeAll: boolean) {
+function randomizePoints(points: Point[], random: Random, randomizationShift: number) {
   const pointSet = new PointSet()
   for (let i = 0; i < points.length; i++) {
     let p: Point = points[i]
-    if (randomizeAll || pointSet.has(p)) {
+    if (randomizationShift || pointSet.has(p)) {
       do {
-        const newX: number = p.x + (2 * random.random() - 1) * epsilon
-        const newY: number = p.y + (2 * random.random() - 1) * epsilon
+        const newX: number = p.x + (2 * random.random() - 1) * randomizationShift
+        const newY: number = p.y + (2 * random.random() - 1) * randomizationShift
         p = new Point(newX, newY)
       } while (pointSet.has(p))
     }

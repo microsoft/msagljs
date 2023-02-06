@@ -12,7 +12,7 @@ export class OverlapRemovalSettings {
 
   workInInches: boolean
 
-  randomizeAllPointsOnStart = false
+  private randomizeAllPointsOnStart = false
 
   // If true, the overlap iteration process stops after maxIterat iterations.
   public get StopOnMaxIterat(): boolean {
