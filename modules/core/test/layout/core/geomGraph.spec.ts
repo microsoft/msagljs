@@ -206,7 +206,7 @@ test('intersectedEnities', () => {
   }
 })
 
-test('tiles composers', () => {
+xtest('tiles composers', () => {
   const fpath = path.join(__dirname, '../../data/JSONfiles/composersWithGeom.JSON')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
 

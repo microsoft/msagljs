@@ -363,7 +363,10 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
     // cb.pad(e.lineWidth)
     t.b.addRecSelf(cb)
     if (e.edge.label != null) {
-      t.b.addRecSelf(GeomObject.getGeom(e.edge.label).boundingBox)
+      const labelGeom = GeomObject.getGeom(e.edge.label)
+      if (labelGeom) {
+        t.b.addRecSelf(labelGeom.boundingBox)
+      }
     }
   }
 
