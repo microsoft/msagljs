@@ -34,7 +34,7 @@ export class Cdt extends Algorithm {
   PointsToSites: PointMap<CdtSite> = new PointMap<CdtSite>()
 
   allInputSites: Array<CdtSite>
-  simplifyObstacles: true
+  simplifyObstacles = true
 
   // constructor
   constructor(isolatedSites: Point[], obstacles: Array<Polyline>, isolatedSegments: Array<SymmetricSegment>) {
@@ -106,33 +106,25 @@ export class Cdt extends Algorithm {
   }
 
   AddPolylineToAllInputSites(poly: Polyline) {
-    for (let pp = poly.startPoint; pp.next != null; pp = pp.next) {
-      if (this.simplifyObstacles) {
-        let pend = pp.next
-        while (pend.next && Point.getTriangleOrientation(pp.point, pend.point, pend.next.point) === TriangleOrientation.Collinear) {
-          pend = pend.next
+    if (this.simplifyObstacles) {
+      for (let p = poly.startPoint; p != null; ) {
+        const edgeStart = p.point
+        p = p.next
+        if (!p) break
+        while (p.next && Point.getTriangleOrientation(edgeStart, p.point, p.next.point) === TriangleOrientation.Collinear) {
+          p = p.next
         }
 
-        this.AddConstrainedEdge(pp.point, pend.point, poly)
-        pp = pend
-      } else {
+        this.AddConstrainedEdge(edgeStart, p.point, poly)
+      }
+    } else {
+      for (let pp = poly.startPoint; pp.next != null; pp = pp.next) {
         this.AddConstrainedEdge(pp.point, pp.next.point, poly)
       }
     }
 
     if (poly.closed) {
-      if (this.simplifyObstacles) {
-        let pend = poly.startPoint
-        while (
-          pend.next &&
-          Point.getTriangleOrientation(poly.endPoint.point, pend.point, pend.next.point) === TriangleOrientation.Collinear
-        ) {
-          pend = pend.next
-        }
-        this.AddConstrainedEdge(poly.end, pend.point, poly)
-      } else {
-        this.AddConstrainedEdge(poly.endPoint.point, poly.startPoint.point, poly)
-      }
+      this.AddConstrainedEdge(poly.endPoint.point, poly.startPoint.point, poly)
     }
   }
 
