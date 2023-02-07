@@ -232,7 +232,7 @@ export class CdtSweeper extends Algorithm {
     // @ts-ignore
     edgeInserter._sweeper = this
 
-    edgeInserter.Run()
+    edgeInserter.runEdgeInserter()
   }
 
   static EdgeIsProcessed(edge: CdtEdge): boolean {

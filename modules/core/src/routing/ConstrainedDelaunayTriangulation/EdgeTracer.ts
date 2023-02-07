@@ -9,23 +9,23 @@ import {CdtSite} from './CdtSite'
 import {CdtSweeper} from './CdtSweeper'
 import {CdtTriangle} from './CdtTriangle'
 
-export class EdgeTracer {
-  readonly edge: CdtEdge
-  readonly triangles: Set<CdtTriangle>
-  readonly front: RBTree<CdtFrontElement>
-  readonly leftPolygon: Array<CdtSite>
-  readonly rightPolygon: Array<CdtSite>
+export class _EdgeTracer_ {
+  traversingEdge: CdtEdge
+  triangles: Set<CdtTriangle>
+  front: RBTree<CdtFrontElement>
+  leftPolygon: Array<CdtSite>
+  rightPolygon: Array<CdtSite>
 
-  // the upper site of the edge
+  // the upper site of the traversing edge
   a: CdtSite
-  // the lower site of the edge
+  // the lower site of the traversing edge
   b: CdtSite
   piercedEdge: CdtEdge
   piercedTriangle: CdtTriangle
   piercedToTheLeftFrontElemNode: RBNode<CdtFrontElement>
   piercedToTheRightFrontElemNode: RBNode<CdtFrontElement>
   elementsToBeRemovedFromFront = new Array<CdtFrontElement>()
-  removedTriangles = new Array<CdtTriangle>()
+  removedTriangles: Array<CdtTriangle>
 
   constructor(
     edge: CdtEdge,
@@ -34,7 +34,7 @@ export class EdgeTracer {
     leftPolygon: Array<CdtSite>,
     rightPolygon: Array<CdtSite>,
   ) {
-    this.edge = edge
+    this.traversingEdge = edge
     this.triangles = triangles
     this.front = front
     this.leftPolygon = leftPolygon
@@ -44,7 +44,7 @@ export class EdgeTracer {
   }
 
   Run() {
-    this.Init()
+    this.initEdgeTracer()
     this.Traverse()
   }
 
@@ -223,7 +223,8 @@ export class EdgeTracer {
     return this.piercedEdge.IsAdjacent(this.b)
   }
 
-  Init() {
+  initEdgeTracer() {
+    this.removedTriangles = []
     //            if (CdtSweeper.D)
     //                CdtSweeper.ShowFront(triangles, front, new[] {new LineSegment(a.point, b.point)},null);
     // new[] {new LineSegment(piercedEdge.upperSite.point, piercedEdge.lowerSite.point)});
