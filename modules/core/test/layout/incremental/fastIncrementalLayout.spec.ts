@@ -134,7 +134,7 @@ xtest('layout 150-250 gv files with fil', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      //SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })

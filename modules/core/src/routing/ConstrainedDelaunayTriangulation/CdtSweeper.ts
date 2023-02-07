@@ -229,6 +229,9 @@ export class CdtSweeper extends Algorithm {
     }
 
     const edgeInserter = new EdgeInserter(edge, this.triangles, this.front, this.createEdgeDelegate)
+    // @ts-ignore
+    edgeInserter._sweeper = this
+
     edgeInserter.Run()
   }
 

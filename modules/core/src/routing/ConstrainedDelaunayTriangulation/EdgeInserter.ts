@@ -43,7 +43,15 @@ export class EdgeInserter {
   UpdateFront() {
     const newFrontEdges = new Set<CdtEdge>()
     for (const t of this.addedTriangles) {
-      for (const e of t.Edges) if (e.CwTriangle == null || e.CcwTriangle == null) newFrontEdges.add(e)
+      for (const e of t.Edges)
+        if (e.CwTriangle == null || e.CcwTriangle == null) {
+          // @ts-ignore
+          if (e.lowerSite == this._sweeper.p_2 && e.upperSite == this._sweeper.p_1) {
+            continue
+          }
+
+          newFrontEdges.add(e)
+        }
     }
     for (const e of newFrontEdges) this.AddEdgeToFront(e)
   }
@@ -90,6 +98,8 @@ export class EdgeInserter {
 
   TraceEdgeThroughTriangles() {
     const edgeTracer = new EdgeTracer(this.edge, this.triangles, this.front, this.leftPolygon, this.rightPolygon)
+    // @ts-ignore
+    edgeTracer._sweeper = this._sweeper
     edgeTracer.Run()
   }
 }
