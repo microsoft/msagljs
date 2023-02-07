@@ -100,7 +100,7 @@ export class EdgeInserter {
 
   TraceEdgeThroughTriangles() {
     this.initEdgeTracer()
-    this.runEdgeTracel()
+    this.Traverse()
   }
   /** edge tracer region */
 
@@ -114,11 +114,6 @@ export class EdgeInserter {
   piercedToTheRightFrontElemNode: RBNode<CdtFrontElement>
   elementsToBeRemovedFromFront = new Array<CdtFrontElement>()
   removedTriangles: Array<CdtTriangle>
-
-  runEdgeTracel() {
-    this.initEdgeTracer()
-    this.Traverse()
-  }
 
   Traverse() {
     while (!this.BIsReached()) {
