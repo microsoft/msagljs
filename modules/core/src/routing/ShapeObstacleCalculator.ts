@@ -34,13 +34,13 @@ export class ShapeObstacleCalculator {
   MainShape: Shape
   OverlapsDetected: boolean
 
-  Calculate(randomizeLoosePolylines: boolean) {
+  Calculate(randomizationShift: number) {
     if (this.MainShape.Children.length === 0) {
       return
     }
 
     this.CreateTightObstacles()
-    this.CreateTigthLooseCouples(randomizeLoosePolylines)
+    this.CreateTigthLooseCouples(randomizationShift)
     this.FillTheMapOfShapeToTightLooseCouples()
   }
   FillTheMapOfShapeToTightLooseCouples() {
@@ -59,11 +59,11 @@ export class ShapeObstacleCalculator {
     return Curve.PointRelativeToCurveLocation(shape.BoundaryCurve.start, tightPolyline) === PointLocation.Inside
   }
 
-  CreateTigthLooseCouples(randomizeLoosePolylines: boolean) {
+  CreateTigthLooseCouples(randomizationShift: number) {
     const couples = new Array<TightLooseCouple>()
     for (const tightPolyline of this.tightHierarchy.GetAllLeaves()) {
       const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(this.tightHierarchy, tightPolyline, this.LoosePadding)
-      const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizeLoosePolylines)
+      const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizationShift)
       couples.push(TightLooseCouple.mk(tightPolyline, new Shape(loosePoly), distance))
     }
 

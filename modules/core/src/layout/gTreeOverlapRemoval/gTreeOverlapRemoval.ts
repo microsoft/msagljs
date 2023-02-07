@@ -29,7 +29,7 @@ export class GTreeOverlapRemoval {
   // Removes the overlap by using the default settings.
   public static RemoveOverlaps(nodes: GeomNode[], nodeSeparation: number) {
     const settings = new OverlapRemovalSettings()
-    settings.RandomizeAllPointsOnStart = true
+    settings.RandomizationShift = 1
     settings.NodeSeparation = nodeSeparation
     const mst = new GTreeOverlapRemoval(settings, nodes)
     mst.RemoveOverlaps()
@@ -42,7 +42,7 @@ export class GTreeOverlapRemoval {
       return
     }
     const t = {nodePositions: new Array<Point>(), nodeSizes: new Array<Size>()}
-    InitNodePositionsAndBoxes(this._settings, this._nodes, t, this._settings.RandomizeAllPointsOnStart)
+    InitNodePositionsAndBoxes(this._settings, this._nodes, t, this._settings.RandomizationShift)
 
     this.lastRunNumberIterations = 0
     while (this.OneIteration(t.nodePositions, t.nodeSizes, false)) {
@@ -326,10 +326,10 @@ function InitNodePositionsAndBoxes(
   overlapRemovalSettings: OverlapRemovalSettings,
   nodes: GeomNode[],
   t: {nodePositions: Point[]; nodeSizes: Size[]},
-  randomizeNodePositions: boolean,
+  randomizeShift: number,
 ) {
   t.nodePositions = nodes.map((v) => v.center)
-  randomizePoints(t.nodePositions, new Random(0, 0), 1)
+  if (randomizeShift) randomizePoints(t.nodePositions, new Random(0, 0), randomizeShift)
   t.nodeSizes = nodes.map((n) => {
     const s = n.boundingBox.size
     s.width += overlapRemovalSettings.NodeSeparation // this pad with both sides by overlapRemovalSettings.NodeSeparation/2
