@@ -99,8 +99,8 @@ export class Cdt extends Algorithm {
       box.add(site)
     }
 
-    const delx = Math.max(box.width / 3, 1)
-    const dely = Math.max(box.height / 3, 1)
+    const delx = 10
+    const dely = 10
     this.P1 = new CdtSite(box.leftBottom.add(new Point(-delx, -dely)))
     this.P2 = new CdtSite(box.rightBottom.add(new Point(delx, -dely)))
   }
