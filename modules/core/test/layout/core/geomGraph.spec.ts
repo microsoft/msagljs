@@ -206,16 +206,6 @@ test('intersectedEnities', () => {
   }
 })
 
-test('tiles composers', () => {
-  const fpath = path.join(__dirname, '../../data/JSONfiles/composersWithGeom.JSON')
-  const graphStr = fs.readFileSync(fpath, 'utf-8')
-
-  const json = JSON.parse(graphStr)
-  const graph = parseJSON(json)
-  const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
-  sr.run()
-})
 xtest('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
