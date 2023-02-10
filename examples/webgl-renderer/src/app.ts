@@ -7,7 +7,7 @@ import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from 'msagl-js/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/gameofthrones.json'
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
 
 /// Debug on main thread
@@ -45,8 +45,7 @@ dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
     updateRender(graph)
-    document.getElementById('graph-name').innerText =
-      graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString + ')'
+    document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
   })
 }
 
@@ -91,16 +90,14 @@ fontSelect.onchange = () => {
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
   updateRender(graph)
-  document.getElementById('graph-name').innerText =
-    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
+  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   const hasGeom = geometryIsCreated(graph)
   updateRender(graph, hasGeom ? null : getSettings())
 
-  document.getElementById('graph-name').innerText =
-    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
+  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })()
 
 function getSettings(): LayoutOptions {

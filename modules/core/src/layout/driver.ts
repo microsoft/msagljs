@@ -169,7 +169,7 @@ export function layoutGeomGraphDetailed(
     return
   }
   if (geomG.parent == null) {
-    //console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount(), 'edges')
+    //console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount, 'edges')
     //console.time('layout')
     // go over some intitial settings only on the top level
     initRandom(randomSeed)
