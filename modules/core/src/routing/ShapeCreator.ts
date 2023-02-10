@@ -110,12 +110,14 @@ export class ShapeCreator {
   }
 
   static FixPortAtSource(port: Port, e: GeomEdge) {
+    if (e == null) return
     if (e.sourcePort == null) {
       e.sourcePort = port
     }
   }
 
   static FixPortAtTarget(port: Port, e: GeomEdge) {
+    if (e == null) return
     if (e.targetPort == null) {
       e.targetPort = port
     }

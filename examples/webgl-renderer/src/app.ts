@@ -36,7 +36,7 @@ async function updateRender(graphOrSettings: Graph | LayoutOptions, settings?: L
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
 for (const name of SAMPLE_DOT) {
   const option = document.createElement('option')
-  option.value = `${name}.gv`
+  option.value = name
   option.innerText = name
   dotFileSelect.appendChild(option)
 }

@@ -381,6 +381,7 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
     igraph.addLabelToGraphBB(t.b)
   }
   function isProperEdge(geomEdge: GeomEdge): boolean {
+    if (geomEdge == null) return false
     if (geomEdge.curve == null) return false
     if (geomEdge.underCollapsedGraph()) return false
     if (igraph instanceof GeomGraph) {
