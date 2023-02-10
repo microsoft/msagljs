@@ -16,7 +16,7 @@ viewer.setAttribute('style', 'touch-action: none;')
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
 
 const svgRenderer = new RendererSvg(viewer)
-const dotFileSelect = createDotGraphsSelect()
+const graphExamplesSelect = createDotGraphsSelect()
 let objectWithEditedLabel: Entity
 viewer.addEventListener('dblclick', (e) => {
   // to disable the double click zoom under panZoom of anvaka
@@ -77,8 +77,8 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
   }
 })
 
-dotFileSelect.onchange = () => {
-  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
+graphExamplesSelect.onchange = () => {
+  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + graphExamplesSelect.value
   loadGraphFromUrl(url)
     .then((graph) => {
       svgRenderer.setGraph(graph, getLayoutOptions())
@@ -191,15 +191,15 @@ function createEdgeRoutingSelect() {
 }
 
 function createDotGraphsSelect() {
-  const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
+  const graphExamples = <HTMLSelectElement>document.getElementById('gv')
   for (const name of SAMPLE_DOT) {
     const option = document.createElement('option')
-    option.value = `${name}.gv`
+    option.value = name
     option.innerText = name
-    dotFileSelect.appendChild(option)
+    graphExamples.appendChild(option)
   }
-  dotFileSelect.selectedIndex = -1
-  return dotFileSelect
+  graphExamples.selectedIndex = -1
+  return graphExamples
 }
 
 function getLayoutOptions(): LayoutOptions {

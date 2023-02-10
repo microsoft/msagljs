@@ -12,7 +12,7 @@ export class OverlapRemovalSettings {
 
   workInInches: boolean
 
-  private randomizationShift = 1
+  private randomizationShift = 0.1
 
   // If true, the overlap iteration process stops after maxIterat iterations.
   public get StopOnMaxIterat(): boolean {
