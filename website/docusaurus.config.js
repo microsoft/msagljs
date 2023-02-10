@@ -73,18 +73,37 @@ const config = configure({
     }),
 }, {
   compileCode: {
-    langs: [
-      {
-        lang: "msagl",
-        html: "./tools/msagl.html",
-        timeout: 10000,
-        outputFiles: [
-          {
-            name: "output.svg",
-            title: "Generated graph",
+    langs: [{
+      lang: "ts",
+      meta: "build",
+      nodeBin: "tsc",
+      npmPackage: "typescript",
+      inputFiles: {
+        "tsconfig.json": {
+          "compilerOptions": {
+            "target": "es2018",
+            "moduleResolution": "node",
+            "allowJs": true,
+            "noImplicitAny": true,
+            "lib": ["dom", "es2018"],
+            "importHelpers": true,
+            "noEmit": true,
+            "esModuleInterop": true,
           },
-        ]
-      },]
+        }
+      }
+    },
+    {
+      lang: "dot",
+      html: "./tools/msagl.html",
+      timeout: 120000,
+      outputFiles: [
+        {
+          name: "output.svg",
+          title: "Generated graph",
+        },
+      ]
+    },]
   },
   sideEditor: {
     editors: [
