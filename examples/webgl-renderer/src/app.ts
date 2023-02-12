@@ -1,5 +1,6 @@
 import {dropZone} from './drag-n-drop'
-import {Renderer as WebGLRenderer, SearchControl, LayoutOptions} from '@msagl/renderer-webgl'
+import {LayoutOptions} from '@msagl/renderer-common'
+import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
 import {EdgeRoutingMode, geometryIsCreated, Graph} from 'msagl-js'
 

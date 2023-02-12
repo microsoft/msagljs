@@ -4,7 +4,7 @@
 //
 //  'real' edges are original graph edges
 
-import {Port} from '../../../../src/layout/core/port'
+import {Port} from '../../../layout/core/port'
 import {Stack} from 'stack-typescript'
 import {GeomEdge, Point} from '../../..'
 import {Polyline, Curve, PointLocation} from '../../../math/geometry'
