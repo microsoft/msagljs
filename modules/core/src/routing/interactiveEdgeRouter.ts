@@ -1362,7 +1362,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     if (rectangleNode == null) {
       return null
     }
-    return rectangleNode.FirstHitNodePF(point, (pnt, polyline) =>
+    return rectangleNode.FirstHitNodeWithPredicate(point, (pnt, polyline) =>
       Curve.PointRelativeToCurveLocation(pnt, polyline) !== PointLocation.Outside ? HitTestBehavior.Stop : HitTestBehavior.Continue,
     )
   }
