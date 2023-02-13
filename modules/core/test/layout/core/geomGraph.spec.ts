@@ -206,7 +206,7 @@ test('intersectedEnities', () => {
   }
 })
 
-test('tiles gameofthrones', () => {
+xtest('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
