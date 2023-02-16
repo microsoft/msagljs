@@ -581,6 +581,9 @@ export class RectilinearEdgeRouter extends Algorithm {
   // }
 
   static FitArcsIntoCorners(radius: number, polyline: Point[]): ICurve {
+    if (radius == 0) {
+      return Polyline.mkFromPoints(polyline)
+    }
     const ellipses = RectilinearEdgeRouter.GetFittedArcSegs(radius, polyline)
     const curve = new Curve()
     let prevEllipse: Ellipse = null
