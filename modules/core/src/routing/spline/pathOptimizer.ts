@@ -76,7 +76,7 @@ export class PathOptimizer {
         const ot = e.GetOtherTriangle_T(t)
 
         if (ot == null || trs.has(ot)) continue
-        if (ot.intersectsLine(start, end)) {
+        if (this.insideSourceOrTargetPoly(ot) || ot.intersectsLine(start, end)) {
           enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
         }
       }
@@ -92,6 +92,13 @@ export class PathOptimizer {
       }
     }
   }
+  insideSourceOrTargetPoly(t: T): boolean {
+    const owner = t.Sites.item0.Owner
+    if (owner === this.sourcePoly || owner === this.targetPoly) {
+      if (owner === t.Sites.item1.Owner && owner === t.Sites.item2.Owner) return true
+    }
+    return false
+  }
   private canBelongToTriangles(t: T): boolean {
     const owner = t.Sites.item0.Owner
     return owner === this.sourcePoly || owner === this.targetPoly || !triangIsInsideOfObstacle(t)
@@ -105,6 +112,7 @@ export class PathOptimizer {
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
     //++debCount
     this.poly = poly
+    this.d = []
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
@@ -351,7 +359,6 @@ export class PathOptimizer {
   }
 
   private initDiagonals(sleeve: SleeveEdge[]) {
-    this.d = []
     for (const sleeveEdge of sleeve) {
       const e = sleeveEdge.edge
       const site = sleeveEdge.source.OppositeSite(e)

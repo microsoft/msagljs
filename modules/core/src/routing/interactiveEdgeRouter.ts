@@ -903,14 +903,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   }
 
   RouteFromFloatingPortToFloatingPort(portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
-    const targetPortLocation: Point = this.TargetPort.Location
-    const ls = LineSegment.mkPP(this.StartPointOfEdgeRouting, targetPortLocation)
-    if (this.AllowedShootingStraightLines && this.LineAvoidsTightHierarchyLPP(ls, this.SourceTightPolyline, this.targetTightPolyline)) {
-      t.smoothedPolyline = this.SmoothedPolylineFromTwoPoints(ls.start, ls.end)
-      return ls
-    }
-
-    // we need to route through the visibility graph
+    // route through the visibility graph
     this.ExtendVisibilityGraphToLocationOfTargetFloatingPort(portLoosePolyline)
     this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
     if (this._polyline == null) {
