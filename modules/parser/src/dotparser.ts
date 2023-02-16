@@ -898,7 +898,7 @@ function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
       yield {type: 'attr', id: 'geomEdgeLabel', eq: JSON.stringify(rJSON)}
     }
   }
-  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(edge))
+  yield* attrIter(DrawingObject.getDrawingObj(edge))
 }
 
 function getNodeStatement(node: Node): NodeStmt | Subgraph {
@@ -929,13 +929,99 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
     yield getNodeBoundaryCurve(node)
   }
 
-  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(node))
+  yield* attrIter(DrawingObject.getDrawingObj(node))
 }
 
-function* drawingObjAttrIter(drawingObj: DrawingObject) {
-  if (drawingObj) {
-    for (const attr of drawingObj.attrIter()) {
-      yield attr
+function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
+  if (drObj.color && drObj.color.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'color', eq: drObj.color.toString()}
+  }
+  if (drObj.fillColor) {
+    yield {type: 'attr', id: 'fillColor', eq: drObj.fillColor.toString()}
+  }
+  if (drObj.labelfontcolor && drObj.labelfontcolor.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'labelfontcolor', eq: drObj.labelfontcolor.toString()}
+  }
+  if (!(drObj.labelText == null || drObj.labelText === '') && drObj.entity && drObj.labelText !== drObj.id) {
+    yield {type: 'attr', id: 'label', eq: drObj.labelText}
+  }
+  if (drObj.fontColor && drObj.fontColor.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'fontColor', eq: drObj.fontColor.toString()}
+  }
+
+  if (drObj.styles && drObj.styles.length) {
+    const styleString = drObj.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
+    yield {type: 'attr', id: 'style', eq: styleString}
+  }
+  if (drObj.pencolor && drObj.pencolor.keyword !== 'black') {
+    yield {type: 'attr', id: 'pencolor', eq: drObj.pencolor.toString()}
+  }
+  if (drObj.penwidth && drObj.penwidth !== 1) {
+    yield {type: 'attr', id: 'penwidth', eq: drObj.penwidth.toString()}
+  }
+  if (drObj.rankdir) {
+    yield {type: 'attr', id: 'rankdir', eq: drObj.rankdir.toString()}
+  }
+  if (drObj.fontname && drObj.fontname !== DrawingObject.defaultLabelFontName) {
+    yield {type: 'attr', id: 'fontname', eq: drObj.fontname}
+  }
+  if (drObj.margin) {
+    yield {type: 'attr', id: 'margin', eq: drObj.margin.toString()}
+  }
+  if (drObj.fontsize && drObj.fontsize !== DrawingObject.defaultLabelFontSize) {
+    yield {type: 'attr', id: 'fontsize', eq: drObj.fontsize.toString()}
+  }
+  if (drObj.orientation) {
+    yield {type: 'attr', id: 'orientation', eq: drObj.orientation.toString()}
+  }
+  if (drObj.ranksep) {
+    yield {type: 'attr', id: 'ranksep', eq: drObj.ranksep.toString()}
+  }
+  if (drObj.arrowtail) {
+    yield {type: 'attr', id: 'arrowtail', eq: drObj.arrowtail.toString()}
+  }
+  if (drObj.arrowhead) {
+    yield {type: 'attr', id: 'arrowhead', eq: drObj.arrowhead.toString()}
+  }
+  if (drObj.ordering) {
+    yield {type: 'attr', id: 'ordering', eq: drObj.ordering.toString()}
+  }
+  if (drObj.bgcolor) {
+    yield {type: 'attr', id: 'bgcolor', eq: drObj.bgcolor.toString()}
+  }
+  if (drObj.pos) {
+    yield {type: 'attr', id: 'pos', eq: drObj.pos.toString()}
+  }
+  if (drObj.nodesep) {
+    yield {type: 'attr', id: 'nodesep', eq: drObj.nodesep.toString()}
+  }
+  if (drObj.arrowsize) {
+    yield {type: 'attr', id: 'arrowsize', eq: drObj.arrowsize.toString()}
+  }
+  if (drObj.samehead) {
+    yield {type: 'attr', id: 'samehead', eq: drObj.samehead.toString()}
+  }
+  if (drObj.layersep) {
+    yield {type: 'attr', id: 'layersep', eq: drObj.layersep.toString()}
+  }
+  if (drObj.clusterRank) {
+    yield {type: 'attr', id: 'clusterrank', eq: drObj.clusterRank.toString()}
+  }
+  if (drObj.measuredTextSize) {
+    yield {type: 'attr', id: 'measuredTextSize', eq: JSON.stringify(drObj.measuredTextSize)}
+  }
+  if (drObj instanceof DrawingNode) {
+    if (drObj.shape && drObj.shape !== ShapeEnum.box) {
+      yield {type: 'attr', id: 'shape', eq: drObj.shape.toString()}
+    }
+    if (drObj.xRad && drObj.xRad !== 3) {
+      yield {type: 'attr', id: 'xRad', eq: drObj.xRad.toString()}
+    }
+    if (drObj.yRad && drObj.yRad !== 3) {
+      yield {type: 'attr', id: 'yRad', eq: drObj.yRad.toString()}
+    }
+    if (drObj.padding && drObj.padding !== 2) {
+      yield {type: 'attr', id: 'padding', eq: drObj.padding.toString()}
     }
   }
 }
@@ -1009,7 +1095,7 @@ function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
   if (dg == null) return
   const defaultDrawingNode = dg.defaultNodeObject
   if (defaultDrawingNode) {
-    children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(drawingObjAttrIter(defaultDrawingNode))})
+    children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(attrIter(defaultDrawingNode))})
   }
 }
 
