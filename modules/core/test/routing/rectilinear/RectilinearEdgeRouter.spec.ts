@@ -1,12 +1,10 @@
 import {join} from 'path'
 import {GeomGraph, Graph, CurveFactory, Point, GeomEdge, Edge, ICurve, GeomNode, Node, Rectangle, routeRectilinearEdges} from '../../../src'
 import {DrawingGraph} from '../../../src/drawing'
-import {GeomObject} from '../../../src/layout/core/geomObject'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {RectilinearEdgeRouter} from '../../../src/routing/rectilinear/RectilinearEdgeRouter'
 
 import {sortedList} from '../../layout/sortedBySizeListOfgvFiles'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from '../../utils/testUtils'
 test('empty graph', () => {
   const gg = new GeomGraph(new Graph('graph'))
