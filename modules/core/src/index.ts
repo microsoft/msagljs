@@ -22,6 +22,7 @@ import {Label} from './structs/label'
 import {Assert} from './utils/assert'
 import {IntPairMap} from './utils/IntPairMap'
 import {DrawingGraph} from './drawing'
+import {PolylinePoint} from './math/geometry/polylinePoint'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge, DrawingGraph}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -53,6 +54,7 @@ export {Curve, CurveJSON, clipWithRectangle} from './math/geometry/curve'
 export {BezierSeg, BezierJSON} from './math/geometry/bezierSeg'
 export {LineSegment, LineSegmentJSON} from './math/geometry/lineSegment'
 export {Polyline, PolylineJSON} from './math/geometry/polyline'
+
 export {GeomObject} from './layout/core/geomObject'
 export {Arrowhead} from './layout/core/arrowhead'
 export {setNewParent} from './structs/graph'
@@ -79,4 +81,5 @@ export {
   TileMap,
   TileData,
   CurveClip,
+  PolylinePoint,
 }
