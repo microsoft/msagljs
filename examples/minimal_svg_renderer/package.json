@@ -1,6 +1,6 @@
 {
   "name": "minimal-svg-renderer",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "private": true,
   "description": "Public demo for svg from msagl-js",
   "main": "main.js",
@@ -10,9 +10,9 @@
   "author": "levnach@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/parser": "^1.1.6",
-    "@msagl/renderer-svg": "^1.1.7",
-    "msagl-js": "^1.1.6"
+    "@msagl/parser": "^1.1.7",
+    "@msagl/renderer-svg": "^1.1.8",
+    "msagl-js": "^1.1.7"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",
