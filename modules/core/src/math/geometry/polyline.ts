@@ -284,10 +284,11 @@ export class Polyline implements ICurve {
   }
   trim(start: number, end: number): ICurve {
     //this is a very lazy version!
-    let curve: Curve = this.toCurve()
-    curve = <Curve>curve.trim(start, end)
-
-    return Polyline.polylineFromCurve(curve)
+    let curve: ICurve = this.toCurve()
+    curve = curve.trim(start, end)
+    /* always convert to Polyline */
+    if (curve instanceof Curve) return Polyline.polylineFromCurve(curve)
+    else return Polyline.mkFromPoints([curve.start, curve.end])
   }
   trimWithWrap(start: number, end: number): ICurve {
     throw new Error('Method not implemented.')
