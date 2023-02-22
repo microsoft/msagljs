@@ -1123,8 +1123,8 @@ export function parseTXT(content: string): Graph {
     for (const l of lines) {
       if (l.length == 0) continue
       if (l.charAt(0) == '#') continue
-      const st = l.split(/\t/)
-      if (st.length != 2) {
+      const st = l.split(/\t| |,/)
+      if (st.length < 2) {
         console.log('cannot parse', l)
         return null
       }
@@ -1157,7 +1157,11 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
 
   if (file.name.toLowerCase().endsWith('.json')) {
     graph = parseJSON(JSON.parse(content))
-  } else if (file.name.toLowerCase().endsWith('.txt')) {
+  } else if (
+    file.name.toLowerCase().endsWith('.txt') ||
+    file.name.toLowerCase().endsWith('.tsv') ||
+    file.name.toLowerCase().endsWith('.csv')
+  ) {
     graph = parseTXT(content)
   } else {
     graph = parseDot(content)

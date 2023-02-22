@@ -369,7 +369,7 @@ export class SplineRouter extends Algorithm {
       multiEdges: [],
     }
     try {
-      const cdtOnLooseObstacles = this.getCdtFromShapes(obstacleShapes)
+      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
       console.log(e)
@@ -392,7 +392,7 @@ export class SplineRouter extends Algorithm {
       }
     }
   }
-  private getCdtFromShapes(passport: Set<Shape>): Cdt {
+  private getCdtFromPassport(passport: Set<Shape>): Cdt {
     // we need a set here because a loose polyline could be the same for different shapes
     // in the case of overlaps
     const loosePolys = new Set<Polyline>()

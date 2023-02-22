@@ -28,25 +28,44 @@ export class PathOptimizer {
   cdtRTree: RectangleNode<T, Point>
   setCdt(cdt: Cdt) {
     this.cdt = cdt
-    if (cdt) {
-      this.cdtRTree = this.cdt.getRectangleNodeOnTriangles()
-    }
   }
 
   triangles = new Set<T>()
   private findTrianglesIntersectingThePolyline() {
     this.triangles.clear()
-    const passedTriSet = this.getPointTrianglesInTheGlobalCdt(this.poly.start)
+    const passedTriSet = this.initPassedTriangles(this.poly.start)
     for (let p = this.poly.startPoint; p.next; p = p.next) {
       this.addLineSeg(passedTriSet, p.point, p.next.point)
     }
   }
-  private getPointTrianglesInTheGlobalCdt(start: Point): Set<T> {
-    const ts = new Set<T>()
-    for (const t of this.cdtRTree.AllHitItems(Rectangle.mkOnPoints([start]), (t) => t.containsPoint(start))) {
-      ts.add(t)
+  private initPassedTriangles(start: Point): Set<T> {
+    const ret = new Set<T>()
+    const p = this.sourcePoly.start
+    const ps = this.cdt.FindSite(p)
+    for (const e of ps.Edges) {
+      let ot = e.CcwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+      ot = e.CwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
     }
-    return ts
+    for (const e of ps.InEdges) {
+      let ot = e.CcwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+      ot = e.CwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+    }
   }
   private addLineSeg(passedTriSet: Set<T>, start: Point, end: Point): Set<T> {
     //Assert.assert(startTri.containsPoint(start))
