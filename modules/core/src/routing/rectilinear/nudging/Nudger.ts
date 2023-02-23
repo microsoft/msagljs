@@ -200,7 +200,7 @@ export class Nudger {
     this.CreateLongestNudgedSegments()
     this.FindFreeSpaceInDirection(<Array<AxisEdge>>Array.from(this.PathVisibilityGraph.Edges))
     this.MoveLongestSegsIdealPositionsInsideFeasibleIntervals()
-    this.PositionShiftedEdges()
+    this.PositionShiftedEdqges()
   }
 
   SetWidthsOfArrowheads() {
