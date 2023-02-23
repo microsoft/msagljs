@@ -223,14 +223,14 @@ export class Nudger {
   }
 
   EdgeSeparation: number
-  PositionShiftedEdges() {
-    // we are using 2*cornerFitRadius for the minimal edge separation
+  PositionShiftedEdqges() {
     this.Solver = new UniformOneDimensionalSolver(this.EdgeSeparation)
     for (let i = 0; i < this.LongestNudgedSegs.length; i++) {
       this.CreateVariablesOfLongestSegment(this.LongestNudgedSegs[i])
     }
 
     this.CreateConstraintsOfTheOrder()
+
     this.CreateConstraintsBetweenLongestSegments()
     this.Solver.SolveByRegularSolver()
     this.ShiftPathEdges()

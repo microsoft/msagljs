@@ -156,7 +156,7 @@ export class Qpsc {
   private previousFunctionValue: number = Number.MAX_VALUE
 
   constructor(solverParameters: Parameters, cVariables: number) {
-    this.solverParameters = this.solverParameters
+    this.solverParameters = solverParameters
     this.matrixQ = new Array(cVariables)
     this.vectorWiDi = new Array(cVariables)
     this.vectorQpscVars = new Array(cVariables)
