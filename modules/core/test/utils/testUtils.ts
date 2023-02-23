@@ -127,7 +127,7 @@ export function runMDSLayout(fname: string, edgeRoutingMode = EdgeRoutingMode.St
 export function runMDSLayoutNoSubgraphs(fname: string, edgeRoutingMode: EdgeRoutingMode) {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph(fname))
   if (dg == null) return null
-  if (dg.graph.hasSubgraphs()) return null
+  // if (dg.graph.hasSubgraphs()) return null
 
   dg.createGeometry(measureTextSize)
   const gg = <GeomGraph>GeomObject.getGeom(dg.graph)

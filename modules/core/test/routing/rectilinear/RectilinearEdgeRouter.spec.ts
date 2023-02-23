@@ -421,6 +421,20 @@ test('abstract rect', () => {
   }
 })
 
+test('smlred rect', () => {
+  const path = 'graphvis/'
+  let dg: DrawingGraph
+  try {
+    dg = runMDSLayoutNoSubgraphs(join(path, 'smlred.gv'), EdgeRoutingMode.Rectilinear)
+  } catch (Error) {
+    console.log('abstract.gv' + ' error:' + Error.message)
+    expect(1).toBe(0)
+  }
+  if (dg != null) {
+    // SvgDebugWriter.writeGeomGraph('./tmp/rect' + 'abstract' + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  }
+})
+
 /** returns the parameter dividing curve by half lengthwise */
 function findLengthMiddleParameter(poly: Polyline): number {
   // the array of growing lengths

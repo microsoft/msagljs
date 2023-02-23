@@ -519,19 +519,20 @@ export class TransientGraphUtility {
 
   private SpliceGroupBoundaryCrossing(currentVertex: VisibilityVertex, pac: PointAndCrossings, dirToInside: Direction) {
     const crossings: GroupBoundaryCrossing[] = PointAndCrossingsList.ToCrossingArray(pac.Crossings, dirToInside)
+
     if (crossings != null) {
       const outerVertex = this.VisGraph.FindVertex(pac.Location) ?? this.AddVertex(pac.Location)
-      this.AddVertex(pac.Location)
+
       if (!currentVertex.point.equal(outerVertex.point)) {
         this.FindOrAddEdgeVV(currentVertex, outerVertex)
       }
 
       const interiorPoint = crossings[0].GetInteriorVertexPoint(pac.Location)
       const interiorVertex = this.VisGraph.FindVertex(interiorPoint) ?? this.AddVertex(interiorPoint)
-      this.AddVertex(interiorPoint)
+
       // FindOrAddEdge splits an existing edge so may not return the portion bracketed by outerVertex and interiorVertex.
-      this.FindOrAddEdgeVV(outerVertex, interiorVertex)
-      const edge = this.VisGraph.FindEdgePP(outerVertex.point, interiorVertex.point)
+      const edge = this.FindOrAddEdgeVV(outerVertex, interiorVertex)
+      //const edge = this.VisGraph.FindEdgePP(outerVertex.point, interiorVertex.point)
       const crossingsArray = crossings.map((c) => c.Group.InputShape)
       edge.IsPassable = () => crossingsArray.some((s) => s.IsTransparent)
     }

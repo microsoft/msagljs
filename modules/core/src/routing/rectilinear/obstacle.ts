@@ -31,7 +31,16 @@ export class Obstacle {
   Ports: Set<Port>
   ConvexHull: OverlapConvexHull
   OverlapsGroupCorner: boolean
-  looseVisibilityPolyline: Polyline
+  private _looseVisibilityPolyline: Polyline
+  public get looseVisibilityPolyline(): Polyline {
+    if (this._looseVisibilityPolyline == null) {
+      this._looseVisibilityPolyline = Obstacle.CreateLoosePolyline(this.VisibilityPolyline)
+    }
+    return this._looseVisibilityPolyline
+  }
+  public set looseVisibilityPolyline(value: Polyline) {
+    this._looseVisibilityPolyline = value
+  }
 
   GetPortChanges(t: {addedPorts: Set<Port>; removedPorts: Set<Port>}): boolean {
     t.addedPorts = substractSets(this.InputShape.Ports, this.Ports)
