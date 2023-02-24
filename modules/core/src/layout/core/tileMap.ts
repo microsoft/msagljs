@@ -93,9 +93,10 @@ export class TileMap {
     const rank = pageRank(this.geomGraph.graph, 0.85)
     this.pageRank = new Map<Edge, number>()
     for (const e of this.geomGraph.graph.deepEdges) {
-      this.pageRank.set(e, rank.get(e.source) + rank.get(e.target))
+      const r = rank.get(e.source) + rank.get(e.target)
+      this.pageRank.set(e, r)
       if (e.label) {
-        this.pageRank.set(e.label, rank.get(e.source) + rank.get(e.target))
+        this.pageRank.set(e.label, r)
       }
     }
     for (const n of this.geomGraph.graph.nodesBreadthFirst) {
