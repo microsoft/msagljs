@@ -346,7 +346,7 @@ export class TileMap {
     let allTilesAreSmall = true
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      allTilesAreSmall = this.subdivideOneTile(key, w, h, tile, levelTiles, allTilesAreSmall, z)
+      allTilesAreSmall = this.subdivideOneTile(key, w, h, tile, levelTiles, allTilesAreSmall)
     }
     return allTilesAreSmall
   }
