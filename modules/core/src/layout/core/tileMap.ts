@@ -363,7 +363,6 @@ export class TileMap {
     /** this is the map we collect new tiles to */
     levelTiles: IntPairMap<TileData>,
     allTilesAreSmall: boolean,
-    z: number,
   ) {
     const xp = key.x
     const yp = key.y
@@ -430,10 +429,11 @@ export class TileMap {
             const k = 2 * i + j
             const tile = tdArr[k]
 
-            if (!tile.rect.containsRect(trBb)) continue
-            //   Assert.assert(tile.rect.contains(p))
-            tile.curveClips.push({curve: tr, edge: cs.edge})
-            break
+            if (tile.rect.containsRect(trBb)) {
+              //   Assert.assert(tile.rect.contains(p))
+              tile.curveClips.push({curve: tr, edge: cs.edge})
+              break
+            }
           }
         }
       }
