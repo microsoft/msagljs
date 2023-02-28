@@ -25,8 +25,12 @@
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },
   "dependencies": {
+    "@types/d3-color": "^3.1.0",
+    "@types/d3-scale": "^4.0.0",
     "@msagl/parser": "^1.1.8",
     "@msagl/renderer-common": "^1.1.9",
+    "d3-color": "^3.1.0",
+    "d3-scale": "^4.0.0",
     "deck.gl": "^8.8.20",
     "msagl-js": "^1.1.8"
   },
