@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <title>deck.gl renderer with MSAGL-JS</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./editor.main.css" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        font-size: 13px;
+      }
+      main {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+      }
+      #editor {
+        position: relative;
+        flex: 0 0 50%;
+        max-width: 480px;
+        height: 100%;
+      }
+      #viewer {
+        position: relative;
+        flex: 1 0 50%;
+        height: 100%;
+      }
+      #update-btn {
+        position: absolute;
+        z-index: 1;
+        margin: 12px;
+        padding: 4px;
+        background: red;
+        color: white;
+      }
+      #update-btn .error {
+        color: red;
+        position: absolute;
+        left: 80px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <div id="editor"></div>
+      <div id="viewer">
+        <button id="update-btn">
+          Update
+          <div class="error"></div>
+        </button>
+      </div>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
