@@ -7,15 +7,19 @@ import {iconMapping} from './arrows'
 
 import CurveLayer, {CurveLayerProps} from './curve-layer'
 import {CURVE} from './curve-layer'
+import {ParsedGraphEdgeLayerStyle} from '../styles/graph-style-evaluator'
+import GraphStyleExtension from './graph-style-extension'
 
 type EdgeLayerProps = CurveLayerProps<ICurve> & {
   resolution?: number
 }
 
-export function getEdgeLayer(props: EdgeLayerProps, dataCache: any): Layer {
+export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerStyle): Layer {
   
-  if (!dataCache.curves) {
-    dataCache.curves = Array.from(
+  // @ts-ignore
+  if (!props.data._curves) {
+    // @ts-ignore
+    props.data._curves = Array.from(
       getCurves(props.data as Iterable<CurveClip>, (segment: ICurve, datum: CurveClip, index: number) => {
         // @ts-expect-error
         segment.__source = {
@@ -28,11 +32,10 @@ export function getEdgeLayer(props: EdgeLayerProps, dataCache: any): Layer {
     )
   }
 
-  const {id, resolution} = props
-
   return new CurveLayer<ICurve>(props, {
-    id: `${id}-edge`,
-    data: dataCache.curves,
+    id: `${props.id}-edge`,
+    // @ts-ignore
+    data: props.data._curves,
     getCurveType,
     getControlPoints,
     getRange: (d: ICurve) => {
@@ -43,10 +46,17 @@ export function getEdgeLayer(props: EdgeLayerProps, dataCache: any): Layer {
     // one vertex per 4 pixels
     getResolution: (d: ICurve) => {
       // @ts-ignore
-      return d.length * resolution
+      return d.length * props.resolution
     },
     // @ts-ignore
     clipByInstance: false,
+
+    extensions: [new GraphStyleExtension({
+      overrideProps: {
+        getWidth: style.strokeWidth,
+        getColor: style.strokeColor
+      }
+    })]
   })
 }
 
@@ -54,9 +64,7 @@ export function getArrowHeadLayer(props: IconLayerProps<{
   tip: Point
   edge: Edge
   base: Point
-}>): Layer {
-  const {id, getColor} = props
-
+}>, style: ParsedGraphEdgeLayerStyle): Layer {
   return new IconLayer<{
     tip: Point
     edge: Edge
@@ -64,32 +72,44 @@ export function getArrowHeadLayer(props: IconLayerProps<{
   }>(
     props,
     {
-      id: `${id}-arrowhead`,
+      id: `${props.id}-arrowhead`,
       iconAtlas: 'deck://arrowAtlas',
       iconMapping,
       getPosition: (d) => [d.tip.x, d.tip.y],
-      getColor: getColor || ((d) => getEdgeColor(d.edge)),
+      getColor: (d) => getEdgeColor(d.edge),
       getIcon: (d) => getEdgeType(d.edge),
       getSize: (d) => getArrowSize(d.tip, d.base),
       getAngle: (d) => getArrowAngle(d.tip, d.base),
       billboard: false,
       sizeUnits: 'common',
+
+      extensions: [new GraphStyleExtension({
+        overrideProps: {
+          sizeScale: style.arrowSize,
+          getColor: style.arrowColor
+        }
+      })]
     },
   )
 }
 
-export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>): Layer {
-  const {id, getColor = getLabelColor} = props
-
+export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>, style: ParsedGraphEdgeLayerStyle): Layer {
   return new TextLayer<GeomLabel>(
     props,
     {
-      id: `${id}-edge-label`,
+      id: `${props.id}-edge-label`,
       getText: getLabelText,
       getSize: getLabelSize,
-      getColor,
+      getColor: getLabelColor,
       getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
       sizeUnits: 'common',
+
+      extensions: [new GraphStyleExtension({
+        overrideProps: {
+          sizeScale: style.labelSize,
+          getColor: style.labelColor
+        }
+      })]
     },
   )
 }

@@ -219,6 +219,7 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
         normalized: true,
         type: GL.UNSIGNED_BYTE,
         accessor: 'getColor',
+        defaultValue: [0, 0, 0, 255],
       },
     })
   }

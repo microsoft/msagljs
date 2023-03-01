@@ -22,8 +22,8 @@ export type InterpolatorContext = {
   zoom: number
 }
 export type Interpolation<OutputT> = {
-  interpolation: 'step' | 'linear'
-  interpolationParameters: number[]
+  interpolation: 'step' | 'linear' | 'power'
+  interpolationParameters?: number[]
   input: keyof InterpolatorContext
   inputStops: number[]
   outputStops: OutputT[]
@@ -32,7 +32,7 @@ export type Interpolation<OutputT> = {
 type GraphLayerStyle = {
   id?: string
   type: string
-  filter?: EntityFilter
+  filter?: EntityFilter | EntityFilter[]
   visible?: boolean
   minZoom?: number
   maxZoom?: number
