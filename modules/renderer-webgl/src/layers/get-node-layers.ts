@@ -5,6 +5,8 @@ import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 import {getLabelPosition} from '@msagl/renderer-common'
+import {ParsedGraphNodeLayerStyle} from '../styles/graph-style-evaluator'
+import GraphStyleExtension from './graph-style-extension'
 
 type NodeLayerProps = GeometryLayerProps<GeomNode> &
   TextLayerProps<GeomNode> & {
@@ -12,50 +14,49 @@ type NodeLayerProps = GeometryLayerProps<GeomNode> &
     textSizeScale: number
   }
 
-export function getNodeLayers(props: NodeLayerProps): LayersList {
-  const {
-    id,
-    getFillColor = getNodeFillColor,
-    getLineColor = getNodeColor,
-    getLineWidth = 1,
-    textColor = [0, 0, 0, 255],
-    textSizeScale = 1
-  } = props 
-
+export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayerStyle): LayersList {
   return [
     new GeometryLayer<GeomNode>(
       props,
       {
-        id: `${id}-node-boundary`,
+        id: `${props.id}-node-boundary`,
         lineWidthUnits: 'pixels',
         getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
         getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
         getShape: (e: GeomNode) => getShapeFromNode(e.node),
         cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
-        getLineWidth,
-        getLineColor,
-        getFillColor,
+        getLineColor: getNodeColor,
+        getFillColor: getNodeFillColor,
+
+        extensions: [new GraphStyleExtension({
+          overrideProps: {
+            sizeScale: style.size,
+            getFillColor: style.fillColor,
+            getLineWidth: style.strokeWidth,
+            getLineColor: style.strokeColor,
+          }
+        })]
       }
     ),
 
     new TextLayer<GeomNode>(
       props,
       {
-        id: `${id}-node-label`,
+        id: `${props.id}-node-label`,
         getPosition: (n: GeomNode) => getLabelPosition(n),
         getText: getLabelText,
         getSize: getLabelSize,
-        getColor: textColor || getNodeColor,
-        sizeScale: textSizeScale,
+        getColor: getNodeColor,
         billboard: false,
         sizeUnits: 'common',
         characterSet: 'auto',
-        // TODO - fix in ClipExtension
-        _subLayerProps: {
-          characters: {
-            clipByInstance: false,
-          },
-        },
+
+        extensions: [new GraphStyleExtension({
+          overrideProps: {
+            getColor: style.labelColor,
+            sizeScale: style.labelSize
+          }
+        })]
       }
     ),
   ]
