@@ -161,7 +161,7 @@ function parseInterpolation<ValueT extends number | string, OutputT = ValueT>(
   if (transform) {
     return transform(valueOrInterpolation as ValueT)
   }
-  return valueOrInterpolation as OutputT
+  return valueOrInterpolation as unknown as OutputT
 }
 
 function colorToRGB(input: string): number[] {
