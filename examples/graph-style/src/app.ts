@@ -16,13 +16,14 @@ renderer.setStyle(defaultStyle)
   const graph = await loadGraphFromUrl(defaultGraph)
   await renderer.setGraph(graph)
 
+  const updateMessage = document.querySelector('#update-btn .error') as HTMLDivElement
   document.getElementById('update-btn').addEventListener('click', () => {
     try {
       const newStyle = JSON.parse(editor.getValue())
       renderer.setStyle(newStyle)
-      document.querySelector('#update-btn .error').innerText = ''
+      updateMessage.innerText = ''
     } catch (ex) {
-      document.querySelector('#update-btn .error').innerText = ex.message
+      updateMessage.innerText = ex.message
     }
   })
 })()

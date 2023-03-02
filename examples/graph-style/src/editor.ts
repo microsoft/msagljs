@@ -1,5 +1,6 @@
 // https://github.com/microsoft/monaco-editor/blob/main/samples/browser-esm-esbuild/index.js
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.main.js';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.main.js'
+import graphStyleSchema from '@msagl/renderer-webgl/graph-style-schema.json'
 
 export function createEditor(container: HTMLElement) {
   // @ts-ignore
@@ -21,9 +22,20 @@ export function createEditor(container: HTMLElement) {
     }
   }
 
+  var modelUri = monaco.Uri.parse("http://msagl/graph-style.json"); // a made up unique URI for our model
+  var model = monaco.editor.createModel('', "json", modelUri);
+
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    validate: true,
+    schemas: [{
+      uri: "http://msagl/graph-style-schema.json", // id of the first schema
+      fileMatch: [modelUri.toString()], // associate with our model
+      schema: graphStyleSchema
+    }]
+  });
+
   return monaco.editor.create(container, {
-    value: '',
-    language: 'json',
-    formatOnType: true,
+    model,
+    tabSize: 2
   })
 }
