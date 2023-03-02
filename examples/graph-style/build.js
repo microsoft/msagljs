@@ -10,17 +10,20 @@ const workerEntryPoints = [
 	'vs/language/css/css.worker.js',
 	'vs/language/html/html.worker.js',
 	'vs/language/typescript/ts.worker.js',
-	'vs/editor/editor.worker.js'
+	'vs/editor/editor.worker.js',
 ];
+
 const monacoModuleDir = '../../node_modules/monaco-editor'
 
 start(mode);
 
 async function start() {
-  fs.rmSync('./dist', { recursive: true })
+  if (fs.existsSync('./dist')) {
+    fs.rmSync('./dist', { recursive: true })
+  }
   fs.mkdirSync('./dist')
 
-  const result = await esbuild.build({
+  let result = await esbuild.build({
     entryPoints: workerEntryPoints.map((entry) => `${monacoModuleDir}/esm/${entry}`),
     bundle: true,
     format: 'iife',
@@ -28,8 +31,6 @@ async function start() {
     outdir: './dist'
   });
   handleErrors(result);
-
-  fs.copyFileSync(`${monacoModuleDir}/min/vs/editor/editor.main.css`, 'dist/editor.main.css');
 
   const ctx = {
     entryPoints: ['src/app.ts'],
@@ -45,11 +46,10 @@ async function start() {
   if (mode === 'watch') {
     fs.linkSync('./index.html', './dist/index.html')
 
-    await esbuild.serve({
+    result = await esbuild.serve({
       servedir: './dist',
-      port: 8080
     }, ctx);
-    console.log(`serving on http://localhost:8080`);
+    console.log(`> Local: \thttp://localhost:${result.port}`);
 
   } else {
     fs.copyFileSync('./index.html', './dist/index.html')

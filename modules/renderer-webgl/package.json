@@ -8,6 +8,7 @@
   "files": [
     "dist",
     "dist.min.js",
+    "graph-style-schema.json",
     "src"
   ],
   "publishConfig": {
@@ -19,7 +20,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc --build tsconfig.prod.json && npm run build-bundle && npm run build-worker",
+    "build": "tsc --build tsconfig.prod.json && npm run build-bundle && npm run build-worker && npm run build-schema",
+    "build-schema": "typescript-json-schema src/styles/graph-style-spec.ts GraphStyleSpecification > graph-style-schema.json",
     "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js",
     "build-worker": "esbuild ./worker.js --outfile=dist/worker.min.js --bundle --minify",
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""

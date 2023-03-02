@@ -165,6 +165,11 @@ float smoothedgeCommon(float edge, float x) {
   return smoothstep(edge - radius, edge + radius, x);
 }
 
+float smoothedgeCommon(float edge, float x, float maxRadius) {
+  float radius = min(0.5 / project_uScale, maxRadius);
+  return smoothstep(edge - radius, edge + radius, x);
+}
+
 float inRectangle(vec2 halfSize, float radius) {
   vec2 edgeVec = halfSize - abs(vPosition);
   float edgeDistance = min(edgeVec.x, edgeVec.y);
@@ -174,7 +179,8 @@ float inRectangle(vec2 halfSize, float radius) {
   }
   vec2 cornerVec = radius - edgeVec;
   cornerVec *= float(cornerVec.x > 0.0 && cornerVec.y > 0.0);
-  return smoothedgeCommon(length(cornerVec), radius) * inside;
+  float outCorner = smoothedgeCommon(radius, length(cornerVec), radius / 2.0);
+  return inside * (1.0 - outCorner);
 }
 
 float inOval(vec2 halfSize) {

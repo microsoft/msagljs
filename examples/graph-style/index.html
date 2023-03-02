@@ -3,7 +3,7 @@
     <title>deck.gl renderer with MSAGL-JS</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./editor.main.css" />
+    <link rel="stylesheet" href="./app.css" />
     <style>
       body {
         margin: 0;
@@ -18,20 +18,21 @@
       }
       #editor {
         position: relative;
-        flex: 0 0 50%;
-        max-width: 480px;
+        flex: 0 0 auto;
+        width: 480px;
         height: 100%;
       }
       #viewer {
         position: relative;
-        flex: 1 0 50%;
+        flex-grow: 1;
         height: 100%;
       }
       #update-btn {
         position: absolute;
         z-index: 1;
+        border: none;
         margin: 12px;
-        padding: 4px;
+        padding: 8px;
         background: red;
         color: white;
       }
