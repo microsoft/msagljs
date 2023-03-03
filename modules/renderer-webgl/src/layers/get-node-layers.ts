@@ -1,10 +1,9 @@
-import {LayersList, Color, GetPickingInfoParams} from '@deck.gl/core/typed'
+import {LayersList, Color, Position} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {GeomNode, GeomGraph, Node, Entity} from 'msagl-js'
 import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
-import {getLabelPosition} from '@msagl/renderer-common'
 import {ParsedGraphNodeLayerStyle} from '../styles/graph-style-evaluator'
 import GraphStyleExtension from './graph-style-extension'
 
@@ -21,7 +20,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       {
         id: `${props.id}-node-boundary`,
         lineWidthUnits: 'pixels',
-        getPosition: (e: GeomNode) => [e.boundingBox.center.x, e.boundingBox.center.y],
+        getPosition: getNodeCenter,
         getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
         getShape: (e: GeomNode) => getShapeFromNode(e.node),
         cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
@@ -43,7 +42,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       props,
       {
         id: `${props.id}-node-label`,
-        getPosition: (n: GeomNode) => getLabelPosition(n),
+        getPosition: getLabelPosition,
         getText: getLabelText,
         getSize: getLabelSize,
         getColor: getNodeColor,
@@ -60,6 +59,18 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       }
     ),
   ]
+}
+
+function getNodeCenter(n: GeomNode): Position {
+  return [n.center.x, n.center.y]
+}
+
+function getLabelPosition(n: GeomNode, context: any): Position {
+  if (n instanceof GeomGraph) {
+    const box = n.boundingBox
+    return [box.center.x, box.bottom + (<GeomGraph>n).labelSize.height / 2 + 2]
+  }
+  return getNodeCenter(n)
 }
 
 function getLabelText(n: GeomNode): string {
