@@ -1,4 +1,4 @@
-import {Layer, project32, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
+import {Layer, project32, Position, Color, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
 import GL from '@luma.gl/constants'
 import {Model, Geometry} from '@luma.gl/engine'
 import {Texture2D} from '@luma.gl/webgl'
@@ -30,11 +30,11 @@ export type GeometryLayerProps<DataT = any> = {
   nodeDepth?: Texture2D
   highlightColors?: number[][]
 
-  getPickingColor?: Accessor<DataT, number[]>
-  getPosition?: Accessor<DataT, number[]>
+  getPickingColor?: Accessor<DataT, Color>
+  getPosition?: Accessor<DataT, Position>
   getSize?: Accessor<DataT, [number, number]>
-  getFillColor?: Accessor<DataT, number[]>
-  getLineColor?: Accessor<DataT, number[]>
+  getFillColor?: Accessor<DataT, Color>
+  getLineColor?: Accessor<DataT, Color>
   getLineWidth?: Accessor<DataT, number>
   getShape?: Accessor<DataT, SHAPE>
 } & LayerProps<DataT>
