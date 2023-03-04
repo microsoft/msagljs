@@ -275,9 +275,6 @@ export default class Renderer extends EventSource {
         tile.bbox as NonGeoBoundingBox
         return tileMap.getTileData(x, y, z - startZoom)
       },
-      parameters: {
-        depthTest: false,
-      },
       // For debugging
       // onClick: ({sourceLayer}) => {
       //   // @ts-ignore

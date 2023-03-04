@@ -67,6 +67,10 @@ export default class GraphStyleExtension extends LayerExtension<GraphStyleExtens
     const {modifiedProps, dynamicAttributes} = this.state
     this.props = modifiedProps
 
+    if ('opacity' in extension.opts.overrideProps) {
+      params.uniforms.opacity = Math.pow(modifiedProps.opacity, 1 / 2.2)
+    }
+
     if (!extension.isDynamic) return
 
     for (const propName in dynamicAttributes) {

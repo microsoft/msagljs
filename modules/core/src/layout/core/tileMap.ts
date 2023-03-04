@@ -31,14 +31,14 @@ export class TileMap {
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 1000
+  private tileCapacity = 2500
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<TileData>[] = []
 
   private pageRank: Map<Entity, number>
 
   /** the more rank is the more important the entity is */
-  entityRank: Map<Entity, number>
+  entityRank: Map<Node, number>
 
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): TileData {
@@ -167,19 +167,15 @@ export class TileMap {
     return this.levels.length
   }
   private calculateRank(entsSortedByVisualAndPageRank: Entity[]) {
-    this.entityRank = new Map<Entity, number>()
+    this.entityRank = new Map<Node, number>()
 
-    const assignRank = (sortedEntities: Entity[]) => {
-      const n = sortedEntities.length
-      for (let i = 0; i < n; i++) {
-        this.entityRank.set(sortedEntities[i], 1 - i / n)
-      }
+    const nodes = entsSortedByVisualAndPageRank.filter((e: Entity): e is Node => {
+      return e instanceof Node
+    })
+    const n = nodes.length
+    for (let i = 0; i < n; i++) {
+      this.entityRank.set(nodes[i], -Math.log10((i + 1) / n))
     }
-
-    const nodes = entsSortedByVisualAndPageRank.filter(e => e instanceof Node)
-    assignRank(nodes)
-    const edges = entsSortedByVisualAndPageRank.filter(e => e instanceof Edge)
-    assignRank(edges)
   }
   private pushUpNodeRanksAboveTheirEdges() {
     for (const n of this.geomGraph.nodesBreadthFirst) {
