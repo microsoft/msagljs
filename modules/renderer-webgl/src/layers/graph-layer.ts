@@ -1,17 +1,21 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
 import { TextLayer, TextLayerProps } from '@deck.gl/layers/typed'
 import {GeomNode, TileData, TileMap} from 'msagl-js'
+import {Matrix4} from '@math.gl/core'
 
 import {getNodeLayers} from './get-node-layers'
 import {getEdgeLayer, getArrowHeadLayer, getEdgeLabelLayer} from './get-edge-layers'
 import GraphHighlighter from './graph-highlighter'
 import {ParsedGraphStyle, ParsedGraphNodeLayerStyle, ParsedGraphEdgeLayerStyle} from '../styles/graph-style-evaluator'
 
+import type { _Tile2DHeader, NonGeoBoundingBox } from '@deck.gl/geo-layers/typed'
+
 type GraphLayerProps = TextLayerProps<GeomNode> & {
   highlighter: GraphHighlighter
   resolution: number
   graphStyle: ParsedGraphStyle
   tileMap?: TileMap
+  tile: _Tile2DHeader
 }
 
 export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
@@ -68,13 +72,21 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
 
   override renderLayers(): LayersList {
     const {layerMap} = this.state
-    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight} = this.props
+    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix} = this.props
+    const layerCount = graphStyle.layers.length
+    const tileSize = (tile.bbox as NonGeoBoundingBox).right - (tile.bbox as NonGeoBoundingBox).left
 
-    return graphStyle.layers.map((layer) => {
+    return graphStyle.layers.map((layer, layerIndex) => {
       const data = layerMap[layer.id]
       const subLayers = []
       const subLayerProps = this.getSubLayerProps({id: layer.id})
-      subLayerProps.layerStyle = layer
+      Object.assign(subLayerProps, {
+        layerStyle: layer,
+        modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize]),
+        parameters: {
+          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount]
+        }
+      })
 
       if (data.nodes?.length > 0) {
         subLayers.push(getNodeLayers({

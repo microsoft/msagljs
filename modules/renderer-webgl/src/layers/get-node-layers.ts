@@ -29,6 +29,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
 
         extensions: [new GraphStyleExtension({
           overrideProps: {
+            opacity: style.opacity,
             sizeScale: style.size,
             getFillColor: style.fillColor,
             getLineWidth: style.strokeWidth,
@@ -52,6 +53,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
 
         extensions: [new GraphStyleExtension({
           overrideProps: {
+            opacity: style.opacity,
             getColor: style.labelColor,
             sizeScale: style.labelSize
           }
@@ -61,8 +63,8 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
   ]
 }
 
-function getNodeCenter(n: GeomNode): Position {
-  return [n.center.x, n.center.y]
+function getNodeCenter(n: GeomNode, {index, data}: any): Position {
+  return [n.center.x, n.center.y, 1 - index / data.length]
 }
 
 function getLabelPosition(n: GeomNode, context: any): Position {
@@ -70,7 +72,7 @@ function getLabelPosition(n: GeomNode, context: any): Position {
     const box = n.boundingBox
     return [box.center.x, box.bottom + (<GeomGraph>n).labelSize.height / 2 + 2]
   }
-  return getNodeCenter(n)
+  return getNodeCenter(n, context)
 }
 
 function getLabelText(n: GeomNode): string {

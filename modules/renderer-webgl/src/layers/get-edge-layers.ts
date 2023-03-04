@@ -53,6 +53,7 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
 
     extensions: [new GraphStyleExtension({
       overrideProps: {
+        opacity: style.opacity,
         getWidth: style.strokeWidth,
         getColor: style.strokeColor
       }
@@ -85,6 +86,7 @@ export function getArrowHeadLayer(props: IconLayerProps<{
 
       extensions: [new GraphStyleExtension({
         overrideProps: {
+          opacity: style.opacity,
           sizeScale: style.arrowSize,
           getColor: style.arrowColor
         }
@@ -106,6 +108,7 @@ export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>, style: Parse
 
       extensions: [new GraphStyleExtension({
         overrideProps: {
+          opacity: style.opacity,
           sizeScale: style.labelSize,
           getColor: style.labelColor
         }

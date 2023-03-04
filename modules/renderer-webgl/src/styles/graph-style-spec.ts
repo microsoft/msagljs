@@ -41,6 +41,7 @@ type GraphLayerStyle = {
 export type GraphNodeLayerStyle = GraphLayerStyle & {
   type: 'node'
   size?: number | Interpolation<number>
+  opacity?: number | Interpolation<number>
   fillColor?: string | Interpolation<string>
   strokeWidth?: number | Interpolation<number>
   strokeColor?: string | Interpolation<string>
@@ -50,6 +51,7 @@ export type GraphNodeLayerStyle = GraphLayerStyle & {
 
 export type GraphEdgeLayerStyle = GraphLayerStyle & {
   type: 'edge'
+  opacity?: number | Interpolation<number>
   strokeWidth?: number | Interpolation<number>
   strokeColor?: string | Interpolation<string>
   arrowSize?: number | Interpolation<number>

@@ -26,6 +26,7 @@ export type ValueOrInterpolator<OutputT> = ((context: InterpolatorContext) => Ou
 export type ParsedGraphNodeLayerStyle = ParsedGraphLayerStyle & {
   type: 'node'
   size: ValueOrInterpolator<number>
+  opacity: ValueOrInterpolator<number>
   fillColor: ValueOrInterpolator<number[]>
   strokeWidth: ValueOrInterpolator<number>
   strokeColor: ValueOrInterpolator<number[]>
@@ -35,6 +36,7 @@ export type ParsedGraphNodeLayerStyle = ParsedGraphLayerStyle & {
 /** Internal only */
 export type ParsedGraphEdgeLayerStyle = ParsedGraphLayerStyle & {
   type: 'edge'
+  opacity: ValueOrInterpolator<number>
   strokeWidth: ValueOrInterpolator<number>
   strokeColor: ValueOrInterpolator<number[]>
   arrowSize: ValueOrInterpolator<number>
@@ -75,15 +77,17 @@ function parseLayerStyle(layer: GraphNodeLayerStyle | GraphEdgeLayerStyle, layer
 
   if (type === 'node') {
     interpolators = {
+      opacity: parseInterpolation(layer.opacity),
       size: parseInterpolation(layer.size),
       fillColor: parseInterpolation(layer.fillColor, colorToRGB),
       strokeWidth: parseInterpolation(layer.strokeWidth),
       strokeColor: parseInterpolation(layer.strokeColor, colorToRGB),
-      labelSize: parseInterpolation(layer.labelSize),
+      labelSize: parseInterpolation(layer.labelSize ?? layer.size),
       labelColor: parseInterpolation(layer.labelColor, colorToRGB),
     }
   } else if (layer.type === 'edge') {
     interpolators = {
+      opacity: parseInterpolation(layer.opacity),
       strokeWidth: parseInterpolation(layer.strokeWidth),
       strokeColor: parseInterpolation(layer.strokeColor, colorToRGB),
       arrowSize: parseInterpolation(layer.arrowSize),
@@ -203,7 +207,16 @@ function parseFilter(filter: EntityFilter | EntityFilter[] | undefined): ((e: En
       getProperty = (e: Entity) => getDrawingObj<DrawingNode | DrawingEdge>(e).labelText
       break
     case 'rank':
-      getProperty = (e: Entity, context: FilterContext) => context.tileMap?.entityRank.get(e)
+      getProperty = (e: Entity, context: FilterContext) => {
+        if ('source' in e) {
+          // is edge
+          return Math.min(
+            context.tileMap?.entityRank.get((e as Edge).source),
+            context.tileMap?.entityRank.get((e as Edge).target)
+          )
+        }
+        return context.tileMap?.entityRank.get(e as Node)
+      }
       break
     default:
       throw new Error(`Unknown filter property ${filter.property}`)
