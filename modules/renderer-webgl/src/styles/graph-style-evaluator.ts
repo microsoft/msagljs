@@ -211,11 +211,11 @@ function parseFilter(filter: EntityFilter | EntityFilter[] | undefined): ((e: En
         if ('source' in e) {
           // is edge
           return Math.min(
-            context.tileMap?.entityRank.get((e as Edge).source),
-            context.tileMap?.entityRank.get((e as Edge).target)
+            context.tileMap?.nodeRank.get((e as Edge).source),
+            context.tileMap?.nodeRank.get((e as Edge).target)
           )
         }
-        return context.tileMap?.entityRank.get(e as Node)
+        return context.tileMap?.nodeRank.get(e as Node)
       }
       break
     default:

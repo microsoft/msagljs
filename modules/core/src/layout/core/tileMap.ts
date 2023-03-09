@@ -38,7 +38,7 @@ export class TileMap {
   private pageRank: Map<Entity, number>
 
   /** the more rank is the more important the entity is */
-  entityRank: Map<Node, number>
+  nodeRank: Map<Node, number>
 
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): TileData {
@@ -167,14 +167,14 @@ export class TileMap {
     return this.levels.length
   }
   private calculateRank(entsSortedByVisualAndPageRank: Entity[]) {
-    this.entityRank = new Map<Node, number>()
+    this.nodeRank = new Map<Node, number>()
 
-    const nodes = entsSortedByVisualAndPageRank.filter((e: Entity): e is Node => {
-      return e instanceof Node
-    })
+    const nodes = entsSortedByVisualAndPageRank.filter((e: Entity)=>
+       e instanceof Node
+    ) as Node[]
     const n = nodes.length
     for (let i = 0; i < n; i++) {
-      this.entityRank.set(nodes[i], -Math.log10((i + 1) / n))
+      this.nodeRank.set(nodes[i], -Math.log10((i + 1) / n))
     }
   }
   private pushUpNodeRanksAboveTheirEdges() {
