@@ -8,7 +8,7 @@ import {Entity} from '../../structs/entity'
 import {CurveClip, ArrowHeadData} from './tileMap'
 
 /** keeps all the data needed to render a tile */
-export class TileData {
+export class Tile {
   isEmpty(): boolean {
     return this.curveClips.length == 0 && this.arrowheads.length == 0 && this.nodes.length == 0 && this.labels.length == 0
   }
@@ -35,8 +35,8 @@ export class TileData {
     this.nodes = []
     this.labels = []
   }
-  static mk(curveClips: CurveClip[], arrows: ArrowHeadData[], nodes: GeomNode[], labels: GeomLabel[], rect: Rectangle): TileData {
-    const t = new TileData()
+  static mk(curveClips: CurveClip[], arrows: ArrowHeadData[], nodes: GeomNode[], labels: GeomLabel[], rect: Rectangle): Tile {
+    const t = new Tile()
     t.curveClips = curveClips
     t.arrowheads = arrows
     t.nodes = nodes
@@ -50,8 +50,8 @@ export class TileData {
   nodes: GeomNode[]
   labels: GeomLabel[]
   rect: Rectangle
-  get elementCount() {
-    return this.curveClips.length + this.arrowheads.length + this.labels.length + this.nodes.length
+  get nodeCount() {
+    return /*this.curveClips.length + this.arrowheads.length + this.labels.length +*/ this.nodes.length
   }
 
   addElement(data: CurveClip | ArrowHeadData | GeomLabel | GeomNode) {
