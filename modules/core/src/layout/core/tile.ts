@@ -50,8 +50,8 @@ export class Tile {
   nodes: GeomNode[]
   labels: GeomLabel[]
   rect: Rectangle
-  get nodeCount() {
-    return /*this.curveClips.length + this.arrowheads.length + this.labels.length +*/ this.nodes.length
+  get entityCount() {
+    return this.curveClips.length + this.arrowheads.length + this.labels.length + this.nodes.length
   }
 
   addElement(data: CurveClip | ArrowHeadData | GeomLabel | GeomNode) {

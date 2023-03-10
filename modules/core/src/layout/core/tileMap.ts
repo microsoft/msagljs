@@ -1,4 +1,4 @@
-import {pageRank} from '../../structs/graph'
+import {pagerank} from '../../structs/graph'
 import {Rectangle, Size} from '../../math/geometry/rectangle'
 import {GeomNode} from './geomNode'
 import {GeomEdge} from './geomEdge'
@@ -10,7 +10,7 @@ import {Point} from '../../math/geometry/point'
 import {GeomGraph} from '.'
 import {GeomConstants, ICurve, LineSegment} from '../../math/geometry'
 import {Entity} from '../../structs/entity'
-import {TileData} from './tileData'
+import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 /** Represents a part of the curve containing in a tile.
@@ -18,36 +18,36 @@ import {IntPair} from '../../utils/IntPair'
  */
 export type CurveClip = {curve: ICurve; edge: Edge}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
-type EntityDataInTile = {tile: TileData; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
-export function tileIsEmpty(sd: TileData): boolean {
+type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
+export function tileIsEmpty(sd: Tile): boolean {
   return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
 }
 
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
-  private visualRank = new Map<Entity, number>()
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 2500
+  private tileCapacity = 2500 // in the number of nodes
   /** the tiles of level z is represented by levels[z] */
-  private levels: IntPairMap<TileData>[] = []
+  private levels: IntPairMap<Tile>[] = []
 
-  private pageRank: Map<Entity, number>
+  private pageRank: Map<Node, number>
 
   /** the more rank is the more important the entity is */
   nodeRank: Map<Node, number>
+  nodeIndexInSortedNodes: Map<Node, number> = new Map<Node, number>()
 
   /** retrieves the data for a single tile(x-y-z) */
-  getTileData(x: number, y: number, z: number): TileData {
+  getTileData(x: number, y: number, z: number): Tile {
     const mapOnLevel = this.levels[z]
     if (!mapOnLevel) return null
     return mapOnLevel.get(x, y)
   }
   /** retrieves all the tiles of z-th level */
-  *getTilesOfLevel(z: number): IterableIterator<{x: number; y: number; data: TileData}> {
+  *getTilesOfLevel(z: number): IterableIterator<{x: number; y: number; data: Tile}> {
     const tm = this.levels[z]
     if (tm == null) return
     for (const [key, val] of tm.keyValues()) {
@@ -65,7 +65,9 @@ export class TileMap {
     this.topLevelTileRect = topLevelTileRect
     this.fillTopLevelTile()
     this.minTileSize = this.getMinTileSize()
+    this.pageRank = pagerank(this.geomGraph.graph, 0.85)
   }
+
   private getMinTileSize(): Size {
     let w = 0
     let h = 0
@@ -85,22 +87,8 @@ export class TileMap {
   }
 
   private fillTopLevelTile() {
-    const tileMap = new IntPairMap<TileData>(1)
-    const rank = pageRank(this.geomGraph.graph, 0.85)
-    this.pageRank = new Map<Edge, number>()
-    for (const e of this.geomGraph.graph.deepEdges) {
-      const r = rank.get(e.source) + rank.get(e.target)
-      this.pageRank.set(e, r)
-      if (e.label) {
-        this.pageRank.set(e.label, r)
-      }
-    }
-    for (const n of this.geomGraph.graph.nodesBreadthFirst) {
-      const nodeRank = rank.get(n)
-      this.pageRank.set(n, 2 * nodeRank) // to be comparable with the edges
-    }
-
-    const topLevelTile = new TileData()
+    const tileMap = new IntPairMap<Tile>(1)
+    const topLevelTile = new Tile()
 
     topLevelTile.curveClips = []
 
@@ -134,6 +122,7 @@ export class TileMap {
     tileMap.set(0, 0, topLevelTile)
     this.levels.push(tileMap)
   }
+
   /**
    * Creates tilings for levels from 0 to z, including the level z.
    * The method does not necesserely creates all levels until z, but can exit earlier
@@ -141,138 +130,142 @@ export class TileMap {
    * Returns the number of created levels.
    */
   buildUpToLevel(z: number): number {
-    let noNeedToSubdivide = true
+    let needSubdivide = false
     // level 0 is filled in the constructor: maybe it is small enough
     for (const tile of this.levels[0].values()) {
-      if (tile.elementCount > this.tileCapacity) {
-        noNeedToSubdivide = false
+      if (tile.entityCount > this.tileCapacity) {
+        needSubdivide = true
         break
       }
     }
-    if (noNeedToSubdivide) return this.levels.length
+    if (!needSubdivide) return 1 // we have only on layer
 
     for (let i = 1; i <= z; i++) {
       if (this.subdivideLevel(i)) {
         break
       }
     }
-    this.calculateVisualRank()
-    this.pushUpNodeRanksAboveTheirEdges()
-    const entsSortedByVisualAndPageRank = Array.from(this.visualRank.keys()).sort((u, v) => this.compareByVisPageRanks(u, v))
+    const sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
+    for (let i = 0; i < sortedNodes.length; i++) {
+      this.nodeIndexInSortedNodes.set(sortedNodes[i], i)
+    }
     // do not filter the lowest layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      this.filterOutEntities(this.levels[i], entsSortedByVisualAndPageRank, i)
+      this.filterOutEntities(this.levels[i], sortedNodes, i)
     }
-    this.calculateRank(entsSortedByVisualAndPageRank)
+    this.calculateNodeRank(sortedNodes)
+    //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
-  private calculateRank(entsSortedByVisualAndPageRank: Entity[]) {
+  // lastLayerHasAllNodes(): boolean {
+  //   const lastLayerNodes = new Set<Node>()
+  //   for (const tile of this.levels[this.levels.length - 1].values()) {
+  //     for (const n of tile.nodes) {
+  //       lastLayerNodes.add(n.node)
+  //     }
+  //   }
+  //   const gNodes = new Set<Node>(this.geomGraph.graph.nodesBreadthFirst)
+  //   return setsAreEqual(gNodes, lastLayerNodes)
+  // }
+  private calculateNodeRank(sortedNodes: Node[]) {
     this.nodeRank = new Map<Node, number>()
-
-    const nodes = entsSortedByVisualAndPageRank.filter((e: Entity)=>
-       e instanceof Node
-    ) as Node[]
-    const n = nodes.length
+    const n = sortedNodes.length
     for (let i = 0; i < n; i++) {
-      this.nodeRank.set(nodes[i], -Math.log10((i + 1) / n))
+      this.nodeRank.set(sortedNodes[i], -Math.log10((i + 1) / n))
     }
   }
-  private pushUpNodeRanksAboveTheirEdges() {
-    for (const n of this.geomGraph.nodesBreadthFirst) {
-      if (n instanceof GeomGraph) continue
-      let maxVisRank = this.visualRank.get(n.node)
-      let maxPageRank = this.pageRank.get(n.node)
-      let hasEdge = false
-      for (const e of n.node.edges) {
-        maxVisRank = Math.max(maxVisRank, this.visualRank.get(e))
-        maxPageRank = Math.max(maxPageRank, this.pageRank.get(e))
-        hasEdge = true
-      }
-      if (hasEdge) {
-        this.visualRank.set(n.node, maxVisRank)
-        this.pageRank.set(n.node, maxPageRank)
-      } else {
-        this.visualRank.set(n.node, 2 * maxVisRank)
-        this.pageRank.set(n.node, 2 * maxPageRank)
-      }
-    }
-  }
-  private compareByVisPageRanks(u: Entity, v: Entity): number {
-    // const uVis = this.visualRank.get(u)
-    // const vVis = this.visualRank.get(v)
-    // if (uVis > vVis) {
-    //   return -1
-    // }
-    // if (uVis < vVis) {
-    //   return 1
-    // }
-    const del = this.pageRank.get(v) - this.pageRank.get(u)
-    if (del) return del
-    // A Node has to be returned before any of its edges
-    if (v instanceof Node && u instanceof Edge) {
-      return 1
-    }
-    if (v instanceof Edge && u instanceof Node) {
-      return -1
-    }
-    return 0
+  private compareByPagerank(u: Node, v: Node): number {
+    return this.pageRank.get(v) - this.pageRank.get(u)
   }
 
-  private calculateVisualRank() {
-    for (const tile of this.levels[this.levels.length - 1].values()) {
-      this.calculateVisualRankOnTile(tile)
-    }
-  }
-  private calculateVisualRankOnTile(tile: TileData) {
-    const ents = Array.from(new Set<Entity>(tile.entitiesOfTile()))
-    let rankAdditionOfTile = 2 / ents.length
-    const rankDel = rankAdditionOfTile / (2 * ents.length)
-    ents.sort((a, b) => this.pageRank.get(b) - this.pageRank.get(b))
-    for (let i = 0; i < ents.length; i++) {
-      const e = ents[i]
-      const rank = this.visualRank.get(e)
-      if (!rank) {
-        this.visualRank.set(e, rankAdditionOfTile)
-      } else {
-        this.visualRank.set(e, rankAdditionOfTile + rank)
-        rankAdditionOfTile -= rankDel
-      }
-    }
-  }
-
-  private filterOutEntities(levelToReduce: IntPairMap<TileData>, entsSortedByVisualAndPageRank: Entity[], z: number) {
+  /** the nodes are sorted by rank here */
+  private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
     const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
-    for (; k < entsSortedByVisualAndPageRank.length; k++) {
-      const e = entsSortedByVisualAndPageRank[k]
-      if (!this.tryAddToLevel(levelToReduce, e, dataByEntity.get(e))) {
+    for (; k < nodes.length; k++) {
+      const n = nodes[k]
+      if (!this.addNodeToLevel(levelToReduce, n, dataByEntity)) {
         break
       }
     }
     console.log('added', k, 'visual elements to level', z)
   }
 
-  /** goes over all tiles where 'ent' had a presence and tries to add the corresponding rendering data into it */
-  private tryAddToLevel(levelToReduce: IntPairMap<TileData>, ent: Entity, entityToData: EntityDataInTile[], force = false) {
-    if (!force) {
-      for (const edt of entityToData) {
-        const tile = edt.tile
-        if (tile.elementCount >= this.tileCapacity) {
-          return false
-        }
+  /** Goes over all tiles where 'node' had a presence and tries to add.
+   * If the above succeeds then all edges leading to the highire ranking edges and their attributes are added without consulting with tileCapacity
+   */
+  private addNodeToLevel(levelToReduce: IntPairMap<Tile>, node: Node, dataByEntity: Map<Entity, EntityDataInTile[]>) {
+    const entityToData = dataByEntity.get(node)
+    for (const edt of entityToData) {
+      const tile = edt.tile
+      if (tile.entityCount >= this.tileCapacity) {
+        return false
       }
     }
+
     for (const edt of entityToData) {
       const tile = edt.tile
       const data = edt.data
       tile.addElement(data)
     }
+
+    for (const e of node.selfEdges) {
+      const ed = dataByEntity.get(e)
+      for (const edt of ed) {
+        const tile = edt.tile
+        const data = edt.data
+        tile.addElement(data)
+      }
+      if (e.label) {
+        for (const edt of dataByEntity.get(e.label)) {
+          const tile = edt.tile
+          const data = edt.data
+          tile.addElement(data)
+        }
+      }
+    }
+    const nodeIndex = this.nodeIndexInSortedNodes.get(node)
+    for (const e of node.inEdges) {
+      const source = e.source
+      const sourceIndex = this.nodeIndexInSortedNodes.get(source)
+      if (sourceIndex > nodeIndex) continue
+      for (const edt of dataByEntity.get(e)) {
+        const tile = edt.tile
+        const data = edt.data
+        tile.addElement(data)
+      }
+      if (e.label) {
+        for (const edt of dataByEntity.get(e.label)) {
+          const tile = edt.tile
+          const data = edt.data
+          tile.addElement(data)
+        }
+      }
+    }
+    for (const e of node.outEdges) {
+      const target = e.target
+      const targetIndex = this.nodeIndexInSortedNodes.get(target)
+      if (targetIndex > nodeIndex) continue
+      for (const edt of dataByEntity.get(e)) {
+        const tile = edt.tile
+        const data = edt.data
+        tile.addElement(data)
+      }
+      if (e.label) {
+        for (const edt of dataByEntity.get(e.label)) {
+          const tile = edt.tile
+          const data = edt.data
+          tile.addElement(data)
+        }
+      }
+    }
+
     return true
   }
 
-  private transferDataOfLevelToMap(levelToReduce: IntPairMap<TileData>): Map<Entity, EntityDataInTile[]> {
+  private transferDataOfLevelToMap(levelToReduce: IntPairMap<Tile>): Map<Entity, EntityDataInTile[]> {
     const m = new Map<Entity, EntityDataInTile[]>()
     for (const tile of levelToReduce.values()) {
       for (const cc of tile.curveClips) {
@@ -315,7 +308,7 @@ export class TileMap {
 
   private subdivideLevel(z: number): boolean {
     const tilesInRow = Math.pow(2, z)
-    const levelTiles = (this.levels[z] = new IntPairMap<TileData>(tilesInRow))
+    const levelTiles = (this.levels[z] = new IntPairMap<Tile>(tilesInRow))
     /** the width and the height of z-th level tile */
     let w = this.topLevelTileRect.width
     let h = this.topLevelTileRect.height
@@ -325,21 +318,24 @@ export class TileMap {
     }
     const allTilesAreSmall = this.subdivideTilesOnLevel(z, w, h, levelTiles)
     if (allTilesAreSmall) {
-      //console.log('done at level', z, ' because each tile contains less than ', this.tileCapacity)
+      console.log('done subdividing at level', z, ' because each tile contains less than ', this.tileCapacity)
       return true
     }
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
-      //console.log('done at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
+      console.log('done subdividing at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
       return true
     }
     return false
   }
 
-  private subdivideTilesOnLevel(z: number, w: number, h: number, levelTiles: IntPairMap<TileData>) {
+  private subdivideTilesOnLevel(z: number, w: number, h: number, levelTiles: IntPairMap<Tile>) {
     let allTilesAreSmall = true
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      allTilesAreSmall = this.subdivideOneTile(key, w, h, tile, levelTiles, allTilesAreSmall)
+      const tileIsSmall = this.subdivideOneTile(key, w, h, tile, levelTiles)
+      if (allTilesAreSmall) {
+        allTilesAreSmall = tileIsSmall
+      }
     }
     return allTilesAreSmall
   }
@@ -352,16 +348,16 @@ export class TileMap {
     h: number,
 
     /** this is the tile we are subdividing */
-    upperTile: TileData,
+    upperTile: Tile,
     /** this is the map we collect new tiles to */
-    levelTiles: IntPairMap<TileData>,
-    allTilesAreSmall: boolean,
+    levelTiles: IntPairMap<Tile>,
   ) {
+    let allTilesAreSmall = true
     const xp = key.x
     const yp = key.y
     const left = this.topLevelTileRect.left + xp * w * 2
     const bottom = this.topLevelTileRect.bottom + yp * h * 2
-    const tdArr = new Array<TileData>(4)
+    const tdArr = new Array<Tile>(4)
 
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++) {
@@ -381,7 +377,7 @@ export class TileMap {
 
         if (!tile.isEmpty()) {
           levelTiles.set(2 * xp + i, 2 * yp + j, tile)
-          if (allTilesAreSmall && tile.elementCount > this.tileCapacity) {
+          if (allTilesAreSmall && tile.entityCount > this.tileCapacity) {
             //console.log('found a tile at level', z, ' with ', tile.elementCount, 'elements, which is greater than', this.tileCapacity)
             allTilesAreSmall = false
           }
@@ -433,17 +429,17 @@ export class TileMap {
     }
   }
 
-  private generateSubTileWithoutEdgeClips(upperTile: TileData, tileRect: Rectangle): TileData {
-    const sd = TileData.mk([], [], [], [], tileRect)
+  private generateSubTileWithoutEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
+    const tile = Tile.mk([], [], [], [], tileRect)
     for (const n of upperTile.nodes) {
       if (n.boundingBox.intersects(tileRect)) {
-        sd.nodes.push(n)
+        tile.nodes.push(n)
       }
     }
 
     for (const lab of upperTile.labels) {
       if (lab.boundingBox.intersects(tileRect)) {
-        sd.labels.push(lab)
+        tile.labels.push(lab)
       }
     }
 
@@ -453,8 +449,8 @@ export class TileMap {
       const dRotated = d.rotate90Cw()
       arrowheadBox.add(arrowhead.base.add(dRotated))
       arrowheadBox.add(arrowhead.base.sub(dRotated))
-      if (arrowheadBox.intersects(tileRect)) sd.arrowheads.push(arrowhead)
+      if (arrowheadBox.intersects(tileRect)) tile.arrowheads.push(arrowhead)
     }
-    return sd
+    return tile
   }
 }

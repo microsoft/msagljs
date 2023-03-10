@@ -8,7 +8,7 @@ import {
   intersectedObjects,
 } from './layout/core/geomGraph'
 import {CurveClip, TileMap} from './layout/core/tileMap'
-import {TileData} from './layout/core/tileData'
+import {Tile} from './layout/core/tile'
 import {GeomLabel} from './layout/core/geomLabel'
 import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'
@@ -17,7 +17,7 @@ import {PlaneTransformation} from './math/geometry/planeTransformation'
 import {RTree} from './math/geometry/RTree/rTree'
 import {SmoothedPolyline} from './math/geometry/smoothedPolyline'
 import {Attribute} from './structs/attribute'
-import {pageRank} from './structs/graph'
+import {pagerank} from './structs/graph'
 import {Label} from './structs/label'
 import {Assert} from './utils/assert'
 import {IntPairMap} from './utils/IntPairMap'
@@ -77,9 +77,9 @@ export {
   Attribute,
   SmoothedPolyline,
   IntPairMap,
-  pageRank,
+  pagerank as pageRank,
   TileMap,
-  TileData,
+  Tile as TileData,
   CurveClip,
   PolylinePoint,
 }

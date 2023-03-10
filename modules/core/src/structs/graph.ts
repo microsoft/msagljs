@@ -390,7 +390,7 @@ export function setNewParent(newParent: Graph, node: Node) {
 /** implements the google PageRank.
  * omega is the probability of following a link
  * */
-export function pageRank(graph: Graph, omega: number): Map<Node, number> {
+export function pagerank(graph: Graph, omega: number): Map<Node, number> {
   let p = new Map<Node, number>()
   const n = graph.nodeCountDeep
   let initialVal = 1 / n
