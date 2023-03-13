@@ -301,6 +301,9 @@ export class SvgRenderer implements IViewer {
     if (!this._graph) return
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
+    if (this.panZoom) {
+      this.panZoom.dispose()
+    }
     this.panZoom = panZoom(this._svgCreator.svg, {
       onTouch: () => {
         // `e` - is the current touch event.

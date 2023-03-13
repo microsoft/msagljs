@@ -67,6 +67,7 @@ export class EdgeRoutingSettings {
   constructor() {
     this.EdgeRoutingMode = EdgeRoutingMode.Spline
   }
+  needToBeautifyEdges = false
   private edgeRoutingMode: EdgeRoutingMode // = EdgeRoutingMode.SugiyamaSplines
 
   // defines the way edges are routed

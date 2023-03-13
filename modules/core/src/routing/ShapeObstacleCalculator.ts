@@ -64,7 +64,8 @@ export class ShapeObstacleCalculator {
     for (const tightPolyline of this.tightHierarchy.GetAllLeaves()) {
       const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(this.tightHierarchy, tightPolyline, this.LoosePadding)
       const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizationShift)
-      couples.push(TightLooseCouple.mk(tightPolyline, new Shape(loosePoly), distance))
+      const looseShape = new Shape(loosePoly)
+      couples.push(TightLooseCouple.mk(tightPolyline, looseShape, distance))
     }
 
     this.coupleHierarchy = CreateRectNodeOnArrayOfRectNodes(
@@ -85,7 +86,7 @@ export class ShapeObstacleCalculator {
       (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
-    if (stickingPointsArray.length <= 0) {
+    if (stickingPointsArray.length == 0) {
       return poly
     }
     const pts = Array.from(poly).concat(stickingPointsArray)

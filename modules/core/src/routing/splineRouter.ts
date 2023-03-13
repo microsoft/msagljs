@@ -16,7 +16,12 @@ import {VisibilityEdge} from './visibility/VisibilityEdge'
 import {ConeSpanner} from './spline/coneSpanner/ConeSpanner'
 import {HookUpAnywhereFromInsidePort} from '../layout/core/hookUpAnywhereFromInsidePort'
 import {ClusterBoundaryPort} from './ClusterBoundaryPort'
-import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/rectangleNode'
+import {
+  createRectangleNodeOnData,
+  CreateRectNodeOnArrayOfRectNodes,
+  mkRectangleNode,
+  RectangleNode,
+} from '../math/geometry/RTree/rectangleNode'
 import {CurvePort} from '../layout/core/curvePort'
 import {BundlingSettings} from './BundlingSettings'
 import {CancelToken, GeomGraph} from '..'
@@ -41,9 +46,12 @@ import {SdShortestPath} from './spline/bundling/SdShortestPath'
 import {Cdt, createCDTOnPolylineRectNode} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
+
 import {PathOptimizer} from './spline/pathOptimizer'
 //import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 import {initRandom} from '../utils/random'
+import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
+import {GeomNode} from '..'
 
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
@@ -51,6 +59,8 @@ export class SplineRouter extends Algorithm {
   //
   continueOnOverlaps = true
   obstacleCalculator: ShapeObstacleCalculator
+  /** each polyline points to the nodes within it, maximal with this property */
+  loosePolylinesToNodes: Map<Polyline, Set<GeomNode>>
   get ContinueOnOverlaps(): boolean {
     return this.continueOnOverlaps
   }
@@ -199,6 +209,36 @@ export class SplineRouter extends Algorithm {
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
+    if (this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
+      this.geomGraph.beautifyEdges = this.rerouteOnSubsetOfNodes.bind(this)
+    }
+  }
+
+  /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
+  rerouteOnSubsetOfNodes(activeNodes: Set<GeomNode>) {
+    if (this.loosePolylinesToNodes == null) {
+      this.calcLooseShapesToNodes()
+    }
+  }
+  calcLooseShapesToNodes() {
+    const nodeTree = createRectangleNodeOnData(this.geomGraph.nodesBreadthFirst, (n) => n.boundingBox)
+    const looseTree = this.GetLooseHierarchy()
+    this.loosePolylinesToNodes = new Map<Polyline, Set<GeomNode>>()
+    CrossRectangleNodes(looseTree, nodeTree, (poly, geomNode) => {
+      if (Curve.CurveIsInsideOther(geomNode.boundaryCurve, poly)) {
+        let polyNodes = this.loosePolylinesToNodes.get(poly)
+
+        for (const an of geomNode.getAncestors()) {
+          if (an instanceof GeomGraph && an.parent == null) continue
+          if (an.boundaryCurve == null) continue
+          if (Curve.CurveIsInsideOther(an.boundaryCurve, poly)) return // we need to take an ancestor instead
+        }
+        if (polyNodes == null) {
+          this.loosePolylinesToNodes.set(poly, (polyNodes = new Set<GeomNode>()))
+        }
+        polyNodes.add(geomNode)
+      }
+    })
   }
 
   RouteOnRoot() {
@@ -810,9 +850,6 @@ export class SplineRouter extends Algorithm {
    *          ToAncestorEnum. if the source is a descendant of the target
    *         -1 if the target is a descendant of the source
    */
-  KeepOriginalSpline = false
-
-  ArrowHeadRatio = 0
   LineSweeperPorts: Point[];
 
   *AddVisibilityEdgesFromPort(port: Port): IterableIterator<VisibilityEdge> {
@@ -1038,17 +1075,6 @@ export class SplineRouter extends Algorithm {
     //                SplineRouter.ShowVisGraph(tmpVisGraph, obstacles, null, null);
   }
 
-  bidirectional = false
-  // If set to true then a smaller visibility graph is created.
-  // An edge is added to the visibility graph only if it is found at least twice:
-  // once sweeping with a direction d and the second time with -d
-  get Bidirectional(): boolean {
-    return this.bidirectional
-  }
-  set Bidirectional(value: boolean) {
-    this.bidirectional = value
-  }
-
   // #if TEST_MSAGL
 
   //     static internal void ShowVisGraph(VisibilityGraph tmpVisGraph, Iterable<Polyline> obstacles, Iterable<ICurve> greenCurves, Iterable<ICurve> redCurves) {
@@ -1223,18 +1249,6 @@ export class SplineRouter extends Algorithm {
         )
       }
     }
-  }
-
-  //  computes loosePadding for spline routing obstacles from node separation and EdgePadding.
-  static ComputeLooseSplinePadding(nodeSeparation: number, edgePadding: number): number {
-    //Assert.assert(edgePadding > 0, 'require EdgePadding > 0')
-    const twicePadding: number = 2 * edgePadding
-    //Assert.assert(nodeSeparation > twicePadding, 'require OverlapSeparation > 2*EdgePadding')
-    // the 8 divisor is just to guarantee the final postcondition
-    const loosePadding: number = (nodeSeparation - twicePadding) / 8
-    //Assert.assert(loosePadding > 0, 'require LoosePadding > 0')
-    //Assert.assert(twicePadding + 2 * loosePadding < nodeSeparation, 'EdgePadding too big!')
-    return loosePadding
   }
 }
 export function routeSplines(gg: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken): void {
