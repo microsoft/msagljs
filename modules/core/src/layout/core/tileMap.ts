@@ -39,6 +39,7 @@ export class TileMap {
   /** the more rank is the more important the entity is */
   nodeRank: Map<Node, number>
   nodeIndexInSortedNodes: Map<Node, number> = new Map<Node, number>()
+  beautifyEdges: (activeNodes: Set<Node>) => void
 
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): Tile {
@@ -60,12 +61,13 @@ export class TileMap {
   /** geomGraph  - the graph to work with.
    * The topLevelTileRect serves as the only tile of the top level.
    */
-  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, edgeBeautifier: (activeNodes: Set<Node>) => void) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
     this.fillTopLevelTile()
     this.minTileSize = this.getMinTileSize()
     this.pageRank = pagerank(this.geomGraph.graph, 0.85)
+    this.beautifyEdges = edgeBeautifier
   }
 
   private getMinTileSize(): Size {
@@ -151,12 +153,20 @@ export class TileMap {
     }
     // do not filter the lowest layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      this.filterOutEntities(this.levels[i], sortedNodes, i)
+      const numberOfInsertedNodes = this.filterOutEntities(this.levels[i], sortedNodes, i)
+      if (this.beautifyEdges) {
+        this.beatifyEdgesMethod(i, new Set<Node>(sortedNodes.slice(0, numberOfInsertedNodes)))
+      }
     }
+
     this.calculateNodeRank(sortedNodes)
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
+  beatifyEdgesMethod(levelIndex: number, activeNodes: Set<Node>) {
+    this.beautifyEdges(activeNodes)
+  }
+
   // lastLayerHasAllNodes(): boolean {
   //   const lastLayerNodes = new Set<Node>()
   //   for (const tile of this.levels[this.levels.length - 1].values()) {
@@ -178,8 +188,12 @@ export class TileMap {
     return this.pageRank.get(v) - this.pageRank.get(u)
   }
 
-  /** the nodes are sorted by rank here */
-  private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
+  /** Fills the tiles up to the capacity.
+   * Returns the number of inserted node.
+   * An edge and its attributes is inserted just after its source and the target are inserted.
+   * The nodes are sorted by rank here.  */
+
+  private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number): number {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
     const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
@@ -191,6 +205,7 @@ export class TileMap {
       }
     }
     console.log('added', k, 'visual elements to level', z)
+    return k
   }
 
   /** Goes over all tiles where 'node' had a presence and tries to add.

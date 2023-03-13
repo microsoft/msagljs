@@ -280,6 +280,50 @@
                                 }
                             ]
                         },
+                        "opacity": {
+                            "anyOf": [
+                                {
+                                    "properties": {
+                                        "input": {
+                                            "enum": [
+                                                "zoom"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "inputStops": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "interpolation": {
+                                            "enum": [
+                                                "linear",
+                                                "power",
+                                                "step"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "interpolationParameters": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "outputStops": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ]
+                        },
                         "strokeColor": {
                             "anyOf": [
                                 {
@@ -571,6 +615,50 @@
                             ]
                         },
                         "labelSize": {
+                            "anyOf": [
+                                {
+                                    "properties": {
+                                        "input": {
+                                            "enum": [
+                                                "zoom"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "inputStops": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "interpolation": {
+                                            "enum": [
+                                                "linear",
+                                                "power",
+                                                "step"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "interpolationParameters": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "outputStops": {
+                                            "items": {
+                                                "type": "number"
+                                            },
+                                            "type": "array"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ]
+                        },
+                        "opacity": {
                             "anyOf": [
                                 {
                                     "properties": {
