@@ -52,16 +52,6 @@ export class SmoothedPolyline {
     return ret
   }
 
-  *getSegments(): IterableIterator<LineSegment> {
-    let s0 = this.headSite
-    let s1 = s0.next
-    while (s1 != null) {
-      yield LineSegment.mkPP(s0.point, s1.point)
-      s0 = s1
-      s1 = s1.next
-    }
-  }
-
   *[Symbol.iterator](): IterableIterator<Point> {
     let s0 = this.headSite
     while (s0 != null) {

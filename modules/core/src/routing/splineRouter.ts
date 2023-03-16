@@ -24,7 +24,7 @@ import {
 } from '../math/geometry/RTree/rectangleNode'
 import {CurvePort} from '../layout/core/curvePort'
 import {BundlingSettings} from './BundlingSettings'
-import {CancelToken, GeomGraph} from '..'
+import {Assert, CancelToken, GeomGraph} from '..'
 import {EdgeRoutingSettings} from './EdgeRoutingSettings'
 import {ShapeCreatorForRoutingToParents} from './ShapeCreatorForRoutingToParents'
 import {Port} from '../layout/core/port'
@@ -51,8 +51,9 @@ import {PathOptimizer} from './spline/pathOptimizer'
 //import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 import {initRandom} from '../utils/random'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
-import {GeomNode} from '..'
-
+import {Node} from '..'
+import {edgeHasEndsInSet} from '../structs/graph'
+import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
@@ -60,7 +61,7 @@ export class SplineRouter extends Algorithm {
   continueOnOverlaps = true
   obstacleCalculator: ShapeObstacleCalculator
   /** each polyline points to the nodes within it, maximal with this property */
-  loosePolylinesToNodes: Map<Polyline, Set<GeomNode>>
+  loosePolylinesToNodes: Map<Polyline, Set<Node>>
   get ContinueOnOverlaps(): boolean {
     return this.continueOnOverlaps
   }
@@ -209,21 +210,25 @@ export class SplineRouter extends Algorithm {
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
-    if (this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
-      this.geomGraph.beautifyEdges = this.rerouteOnSubsetOfNodes.bind(this)
+
+    if (this.geomGraph.layoutSettings && this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
+      this.geomGraph.beautifyEdges = (nodeSet: Set<Node>) => this.rerouteOnSubsetOfNodes(nodeSet)
     }
   }
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
-  rerouteOnSubsetOfNodes(activeNodes: Set<GeomNode>) {
+  rerouteOnSubsetOfNodes(activeNodes: Set<Node>) {
     if (this.loosePolylinesToNodes == null) {
       this.calcLooseShapesToNodes()
     }
+    this.GetOrCreateRoot()
+    this.rerouteOnActiveNodes(activeNodes)
+    this.RemoveRoot()
   }
   calcLooseShapesToNodes() {
     const nodeTree = createRectangleNodeOnData(this.geomGraph.nodesBreadthFirst, (n) => n.boundingBox)
     const looseTree = this.GetLooseHierarchy()
-    this.loosePolylinesToNodes = new Map<Polyline, Set<GeomNode>>()
+    this.loosePolylinesToNodes = new Map<Polyline, Set<Node>>()
     CrossRectangleNodes(looseTree, nodeTree, (poly, geomNode) => {
       if (Curve.CurveIsInsideOther(geomNode.boundaryCurve, poly)) {
         let polyNodes = this.loosePolylinesToNodes.get(poly)
@@ -234,9 +239,9 @@ export class SplineRouter extends Algorithm {
           if (Curve.CurveIsInsideOther(an.boundaryCurve, poly)) return // we need to take an ancestor instead
         }
         if (polyNodes == null) {
-          this.loosePolylinesToNodes.set(poly, (polyNodes = new Set<GeomNode>()))
+          this.loosePolylinesToNodes.set(poly, (polyNodes = new Set<Node>()))
         }
-        polyNodes.add(geomNode)
+        polyNodes.add(geomNode.node)
       }
     })
   }
@@ -382,6 +387,28 @@ export class SplineRouter extends Algorithm {
       this.RouteBundles()
     }
   }
+  private rerouteOnActiveNodes(activeNodeSet: Set<Node>) {
+    this.ancestorSets = SplineRouter.GetAncestorSetsMap(Array.from(this.root.Descendants()))
+    if (this.BundlingSettings == null) {
+      for (const edgeGroup of this.GroupEdgesByPassport()) {
+        const passport = edgeGroup.passport
+        const obstacleShapes: Set<Shape> = this.GetObstaclesFromPassport(passport)
+        const filteredObstacleShapes = new Set<Shape>()
+        for (const sh of obstacleShapes) {
+          const lsh = this.LooseShapeOfOriginalShape(sh)
+          for (const n of this.loosePolylinesToNodes.get(lsh.BoundaryCurve as Polyline)) {
+            if (activeNodeSet.has(n)) {
+              filteredObstacleShapes.add(sh)
+            }
+          }
+        }
+        const interactiveEdgeRouter = this.CreateInteractiveEdgeRouter(Array.from(filteredObstacleShapes))
+        this.rerouteEdgesWithTheSamePassportActiveNodes(edgeGroup, interactiveEdgeRouter, filteredObstacleShapes, activeNodeSet)
+      }
+    } else {
+      this.RouteBundles()
+    }
+  }
   getDebugCurvesFromEdgesAndCdt(cdt: Cdt): DebugCurve[] {
     const ret = Array.from(this.geomGraph.deepEdges)
       .map((e) => e.curve as Polyline)
@@ -431,6 +458,58 @@ export class SplineRouter extends Algorithm {
         this.routeEdge(interactiveEdgeRouter, edgeGeometryGroup.edges[i])
       }
     }
+  }
+  private rerouteEdgesWithTheSamePassportActiveNodes(
+    edgeGeometryGroup: {passport: Set<Shape>; edges: Array<GeomEdge>},
+    interactiveEdgeRouter: InteractiveEdgeRouter,
+    obstacleShapes: Set<Shape>,
+    activeNodes: Set<Node>,
+  ) {
+    const t: {regularEdges: Array<GeomEdge>; multiEdges: Array<GeomEdge[]>} = {
+      regularEdges: [],
+      multiEdges: [],
+    }
+    try {
+      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
+
+      interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
+    } catch (e: any) {
+      console.log(e)
+      interactiveEdgeRouter.pathOptimizer.setCdt(null)
+    }
+    if (this.RouteMultiEdgesAsBundles) {
+      this.SplitOnRegularAndMultiedges(edgeGeometryGroup.edges, t)
+      if (t.regularEdges.length > 0) {
+        for (let i = 0; i < t.regularEdges.length; i++) {
+          const e = t.regularEdges[i]
+          if (edgeHasEndsInSet(e.edge, activeNodes)) {
+            this.rerouteEdge(interactiveEdgeRouter, e)
+          }
+        }
+      }
+      if (t.multiEdges != null) {
+        this.ScaleDownLooseHierarchy(interactiveEdgeRouter, obstacleShapes)
+        this.RouteMultiEdges(t.multiEdges, interactiveEdgeRouter, edgeGeometryGroup.passport)
+      }
+    } else {
+      for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
+        const e = edgeGeometryGroup.edges[i]
+        if (edgeHasEndsInSet(e.edge, activeNodes)) {
+          this.rerouteEdge(interactiveEdgeRouter, e)
+        }
+      }
+    }
+  }
+  rerouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
+    interactiveEdgeRouter.rerouteEdge(edge)
+    Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
+    const bb = edge.source.parent.boundingBox
+    Assert.assert(bb.containsRect(edge.boundingBox))
+    // SvgDebugWriter.dumpDebugCurves('/tmp/edge.svg', [
+    //   DebugCurve.mkDebugCurveCI('Red', edge.source.boundaryCurve),
+    //   DebugCurve.mkDebugCurveCI('Blue', edge.target.boundaryCurve),
+    //   DebugCurve.mkDebugCurveI(edge.curve),
+    // ])
   }
   private getCdtFromPassport(passport: Set<Shape>): Cdt {
     // we need a set here because a loose polyline could be the same for different shapes
@@ -1189,11 +1268,12 @@ export class SplineRouter extends Algorithm {
   }
 
   RemoveRoot() {
-    if (this.rootWasCreated) {
-      for (const rootShape of this.rootShapes) {
-        rootShape.RemoveParent(this.root)
-      }
+    if (!this.rootWasCreated) return
+    for (const rootShape of this.rootShapes) {
+      rootShape.RemoveParent(this.root)
     }
+    this.root = null
+    this.rootWasCreated = false
   }
 
   // #if TEST_MSAGL
