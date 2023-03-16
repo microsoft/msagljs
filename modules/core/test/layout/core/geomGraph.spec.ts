@@ -24,6 +24,7 @@ import {
   Assert,
   Curve,
   SplineRouter,
+  FastIncrementalLayoutSettings,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -34,6 +35,7 @@ import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
+import {Tile} from '../../../src/layout/core/tile'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
@@ -206,7 +208,7 @@ test('intersectedEnities', () => {
   }
 })
 
-xtest('tiles gameofthrones', () => {
+test('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
@@ -225,18 +227,17 @@ xtest('tiles gameofthrones', () => {
   // fs.close(ws)
 
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
-  const str = fs.readFileSync('/tmp/gameofthrones.json', 'utf-8')
+  const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)
   const graph = parseJSON(json)
   //Curve.dumper = SvgDebugWriter.dumpDebugCurves
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  const sr = new SplineRouter(
-    geomGraph,
-    Array.from(geomGraph.deepEdges)
-      .filter((e) => e != null)
-      .filter((e) => e.source.id == 'CERWYN' && e.target.id == 'RAMSAY'),
-  )
+  geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
+  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
   sr.run()
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox, geomGraph.beautifyEdges)
+  ts.buildUpToLevel(6)
+  dumpTiles(ts)
 })
 
 test('clipWithRectangleInsideInterval', () => {
@@ -247,7 +248,7 @@ test('clipWithRectangleInsideInterval', () => {
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
   const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect)
+  const tileMap = new TileMap(geomGraph, rect, geomGraph.beautifyEdges)
   tileMap.buildUpToLevel(6)
 
   // dumpTiles(tileMap)
@@ -261,7 +262,7 @@ function dumpTiles(tileMap: TileMap) {
     for (const t of tilesOfLevel) {
       try {
         SvgDebugWriter.dumpDebugCurves(
-          './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
+          './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
           t.data.curveClips
             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
