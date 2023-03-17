@@ -1,6 +1,6 @@
 import {Queue} from 'queue-typescript'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+//
+//
 import {CurveFactory, LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
@@ -13,7 +13,7 @@ import {CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
 let debCount = 0
-let drawCount = 0
+const drawCount = 0
 /** the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source) */
 type SleeveEdge = {source: T; edge: E}
 /** nextR and nextL are defined only for an apex */
@@ -136,11 +136,11 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
-    this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    //this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findTrianglesIntersectingThePolyline()
 
     const perimeter = this.getPerimeterEdges()
-    this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    //this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -149,7 +149,7 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    this.drawInitialPolyDebuggg(Array.from(localCdt.GetTriangles()), perimeter, null, poly)
+    //this.drawInitialPolyDebuggg(Array.from(localCdt.GetTriangles()), perimeter, null, poly)
 
     const sleeve: SleeveEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {
@@ -185,26 +185,26 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
-    if (debCount < 1000000) return
-    const dc = []
-    for (const t of triangles) {
-      for (const e of t.Edges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
-      }
-    }
-    if (perimEdges) {
-      for (const e of perimEdges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-      }
-    }
-    if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
-    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
+  // drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+  //   if (debCount < 1000000) return
+  //   const dc = []
+  //   for (const t of triangles) {
+  //     for (const e of t.Edges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
 
-    SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
-  }
+  //   SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
+  // }
 
   private refineFunnel(dc: Array<DebugCurve>) {
     // remove param later:Debug
@@ -285,7 +285,7 @@ export class PathOptimizer {
         ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[prefix.length - 1], v)))
       }
 
-      SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
+      //SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
     }
     function visibleRight(pp: PathPoint) {
       if (pp.next == null) {

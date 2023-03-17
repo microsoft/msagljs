@@ -1,4 +1,3 @@
-import {SvgDebugWriter} from './svgDebugWriter'
 import {allVerticesOfParall} from '../../src/math/geometry/parallelogram'
 import {DebugCurve} from '../../src/math/geometry/debugCurve'
 import {PN} from '../../src/math/geometry/parallelogramNode'

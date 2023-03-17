@@ -15,7 +15,7 @@ import {MetroGraphData} from './MetroGraphData'
 import {Metroline} from './MetroLine'
 import {OrientedHubSegment} from './OrientedHubSegment'
 import {Station} from './Station'
-//import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
+//
 // import {Assert} from '../../../utils/assert'
 /** this class nudges the edges, sorts the edges that run in parallel in a way that minimezes the number of crossings*/
 export class EdgeNudger extends Algorithm {
