@@ -13,8 +13,8 @@ import {Entity} from '../../structs/entity'
 import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Assert} from '../../utils/assert'
+import {AttributeRegistry} from '../../structs/attributeRegistry'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -24,7 +24,7 @@ type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel
 export function tileIsEmpty(sd: Tile): boolean {
   return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
 }
-
+let debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
@@ -175,14 +175,37 @@ export class TileMap {
   }
   beatifyEdgesMethod(levelIndex: number, activeNodes: Set<Node>) {
     this.beautifyEdges(activeNodes)
-    this.regenerateCurveChunksUpToLayer(levelIndex, activeNodes)
-  }
-  regenerateCurveChunksUpToLayer(levelIndex: number, activeNodes: Set<Node>) {
-    for (const t of this.levels[0].values()) {
-      this.regenerateCurveChunksUnderTileUpToLevel(t, levelIndex, activeNodes)
+    this.regenerateCurveClipsUpToLayer(levelIndex, activeNodes)
+    let i = 0
+    for (const level of this.levels) {
+      i++
+      for (const t of level.values()) {
+        for (const cl of t.curveClips) {
+          const e = cl.edge
+          let b = e.source.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox.clone()
+          b = b.add_rect(e.target.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
+          b = b.add_rect(e.getAttr(AttributeRegistry.GeomObjectIndex).curve.boundingBox)
+          b.pad(b.diagonal / 10)
+          if (b.contains_rect(cl.curve.boundingBox)) continue
+
+          console.log(i)
+          console.log(cl)
+          // SvgDebugWriter.dumpDebugCurves('./tmp/outBox.svg', [
+          //   DebugCurve.mkDebugCurveI(e.source.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve),
+          //   DebugCurve.mkDebugCurveI(e.target.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve),
+          //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Blue', e.getAttr(AttributeRegistry.GeomObjectIndex).curve),
+          //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Magenta', cl.curve),
+          // ])
+        }
+      }
     }
   }
-  regenerateCurveChunksUnderTileUpToLevel(t: Tile, levelIndex: number, activeNodes: Set<Node>) {
+  regenerateCurveClipsUpToLayer(levelIndex: number, activeNodes: Set<Node>) {
+    for (const t of this.levels[0].values()) {
+      this.regenerateCurveClipsUnderTileUpToLevel(t, levelIndex, activeNodes)
+    }
+  }
+  regenerateCurveClipsUnderTileUpToLevel(t: Tile, levelIndex: number, activeNodes: Set<Node>) {
     t.arrowheads = []
     t.curveClips = []
     for (const geomEdge of this.geomGraph.deepEdges) {
@@ -198,22 +221,50 @@ export class TileMap {
     // do not change the labels
     // Now the top tile(s) is ready
     for (let i = 1; i <= levelIndex; i++) {
-      this.regenerateCurveChunksWhenPreviosLayerIsDone(i)
+      this.regenerateCurveClipsWhenPreviosLayerIsDone(i)
+      this.removeEmptyTiles(i)
     }
   }
-  regenerateCurveChunksWhenPreviosLayerIsDone(z: number) {
+  private removeEmptyTiles(i: number) {
+    const level = this.levels[i]
+    const keysToDelete = []
+    for (const [k, t] of level.keyValues()) {
+      if (t.isEmpty()) {
+        keysToDelete.push(k)
+      }
+    }
+    for (const k of keysToDelete) {
+      level.delete(k.x, k.y)
+    }
+  }
+
+  regenerateCurveClipsWhenPreviosLayerIsDone(z: number) {
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
       this.regenerateUnderOneTile(key, tile, z)
     }
   }
   regenerateUnderOneTile(key: IntPair, upperTile: Tile, z: number) {
-    const {subTilesRects, h, w} = createSubTileRects()
-    const clipsPerRect = regenerateCurveClipsUnderTile()
+    const subTilesRects = createSubTileRects()
+    const clipsPerRect = this.regenerateCurveClipsUnderTile(upperTile, subTilesRects)
     pushRegeneratedClips(this.levels[z])
 
-    cleanArrowheadsIsSubtiles(this.levels[z])
+    cleanArrowheadsInSubtiles(this.levels[z])
 
     pushArrowheadsToSubtiles()
+
+    cleanUpSubtilesUnderTile(this.levels[z])
+    function cleanUpSubtilesUnderTile(thislevels: IntPairMap<Tile>) {
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 2; j++) {
+          const ti = 2 * key.x + i
+          const tj = 2 * key.y + j
+          const tile = thislevels.get(ti, tj)
+          if (tile == null) continue
+          if (tile.isEmpty()) {
+            thislevels.delete(ti, tj)
+          }
+        }
+    }
 
     function pushArrowheadsToSubtiles() {
       for (const arrowhead of upperTile.arrowheads) {
@@ -235,7 +286,7 @@ export class TileMap {
       }
     }
 
-    function cleanArrowheadsIsSubtiles(levelMap: IntPairMap<Tile>) {
+    function cleanArrowheadsInSubtiles(levelMap: IntPairMap<Tile>) {
       for (let i = 0; i < 2; i++)
         for (let j = 0; j < 2; j++) {
           const ti = 2 * key.x + i
@@ -253,12 +304,16 @@ export class TileMap {
         for (let j = 0; j < 2; j++) {
           const k = 2 * i + j
           const clips = clipsPerRect[k]
-          if (clips.length == 0) continue
+
           const ti = 2 * key.x + i
           const tj = 2 * key.y + j
           let tile = levelMap.get(ti, tj)
           if (tile == null) {
-            levelMap.set(ti, tj, (tile = Tile.mk([], [], [], [], subTilesRects[k])))
+            if (clips.length) {
+              levelMap.set(ti, tj, (tile = Tile.mk([], [], [], [], subTilesRects[k])))
+            } else {
+              continue
+            }
           }
           tile.curveClips = clips.map((x) => x)
         }
@@ -278,49 +333,47 @@ export class TileMap {
           })
           subTilesRects.push(tileRect)
         }
-      return {subTilesRects, h, w}
+      return subTilesRects
     }
+  }
 
-    function regenerateCurveClipsUnderTile(): Array<Array<CurveClip>> {
-      const ret = new Array<Array<CurveClip>>() // form the 2x2 matrix
-      for (let i = 0; i < 4; i++) {
-        ret.push([])
-      }
-      const horizontalMiddleLine = new LineSegment(
-        upperTile.rect.left,
-        upperTile.rect.bottom + h,
-        upperTile.rect.left + 2 * w,
-        upperTile.rect.bottom + h,
-      )
-      const verticalMiddleLine = new LineSegment(
-        upperTile.rect.left + w,
-        upperTile.rect.bottom,
-        upperTile.rect.left + w,
-        upperTile.rect.bottom + 2 * h,
-      )
-      for (const cs of upperTile.curveClips) {
-        for (const tr of innerClips(cs.curve, verticalMiddleLine, horizontalMiddleLine)) {
-          const del = (tr.parEnd - tr.parStart) / 5
+  regenerateCurveClipsUnderTile(upperTile: Tile, subTilesRects: Rectangle[]): Array<Array<CurveClip>> {
+    const ret = new Array<Array<CurveClip>>() // form the 2x2 matrix
+    for (let i = 0; i < 4; i++) {
+      ret.push([])
+    }
+    const w = subTilesRects[0].width
+    const h = subTilesRects[0].height
+    const horizontalMiddleLine = new LineSegment(
+      upperTile.rect.left,
+      upperTile.rect.bottom + h,
+      upperTile.rect.right,
+      upperTile.rect.bottom + h,
+    )
+    const verticalMiddleLine = new LineSegment(upperTile.rect.left + w, upperTile.rect.bottom, upperTile.rect.left + w, upperTile.rect.top)
+    for (const cs of upperTile.curveClips) {
+      for (const tr of this.innerClips(cs.curve, verticalMiddleLine, horizontalMiddleLine)) {
+        const del = (tr.parEnd - tr.parStart) / 5
 
-          let t = tr.parStart
-          const trBb = tr.boundingBox
-          for (let r = 0; r < 6; r++, t += del) {
-            const p = tr.value(t)
-            const i = p.x <= upperTile.rect.left + w ? 0 : 1
-            const j = p.y <= upperTile.rect.bottom + h ? 0 : 1
-            const k = 2 * i + j
-            const rect = subTilesRects[k]
+        let t = tr.parStart
+        const trBb = tr.boundingBox
+        for (let r = 0; r < 6; r++, t += del) {
+          const p = tr.value(t)
+          const i = p.x <= upperTile.rect.left + w ? 0 : 1
+          const j = p.y <= upperTile.rect.bottom + h ? 0 : 1
+          const k = 2 * i + j
+          const rect = subTilesRects[k]
 
-            if (rect.containsRect(trBb)) {
-              //   Assert.assert(tile.rect.contains(p))
-              ret[k].push({curve: tr, edge: cs.edge})
-              break
-            }
+          if (rect.containsRect(trBb)) {
+            //   Assert.assert(tile.rect.contains(p))
+            ret[k].push({curve: tr, edge: cs.edge})
+            Assert.assert(this.clipIsLegal(tr, cs.edge, rect, horizontalMiddleLine, verticalMiddleLine, upperTile))
+            break
           }
         }
       }
-      return ret
     }
+    return ret
   }
 
   // lastLayerHasAllNodes(): boolean {
@@ -562,8 +615,8 @@ export class TileMap {
       const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
       for (const cs of upperTile.curveClips) {
         // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
-        const xs = Array.from(Curve.getAllIntersections(cs.curve, horizontalMiddleLine, false)).concat(
-          Array.from(Curve.getAllIntersections(cs.curve, verticalMiddleLine, false)),
+        const xs = Array.from(Curve.getAllIntersections(cs.curve, horizontalMiddleLine, true)).concat(
+          Array.from(Curve.getAllIntersections(cs.curve, verticalMiddleLine, true)),
         )
         xs.sort((a, b) => a.par0 - b.par0)
         const filteredXs = [cs.curve.parStart]
@@ -601,6 +654,52 @@ export class TileMap {
     }
   }
 
+  innerClips(curve: ICurve, verticalMiddleLine: LineSegment, horizontalMiddleLine: LineSegment): Array<ICurve> {
+    debCount++
+    const ret = []
+    // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
+    const xs = Array.from(Curve.getAllIntersections(curve, horizontalMiddleLine, true)).concat(
+      Array.from(Curve.getAllIntersections(curve, verticalMiddleLine, true)),
+    )
+    xs.sort((a, b) => a.par0 - b.par0)
+    const filteredXs = [curve.parStart]
+    for (let i = 0; i < xs.length; i++) {
+      const ii = xs[i]
+      if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+        filteredXs.push(ii.par0)
+      }
+    }
+    if (curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
+      filteredXs.push(curve.parEnd)
+    }
+
+    if (filteredXs.length <= 2) {
+      ret.push(curve)
+      return ret
+    }
+    for (let u = 0; u < filteredXs.length - 1; u++) {
+      ret.push(curve.trim(filteredXs[u], filteredXs[u + 1]))
+    }
+
+    // if (debCount == 3) {
+    //   console.log(ret)
+    //   const trs = []
+    //   for (let i = 0; i < ret.length; i++) {
+    //     trs.push(DebugCurve.mkDebugCurveWCI(i + 1, 'Black', ret[i]))
+    //   }
+    //   SvgDebugWriter.dumpDebugCurves(
+    //     './tmp/innerClips.svg',
+    //     [
+    //       DebugCurve.mkDebugCurveTWCI(150, 2, 'Yellow', verticalMiddleLine),
+    //       DebugCurve.mkDebugCurveTWCI(100, 2, 'Magenta', horizontalMiddleLine),
+    //       DebugCurve.mkDebugCurveTWCI(100, 5, 'Blue', curve),
+    //     ].concat(trs),
+    //   )
+    // }
+
+    return ret
+  }
+
   private generateSubTileWithoutEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
     const tile = Tile.mk([], [], [], [], tileRect)
     for (const n of upperTile.nodes) {
@@ -625,29 +724,43 @@ export class TileMap {
     }
     return tile
   }
-}
-
-function* innerClips(curve: ICurve, verticalMiddleLine: LineSegment, horizontalMiddleLine: LineSegment): IterableIterator<ICurve> {
-  // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
-  const xs = Array.from(Curve.getAllIntersections(curve, horizontalMiddleLine, false)).concat(
-    Array.from(Curve.getAllIntersections(curve, verticalMiddleLine, false)),
-  )
-  xs.sort((a, b) => a.par0 - b.par0)
-  const filteredXs = [curve.parStart]
-  for (let i = 0; i < xs.length; i++) {
-    const ii = xs[i]
-    if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-      filteredXs.push(ii.par0)
+  clipIsLegal(
+    tr: ICurve,
+    edge: Edge,
+    rect: Rectangle,
+    horizontalMiddleLine: LineSegment,
+    verticalMiddleLine: LineSegment,
+    upperTile: Tile,
+  ): boolean {
+    if (!rect.contains(tr.start)) return false
+    if (!rect.contains(tr.end)) return false
+    if (rect.contains_point_radius(tr.start, -0.1)) {
+      if (!GeomNode.getGeom(edge.source).boundingBox.intersects(rect)) {
+        //   SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
+        //     DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
+        //     DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
+        //     DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
+        //     DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
+        //     DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
+        //   ])
+        return false
+      }
     }
-  }
-  if (curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-    filteredXs.push(curve.parEnd)
-  }
-
-  if (filteredXs.length <= 2) {
-    yield curve
-  }
-  for (let u = 0; u < filteredXs.length - 1; u++) {
-    yield curve.trim(filteredXs[u], filteredXs[u + 1])
+    if (rect.contains_point_radius(tr.end, -0.1)) {
+      if (!GeomNode.getGeom(edge.target).boundingBox.intersects(rect)) {
+        // SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
+        //   DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
+        //   DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
+        //   DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
+        //   DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
+        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
+        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Yellow', verticalMiddleLine),
+        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Magenta', horizontalMiddleLine),
+        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Blue', upperTile.rect.perimeter()),
+        // ])
+        return false
+      }
+    }
+    return true
   }
 }

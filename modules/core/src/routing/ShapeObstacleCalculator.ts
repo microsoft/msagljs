@@ -2,7 +2,6 @@
 // We assume that the boundaries are not set for the shape children yet
 
 import {Point} from '..'
-// import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 import {Curve, PointLocation} from '../math/geometry'
 import {ConvexHull} from '../math/geometry/convexHull'
 import {Polyline} from '../math/geometry/polyline'

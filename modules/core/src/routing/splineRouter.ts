@@ -48,12 +48,10 @@ import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {DebugCurve} from '../math/geometry/debugCurve'
 
 import {PathOptimizer} from './spline/pathOptimizer'
-//import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 import {initRandom} from '../utils/random'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
 import {Node} from '..'
 import {edgeHasEndsInSet} from '../structs/graph'
-import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
