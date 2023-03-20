@@ -93,7 +93,7 @@ export class Cdt extends Algorithm {
     return site
   }
 
-  AddP1AndP2() {
+  private AddP1AndP2() {
     const box = Rectangle.mkEmpty()
     for (const site of this.PointsToSites.keys()) {
       box.add(site)
@@ -105,7 +105,7 @@ export class Cdt extends Algorithm {
     this.P2 = new CdtSite(box.rightBottom.add(new Point(delx, -dely)))
   }
 
-  AddPolylineToAllInputSites(poly: Polyline) {
+  private AddPolylineToAllInputSites(poly: Polyline) {
     if (this.simplifyObstacles) {
       for (let p = poly.startPoint; p != null; ) {
         const edgeStart = p.point
@@ -128,7 +128,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  AddConstrainedEdge(a: Point, b: Point, poly: Polyline) {
+  private AddConstrainedEdge(a: Point, b: Point, poly: Polyline) {
     const ab = Cdt.AbovePP(a, b)
     /*Assert.assert(ab !== 0)*/
     let upperPoint: CdtSite
@@ -166,7 +166,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  static CreateEdgeOnOrderedCouple(upperPoint: CdtSite, lowerPoint: CdtSite): CdtEdge {
+  private static CreateEdgeOnOrderedCouple(upperPoint: CdtSite, lowerPoint: CdtSite): CdtEdge {
     /*Assert.assert(Cdt.AboveCC(upperPoint, lowerPoint) === 1)*/
     return new CdtEdge(upperPoint, lowerPoint)
   }
@@ -186,17 +186,17 @@ export class Cdt extends Algorithm {
     this.sweeper.run()
   }
 
-  Initialization() {
+  private Initialization() {
     this.FillAllInputSites()
     this.allInputSites.sort(Cdt.OnComparison)
   }
 
-  static OnComparison(a: CdtSite, b: CdtSite): number {
+  private static OnComparison(a: CdtSite, b: CdtSite): number {
     return Cdt.AboveCC(a, b)
   }
 
   // compare first y then -x coordinates
-  public static AbovePP(a: Point, b: Point): number {
+  static AbovePP(a: Point, b: Point): number {
     let del = a.y - b.y
     if (del > 0) {
       return 1
@@ -212,7 +212,7 @@ export class Cdt extends Algorithm {
   }
 
   // compare first y then -x coordinates
-  static AboveCC(a: CdtSite, b: CdtSite): number {
+  private static AboveCC(a: CdtSite, b: CdtSite): number {
     return Cdt.AbovePP(a.point, b.point)
   }
 
@@ -226,7 +226,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  public SetInEdges() {
+  private SetInEdges() {
     for (const site of this.PointsToSites.values()) {
       for (const e of site.Edges) {
         const oSite = e.lowerSite
@@ -236,7 +236,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  public FindSite(point: Point): CdtSite {
+  FindSite(point: Point): CdtSite {
     return this.PointsToSites.get(point)
   }
 
@@ -262,21 +262,21 @@ export class Cdt extends Algorithm {
     }
     return this.rectangleNodeOnTriangles
   }
-  EdgeIsCorrect(edge: CdtEdge): boolean {
-    const us = edge.upperSite
-    let edgeIsThere = false
-    for (const e of us.Edges) {
-      if (e === edge) {
-        edgeIsThere = true
-        break
-      }
-    }
-    if (!edgeIsThere) {
-      return false
-    }
-    const usShouldBe = this.PointsToSites.get(us.point)
-    return usShouldBe === us
-  }
+  // EdgeIsCorrect(edge: CdtEdge): boolean {
+  //   const us = edge.upperSite
+  //   let edgeIsThere = false
+  //   for (const e of us.Edges) {
+  //     if (e === edge) {
+  //       edgeIsThere = true
+  //       break
+  //     }
+  //   }
+  //   if (!edgeIsThere) {
+  //     return false
+  //   }
+  //   const usShouldBe = this.PointsToSites.get(us.point)
+  //   return usShouldBe === us
+  // }
 }
 
 export function createCDTOnPolylineRectNode(polylineHierarchy: RectangleNode<Polyline, Point>): Cdt {

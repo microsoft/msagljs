@@ -8,7 +8,7 @@ import {
   intersectedObjects,
 } from './layout/core/geomGraph'
 import {CurveClip, TileMap} from './layout/core/tileMap'
-import {TileData} from './layout/core/tileData'
+import {Tile} from './layout/core/tile'
 import {GeomLabel} from './layout/core/geomLabel'
 import {GeomNode} from './layout/core/geomNode'
 import {EventHandler} from './layout/core/geomObject'
@@ -17,11 +17,12 @@ import {PlaneTransformation} from './math/geometry/planeTransformation'
 import {RTree} from './math/geometry/RTree/rTree'
 import {SmoothedPolyline} from './math/geometry/smoothedPolyline'
 import {Attribute} from './structs/attribute'
-import {pageRank} from './structs/graph'
+import {pagerank} from './structs/graph'
 import {Label} from './structs/label'
 import {Assert} from './utils/assert'
 import {IntPairMap} from './utils/IntPairMap'
 import {DrawingGraph} from './drawing'
+import {PolylinePoint} from './math/geometry/polylinePoint'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge, DrawingGraph}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -53,6 +54,7 @@ export {Curve, CurveJSON, clipWithRectangle} from './math/geometry/curve'
 export {BezierSeg, BezierJSON} from './math/geometry/bezierSeg'
 export {LineSegment, LineSegmentJSON} from './math/geometry/lineSegment'
 export {Polyline, PolylineJSON} from './math/geometry/polyline'
+
 export {GeomObject} from './layout/core/geomObject'
 export {Arrowhead} from './layout/core/arrowhead'
 export {setNewParent} from './structs/graph'
@@ -75,8 +77,9 @@ export {
   Attribute,
   SmoothedPolyline,
   IntPairMap,
-  pageRank,
+  pagerank as pageRank,
   TileMap,
-  TileData,
+  Tile as TileData,
   CurveClip,
+  PolylinePoint,
 }

@@ -303,8 +303,10 @@ export function routeRectilinearEdges(
   cancelToken: CancelToken,
   nodePadding = 1,
   cornerFitRadius = 3,
+  edgeSeparatian = 3,
 ) {
   const rr = RectilinearEdgeRouter.constructorGNAN(geomG, edgesToRoute, nodePadding, cornerFitRadius)
+  rr.edgeSeparatian = edgeSeparatian
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph, edges: GeomEdge[]) {

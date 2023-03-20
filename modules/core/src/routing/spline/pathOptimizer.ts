@@ -13,7 +13,8 @@ import {CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
  */
 //let debCount = 0
 //const drawCount = 0
-type SleeveEdge = {source: T; edge: E} // the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source)
+/** the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source) */
+type SleeveEdge = {source: T; edge: E}
 /** nextR and nextL are defined only for an apex */
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
 
@@ -24,30 +25,49 @@ export class PathOptimizer {
   sourcePoly: Polyline
   targetPoly: Polyline
   d: Diagonal[]
-  cdtTree: RectangleNode<T, Point>
+  cdtRTree: RectangleNode<T, Point>
   setCdt(cdt: Cdt) {
     this.cdt = cdt
-    if (cdt) {
-      this.cdtTree = this.cdt.getRectangleNodeOnTriangles()
-    }
   }
 
   triangles = new Set<T>()
-  findTrianglesIntersectingThePolyline() {
+  private findTrianglesIntersectingThePolyline() {
     this.triangles.clear()
-    const passedTriSet = this.getPointTrianglesInTheGlobalCdt(this.poly.start)
+    const passedTriSet = this.initPassedTriangles(this.poly.start)
     for (let p = this.poly.startPoint; p.next; p = p.next) {
       this.addLineSeg(passedTriSet, p.point, p.next.point)
     }
   }
-  getPointTrianglesInTheGlobalCdt(start: Point): Set<T> {
-    const ts = new Set<T>()
-    for (const t of this.cdtTree.AllHitItems(Rectangle.mkOnPoints([start]), (t) => t.containsPoint(start))) {
-      ts.add(t)
+  private initPassedTriangles(start: Point): Set<T> {
+    const ret = new Set<T>()
+    const p = this.sourcePoly.start
+    const ps = this.cdt.FindSite(p)
+    for (const e of ps.Edges) {
+      let ot = e.CcwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+      ot = e.CwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
     }
-    return ts
+    for (const e of ps.InEdges) {
+      let ot = e.CcwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+      ot = e.CwTriangle
+      if (triangIsInsideOfObstacle(ot)) {
+        ret.add(ot)
+        return ret
+      }
+    }
   }
-  addLineSeg(passedTriSet: Set<T>, start: Point, end: Point): Set<T> {
+  private addLineSeg(passedTriSet: Set<T>, start: Point, end: Point): Set<T> {
     //Assert.assert(startTri.containsPoint(start))
 
     const q = new Queue<T>()
@@ -75,7 +95,7 @@ export class PathOptimizer {
         const ot = e.GetOtherTriangle_T(t)
 
         if (ot == null || trs.has(ot)) continue
-        if (ot.intersectsLine(start, end)) {
+        if (this.insideSourceOrTargetPoly(ot) || ot.intersectsLine(start, end)) {
           enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
         }
       }
@@ -91,6 +111,13 @@ export class PathOptimizer {
       }
     }
   }
+  insideSourceOrTargetPoly(t: T): boolean {
+    const owner = t.Sites.item0.Owner
+    if (owner === this.sourcePoly || owner === this.targetPoly) {
+      if (owner === t.Sites.item1.Owner && owner === t.Sites.item2.Owner) return true
+    }
+    return false
+  }
   private canBelongToTriangles(t: T): boolean {
     const owner = t.Sites.item0.Owner
     return owner === this.sourcePoly || owner === this.targetPoly || !triangIsInsideOfObstacle(t)
@@ -104,6 +131,7 @@ export class PathOptimizer {
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
     //++debCount
     this.poly = poly
+    this.d = []
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
@@ -176,7 +204,7 @@ export class PathOptimizer {
   //   //SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
   // }
 
-  refineFunnel(/*dc: Array<DebugCurve>*/) {
+  private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
     const prefix: Point[] = [] // the path befor apex
     let v = this.poly.start // the apex point
@@ -349,8 +377,7 @@ export class PathOptimizer {
     }
   }
 
-  initDiagonals(sleeve: SleeveEdge[]) {
-    this.d = []
+  private initDiagonals(sleeve: SleeveEdge[]) {
     for (const sleeveEdge of sleeve) {
       const e = sleeveEdge.edge
       const site = sleeveEdge.source.OppositeSite(e)
@@ -361,12 +388,12 @@ export class PathOptimizer {
       }
     }
   }
-  getSleeve(sourceTriangle: T): SleeveEdge[] {
+  private getSleeve(sourceTriangle: T): SleeveEdge[] {
     const q = new Queue<T>()
     //Assert.assert(sourceTriangle != null)
     q.enqueue(sourceTriangle)
     // Assert.assert(sourceTriangle != null)
-    const edgeMap = new Map<T, SleeveEdge | undefined>()
+    const edgeMap = new Map<T, E>()
     edgeMap.set(sourceTriangle, undefined)
     while (q.length > 0) {
       const t = q.dequeue()
@@ -377,23 +404,23 @@ export class PathOptimizer {
       for (const e of t.Edges) {
         if (e.constrained) continue // do not leave the polygon:
         // we walk a dual graph of a triangulation of a simple polygon: it is a tree!
-        if (edgeIntoT !== undefined && e === edgeIntoT.edge) continue
+        if (edgeIntoT !== undefined && e === edgeIntoT) continue
         const ot = e.GetOtherTriangle_T(t)
         if (ot == null) continue
         if (edgeMap.has(ot)) continue
-       
-        edgeMap.set(ot, {source: t, edge: e})
+
+        edgeMap.set(ot, e)
         q.enqueue(ot)
       }
     }
   }
-  recoverPath(sourcTriangle: T, edgeMap: Map<T, SleeveEdge>, t: T): SleeveEdge[] {
+  private recoverPath(sourceTriangle: T, edgeMap: Map<T, E>, t: T): SleeveEdge[] {
     const ret = []
-    for (let tr = t; tr != sourcTriangle; ) {
-      if (tr === sourcTriangle) break
+    for (let tr = t; tr != sourceTriangle; ) {
+      if (tr === sourceTriangle) break
       const e = edgeMap.get(tr)
-      ret.push(e)
-      tr = e.source
+      tr = e.GetOtherTriangle_T(tr)
+      ret.push({source: tr, edge: e})
     }
     return ret.reverse()
   }

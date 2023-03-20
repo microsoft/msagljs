@@ -1,18 +1,19 @@
 {
-  "name": "msagl-example",
+  "name": "graph-style-example",
   "version": "1.1.9",
   "private": true,
   "description": "Public demo for msagl-js",
   "main": "index.js",
   "scripts": {
-    "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
-    "build": "rm -rf dist && esbuild ./src/app.ts --outfile=dist/app.js --bundle --minify && cp index.html spinner.gif dist"
+    "start": "node build.js watch",
+    "build": "rm -rf dist && node build.js build"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
     "@msagl/parser": "^1.1.8",
     "@msagl/renderer-webgl": "^1.1.9",
+    "monaco-editor": "^0.36.1",
     "msagl-js": "^1.1.8"
   },
   "devDependencies": {

@@ -1,145 +1,134 @@
-import {CompositeLayer, LayersList, Accessor, GetPickingInfoParams} from '@deck.gl/core/typed'
-import {IconLayer, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomLabel, TileData, Point, Edge, GeomEdge} from 'msagl-js'
-import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
-import {iconMapping} from './arrows'
+import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
+import { TextLayer, TextLayerProps } from '@deck.gl/layers/typed'
+import {GeomNode, TileData, TileMap} from 'msagl-js'
+import {Matrix4} from '@math.gl/core'
 
-import NodeLayer from './node-layer'
-import EdgeLayer from './edge-layer'
+import {getNodeLayers} from './get-node-layers'
+import {getEdgeLayer, getArrowHeadLayer, getEdgeLabelLayer} from './get-edge-layers'
 import GraphHighlighter from './graph-highlighter'
+import {ParsedGraphStyle, ParsedGraphNodeLayerStyle, ParsedGraphEdgeLayerStyle} from '../styles/graph-style-evaluator'
 
-type NodeLayerProps = TextLayerProps<GeomNode> & {
+import type { _Tile2DHeader, NonGeoBoundingBox } from '@deck.gl/geo-layers/typed'
+
+type GraphLayerProps = TextLayerProps<GeomNode> & {
   highlighter: GraphHighlighter
   resolution: number
-  getTextSize: Accessor<GeomNode, number>
+  graphStyle: ParsedGraphStyle
+  tileMap?: TileMap
+  tile: _Tile2DHeader
 }
 
-export default class GraphLayer extends CompositeLayer<NodeLayerProps> {
+export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
   static defaultProps = {
     ...TextLayer.defaultProps,
     resolution: {type: 'number', value: 1},
     highlighter: {type: 'object'},
-    getTextSize: {type: 'accessor', value: 16},
+    fontSize: {type: 'number', value: 16},
   }
   static layerName = 'Graphayer'
 
-  renderLayers(): LayersList {
-    // @ts-ignore
-    const data = this.props.data as TileData
-    const {highlighter, resolution, fontFamily, fontWeight, lineHeight, getTextSize} = this.props
-    return [
-      data.nodes.length > 0 &&
-        new NodeLayer(
-          this.getSubLayerProps({
-            id: 'nodes',
-          }),
-          {
-            data: data.nodes,
-            getPickingColor: (n, {target}) => highlighter.encodeNodeIndex(n, target),
-            fromIndex: (i) => highlighter.getNode(i),
-            nodeDepth: highlighter.nodeDepth,
-            getLineWidth: 1,
-            fontFamily,
-            fontWeight,
-            lineHeight,
-            getTextSize,
-            // @ts-ignore
-            clipByInstance: false,
-          },
-        ),
-
-      data.curveClips.length > 0 &&
-        new EdgeLayer(
-          this.getSubLayerProps({
-            id: 'curves',
-          }),
-          {
-            data: data.curveClips,
-            getWidth: 1,
-            getDepth: highlighter.edgeDepth,
-            resolution,
-          },
-        ),
-
-      data.arrowheads.length > 0 &&
-        new IconLayer<{
-          tip: Point
-          edge: Edge
-          base: Point
-        }>(
-          this.getSubLayerProps({
-            id: 'arrowheads',
-          }),
-          {
-            data: data.arrowheads,
-            iconAtlas: 'deck://arrowAtlas',
-            iconMapping,
-            getPosition: (d) => [d.tip.x, d.tip.y],
-            getColor: (d) => getEdgeColor(d.edge),
-            getIcon: (d) => getEdgeType(d.edge),
-            getSize: (d) => getArrowSize(d.tip, d.base),
-            getAngle: (d) => getArrowAngle(d.tip, d.base),
-            billboard: false,
-            sizeUnits: 'common',
-          },
-        ),
-
-      data.labels.length > 0 &&
-        new TextLayer<GeomLabel>(
-          this.getSubLayerProps({
-            id: 'labels',
-          }),
-          {
-            data: data.labels,
-            getText: (d: GeomLabel) => getDrawingLabel(d).labelText,
-            getSize: (d: GeomLabel) => getDrawingLabel(d).fontsize,
-            getColor: getLabelColor,
-            getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
-            fontFamily,
-            fontWeight,
-            lineHeight,
-            sizeUnits: 'common',
-          },
-        ),
-    ]
+  state!: {
+    layerMap: Record<string, TileData>
   }
-}
 
-function getEdgeColor(e: Edge): [number, number, number] {
-  const drawinEdge = <DrawingEdge>DrawingObject.getDrawingObj(e)
-  if (drawinEdge) {
-    const color = drawinEdge.color
-    if (color) return [color.R, color.G, color.B]
+  override updateState({props, oldProps, changeFlags}: UpdateParameters<this>) {
+    const {graphStyle} = props;
+    if (changeFlags.dataChanged || graphStyle !== oldProps.graphStyle) {
+      // @ts-ignore
+      const data = props.data as TileData
+      const filterContext = {
+        tileMap: props.tileMap
+      }
+      const layerMap: Record<string, TileData> = {}
+      for (const layer of graphStyle.layers) {
+        const layerData = new TileData()
+        layerMap[layer.id] = layerData
+
+        if (layer.type === 'node') {
+          layerData.nodes = layer.filter ? data.nodes.filter(n => layer.filter(n.node, filterContext)) : data.nodes
+        }
+        if (layer.type === 'edge') {
+          layerData.curveClips = layer.filter ? data.curveClips.filter(c => layer.filter(c.edge, filterContext)) : data.curveClips
+          layerData.arrowheads = layer.filter ? data.arrowheads.filter(a => layer.filter(a.edge, filterContext)) : data.arrowheads
+          layerData.labels = layer.filter ? data.labels.filter(l => layer.filter(l.parent.entity, filterContext)) : data.labels
+        }
+      }
+      this.setState({ layerMap })
+    }
   }
-  return [0, 0, 0]
-}
 
-function getEdgeType(e: Edge): string {
-  return 'triangle-n'
-}
-
-function getArrowSize(tip: Point, end: Point): number {
-  const dx = tip.x - end.x
-  const dy = tip.y - end.y
-  return Math.sqrt(dx * dx + dy * dy)
-}
-
-function getArrowAngle(tip: Point, end: Point): number {
-  const dx = tip.x - end.x
-  const dy = tip.y - end.y
-  return (Math.atan2(dy, dx) / Math.PI) * 180
-}
-
-function getDrawingLabel(l: GeomLabel): DrawingObject {
-  const geomEdge = l.parent as GeomEdge
-  const edge = geomEdge.entity as Edge
-  return DrawingObject.getDrawingObj(edge)
-}
-
-function getLabelColor(l: GeomLabel): [number, number, number] {
-  const color = getDrawingLabel(l).labelfontcolor
-  if (color) {
-    return [color.R, color.G, color.B]
+  getPickingInfo({sourceLayer, info}: GetPickingInfoParams) {
+    if (sourceLayer.id.endsWith('node-boundary') && info.picked) {
+      info.object = this.props.highlighter.getNode(info.index)
+    }
+    return info
   }
-  return [0, 0, 0]
+
+  filterSubLayer({layer, viewport}: any) {
+    const layerStyle = layer.props.layerStyle as (ParsedGraphNodeLayerStyle | ParsedGraphEdgeLayerStyle)
+    const {zoom} = viewport
+    return layerStyle.minZoom <= zoom && layerStyle.maxZoom >= zoom
+  }
+
+  override renderLayers(): LayersList {
+    const {layerMap} = this.state
+    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix} = this.props
+    const layerCount = graphStyle.layers.length
+    const tileSize = (tile.bbox as NonGeoBoundingBox).right - (tile.bbox as NonGeoBoundingBox).left
+
+    return graphStyle.layers.map((layer, layerIndex) => {
+      const data = layerMap[layer.id]
+      const subLayers = []
+      const subLayerProps = this.getSubLayerProps({id: layer.id})
+      Object.assign(subLayerProps, {
+        layerStyle: layer,
+        modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize]),
+        parameters: {
+          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount]
+        }
+      })
+
+      if (data.nodes?.length > 0) {
+        subLayers.push(getNodeLayers({
+          ...subLayerProps,
+          data: data.nodes,
+          getPickingColor: (n, {target}) => highlighter.encodeNodeIndex(n, target),
+          nodeDepth: highlighter.nodeDepth,
+
+          // From renderer layout options
+          fontFamily,
+          fontWeight,
+          lineHeight,
+        }, layer as ParsedGraphNodeLayerStyle))
+      }
+
+      if (data.curveClips?.length > 0) {
+        subLayers.push(getEdgeLayer({
+          ...subLayerProps,
+          data: data.curveClips,
+          getDepth: highlighter.edgeDepth,
+          resolution,
+        }, layer as ParsedGraphEdgeLayerStyle))
+      }
+      
+      if (data.arrowheads?.length > 0) {
+        subLayers.push(getArrowHeadLayer({
+          ...subLayerProps,
+          data: data.arrowheads,
+        }, layer as ParsedGraphEdgeLayerStyle))
+      }
+      
+      if (data.labels?.length > 0) {
+        subLayers.push(getEdgeLabelLayer({
+          ...subLayerProps,
+          data: data.labels,
+          fontFamily,
+          fontWeight,
+          lineHeight,
+        }, layer as ParsedGraphEdgeLayerStyle))
+      }
+
+      return subLayers
+    })
+  }
 }

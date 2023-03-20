@@ -1,5 +1,6 @@
 import {dropZone} from './drag-n-drop'
-import {Renderer as WebGLRenderer, SearchControl, LayoutOptions} from '@msagl/renderer-webgl'
+import {LayoutOptions} from '@msagl/renderer-common'
+import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
 import {EdgeRoutingMode, geometryIsCreated, Graph} from 'msagl-js'
 
@@ -36,7 +37,7 @@ async function updateRender(graphOrSettings: Graph | LayoutOptions, settings?: L
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
 for (const name of SAMPLE_DOT) {
   const option = document.createElement('option')
-  option.value = `${name}.gv`
+  option.value = name
   option.innerText = name
   dotFileSelect.appendChild(option)
 }

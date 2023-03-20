@@ -1,12 +1,24 @@
 import {join} from 'path'
-import {GeomGraph, Graph, CurveFactory, Point, GeomEdge, Edge, ICurve, GeomNode, Node, Rectangle, routeRectilinearEdges} from '../../../src'
+import {
+  GeomGraph,
+  Graph,
+  CurveFactory,
+  Point,
+  GeomEdge,
+  Edge,
+  ICurve,
+  GeomNode,
+  Node,
+  Rectangle,
+  routeRectilinearEdges,
+  Polyline,
+} from '../../../src'
 import {DrawingGraph} from '../../../src/drawing'
-import {GeomObject} from '../../../src/layout/core/geomObject'
+import {PolylinePoint} from '../../../src/math/geometry/polylinePoint'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {RectilinearEdgeRouter} from '../../../src/routing/rectilinear/RectilinearEdgeRouter'
 
 import {sortedList} from '../../layout/sortedBySizeListOfgvFiles'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from '../../utils/testUtils'
 test('empty graph', () => {
   const gg = new GeomGraph(new Graph('graph'))
@@ -261,6 +273,16 @@ test('pbi', () => {
   }
 })
 
+test('mid poly', () => {
+  let p = Polyline.mkFromPoints([new Point(0, 0), new Point(0, 5), new Point(3, 5), new Point(3, 8)])
+  let lenMid = findLengthMiddleParameter(p)
+  expect(lenMid == 1.5).toBe(true)
+  p = Polyline.mkFromPoints([new Point(0, 0), new Point(0, 5)])
+  lenMid = findLengthMiddleParameter(p)
+  expect(lenMid == 0.5).toBe(true)
+  p = Polyline.mkFromPoints([new Point(0, 0), new Point(0, 5), new Point(3, 5)])
+  expect(lenMid == 0.5)
+})
 test('four nodes', () => {
   const gg = new GeomGraph(new Graph('graph'))
 
@@ -398,3 +420,37 @@ test('abstract rect', () => {
     // SvgDebugWriter.writeGeomGraph('./tmp/rect' + 'abstract' + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
   }
 })
+
+test('smlred rect', () => {
+  const path = 'graphvis/'
+  let dg: DrawingGraph
+  try {
+    dg = runMDSLayoutNoSubgraphs(join(path, 'smlred.gv'), EdgeRoutingMode.Rectilinear)
+  } catch (Error) {
+    console.log('abstract.gv' + ' error:' + Error.message)
+    expect(1).toBe(0)
+  }
+  if (dg != null) {
+    // SvgDebugWriter.writeGeomGraph('./tmp/rect' + 'abstract' + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  }
+})
+
+/** returns the parameter dividing curve by half lengthwise */
+function findLengthMiddleParameter(poly: Polyline): number {
+  // the array of growing lengths
+  const ls = [0]
+  let p: PolylinePoint
+  for (p = poly.startPoint.next; p != null; p = p.next) {
+    ls.push(p.point.sub(p.prev.point).length + ls[ls.length - 1])
+  }
+  // get the half half length
+  const hl = ls[ls.length - 1] / 2
+  for (let i = 0; i < ls.length - 1; i++) {
+    if (hl <= ls[i + 1]) {
+      // the middle is between i and i+1
+      return i + 0.5
+    }
+  }
+  // should not be here
+  return 0.5
+}

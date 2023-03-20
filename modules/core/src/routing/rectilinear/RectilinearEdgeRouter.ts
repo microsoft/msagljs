@@ -38,10 +38,11 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   Padding = 0
 
-  // The radius of the arc inscribed into the path corners.
+  /**  The radius of the arc inscribed into the path corners. */
 
   CornerFitRadius = 0
-
+  /** the minimal distance between to parrallel segments */
+  edgeSeparatian = 3
   // The relative penalty of a bend, representated as a percentage of the Manhattan distance between
   // two ports being connected.
 
@@ -463,7 +464,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     const ancestorSets = this.ObsTree.SpatialAncestorsAdjusted ? SplineRouter.GetAncestorSetsMap(this.Obstacles) : this.AncestorsSets
     // Using VisibilityPolyline retains any reflection/staircases on the convex hull borders; using
     // PaddedPolyline removes them.
-    Nudger.NudgePaths(edgePaths, this.CornerFitRadius, this.PaddedObstacles, ancestorSets, this.RemoveStaircases)
+    Nudger.NudgePaths(edgePaths, this.edgeSeparatian, this.PaddedObstacles, ancestorSets, this.RemoveStaircases)
     // Nudger.NudgePaths(edgePaths, CornerFitRadius, this.ObstacleTree.GetAllPrimaryObstacles().Select(obs => obs.VisibilityPolyline), ancestorSets, RemoveStaircases);
   }
 
@@ -580,6 +581,9 @@ export class RectilinearEdgeRouter extends Algorithm {
   // }
 
   static FitArcsIntoCorners(radius: number, polyline: Point[]): ICurve {
+    if (radius == 0) {
+      return Polyline.mkFromPoints(polyline)
+    }
     const ellipses = RectilinearEdgeRouter.GetFittedArcSegs(radius, polyline)
     const curve = new Curve()
     let prevEllipse: Ellipse = null

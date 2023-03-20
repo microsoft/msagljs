@@ -328,6 +328,7 @@ export class SvgDebugWriter {
   }
 
   private writeEdge(edge: GeomEdge) {
+    if (edge == null) return
     const icurve = edge.curve // mkFromeSmothPolyline(edge.underlyingPolyline)
     if (icurve == null) return
     this.xw.startElement('path')

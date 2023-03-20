@@ -6,7 +6,6 @@ import {DirTypeEnum} from './dirTypeEnum'
 import {OrderingEnum} from './orderingEnum'
 import {LayerDirectionEnum, Size} from '..'
 import {Entity} from '../structs/entity'
-import {Attr} from 'dotparser'
 import {Attribute} from '../structs/attribute'
 import {AttributeRegistry} from '../structs/attributeRegistry'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
@@ -90,85 +89,7 @@ export abstract class DrawingObject extends Attribute {
       target.clusterRank = source.clusterRank
     }
   }
-  *attrIter(): IterableIterator<Attr> {
-    if (this.color && this.color.keyword.toLowerCase() !== 'black') {
-      yield {type: 'attr', id: 'color', eq: this.color.toString()}
-    }
-    if (this.fillColor) {
-      yield {type: 'attr', id: 'fillColor', eq: this.fillColor.toString()}
-    }
-    if (this.labelfontcolor && this.labelfontcolor.keyword.toLowerCase() !== 'black') {
-      yield {type: 'attr', id: 'labelfontcolor', eq: this.labelfontcolor.toString()}
-    }
-    if (!(this.labelText == null || this.labelText === '') && this.entity && this.labelText !== this.id) {
-      yield {type: 'attr', id: 'label', eq: this.labelText}
-    }
-    if (this.fontColor && this.fontColor.keyword.toLowerCase() !== 'black') {
-      yield {type: 'attr', id: 'fontColor', eq: this.fontColor.toString()}
-    }
 
-    if (this.styles && this.styles.length) {
-      const styleString = this.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
-      yield {type: 'attr', id: 'style', eq: styleString}
-    }
-    if (this.pencolor && this.pencolor.keyword !== 'black') {
-      yield {type: 'attr', id: 'pencolor', eq: this.pencolor.toString()}
-    }
-    if (this.penwidth && this.penwidth !== 1) {
-      yield {type: 'attr', id: 'penwidth', eq: this.penwidth.toString()}
-    }
-    if (this.rankdir) {
-      yield {type: 'attr', id: 'rankdir', eq: this.rankdir.toString()}
-    }
-    if (this.fontname && this.fontname !== DrawingObject.defaultLabelFontName) {
-      yield {type: 'attr', id: 'fontname', eq: this.fontname}
-    }
-    if (this.margin) {
-      yield {type: 'attr', id: 'margin', eq: this.margin.toString()}
-    }
-    if (this.fontsize && this.fontsize !== DrawingObject.defaultLabelFontSize) {
-      yield {type: 'attr', id: 'fontsize', eq: this.fontsize.toString()}
-    }
-    if (this.orientation) {
-      yield {type: 'attr', id: 'orientation', eq: this.orientation.toString()}
-    }
-    if (this.ranksep) {
-      yield {type: 'attr', id: 'ranksep', eq: this.ranksep.toString()}
-    }
-    if (this.arrowtail) {
-      yield {type: 'attr', id: 'arrowtail', eq: this.arrowtail.toString()}
-    }
-    if (this.arrowhead) {
-      yield {type: 'attr', id: 'arrowhead', eq: this.arrowhead.toString()}
-    }
-    if (this.ordering) {
-      yield {type: 'attr', id: 'ordering', eq: this.ordering.toString()}
-    }
-    if (this.bgcolor) {
-      yield {type: 'attr', id: 'bgcolor', eq: this.bgcolor.toString()}
-    }
-    if (this.pos) {
-      yield {type: 'attr', id: 'pos', eq: this.pos.toString()}
-    }
-    if (this.nodesep) {
-      yield {type: 'attr', id: 'nodesep', eq: this.nodesep.toString()}
-    }
-    if (this.arrowsize) {
-      yield {type: 'attr', id: 'arrowsize', eq: this.arrowsize.toString()}
-    }
-    if (this.samehead) {
-      yield {type: 'attr', id: 'samehead', eq: this.samehead.toString()}
-    }
-    if (this.layersep) {
-      yield {type: 'attr', id: 'layersep', eq: this.layersep.toString()}
-    }
-    if (this.clusterRank) {
-      yield {type: 'attr', id: 'clusterrank', eq: this.clusterRank.toString()}
-    }
-    if (this.measuredTextSize) {
-      yield {type: 'attr', id: 'measuredTextSize', eq: JSON.stringify(this.measuredTextSize)}
-    }
-  }
   measuredTextSize: Size
   /** the index of the DrawingObject in the list of attributes of Entity */
   /**  This is the field from the Graph. It is used to keep the connection with the underlying graph */

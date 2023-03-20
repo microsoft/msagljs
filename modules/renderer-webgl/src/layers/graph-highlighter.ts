@@ -1,5 +1,5 @@
 import GL from '@luma.gl/constants'
-import {Buffer, Framebuffer, Texture2D, readPixelsToArray, readPixelsToBuffer} from '@luma.gl/webgl'
+import {Buffer, Framebuffer, Texture2D} from '@luma.gl/webgl'
 import {withParameters} from '@luma.gl/gltools'
 import {Model, Transform} from '@luma.gl/engine'
 import {Graph, GeomGraph, GeomNode} from 'msagl-js'
@@ -37,7 +37,7 @@ export default class GraphHighlighter {
   private _hasBidirectionalEdge: boolean
   private _nodeMap: Map<string, number>
   private _nodeList: GeomNode[]
-
+  private _lastSourceId?: string | null;
   private _model: Model
   private _transform: Transform
   private _nodeDepthTextures: Texture2D[]
@@ -103,6 +103,7 @@ export default class GraphHighlighter {
     this._nodeMap = new Map<string, number>()
     this._nodeList = []
     this._hasBidirectionalEdge = false
+    this._lastSourceId = undefined
 
     const gl = this._gl
     this._edgeSourceBuffer = getBuffer(gl, this._edgeSourceBuffer, {size: 3, type: GL.UNSIGNED_BYTE}, edgeCount)
@@ -114,7 +115,7 @@ export default class GraphHighlighter {
     let edgeIndex = 0
     for (const node of graph.nodesBreadthFirst) {
       this._nodeList[nodeIndex] = node
-      this._nodeMap.set(node.id, nodeIndex + 1)
+      this._nodeMap.set(node.id, nodeIndex)
       nodeIndex++
     }
     const edgeSource = new Uint8Array(edgeCount * 3)
@@ -171,6 +172,11 @@ export default class GraphHighlighter {
 
   update(opts: {sourceId: string; edgeDepth?: boolean; maxDepth?: number}) {
     const {sourceId, edgeDepth = false, maxDepth = 1} = opts
+    if (sourceId === this._lastSourceId) {
+      return
+    }
+
+    this._lastSourceId = sourceId
     const textureDim = [this._nodeDepthFB.width, this._nodeDepthFB.height]
 
     let sourceTexture: Texture2D = this._nodeDepthTextures[1]
@@ -228,13 +234,14 @@ export default class GraphHighlighter {
     }
 
     /* Debug result*/
+    // console.log(`${sourceId} >>>>`)
     // const result = readPixelsToArray(targetTexture)
     // for (let i = 0; i < this._nodeCount; i++) {
-    //  const valid = result[i * 4 + 3] === 0;
-    //  if (valid) {
-    //    const depth = result[i * 4];
-    //    console.log(this._nodeList[i], depth)
-    //  }
+    //   const valid = result[i * 4 + 3] === 0;
+    //   if (valid) {
+    //     const depth = result[i * 4];
+    //     console.log(this._nodeList[i].id, depth)
+    //   }
     // }
     /* End of debug */
   }
@@ -244,23 +251,26 @@ export default class GraphHighlighter {
       [GL.COLOR_ATTACHMENT0]: texture,
     })
 
+    const gl = this._gl;
     withParameters(
-      this._gl,
+      gl,
       {
         framebuffer: this._nodeDepthFB,
         viewport: [0, 0, texture.width, texture.height],
         clearColor: [1, 1, 1, 1],
       },
       () => {
-        this._gl.clear(GL.COLOR_BUFFER_BIT)
+        gl.clear(GL.COLOR_BUFFER_BIT)
       },
     )
 
     if (originPixelIdx !== undefined) {
+      const x = (originPixelIdx + 1) % texture.width
+      const y = Math.floor((originPixelIdx + 1) / texture.width)
       texture.setSubImageData({
         data: originData,
-        x: originPixelIdx % texture.width,
-        y: Math.floor(originPixelIdx / texture.width),
+        x,
+        y,
         width: 1,
         height: 1,
       })
@@ -397,8 +407,8 @@ void main(void) {
 }
 
 function encodePickingColor(i: number, out: number[]): number[] {
-  out[0] = i & 255
-  out[1] = (i >> 8) & 255
-  out[2] = ((i >> 8) >> 8) & 255
+  out[0] = (i + 1) & 255;
+  out[1] = ((i + 1) >> 8) & 255;
+  out[2] = (((i + 1) >> 8) >> 8) & 255;
   return out
 }

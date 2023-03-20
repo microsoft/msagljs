@@ -225,18 +225,18 @@ xtest('tiles gameofthrones', () => {
   // fs.close(ws)
 
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
-  const str = fs.readFileSync(fpath, 'utf-8')
+  const str = fs.readFileSync('/tmp/gameofthrones.json', 'utf-8')
   const json = JSON.parse(str)
   const graph = parseJSON(json)
   //Curve.dumper = SvgDebugWriter.dumpDebugCurves
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  for (const e of geomGraph.deepEdges) {
-    Assert.assert(isLegal(e))
-  }
-  expect(geomGraph.boundingBox.width).toBeGreaterThan(0)
-  const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect)
-  tileMap.buildUpToLevel(20)
+  const sr = new SplineRouter(
+    geomGraph,
+    Array.from(geomGraph.deepEdges)
+      .filter((e) => e != null)
+      .filter((e) => e.source.id == 'CERWYN' && e.target.id == 'RAMSAY'),
+  )
+  sr.run()
 })
 
 test('clipWithRectangleInsideInterval', () => {

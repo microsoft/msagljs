@@ -200,7 +200,7 @@ export class Nudger {
     this.CreateLongestNudgedSegments()
     this.FindFreeSpaceInDirection(<Array<AxisEdge>>Array.from(this.PathVisibilityGraph.Edges))
     this.MoveLongestSegsIdealPositionsInsideFeasibleIntervals()
-    this.PositionShiftedEdges()
+    this.PositionShiftedEdqges()
   }
 
   SetWidthsOfArrowheads() {
@@ -223,14 +223,14 @@ export class Nudger {
   }
 
   EdgeSeparation: number
-  PositionShiftedEdges() {
-    // we are using 2*cornerFitRadius for the minimal edge separation
+  PositionShiftedEdqges() {
     this.Solver = new UniformOneDimensionalSolver(this.EdgeSeparation)
     for (let i = 0; i < this.LongestNudgedSegs.length; i++) {
       this.CreateVariablesOfLongestSegment(this.LongestNudgedSegs[i])
     }
 
     this.CreateConstraintsOfTheOrder()
+
     this.CreateConstraintsBetweenLongestSegments()
     this.Solver.SolveByRegularSolver()
     this.ShiftPathEdges()

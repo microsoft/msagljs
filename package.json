@@ -42,6 +42,7 @@
     "prettier": "^2.6.0",
     "ts-jest": "^29.0.4",
     "typescript": "^4.6.3",
+    "typescript-json-schema": "^0.55.0",
     "xml-writer": "^1.7.0"
   },
   "lint-staged": {

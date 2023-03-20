@@ -7,17 +7,18 @@ import {DrawingGraph} from 'msagl-js/drawing'
 
 import GraphLayer from './layers/graph-layer'
 
-import {layoutGraph, layoutGraphOnWorker} from '@msagl/renderer-common/src/layout'
+import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
 import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated} from 'msagl-js'
 
 import {Matrix4} from '@math.gl/core'
 
 import EventSource, {Event} from './event-source'
-import {deepEqual, TextMeasurer} from '@msagl/renderer-common'
 
 import GraphHighlighter from './layers/graph-highlighter'
 import {getIconAtlas} from './layers/arrows'
-import {LayoutOptions} from '@msagl/renderer-common/src'
+
+import {GraphStyleSpecification, DefaultGraphStyle} from './styles/graph-style-spec'
+import {parseGraphStyle, ParsedGraphStyle} from './styles/graph-style-evaluator'
 
 export interface IRendererControl {
   onAdd(renderer: Renderer): void
@@ -42,6 +43,7 @@ export default class Renderer extends EventSource {
   private _graphHighlighter: GraphHighlighter
   private _highlightedNodeId: string | null
   private _layoutWorkerUrl?: string
+  private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
 
   constructor(container: HTMLElement = document.body, layoutWorkerUrl?: string) {
     super()
@@ -121,6 +123,19 @@ export default class Renderer extends EventSource {
 
   get graph(): Graph {
     return this._graph
+  }
+
+  setStyle(style: GraphStyleSpecification) {
+    this._style = parseGraphStyle(style)
+    const layer = this._deck.props.layers[0]
+    if (layer) {
+      const newLayer = layer.clone({
+        graphStyle: this._style
+      })
+      this._deck.setProps({
+        layers: [newLayer]
+      })
+    }
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done
@@ -247,7 +262,9 @@ export default class Renderer extends EventSource {
 
     const modelMatrix = new Matrix4().translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
 
-    const layer = new TileLayer<TileData>({
+    const layer = new TileLayer<TileData, {
+      graphStyle: ParsedGraphStyle
+    }>({
       extent: [0, 0, rootTileSize, rootTileSize],
       refinementStrategy: 'no-overlap',
       minZoom: startZoom,
@@ -257,9 +274,6 @@ export default class Renderer extends EventSource {
         const {x, y, z} = tile.index
         tile.bbox as NonGeoBoundingBox
         return tileMap.getTileData(x, y, z - startZoom)
-      },
-      parameters: {
-        depthTest: false,
       },
       // For debugging
       // onClick: ({sourceLayer}) => {
@@ -276,7 +290,10 @@ export default class Renderer extends EventSource {
           }
         }
       },
-      renderSubLayers: ({data, id, tile}) => {
+      graphStyle: this._style,
+
+      // @ts-ignore
+      renderSubLayers: ({data, graphStyle, id, tile}) => {
         if (!data) return null
 
         const bbox = data.rect
@@ -310,9 +327,10 @@ export default class Renderer extends EventSource {
             fontFamily: fontSettings.fontFamily,
             fontWeight: fontSettings.fontWeight,
             lineHeight: fontSettings.lineHeight,
-            getTextSize: fontSettings.fontSize,
             resolution: 2 ** (tile.index.z - 2),
             pickable: true,
+            graphStyle,
+            tileMap,
             // @ts-ignore
             clipBounds: [bbox.left, bbox.bottom, bbox.right, bbox.top],
             clipByInstance: false,
