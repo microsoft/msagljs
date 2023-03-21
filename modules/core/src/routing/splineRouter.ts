@@ -51,7 +51,7 @@ import {PathOptimizer} from './spline/pathOptimizer'
 import {initRandom} from '../utils/random'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
 import {Node} from '..'
-import {edgeHasEndsInSet} from '../structs/graph'
+import {edgeNodesBelongToSet} from '../structs/graph'
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
@@ -480,7 +480,7 @@ export class SplineRouter extends Algorithm {
       if (t.regularEdges.length > 0) {
         for (let i = 0; i < t.regularEdges.length; i++) {
           const e = t.regularEdges[i]
-          if (edgeHasEndsInSet(e.edge, activeNodes)) {
+          if (edgeNodesBelongToSet(e.edge, activeNodes)) {
             this.rerouteEdge(interactiveEdgeRouter, e)
           }
         }
@@ -492,7 +492,7 @@ export class SplineRouter extends Algorithm {
     } else {
       for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
         const e = edgeGeometryGroup.edges[i]
-        if (edgeHasEndsInSet(e.edge, activeNodes)) {
+        if (edgeNodesBelongToSet(e.edge, activeNodes)) {
           this.rerouteEdge(interactiveEdgeRouter, e)
         }
       }
