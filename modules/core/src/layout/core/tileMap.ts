@@ -32,7 +32,7 @@ export class TileMap {
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 100 // in the number of nodes
+  private tileCapacity = 1000 // in the number of nodes
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
@@ -69,10 +69,6 @@ export class TileMap {
     this.topLevelTileRect = topLevelTileRect
     this.tileSizes = []
     this.tileSizes.push(topLevelTileRect.size)
-
-    this.fillTopLevelTile()
-    this.minTileSize = this.getMinTileSize()
-    this.pageRank = pagerank(this.geomGraph.graph, 0.85)
     this.beautifyEdges = edgeBeautifier
   }
 
@@ -91,10 +87,10 @@ export class TileMap {
       }
       n++
     }
-    return new Size(w * 8, h * 8)
+    return new Size(w * 3, h * 3)
   }
 
-  private fillTopLevelTile() {
+  private fillTheLowestLayer() {
     const tileMap = new IntPairMap<Tile>(1)
     const topLevelTile = new Tile()
 
@@ -105,13 +101,7 @@ export class TileMap {
     for (const e of this.geomGraph.graph.deepEdges) {
       const geomEdge = GeomEdge.getGeom(e)
       const c = GeomEdge.getGeom(e).curve
-      if (c instanceof Curve) {
-        for (const seg of c.segs) {
-          topLevelTile.curveClips.push({curve: seg, edge: e})
-        }
-      } else {
-        topLevelTile.curveClips.push({curve: c, edge: e})
-      }
+      pushToClips(topLevelTile.curveClips, e, c)
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -138,15 +128,18 @@ export class TileMap {
    * Returns the number of created levels.
    */
   buildUpToLevel(z: number): number {
+    this.fillTheLowestLayer()
+    this.minTileSize = this.getMinTileSize()
+    this.pageRank = pagerank(this.geomGraph.graph, 0.85)
+
     let needSubdivide = false
-    // level 0 is filled in the constructor: maybe it is small enough
     for (const tile of this.levels[0].values()) {
       if (tile.entityCount > this.tileCapacity) {
         needSubdivide = true
         break
       }
     }
-    if (!needSubdivide) return 1 // we have only on layer
+    if (!needSubdivide) return 1 // we have only one layer
 
     for (let i = 1; i <= z; i++) {
       if (this.subdivideLevel(i)) {
@@ -163,12 +156,18 @@ export class TileMap {
     for (let i = 0; i < this.levels.length - 1; i++) {
       numberOfNodesInLayer.push(this.filterOutEntities(this.levels[i], sortedNodes, i))
     }
+    for (let i = 0; i < this.levels.length; i++) {
+      this.checkLevel(i)
+    }
+
     if (this.beautifyEdges) {
       for (let i = this.levels.length - 2; i >= 0; i--) {
         this.beatifyEdgesMethod(i, new Set<Node>(sortedNodes.slice(0, numberOfNodesInLayer[i])))
       }
     }
-
+    for (let i = 0; i < this.levels.length; i++) {
+      this.checkLevel(i)
+    }
     this.calculateNodeRank(sortedNodes)
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
@@ -176,41 +175,76 @@ export class TileMap {
   beatifyEdgesMethod(levelIndex: number, activeNodes: Set<Node>) {
     this.beautifyEdges(activeNodes)
     this.regenerateCurveClipsUpToLayer(levelIndex, activeNodes)
-    let i = 0
-    for (const level of this.levels) {
-      i++
-      for (const t of level.values()) {
-        for (const cl of t.curveClips) {
-          const e = cl.edge
-          let b = e.source.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox.clone()
-          b = b.add_rect(e.target.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox)
-          b = b.add_rect(e.getAttr(AttributeRegistry.GeomObjectIndex).curve.boundingBox)
-          b.pad(b.diagonal / 10)
-          if (b.contains_rect(cl.curve.boundingBox)) continue
-
-          console.log(i)
-          console.log(cl)
-          // SvgDebugWriter.dumpDebugCurves('./tmp/outBox.svg', [
-          //   DebugCurve.mkDebugCurveI(e.source.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve),
-          //   DebugCurve.mkDebugCurveI(e.target.getAttr(AttributeRegistry.GeomObjectIndex).boundaryCurve),
-          //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Blue', e.getAttr(AttributeRegistry.GeomObjectIndex).curve),
-          //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Magenta', cl.curve),
-          // ])
-        }
-      }
+    /* debug code */
+  }
+  checkLevel(i: number) {
+    const [edgeMap, nodeSet] = this.getEntityDataFromLevel(i)
+    for (const [e, entDataArray] of edgeMap) {
+      this.checkEntityDataArray(e, entDataArray, nodeSet)
     }
   }
+  checkEntityDataArray(e: Entity, entDataArray: EntityDataInTile[], nodeSet: Set<Node>) {
+    if (e instanceof Edge) {
+      if (!nodeSet.has(e.source)) {
+        Assert.assert(false)
+      }
+      if (!nodeSet.has(e.target)) {
+        Assert.assert(false)
+      }
+      let connectedToSource = false
+      let connectedToTarget = false
+      const ge = GeomEdge.getGeom(e)
+      const sb = ge.source.boundingBox
+      const tb = ge.target.boundingBox
+      for (const cc of entDataArray) {
+        if ('curve' in cc.data) {
+          Assert.assert(cc.data.edge === e)
+          const curve = cc.data.curve
+          if (sb.contains(curve.start)) connectedToSource = true
+          if (tb.contains(curve.end)) connectedToTarget = true
+        }
+      }
+      Assert.assert(connectedToSource && connectedToTarget)
+    }
+  }
+  getEntityDataFromLevel(i: number): [Map<Entity, EntityDataInTile[]>, Set<Node>] {
+    const m = new Map<Entity, EntityDataInTile[]>()
+    const nodeSet = new Set<Node>()
+    for (const t of this.levels[i].values()) {
+      for (const cc of t.curveClips) {
+        const e = cc.edge
+        let arr: EntityDataInTile[] = m.get(e)
+        if (arr == null) {
+          m.set(e, (arr = []))
+        }
+        arr.push({data: cc, tile: t})
+      }
+      for (const n of t.nodes) {
+        nodeSet.add(n.node)
+      }
+    }
+    return [m, nodeSet]
+  }
   regenerateCurveClipsUpToLayer(levelIndex: number, activeNodes: Set<Node>) {
+    this.clearCurveClipsInLevelsUpTo(levelIndex)
     for (const t of this.levels[0].values()) {
       this.regenerateCurveClipsUnderTileUpToLevel(t, levelIndex, activeNodes)
     }
   }
+  private clearCurveClipsInLevelsUpTo(levelIndex: number) {
+    for (let i = 0; i <= levelIndex; i++) {
+      for (const t of this.levels[i].values()) {
+        t.curveClips = []
+      }
+    }
+  }
+
   regenerateCurveClipsUnderTileUpToLevel(t: Tile, levelIndex: number, activeNodes: Set<Node>) {
     t.arrowheads = []
     t.curveClips = []
     for (const geomEdge of this.geomGraph.deepEdges) {
       if (!edgeHasEndsInSet(geomEdge.edge, activeNodes)) continue
-      t.curveClips.push({edge: geomEdge.edge, curve: geomEdge.curve})
+      pushToClips(t.curveClips, geomEdge.edge, geomEdge.curve)
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -315,7 +349,10 @@ export class TileMap {
               continue
             }
           }
-          tile.curveClips = clips.map((x) => x)
+          tile.curveClips = []
+          for (const clip of clips) {
+            pushToClips(tile.curveClips, clip.edge, clip.curve)
+          }
         }
     }
 
@@ -367,7 +404,7 @@ export class TileMap {
           if (rect.containsRect(trBb)) {
             //   Assert.assert(tile.rect.contains(p))
             ret[k].push({curve: tr, edge: cs.edge})
-            Assert.assert(this.clipIsLegal(tr, cs.edge, rect, horizontalMiddleLine, verticalMiddleLine, upperTile))
+            // Assert.assert(this.clipIsLegal(tr, cs.edge, rect, horizontalMiddleLine, verticalMiddleLine, upperTile))
             break
           }
         }
@@ -405,20 +442,26 @@ export class TileMap {
   private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
-    const dataByEntity = this.transferDataOfLevelToMap(levelToReduce)
+    const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
     for (; k < nodes.length; k++) {
       const n = nodes[k]
-      if (!this.addNodeToLevel(levelToReduce, n, dataByEntity)) {
+      if (!this.addNodeToLevel(levelToReduce, n, dataByEntityMap)) {
         break
       }
     }
-    console.log('added', k, 'visual elements to level', z)
+    this.removeEmptyTiles(z)
+
+    let totalCount = 0
+    for (const t of levelToReduce.keyValues()) {
+      totalCount += t[1].entityCount
+    }
+    console.log('added', k, 'nodes to level', z, ', in total', totalCount, 'elements')
     return k
   }
 
   /** Goes over all tiles where 'node' had presence and tries to add.
-   * If the above succeeds then all edges leading to the highire ranking edges and their attributes are added without consulting with tileCapacity
+   *  If the above succeeds then all edges leading to the higher ranking nodes added without consulting with tileCapacity. The edge attributes added as well
    */
   private addNodeToLevel(levelToReduce: IntPairMap<Tile>, node: Node, dataByEntity: Map<Entity, EntityDataInTile[]>) {
     const entityToData = dataByEntity.get(node)
@@ -645,7 +688,7 @@ export class TileMap {
 
             if (tile.rect.containsRect(trBb)) {
               //   Assert.assert(tile.rect.contains(p))
-              tile.curveClips.push({curve: tr, edge: cs.edge})
+              pushToClips(tile.curveClips, cs.edge, tr)
               break
             }
           }
@@ -724,43 +767,56 @@ export class TileMap {
     }
     return tile
   }
-  clipIsLegal(
-    tr: ICurve,
-    edge: Edge,
-    rect: Rectangle,
-    horizontalMiddleLine: LineSegment,
-    verticalMiddleLine: LineSegment,
-    upperTile: Tile,
-  ): boolean {
-    if (!rect.contains(tr.start)) return false
-    if (!rect.contains(tr.end)) return false
-    if (rect.contains_point_radius(tr.start, -0.1)) {
-      if (!GeomNode.getGeom(edge.source).boundingBox.intersects(rect)) {
-        //   SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
-        //     DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
-        //     DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
-        //     DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
-        //     DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
-        //     DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
-        //   ])
-        return false
-      }
+  // clipIsLegal(
+  //   tr: ICurve,
+  //   edge: Edge,
+  //   rect: Rectangle,
+  //   horizontalMiddleLine: LineSegment,
+  //   verticalMiddleLine: LineSegment,
+  //   upperTile: Tile,
+  // ): boolean {
+  //   if (!rect.contains(tr.start)) return false
+  //   if (!rect.contains(tr.end)) return false
+  //   if (rect.contains_point_radius(tr.start, -0.1)) {
+  //     if (!GeomNode.getGeom(edge.source).boundingBox.intersects(rect)) {
+  //       //   SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
+  //       //     DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
+  //       //     DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
+  //       //     DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
+  //       //     DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
+  //       //     DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
+  //       //   ])
+  //       return false
+  //     }
+  //   }
+  //   if (rect.contains_point_radius(tr.end, -0.1)) {
+  //     if (!GeomNode.getGeom(edge.target).boundingBox.intersects(rect)) {
+  //       // SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
+  //       //   DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
+  //       //   DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
+  //       //   DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
+  //       //   DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
+  //       //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
+  //       //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Yellow', verticalMiddleLine),
+  //       //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Magenta', horizontalMiddleLine),
+  //       //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Blue', upperTile.rect.perimeter()),
+  //       // ])
+  //       return false
+  //     }
+  //   }
+  //   return true
+  // }
+}
+function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
+  if (e.source.id === '2141' && e.target.id === '2572') {
+    Tile.dc++
+    console.log(Tile.dc)
+  }
+  if (c instanceof Curve) {
+    for (const seg of c.segs) {
+      clips.push({curve: seg, edge: e})
     }
-    if (rect.contains_point_radius(tr.end, -0.1)) {
-      if (!GeomNode.getGeom(edge.target).boundingBox.intersects(rect)) {
-        // SvgDebugWriter.dumpDebugCurves('./tmp/bug.svg', [
-        //   DebugCurve.mkDebugCurveCI('Black', rect.perimeter()),
-        //   DebugCurve.mkDebugCurveCI('Red', GeomNode.getGeom(edge.source).boundaryCurve),
-        //   DebugCurve.mkDebugCurveCI('Blue', GeomNode.getGeom(edge.target).boundaryCurve),
-        //   DebugCurve.mkDebugCurveTWCI(100, 0.5, 'Green', GeomEdge.getGeom(edge).curve),
-        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Brown', tr),
-        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Yellow', verticalMiddleLine),
-        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Magenta', horizontalMiddleLine),
-        //   DebugCurve.mkDebugCurveTWCI(100, 2, 'Blue', upperTile.rect.perimeter()),
-        // ])
-        return false
-      }
-    }
-    return true
+  } else {
+    clips.push({curve: c, edge: e})
   }
 }

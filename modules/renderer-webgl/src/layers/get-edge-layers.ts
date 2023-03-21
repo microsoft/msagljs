@@ -1,8 +1,8 @@
-import { Unit, Accessor, Color, Layer, LayerProps, DefaultProps} from '@deck.gl/core/typed'
+import {Unit, Accessor, Color, Layer, LayerProps, DefaultProps} from '@deck.gl/core/typed'
 import {Buffer} from '@luma.gl/webgl'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {ICurve, Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from 'msagl-js'
-import { DrawingEdge, DrawingObject } from 'msagl-js/drawing'
+import {Curve, ICurve, Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from 'msagl-js'
+import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
 import {iconMapping} from './arrows'
 
 import CurveLayer, {CurveLayerProps} from './curve-layer'
@@ -15,7 +15,6 @@ type EdgeLayerProps = CurveLayerProps<ICurve> & {
 }
 
 export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerStyle): Layer {
-  
   // @ts-ignore
   if (!props.data._curves) {
     // @ts-ignore
@@ -25,8 +24,8 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
         segment.__source = {
           parent: this,
           object: datum,
-          index: index
-        };
+          index: index,
+        }
         return segment
       }),
     )
@@ -51,70 +50,73 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
     // @ts-ignore
     clipByInstance: false,
 
-    extensions: [new GraphStyleExtension({
-      overrideProps: {
-        opacity: style.opacity,
-        getWidth: style.strokeWidth,
-        getColor: style.strokeColor
-      }
-    })]
+    extensions: [
+      new GraphStyleExtension({
+        overrideProps: {
+          opacity: style.opacity,
+          getWidth: style.strokeWidth,
+          getColor: style.strokeColor,
+        },
+      }),
+    ],
   })
 }
 
-export function getArrowHeadLayer(props: IconLayerProps<{
-  tip: Point
-  edge: Edge
-  base: Point
-}>, style: ParsedGraphEdgeLayerStyle): Layer {
+export function getArrowHeadLayer(
+  props: IconLayerProps<{
+    tip: Point
+    edge: Edge
+    base: Point
+  }>,
+  style: ParsedGraphEdgeLayerStyle,
+): Layer {
   return new IconLayer<{
     tip: Point
     edge: Edge
     base: Point
-  }>(
-    props,
-    {
-      id: `${props.id}-arrowhead`,
-      iconAtlas: 'deck://arrowAtlas',
-      iconMapping,
-      getPosition: (d) => [d.tip.x, d.tip.y],
-      getColor: (d) => getEdgeColor(d.edge),
-      getIcon: (d) => getEdgeType(d.edge),
-      getSize: (d) => getArrowSize(d.tip, d.base),
-      getAngle: (d) => getArrowAngle(d.tip, d.base),
-      billboard: false,
-      sizeUnits: 'common',
+  }>(props, {
+    id: `${props.id}-arrowhead`,
+    iconAtlas: 'deck://arrowAtlas',
+    iconMapping,
+    getPosition: (d) => [d.tip.x, d.tip.y],
+    getColor: (d) => getEdgeColor(d.edge),
+    getIcon: (d) => getEdgeType(d.edge),
+    getSize: (d) => getArrowSize(d.tip, d.base),
+    getAngle: (d) => getArrowAngle(d.tip, d.base),
+    billboard: false,
+    sizeUnits: 'common',
 
-      extensions: [new GraphStyleExtension({
+    extensions: [
+      new GraphStyleExtension({
         overrideProps: {
           opacity: style.opacity,
           sizeScale: style.arrowSize,
-          getColor: style.arrowColor
-        }
-      })]
-    },
-  )
+          getColor: style.arrowColor,
+        },
+      }),
+    ],
+  })
 }
 
 export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>, style: ParsedGraphEdgeLayerStyle): Layer {
-  return new TextLayer<GeomLabel>(
-    props,
-    {
-      id: `${props.id}-edge-label`,
-      getText: getLabelText,
-      getSize: getLabelSize,
-      getColor: getLabelColor,
-      getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
-      sizeUnits: 'common',
+  return new TextLayer<GeomLabel>(props, {
+    id: `${props.id}-edge-label`,
+    getText: getLabelText,
+    getSize: getLabelSize,
+    getColor: getLabelColor,
+    getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
+    sizeUnits: 'common',
 
-      extensions: [new GraphStyleExtension({
+    extensions: [
+      new GraphStyleExtension({
         overrideProps: {
           opacity: style.opacity,
           sizeScale: style.labelSize,
-          getColor: style.labelColor
-        }
-      })]
-    },
-  )
+          getColor: style.labelColor,
+        },
+      }),
+    ],
+  })
 }
 
 function getCurveType(c: ICurve): CURVE {
@@ -123,6 +125,9 @@ function getCurveType(c: ICurve): CURVE {
   }
   if (c instanceof BezierSeg) {
     return CURVE.Bezier
+  }
+  if (c instanceof Curve) {
+    throw new Error('unexpected type Curve')
   }
   return CURVE.Line
 }
@@ -195,5 +200,5 @@ function getLabelColor(l: GeomLabel): [number, number, number] {
 }
 
 function getDrawingObj<T extends DrawingObject>(e: Entity): T {
-  return DrawingObject.getDrawingObj(e) as T;
+  return DrawingObject.getDrawingObj(e) as T
 }

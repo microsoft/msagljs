@@ -83,6 +83,5 @@ export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
   }
 
   new DrawingGraph(g) // create the DrawingAttribute on the graph
-
   return g
 }
