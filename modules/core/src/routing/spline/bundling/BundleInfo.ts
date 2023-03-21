@@ -1,4 +1,4 @@
-﻿//import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
+﻿//
 import {Curve, GeomConstants, LineSegment, Point, Polyline} from '../../../math/geometry'
 import {IntersectionInfo} from '../../../math/geometry/intersectionInfo'
 import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'

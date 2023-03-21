@@ -130,10 +130,10 @@ export default class Renderer extends EventSource {
     const layer = this._deck.props.layers[0]
     if (layer) {
       const newLayer = layer.clone({
-        graphStyle: this._style
+        graphStyle: this._style,
       })
       this._deck.setProps({
-        layers: [newLayer]
+        layers: [newLayer],
       })
     }
   }
@@ -156,6 +156,7 @@ export default class Renderer extends EventSource {
 
         const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
         drawingGraph.createGeometry(this._textMeasurer.measure)
+
         await this._layoutGraph(true)
       } else if (this._deck.layerManager) {
         // deck is ready
@@ -234,6 +235,7 @@ export default class Renderer extends EventSource {
     const fontSettings = this._textMeasurer.opts
 
     const geomGraph = GeomGraph.getGeom(this._graph)
+    geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges = true
 
     if (!geomGraph) {
       return
@@ -254,7 +256,7 @@ export default class Renderer extends EventSource {
       right: boundingBox.right + (rootTileSize - boundingBox.width) / 2,
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
-    const tileMap = new TileMap(geomGraph, rootTile)
+    const tileMap = new TileMap(geomGraph, rootTile, geomGraph.beautifyEdges)
     const numberOfLevels = tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
     console.timeEnd('Generate tiles')
 
@@ -262,9 +264,12 @@ export default class Renderer extends EventSource {
 
     const modelMatrix = new Matrix4().translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
 
-    const layer = new TileLayer<TileData, {
-      graphStyle: ParsedGraphStyle
-    }>({
+    const layer = new TileLayer<
+      TileData,
+      {
+        graphStyle: ParsedGraphStyle
+      }
+    >({
       extent: [0, 0, rootTileSize, rootTileSize],
       refinementStrategy: 'no-overlap',
       minZoom: startZoom,

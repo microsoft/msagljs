@@ -17,19 +17,17 @@ import {
   GeomEdge,
   Point,
   TileMap,
-  Rectangle,
-  Entity,
   GeomObject,
   LineSegment,
   Assert,
   Curve,
   SplineRouter,
+  FastIncrementalLayoutSettings,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects, HitTreeNodeType} from '../../../src/layout/core/geomGraph'
+import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects} from '../../../src/layout/core/geomGraph'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
-import {PointPair} from '../../../src/math/geometry/pointPair'
 import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
@@ -77,17 +75,6 @@ test('geom subgraphs', () => {
   expect(bIndex > aaIndex).toBe(true)
 })
 
-function dist(p: Point, s: Point, e: Point): number {
-  const l = e.sub(s)
-  const len = l.length
-  if (len < 1.0 / 10) {
-    return p.sub(Point.middle(s, e)).length
-  }
-
-  const perp = l.rotate90Cw()
-  return Math.abs(p.sub(s).dot(perp)) / len
-}
-
 test('buildRTreeWithInterpolatedEdges', () => {
   const g = parseDotGraph('graphvis/fsm.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
@@ -125,19 +112,19 @@ test('buildRTreeWithInterpolatedEdges', () => {
     for (const n of hitItems) {
       if (n === ge) found = true
     }
-    if (found == false) {
-      const p = ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd)
-      const rect = Rectangle.mkSizeCenter(new Size(slack * 2), p)
-      const hitItems: Array<HitTreeNodeType> = Array.from(tree.RootNode.AllHitItems(rect, null))
-      const subHitItems = hitItems.filter((i) => i instanceof Entity == false) as Array<{edge: Edge; pp: PointPair}>
-      /*
-      const distances = subHitItems.map((a) => dist(p, a.pp.first, a.pp._second))
+    // if (found == false) {
+    //   const p = ge.curve.value(ge.curve.parStart * t + (1 - t) * ge.curve.parEnd)
+    //   const rect = Rectangle.mkSizeCenter(new Size(slack * 2), p)
+    //   const hitItems: Array<HitTreeNodeType> = Array.from(tree.RootNode.AllHitItems(rect, null))
+    //   /*const subHitItems = hitItems.filter((i) => i instanceof Entity == false) as Array<{edge: Edge; pp: PointPair}>
 
-      SvgDebugWriter.dumpICurves(
-        './tmp/debug.svg',
-        [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp._first, m.pp._second))),
-      )*/
-    }
+    //   const distances = subHitItems.map((a) => dist(p, a.pp.first, a.pp._second))
+
+    //   SvgDebugWriter.dumpICurves(
+    //     './tmp/debug.svg',
+    //     [CurveFactory.mkCircle(5, p) as ICurve].concat(subHitItems.map((m) => LineSegment.mkPP(m.pp._first, m.pp._second))),
+    //   )*/
+    // }
     expect(found).toBe(true)
     // target arrowheads are hit
     if (ge.targetArrowhead) {
@@ -225,18 +212,17 @@ xtest('tiles gameofthrones', () => {
   // fs.close(ws)
 
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
-  const str = fs.readFileSync('/tmp/gameofthrones.json', 'utf-8')
+  const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)
   const graph = parseJSON(json)
   //Curve.dumper = SvgDebugWriter.dumpDebugCurves
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  const sr = new SplineRouter(
-    geomGraph,
-    Array.from(geomGraph.deepEdges)
-      .filter((e) => e != null)
-      .filter((e) => e.source.id == 'CERWYN' && e.target.id == 'RAMSAY'),
-  )
+  geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
+  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
   sr.run()
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox, geomGraph.beautifyEdges)
+  ts.buildUpToLevel(6)
+  //dumpTiles(ts)
 })
 
 test('clipWithRectangleInsideInterval', () => {
@@ -247,42 +233,42 @@ test('clipWithRectangleInsideInterval', () => {
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
   const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect)
+  const tileMap = new TileMap(geomGraph, rect, geomGraph.beautifyEdges)
   tileMap.buildUpToLevel(6)
 
   // dumpTiles(tileMap)
 })
-function dumpTiles(tileMap: TileMap) {
-  for (let z = 0; ; z++) {
-    const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
-    if (tilesOfLevel.length == 0) {
-      break
-    }
-    for (const t of tilesOfLevel) {
-      try {
-        SvgDebugWriter.dumpDebugCurves(
-          './tmp/tile' + t.x + '-' + t.y + '-' + z + '.svg',
-          t.data.curveClips
-            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
-            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
-            .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-            .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
-        )
-      } catch (Error) {
-        console.log(Error.message)
-      }
-    }
-  }
-}
-function isLegal(e: GeomEdge): boolean {
-  const c = e.curve
-  if (c instanceof Curve) {
-    for (let i = 0; i < c.segs.length - 1; i++) {
-      if (Point.closeDistEps(c.segs[i].end, c.segs[i + 1].start)) continue
-      Assert.assert(false)
-    }
-    return true
-  } else {
-    return true
-  }
-}
+// function dumpTiles(tileMap: TileMap) {
+//   for (let z = 0; ; z++) {
+//     const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
+//     if (tilesOfLevel.length == 0) {
+//       break
+//     }
+//     for (const t of tilesOfLevel) {
+//       try {
+//         SvgDebugWriter.dumpDebugCurves(
+//           './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
+//           t.data.curveClips
+//             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
+//             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
+//             .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+//             .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+//         )
+//       } catch (Error) {
+//         console.log(Error.message)
+//       }
+//     }
+//   }
+// }
+// function isLegal(e: GeomEdge): boolean {
+//   const c = e.curve
+//   if (c instanceof Curve) {
+//     for (let i = 0; i < c.segs.length - 1; i++) {
+//       if (Point.closeDistEps(c.segs[i].end, c.segs[i + 1].start)) continue
+//       Assert.assert(false)
+//     }
+//     return true
+//   } else {
+//     return true
+//   }
+// }

@@ -31,8 +31,24 @@ import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
+//const debCount = 0
 
 export class InteractiveEdgeRouter extends Algorithm {
+  rerouteEdge(edge: GeomEdge) {
+    const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
+    const loosePolyOfSource = InteractiveEdgeRouter.GetFirstHitPolyline(poly.start, this.ObstacleCalculator.RootOfLooseHierarchy)
+    const loosePolyOfTarget = InteractiveEdgeRouter.GetFirstHitPolyline(poly.end, this.ObstacleCalculator.RootOfLooseHierarchy)
+    this.pathOptimizer.run(poly, loosePolyOfSource, loosePolyOfTarget)
+    edge.curve = this.pathOptimizer.poly.toCurve()
+    // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
+    //   DebugCurve.mkDebugCurveCI('Red', edge.source.boundaryCurve),
+    //   DebugCurve.mkDebugCurveCI('Blue', edge.target.boundaryCurve),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', poly),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', loosePolyOfSource),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', loosePolyOfTarget),
+    //   DebugCurve.mkDebugCurveTWCI(200, 1.5, 'Magenta', edge.curve),
+    // ])
+  }
   pathOptimizer: PathOptimizer
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
     return InteractiveEdgeRouter.constructorANNNB(obstacles, padding, loosePadding, coneSpannerAngle, false)
@@ -48,7 +64,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     this.obstacles_ = value
   }
 
-  // the minimum angle between a node boundary curve and and an edge
+  // the minimum angle between a node boundary curve and the edge
   // curve at the place where the edge curve intersects the node boundary
   enteringAngleBound_: number
   get EnteringAngleBound(): number {

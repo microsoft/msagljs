@@ -16,7 +16,7 @@ import {
   layoutGeomGraph,
   Curve,
 } from '../../src'
-import {SvgDebugWriter} from './svgDebugWriter'
+
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
 import {parseDot} from '@msagl/parser'
 import {DrawingGraph, TextMeasurerOptions} from '../../src/drawing'
@@ -30,6 +30,7 @@ import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
 import {IPsepColaSetting} from '../../src/layout/incremental/iPsepColaSettings'
 import {PointLocation} from '../../src/math/geometry'
+import {SvgDebugWriter} from './svgDebugWriter'
 
 function edgeIsAttached(e: Edge): boolean {
   return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)

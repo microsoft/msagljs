@@ -43,6 +43,7 @@ export function optimalPackingRunner(geomGraph: GeomGraph, subGraphs: GeomGraph[
 
 /** GeomGraph is an attribute on a Graph. The underlying Graph keeps all structural information but GeomGraph holds the geometry data, and the layout settings */
 export class GeomGraph extends GeomNode {
+  beautifyEdges: (activeNodes: Set<Node>) => void
   isAncestor(source: GeomNode): boolean {
     return this.graph.isAncestor(source.node)
   }

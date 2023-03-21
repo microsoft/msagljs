@@ -419,3 +419,6 @@ export function pagerank(graph: Graph, omega: number): Map<Node, number> {
 
   return p
 }
+export function edgeNodesBelongToSet(e: Edge, s: Set<Node>): boolean {
+  return s.has(e.source) && s.has(e.target)
+}

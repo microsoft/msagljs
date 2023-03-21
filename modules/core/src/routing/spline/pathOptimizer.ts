@@ -1,5 +1,6 @@
 import {Queue} from 'queue-typescript'
-//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+//
+//
 import {CurveFactory, LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
@@ -11,8 +12,8 @@ import {CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-//let debCount = 0
-//const drawCount = 0
+let debCount = 0
+const drawCount = 0
 /** the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source) */
 type SleeveEdge = {source: T; edge: E}
 /** nextR and nextL are defined only for an apex */
@@ -129,7 +130,7 @@ export class PathOptimizer {
   }
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
-    //++debCount
+    ++debCount
     this.poly = poly
     this.d = []
     if (poly.count <= 2 || this.cdt == null) return
@@ -139,7 +140,7 @@ export class PathOptimizer {
     this.findTrianglesIntersectingThePolyline()
 
     const perimeter = this.getPerimeterEdges()
-    // this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    //this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -159,8 +160,8 @@ export class PathOptimizer {
     }
     this.initDiagonals(sleeve)
 
-    //    const dc = getDebugCurvesFromCdt(localCdt)
-    this.refineFunnel(/*dc*/)
+    const dc = getDebugCurvesFromCdt(localCdt)
+    this.refineFunnel(dc)
     //  const c = this.poly
     // dc = dc.concat([
     //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c),
@@ -185,6 +186,7 @@ export class PathOptimizer {
   }
 
   // drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+  //   if (debCount < 1000000) return
   //   const dc = []
   //   for (const t of triangles) {
   //     for (const e of t.Edges) {
@@ -201,10 +203,10 @@ export class PathOptimizer {
   //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
   //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
 
-  //   //SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
+  //   SvgDebugWriter.dumpDebugCurves('/tmp/poly' + ++drawCount + '.svg', dc)
   // }
 
-  private refineFunnel(/*dc: Array<DebugCurve>*/) {
+  private refineFunnel(dc: Array<DebugCurve>) {
     // remove param later:Debug
     const prefix: Point[] = [] // the path befor apex
     let v = this.poly.start // the apex point
@@ -258,32 +260,33 @@ export class PathOptimizer {
           extendRightChainFromP(p)
         }
       }
-      //      draw(d[i - 1], d[i], dc)
+      draw(d[i - 1], d[i], dc)
     }
 
-    // function draw(d: Diagonal, dn: Diagonal, dc: DebugCurve[]) {
-    //   const ldc = dc.map((d) => d.clone())
+    function draw(d: Diagonal, dn: Diagonal, dc: DebugCurve[]) {
+      if (debCount < 1000000) return
+      const ldc = dc.map((d) => d.clone())
 
-    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Yellow', LineSegment.mkPP(d.left, d.right)))
-    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'cyan', LineSegment.mkPP(dn.left, dn.right)))
-    //   for (let l: PathPoint = leftChainStart; l && l.next; l = l.next) {
-    //     ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Magenta', LineSegment.mkPP(l.point, l.next.point)))
-    //   }
-    //   for (let r: PathPoint = rightChainStart; r && r.next; r = r.next) {
-    //     ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Navy', LineSegment.mkPP(r.point, r.next.point)))
-    //   }
+      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Yellow', LineSegment.mkPP(d.left, d.right)))
+      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'cyan', LineSegment.mkPP(dn.left, dn.right)))
+      for (let l: PathPoint = leftChainStart; l && l.next; l = l.next) {
+        ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Magenta', LineSegment.mkPP(l.point, l.next.point)))
+      }
+      for (let r: PathPoint = rightChainStart; r && r.next; r = r.next) {
+        ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'Navy', LineSegment.mkPP(r.point, r.next.point)))
+      }
 
-    //   ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'red', CurveFactory.mkCircle(3, v)))
+      ldc.push(DebugCurve.mkDebugCurveTWCI(100, 3, 'red', CurveFactory.mkCircle(3, v)))
 
-    //   if (prefix.length) {
-    //     for (let i = 0; i < prefix.length - 1; i++) {
-    //       ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[i], prefix[i + 1])))
-    //     }
-    //     ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[prefix.length - 1], v)))
-    //   }
+      if (prefix.length) {
+        for (let i = 0; i < prefix.length - 1; i++) {
+          ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[i], prefix[i + 1])))
+        }
+        ldc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Black', LineSegment.mkPP(prefix[prefix.length - 1], v)))
+      }
 
-    //   SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
-    // }
+      //SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', ldc)
+    }
     function visibleRight(pp: PathPoint) {
       if (pp.next == null) {
         return true
@@ -441,10 +444,10 @@ export class PathOptimizer {
 function triangIsInsideOfObstacle(t: T): boolean {
   return t.Sites.item0.Owner != null && t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
 }
-// function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
-//   const es = new Set<E>()
-//   for (const t of localCdt.GetTriangles()) {
-//     for (const e of t.Edges) es.add(e)
-//   }
-//   return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-// }
+function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
+  const es = new Set<E>()
+  for (const t of localCdt.GetTriangles()) {
+    for (const e of t.Edges) es.add(e)
+  }
+  return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+}
