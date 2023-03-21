@@ -31,7 +31,7 @@ import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
-const debCount = 0
+//const debCount = 0
 
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {

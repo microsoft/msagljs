@@ -8,7 +8,7 @@ import {DrawingGraph} from 'msagl-js/drawing'
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated, Node} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated} from 'msagl-js'
 
 import {Matrix4} from '@math.gl/core'
 

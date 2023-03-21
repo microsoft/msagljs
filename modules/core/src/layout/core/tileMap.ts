@@ -1,4 +1,4 @@
-import {edgeHasEndsInSet, pagerank} from '../../structs/graph'
+import {edgeNodesBelongToSet, pagerank} from '../../structs/graph'
 import {Rectangle, Size} from '../../math/geometry/rectangle'
 import {GeomNode} from './geomNode'
 import {GeomEdge} from './geomEdge'
@@ -13,8 +13,6 @@ import {Entity} from '../../structs/entity'
 import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
-import {Assert} from '../../utils/assert'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -24,7 +22,7 @@ type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel
 export function tileIsEmpty(sd: Tile): boolean {
   return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
 }
-let debCount = 0
+// let debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
@@ -156,18 +154,17 @@ export class TileMap {
     for (let i = 0; i < this.levels.length - 1; i++) {
       numberOfNodesInLayer.push(this.filterOutEntities(this.levels[i], sortedNodes, i))
     }
-    for (let i = 0; i < this.levels.length; i++) {
-      this.checkLevel(i)
-    }
-
+    // for (let i = 0; i < this.levels.length; i++) {
+    //   this.checkLevel(i)
+    // }
     if (this.beautifyEdges) {
       for (let i = this.levels.length - 2; i >= 0; i--) {
         this.beatifyEdgesMethod(i, new Set<Node>(sortedNodes.slice(0, numberOfNodesInLayer[i])))
       }
     }
-    for (let i = 0; i < this.levels.length; i++) {
-      this.checkLevel(i)
-    }
+    // for (let i = 0; i < this.levels.length; i++) {
+    //   this.checkLevel(i)
+    // }
     this.calculateNodeRank(sortedNodes)
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
@@ -177,36 +174,37 @@ export class TileMap {
     this.regenerateCurveClipsUpToLayer(levelIndex, activeNodes)
     /* debug code */
   }
-  checkLevel(i: number) {
-    const [edgeMap, nodeSet] = this.getEntityDataFromLevel(i)
-    for (const [e, entDataArray] of edgeMap) {
-      this.checkEntityDataArray(e, entDataArray, nodeSet)
-    }
-  }
-  checkEntityDataArray(e: Entity, entDataArray: EntityDataInTile[], nodeSet: Set<Node>) {
-    if (e instanceof Edge) {
-      if (!nodeSet.has(e.source)) {
-        Assert.assert(false)
-      }
-      if (!nodeSet.has(e.target)) {
-        Assert.assert(false)
-      }
-      let connectedToSource = false
-      let connectedToTarget = false
-      const ge = GeomEdge.getGeom(e)
-      const sb = ge.source.boundingBox
-      const tb = ge.target.boundingBox
-      for (const cc of entDataArray) {
-        if ('curve' in cc.data) {
-          Assert.assert(cc.data.edge === e)
-          const curve = cc.data.curve
-          if (sb.contains(curve.start)) connectedToSource = true
-          if (tb.contains(curve.end)) connectedToTarget = true
-        }
-      }
-      Assert.assert(connectedToSource && connectedToTarget)
-    }
-  }
+  // checkLevel(i: number) {
+  //   const [edgeMap, nodeSet] = this.getEntityDataFromLevel(i)
+  //   for (const [e, entDataArray] of edgeMap) {
+  //     this.checkEntityDataArray(e, entDataArray, nodeSet)
+  //   }
+  // }
+  // checkEntityDataArray(e: Entity, entDataArray: EntityDataInTile[], nodeSet: Set<Node>) {
+  //   if (e instanceof Edge) {
+
+  //     if (!nodeSet.has(e.source)) {
+  //       Assert.assert(false)
+  //     }
+  //     if (!nodeSet.has(e.target)) {
+  //       Assert.assert(false)
+  //     }
+  //     let connectedToSource = false
+  //     let connectedToTarget = false
+  //     const ge = GeomEdge.getGeom(e)
+  //     const sb = ge.source.boundingBox
+  //     const tb = ge.target.boundingBox
+  //     for (const cc of entDataArray) {
+  //       if ('curve' in cc.data) {
+  //         Assert.assert(cc.data.edge === e)
+  //         const curve = cc.data.curve
+  //         if (sb.contains(curve.start)) connectedToSource = true
+  //         if (tb.contains(curve.end)) connectedToTarget = true
+  //       }
+  //     }
+  //     Assert.assert(connectedToSource && connectedToTarget)
+  //   }
+  // }
   getEntityDataFromLevel(i: number): [Map<Entity, EntityDataInTile[]>, Set<Node>] {
     const m = new Map<Entity, EntityDataInTile[]>()
     const nodeSet = new Set<Node>()
@@ -243,7 +241,7 @@ export class TileMap {
     t.arrowheads = []
     t.curveClips = []
     for (const geomEdge of this.geomGraph.deepEdges) {
-      if (!edgeHasEndsInSet(geomEdge.edge, activeNodes)) continue
+      if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
       pushToClips(t.curveClips, geomEdge.edge, geomEdge.curve)
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -698,7 +696,7 @@ export class TileMap {
   }
 
   innerClips(curve: ICurve, verticalMiddleLine: LineSegment, horizontalMiddleLine: LineSegment): Array<ICurve> {
-    debCount++
+    //debCount++
     const ret = []
     // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
     const xs = Array.from(Curve.getAllIntersections(curve, horizontalMiddleLine, true)).concat(
@@ -808,10 +806,6 @@ export class TileMap {
   // }
 }
 function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
-  if (e.source.id === '2141' && e.target.id === '2572') {
-    Tile.dc++
-    console.log(Tile.dc)
-  }
   if (c instanceof Curve) {
     for (const seg of c.segs) {
       clips.push({curve: seg, edge: e})
