@@ -209,17 +209,21 @@ export class SplineRouter extends Algorithm {
     this.RouteOnRoot()
     this.RemoveRoot()
 
-    if (this.geomGraph.layoutSettings && this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
-      this.geomGraph.beautifyEdges = (nodeSet: Set<Node>) => this.rerouteOnSubsetOfNodes(nodeSet)
-    }
+    // if (this.geomGraph.layoutSettings && this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
+    //   this.geomGraph.beautifyEdges = (nodeSet: Set<Node>) => this.rerouteOnSubsetOfNodes(nodeSet)
+    // }
   }
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
   rerouteOnSubsetOfNodes(activeNodes: Set<Node>) {
-    if (this.loosePolylinesToNodes == null) {
-      this.calcLooseShapesToNodes()
-    }
+    this.RouteMultiEdgesAsBundles = false
+    this.edges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
+    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
+    this.rootShapes = obstacles.filter((s) => s.Parents == null || s.Parents.length === 0)
     this.GetOrCreateRoot()
+    this.CalculateShapeToBoundaries(this.root)
+    this.calcLooseShapesToNodes()
+    this.CalculatePortsToShapes()
     this.rerouteOnActiveNodes(activeNodes)
     this.RemoveRoot()
   }
@@ -480,9 +484,8 @@ export class SplineRouter extends Algorithm {
       if (t.regularEdges.length > 0) {
         for (let i = 0; i < t.regularEdges.length; i++) {
           const e = t.regularEdges[i]
-          if (edgeNodesBelongToSet(e.edge, activeNodes)) {
-            this.rerouteEdge(interactiveEdgeRouter, e)
-          }
+          Assert.assert(edgeNodesBelongToSet(e.edge, activeNodes))
+          this.rerouteEdge(interactiveEdgeRouter, e)
         }
       }
       if (t.multiEdges != null) {
@@ -498,7 +501,7 @@ export class SplineRouter extends Algorithm {
       }
     }
   }
-  rerouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
+  private rerouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
     interactiveEdgeRouter.rerouteEdge(edge)
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     const bb = edge.source.parent.boundingBox

@@ -13,6 +13,7 @@ import {Entity} from '../../structs/entity'
 import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
+import {SplineRouter} from '../../routing/splineRouter'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -30,7 +31,7 @@ export class TileMap {
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 1000 // in the number of nodes
+  private tileCapacity = 1000 // in the number of elements
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
@@ -39,7 +40,6 @@ export class TileMap {
   /** the more rank is the more important the entity is */
   nodeRank: Map<Node, number>
   nodeIndexInSortedNodes: Map<Node, number> = new Map<Node, number>()
-  beautifyEdges: (activeNodes: Set<Node>) => void
   tileSizes: Size[]
 
   /** retrieves the data for a single tile(x-y-z) */
@@ -62,12 +62,11 @@ export class TileMap {
   /** geomGraph  - the graph to work with.
    * The topLevelTileRect serves as the only tile of the top level.
    */
-  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, edgeBeautifier: (activeNodes: Set<Node>) => void) {
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
     this.tileSizes = []
     this.tileSizes.push(topLevelTileRect.size)
-    this.beautifyEdges = edgeBeautifier
   }
 
   private getMinTileSize(): Size {
@@ -150,29 +149,27 @@ export class TileMap {
     }
 
     const numberOfNodesInLayer = []
-    // do not filter the lowest layer: it should show everything
+    // do not filter the uppermost layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
       numberOfNodesInLayer.push(this.filterOutEntities(this.levels[i], sortedNodes, i))
     }
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
-    if (this.beautifyEdges) {
-      for (let i = this.levels.length - 2; i >= 0; i--) {
-        this.beatifyEdgesMethod(i, new Set<Node>(sortedNodes.slice(0, numberOfNodesInLayer[i])))
-      }
+    const sr = new SplineRouter(this.geomGraph, [])
+
+    for (let i = this.levels.length - 2; i >= 0; i--) {
+      const activeNodes = new Set<Node>(sortedNodes.slice(0, numberOfNodesInLayer[i]))
+      sr.rerouteOnSubsetOfNodes(activeNodes)
+      this.regenerateCurveClipsUpToLayer(i, activeNodes)
     }
+
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
     this.calculateNodeRank(sortedNodes)
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
-  }
-  beatifyEdgesMethod(levelIndex: number, activeNodes: Set<Node>) {
-    this.beautifyEdges(activeNodes)
-    this.regenerateCurveClipsUpToLayer(levelIndex, activeNodes)
-    /* debug code */
   }
   // checkLevel(i: number) {
   //   const [edgeMap, nodeSet] = this.getEntityDataFromLevel(i)

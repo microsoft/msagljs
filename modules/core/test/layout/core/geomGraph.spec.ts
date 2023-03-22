@@ -193,7 +193,7 @@ test('intersectedEnities', () => {
   }
 })
 
-xtest('tiles gameofthrones', () => {
+test('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
@@ -220,7 +220,7 @@ xtest('tiles gameofthrones', () => {
   geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
   const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
   sr.run()
-  const ts = new TileMap(geomGraph, geomGraph.boundingBox, geomGraph.beautifyEdges)
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
   //dumpTiles(ts)
 })
@@ -233,10 +233,10 @@ test('clipWithRectangleInsideInterval', () => {
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
   const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect, geomGraph.beautifyEdges)
+  const tileMap = new TileMap(geomGraph, rect)
   tileMap.buildUpToLevel(6)
 
-  // dumpTiles(tileMap)
+  //  dumpTiles(tileMap)
 })
 // function dumpTiles(tileMap: TileMap) {
 //   for (let z = 0; ; z++) {
