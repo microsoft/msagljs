@@ -30,24 +30,20 @@ import {PointVisibilityCalculator} from './visibility/PointVisibilityCalculator'
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
+import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
+import {DebugCurve} from '../math/geometry/debugCurve'
 // import {Assert} from '../utils/assert'
-//const debCount = 0
-
+let debCount = 0
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
-    const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
+    let poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
     const loosePolyOfSource = InteractiveEdgeRouter.GetFirstHitPolyline(poly.start, this.ObstacleCalculator.RootOfLooseHierarchy)
     const loosePolyOfTarget = InteractiveEdgeRouter.GetFirstHitPolyline(poly.end, this.ObstacleCalculator.RootOfLooseHierarchy)
     this.pathOptimizer.run(poly, loosePolyOfSource, loosePolyOfTarget)
-    edge.curve = this.pathOptimizer.poly.toCurve()
-    // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
-    //   DebugCurve.mkDebugCurveCI('Red', edge.source.boundaryCurve),
-    //   DebugCurve.mkDebugCurveCI('Blue', edge.target.boundaryCurve),
-    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', poly),
-    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', loosePolyOfSource),
-    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', loosePolyOfTarget),
-    //   DebugCurve.mkDebugCurveTWCI(200, 1.5, 'Magenta', edge.curve),
-    // ])
+    poly = this.pathOptimizer.poly
+    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+    this.SmoothenCorners(edge.smoothedPolyline)
+    edge.curve = edge.smoothedPolyline.createCurve()
   }
   pathOptimizer: PathOptimizer
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {

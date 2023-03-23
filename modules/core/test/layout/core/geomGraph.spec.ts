@@ -23,6 +23,7 @@ import {
   Curve,
   SplineRouter,
   FastIncrementalLayoutSettings,
+  CurveClip,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -222,10 +223,10 @@ test('tiles gameofthrones', () => {
   sr.run()
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
-  //dumpTiles(ts)
+  dumpTiles(ts)
 })
 
-test('clipWithRectangleInsideInterval', () => {
+test('tile abstract.dot', () => {
   const g = parseDotGraph('graphvis/abstract.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   const geomGraph = dg.createGeometry(() => new Size(20, 20))
@@ -238,28 +239,42 @@ test('clipWithRectangleInsideInterval', () => {
 
   //  dumpTiles(tileMap)
 })
-// function dumpTiles(tileMap: TileMap) {
-//   for (let z = 0; ; z++) {
-//     const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
-//     if (tilesOfLevel.length == 0) {
-//       break
-//     }
-//     for (const t of tilesOfLevel) {
-//       try {
-//         SvgDebugWriter.dumpDebugCurves(
-//           './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
-//           t.data.curveClips
-//             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
-//             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
-//             .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-//             .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
-//         )
-//       } catch (Error) {
-//         console.log(Error.message)
-//       }
-//     }
-//   }
-// }
+function dumpTiles(tileMap: TileMap) {
+  for (let z = 0; ; z++) {
+    const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
+    if (tilesOfLevel.length == 0) {
+      break
+    }
+    const ts = tilesOfLevel.filter(tileIsCool)
+    for (const t of ts) {
+      try {
+        const cc = t.data.curveClips.filter(clipIsCool)
+
+        SvgDebugWriter.dumpDebugCurves(
+          './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
+          cc
+            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
+            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
+            .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+            .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+        )
+      } catch (Error) {
+        console.log(Error.message)
+      }
+    }
+  }
+}
+
+function clipIsCool(c: CurveClip) {
+  return c.edge.source.id == 'NED' && c.edge.target.id == 'STEFFON'
+}
+
+function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): unknown {
+  for (const c of t.data.curveClips) {
+    if (clipIsCool(c)) return true
+  }
+  return false
+}
 // function isLegal(e: GeomEdge): boolean {
 //   const c = e.curve
 //   if (c instanceof Curve) {

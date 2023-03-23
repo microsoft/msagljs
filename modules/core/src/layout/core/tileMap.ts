@@ -148,10 +148,9 @@ export class TileMap {
       this.nodeIndexInSortedNodes.set(sortedNodes[i], i)
     }
 
-    const numberOfNodesInLayer = []
     // do not filter the uppermost layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      numberOfNodesInLayer.push(this.filterOutEntities(this.levels[i], sortedNodes, i))
+      this.filterOutEntities(this.levels[i], sortedNodes, i)
     }
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
@@ -159,7 +158,7 @@ export class TileMap {
     const sr = new SplineRouter(this.geomGraph, [])
 
     for (let i = this.levels.length - 2; i >= 0; i--) {
-      const activeNodes = new Set<Node>(sortedNodes.slice(0, numberOfNodesInLayer[i]))
+      const activeNodes = this.setOfNodesOnTheLevel(i)
       sr.rerouteOnSubsetOfNodes(activeNodes)
       this.regenerateCurveClipsUpToLayer(i, activeNodes)
     }
@@ -170,6 +169,15 @@ export class TileMap {
     this.calculateNodeRank(sortedNodes)
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
+  }
+  setOfNodesOnTheLevel(i: number): Set<Node> {
+    const ret = new Set<Node>()
+    for (const t of this.levels[i].values()) {
+      for (const node of t.nodes) {
+        ret.add(node.node)
+      }
+    }
+    return ret
   }
   // checkLevel(i: number) {
   //   const [edgeMap, nodeSet] = this.getEntityDataFromLevel(i)
@@ -440,8 +448,8 @@ export class TileMap {
     const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
     for (; k < nodes.length; k++) {
-      const n = nodes[k]
-      if (!this.addNodeToLevel(levelToReduce, n, dataByEntityMap)) {
+      const node = nodes[k]
+      if (!this.addNodeToLevel(levelToReduce, node, dataByEntityMap)) {
         break
       }
     }
