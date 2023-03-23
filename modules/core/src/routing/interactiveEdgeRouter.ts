@@ -30,10 +30,7 @@ import {PointVisibilityCalculator} from './visibility/PointVisibilityCalculator'
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
-import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
-import {DebugCurve} from '../math/geometry/debugCurve'
 // import {Assert} from '../utils/assert'
-let debCount = 0
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
     let poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
