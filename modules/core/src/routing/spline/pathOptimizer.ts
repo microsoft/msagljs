@@ -1,5 +1,4 @@
 import {Queue} from 'queue-typescript'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 import {GeomConstants, LineSegment, Point, Polyline} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {segmentsIntersect} from '../../math/geometry/lineSegment'
@@ -14,8 +13,8 @@ import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-let debCount = 0
-let drawCount = 0
+// let debCount = 0
+// let drawCount = 0
 /** the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source) */
 type SleeveEdge = {source: T; edge: E}
 /** nextR and nextL are defined only for an apex */
@@ -184,19 +183,19 @@ export class PathOptimizer {
   }
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
-    ++debCount
+    //++debCount
     this.poly = poly
     this.d = []
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = sourcePoly
     this.targetPoly = targetPoly
-    if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    //if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findTrianglesIntersectingThePolyline(0.05)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
 
-    if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    //if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -205,7 +204,7 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(localCdt.GetTriangles()), perimeter, null, poly)
+    //if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(localCdt.GetTriangles()), perimeter, null, poly)
 
     const sleeve: SleeveEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {
@@ -277,25 +276,25 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
-    const dc = []
-    for (const t of triangles) {
-      for (const e of t.Edges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
-      }
-    }
-    if (perimEdges) {
-      for (const e of perimEdges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-      }
-    }
-    if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
-    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
+  // drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+  //   const dc = []
+  //   for (const t of triangles) {
+  //     for (const e of t.Edges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
 
-    SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
-  }
+  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  // }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
