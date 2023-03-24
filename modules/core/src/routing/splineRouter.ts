@@ -441,7 +441,6 @@ export class SplineRouter extends Algorithm {
       const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
-      console.log(e)
       interactiveEdgeRouter.pathOptimizer.setCdt(null)
     }
     if (this.RouteMultiEdgesAsBundles) {

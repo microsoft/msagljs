@@ -223,7 +223,7 @@ test('tiles gameofthrones', () => {
   sr.run()
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
-  dumpTiles(ts)
+  //dumpTiles(ts)
 })
 
 test('tile abstract.dot', () => {
