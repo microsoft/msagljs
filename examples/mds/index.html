@@ -37,8 +37,8 @@
       let g = msagl.parseDot(dotString)
       let dg = msagl.DrawingGraph.getDrawingObj(g) // as DrawingGraph
       let geomGraph = dg.createGeometry()
-      let layoutSettings = new msagl.MdsLayoutSettings()
-      let pivotMds = new msagl.PivotMDS(geomGraph, null, length, layoutSettings)
+      geomGraph.layoutSettings = new msagl.MdsLayoutSettings()
+      let pivotMds = new msagl.PivotMDS(geomGraph, null, length, geomGraph.layoutSettings)
 
       pivotMds.run()
       let sr = new msagl.SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
