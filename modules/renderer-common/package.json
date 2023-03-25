@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer-common",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "common utils for MSAGL renderers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

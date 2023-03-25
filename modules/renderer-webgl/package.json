@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer-webgl",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@msagl/parser": "^1.1.9",
-    "@msagl/renderer-common": "^1.1.10",
+    "@msagl/renderer-common": "^1.1.11",
     "@types/d3-color": "^3.1.0",
     "@types/d3-scale": "^4.0.0",
     "d3-color": "^3.1.0",
