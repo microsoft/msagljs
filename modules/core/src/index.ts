@@ -23,6 +23,7 @@ import {Assert} from './utils/assert'
 import {IntPairMap} from './utils/IntPairMap'
 import {DrawingGraph} from './drawing'
 import {PolylinePoint} from './math/geometry/polylinePoint'
+import {PivotMDS} from './layout/mds/pivotMDS'
 
 export {GeomGraph, GeomLabel, GeomNode, GeomEdge, DrawingGraph}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
@@ -66,6 +67,7 @@ export {ILayoutSettings}
 export {EventHandler}
 export {PlaneTransformation}
 export {
+  PivotMDS,
   RTree,
   buildRTree,
   intersectedObjects,

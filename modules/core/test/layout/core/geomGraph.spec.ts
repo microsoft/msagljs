@@ -1,4 +1,5 @@
 import {parseJSON} from '../../../../parser/src/jsonparser'
+import {parseDot} from '../../../../parser/src/dotparser'
 import * as fs from 'fs'
 import * as path from 'path'
 import {
@@ -24,6 +25,7 @@ import {
   SplineRouter,
   FastIncrementalLayoutSettings,
   CurveClip,
+  MdsLayoutSettings,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -33,6 +35,7 @@ import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
+import {PivotMDS} from '../../../src/layout/mds/pivotMDS'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
@@ -224,6 +227,46 @@ test('tiles gameofthrones', () => {
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
   //dumpTiles(ts)
+})
+
+test('mds with length', () => {
+  const dotString =
+    'graph G {\n' +
+    'run -- intr;\n' +
+    'intr -- runbl;\n' +
+    'runbl -- run;\n' +
+    'run -- runmem;\n' +
+    /* run -- kernel; */
+    'kernel -- zombie;\n' +
+    'kernel -- sleep;\n' +
+    'kernel -- runmem;\n' +
+    'sleep -- swap;\n' +
+    'swap -- runswap;\n' +
+    'runswap -- new;\n' +
+    'runswap -- runmem;\n' +
+    'new -- runmem;\n' +
+    'sleep -- runmem;\n' +
+    '}'
+  const g = parseDot(dotString)
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  const geomGraph = dg.createGeometry()
+  geomGraph.layoutSettings = new MdsLayoutSettings()
+  const pivotMds = new PivotMDS(geomGraph, null, (e) => length(e), geomGraph.layoutSettings as MdsLayoutSettings)
+  pivotMds.run()
+  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
+  sr.run()
+
+  function length(e: GeomEdge) {
+    return nodeWeight(e.source) + nodeWeight(e.target)
+  }
+  function nodeWeight(node: GeomNode): number {
+    if (node.id == 'sleep') {
+      return 5
+    }
+
+    return 1
+  }
+  SvgDebugWriter.writeGeomGraph('./tmp/gra.svg', geomGraph)
 })
 
 test('tile abstract.dot', () => {

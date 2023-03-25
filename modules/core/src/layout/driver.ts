@@ -104,13 +104,13 @@ function figureOutSettings(geomGraph: GeomGraph): any {
 
   return directed ? new SugiyamaLayoutSettings() : new IPsepColaSetting()
 }
-function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
+function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken, edgeLenght: (e: GeomEdge) => number = () => 1) {
   createSettingsIfNeeded(geomGraph)
   if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
     const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
     ll.run()
   } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
-    const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
+    const pivotMds = new PivotMDS(geomGraph, cancelToken, edgeLenght, <MdsLayoutSettings>geomGraph.layoutSettings)
     pivotMds.run()
   } else if (geomGraph.layoutSettings instanceof IPsepColaSetting) {
     const layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
@@ -160,10 +160,12 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
 export function layoutGeomGraphDetailed(
   geomG: GeomGraph,
   cancelToken: CancelToken,
-  layoutEngine: (g: GeomGraph, cancelToken: CancelToken) => void,
+  layoutEngine: (g: GeomGraph, cancelToken: CancelToken, edgeLength: (e: GeomEdge) => number) => void,
   edgeRouter: (g: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) => void,
   packing: (g: GeomGraph, subGraphs: GeomGraph[]) => void,
   randomSeed = 1,
+  /** used only for PivotMDS */
+  edgeLength: (e: GeomEdge) => number = () => 1,
 ) {
   if (geomG.graph.isEmpty()) {
     return
@@ -246,10 +248,10 @@ export function layoutGeomGraphDetailed(
 
   function layoutComps() {
     if (connectedGraphs.length === 1) {
-      layoutEngine(geomG, cancelToken)
+      layoutEngine(geomG, cancelToken, edgeLength)
     } else {
       for (const cg of connectedGraphs) {
-        layoutEngine(cg, cancelToken)
+        layoutEngine(cg, cancelToken, edgeLength)
         cg.boundingBox = cg.pumpTheBoxToTheGraphWithMargins()
       }
       packing(geomG, connectedGraphs)
