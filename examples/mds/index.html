@@ -14,7 +14,7 @@
   <body>
     <script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
     <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
-    <script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/renderer-svg@latest/dist.min.js"></script>
     <script>
       let dotString =
         'graph G {\n' +
@@ -45,6 +45,7 @@
       sr.run()
       let renderer = new msagl.RendererSvg()
       renderer.needCalculateLayout = false
+      renderer.needCreateGeometry = false
       renderer.setGraph(g)
       function length(e /* GeomEdge*/) {
         return nodeWeight(e.source) + nodeWeight(e.target)
