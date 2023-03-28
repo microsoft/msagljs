@@ -92,17 +92,26 @@ export class PathOptimizer {
     let t: T
     while (q.length > 0) {
       t = q.dequeue()
+      this.addToTriangles(t)
       if (t.containsPoint(end)) {
         passedTriSet.add(t)
+        continue
       }
-      this.addToTriangles(t)
+      const t_neighbors = []
       for (const e of t.Edges) {
         const ot = e.GetOtherTriangle_T(t)
 
         if (ot == null || trs.has(ot)) continue
-
-        if (this.triangleIntersectSegmentOrIsInsideEndObstacles(ot, start, end, eps)) {
-          enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
+        t_neighbors.push(ot)
+      }
+      if (t_neighbors.length == 1) {
+        // if there is only on triangle to exit t, we have to take it
+        enqueueTriangle(t_neighbors[0], () => true)
+      } else {
+        for (const ot of t_neighbors) {
+          if (this.triangleIntersectSegmentOrIsInsideEndObstacles(ot, start, end, eps)) {
+            enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
+          }
         }
       }
     }
