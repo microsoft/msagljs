@@ -1,20 +1,24 @@
 import {Queue} from 'queue-typescript'
+import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 import {GeomConstants, LineSegment, Point, Polyline} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
 import {segmentsIntersect} from '../../math/geometry/lineSegment'
 import {TriangleOrientation} from '../../math/geometry/point'
-import {RectangleNode} from '../../math/geometry/RTree/rectangleNode'
+import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
+import {RTree} from '../../math/geometry/RTree/rTree'
+import {Assert} from '../../utils/assert'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as E} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as T} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
+import {CdtThreader} from './bundling/CdtThreader'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
-// let debCount = 0
-// let drawCount = 0
+const debCount = 0
+let drawCount = 0
 /** the target of s would be otherTriange s.edge.getOtherTriangle_T(s.source) */
 type SleeveEdge = {source: T; edge: E}
 /** nextR and nextL are defined only for an apex */
@@ -22,100 +26,88 @@ type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
 
 type Diagonal = {left: Point; right: Point}
 export class PathOptimizer {
-  cdt: Cdt
+  private cdt: Cdt
   poly: Polyline
-  sourcePoly: Polyline
-  targetPoly: Polyline
-  d: Diagonal[]
-  cdtRTree: RectangleNode<T, Point>
+  private sourcePoly: Polyline
+  private targetPoly: Polyline
+  private d: Diagonal[]
+  private polyRTree: RectangleNode<Polyline, Point>
   setCdt(cdt: Cdt) {
     this.cdt = cdt
+    const polys = new Set<Polyline>()
+    for (const t of cdt.GetTriangles()) {
+      for (const s of t.Sites) {
+        if (s.Owner != null) polys.add(s.Owner as Polyline)
+      }
+    }
+    this.polyRTree = createRectangleNodeOnData(polys, (p) => p.boundingBox)
   }
 
   triangles = new Set<T>()
+  piercedEdges = new Set<E>()
+
   private findTrianglesIntersectingThePolyline(eps: number) {
     this.triangles.clear()
-    const passedTriSet = this.initPassedTriangles()
-    for (let p = this.poly.startPoint; p.next; p = p.next) {
-      this.addLineSeg(passedTriSet, p.point, p.next.point, eps)
+    this.piercedEdges.clear()
+    let t = this.findSiteTriangle(this.poly.start)
+    for (let p = this.poly.startPoint; p.next != null; p = p.next) {
+      t = this.addPiercedEdgesOnTriangle(t, p.point, p.next.point)
     }
+
+    this.getTrianglesFromPiercedEdges()
   }
-  private initPassedTriangles(): Set<T> {
-    const ret = new Set<T>()
-    const p = this.sourcePoly.start
+
+  getTrianglesFromPiercedEdges() {
+    for (const e of this.piercedEdges) {
+      this.triangles.add(e.CcwTriangle)
+      this.triangles.add(e.CwTriangle)
+    }
+    this.addSourceTargetTriangles()
+  }
+
+  addSourceTargetTriangles() {
+    this.addPolyTrianglesForEndStart(this.poly.start)
+    this.addPolyTrianglesForEndStart(this.poly.end)
+  }
+
+  private findSiteTriangle(p: Point): T {
     const ps = this.cdt.FindSite(p)
     for (const e of ps.Edges) {
-      let ot = e.CcwTriangle
-      if (triangleIsInsideOfObstacle(ot)) {
-        ret.add(ot)
-        return ret
-      }
-      ot = e.CwTriangle
-      if (triangleIsInsideOfObstacle(ot)) {
-        ret.add(ot)
-        return ret
-      }
-    }
-    for (const e of ps.InEdges) {
-      let ot = e.CcwTriangle
-      if (triangleIsInsideOfObstacle(ot)) {
-        ret.add(ot)
-        return ret
-      }
-      ot = e.CwTriangle
-      if (triangleIsInsideOfObstacle(ot)) {
-        ret.add(ot)
-        return ret
-      }
+      return e.CcwTriangle
     }
   }
-  private addLineSeg(passedTriSet: Set<T>, start: Point, end: Point, eps: number): Set<T> {
-    //Assert.assert(startTri.containsPoint(start))
-
-    const q = new Queue<T>()
+  private addPolyTrianglesForEndStart(p: Point) {
     const trs = new Set<T>()
-
-    const containingEnd = []
-
-    for (const t of passedTriSet) {
-      enqueueTriangle(t, () => true)
-      if (t.containsPoint(end)) {
-        containingEnd.push(t)
-      }
-    }
-
-    passedTriSet.clear()
-    for (const t of containingEnd) {
-      passedTriSet.add(t)
-    }
-
-    let t: T
-    while (q.length > 0) {
-      t = q.dequeue()
-      if (t.containsPoint(end)) {
-        passedTriSet.add(t)
-      }
-      this.addToTriangles(t)
+    const q = new Queue<T>(this.findSiteTriangle(p))
+    while (q.length) {
+      const t = q.dequeue()
       for (const e of t.Edges) {
         const ot = e.GetOtherTriangle_T(t)
-
-        if (ot == null || trs.has(ot)) continue
-
-        if (this.triangleIntersectSegmentOrIsInsideEndObstacles(ot, start, end, eps)) {
-          enqueueTriangle(ot, (t) => this.canBelongToTriangles(t))
+        if (ot && trs.has(ot) == false && triangleIsInsideOfObstacle(ot)) {
+          q.enqueue(ot)
+          trs.add(ot)
         }
       }
     }
-    return passedTriSet
+    // enlarge to the channel too
 
-    function enqueueTriangle(tr: T, test: (t: T) => boolean) {
-      q.enqueue(tr)
-      trs.add(tr)
-
-      if (test(tr) && tr.containsPoint(end)) {
-        passedTriSet.add(tr)
+    for (const t of trs) {
+      this.triangles.add(t)
+      for (const s of t.Sites) {
+        for (const tr of s.Triangles()) this.triangles.add(tr)
       }
     }
+  }
+
+  addPiercedEdgesOnTriangle(t: T, start: Point, end: Point): T {
+    const cdtThreader = new CdtThreader(t, start, end)
+    let e: E
+    while (cdtThreader.MoveNext()) {
+      this.piercedEdges.add((e = cdtThreader.CurrentPiercedEdge))
+      cdtThreader.CurrentTriangle
+    }
+    if (e.CcwTriangle.containsPoint(end)) return e.CcwTriangle
+    return e.CwTriangle
   }
   private triangleIntersectSegmentOrIsInsideEndObstacles(ot: T, start: Point, end: Point, eps: number) {
     if (this.insideSourceOrTargetPoly(ot)) return true
@@ -172,30 +164,27 @@ export class PathOptimizer {
     }
     return false
   }
-  private canBelongToTriangles(t: T): boolean {
+  private outsideOfObstacles(t: T): boolean {
+    if (t == null) return false
     const owner = t.Sites.item0.Owner
     return owner === this.sourcePoly || owner === this.targetPoly || !triangleIsInsideOfObstacle(t)
   }
-  private addToTriangles(t: T) {
-    if (this.canBelongToTriangles(t)) {
-      this.triangles.add(t)
-    }
-  }
+
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
-  run(poly: Polyline, sourcePoly: Polyline, targetPoly: Polyline) {
+  run(poly: Polyline) {
     //++debCount
     this.poly = poly
     this.d = []
     if (poly.count <= 2 || this.cdt == null) return
-    this.sourcePoly = sourcePoly
-    this.targetPoly = targetPoly
+    this.sourcePoly = this.findPoly(poly.start)
+    this.targetPoly = this.findPoly(poly.end)
     //if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findTrianglesIntersectingThePolyline(0.05)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
 
-    //if (debCount == 3692) this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
+    this.drawInitialPolyDebuggg(Array.from(this.triangles), perimeter, null, poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -230,6 +219,15 @@ export class PathOptimizer {
 
     // SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
   }
+  findPoly(p: Point): Polyline {
+    const polys = Array.from(this.polyRTree.AllHitItems_(p))
+    if (polys.length == null) {
+      return null
+    }
+    if (polys.length == 1) return polys[0]
+    polys.sort((a, b) => a.boundingBox.diagonal - b.boundingBox.diagonal)
+    return polys[0]
+  }
   /** Because of the floating point operations we might miss some triangles and get a polygon collapsing to a point somewhere inside of the polyline.
    * This point will correspond to a site adjacent to more than two edges from 'perimeter'.
    * We add to the polygon all the 'legal' triangles adjacent to this cite.
@@ -250,7 +248,7 @@ export class PathOptimizer {
     if (sitesToFix.length == 0) return perimeter
     for (const s of sitesToFix) {
       for (const t of s.Triangles()) {
-        if (this.canBelongToTriangles(t)) {
+        if (this.outsideOfObstacles(t)) {
           this.triangles.add(t)
         }
       }
@@ -276,25 +274,28 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  // drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
-  //   const dc = []
-  //   for (const t of triangles) {
-  //     for (const e of t.Edges) {
-  //       dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
-  //     }
-  //   }
-  //   if (perimEdges) {
-  //     for (const e of perimEdges) {
-  //       dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-  //     }
-  //   }
-  //   if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
-  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 8, 'Violet', this.sourcePoly))
-  //   dc.push(DebugCurve.mkDebugCurveTWCI(220, 3, 'Magenta', this.targetPoly))
+  drawInitialPolyDebuggg(triangles: T[], perimEdges: Set<E>, perimeterPoly: Polyline, originalPoly: Polyline) {
+    const dc = []
+    for (const t of triangles) {
+      for (const e of t.Edges) {
+        dc.push(DebugCurve.mkDebugCurveTWCI(100, e.constrained ? 1.2 : 1, 'Cyan', LineSegment.mkPP(e.upperSite.point, e.lowerSite.point)))
+      }
+    }
+    if (perimEdges) {
+      for (const e of perimEdges) {
+        dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+      }
+    }
+    if (perimeterPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', perimeterPoly))
+    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+    dc.push(DebugCurve.mkDebugCurveTWCI(200, 8, 'Violet', this.sourcePoly))
+    dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Magenta', this.targetPoly))
+    for (const e of this.piercedEdges) {
+      dc.push(DebugCurve.mkDebugCurveTWCI(150, 2, 'Brown', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+    }
 
-  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
-  // }
+    SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
@@ -496,7 +497,8 @@ export class PathOptimizer {
       }
       for (const e of t.Edges) {
         if (e.constrained) continue // do not leave the polygon:
-        // we walk a dual graph of a triangulation of a simple polygon: it is a tree!
+        // we walk a dual graph of a triangulation of a polygon:
+        // it is not always a simple polygon, but usually it is
         if (edgeIntoT !== undefined && e === edgeIntoT) continue
         const ot = e.GetOtherTriangle_T(t)
         if (ot == null) continue
@@ -532,7 +534,10 @@ export class PathOptimizer {
 }
 
 function triangleIsInsideOfObstacle(t: T): boolean {
-  return t.Sites.item0.Owner != null && t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
+  if (t.Sites.item0.Owner == null || t.Sites.item1.Owner == null || t.Sites.item2.Owner == null) {
+    return true // one of the sites corresponds to a Port
+  }
+  return t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
 }
 function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
   const es = new Set<E>()

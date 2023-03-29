@@ -249,7 +249,6 @@ export class SplineRouter extends Algorithm {
   }
 
   RouteOnRoot() {
-    initRandom(0)
     this.CalculatePortsToShapes()
     this.CalculatePortsToEnterableShapes()
     this.CalculateShapeToBoundaries(this.root)
@@ -515,20 +514,36 @@ export class SplineRouter extends Algorithm {
     // we need a set here because a loose polyline could be the same for different shapes
     // in the case of overlaps
     const loosePolys = new Set<Polyline>()
+    const ports: Point[] = []
     for (const shape of passport) {
       const lp = this.LoosePolyOfOriginalShape(shape)
       if (lp == null) continue
       loosePolys.add(lp)
+      for (const port of shape.Ports) {
+        ports.push(port.Location)
+      }
     }
 
     const bb = this.geomGraph.boundingBox.clone()
     bb.pad(Math.max(bb.diagonal / 4, 100))
 
-    const lps = Array.from(loosePolys)
+    const lps = Array.from(loosePolys).map((p) => this.shrinkPolyAroundCenter(p))
     lps.push(bb.perimeter()) // this will give some space for the edges to be routed near the graph border
-    const cdt = new Cdt([], lps, [])
+
+    const cdt = new Cdt(ports, lps, [])
     cdt.run()
     return cdt
+  }
+  shrinkPolyAroundCenter(poly: Polyline): Polyline {
+    const center = poly.boundingBox.center
+    return Polyline.mkFromPoints(
+      Array.from(poly).map((p) => {
+        const d = p.sub(center)
+        const len = d.length
+        const eps = Math.min(0.1, len / 10)
+        return center.add(d.mul((len - eps) / len))
+      }),
+    )
   }
 
   // if set to true routes multi edges as ordered bundles

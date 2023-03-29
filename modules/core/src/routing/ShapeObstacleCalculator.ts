@@ -7,6 +7,7 @@ import {ConvexHull} from '../math/geometry/convexHull'
 import {Polyline} from '../math/geometry/polyline'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/rectangleNode'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
+import {initRandom} from '../utils/random'
 import {flattenArray} from '../utils/setOperations'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {Shape} from './shape'
@@ -34,6 +35,7 @@ export class ShapeObstacleCalculator {
   OverlapsDetected: boolean
 
   Calculate(randomizationShift: number) {
+    initRandom(3) // keep it the same all the time, otherwise the path optimizer migth not work
     if (this.MainShape.Children.length === 0) {
       return
     }

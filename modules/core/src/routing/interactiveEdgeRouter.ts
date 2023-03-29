@@ -34,9 +34,7 @@ import {PathOptimizer} from './spline/pathOptimizer'
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
     let poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
-    const loosePolyOfSource = InteractiveEdgeRouter.GetFirstHitPolyline(poly.start, this.ObstacleCalculator.RootOfLooseHierarchy)
-    const loosePolyOfTarget = InteractiveEdgeRouter.GetFirstHitPolyline(poly.end, this.ObstacleCalculator.RootOfLooseHierarchy)
-    this.pathOptimizer.run(poly, loosePolyOfSource, loosePolyOfTarget)
+    this.pathOptimizer.run(poly)
     poly = this.pathOptimizer.poly
     edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
     this.SmoothenCorners(edge.smoothedPolyline)
@@ -687,7 +685,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     ret = ret.RemoveCollinearVertices()
     if (this.pathOptimizer) {
-      this.pathOptimizer.run(ret, this.SourceLoosePolyline, this.targetLoosePolyline)
+      this.pathOptimizer.run(ret)
       return this.pathOptimizer.poly
     }
     return ret
