@@ -1,4 +1,5 @@
 ﻿import {Point} from '../../math/geometry/point'
+import {Assert} from '../../utils/assert'
 
 import {CdtEdge} from './CdtEdge'
 import {CdtTriangle} from './CdtTriangle'
@@ -6,7 +7,7 @@ export class CdtSite {
   // Object to which this site refers to.
   Owner: any = null
 
-  point: Point
+  readonly point: Point
 
   // each CdtSite points to the edges for which it is the upper virtex ( for horizontal edges it is the left point)
   public Edges: Array<CdtEdge>

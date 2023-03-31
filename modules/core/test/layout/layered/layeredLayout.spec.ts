@@ -1,5 +1,5 @@
 import {SortedMap} from '@esfx/collections-sortedmap'
-
+import * as path from 'path'
 import {StringBuilder} from 'typescript-string-operations'
 
 import {join} from 'path'
@@ -31,7 +31,7 @@ import {
   AttributeRegistry,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
-import {parseDot} from '@msagl/parser'
+import {parseDot, parseJSON} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, PointLocation, Polyline} from '../../../src/math/geometry'
@@ -190,27 +190,12 @@ test('support undirected graphs', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/undir_pack.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
-xtest('austin', () => {
-  const data = fs.readFileSync('examples/data/gameofthrones.json').toString()
-  const graphJson = JSON.parse(data)
-  const graph = new Graph()
+test('austin', () => {
+  const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
+  const str = fs.readFileSync(fpath, 'utf-8')
+  const json = JSON.parse(str)
+  const graph = parseJSON(json)
   const dg = new DrawingGraph(graph)
-  dg.rankdir = LayerDirectionEnum.LR
-  for (const node of graphJson.nodes) {
-    const n = graph.addNode(new Node(node.id))
-    const dn = new DrawingNode(n)
-    dn.labelText = node.label
-  }
-  for (const edge of graphJson.edges) {
-    const s = graph.findNode(edge.source)
-    const t = graph.findNode(edge.target)
-    const e = new Edge(s, t)
-    const de = new DrawingEdge(e, false)
-
-    de.arrowhead = ArrowTypeEnum.none
-    de.arrowtail = ArrowTypeEnum.none
-  }
-
   createGeometry(dg, measureTextSize)
   const gg = GeomGraph.getGeom(dg.graph)
   const ss = new MdsLayoutSettings()
@@ -220,7 +205,7 @@ xtest('austin', () => {
   for (const e of gg.deepEdges) {
     expect(e.curve == null).toBe(false)
   }
-  // SvgDebugWriter.writeGeomGraph('./tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+  SvgDebugWriter.writeGeomGraph('./tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
 test('clust.gv', () => {

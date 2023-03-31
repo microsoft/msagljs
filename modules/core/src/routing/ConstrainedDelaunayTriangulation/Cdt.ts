@@ -14,6 +14,7 @@ import {CdtSite} from './CdtSite'
 import {CdtTriangle} from './CdtTriangle'
 import {CdtSweeper} from './CdtSweeper'
 import {RectangleNode, CreateRectNodeOnArrayOfRectNodes, mkRectangleNode} from '../../math/geometry/RTree/rectangleNode'
+import {Assert} from '../../utils/assert'
 
 export type SymmetricSegment = {A: Point; B: Point}
 export class Cdt extends Algorithm {
@@ -237,7 +238,9 @@ export class Cdt extends Algorithm {
   }
 
   FindSite(point: Point): CdtSite {
-    return this.PointsToSites.get(point)
+    const ret = this.PointsToSites.get(point)
+    Assert.assert(ret.point.equal(point))
+    return ret
   }
 
   static PointIsInsideOfTriangle(point: Point, t: CdtTriangle): boolean {

@@ -1357,7 +1357,7 @@ export class LayoutEditor {
       curve = LineSegment.mkPP(this.SourcePort.Location, this.TargetPort.Location)
     } else {
       const boxedPolyline: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
-      curve = this.interactiveEdgeRouter.RouteEdgeToPort(targetPortParameter, portLoosePolyline, false, boxedPolyline)
+      curve = this.interactiveEdgeRouter.RouteEdgeToPort(targetPortParameter, portLoosePolyline, false, boxedPolyline, null)
       smoothedPolyline = boxedPolyline.smoothedPolyline
     }
 

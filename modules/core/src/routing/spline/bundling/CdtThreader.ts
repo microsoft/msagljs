@@ -1,18 +1,21 @@
-import {Point} from '../../..'
-import {GeomConstants} from '../../../math/geometry'
+import {Assert, Point} from '../../..'
+import {SvgDebugWriter} from '../../../../test/utils/svgDebugWriter'
+import {CurveFactory, GeomConstants, PointLocation, Polyline} from '../../../math/geometry'
+import {DebugCurve} from '../../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../../math/geometry/point'
 
 import {CdtEdge} from '../../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from '../../ConstrainedDelaunayTriangulation/CdtTriangle'
-
+let debCount = 0
 export class CdtThreader {
+  edgeCanBePierced: (e: CdtEdge) => boolean
   start: Point
 
   end: Point
-
+  /** >0, if one of the ends of piercedEdge is to the right of (start, end) line, 0 - if it is on the line */
   positiveSign: number
-
+  /** <0, if one of the ends of piercedEdge is to the left of (start, end) line, 0 - if it is on the line */
   negativeSign: number
 
   private currentPiercedEdge: CdtEdge
@@ -33,13 +36,31 @@ export class CdtThreader {
     this.end = end
     //Assert.assert(CdtTriangle.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
   }
+  /**This method finds the first edge of the current triangle that 
+   * is pierced by a segment (start,end). It assumes that the start 
+   * point is inside or on the boundary of the current triangle, 
+   *  and the end point is outside. 
+   * The function works by computing the sign of each vertex
+   *  of the current triangle with respect to the segment.
+   *  The sign is zero if the vertex is on the segment, 
+   * positive if it is to the right of the segment  (when looking from the start point to the end point), 
+   * and negative if it is to the left.
+   * The function then checks if there are two consecutive 
+   * vertices with different signs. If so, it means that the edge between them is pierced by the segment. The function returns that edge as the result.
 
+The function also sets the positiveSign and negativeSign fields to store the signs of the vertices on either side of the pierced edge. This is useful for finding the next triangle in the path of the segment. */
+  private canPierce(e: CdtEdge) {
+    return this.edgeCanBePierced == null || this.edgeCanBePierced(e)
+  }
   private FindFirstPiercedEdge(): CdtEdge {
-    //Assert.assert(CdtTriangle.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)
-    //Assert.assert(CdtTriangle.PointLocationForTriangle(this.end, this.currentTriangle) === PointLocation.Outside)
+    Assert.assert(CdtTriangle.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)
+    if (CdtTriangle.PointLocationForTriangle(this.end, this.currentTriangle) == PointLocation.Boundary) {
+      console.log('boundary')
+    }
     const sign0 = this.GetHyperplaneSign(this.currentTriangle.Sites.item0)
     const sign1 = this.GetHyperplaneSign(this.currentTriangle.Sites.item1)
-    if (sign0 !== sign1) {
+
+    if (this.canPierce(this.currentTriangle.Edges.item0) && sign0 !== sign1) {
       if (
         Point.getTriangleOrientation(this.end, this.currentTriangle.Sites.item0.point, this.currentTriangle.Sites.item1.point) ==
         TriangleOrientation.Clockwise
@@ -49,9 +70,8 @@ export class CdtThreader {
         return this.currentTriangle.Edges.item0
       }
     }
-
     const sign2 = this.GetHyperplaneSign(this.currentTriangle.Sites.item2)
-    if (sign1 !== sign2) {
+    if (this.canPierce(this.currentTriangle.Edges.item1) && sign1 != sign2) {
       if (
         Point.getTriangleOrientation(this.end, this.currentTriangle.Sites.item1.point, this.currentTriangle.Sites.item2.point) ==
         TriangleOrientation.Clockwise
@@ -62,13 +82,21 @@ export class CdtThreader {
       }
     }
 
-    this.positiveSign = sign2
-    this.negativeSign = sign0
-    //Assert.assert(this.positiveSign > this.negativeSign)
-    return this.currentTriangle.Edges.item2
+    if (this.canPierce(this.currentTriangle.Edges.item2)) {
+      this.positiveSign = sign2
+      this.negativeSign = sign0
+      //Assert.assert(this.positiveSign > this.negativeSign)
+      return this.currentTriangle.Edges.item2
+    } else {
+      return null
+    }
   }
 
   private FindNextPierced() {
+    ++debCount
+    if (117652 == debCount) {
+      console.log(debCount)
+    }
     //Assert.assert(this.negativeSign < this.positiveSign)
     this.currentTriangle = this.currentPiercedEdge.GetOtherTriangle_T(this.currentTriangle)
     //            ShowDebug(null,currentPiercedEdge,currentTriangle);
@@ -78,35 +106,53 @@ export class CdtThreader {
     }
 
     const i = this.currentTriangle.Edges.index(this.currentPiercedEdge)
-    let j: number
+    let j = -1
     // pierced index
     const oppositeSite = this.currentTriangle.Sites.getItem(i + 2)
     const oppositeSiteSign = this.GetHyperplaneSign(oppositeSite)
-    if (this.negativeSign === 0) {
-      //Assert.assert(this.positiveSign === 1)
-      if (oppositeSiteSign === -1 || oppositeSiteSign === 0) {
+
+    if (this.edgeCanBePierced) {
+      const e1 = this.canPierce(this.currentTriangle.Edges.getItem(i + 1))
+      const e2 = this.canPierce(this.currentTriangle.Edges.getItem(i + 2))
+      //Assert.assert(i_1_ok || i_2_ok)
+      if (!e1) {
+        if (e2) j = i + 2
+        else {
+          this.currentPiercedEdge = null
+          return
+        }
+      } else if (!e2) {
+        j = i + 1
+      }
+    }
+
+    if (j == -1) {
+      // the joice has not been made yet
+      if (this.negativeSign === 0) {
+        //Assert.assert(this.positiveSign === 1)
+        if (oppositeSiteSign <= 0) {
+          this.negativeSign = oppositeSiteSign
+          j = i + 1
+        } else {
+          j = i + 2
+        }
+      } else if (this.positiveSign === 0) {
+        //Assert.assert(this.negativeSign === -1)
+        if (oppositeSiteSign >= 0) {
+          this.positiveSign = oppositeSiteSign
+          j = i + 2
+        } else {
+          j = i + 1
+        }
+      } else if (oppositeSiteSign !== this.positiveSign) {
         this.negativeSign = oppositeSiteSign
         j = i + 1
       } else {
-        j = i + 2
-      }
-    } else if (this.positiveSign === 0) {
-      //Assert.assert(this.negativeSign === -1)
-      if (oppositeSiteSign === 1 || oppositeSiteSign === 0) {
+        //Assert.assert(this.negativeSign !== oppositeSiteSign)
         this.positiveSign = oppositeSiteSign
         j = i + 2
-      } else {
-        j = i + 1
       }
-    } else if (oppositeSiteSign !== this.positiveSign) {
-      this.negativeSign = oppositeSiteSign
-      j = i + 1
-    } else {
-      //Assert.assert(this.negativeSign !== oppositeSiteSign)
-      this.positiveSign = oppositeSiteSign
-      j = i + 2
     }
-
     this.currentPiercedEdge =
       Point.signedDoubledTriangleArea(
         this.end,
@@ -115,6 +161,7 @@ export class CdtThreader {
       ) < -GeomConstants.distanceEpsilon
         ? this.currentTriangle.Edges.getItem(j)
         : null
+    Assert.assert(this.currentPiercedEdge == null || this.canPierce(this.currentPiercedEdge))
   }
 
   //        void ShowDebug(Array<CdtTriangle> cdtTriangles, CdtEdge cdtEdge, CdtTriangle cdtTriangle) {

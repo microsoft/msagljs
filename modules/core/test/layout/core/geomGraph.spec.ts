@@ -198,23 +198,6 @@ test('intersectedEnities', () => {
 })
 
 test('tiles gameofthrones', () => {
-  // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
-  // const graphStr = fs.readFileSync(fpath, 'utf-8')
-
-  // const json = JSON.parse(graphStr)
-  // const graph = parseJSON(json)
-  // const dg = graph.getAttr(AttributeRegistry.DrawingObjectIndex) as DrawingGraph
-  // dg.createGeometry()
-  // const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  // layoutGeomGraph(geomGraph)
-  // geomGraph.pumpTheBoxToTheGraphWithMargins()
-
-  // const t = graphToJSON(graph)
-  // const content = JSON.stringify(t, null, 2)
-  // const ws = fs.openSync('./tmp/got.JSON', 'w', 0o666)
-  // fs.writeFileSync(ws, content)
-  // fs.close(ws)
-
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
   const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)
@@ -222,7 +205,8 @@ test('tiles gameofthrones', () => {
   //Curve.dumper = SvgDebugWriter.dumpDebugCurves
   const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
   geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
-  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
+  const edges = Array.from(geomGraph.deepEdges)
+  const sr = new SplineRouter(geomGraph, edges)
   sr.run()
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
@@ -318,6 +302,7 @@ function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileD
   }
   return false
 }
+
 // function isLegal(e: GeomEdge): boolean {
 //   const c = e.curve
 //   if (c instanceof Curve) {

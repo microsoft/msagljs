@@ -376,7 +376,7 @@ export class SimulatedAnnealing {
         idealWidth / 2,
         t,
       )
-      if (!res) {
+      if (!res && false) {
         EdgeNudger.ShowHubs(this.metroGraphData, null, station, './tmp/inside_forbid.svg', [
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Blue', LineSegment.mkPP(station.Position, adjStation.Position)),
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(2, station.Position)),
