@@ -11,11 +11,8 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
-import {Polyline} from '../../math/geometry'
 
 export class GeomEdge extends GeomObject {
-  /** this is the route which is created on the visibility gpaph, it should not be optimized, shortcutted, etc. */
-  originalRoute: Polyline
   static getGeom(e: Entity): GeomEdge {
     return GeomObject.getGeom(e) as GeomEdge
   }

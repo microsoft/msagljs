@@ -32,14 +32,18 @@ import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
 export class InteractiveEdgeRouter extends Algorithm {
-  edge: GeomEdge
-  /** reroutes the polyline and sets the obtained curves under the edge */
-  rerouteEdge(edge: GeomEdge, poly: Polyline) {
+  rerouteEdge(edge: GeomEdge) {
+    const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
     this.pathOptimizer.run(poly)
-    poly = this.pathOptimizer.poly
-    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-    this.SmoothenCorners(edge.smoothedPolyline)
-    edge.curve = edge.smoothedPolyline.createCurve()
+    edge.curve = this.pathOptimizer.poly.toCurve()
+    // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
+    //   DebugCurve.mkDebugCurveCI('Red', edge.source.boundaryCurve),
+    //   DebugCurve.mkDebugCurveCI('Blue', edge.target.boundaryCurve),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', poly),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', loosePolyOfSource),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', loosePolyOfTarget),
+    //   DebugCurve.mkDebugCurveTWCI(200, 1.5, 'Magenta', edge.curve),
+    // ])
   }
   pathOptimizer: PathOptimizer
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
@@ -669,7 +673,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   //            return (this.SourcePort as FloatingPort).Location;
   //    }
   // }
-  GetShortestPolyline(sourceVisVertex: VisibilityVertex, _targetVisVertex: VisibilityVertex, edge: GeomEdge): Polyline {
+  GetShortestPolyline(sourceVisVertex: VisibilityVertex, _targetVisVertex: VisibilityVertex): Polyline {
     this.CleanTheGraphForShortestPath()
     const pathCalc = new SingleSourceSingleTargetShortestPathOnVisibilityGraph(this.visibilityGraph, sourceVisVertex, _targetVisVertex)
     const path = pathCalc.GetPath(this.UseEdgeLengthMultiplier)
@@ -680,9 +684,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     // Assert.assert(path[0] === sourceVisVertex && path[path.length - 1] === _targetVisVertex)
     let ret = Polyline.mkFromPoints(Array.from(path).map((p) => p.point)).RemoveCollinearVertices()
-    if (edge) {
-      edge.originalRoute = Polyline.mkFromPoints(ret)
-    }
     if (this.pathOptimizer) {
       this.pathOptimizer.run(ret)
       ret = this.pathOptimizer.poly
@@ -809,7 +810,7 @@ export class InteractiveEdgeRouter extends Algorithm {
     }
 
     this.ExtendVisibilityGraphToLocation(targetLocation)
-    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV, edge)
+    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
     if (this.SourcePort instanceof CurvePort) {
       this._polyline.PrependPoint(this.SourcePort.Location)
     }
@@ -823,13 +824,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   //
 
-  RouteEdgeToPort(
-    edgeTargetPort: Port,
-    portLoosePolyline: Polyline,
-    smooth: boolean,
-    t: {smoothedPolyline: SmoothedPolyline},
-    edge: GeomEdge,
-  ): ICurve {
+  RouteEdgeToPort(edgeTargetPort: Port, portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     if (!this.ObstacleCalculator.IsEmpty()) {
       this.TargetPort = edgeTargetPort
       this.TargetTightPolyline = InteractiveEdgeRouter.GetFirstHitPolyline(
@@ -838,10 +833,10 @@ export class InteractiveEdgeRouter extends Algorithm {
       )
       // Assert.assert(this.targetTightPolyline != null)
       if (edgeTargetPort instanceof CurvePort) {
-        return this.RouteEdgeToBoundaryPort(portLoosePolyline, smooth, t, edge)
+        return this.RouteEdgeToBoundaryPort(portLoosePolyline, smooth, t)
       }
 
-      return this.RouteEdgeToFloatingPortOfNode(portLoosePolyline, smooth, t, edge)
+      return this.RouteEdgeToFloatingPortOfNode(portLoosePolyline, smooth, t)
     }
 
     if (this.sourcePort != null && this.targetPort != null) {
@@ -859,25 +854,15 @@ export class InteractiveEdgeRouter extends Algorithm {
     return SmoothedPolyline.mkFromPoints(this._polyline)
   }
 
-  RouteEdgeToFloatingPortOfNode(
-    portLoosePolyline: Polyline,
-    smooth: boolean,
-    t: {smoothedPolyline: SmoothedPolyline},
-    edge: GeomEdge,
-  ): ICurve {
+  RouteEdgeToFloatingPortOfNode(portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     if (this.sourcePort instanceof FloatingPort) {
-      return this.RouteFromFloatingPortToFloatingPort(portLoosePolyline, smooth, t, edge)
+      return this.RouteFromFloatingPortToFloatingPort(portLoosePolyline, smooth, t)
     }
 
-    return this.RouteFromBoundaryPortToFloatingPort(portLoosePolyline, smooth, t, edge)
+    return this.RouteFromBoundaryPortToFloatingPort(portLoosePolyline, smooth, t)
   }
 
-  RouteFromBoundaryPortToFloatingPort(
-    targetPortLoosePolyline: Polyline,
-    smooth: boolean,
-    t: {smoothedPolyline: SmoothedPolyline},
-    edge: GeomEdge,
-  ): ICurve {
+  RouteFromBoundaryPortToFloatingPort(targetPortLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     const sourcePortLocation: Point = this.SourcePort.Location
     const targetPortLocation: Point = this.targetPort.Location
     let ls = LineSegment.mkPP(sourcePortLocation, targetPortLocation)
@@ -902,12 +887,13 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     // we need to route throw the visibility graph
     this.ExtendVisibilityGraphToLocationOfTargetFloatingPort(targetPortLoosePolyline)
-    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV, edge)
+    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
     const tmp: Polyline = this.SourceTightPolyline
     if (!this.targetIsInsideOfSourceTightPolyline) {
       this.SourceTightPolyline = null
     }
 
+    this.TryShortcutPolyline()
     this.SourceTightPolyline = tmp
     this._polyline.PrependPoint(sourcePortLocation)
     //  return this._polyline
@@ -923,21 +909,27 @@ export class InteractiveEdgeRouter extends Algorithm {
     return t.smoothedPolyline.createCurve()
   }
 
-  RouteFromFloatingPortToFloatingPort(
-    portLoosePolyline: Polyline,
-    smooth: boolean,
-    t: {smoothedPolyline: SmoothedPolyline},
-    edge: GeomEdge,
-  ): ICurve {
+  RouteFromFloatingPortToFloatingPort(portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     // route through the visibility graph
     this.ExtendVisibilityGraphToLocationOfTargetFloatingPort(portLoosePolyline)
-    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV, edge)
+    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
     if (this._polyline == null) {
       return null
     }
 
     t.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
     return this.SmoothCornersAndReturnCurve(smooth, t)
+  }
+
+  TryShortcutPolyline() {
+    return
+    if (this.UseInnerPolylingShortcutting) {
+      while (this.ShortcutPolylineOneTime()) {}
+    }
+
+    if (this.UsePolylineEndShortcutting) {
+      this.TryShortCutThePolylineEnds()
+    }
   }
 
   TryShortCutThePolylineEnds() {
@@ -1128,16 +1120,16 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     }
   }
 
-  RouteEdgeToBoundaryPort(portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}, edge: GeomEdge): ICurve {
+  RouteEdgeToBoundaryPort(portLoosePolyline: Polyline, smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     this.TargetLoosePolyline = portLoosePolyline
     if (this.sourcePort instanceof FloatingPort) {
-      return this.RouteFromFloatingPortToBoundaryPort(smooth, t, edge)
+      return this.RouteFromFloatingPortToBoundaryPort(smooth, t)
     }
 
-    return this.RouteFromBoundaryPortToBoundaryPort(smooth, t, edge)
+    return this.RouteFromBoundaryPortToBoundaryPort(smooth, t)
   }
 
-  RouteFromBoundaryPortToBoundaryPort(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}, edge: GeomEdge): ICurve {
+  RouteFromBoundaryPortToBoundaryPort(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     const sourcePortLocation: Point = this.SourcePort.Location
     let curve: ICurve
     const targetPortLocation: Point = this.targetPort.Location
@@ -1147,7 +1139,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
       this._polyline.addPoint(ls.start)
       this._polyline.addPoint(ls.end)
       t.smoothedPolyline = this.SmoothedPolylineFromTwoPoints(ls.start, ls.end)
-      edge.originalRoute = Polyline.mkFromPoints(this._polyline)
       curve = SmoothedPolyline.mkFromPoints(this._polyline).createCurve()
     } else {
       // try three variants with two segments
@@ -1166,7 +1157,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
         this._polyline.addPoint(ls.end)
         this._polyline.addPoint(targetPortLocation)
         curve = this.SmoothCornersAndReturnCurve(smooth, t)
-        edge.originalRoute = Polyline.mkFromPoints(this._polyline)
       } else {
         ls = LineSegment.mkPP(this.StartPointOfEdgeRouting, targetPortLocation)
         if (
@@ -1177,7 +1167,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
           this._polyline.addPoint(sourcePortLocation)
           this._polyline.addPoint(ls.start)
           this._polyline.addPoint(ls.end)
-          edge.originalRoute = Polyline.mkFromPoints(this._polyline)
           curve = this.SmoothCornersAndReturnCurve(smooth, t)
         } else {
           // we still can make the polyline with two segs when the port sticking segs are intersecting
@@ -1187,14 +1176,12 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
             this._polyline.addPoint(sourcePortLocation)
             this._polyline.addPoint(x)
             this._polyline.addPoint(targetPortLocation)
-            edge.originalRoute = Polyline.mkFromPoints(this._polyline)
             curve = this.SmoothCornersAndReturnCurve(smooth, t)
           } else if (Point.closeDistEps(this.StartPointOfEdgeRouting, takenOutPoint)) {
             this._polyline = new Polyline()
             this._polyline.addPoint(sourcePortLocation)
             this._polyline.addPoint(takenOutPoint)
             this._polyline.addPoint(targetPortLocation)
-            edge.originalRoute = Polyline.mkFromPoints(this._polyline)
             curve = this.SmoothCornersAndReturnCurve(smooth, t)
           } else if (this.LineAvoidsTightHierarchy(LineSegment.mkPP(this.StartPointOfEdgeRouting, takenOutPoint))) {
             // can we do three segments?
@@ -1206,9 +1193,10 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
             curve = this.SmoothCornersAndReturnCurve(smooth, t)
           } else {
             this.ExtendVisibilityGraphToTargetBoundaryPort(takenOutPoint)
-            this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV, edge)
+            this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
             const r: {tmpTargetTight: Polyline} = {tmpTargetTight: null}
             const tmpSourceTight: Polyline = this.HideSourceTargetTightsIfNeeded(r)
+            this.TryShortcutPolyline()
             this.RecoverSourceTargetTights(tmpSourceTight, r.tmpTargetTight)
             this._polyline.PrependPoint(sourcePortLocation)
             this._polyline.addPoint(targetPortLocation)
@@ -1241,7 +1229,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     )
   }
 
-  RouteFromFloatingPortToBoundaryPort(smooth: boolean, r: {smoothedPolyline: SmoothedPolyline}, edge: GeomEdge): ICurve {
+  RouteFromFloatingPortToBoundaryPort(smooth: boolean, r: {smoothedPolyline: SmoothedPolyline}): ICurve {
     const targetPortLocation: Point = this.targetPort.Location
     let ls: LineSegment
     if (this.InsideOfTheAllowedConeOfBoundaryPort(this.sourcePort.Location, <CurvePort>this.targetPort)) {
@@ -1266,7 +1254,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     }
 
     this.ExtendVisibilityGraphToTargetBoundaryPort(takenOutTargetPortLocation)
-    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV, edge)
+    this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
     this._polyline.addPoint(targetPortLocation)
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
     return this.SmoothCornersAndReturnCurve(smooth, t)
@@ -1451,7 +1439,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     targetPortLocal: Port,
     smooth: boolean,
     t: {smoothedPolyline: SmoothedPolyline},
-    edge: GeomEdge,
   ): ICurve {
     const reversed: boolean =
       (sourcePortLocal instanceof FloatingPort && targetPortLocal instanceof CurvePort) ||
@@ -1465,7 +1452,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     this.sourcePort = sourcePortLocal
     this.targetPort = targetPortLocal
     this.FigureOutSourceTargetPolylinesAndActiveRectangle()
-    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t, edge)
+    let curve: ICurve = this.GetEdgeGeomByRouting(smooth, t)
     if (curve == null) {
       return null
     }
@@ -1479,7 +1466,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     return curve
   }
 
-  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}, edge: GeomEdge): ICurve {
+  GetEdgeGeomByRouting(smooth: boolean, t: {smoothedPolyline: SmoothedPolyline}): ICurve {
     this.sourceIsInsideOfTargetTightPolyline =
       this.TargetTightPolyline == null ||
       Curve.PointRelativeToCurveLocation(this.sourcePort.Location, this.TargetTightPolyline) === PointLocation.Inside
@@ -1494,15 +1481,15 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
 
       const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
       if (this.targetPort instanceof CurvePort) {
-        curve = this.RouteFromBoundaryPortToBoundaryPort(smooth, t, edge)
+        curve = this.RouteFromBoundaryPortToBoundaryPort(smooth, t)
       } else {
-        curve = this.RouteFromBoundaryPortToFloatingPort(this.targetLoosePolyline, smooth, t, edge)
+        curve = this.RouteFromBoundaryPortToFloatingPort(this.targetLoosePolyline, smooth, t)
       }
     } else if (this.targetPort instanceof FloatingPort) {
       this.ExtendVisibilityGraphFromFloatingSourcePort()
       // Assert.assert(this.sourceVV != null)
       // the edge has to be reversed to route from CurvePort to FloatingPort
-      curve = this.RouteFromFloatingPortToFloatingPort(this.targetLoosePolyline, smooth, t, edge)
+      curve = this.RouteFromFloatingPortToFloatingPort(this.targetLoosePolyline, smooth, t)
     } else {
       // Assert.assert(this.targetPort instanceof HookUpAnywhereFromInsidePort)
       curve = this.RouteFromFloatingPortToAnywherePort(
@@ -1510,7 +1497,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
         smooth,
         t,
         <HookUpAnywhereFromInsidePort>this.targetPort,
-        edge,
       )
     }
 
@@ -1522,7 +1508,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     smooth: boolean,
     t: {smoothedPolyline: SmoothedPolyline},
     port: HookUpAnywhereFromInsidePort,
-    edge: GeomEdge,
   ): ICurve {
     if (!port.Curve.boundingBox.contains(this.sourcePort.Location)) {
       t.smoothedPolyline = null

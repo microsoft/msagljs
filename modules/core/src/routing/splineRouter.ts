@@ -51,6 +51,7 @@ import {PathOptimizer} from './spline/pathOptimizer'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
 import {Node} from '..'
 import {edgeNodesBelongToSet} from '../structs/graph'
+import {initRandom} from '../utils/random'
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
@@ -213,18 +214,12 @@ export class SplineRouter extends Algorithm {
     // }
   }
 
-  /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.
-   * edgeToPolys is the map from the edges to their original routes
-   */
+  /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
   rerouteOnSubsetOfNodes(activeNodes: Set<Node>) {
-    this.RouteMultiEdgesAsBundles = false
-    this.edges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
-    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
-    this.rootShapes = obstacles.filter((s) => s.Parents == null || s.Parents.length === 0)
+    if (this.loosePolylinesToNodes == null) {
+      this.calcLooseShapesToNodes()
+    }
     this.GetOrCreateRoot()
-    this.CalculateShapeToBoundaries(this.root)
-    this.calcLooseShapesToNodes()
-    this.CalculatePortsToShapes()
     this.rerouteOnActiveNodes(activeNodes)
     this.RemoveRoot()
   }
@@ -250,6 +245,7 @@ export class SplineRouter extends Algorithm {
   }
 
   RouteOnRoot() {
+    initRandom(0)
     this.CalculatePortsToShapes()
     this.CalculatePortsToEnterableShapes()
     this.CalculateShapeToBoundaries(this.root)
@@ -439,7 +435,7 @@ export class SplineRouter extends Algorithm {
       multiEdges: [],
     }
     try {
-      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes, this.loosePadding * 0.1)
+      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
       interactiveEdgeRouter.pathOptimizer.setCdt(null)
@@ -473,7 +469,7 @@ export class SplineRouter extends Algorithm {
       multiEdges: [],
     }
     try {
-      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes, this.loosePadding * 0.1)
+      const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
 
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
@@ -486,7 +482,7 @@ export class SplineRouter extends Algorithm {
         for (let i = 0; i < t.regularEdges.length; i++) {
           const e = t.regularEdges[i]
           Assert.assert(edgeNodesBelongToSet(e.edge, activeNodes))
-          this.rerouteEdge(interactiveEdgeRouter, e, e.originalRoute)
+          this.rerouteEdge(interactiveEdgeRouter, e)
         }
       }
       if (t.multiEdges != null) {
@@ -497,18 +493,14 @@ export class SplineRouter extends Algorithm {
       for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
         const e = edgeGeometryGroup.edges[i]
         if (edgeNodesBelongToSet(e.edge, activeNodes)) {
-          this.rerouteEdge(interactiveEdgeRouter, e, e.originalRoute)
+          this.rerouteEdge(interactiveEdgeRouter, e)
         }
       }
     }
   }
   /** poly gives the polyline to reroute */
-  private rerouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge, poly: Polyline) {
-    // function edgeIsCool(e: GeomEdge): unknown {
-    //   return (e.source.id == 'SANSA' && e.target.id == 'HOUND') || (e.target.id == 'SANSA' && e.source.id == 'HOUND')
-    // }
-    // if (!edgeIsCool(edge)) return
-    interactiveEdgeRouter.rerouteEdge(edge, poly)
+  private rerouteEdge(interactiveEdgeRouter: InteractiveEdgeRouter, edge: GeomEdge) {
+    interactiveEdgeRouter.rerouteEdge(edge)
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     const bb = edge.source.parent.boundingBox
     Assert.assert(bb.containsRect(edge.boundingBox))
@@ -518,7 +510,7 @@ export class SplineRouter extends Algorithm {
     //   DebugCurve.mkDebugCurveI(edge.curve),
     // ])
   }
-  private getCdtFromPassport(passport: Set<Shape>, epsToShrink: number): Cdt {
+  private getCdtFromPassport(passport: Set<Shape>): Cdt {
     // we need a set here because a loose polyline could be the same for different shapes
     // in the case of overlaps
     const loosePolys = new Set<Polyline>()
@@ -535,25 +527,12 @@ export class SplineRouter extends Algorithm {
     const bb = this.geomGraph.boundingBox.clone()
     bb.pad(Math.max(bb.diagonal / 4, 100))
 
-    const lps = Array.from(loosePolys).map((p) => this.shrinkPolyAroundCenter(p, epsToShrink))
+    const lps = Array.from(loosePolys)
     lps.push(bb.perimeter()) // this will give some space for the edges to be routed near the graph border
 
     const cdt = new Cdt(ports, lps, [])
     cdt.run()
     return cdt
-  }
-  shrinkPolyAroundCenter(poly: Polyline, epsToShrink: number): Polyline {
-    const center = poly.boundingBox.center
-    const ret = Polyline.mkFromPoints(
-      Array.from(poly).map((p) => {
-        const d = p.sub(center)
-        const len = d.length
-        const eps = Math.min(epsToShrink, len / 10)
-        return center.add(d.mul((len - eps) / len))
-      }),
-    )
-    ret.closed = true
-    return ret
   }
 
   // if set to true routes multi edges as ordered bundles
@@ -933,7 +912,7 @@ export class SplineRouter extends Algorithm {
 
     const t: {smoothedPolyline: SmoothedPolyline} = {smoothedPolyline: null}
     if (!Point.closeDistEps(edge.sourcePort.Location, edge.targetPort.Location)) {
-      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t, edge)
+      edge.curve = iRouter.RouteSplineFromPortToPortWhenTheWholeGraphIsReady(edge.sourcePort, edge.targetPort, true, t)
     } else {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
     }
