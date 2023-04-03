@@ -6,9 +6,10 @@ import {Rectangle} from '../../math/geometry/rectangle'
 import {CdtEdge} from './CdtEdge'
 import {CdtSite} from './CdtSite'
 import {ThreeArray} from './ThreeArray'
-
+let debId = 0
 // a trianlge oriented counterclockwise
 export class CdtTriangle {
+  id: number = debId++
   containsPoint(p: Point): boolean {
     return CdtTriangle.PointLocationForTriangle(p, this) !== PointLocation.Outside
   }

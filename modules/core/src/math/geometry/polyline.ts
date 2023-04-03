@@ -18,7 +18,6 @@ type AdjustedPar = {
 }
 
 export type PolylineJSON = {points: PointJSON[]}
-
 /** the curve corresponding to the sequence of lines, could be closed when the start coincides with the end */
 export class Polyline implements ICurve {
   toJSON(): PolylineJSON {

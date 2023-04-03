@@ -94,13 +94,10 @@ The function also sets the positiveSign and negativeSign fields to store the sig
 
   private FindNextPierced() {
     ++debCount
-    if (117652 == debCount) {
-      console.log(debCount)
-    }
     //Assert.assert(this.negativeSign < this.positiveSign)
     this.currentTriangle = this.currentPiercedEdge.GetOtherTriangle_T(this.currentTriangle)
     //            ShowDebug(null,currentPiercedEdge,currentTriangle);
-    if (this.currentTriangle == null) {
+    if (this.currentTriangle == null || this.currentTriangle.containsPoint(this.end)) {
       this.currentPiercedEdge = null
       return
     }
@@ -111,9 +108,9 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     const oppositeSite = this.currentTriangle.Sites.getItem(i + 2)
     const oppositeSiteSign = this.GetHyperplaneSign(oppositeSite)
 
-    if (this.edgeCanBePierced) {
-      const e1 = this.canPierce(this.currentTriangle.Edges.getItem(i + 1))
-      const e2 = this.canPierce(this.currentTriangle.Edges.getItem(i + 2))
+    if (this.edgeCanBePierced !== null) {
+      const e1 = this.edgeCanBePierced(this.currentTriangle.Edges.getItem(i + 1))
+      const e2 = this.edgeCanBePierced(this.currentTriangle.Edges.getItem(i + 2))
       //Assert.assert(i_1_ok || i_2_ok)
       if (!e1) {
         if (e2) j = i + 2
