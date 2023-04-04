@@ -8,14 +8,14 @@ import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
 import {Assert} from '../../utils/assert'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-import {DebugCurve} from '../../math/geometry/debugCurve'
+// import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+// import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is not assumed that the polyline passes only through the sites of the cdt.
  */
 let debCount = 0
-let drawCount = 0
+const drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -171,9 +171,9 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    if (debCount == 2) {
-      this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
-    }
+    // if (debCount == 2) {
+    //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    // }
     this.findChannelTriangles()
     // (debCount == 2835) // this.debugDraw(Array.from(this.triangles), null, null, poly)
 
@@ -270,43 +270,43 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: ICurve[] = [], ls: ICurve = null) {
-    const dc = []
-    if (ls) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
-    }
-    const box = this.poly.boundingBox.clone()
-    box.addRec(this.sourcePoly.boundingBox)
-    box.addRec(this.targetPoly.boundingBox)
-    for (const t of triangles) {
-      // if (t.BoundingBox().intersects(box) == false) continue
-      for (const e of t.Edges) {
-        dc.push(
-          DebugCurve.mkDebugCurveTWCI(
-            e.constrained ? 150 : 100,
-            e.constrained ? 1.5 : 1,
-            e.constrained ? 'DarkSeaGreen' : 'Cyan',
-            LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
-          ),
-        )
-      }
-    }
-    if (perimEdges) {
-      for (const e of perimEdges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-      }
-    }
-    if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
-    for (const strangeOb of strangeObs) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
-    }
+  // debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: ICurve[] = [], ls: ICurve = null) {
+  //   const dc = []
+  //   if (ls) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
+  //   }
+  //   const box = this.poly.boundingBox.clone()
+  //   box.addRec(this.sourcePoly.boundingBox)
+  //   box.addRec(this.targetPoly.boundingBox)
+  //   for (const t of triangles) {
+  //     // if (t.BoundingBox().intersects(box) == false) continue
+  //     for (const e of t.Edges) {
+  //       dc.push(
+  //         DebugCurve.mkDebugCurveTWCI(
+  //           e.constrained ? 150 : 100,
+  //           e.constrained ? 1.5 : 1,
+  //           e.constrained ? 'DarkSeaGreen' : 'Cyan',
+  //           LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
+  //         ),
+  //       )
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
+  //   for (const strangeOb of strangeObs) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
+  //   }
 
-    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
 
-    SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
-  }
+  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  // }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
@@ -646,15 +646,15 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     //Assert.assert(this.negativeSign < this.positiveSign)
     const tr = targetOfFrontEdge(fe)
     if (tr == null) return
-    if (debCount == 2)
-      this.debugDraw(
-        Array.from(this.cdt.GetTriangles()),
-        null,
-        null,
-        this.poly,
-        [trianglePerimeter(tr)],
-        LineSegment.mkPP(this.start, this.end),
-      )
+    // if (debCount == 2)
+    //   this.debugDraw(
+    //     Array.from(this.cdt.GetTriangles()),
+    //     null,
+    //     null,
+    //     this.poly,
+    //     [trianglePerimeter(tr)],
+    //     LineSegment.mkPP(this.start, this.end),
+    //   )
 
     this.visitedInThreader.add(tr)
     if (tr.containsPoint(this.end)) {
