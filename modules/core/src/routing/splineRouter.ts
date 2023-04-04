@@ -519,6 +519,8 @@ export class SplineRouter extends Algorithm {
     // in the case of overlaps
     const loosePolys = new Set<Polyline>()
     const ports: Point[] = []
+    // we cannot rely on the bounding box of the graph because it is not updated, or might be too large - would create thin triangles
+    const bb = Rectangle.mkEmpty()
     for (const shape of passport) {
       const lp = this.LoosePolyOfOriginalShape(shape)
       if (lp == null) continue
@@ -526,9 +528,9 @@ export class SplineRouter extends Algorithm {
       for (const port of shape.Ports) {
         ports.push(port.Location)
       }
+      bb.addRecSelf(lp.boundingBox)
     }
 
-    const bb = this.geomGraph.boundingBox.clone()
     bb.pad(Math.max(bb.diagonal / 4, 100))
 
     const lps = Array.from(loosePolys)
