@@ -1,17 +1,13 @@
 import {Queue} from 'queue-typescript'
-//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-import {Curve, GeomConstants, ICurve, LineSegment, Point, PointLocation, Polyline} from '../../math/geometry'
-import {DebugCurve} from '../../math/geometry/debugCurve'
-//import {DebugCurve} from '../../math/geometry/debugCurve'
-import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
+import {GeomConstants, Point, Polyline} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
-import {Assert} from '../../utils/assert'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
+import {Assert} from '../../utils/assert'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
@@ -33,6 +29,7 @@ export class PathOptimizer {
   private polyRTree: RectangleNode<Polyline, Point>
   setCdt(cdt: Cdt) {
     this.cdt = cdt
+    this.cdt.SetInEdges()
     const polys = new Set<Polyline>()
     for (const t of cdt.GetTriangles()) {
       for (const s of t.Sites) {
@@ -46,19 +43,10 @@ export class PathOptimizer {
 
   private findChannelTriangles() {
     this.passedTrs.clear()
-    this.passedTrs.add(this.findSiteTriangle(this.poly.start))
-    this.extendPassedTrsByContainingPoint(this.poly.start)
+    //  this.extendPassedTrsByContainingPoint(this.poly.start)
     // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.passedTrs).map(trianglePerimeter))
     for (let p = this.poly.startPoint; p.next != null; p = p.next) {
       this.addPiercedTrianglesOnSegment(p.point, p.next.point)
-      // this.debugDraw(
-      //   Array.from(this.cdt.GetTriangles()),
-      //   null,
-      //   null,
-      //   this.poly,
-      //   Array.from(this.passedTrs).map(trianglePerimeter),
-      //   LineSegment.mkPP(p.point, p.next.point),
-      // )
     }
 
     this.addSourceTargetTriangles()
@@ -71,11 +59,8 @@ export class PathOptimizer {
 
   private findSiteTriangle(p: Point): Tr {
     const site = this.cdt.FindSite(p)
-    for (const e of site.Edges) {
-      Assert.assert(e.lowerSite == site || e.upperSite == site)
-      const t = e.CcwTriangle
-      Assert.assert(site == t.Sites.item0 || site == t.Sites.item1 || site == t.Sites.item2)
-      return e.CcwTriangle
+    for (const t of site.Triangles()) {
+      return t
     }
   }
   private addPolyTrianglesForEndStart(p: Point) {
@@ -99,13 +84,13 @@ export class PathOptimizer {
    * but on entering the end becomes start of the next segment
    */
   addPiercedTrianglesOnSegment(start: Point, end: Point) {
-    // debCount++
     this.extendPassedTrsByContainingPoint(start)
     for (const t of this.passedTrs) {
       this.triangles.add(t)
     }
     // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
     this.createThreader(start, end)
+
     for (const tr of this.threadThrough()) {
       this.triangles.add(tr)
 
@@ -150,7 +135,7 @@ export class PathOptimizer {
   }
   private outsideOfObstacles(t: Tr): boolean {
     if (t == null) return false
-    const owner = t.Sites.item0.Owner
+    const owner = t.Sites.item0.Owner ?? t.Sites.item1.Owner
     return owner === this.sourcePoly || owner === this.targetPoly || !triangleIsInsideOfObstacle(t)
   }
 
@@ -164,7 +149,7 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    //if (debCount == 2750) this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findChannelTriangles()
     // (debCount == 2835) // this.debugDraw(Array.from(this.triangles), null, null, poly)
 
@@ -261,18 +246,11 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  // debugDraw(
-  //   triangles: Tr[],
-  //   perimEdges: Set<Ed>,
-  //   poly: Polyline,
-  //   originalPoly: Polyline,
-  //   strangeObs: Polyline[] = [],
-  //   ls: LineSegment = null,
-  // ) {
+  // debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: ICurve[] = [], ls: ICurve = null) {
   //   const dc = []
-  //   // if (ls) {
-  //   //   dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
-  //   // }
+  //   if (ls) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
+  //   }
   //   const box = this.poly.boundingBox.clone()
   //   box.addRec(this.sourcePoly.boundingBox)
   //   box.addRec(this.targetPoly.boundingBox)
@@ -610,6 +588,7 @@ The function also sets the positiveSign and negativeSign fields to store the sig
   initFront(tr: Tr) {
     if (tr.containsPoint(this.end)) {
       this.passedTrs.add(tr)
+      this.triangles.add(tr)
     }
     const sign0 = this.GetHyperplaneSign(tr.Sites.item0)
     const sign1 = this.GetHyperplaneSign(tr.Sites.item1)
@@ -674,19 +653,23 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     }
   }
   extendPassedTrsByContainingPoint(p: Point) {
-    const q = new Queue<Tr>()
-    for (const t of this.passedTrs) {
-      q.enqueue(t)
-    }
-    while (q.length) {
-      const t = q.dequeue()
-      for (const ot of this.neigborsInChannel(t)) {
-        if (this.passedTrs.has(ot)) {
-          continue
-        }
-        if (ot.containsPoint(p)) {
+    const site = this.cdt.FindSite(p)
+    if (site) {
+      for (const t of site.Triangles()) {
+        if (this.outsideOfObstacles(t)) this.passedTrs.add(t)
+      }
+    } else {
+      if (this.passedTrs.size == 0) {
+        console.log('no site found for p: it must be on the boundary of a triangle')
+      }
+      // no site found for p: it must be on the boundary of a triangle
+      // t = get one of the triangles in this.passedTrs
+      const t = this.passedTrs.values().next().value
+      for (const e of t.Edges) {
+        const ot = e.GetOtherTriangle_T(t)
+        if (this.outsideOfObstacles(ot) && ot.containsPoint(p)) {
           this.passedTrs.add(ot)
-          q.enqueue(ot)
+          break
         }
       }
     }

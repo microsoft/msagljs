@@ -226,7 +226,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  private SetInEdges() {
+  SetInEdges() {
     for (const site of this.PointsToSites.values()) {
       for (const e of site.Edges) {
         const oSite = e.lowerSite
