@@ -1,5 +1,5 @@
 import {Queue} from 'queue-typescript'
-import {GeomConstants, Point, Polyline} from '../../math/geometry'
+import {GeomConstants, ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
@@ -8,6 +8,8 @@ import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
 import {Assert} from '../../utils/assert'
+import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is assumed that the polyline passes only through the sites of the cdt.
@@ -59,9 +61,29 @@ export class PathOptimizer {
 
   private findSiteTriangle(p: Point): Tr {
     const site = this.cdt.FindSite(p)
-    for (const t of site.Triangles()) {
-      return t
-    }
+    if (site.Edges)
+      for (const e of site.Edges) {
+        let t = e.CcwTriangle
+        if (t && triangleIsInsideOfObstacle(t)) {
+          return t
+        }
+        t = e.CwTriangle
+        if (t && triangleIsInsideOfObstacle(t)) {
+          return t
+        }
+      }
+    if (site.InEdges)
+      for (const e of site.InEdges) {
+        let t = e.CcwTriangle
+        if (t && triangleIsInsideOfObstacle(t)) {
+          return t
+        }
+        t = e.CwTriangle
+        if (t && triangleIsInsideOfObstacle(t)) {
+          return t
+        }
+      }
+    return null
   }
   private addPolyTrianglesForEndStart(p: Point) {
     const trs = new Set<Tr>()
@@ -85,12 +107,12 @@ export class PathOptimizer {
    */
   addPiercedTrianglesOnSegment(start: Point, end: Point) {
     this.extendPassedTrsByContainingPoint(start)
-    for (const t of this.passedTrs) {
-      this.triangles.add(t)
-    }
     // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
     this.createThreader(start, end)
-
+    if (this.passedTrs.size) {
+      this.front = new Queue<FrontEdge>()
+      return
+    }
     for (const tr of this.threadThrough()) {
       this.triangles.add(tr)
 
@@ -149,7 +171,9 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    //if (debCount == 2750) this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    // if (debCount == 5) {
+    //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    // }
     this.findChannelTriangles()
     // (debCount == 2835) // this.debugDraw(Array.from(this.triangles), null, null, poly)
 
@@ -656,7 +680,10 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     const site = this.cdt.FindSite(p)
     if (site) {
       for (const t of site.Triangles()) {
-        if (this.outsideOfObstacles(t)) this.passedTrs.add(t)
+        if (this.outsideOfObstacles(t)) {
+          this.passedTrs.add(t)
+          this.triangles.add(t)
+        }
       }
     } else {
       if (this.passedTrs.size == 0) {
@@ -669,7 +696,8 @@ The function also sets the positiveSign and negativeSign fields to store the sig
         const ot = e.GetOtherTriangle_T(t)
         if (this.outsideOfObstacles(ot) && ot.containsPoint(p)) {
           this.passedTrs.add(ot)
-          break
+          this.triangles.add(ot)
+          break // there will be only one
         }
       }
     }
