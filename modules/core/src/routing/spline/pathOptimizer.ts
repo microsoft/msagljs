@@ -1,8 +1,8 @@
 import {Queue} from 'queue-typescript'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 //import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 import {Curve, GeomConstants, ICurve, LineSegment, Point, PointLocation, Polyline} from '../../math/geometry'
 import {DebugCurve} from '../../math/geometry/debugCurve'
+//import {DebugCurve} from '../../math/geometry/debugCurve'
 import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
@@ -17,7 +17,7 @@ import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
  * It is assumed that the polyline passes only through the sites of the cdt.
  */
 let debCount = 0
-let drawCount = 0
+const drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -45,11 +45,20 @@ export class PathOptimizer {
   triangles = new Set<Tr>()
 
   private findChannelTriangles() {
-    this.passedTrs = [this.findSiteTriangle(this.poly.start)]
-    if (debCount == 1) this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, this.passedTrs.map(triPerimeter))
+    this.passedTrs.clear()
+    this.passedTrs.add(this.findSiteTriangle(this.poly.start))
+    this.extendPassedTrsByContainingPoint(this.poly.start)
+    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.passedTrs).map(trianglePerimeter))
     for (let p = this.poly.startPoint; p.next != null; p = p.next) {
       this.addPiercedTrianglesOnSegment(p.point, p.next.point)
-      this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, this.passedTrs.map(triPerimeter))
+      // this.debugDraw(
+      //   Array.from(this.cdt.GetTriangles()),
+      //   null,
+      //   null,
+      //   this.poly,
+      //   Array.from(this.passedTrs).map(trianglePerimeter),
+      //   LineSegment.mkPP(p.point, p.next.point),
+      // )
     }
 
     this.addSourceTargetTriangles()
@@ -90,18 +99,17 @@ export class PathOptimizer {
    * but on entering the end becomes start of the next segment
    */
   addPiercedTrianglesOnSegment(start: Point, end: Point) {
-    debCount++
+    // debCount++
+    this.extendPassedTrsByContainingPoint(start)
     for (const t of this.passedTrs) {
       this.triangles.add(t)
     }
-    if (debCount >= 1)
-      this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(triPerimeter))
+    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
     this.createThreader(start, end)
     for (const tr of this.threadThrough()) {
       this.triangles.add(tr)
 
-      if (debCount >= 1)
-        this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(triPerimeter))
+      // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
     }
   }
   edgeCanBePierced(e: CdtEdge): boolean {
@@ -156,14 +164,13 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    if (debCount == 1) this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
     this.findChannelTriangles()
-    // (debCount == 2835) this.debugDraw(Array.from(this.triangles), null, null, poly)
+    // (debCount == 2835) // this.debugDraw(Array.from(this.triangles), null, null, poly)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
-    this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
-    // (debCount == 2835) this.debugDraw(Array.from(this.triangles), perimeter, null, poly)
+    // this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -172,7 +179,7 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    // (debCount == 2835) this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
+    // (debCount == 2835) // this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
 
     const sleeve: FrontEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {
@@ -185,8 +192,8 @@ export class PathOptimizer {
     this.initDiagonals(sleeve)
     //const dc = getDebugCurvesFromCdt(localCdt)
     this.refineFunnel() //dc)
-    // (debCount == 2835) this.debugDraw(Array.from(localCdt.GetTriangles()), perimeter, this.poly, poly)
-    this.test(perimeter, poly)
+    // (debCount == 2835) // this.debugDraw(Array.from(localCdt.GetTriangles()), perimeter, this.poly, poly)
+    //this.test(perimeter, poly)
     //  const c = this.poly
     // dc = dc.concat([
     //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c),
@@ -254,40 +261,50 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: Polyline[] = []) {
-    const dc = []
-    const box = this.poly.boundingBox.clone()
-    box.addRec(this.sourcePoly.boundingBox)
-    box.addRec(this.targetPoly.boundingBox)
-    for (const t of triangles) {
-      if (t.BoundingBox().intersects(box) == false) continue
-      for (const e of t.Edges) {
-        dc.push(
-          DebugCurve.mkDebugCurveTWCI(
-            e.constrained ? 150 : 100,
-            e.constrained ? 1.5 : 1,
-            'Cyan',
-            LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
-          ),
-        )
-      }
-    }
-    if (perimEdges) {
-      for (const e of perimEdges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-      }
-    }
-    if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
-    for (const strangeOb of strangeObs) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
-    }
+  // debugDraw(
+  //   triangles: Tr[],
+  //   perimEdges: Set<Ed>,
+  //   poly: Polyline,
+  //   originalPoly: Polyline,
+  //   strangeObs: Polyline[] = [],
+  //   ls: LineSegment = null,
+  // ) {
+  //   const dc = []
+  //   // if (ls) {
+  //   //   dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
+  //   // }
+  //   const box = this.poly.boundingBox.clone()
+  //   box.addRec(this.sourcePoly.boundingBox)
+  //   box.addRec(this.targetPoly.boundingBox)
+  //   for (const t of triangles) {
+  //     if (t.BoundingBox().intersects(box) == false) continue
+  //     for (const e of t.Edges) {
+  //       dc.push(
+  //         DebugCurve.mkDebugCurveTWCI(
+  //           e.constrained ? 150 : 100,
+  //           e.constrained ? 1.5 : 1,
+  //           'Cyan',
+  //           LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
+  //         ),
+  //       )
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
+  //   for (const strangeOb of strangeObs) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
+  //   }
 
-    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
 
-    SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
-  }
+  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  // }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
@@ -462,26 +479,36 @@ export class PathOptimizer {
       }
     }
   }
-  test(peremiter: Set<CdtEdge>, originalPoly: Polyline) {
-    for (const obs of this.polyRTree.GetNodeItemsIntersectingRectangle(this.poly.boundingBox)) {
-      if (obs == this.sourcePoly || obs == this.targetPoly) continue
-      const xs = Curve.getAllIntersections(this.poly, obs, false)
-      if (xs.length == 2) {
-        for (const p of pointsBetweenIntersections(this.poly, xs)) {
-          if (Curve.PointRelativeToCurveLocation(p, obs) == PointLocation.Inside) {
-            //this.debugDraw(Array.from(this.triangles), peremiter, this.poly, originalPoly, [obs])
-            console.log(debCount)
-          }
-        }
-      }
-      function* pointsBetweenIntersections(a: ICurve, xx: Array<IntersectionInfo>): IterableIterator<Point> {
-        xx.sort((x, y) => x.par0 - y.par0)
-        for (let i = 0; i < xx.length - 1; i++) {
-          yield a.value((xx[i].par0 + xx[i + 1].par0) / 2)
-        }
-      }
-    }
-  }
+  // test(peremiter: Set<CdtEdge>, originalPoly: Polyline) {
+  //   for (const t of this.triangles) {
+  //     if (this.insideSourceOrTargetPoly(t)) continue
+  //     const per = trianglePerimeter(t)
+
+  //     const x = Curve.intersectionOne(originalPoly, per, false)
+  //     if (x == null) {
+  //       this.debugDraw(Array.from(this.triangles), peremiter, this.poly, originalPoly, [per])
+  //     }
+  //     Assert.assert(x != null, 'triangle is separated from the polyline')
+  //   }
+  //   // for (const obs of this.polyRTree.GetNodeItemsIntersectingRectangle(this.poly.boundingBox)) {
+  //   //   if (obs == this.sourcePoly || obs == this.targetPoly) continue
+  //   //   const xs = Curve.getAllIntersections(this.poly, obs, false)
+  //   //   if (xs.length == 2) {
+  //   //     for (const p of pointsBetweenIntersections(this.poly, xs)) {
+  //   //       if (Curve.PointRelativeToCurveLocation(p, obs) == PointLocation.Inside) {
+  //   //         //// this.debugDraw(Array.from(this.triangles), peremiter, this.poly, originalPoly, [obs])
+  //   //         console.log(debCount)
+  //   //       }
+  //   //     }
+  //   //   }
+  //   //   function* pointsBetweenIntersections(a: ICurve, xx: Array<IntersectionInfo>): IterableIterator<Point> {
+  //   //     xx.sort((x, y) => x.par0 - y.par0)
+  //   //     for (let i = 0; i < xx.length - 1; i++) {
+  //   //       yield a.value((xx[i].par0 + xx[i + 1].par0) / 2)
+  //   //     }
+  //   //   }
+  //   // }
+  // }
   private initDiagonals(sleeve: FrontEdge[]) {
     for (const sleeveEdge of sleeve) {
       const e = sleeveEdge.edge
@@ -548,7 +575,7 @@ export class PathOptimizer {
   end: Point
 
   front = new Queue<FrontEdge>()
-  passedTrs: Tr[]
+  passedTrs = new Set<Tr>()
   canPierce(tr: Tr, e: Ed) {
     return tr && !this.visitedInThreader.has(e.GetOtherTriangle_T(tr)) && this.edgeCanBePierced(e)
   }
@@ -558,10 +585,10 @@ export class PathOptimizer {
     this.start = start
     this.end = end
     this.visitedInThreader.clear()
-    const passedTriClone = this.passedTrs.map((p) => p)
-    this.passedTrs = []
-    for (const startTriangle of passedTriClone) {
-      this.initFront(startTriangle)
+    const passedTriClone = Array.from(this.passedTrs).map((p) => p)
+    this.passedTrs.clear()
+    for (const t of passedTriClone) {
+      this.initFront(t)
     }
 
     //Assert.assert(Tr.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
@@ -581,10 +608,8 @@ export class PathOptimizer {
 The function also sets the positiveSign and negativeSign fields to store the signs of the vertices on either side of the pierced edge. This is useful for finding the next triangle in the path of the segment. */
 
   initFront(tr: Tr) {
-    if (Tr.PointLocationForTriangle(this.end, tr) !== PointLocation.Outside) {
-      // there will not be peirced edges, we are staying inside of tr
-      this.passedTrs.push(tr)
-      return
+    if (tr.containsPoint(this.end)) {
+      this.passedTrs.add(tr)
     }
     const sign0 = this.GetHyperplaneSign(tr.Sites.item0)
     const sign1 = this.GetHyperplaneSign(tr.Sites.item1)
@@ -592,32 +617,44 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     if (this.canPierce(tr, tr.Edges.item0) && sign0 !== sign1) {
       if (Point.getTriangleOrientation(this.end, tr.Sites.item0.point, tr.Sites.item1.point) == TriangleOrientation.Clockwise) {
         const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item0, rightSign: sign0, leftSign: sign1}
-        this.front.enqueue(frontEdge)
+        this.enqueueInFront(frontEdge)
       }
     }
     const sign2 = this.GetHyperplaneSign(tr.Sites.item2)
     if (this.canPierce(tr, tr.Edges.item1) && sign1 !== sign2) {
       if (Point.getTriangleOrientation(this.end, tr.Sites.item1.point, tr.Sites.item2.point) == TriangleOrientation.Clockwise) {
         const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item1, rightSign: sign1, leftSign: sign2}
-        this.front.enqueue(frontEdge)
+        this.enqueueInFront(frontEdge)
       }
     }
 
     if (this.canPierce(tr, tr.Edges.item2) && sign0 !== sign2) {
-      const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item2, rightSign: sign2, leftSign: sign0}
-      this.front.enqueue(frontEdge)
+      if (Point.getTriangleOrientation(this.end, tr.Sites.item2.point, tr.Sites.item0.point) == TriangleOrientation.Clockwise) {
+        const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item2, rightSign: sign2, leftSign: sign0}
+        this.enqueueInFront(frontEdge)
+      }
     }
+  }
+  enqueueInFront(frontEdge: FrontEdge) {
+    this.front.enqueue(frontEdge)
   }
   /** returns true if arrived into the triangle containing end */
   private processFrontEdge(fe: FrontEdge) {
-    ++debCount
     //Assert.assert(this.negativeSign < this.positiveSign)
     const tr = targetOfFrontEdge(fe)
     if (tr == null) return false
-    this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, [triPerimeter(tr)])
+    // this.debugDraw(
+    //   Array.from(this.cdt.GetTriangles()),
+    //   null,
+    //   null,
+    //   this.poly,
+    //   [trianglePerimeter(tr)],
+    //   LineSegment.mkPP(this.start, this.end),
+    // )
+
     this.visitedInThreader.add(tr)
     if (tr.containsPoint(this.end)) {
-      this.passedTrs.push(tr)
+      this.passedTrs.add(tr)
       return
     }
 
@@ -627,12 +664,39 @@ The function also sets the positiveSign and negativeSign fields to store the sig
 
     const e1 = this.canPierce(tr, tr.Edges.getItem(i + 1))
     const e2 = this.canPierce(tr, tr.Edges.getItem(i + 2))
+    if (!e1 && !e2) return
     const oppositeSiteSign = this.GetHyperplaneSign(oppositeSite)
     if (e1 && oppositeSiteSign < fe.rightSign) {
-      this.front.enqueue({source: tr, edge: tr.Edges.getItem(i + 1), leftSign: oppositeSiteSign, rightSign: fe.rightSign})
+      this.enqueueInFront({source: tr, edge: tr.Edges.getItem(i + 1), leftSign: oppositeSiteSign, rightSign: fe.rightSign})
     }
     if (e2 && oppositeSiteSign > fe.leftSign) {
-      this.front.enqueue({source: tr, edge: tr.Edges.getItem(i + 2), leftSign: fe.leftSign, rightSign: oppositeSiteSign})
+      this.enqueueInFront({source: tr, edge: tr.Edges.getItem(i + 2), leftSign: fe.leftSign, rightSign: oppositeSiteSign})
+    }
+  }
+  extendPassedTrsByContainingPoint(p: Point) {
+    const q = new Queue<Tr>()
+    for (const t of this.passedTrs) {
+      q.enqueue(t)
+    }
+    while (q.length) {
+      const t = q.dequeue()
+      for (const ot of this.neigborsInChannel(t)) {
+        if (this.passedTrs.has(ot)) {
+          continue
+        }
+        if (ot.containsPoint(p)) {
+          this.passedTrs.add(ot)
+          q.enqueue(ot)
+        }
+      }
+    }
+  }
+  *neigborsInChannel(t: Tr): IterableIterator<Tr> {
+    for (const e of t.Edges) {
+      if (this.edgeCanBePierced(e) === false) continue
+      const ot = e.GetOtherTriangle_T(t)
+      if (this.visitedInThreader.has(ot)) continue
+      yield ot
     }
   }
 
@@ -686,7 +750,7 @@ function triangleIsInsideOfObstacle(t: Tr): boolean {
 //   }
 //   return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
 // }
-function triPerimeter(currentTriangle: Tr): Polyline {
+function trianglePerimeter(currentTriangle: Tr): Polyline {
   return Polyline.mkClosedFromPoints(Array.from(currentTriangle.Sites).map((s) => s.point))
 }
 

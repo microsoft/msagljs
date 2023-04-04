@@ -216,10 +216,14 @@ export class SplineRouter extends Algorithm {
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
   rerouteOnSubsetOfNodes(activeNodes: Set<Node>) {
-    if (this.loosePolylinesToNodes == null) {
-      this.calcLooseShapesToNodes()
-    }
+    this.RouteMultiEdgesAsBundles = false
+    this.edges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
+    const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
+    this.rootShapes = obstacles.filter((s) => s.Parents == null || s.Parents.length === 0)
     this.GetOrCreateRoot()
+    this.CalculateShapeToBoundaries(this.root)
+    this.calcLooseShapesToNodes()
+    this.CalculatePortsToShapes()
     this.rerouteOnActiveNodes(activeNodes)
     this.RemoveRoot()
   }
