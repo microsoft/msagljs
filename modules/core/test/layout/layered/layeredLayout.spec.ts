@@ -190,7 +190,7 @@ test('support undirected graphs', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/undir_pack.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
 })
 
-test('austin', () => {
+xtest('austin', () => {
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
   const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)

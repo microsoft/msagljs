@@ -3,10 +3,18 @@
 import {CdtEdge} from './CdtEdge'
 import {CdtTriangle} from './CdtTriangle'
 export class CdtSite {
+  cleanRemovedEdges() {
+    for (const e of this.Edges) {
+      if (isRemoved(e)) {
+        this.Edges.splice(this.Edges.indexOf(e), 1)
+        console.log('removed edge from site')
+      }
+    }
+  }
   // Object to which this site refers to.
   Owner: any = null
 
-  readonly point: Point
+  point: Point
 
   // each CdtSite points to the edges for which it is the upper virtex ( for horizontal edges it is the left point)
   public Edges: Array<CdtEdge>
@@ -90,4 +98,7 @@ export class CdtSite {
   toString(): string {
     return this.point.toString()
   }
+}
+function isRemoved(e: CdtEdge) {
+  return e.CcwTriangle == null && e.CwTriangle == null
 }

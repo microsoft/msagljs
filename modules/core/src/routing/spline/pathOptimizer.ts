@@ -7,15 +7,14 @@ import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdg
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
-import {Assert} from '../../utils/assert'
 // import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 // import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is not assumed that the polyline passes only through the sites of the cdt.
  */
-let debCount = 0
-const drawCount = 0
+// let debCount = 0
+// let drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -107,7 +106,15 @@ export class PathOptimizer {
    */
   addPiercedTrianglesOnSegment(start: Point, end: Point) {
     this.extendPassedTrsByContainingPoint(start)
-    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
+    // if (debCount == 19)
+    //   this.debugDraw(
+    //     Array.from(this.cdt.GetTriangles()),
+    //     null,
+    //     null,
+    //     this.poly,
+    //     Array.from(this.triangles).map(trianglePerimeter),
+    //     LineSegment.mkPP(start, end),
+    //   )
     this.createThreader(start, end)
     if (this.passedTrs.size) {
       this.front = new Queue<FrontEdge>()
@@ -163,7 +170,7 @@ export class PathOptimizer {
 
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline) {
-    ++debCount
+    // ++debCount
     this.triangles.clear()
 
     this.poly = poly
@@ -171,7 +178,7 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    // if (debCount == 2) {
+    // if (debCount == 19) {
     //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
     // }
     this.findChannelTriangles()
