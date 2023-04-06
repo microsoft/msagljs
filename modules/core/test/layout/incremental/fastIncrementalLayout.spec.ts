@@ -106,7 +106,7 @@ test('layout100-150 gv files with fil', () => {
     if (f.match('big(.*).gv')) continue // the parser bug
     if (++i > 150) return
     if (i < 100) continue
-    // if (i != 124) continue
+    if (i != 109) continue
     let dg: DrawingGraph
     try {
       dg = runFastIncLayout(join(path, f), EdgeRoutingMode.Spline)

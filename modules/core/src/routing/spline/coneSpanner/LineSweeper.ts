@@ -675,7 +675,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     const node: RBNode<ConeSide> = this.GetLastNodeToTheLeftOfPointInRightSegmentTree(obstacleSideStart)
     if (node != null) {
       const isConeRightSide = node.item instanceof ConeRightSide
-      if (isConeRightSide != null) {
+      if (isConeRightSide) {
         const intersection = Point.IntervalIntersectsRay(
           obstacleSideStart,
           obstacleSideVertex.point,
