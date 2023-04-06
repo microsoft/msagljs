@@ -1,4 +1,5 @@
 import {LineSegment, Point, GeomConstants} from '../../../src/math/geometry'
+import {segmentsIntersect} from '../../../src/math/geometry/lineSegment'
 import {closeDistEps} from '../../../src/utils/compare'
 
 test('lineSegment basic case', () => {
@@ -17,6 +18,16 @@ test('lineSegment basic case', () => {
   expect(Point.close(intersection, p0, GeomConstants.distanceEpsilon)).toBe(true)
   const inters0 = LineSegment.IntersectPPPP(new Point(1, 1.1), p1, p0, p2)
   expect(inters0).toBe(undefined)
+})
+
+test('overlap', () => {
+  const a = new Point(1, 1)
+  const b = new Point(2, 1)
+  const c = new Point(1.1, 1)
+  const d = new Point(1.2, 1)
+  expect(segmentsIntersect(a, b, c, d)).toBe(true)
+  expect(segmentsIntersect(a, d, c, b)).toBe(true)
+  expect(segmentsIntersect(a, c, d, b)).toBe(false)
 })
 test('lineSegment mindist test 0', () => {
   const a = new Point(0, 0)

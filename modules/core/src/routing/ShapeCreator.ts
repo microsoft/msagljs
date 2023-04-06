@@ -13,11 +13,11 @@ import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
 
 export class ShapeCreator {
-  // For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
-  // according to the cluster hierarchy
-
-  // graph with edges to route and nodes/clusters to route around
-  // <returns>the set of obstacles with correct cluster hierarchy and ports</returns>
+  /**  For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
+       according to the cluster hierarchy
+       graph with edges to route and nodes/clusters to route around.
+       Returns the set of obstacles with correct cluster hierarchy and ports
+  */
   public static GetShapes(graph: GeomGraph, edges: GeomEdge[] = Array.from(graph.shallowEdges)): Array<Shape> {
     const nodesToShapes = new Map<GeomNode, Shape>()
     getShapesUnderGraph(graph, nodesToShapes)

@@ -1,4 +1,5 @@
 import {parseJSON} from '../../../../parser/src/jsonparser'
+import {parseDot} from '../../../../parser/src/dotparser'
 import * as fs from 'fs'
 import * as path from 'path'
 import {
@@ -23,6 +24,8 @@ import {
   Curve,
   SplineRouter,
   FastIncrementalLayoutSettings,
+  CurveClip,
+  MdsLayoutSettings,
 } from '../../../src'
 import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 import {DrawingGraph} from '../../../src/drawing/drawingGraph'
@@ -32,6 +35,7 @@ import {initRandom} from '../../../src/utils/random'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
+import {PivotMDS} from '../../../src/layout/mds/pivotMDS'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
@@ -193,7 +197,7 @@ test('intersectedEnities', () => {
   }
 })
 
-xtest('tiles gameofthrones', () => {
+test('tiles gameofthrones', () => {
   // const fpath = path.join(__dirname, '../../../../../examples/data/gameofthrones.json')
   // const graphStr = fs.readFileSync(fpath, 'utf-8')
 
@@ -220,12 +224,52 @@ xtest('tiles gameofthrones', () => {
   geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
   const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
   sr.run()
-  const ts = new TileMap(geomGraph, geomGraph.boundingBox, geomGraph.beautifyEdges)
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
   //dumpTiles(ts)
 })
 
-test('clipWithRectangleInsideInterval', () => {
+test('mds with length', () => {
+  const dotString =
+    'graph G {\n' +
+    'run -- intr;\n' +
+    'intr -- runbl;\n' +
+    'runbl -- run;\n' +
+    'run -- runmem;\n' +
+    /* run -- kernel; */
+    'kernel -- zombie;\n' +
+    'kernel -- sleep;\n' +
+    'kernel -- runmem;\n' +
+    'sleep -- swap;\n' +
+    'swap -- runswap;\n' +
+    'runswap -- new;\n' +
+    'runswap -- runmem;\n' +
+    'new -- runmem;\n' +
+    'sleep -- runmem;\n' +
+    '}'
+  const g = parseDot(dotString)
+  const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
+  const geomGraph = dg.createGeometry()
+  geomGraph.layoutSettings = new MdsLayoutSettings()
+  const pivotMds = new PivotMDS(geomGraph, null, (e) => length(e), geomGraph.layoutSettings as MdsLayoutSettings)
+  pivotMds.run()
+  const sr = new SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
+  sr.run()
+
+  function length(e: GeomEdge) {
+    return nodeWeight(e.source) + nodeWeight(e.target)
+  }
+  function nodeWeight(node: GeomNode): number {
+    if (node.id == 'sleep') {
+      return 5
+    }
+
+    return 1
+  }
+  SvgDebugWriter.writeGeomGraph('./tmp/gra.svg', geomGraph)
+})
+
+test('tile abstract.dot', () => {
   const g = parseDotGraph('graphvis/abstract.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   const geomGraph = dg.createGeometry(() => new Size(20, 20))
@@ -233,33 +277,47 @@ test('clipWithRectangleInsideInterval', () => {
   const ll = new LayeredLayout(geomGraph, ss, new CancelToken())
   ll.run()
   const rect = geomGraph.boundingBox
-  const tileMap = new TileMap(geomGraph, rect, geomGraph.beautifyEdges)
+  const tileMap = new TileMap(geomGraph, rect)
   tileMap.buildUpToLevel(6)
 
-  // dumpTiles(tileMap)
+  //  dumpTiles(tileMap)
 })
-// function dumpTiles(tileMap: TileMap) {
-//   for (let z = 0; ; z++) {
-//     const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
-//     if (tilesOfLevel.length == 0) {
-//       break
-//     }
-//     for (const t of tilesOfLevel) {
-//       try {
-//         SvgDebugWriter.dumpDebugCurves(
-//           './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
-//           t.data.curveClips
-//             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
-//             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
-//             .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-//             .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
-//         )
-//       } catch (Error) {
-//         console.log(Error.message)
-//       }
-//     }
-//   }
-// }
+function dumpTiles(tileMap: TileMap) {
+  for (let z = 0; ; z++) {
+    const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
+    if (tilesOfLevel.length == 0) {
+      break
+    }
+    const ts = tilesOfLevel.filter(tileIsCool)
+    for (const t of ts) {
+      try {
+        const cc = t.data.curveClips.filter(clipIsCool)
+
+        SvgDebugWriter.dumpDebugCurves(
+          './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
+          cc
+            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
+            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
+            .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+            .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+        )
+      } catch (Error) {
+        console.log(Error.message)
+      }
+    }
+  }
+}
+
+function clipIsCool(c: CurveClip) {
+  return c.edge.source.id == 'NED' && c.edge.target.id == 'STEFFON'
+}
+
+function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): unknown {
+  for (const c of t.data.curveClips) {
+    if (clipIsCool(c)) return true
+  }
+  return false
+}
 // function isLegal(e: GeomEdge): boolean {
 //   const c = e.curve
 //   if (c instanceof Curve) {

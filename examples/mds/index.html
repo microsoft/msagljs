@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>MSAGL</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/renderer-svg@latest/dist.min.js"></script>
+    <script>
+      let dotString =
+        'graph G {\n' +
+        'run -- intr;\n' +
+        'intr -- runbl;\n' +
+        'runbl -- run;\n' +
+        'run -- runmem;\n' +
+        /* run -- kernel; */
+        'kernel -- zombie;\n' +
+        'kernel -- sleep;\n' +
+        'kernel -- runmem;\n' +
+        'sleep -- swap;\n' +
+        'swap -- runswap;\n' +
+        'runswap -- new;\n' +
+        'runswap -- runmem;\n' +
+        'new -- runmem;\n' +
+        'sleep -- runmem;\n' +
+        '}'
+      let m = msagl.pivotMds
+      let g = msagl.parseDot(dotString)
+      let dg = msagl.DrawingGraph.getDrawingObj(g) // as DrawingGraph
+      let geomGraph = dg.createGeometry()
+      geomGraph.layoutSettings = new msagl.MdsLayoutSettings()
+      let pivotMds = new msagl.PivotMDS(geomGraph, null, length, geomGraph.layoutSettings)
+
+      pivotMds.run()
+      let sr = new msagl.SplineRouter(geomGraph, Array.from(geomGraph.deepEdges))
+      sr.run()
+      let renderer = new msagl.RendererSvg()
+      renderer.needCalculateLayout = false
+      renderer.needCreateGeometry = false
+      renderer.setGraph(g)
+      function length(e /* GeomEdge*/) {
+        return nodeWeight(e.source) + nodeWeight(e.target)
+      }
+      function nodeWeight(node /*: GeomNode */) {
+        if (node.id == 'sleep') {
+          // surround sleep with long edges
+          return 5
+        }
+        return 1
+      }
+    </script>
+  </body>
+</html>

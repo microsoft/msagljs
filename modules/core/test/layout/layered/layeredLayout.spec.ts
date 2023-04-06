@@ -39,6 +39,7 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
+import {pointIsOnSegment} from '../../../src/math/geometry/lineSegment'
 type P = [number, number]
 
 test('map test', () => {
@@ -548,7 +549,7 @@ function duplicateDisconnected(g: GeomGraph, suffix: string) {
 function crossed(u: GeomEdge, v: GeomEdge): boolean {
   const r = LineSegment.IntersectPPPP(u.source.center, u.target.center, v.source.center, v.target.center)
   if (r) {
-    return LineSegment.xIsBetweenPoints(u.source.center, u.target.center, r)
+    return pointIsOnSegment(u.source.center, u.target.center, r)
   }
   return false
 }

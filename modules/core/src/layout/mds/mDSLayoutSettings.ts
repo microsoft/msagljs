@@ -82,9 +82,9 @@ export class MdsLayoutSettings implements ILayoutSettings {
 
   private iterationsWithMajorization = 30
 
-  private scaleX = 200
+  private scaleX = 100
 
-  private scaleY = 200
+  private scaleY = 100
 
   private exponent = -2
 

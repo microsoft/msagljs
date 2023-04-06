@@ -1,4 +1,5 @@
 ﻿import {PointLocation, GeomConstants, LineSegment} from '../../math/geometry'
+import {segmentsIntersect} from '../../math/geometry/lineSegment'
 import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {Rectangle} from '../../math/geometry/rectangle'
 
@@ -26,12 +27,13 @@ export class CdtTriangle {
 
     return seenBoundary ? PointLocation.Boundary : PointLocation.Inside
   }
-  intersectsLine(a: Point, b: Point): boolean {
+  /** extend by eps the triangles edges before the test */
+  intersectsLine(a: Point, b: Point, eps: number): boolean {
     if (CdtTriangle.PointLocationForTriangle(a, this) != PointLocation.Outside) return true
     if (CdtTriangle.PointLocationForTriangle(b, this) != PointLocation.Outside) return true
 
     for (const e of this.Edges) {
-      if (LineSegment.IntersectPPPP(a, b, e.lowerSite.point, e.upperSite.point)) return true
+      if (this.abIntersectsTrianglSide(a, b, e)) return true
     }
     return false
   }
@@ -40,6 +42,10 @@ export class CdtTriangle {
 
   // the sites
   public Sites: ThreeArray<CdtSite> = new ThreeArray<CdtSite>()
+
+  private abIntersectsTrianglSide(a: Point, b: Point, e: CdtEdge) {
+    return segmentsIntersect(a, b, e.lowerSite.point, e.upperSite.point)
+  }
 
   static mkSSSD(a: CdtSite, b: CdtSite, c: CdtSite, createEdgeDelegate: (a: CdtSite, b: CdtSite) => CdtEdge) {
     const orientation = Point.getTriangleOrientation(a.point, b.point, c.point)

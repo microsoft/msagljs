@@ -35,7 +35,6 @@ export class Tile {
     this.nodes = []
     this.labels = []
   }
-  static dc = 0
   static mk(curveClips: CurveClip[], arrows: ArrowHeadData[], nodes: GeomNode[], labels: GeomLabel[], rect: Rectangle): Tile {
     const t = new Tile()
     t.curveClips = curveClips
@@ -61,10 +60,6 @@ export class Tile {
     } else if (data instanceof GeomLabel) {
       this.labels.push(data)
     } else if ('curve' in data) {
-      if (data.edge.source.id === '2141' && data.edge.target.id === '2572') {
-        Tile.dc++
-        console.log(Tile.dc)
-      }
       this.curveClips.push(data)
     } else {
       this.arrowheads.push(data)
