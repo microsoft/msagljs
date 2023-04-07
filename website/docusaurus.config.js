@@ -92,7 +92,18 @@ const config = configure({
           },
         }
       }
-    }]
+    },
+    {
+      lang: "dot",
+      html: "./tools/msagl.html",
+      timeout: 120000,
+      outputFiles: [
+        {
+          name: "output.svg",
+          title: "Generated graph",
+        },
+      ]
+    },]
   },
   sideEditor: {
     editors: [
