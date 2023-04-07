@@ -1474,7 +1474,7 @@ export class Curve implements ICurve {
   }
   // Return points between but not including the intersections.
   static *PointsBetweenIntersections(a: ICurve, xx: Array<IntersectionInfo>): IterableIterator<Point> {
-    xx.sort((x, y) => (x.par0 < y.par0 ? -1 : x.par0 > y.par0 ? 1 : 0))
+    xx.sort((x, y) => x.par0 - y.par0)
     for (let i = 0; i < xx.length - 1; i++) {
       yield a.value((xx[i].par0 + xx[i + 1].par0) / 2)
     }

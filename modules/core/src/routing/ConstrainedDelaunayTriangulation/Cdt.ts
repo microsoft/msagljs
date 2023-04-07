@@ -184,6 +184,12 @@ export class Cdt extends Algorithm {
   SweepAndFinalize() {
     this.sweeper = new CdtSweeper(this.allInputSites, this.P1, this.P2, Cdt.GetOrCreateEdge)
     this.sweeper.run()
+    this.cleanRemovedEdges()
+  }
+  cleanRemovedEdges() {
+    for (const site of this.PointsToSites.values()) {
+      site.cleanRemovedEdges()
+    }
   }
 
   private Initialization() {
@@ -226,7 +232,7 @@ export class Cdt extends Algorithm {
     }
   }
 
-  private SetInEdges() {
+  SetInEdges() {
     for (const site of this.PointsToSites.values()) {
       for (const e of site.Edges) {
         const oSite = e.lowerSite

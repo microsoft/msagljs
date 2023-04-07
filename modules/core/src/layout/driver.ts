@@ -206,7 +206,6 @@ export function layoutGeomGraphDetailed(
   }
 
   // end of layoutGeomGraphDetailed body
-
   function getUnroutedEdges(g: GeomGraph): Array<GeomEdge> {
     const edges = []
     for (const n of g.nodesBreadthFirst) {

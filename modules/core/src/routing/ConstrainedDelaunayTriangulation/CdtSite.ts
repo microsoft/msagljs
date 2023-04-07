@@ -3,6 +3,13 @@
 import {CdtEdge} from './CdtEdge'
 import {CdtTriangle} from './CdtTriangle'
 export class CdtSite {
+  cleanRemovedEdges() {
+    for (const e of this.Edges) {
+      if (e.CcwTriangle === null && e.CwTriangle === null) {
+        this.Edges.splice(this.Edges.indexOf(e), 1)
+      }
+    }
+  }
   // Object to which this site refers to.
   Owner: any = null
 

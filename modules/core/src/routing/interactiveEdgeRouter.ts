@@ -33,14 +33,17 @@ import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
-    let poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
-    const loosePolyOfSource = InteractiveEdgeRouter.GetFirstHitPolyline(poly.start, this.ObstacleCalculator.RootOfLooseHierarchy)
-    const loosePolyOfTarget = InteractiveEdgeRouter.GetFirstHitPolyline(poly.end, this.ObstacleCalculator.RootOfLooseHierarchy)
-    this.pathOptimizer.run(poly, loosePolyOfSource, loosePolyOfTarget)
-    poly = this.pathOptimizer.poly
-    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-    this.SmoothenCorners(edge.smoothedPolyline)
-    edge.curve = edge.smoothedPolyline.createCurve()
+    const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
+    this.pathOptimizer.run(poly)
+    edge.curve = this.pathOptimizer.poly.toCurve()
+    // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
+    //   DebugCurve.mkDebugCurveCI('Red', edge.source.boundaryCurve),
+    //   DebugCurve.mkDebugCurveCI('Blue', edge.target.boundaryCurve),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Black', poly),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Red', loosePolyOfSource),
+    //   DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', loosePolyOfTarget),
+    //   DebugCurve.mkDebugCurveTWCI(200, 1.5, 'Magenta', edge.curve),
+    // ])
   }
   pathOptimizer: PathOptimizer
   static constructorANNN(obstacles: ICurve[], padding: number, loosePadding: number, coneSpannerAngle: number): InteractiveEdgeRouter {
@@ -680,15 +683,10 @@ export class InteractiveEdgeRouter extends Algorithm {
     }
 
     // Assert.assert(path[0] === sourceVisVertex && path[path.length - 1] === _targetVisVertex)
-    let ret = new Polyline()
-    for (const v of path) {
-      ret.addPoint(v.point)
-    }
-
-    ret = ret.RemoveCollinearVertices()
+    let ret = Polyline.mkFromPoints(Array.from(path).map((p) => p.point)).RemoveCollinearVertices()
     if (this.pathOptimizer) {
-      this.pathOptimizer.run(ret, this.SourceLoosePolyline, this.targetLoosePolyline)
-      return this.pathOptimizer.poly
+      this.pathOptimizer.run(ret)
+      ret = this.pathOptimizer.poly
     }
     return ret
   }
@@ -895,7 +893,6 @@ export class InteractiveEdgeRouter extends Algorithm {
       this.SourceTightPolyline = null
     }
 
-    this.TryShortcutPolyline()
     this.SourceTightPolyline = tmp
     this._polyline.PrependPoint(sourcePortLocation)
     //  return this._polyline
@@ -918,99 +915,9 @@ export class InteractiveEdgeRouter extends Algorithm {
     if (this._polyline == null) {
       return null
     }
-    if (this.UseSpanner) {
-      this.TryShortcutPolyline()
-    }
 
     t.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
     return this.SmoothCornersAndReturnCurve(smooth, t)
-  }
-
-  TryShortcutPolyline() {
-    return
-    if (this.UseInnerPolylingShortcutting) {
-      while (this.ShortcutPolylineOneTime()) {}
-    }
-
-    if (this.UsePolylineEndShortcutting) {
-      this.TryShortCutThePolylineEnds()
-    }
-  }
-
-  TryShortCutThePolylineEnds() {
-    this.TryShortcutPolylineStart()
-    this.TryShortcutPolylineEnd()
-  }
-
-  TryShortcutPolylineEnd(): boolean {
-    const a: PolylinePoint = this._polyline.endPoint
-    const b: PolylinePoint = a.prev
-    if (b == null) {
-      return false
-    }
-
-    const c: PolylinePoint = b.prev
-    if (c == null) {
-      return false
-    }
-
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
-      a.prev = c
-      c.next = a
-      a.polyline.setInitIsRequired()
-      return true
-    }
-
-    const m: Point = Point.middle(b.point, c.point)
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, m, this._sourceTightPolyline, this.targetTightPolyline)) {
-      const p = PolylinePoint.mkFromPoint(m)
-      p.next = a
-      p.prev = c
-      a.prev = p
-      c.next = p
-      a.polyline.setInitIsRequired()
-      return true
-    }
-    return false
-  }
-
-  TryShortcutPolylineStart(): boolean {
-    const a: PolylinePoint = this._polyline.startPoint
-    const b: PolylinePoint = a.next
-    if (b == null) {
-      return
-    }
-
-    const c: PolylinePoint = b.next
-    if (c == null) {
-      return
-    }
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
-      a.next = c
-      c.prev = a
-      a.polyline.setInitIsRequired()
-      return true
-    }
-
-    const m: Point = Point.middle(b.point, c.point)
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, m, this._sourceTightPolyline, this.targetTightPolyline)) {
-      const p = PolylinePoint.mkFromPoint(m)
-      p.prev = a
-      p.next = c
-      a.next = p
-      c.prev = p
-      a.polyline.setInitIsRequired()
-      return true
-    }
-  }
-
-  ShortcutPolylineOneTime(): boolean {
-    let ret = false
-    for (let pp: PolylinePoint = this._polyline.startPoint; pp.next != null && pp.next.next != null; pp = pp.next) {
-      ret = ret || this.TryShortcutPolyPoint(pp)
-    }
-
-    return ret
   }
 
   TryShortcutPolyPoint(pp: PolylinePoint): boolean {
@@ -1201,7 +1108,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
             this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
             const r: {tmpTargetTight: Polyline} = {tmpTargetTight: null}
             const tmpSourceTight: Polyline = this.HideSourceTargetTightsIfNeeded(r)
-            this.TryShortcutPolyline()
             this.RecoverSourceTargetTights(tmpSourceTight, r.tmpTargetTight)
             this._polyline.PrependPoint(sourcePortLocation)
             this._polyline.addPoint(targetPortLocation)
@@ -1523,10 +1429,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
     this._polyline = this.GetShortestPolylineToMulitpleTargets(this.sourceVV, Array.from(this.Targets(targetLoosePoly)))
     if (this._polyline == null) {
       return null
-    }
-
-    if (this.UseSpanner) {
-      this.TryShortcutPolyline()
     }
 
     this.FixLastPolylinePointForAnywherePort(port)
