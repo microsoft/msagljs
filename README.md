@@ -8,7 +8,7 @@
 - `@msagl/parser`: convert common formats to MSAGL Graph instances
 - `@msagl/renderer`: a WebGL-powered rendering component
 
-- [Read the documentation](https://microsoft.github.io/msagljs)
+- [Read the documentation](https://microsoft.github.io/msagljs/)
 
 ## The latest
 
