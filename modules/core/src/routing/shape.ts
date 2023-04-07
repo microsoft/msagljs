@@ -6,7 +6,7 @@ import {Rectangle} from '../math/geometry/rectangle'
 export class Shape {
   private parents: Set<Shape> = new Set<Shape>()
   private children: Set<Shape> = new Set<Shape>()
-  id: number
+  
 
   public get Parents(): Array<Shape> {
     return Array.from(this.parents.values())

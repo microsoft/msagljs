@@ -343,20 +343,20 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
     const vertexEvent = p instanceof VertexEvent
     if (vertexEvent) {
-      this.ProcessVertexEvent(<VertexEvent>p)
+      this.ProcessVertexEvent(p)
     } else {
       const rightIntersectionEvent = p instanceof RightIntersectionEvent
       if (rightIntersectionEvent) {
-        this.ProcessRightIntersectionEvent(<RightIntersectionEvent>p)
+        this.ProcessRightIntersectionEvent(p)
       } else {
         const leftIntersectionEvent = p instanceof LeftIntersectionEvent
         if (leftIntersectionEvent) {
-          this.ProcessLeftIntersectionEvent(<LeftIntersectionEvent>p)
+          this.ProcessLeftIntersectionEvent(p)
         } else {
           const coneClosure = p instanceof ConeClosureEvent
           if (coneClosure) {
-            if (!(<ConeClosureEvent>p).ConeToClose.Removed) {
-              this.RemoveCone((<ConeClosureEvent>p).ConeToClose)
+            if (!p.ConeToClose.Removed) {
+              this.RemoveCone(p.ConeToClose)
             }
           } else {
             this.ProcessPortObstacleEvent(<PortObstacleEvent>p)
@@ -439,7 +439,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   ProcessRightIntersectionEvent(rightIntersectionEvent: RightIntersectionEvent) {
     // restore Z for the time being
     // Z = PreviousZ;
-    if (rightIntersectionEvent.coneRightSide.Removed === false) {
+    if (!rightIntersectionEvent.coneRightSide.Removed) {
       // it can happen that the cone side participating in the intersection is gone;
       // obstracted by another obstacle or because of a vertex found inside of the cone
       // PrintOutRightSegTree();
@@ -462,7 +462,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   TryCreateConeClosureForRightSide(rightSide: BrokenConeSide) {
     const isConeLeftSide = rightSide.Cone.LeftSide instanceof ConeLeftSide
     if (isConeLeftSide) {
-      const coneLeftSide = <ConeLeftSide>rightSide.Cone.LeftSide
+      const coneLeftSide = rightSide.Cone.LeftSide
       if (
         Point.getTriangleOrientation(coneLeftSide.Start, coneLeftSide.Start.add(coneLeftSide.Direction), rightSide.EndVertex.point) ==
         TriangleOrientation.Counterclockwise
@@ -946,7 +946,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     // Show(new Ellipse(10, 5, rightNode.item.start));
     const isConeRightSide = rightNode.item instanceof ConeRightSide
     if (isConeRightSide) {
-      const crs = <ConeRightSide>rightNode.item
+      const crs = rightNode.item
       // rightNode = rightSegmentTree.TreeSuccessor(rightNode);
       // if (rightNode != null) {
       //    var seg = rightNode.item as ObstacleSideSegment;
@@ -1000,22 +1000,28 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
     }
   }
 
-  Show(curves: ICurve[], fn: string) {
-    let l = Array.from(this.Obstacles).map((o) => DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Blue', o))
-    for (const s of this.rightConeSides) {
-      l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Brown', this.ExtendSegmentToZ(s)))
-      if (s instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('brown', LineSweeper.Diamond(s.start)))
-      l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Green', this.ExtendSegmentToZ(s.Cone.LeftSide)))
-      if (s.Cone.LeftSide instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('green', LineSweeper.Diamond(s.Cone.LeftSide.start)))
-    }
-    l = l.concat(
-      Array.from(this.visibilityGraph.Edges).map((edge) =>
-        DebugCurve.mkDebugCurveWCI(2, 'Black', LineSegment.mkPP(edge.SourcePoint, edge.TargetPoint)),
-      ),
-    )
-    l = l.concat(curves.map((c) => DebugCurve.mkDebugCurveCI('Red', c)))
-    //SvgDebugWriter.dumpDebugCurves(fn, l)
-  }
+  // Show(curves: ICurve[], fn: string) {
+  //   let l = Array.from(this.Obstacles).map((o) => DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Blue', o))
+  //   for (const s of this.rightConeSides) {
+  //     l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Brown', this.ExtendSegmentToZ(s)))
+  //     if (s instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('Brown', LineSweeper.Diamond(s.start)))
+  //     l.push(DebugCurve.mkDebugCurveWCI(0.5, 'Green', this.ExtendSegmentToZ(s.Cone.LeftSide)))
+  //     if (s.Cone.LeftSide instanceof BrokenConeSide) l.push(DebugCurve.mkDebugCurveCI('Green', LineSweeper.Diamond(s.Cone.LeftSide.start)))
+  //   }
+  //   l.push(
+  //     ...Array.from(this.visibilityGraph.Edges).map((edge) =>
+  //       DebugCurve.mkDebugCurveTWCI(100, 0.1, 'Cyan', LineSegment.mkPP(edge.SourcePoint, edge.TargetPoint)),
+  //     ),
+  //   )
+
+  //   l.push(...curves.map((c) => DebugCurve.mkDebugCurveCI('Red', c)))
+  //   l.push(
+  //     ...Array.from(this.eventQueue)
+  //       .filter((e) => e instanceof RightIntersectionEvent)
+  //       .map((e) => DebugCurve.mkDebugCurveCI('Black', LineSweeper.mkRightIntersDiamond(e.Site))),
+  //   )
+  //   SvgDebugWriter.dumpDebugCurves(fn, l)
+  // }
 
   //         static BezierSeg BezierOnEdge(VisibilityEdge edge) {
   //             return new BezierSeg(edge.SourcePoint, 2.0 / 3.0 * edge.SourcePoint + 1.0 / 3.0 * edge.TargetPoint,
@@ -1047,7 +1053,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       return
     }
 
-    const visibleCones: Array<Cone> = [cone]
+    const visibleCones = [cone]
     this.coneSideComparer.SetOperand(leftConeSide)
     rbNode = this.leftConeSides.find(leftConeSide)
     if (rbNode == null) {

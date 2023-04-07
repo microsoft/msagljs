@@ -29,6 +29,7 @@ import {
   PlaneTransformation,
   SplineRouter,
   AttributeRegistry,
+  TileMap,
 } from '../../../src'
 import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot, parseJSON} from '@msagl/parser'
@@ -230,6 +231,10 @@ test('smlred.gv', () => {
   const ss = new SugiyamaLayoutSettings()
   const dg = runLayout('graphvis/smlred.gv', ss)
   SvgDebugWriter.writeGeomGraph('./tmp/smlredLayered.svg', <GeomGraph>GeomObject.getGeom(dg.graph))
+
+  const geomGraph = GeomObject.getGeom(dg.graph) as GeomGraph
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox)
+  ts.buildUpToLevel(6)
 })
 
 test('b51.gv', () => {

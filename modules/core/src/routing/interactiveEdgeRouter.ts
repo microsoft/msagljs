@@ -893,7 +893,6 @@ export class InteractiveEdgeRouter extends Algorithm {
       this.SourceTightPolyline = null
     }
 
-    this.TryShortcutPolyline()
     this.SourceTightPolyline = tmp
     this._polyline.PrependPoint(sourcePortLocation)
     //  return this._polyline
@@ -919,93 +918,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
     t.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
     return this.SmoothCornersAndReturnCurve(smooth, t)
-  }
-
-  TryShortcutPolyline() {
-    return
-    if (this.UseInnerPolylingShortcutting) {
-      while (this.ShortcutPolylineOneTime()) {}
-    }
-
-    if (this.UsePolylineEndShortcutting) {
-      this.TryShortCutThePolylineEnds()
-    }
-  }
-
-  TryShortCutThePolylineEnds() {
-    this.TryShortcutPolylineStart()
-    this.TryShortcutPolylineEnd()
-  }
-
-  TryShortcutPolylineEnd(): boolean {
-    const a: PolylinePoint = this._polyline.endPoint
-    const b: PolylinePoint = a.prev
-    if (b == null) {
-      return false
-    }
-
-    const c: PolylinePoint = b.prev
-    if (c == null) {
-      return false
-    }
-
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
-      a.prev = c
-      c.next = a
-      a.polyline.setInitIsRequired()
-      return true
-    }
-
-    const m: Point = Point.middle(b.point, c.point)
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, m, this._sourceTightPolyline, this.targetTightPolyline)) {
-      const p = PolylinePoint.mkFromPoint(m)
-      p.next = a
-      p.prev = c
-      a.prev = p
-      c.next = p
-      a.polyline.setInitIsRequired()
-      return true
-    }
-    return false
-  }
-
-  TryShortcutPolylineStart(): boolean {
-    const a: PolylinePoint = this._polyline.startPoint
-    const b: PolylinePoint = a.next
-    if (b == null) {
-      return
-    }
-
-    const c: PolylinePoint = b.next
-    if (c == null) {
-      return
-    }
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, c.point, this._sourceTightPolyline, this.targetTightPolyline)) {
-      a.next = c
-      c.prev = a
-      a.polyline.setInitIsRequired()
-      return true
-    }
-
-    const m: Point = Point.middle(b.point, c.point)
-    if (this.LineAvoidsTightHierarchyPPPP(a.point, m, this._sourceTightPolyline, this.targetTightPolyline)) {
-      const p = PolylinePoint.mkFromPoint(m)
-      p.prev = a
-      p.next = c
-      a.next = p
-      c.prev = p
-      a.polyline.setInitIsRequired()
-      return true
-    }
-  }
-
-  ShortcutPolylineOneTime(): boolean {
-    let ret = false
-    for (let pp: PolylinePoint = this._polyline.startPoint; pp.next != null && pp.next.next != null; pp = pp.next) {
-      ret = ret || this.TryShortcutPolyPoint(pp)
-    }
-
-    return ret
   }
 
   TryShortcutPolyPoint(pp: PolylinePoint): boolean {
@@ -1196,7 +1108,6 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
             this._polyline = this.GetShortestPolyline(this.sourceVV, this.targetVV)
             const r: {tmpTargetTight: Polyline} = {tmpTargetTight: null}
             const tmpSourceTight: Polyline = this.HideSourceTargetTightsIfNeeded(r)
-            this.TryShortcutPolyline()
             this.RecoverSourceTargetTights(tmpSourceTight, r.tmpTargetTight)
             this._polyline.PrependPoint(sourcePortLocation)
             this._polyline.addPoint(targetPortLocation)

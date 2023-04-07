@@ -5,9 +5,8 @@ import {CdtTriangle} from './CdtTriangle'
 export class CdtSite {
   cleanRemovedEdges() {
     for (const e of this.Edges) {
-      if (isRemoved(e)) {
+      if (e.CcwTriangle === null && e.CwTriangle === null) {
         this.Edges.splice(this.Edges.indexOf(e), 1)
-        console.log('removed edge from site')
       }
     }
   }
@@ -98,7 +97,4 @@ export class CdtSite {
   toString(): string {
     return this.point.toString()
   }
-}
-function isRemoved(e: CdtEdge) {
-  return e.CcwTriangle == null && e.CwTriangle == null
 }

@@ -727,7 +727,7 @@ export class EdgeLabelPlacement extends Algorithm {
           if (isRectangleObstacle) {
             const isCluster = obstacle.data instanceof GeomGraph
             // ...and the cluster is a grandparent of the source or target...
-            if (isCluster != null && (source.node.isDescendantOf(obstacle.data.graph) || target.node.isDescendantOf(obstacle.data))) {
+            if (isCluster && (source.node.isDescendantOf(obstacle.data.graph) || target.node.isDescendantOf(obstacle.data))) {
               // ...don't consider the overlap to be a conflict.
               continue
             }

@@ -2,8 +2,13 @@
 // This class needs a comparer object to compare elements of the queue.
 
 export class BinaryHeapWithComparer<T> {
-  A: T[]
+  A: T[];
 
+  *[Symbol.iterator]() {
+    for (let i = 1; i <= this.heapSize; i++) {
+      yield this.A[i]
+    }
+  }
   // array of the heap elems starting at A[1]
   heapSize = 0
 

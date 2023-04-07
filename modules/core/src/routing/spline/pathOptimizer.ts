@@ -1,7 +1,5 @@
 import {Queue} from 'queue-typescript'
-import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
 import {GeomConstants, ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
-import {DebugCurve} from '../../math/geometry/debugCurve'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
@@ -9,14 +7,12 @@ import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdg
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
-// import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-// import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is not assumed that the polyline passes only through the sites of the cdt.
- */
-let debCount = 0
-let drawCount = 0
+//  */
+// let debCount = 0
+// let drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -108,15 +104,6 @@ export class PathOptimizer {
    */
   addPiercedTrianglesOnSegment(start: Point, end: Point) {
     this.extendPassedTrsByContainingPoint(start)
-    // if (debCount == 19)
-    //   this.debugDraw(
-    //     Array.from(this.cdt.GetTriangles()),
-    //     null,
-    //     null,
-    //     this.poly,
-    //     Array.from(this.triangles).map(trianglePerimeter),
-    //     LineSegment.mkPP(start, end),
-    //   )
     this.createThreader(start, end)
     if (this.passedTrs.size) {
       this.front = new Queue<FrontEdge>()
@@ -172,7 +159,7 @@ export class PathOptimizer {
 
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline) {
-    ++debCount
+    //++debCount
     this.triangles.clear()
 
     this.poly = poly
@@ -180,15 +167,15 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    if (debCount == 2) {
-      this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
-    }
+    // if (debCount == 123) {
+    //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
+    // }
     this.findChannelTriangles()
-    if (debCount == 2) this.debugDraw(Array.from(this.triangles), null, null, poly)
+    // if (debCount == 123) this.debugDraw(Array.from(this.triangles), null, null, poly)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
-    if (debCount == 2) this.debugDraw(Array.from(this.triangles), perimeter, null, this.poly)
+    // this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
     const localCdt = new Cdt(
       [],
       [],
@@ -197,7 +184,7 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    if (debCount == 2) this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
+    // (debCount == 2835) // this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
 
     const sleeve: FrontEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {
@@ -214,19 +201,6 @@ export class PathOptimizer {
     this.initDiagonals(sleeve)
     //const dc = getDebugCurvesFromCdt(localCdt)
     this.refineFunnel() //dc)
-    // (debCount == 2835) // this.debugDraw(Array.from(localCdt.GetTriangles()), perimeter, this.poly, poly)
-    //this.test(perimeter, poly)
-    //  const c = this.poly
-    // dc = dc.concat([
-    //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', c),
-    //   DebugCurve.mkDebugCurveTWCI(200, 1, 'Red', CurveFactory.mkCircle(5, c.start)),
-    // ])
-
-    // for (let pp = perimeterPoly.startPoint; pp.next; pp = pp.next) {
-    //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Black', LineSegment.mkPP(pp.point, pp.next.point)))
-    // }
-
-    // SvgDebugWriter.dumpDebugCurves('/tmp/dc_' + ++debCount + '.svg', dc)
   }
   findPoly(p: Point): Polyline {
     const polys = Array.from(this.polyRTree.AllHitItems_(p))
@@ -283,43 +257,43 @@ export class PathOptimizer {
     return sourceTriangle
   }
 
-  debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: ICurve[] = [], ls: ICurve = null) {
-    const dc = []
-    if (ls) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
-    }
-    const box = this.poly.boundingBox.clone()
-    box.addRec(this.sourcePoly.boundingBox)
-    box.addRec(this.targetPoly.boundingBox)
-    for (const t of triangles) {
-      // if (t.BoundingBox().intersects(box) == false) continue
-      for (const e of t.Edges) {
-        dc.push(
-          DebugCurve.mkDebugCurveTWCI(
-            e.constrained ? 150 : 100,
-            e.constrained ? 1.5 : 1,
-            e.constrained ? 'DarkSeaGreen' : 'Cyan',
-            LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
-          ),
-        )
-      }
-    }
-    if (perimEdges) {
-      for (const e of perimEdges) {
-        dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-      }
-    }
-    if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
-    for (const strangeOb of strangeObs) {
-      dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
-    }
+  // debugDraw(triangles: Tr[], perimEdges: Set<Ed>, poly: Polyline, originalPoly: Polyline, strangeObs: ICurve[] = [], ls: ICurve = null) {
+  //   const dc = []
+  //   if (ls) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(255, 5, 'PapayaWhip', ls))
+  //   }
+  //   const box = this.poly.boundingBox.clone()
+  //   box.addRec(this.sourcePoly.boundingBox)
+  //   box.addRec(this.targetPoly.boundingBox)
+  //   for (const t of triangles) {
+  //     // if (t.BoundingBox().intersects(box) == false) continue
+  //     for (const e of t.Edges) {
+  //       dc.push(
+  //         DebugCurve.mkDebugCurveTWCI(
+  //           e.constrained ? 150 : 100,
+  //           e.constrained ? 1.5 : 1,
+  //           e.constrained ? 'DarkSeaGreen' : 'Cyan',
+  //           LineSegment.mkPP(e.upperSite.point, e.lowerSite.point),
+  //         ),
+  //       )
+  //     }
+  //   }
+  //   if (perimEdges) {
+  //     for (const e of perimEdges) {
+  //       dc.push(DebugCurve.mkDebugCurveTWCI(200, 2.5, 'Blue', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
+  //     }
+  //   }
+  //   if (poly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Green', poly))
+  //   for (const strangeOb of strangeObs) {
+  //     dc.push(DebugCurve.mkDebugCurveTWCI(200, 3, 'Pink', strangeOb))
+  //   }
 
-    if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
-    dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
+  //   if (originalPoly) dc.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'Brown', originalPoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
+  //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
 
-    SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
-  }
+  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  // }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {
     // remove param later:Debug
@@ -659,16 +633,6 @@ The function also sets the positiveSign and negativeSign fields to store the sig
     //Assert.assert(this.negativeSign < this.positiveSign)
     const tr = targetOfFrontEdge(fe)
     if (tr == null) return
-    // if (debCount == 2)
-    //   this.debugDraw(
-    //     Array.from(this.cdt.GetTriangles()),
-    //     null,
-    //     null,
-    //     this.poly,
-    //     [trianglePerimeter(tr)],
-    //     LineSegment.mkPP(this.start, this.end),
-    //   )
-
     this.visitedInThreader.add(tr)
     if (tr.containsPoint(this.end)) {
       this.passedTrs.add(tr)
