@@ -235,8 +235,7 @@ export default class Renderer extends EventSource {
     const fontSettings = this._textMeasurer.opts
 
     const geomGraph = GeomGraph.getGeom(this._graph)
-    geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges = true
-
+    
     if (!geomGraph) {
       return
     }

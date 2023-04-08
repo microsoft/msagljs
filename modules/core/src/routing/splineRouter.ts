@@ -208,10 +208,6 @@ export class SplineRouter extends Algorithm {
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
-
-    // if (this.geomGraph.layoutSettings && this.geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges) {
-    //   this.geomGraph.beautifyEdges = (nodeSet: Set<Node>) => this.rerouteOnSubsetOfNodes(nodeSet)
-    // }
   }
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */

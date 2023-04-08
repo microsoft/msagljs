@@ -287,23 +287,23 @@ export class TileMap {
 
     cleanArrowheadsInSubtiles(this.levels[z])
 
-    pushArrowheadsToSubtiles()
+    pushArrowheadsToSubtiles(this.levels[z])
 
     cleanUpSubtilesUnderTile(this.levels[z])
-    function cleanUpSubtilesUnderTile(thislevels: IntPairMap<Tile>) {
+    function cleanUpSubtilesUnderTile(level: IntPairMap<Tile>) {
       for (let i = 0; i < 2; i++)
         for (let j = 0; j < 2; j++) {
           const ti = 2 * key.x + i
           const tj = 2 * key.y + j
-          const tile = thislevels.get(ti, tj)
+          const tile = level.get(ti, tj)
           if (tile == null) continue
           if (tile.isEmpty()) {
-            thislevels.delete(ti, tj)
+            level.delete(ti, tj)
           }
         }
     }
 
-    function pushArrowheadsToSubtiles() {
+    function pushArrowheadsToSubtiles(level: IntPairMap<Tile>) {
       for (const arrowhead of upperTile.arrowheads) {
         const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
         const d = arrowhead.tip.sub(arrowhead.base).div(3)
@@ -317,7 +317,7 @@ export class TileMap {
               const ti = 2 * key.x + i
               const tj = 2 * key.y + j
 
-              this.levels[z].get(ti, tj).arrowheads.push(arrowhead)
+              level.get(ti, tj).arrowheads.push(arrowhead)
             }
           }
       }

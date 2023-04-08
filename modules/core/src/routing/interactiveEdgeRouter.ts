@@ -33,7 +33,12 @@ import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
+    if (edge.smoothedPolyline == null) {
+      // TODO : can we do something here
+      return
+    }
     const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
+    
     this.pathOptimizer.run(poly)
     edge.curve = this.pathOptimizer.poly.toCurve()
     // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
