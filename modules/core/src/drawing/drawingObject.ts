@@ -139,12 +139,6 @@ export abstract class DrawingObject extends Attribute {
     return this._arrowhead
   }
   public set arrowhead(value: ArrowTypeEnum) {
-    if (typeof value === "string") {
-      console.log("data is a string");
-    } 
-    if (value !== ArrowTypeEnum.none){
-      console.log('arrowhead', value)
-    } 
     this._arrowhead = value
   }
   ordering: OrderingEnum
