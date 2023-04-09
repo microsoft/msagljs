@@ -21,6 +21,10 @@ export class Arrowhead {
     r.tipPosition = this.tipPosition
     return r
   }
+  constructor() {
+   // just for debug
+    this.length = Arrowhead.defaultArrowheadLength
+  }
   // the edgeGeometry.Curve is trimmed already by the node boundaries</param>
   private static calculateArrowheads(edge: GeomEdge): boolean {
     if (edge.sourceArrowhead == null && edge.targetArrowhead == null) return true

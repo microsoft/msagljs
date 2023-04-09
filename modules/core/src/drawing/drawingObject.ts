@@ -134,7 +134,19 @@ export abstract class DrawingObject extends Attribute {
   splines: boolean
   overlap: boolean
   arrowtail: ArrowTypeEnum
-  arrowhead: ArrowTypeEnum
+  private _arrowhead: ArrowTypeEnum
+  public get arrowhead(): ArrowTypeEnum {
+    return this._arrowhead
+  }
+  public set arrowhead(value: ArrowTypeEnum) {
+    if (typeof value === "string") {
+      console.log("data is a string");
+    } 
+    if (value !== ArrowTypeEnum.none){
+      console.log('arrowhead', value)
+    } 
+    this._arrowhead = value
+  }
   ordering: OrderingEnum
   URL: string
   dir: DirTypeEnum

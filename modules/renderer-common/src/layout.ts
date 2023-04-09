@@ -77,7 +77,6 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
     needsLayout = needsLayout || diff.layoutChanged
     needsReroute = needsReroute || diff.routingChanged
     gg.layoutSettings = settings
-    gg.layoutSettings.commonSettings.edgeRoutingSettings.needToBeautifyEdges = true
   }
 
   updateLayoutSettings(geomGraph)

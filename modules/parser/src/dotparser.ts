@@ -828,7 +828,8 @@ export function graphToJSON(graph: Graph): JSONGraph {
    * Edge belongs to the first Graph which is a common ancestor of the edge source and the edge target.
    */
   const idToLevels = getNodeLevels(graph)
-  return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
+  const ret =  {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
+  return ret
 }
 
 function edgeStmt(edge: Edge): EdgeStmt {
@@ -978,10 +979,10 @@ function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
     yield {type: 'attr', id: 'ranksep', eq: drObj.ranksep.toString()}
   }
   if (drObj.arrowtail) {
-    yield {type: 'attr', id: 'arrowtail', eq: drObj.arrowtail.toString()}
+    yield {type: 'attr', id: 'arrowtail', eq: ArrowTypeEnum[drObj.arrowtail]}
   }
   if (drObj.arrowhead) {
-    yield {type: 'attr', id: 'arrowhead', eq: drObj.arrowhead.toString()}
+    yield {type: 'attr', id: 'arrowhead', eq: ArrowTypeEnum[drObj.arrowhead]}
   }
   if (drObj.ordering) {
     yield {type: 'attr', id: 'ordering', eq: drObj.ordering.toString()}

@@ -4,8 +4,6 @@ import {DrawingObject} from './drawingObject'
 
 export class DrawingEdge extends DrawingObject {
   directed = true
-  arrowtail: ArrowTypeEnum
-  arrowhead: ArrowTypeEnum
   constructor(entity: Entity, directed: boolean) {
     super(entity)
     this.directed = directed
