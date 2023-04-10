@@ -1,6 +1,6 @@
 import {Deck, OrthographicView, LinearInterpolator} from '@deck.gl/core/typed'
 import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
-//import {PolygonLayer} from '@deck.gl/layers/typed'
+// import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
 import {DrawingGraph} from 'msagl-js/drawing'
@@ -305,9 +305,12 @@ export default class Renderer extends EventSource {
 
         return [
           // For debugging
-          // const border = new PolygonLayer({
+          // new PolygonLayer({
           //   id: id + 'bounds',
           //   data: [0],
+          //   parameters: {
+          //     depthMask: false
+          //   },
           //   getPolygon: (_) => [
           //     [left, bottom],
           //     [right, bottom],

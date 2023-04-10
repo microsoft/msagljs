@@ -82,7 +82,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
       const subLayerProps = this.getSubLayerProps({id: layer.id})
       Object.assign(subLayerProps, {
         layerStyle: layer,
-        modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize]),
+        modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize / 4]),
         parameters: {
           depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount]
         }
