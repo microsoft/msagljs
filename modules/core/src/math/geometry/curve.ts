@@ -111,7 +111,7 @@ export class Curve implements ICurve {
   }
 
   toJSON(): CurveJSON {
-    return {segs: this.segments.map((seg) => getJSONforSeg(seg))}
+    return {segs: this.segs.map((seg) => getJSONforSeg(seg))}
   }
 
   static CurvesIntersect(curve1: ICurve, curve2: ICurve): boolean {
@@ -123,7 +123,7 @@ export class Curve implements ICurve {
   pBNode: PN
   //the parameter domain is [0,parEnd_] where parEnd_ is the sum (seg.parEnd - seg.parStart()) over all segment in this.segs
   /** the segments comprising the curve */
-  segments: ICurve[]
+  segs: ICurve[]
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static lengthWithInterpolationAndThreshold(_seg: ICurve, _eps: number): number {
@@ -151,11 +151,11 @@ export class Curve implements ICurve {
     const si = this.getSegIndexParam(start)
     const ej = this.getSegIndexParam(end)
     if (si.segIndex < ej.segIndex) {
-      let seg = this.segments[si.segIndex]
+      let seg = this.segs[si.segIndex]
       let ret = seg.lengthPartial(si.par, seg.parEnd)
-      for (let k = si.segIndex + 1; k < ej.segIndex; k++) ret += this.segments[k].length
+      for (let k = si.segIndex + 1; k < ej.segIndex; k++) ret += this.segs[k].length
 
-      seg = this.segments[ej.segIndex]
+      seg = this.segs[ej.segIndex]
       return ret + seg.lengthPartial(seg.parStart, ej.par)
     } else {
       throw new Error('not implemented.')
@@ -165,32 +165,32 @@ export class Curve implements ICurve {
   // this[Reverse[t]]=this[ParEnd+ParStart-t]
   reverse() {
     const ret = new Curve()
-    for (let i = this.segments.length - 1; i >= 0; i--) ret.addSegment(this.segments[i].reverse())
+    for (let i = this.segs.length - 1; i >= 0; i--) ret.addSegment(this.segs[i].reverse())
     return ret
   }
 
   // Constructs the curve for a given number of segments
   constructor() {
-    this.segments = []
+    this.segs = []
     this.parEnd_ = 0
   }
 
   mkCurveWithSegs(segs: ICurve[]) {
-    this.segments = segs
+    this.segs = segs
     for (const s of segs) this.parEnd_ += Curve.paramSpan(s)
   }
 
   get start() {
-    return this.segments[0].start
+    return this.segs[0].start
   }
 
   get end() {
-    return this.segments[this.segments.length - 1].end
+    return this.segs[this.segs.length - 1].end
   }
 
   scaleFromOrigin(xScale: number, yScale: number) {
     const c = new Curve()
-    for (const s of this.segments) c.addSegment(s.scaleFromOrigin(xScale, yScale))
+    for (const s of this.segs) c.addSegment(s.scaleFromOrigin(xScale, yScale))
     return c
   }
 
@@ -206,22 +206,21 @@ export class Curve implements ICurve {
 
     const e = this.getSegIndexParam(params.end)
 
-    if (s.segIndex === e.segIndex) return this.segments[s.segIndex].trim(s.par, e.par)
+    if (s.segIndex === e.segIndex) return this.segs[s.segIndex].trim(s.par, e.par)
 
     let c = new Curve()
 
-    if (s.par < this.segments[s.segIndex].parEnd) c = c.addSegment(this.segments[s.segIndex].trim(s.par, this.segments[s.segIndex].parEnd))
+    if (s.par < this.segs[s.segIndex].parEnd) c = c.addSegment(this.segs[s.segIndex].trim(s.par, this.segs[s.segIndex].parEnd))
 
-    for (let i = s.segIndex + 1; i < e.segIndex; i++) c = c.addSegment(this.segments[i])
+    for (let i = s.segIndex + 1; i < e.segIndex; i++) c = c.addSegment(this.segs[i])
 
-    if (this.segments[e.segIndex].parStart < e.par)
-      c = c.addSegment(this.segments[e.segIndex].trim(this.segments[e.segIndex].parStart, e.par))
+    if (this.segs[e.segIndex].parStart < e.par) c = c.addSegment(this.segs[e.segIndex].trim(this.segs[e.segIndex].parStart, e.par))
 
     return c
   }
 
   translate(delta: Point) {
-    for (const s of this.segments) s.translate(delta)
+    for (const s of this.segs) s.translate(delta)
     if (this.boundingBox_) {
       this.boundingBox_ = Rectangle.translate(this.boundingBox_, delta)
     }
@@ -265,11 +264,11 @@ export class Curve implements ICurve {
       this.segs.length === 0 || Point.close(this.end, curve.start, 0.001),
     )*/
     if (!(curve instanceof Curve)) {
-      this.segments.push(curve)
+      this.segs.push(curve)
       this.parEnd_ += Curve.paramSpan(curve)
     } else {
-      for (const cc of (curve as Curve).segments) {
-        this.segments.push(cc)
+      for (const cc of (curve as Curve).segs) {
+        this.segs.push(cc)
         this.parEnd_ += Curve.paramSpan(cc)
       }
     }
@@ -283,7 +282,7 @@ export class Curve implements ICurve {
 
     const parallelograms: Parallelogram[] = []
     const childrenNodes: PN[] = []
-    for (const curveSeg of this.segments) {
+    for (const curveSeg of this.segs) {
       const pBoxNode = curveSeg.pNodeOverICurve()
       parallelograms.push(pBoxNode.parallelogram)
       childrenNodes.push(pBoxNode)
@@ -376,7 +375,7 @@ export class Curve implements ICurve {
     const curveParallelogramRoot = curve.pNodeOverICurve()
     if (Parallelogram.intersect(lineParallelogram.parallelogram, curveParallelogramRoot.parallelogram) === false) return ret
     let parOffset = 0.0
-    for (const seg of curve.segments) {
+    for (const seg of curve.segs) {
       const iiList = Curve.getAllIntersections(lineSeg, seg, false)
       if (liftIntersections) {
         for (const intersectionInfo of iiList) {
@@ -743,7 +742,7 @@ export class Curve implements ICurve {
     const c = curve as Curve
 
     let offset = 0
-    for (const s of c.segments) {
+    for (const s of c.segs) {
       if (s === seg) return par + offset
       offset += Curve.paramSpan(s)
     }
@@ -857,7 +856,7 @@ export class Curve implements ICurve {
   // returns the segment correspoinding to t and the segment parameter
   getSegParam(t: number): SegParam {
     let u = this.parStart //u is the sum of param domains
-    for (const sg of this.segments) {
+    for (const sg of this.segs) {
       const nextu = u + sg.parEnd - sg.parStart
       if (t >= u && t <= nextu) {
         return {
@@ -867,7 +866,7 @@ export class Curve implements ICurve {
       }
       u = nextu
     }
-    const lastSeg = this.segments[this.segments.length - 1]
+    const lastSeg = this.segs[this.segs.length - 1]
     return {
       seg: lastSeg,
       par: lastSeg.parEnd,
@@ -877,9 +876,9 @@ export class Curve implements ICurve {
   getSegIndexParam(t: number): SegIndexParam {
     // because of this implementation we alwais should have seg.parStart >= 0: otherwise the function can return a wrong segment
     let u = 0 //u is the sum of param domains
-    const segLen = this.segments.length
+    const segLen = this.segs.length
     for (let i = 0; i < segLen; i++) {
-      const sg = this.segments[i]
+      const sg = this.segs[i]
       const nextu = u + sg.parEnd - sg.parStart
       if (t >= u && t <= nextu) {
         return {
@@ -889,7 +888,7 @@ export class Curve implements ICurve {
       }
       u = nextu
     }
-    const lastSeg = this.segments[segLen - 1]
+    const lastSeg = this.segs[segLen - 1]
     return {
       segIndex: segLen - 1,
       par: lastSeg.parEnd,
@@ -1070,9 +1069,9 @@ export class Curve implements ICurve {
     if (Point.closeDistEps(x, pseg.end)) {
       // so pseg enters the spline
       let exitSeg: ICurve = null
-      for (let i = 0; i < polyline.segments.length - 1; i++) {
-        if (polyline.segments[i] === pseg) {
-          exitSeg = polyline.segments[i + 1]
+      for (let i = 0; i < polyline.segs.length - 1; i++) {
+        if (polyline.segs[i] === pseg) {
+          exitSeg = polyline.segs[i + 1]
           break
         }
       }
@@ -1090,9 +1089,9 @@ export class Curve implements ICurve {
     if (Point.closeDistEps(x, pseg.start)) {
       // so pseg exits the spline
       let enterSeg: ICurve = null
-      for (let i: number = polyline.segments.length - 1; i > 0; i--) {
-        if (polyline.segments[i] === pseg) {
-          enterSeg = polyline.segments[i - 1]
+      for (let i: number = polyline.segs.length - 1; i > 0; i--) {
+        if (polyline.segs[i] === pseg) {
+          enterSeg = polyline.segs[i - 1]
           break
         }
       }
@@ -1134,9 +1133,9 @@ export class Curve implements ICurve {
     if (Point.closeDistEps(x, pseg.end)) {
       // so pseg enters the spline
       let exitSeg: ICurve = null
-      for (let i = 0; i < polygon.segments.length; i++) {
-        if (polygon.segments[i] === pseg) {
-          exitSeg = polygon.segments[(i + 1) % polygon.segments.length]
+      for (let i = 0; i < polygon.segs.length; i++) {
+        if (polygon.segs[i] === pseg) {
+          exitSeg = polygon.segs[(i + 1) % polygon.segs.length]
           break
         }
       }
@@ -1153,9 +1152,9 @@ export class Curve implements ICurve {
     if (Point.closeDistEps(x, pseg.start)) {
       // so pseg exits the spline
       let enterSeg: ICurve = null
-      for (let i = 0; i < polygon.segments.length; i++) {
-        if (polygon.segments[i] === pseg) {
-          enterSeg = polygon.segments[i > 0 ? i - 1 : polygon.segments.length - 1]
+      for (let i = 0; i < polygon.segs.length; i++) {
+        if (polygon.segs[i] === pseg) {
+          enterSeg = polygon.segs[i > 0 ? i - 1 : polygon.segs.length - 1]
 
           break
         }
@@ -1269,12 +1268,12 @@ export class Curve implements ICurve {
   get boundingBox() {
     if (this.boundingBox_) return this.boundingBox_
 
-    if (this.segments.length === 0) {
+    if (this.segs.length === 0) {
       this.boundingBox_ = Rectangle.mkEmpty()
     } else {
-      const b = this.segments[0].boundingBox.clone()
+      const b = this.segs[0].boundingBox.clone()
 
-      for (let i = 1; i < this.segments.length; i++) b.addRecSelf(this.segments[i].boundingBox)
+      for (let i = 1; i < this.segs.length; i++) b.addRecSelf(this.segs[i].boundingBox)
 
       return (this.boundingBox_ = b)
     }
@@ -1283,7 +1282,7 @@ export class Curve implements ICurve {
   /**  clones the curve */
   clone() {
     const c = new Curve()
-    for (const seg of this.segments) c.addSegment(seg.clone())
+    for (const seg of this.segs) c.addSegment(seg.clone())
     if (this.boundingBox_ != null) {
       c.boundingBox_ = this.boundingBox_.clone()
     }
@@ -1292,7 +1291,7 @@ export class Curve implements ICurve {
 
   getParameterAtLength(length: number) {
     let parSpan = 0.0
-    for (const seg of this.segments) {
+    for (const seg of this.segs) {
       const segL = seg.length
       if (segL >= length) return parSpan + seg.getParameterAtLength(length)
 
@@ -1304,13 +1303,13 @@ export class Curve implements ICurve {
 
   get length(): number {
     let r = 0
-    for (const s of this.segments) r += s.length
+    for (const s of this.segs) r += s.length
     return r
   }
   /** returns a new curve */
   transform(transformation: PlaneTransformation): ICurve {
     const c = new Curve()
-    for (const s of this.segments) {
+    for (const s of this.segs) {
       c.addSegment(s.transform(transformation))
     }
     if (this.boundingBox_) {
@@ -1325,7 +1324,7 @@ export class Curve implements ICurve {
     let par = 0
     let dist = Number.MAX_VALUE
     let offset = 0
-    for (const seg of this.segments) {
+    for (const seg of this.segs) {
       if (offset > high) break //we are out of the [low, high] segment
       const segparamSpan = Curve.paramSpan(seg)
       const segEnd = offset + segparamSpan
@@ -1352,7 +1351,7 @@ export class Curve implements ICurve {
     let par = 0
     let dist = Number.MAX_VALUE
     let offset = 0
-    for (const c of this.segments) {
+    for (const c of this.segs) {
       const t = c.closestParameter(targetPoint)
       const d = targetPoint.sub(c.value(t))
       const dd = d.dot(d)
@@ -1412,10 +1411,10 @@ export class Curve implements ICurve {
 
   tryToGetLeftSegment(t: number) {
     if (Math.abs(t - this.parStart) < GeomConstants.tolerance) {
-      if (this.start.equal(this.end)) return this.segments[this.segments.length - 1]
+      if (this.start.equal(this.end)) return this.segs[this.segs.length - 1]
       return null
     }
-    for (const seg of this.segments) {
+    for (const seg of this.segs) {
       t -= Curve.paramSpan(seg)
       if (Math.abs(t) < GeomConstants.tolerance) return seg
     }
@@ -1424,11 +1423,11 @@ export class Curve implements ICurve {
 
   tryToGetRightSegment(t: number) {
     if (Math.abs(t - this.parEnd) < GeomConstants.tolerance) {
-      if (this.start === this.end) return this.segments[0]
+      if (this.start === this.end) return this.segs[0]
       return null
     }
 
-    for (const seg of this.segments) {
+    for (const seg of this.segs) {
       if (Math.abs(t) < GeomConstants.tolerance) return seg
 
       t -= Curve.paramSpan(seg)
@@ -1630,7 +1629,7 @@ export class Curve implements ICurve {
     if (curve instanceof Polyline) return curve as Polyline
     if (curve instanceof Curve && Curve.allSegsAreLines(curve as Curve)) {
       const ret = new Polyline()
-      for (const ls of (curve as Curve).segments) ret.addPoint(ls.start)
+      for (const ls of (curve as Curve).segs) ret.addPoint(ls.start)
       ret.closed = true
       if (!ret.isClockwise()) return ret.reverse() as Polyline
     }
@@ -1638,7 +1637,7 @@ export class Curve implements ICurve {
   }
 
   static allSegsAreLines(c: Curve) {
-    for (const s of c.segments) if (!(s instanceof LineSegment)) return false
+    for (const s of c.segs) if (!(s instanceof LineSegment)) return false
     return true
   }
 

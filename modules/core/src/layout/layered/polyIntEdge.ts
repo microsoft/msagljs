@@ -31,7 +31,7 @@ class Routing {
 
   static GetSegmentInFrontOfLabel(edgeCurve: ICurve, labelY: number): ICurve {
     if (edgeCurve instanceof Curve) {
-      for (const seg of (<Curve>edgeCurve).segments) if ((seg.start.y - labelY) * (seg.end.y - labelY) <= 0) return seg
+      for (const seg of (<Curve>edgeCurve).segs) if ((seg.start.y - labelY) * (seg.end.y - labelY) <= 0) return seg
     } else {
       /*Assert.assert(false)*/
     }

@@ -675,7 +675,7 @@ function canAssembleBack(rect: Rectangle, upperLeverSeg: ICurve, subSegs: ICurve
 function segCoverPoint(c: ICurve, p: Point, eps: number): boolean {
   const n = 100
   if (c instanceof Curve) {
-    for (const s of c.segments) {
+    for (const s of c.segs) {
       const del = parameterSpan(s) / n
       for (let i = 0; i <= n; i++) {
         if (s.value(s.parStart + i * del).sub(p).length < eps) return true

@@ -292,7 +292,7 @@ export class Routing extends Algorithm {
   static GetSegmentInFrontOfLabel(edgeCurve: ICurve, labelY: number): ICurve {
     if (edgeCurve instanceof Curve) {
       const curve = <Curve>edgeCurve
-      for (const seg of curve.segments) {
+      for (const seg of curve.segs) {
         if ((seg.start.y - labelY) * (seg.end.y - labelY) <= 0) {
           return seg
         }

@@ -606,7 +606,7 @@ export class RectilinearEdgeRouter extends Algorithm {
       prevEllipse = ellipse
     }
 
-    if (curve.segments.length > 0) {
+    if (curve.segs.length > 0) {
       Curve.continueWithLineSegmentP(curve, polyline[polyline.length - 1])
     } else {
       Curve.addLineSegment(curve, polyline[0], polyline[polyline.length - 1])

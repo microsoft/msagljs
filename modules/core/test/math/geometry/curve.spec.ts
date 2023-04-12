@@ -105,7 +105,7 @@ test('trim', () => {
   curve.addSegment(LineSegment.mkPP(c, d))
   curve.addSegment(LineSegment.mkPP(d, e))
   const t = curve.trim(0.5, 3.5)
-  expect((t as Curve).segments.length).toBe(4)
+  expect((t as Curve).segs.length).toBe(4)
 })
 
 test('box translate behavior', () => {

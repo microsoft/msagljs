@@ -277,7 +277,7 @@ export class Polyline implements ICurve {
   static polylineFromCurve(curve: Curve): Polyline {
     const ret = new Polyline()
     ret.addPoint(curve.start)
-    for (const ls of curve.segments) ret.addPoint(ls.end)
+    for (const ls of curve.segs) ret.addPoint(ls.end)
     ret.closed = curve.start === curve.end
     return ret
   }
