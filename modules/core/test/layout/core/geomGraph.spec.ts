@@ -202,15 +202,11 @@ test('tiles gameofthrones', () => {
   const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)
   const graph = parseJSON(json)
-  //Curve.dumper = SvgDebugWriter.dumpDebugCurves
-  const geomGraph = graph.getAttr(AttributeRegistry.GeomObjectIndex) as GeomGraph
-  geomGraph.layoutSettings = new FastIncrementalLayoutSettings()
-  const edges = Array.from(geomGraph.deepEdges)
-  const sr = new SplineRouter(geomGraph, edges)
-  sr.run()
+  const geomGraph = GeomGraph.getGeom(graph)
+  SvgDebugWriter.writeGeomGraph('./tmp/debug.svg', geomGraph)
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
-  // dumpTiles(ts)
+  dumpTiles(ts)
 })
 
 test('mds with length', () => {
@@ -273,17 +269,17 @@ function dumpTiles(tileMap: TileMap) {
       break
     }
     const ts = tilesOfLevel.filter(tileIsCool)
-    for (const t of ts) {
+    for (const tile of ts) {
       try {
-        const cc = t.data.curveClips.filter(clipIsCool)
+        const cc = Array.from(tile.data.getCurveClips()).filter(clipIsCool)
 
         SvgDebugWriter.dumpDebugCurves(
-          './tmp/tile' + z + '-' + t.x + '-' + t.y + '.svg',
+          './tmp/tile' + z + '-' + tile.x + '-' + tile.y + '.svg',
           cc
             .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
-            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', t.data.rect.perimeter())])
-            .concat(t.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-            .concat(t.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.data.rect.perimeter())])
+            .concat(tile.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+            .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
         )
       } catch (Error) {
         console.log(Error.message)
@@ -297,7 +293,7 @@ function clipIsCool(c: CurveClip) {
 }
 
 function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): unknown {
-  for (const c of t.data.curveClips) {
+  for (const c of t.data.getCurveClips()) {
     if (clipIsCool(c)) return true
   }
   return false

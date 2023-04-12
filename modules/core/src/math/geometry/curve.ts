@@ -122,6 +122,7 @@ export class Curve implements ICurve {
 
   pBNode: PN
   //the parameter domain is [0,parEnd_] where parEnd_ is the sum (seg.parEnd - seg.parStart()) over all segment in this.segs
+  /** the segments comprising the curve */
   segs: ICurve[]
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

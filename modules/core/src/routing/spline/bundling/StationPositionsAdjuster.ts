@@ -473,8 +473,8 @@ export class StationPositionsAdjuster {
     const a: Point = pp.point
     const b: Point = pp.next.point
     const c: Point = pp.next.next.point
-    const abPolylines = segsToPolylines.get_(a, b)
-    const bcPolylines = segsToPolylines.get_(b, c)
+    const abPolylines = segsToPolylines.getPP(a, b)
+    const bcPolylines = segsToPolylines.getPP(b, c)
     const abcPolylines = setIntersection(abPolylines, bcPolylines)
     return [abPolylines, bcPolylines, abcPolylines]
   }

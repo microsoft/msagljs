@@ -664,9 +664,6 @@ The function also sets the positiveSign and negativeSign fields to store the sig
         }
       }
     } else {
-      if (this.passedTrs.size == 0) {
-        console.log('no site found for p: it must be on the boundary of a triangle')
-      }
       // no site found for p: it must be on the boundary of a triangle
       // t = get one of the triangles in this.passedTrs
       const t = this.passedTrs.values().next().value

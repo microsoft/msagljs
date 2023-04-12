@@ -40,7 +40,7 @@ export class PointPairMap<T> {
     return m != null && m.has(pp._second)
   }
 
-  get_(p: Point, q: Point) {
+  getPP(p: Point, q: Point) {
     return this.get(new PointPair(p, q))
   }
   get(pp: PointPair): T {

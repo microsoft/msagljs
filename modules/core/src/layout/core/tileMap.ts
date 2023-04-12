@@ -14,6 +14,11 @@ import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
+import {Assert} from '../../utils/assert'
+import {PointPairMap} from '../../utils/pointPairMap'
+import {PointPair} from '../../math/geometry/pointPair'
+//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -21,9 +26,9 @@ export type CurveClip = {curve: ICurve; edge: Edge}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
 export function tileIsEmpty(sd: Tile): boolean {
-  return sd.arrowheads.length === 0 && sd.curveClips.length === 0 && sd.nodes.length === 0
+  return sd.arrowheads.length === 0 && sd.curveClipsLength === 0 && sd.nodes.length === 0
 }
-// let debCount = 0
+const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
@@ -89,16 +94,20 @@ export class TileMap {
 
   private fillTheLowestLayer() {
     const tileMap = new IntPairMap<Tile>(1)
-    const topLevelTile = new Tile()
+    const topLevelTile = new Tile(this.topLevelTileRect)
 
-    topLevelTile.curveClips = []
-
-    const arrows = (topLevelTile.arrowheads = new Array<{tip: Point; edge: Edge; base: Point}>())
-    const geomLabels = (topLevelTile.labels = new Array<GeomLabel>())
+    const arrows = topLevelTile.arrowheads
+    const geomLabels = topLevelTile.labels
     for (const e of this.geomGraph.graph.deepEdges) {
       const geomEdge = GeomEdge.getGeom(e)
       const c = GeomEdge.getGeom(e).curve
-      pushToClips(topLevelTile.curveClips, e, c)
+      if (c instanceof Curve) {
+        for (const seg of c.segs) {
+          topLevelTile.addElement({edge: e, curve: seg})
+        }
+      } else {
+        topLevelTile.addElement({edge: e, curve: c})
+      }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -110,12 +119,15 @@ export class TileMap {
       }
     }
     // geomLabels and arrowheads are sorted, because edges are sorted: all arrays of TileData are sorted by rank
-
     topLevelTile.nodes = Array.from(this.geomGraph.nodesBreadthFirst)
-    topLevelTile.rect = this.topLevelTileRect
-
     tileMap.set(0, 0, topLevelTile)
     this.levels.push(tileMap)
+    // SvgDebugWriter.dumpICurves(
+    //   './tmp/tile0.svg',
+    //   Array.from(topLevelTile.getCurveClips())
+    //     .map((c) => c.curve)
+    //     .concat(topLevelTile.nodes.map((n) => n.boundaryCurve)),
+    // )
   }
 
   /**
@@ -162,7 +174,6 @@ export class TileMap {
       sr.rerouteOnSubsetOfNodes(activeNodes)
       this.regenerateCurveClipsUpToLayer(i, activeNodes)
     }
-
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
@@ -214,7 +225,7 @@ export class TileMap {
     const m = new Map<Entity, EntityDataInTile[]>()
     const nodeSet = new Set<Node>()
     for (const t of this.levels[i].values()) {
-      for (const cc of t.curveClips) {
+      for (const cc of t.getCurveClips()) {
         const e = cc.edge
         let arr: EntityDataInTile[] = m.get(e)
         if (arr == null) {
@@ -237,17 +248,17 @@ export class TileMap {
   private clearCurveClipsInLevelsUpTo(levelIndex: number) {
     for (let i = 0; i <= levelIndex; i++) {
       for (const t of this.levels[i].values()) {
-        t.curveClips = []
+        t.initCurveClips()
       }
     }
   }
 
   regenerateCurveClipsUnderTileUpToLevel(t: Tile, levelIndex: number, activeNodes: Set<Node>) {
     t.arrowheads = []
-    t.curveClips = []
+    t.initCurveClips()
     for (const geomEdge of this.geomGraph.deepEdges) {
       if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
-      pushToClips(t.curveClips, geomEdge.edge, geomEdge.curve)
+      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve})
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -256,7 +267,7 @@ export class TileMap {
       }
     }
     // do not change the labels
-    // Now the top tile(s) is ready
+    // Now the root tile(s) is ready
     for (let i = 1; i <= levelIndex; i++) {
       this.regenerateCurveClipsWhenPreviosLayerIsDone(i)
       this.removeEmptyTiles(i)
@@ -277,121 +288,116 @@ export class TileMap {
 
   regenerateCurveClipsWhenPreviosLayerIsDone(z: number) {
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      this.regenerateUnderOneTile(key, tile, z)
+      this.subdivideOneTile(key, z, tile, /** for regenerate */ true)
     }
   }
-  regenerateUnderOneTile(key: IntPair, upperTile: Tile, z: number) {
-    const subTilesRects = createSubTileRects()
-    const clipsPerRect = this.regenerateCurveClipsUnderTile(upperTile, subTilesRects)
-    pushRegeneratedClips(this.levels[z])
+  // regenerateUnderOneTile(key: IntPair, upperTile: Tile, z: number) {
+  //   const subTilesRects = createSubTileRects()
+  //   const clipsPerRect = this.regenerateCurveClipsUnderTile(upperTile, subTilesRects)
+  //   pushRegeneratedClips(this.levels[z])
 
-    cleanArrowheadsInSubtiles(this.levels[z])
+  //   cleanArrowheadsInSubtiles(this.levels[z])
 
-    pushArrowheadsToSubtiles(this.levels[z])
+  //   pushArrowheadsToSubtiles(this.levels[z])
 
-    cleanUpSubtilesUnderTile(this.levels[z])
-    function cleanUpSubtilesUnderTile(level: IntPairMap<Tile>) {
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const ti = 2 * key.x + i
-          const tj = 2 * key.y + j
-          const tile = level.get(ti, tj)
-          if (tile == null) continue
-          if (tile.isEmpty()) {
-            level.delete(ti, tj)
-          }
-        }
-    }
+  //   cleanUpSubtilesAboveTile(this.levels[z])
+  //   function cleanUpSubtilesAboveTile(level: IntPairMap<Tile>) {
+  //     for (let i = 0; i < 2; i++)
+  //       for (let j = 0; j < 2; j++) {
+  //         const ti = 2 * key.x + i
+  //         const tj = 2 * key.y + j
+  //         const tile = level.get(ti, tj)
+  //         if (tile == null) continue
+  //         if (tile.isEmpty()) {
+  //           level.delete(ti, tj)
+  //         }
+  //       }
+  //   }
 
-    function pushArrowheadsToSubtiles(level: IntPairMap<Tile>) {
-      for (const arrowhead of upperTile.arrowheads) {
-        const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
-        const d = arrowhead.tip.sub(arrowhead.base).div(3)
-        const dRotated = d.rotate90Cw()
-        arrowheadBox.add(arrowhead.base.add(dRotated))
-        arrowheadBox.add(arrowhead.base.sub(dRotated))
-        for (let i = 0; i < 2; i++)
-          for (let j = 0; j < 2; j++) {
-            const k = 2 * i + j
-            if (arrowheadBox.intersects(subTilesRects[k])) {
-              const ti = 2 * key.x + i
-              const tj = 2 * key.y + j
+  //   function pushArrowheadsToSubtiles(level: IntPairMap<Tile>) {
+  //     for (const arrowhead of upperTile.arrowheads) {
+  //       const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
+  //       const d = arrowhead.tip.sub(arrowhead.base).div(3)
+  //       const dRotated = d.rotate90Cw()
+  //       arrowheadBox.add(arrowhead.base.add(dRotated))
+  //       arrowheadBox.add(arrowhead.base.sub(dRotated))
+  //       for (let i = 0; i < 2; i++)
+  //         for (let j = 0; j < 2; j++) {
+  //           const k = 2 * i + j
+  //           if (arrowheadBox.intersects(subTilesRects[k])) {
+  //             const ti = 2 * key.x + i
+  //             const tj = 2 * key.y + j
 
-              level.get(ti, tj).arrowheads.push(arrowhead)
-            }
-          }
-      }
-    }
+  //             level.get(ti, tj).arrowheads.push(arrowhead)
+  //           }
+  //         }
+  //     }
+  //   }
 
-    function cleanArrowheadsInSubtiles(levelMap: IntPairMap<Tile>) {
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const ti = 2 * key.x + i
-          const tj = 2 * key.y + j
-          const tile = levelMap.get(ti, tj)
-          if (tile == null) {
-            continue
-          }
-          tile.arrowheads = []
-        }
-    }
+  //   function cleanArrowheadsInSubtiles(levelMap: IntPairMap<Tile>) {
+  //     for (let i = 0; i < 2; i++)
+  //       for (let j = 0; j < 2; j++) {
+  //         const ti = 2 * key.x + i
+  //         const tj = 2 * key.y + j
+  //         const tile = levelMap.get(ti, tj)
+  //         if (tile == null) {
+  //           continue
+  //         }
+  //         tile.arrowheads = []
+  //       }
+  //   }
 
-    function pushRegeneratedClips(levelMap: IntPairMap<Tile>) {
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const k = 2 * i + j
-          const clips = clipsPerRect[k]
+  //   function pushRegeneratedClips(levelMap: IntPairMap<Tile>) {
+  //     for (let i = 0; i < 2; i++)
+  //       for (let j = 0; j < 2; j++) {
+  //         const k = 2 * i + j
+  //         const clips = clipsPerRect[k]
 
-          const ti = 2 * key.x + i
-          const tj = 2 * key.y + j
-          let tile = levelMap.get(ti, tj)
-          if (tile == null) {
-            if (clips.length) {
-              levelMap.set(ti, tj, (tile = Tile.mk([], [], [], [], subTilesRects[k])))
-            } else {
-              continue
-            }
-          }
-          tile.curveClips = []
-          for (const clip of clips) {
-            pushToClips(tile.curveClips, clip.edge, clip.curve)
-          }
-        }
-    }
+  //         const ti = 2 * key.x + i
+  //         const tj = 2 * key.y + j
+  //         let tile = levelMap.get(ti, tj)
+  //         if (tile == null) {
+  //           if (clips.length) {
+  //             levelMap.set(ti, tj, (tile = new Tile(subTilesRects[k])))
+  //           } else {
+  //             continue
+  //           }
+  //         }
+  //         tile.initCurveClips()
+  //         for (const clip of clips) {
+  //           tile.addElement({edge: clip.edge, curve: clip.curve})
+  //         }
+  //       }
+  //   }
 
-    function createSubTileRects() {
-      const subTilesRects = new Array<Rectangle>()
-      const w = upperTile.rect.width / 2
-      const h = upperTile.rect.height / 2
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const tileRect = new Rectangle({
-            left: upperTile.rect.left + w * i,
-            right: upperTile.rect.left + w * (i + 1),
-            bottom: upperTile.rect.bottom + h * j,
-            top: upperTile.rect.bottom + h * (j + 1),
-          })
-          subTilesRects.push(tileRect)
-        }
-      return subTilesRects
-    }
-  }
+  //   function createSubTileRects() {
+  //     const subTilesRects = new Array<Rectangle>()
+  //     const w = upperTile.rect.width / 2
+  //     const h = upperTile.rect.height / 2
+  //     for (let i = 0; i < 2; i++)
+  //       for (let j = 0; j < 2; j++) {
+  //         const tileRect = new Rectangle({
+  //           left: upperTile.rect.left + w * i,
+  //           right: upperTile.rect.left + w * (i + 1),
+  //           bottom: upperTile.rect.bottom + h * j,
+  //           top: upperTile.rect.bottom + h * (j + 1),
+  //         })
+  //         subTilesRects.push(tileRect)
+  //       }
+  //     return subTilesRects
+  //   }
+  // }
 
-  regenerateCurveClipsUnderTile(upperTile: Tile, subTilesRects: Rectangle[]): Array<Array<CurveClip>> {
+  regenerateCurveClipsUnderTile(upTile: Tile, subTilesRects: Rectangle[]): Array<Array<CurveClip>> {
     const ret = new Array<Array<CurveClip>>() // form the 2x2 matrix
     for (let i = 0; i < 4; i++) {
       ret.push([])
     }
     const w = subTilesRects[0].width
     const h = subTilesRects[0].height
-    const horizontalMiddleLine = new LineSegment(
-      upperTile.rect.left,
-      upperTile.rect.bottom + h,
-      upperTile.rect.right,
-      upperTile.rect.bottom + h,
-    )
-    const verticalMiddleLine = new LineSegment(upperTile.rect.left + w, upperTile.rect.bottom, upperTile.rect.left + w, upperTile.rect.top)
-    for (const cs of upperTile.curveClips) {
+    const horizontalMiddleLine = new LineSegment(upTile.rect.left, upTile.rect.bottom + h, upTile.rect.right, upTile.rect.bottom + h)
+    const verticalMiddleLine = new LineSegment(upTile.rect.left + w, upTile.rect.bottom, upTile.rect.left + w, upTile.rect.top)
+    for (const cs of upTile.getCurveClips()) {
       for (const tr of this.innerClips(cs.curve, verticalMiddleLine, horizontalMiddleLine)) {
         const del = (tr.parEnd - tr.parStart) / 5
 
@@ -399,8 +405,8 @@ export class TileMap {
         const trBb = tr.boundingBox
         for (let r = 0; r < 6; r++, t += del) {
           const p = tr.value(t)
-          const i = p.x <= upperTile.rect.left + w ? 0 : 1
-          const j = p.y <= upperTile.rect.bottom + h ? 0 : 1
+          const i = p.x <= upTile.rect.left + w ? 0 : 1
+          const j = p.y <= upTile.rect.bottom + h ? 0 : 1
           const k = 2 * i + j
           const rect = subTilesRects[k]
 
@@ -444,7 +450,7 @@ export class TileMap {
 
   private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
-    // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.curveClips[i].edge}
+    // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.getCurveClips[i].edge}
     const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
     for (; k < nodes.length; k++) {
@@ -460,6 +466,8 @@ export class TileMap {
       totalCount += t[1].entityCount
     }
     console.log('added', k, 'nodes to level', z, ', in total', totalCount, 'elements')
+
+    //dumpTiles(levelToReduce, z)
     return k
   }
 
@@ -538,7 +546,7 @@ export class TileMap {
   private transferDataOfLevelToMap(levelToReduce: IntPairMap<Tile>): Map<Entity, EntityDataInTile[]> {
     const m = new Map<Entity, EntityDataInTile[]>()
     for (const tile of levelToReduce.values()) {
-      for (const cc of tile.curveClips) {
+      for (const cc of tile.getCurveClips()) {
         const edge = cc.edge
         const arr = getEntityDataArray(edge)
         arr.push({tile: tile, data: cc})
@@ -577,19 +585,35 @@ export class TileMap {
 
   private subdivideLevel(z: number): boolean {
     const tilesInRow = Math.pow(2, z)
-    const levelTiles = (this.levels[z] = new IntPairMap<Tile>(tilesInRow))
+    this.levels[z] = new IntPairMap<Tile>(tilesInRow)
     /** the width and the height of z-th level tile */
-    const {w, h} = this.getWHOnLevel(z)
-    const allTilesAreSmall = this.subdivideTilesOnLevel(z, w, h, levelTiles)
+    const allTilesAreSmall = this.subdivideTilesOnLevel(z)
+    console.log('total cache clips', this.countCacheClips(z), ', and total clips = ', this.countClips(z))
     if (allTilesAreSmall) {
-      console.log('done subdividing at level', z, ' because each tile contains less than ', this.tileCapacity)
+      console.log('done subdividing at level', z, 'because each tile contains less than', this.tileCapacity)
       return true
     }
+    const {w, h} = this.getWHOnLevel(z)
+
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
       console.log('done subdividing at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
       return true
     }
     return false
+  }
+  countClips(z: number): number {
+    let count = 0
+    for (const tile of this.levels[z].values()) {
+      count += tile.curveClipsLength
+    }
+    return count
+  }
+  countCacheClips(z: number): any {
+    let count = 0
+    for (const tile of this.levels[z].values()) {
+      count += tile.cachedClipsLength
+    }
+    return count
   }
 
   private getWHOnLevel(z: number) {
@@ -600,36 +624,208 @@ export class TileMap {
     return {w: this.tileSizes[z].width, h: this.tileSizes[z].height}
   }
 
-  private subdivideTilesOnLevel(z: number, w: number, h: number, levelTiles: IntPairMap<Tile>) {
+  private subdivideTilesOnLevel(z: number) {
     let allTilesAreSmall = true
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      const tileIsSmall = this.subdivideOneTile(key, w, h, tile, levelTiles)
-      if (allTilesAreSmall) {
-        allTilesAreSmall = tileIsSmall
-      }
+      const tileIsSmall = this.subdivideOneTile(key, z, tile, false)
+      allTilesAreSmall &&= tileIsSmall
     }
     return allTilesAreSmall
   }
 
   private subdivideOneTile(
+    /** the tile key */
     key: IntPair,
-    /** new tile width */
-    w: number,
-    /** new tile height */
-    h: number,
+    z: number, // the level above the lowerTile level
     /** this is the tile we are subdividing */
-    upperTile: Tile,
-    /** this is the map we collect new tiles to */
-    levelTiles: IntPairMap<Tile>,
+    lowerTile: Tile,
+    regenerate: boolean,
   ) {
-    let allTilesAreSmall = true
+    const {w, h} = this.getWHOnLevel(z)
+    /** this is the map we collect new tiles to */
+    const levelTiles = this.levels[z]
+
+    const allTilesAreSmall = true
     const xp = key.x
     const yp = key.y
     const left = this.topLevelTileRect.left + xp * w * 2
     const bottom = this.topLevelTileRect.bottom + yp * h * 2
-    const tdArr = new Array<Tile>(4)
+    /** tiles under the upper tile */
+    let tilesAbove: Array<Tile>
+    if (regenerate) {
+      // fill tilesAbove with existing tiles
+      tilesAbove = []
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          const tile = levelTiles.get(xp * 2 + i, yp * 2 + j)
+          if (tile) {
+            tilesAbove.push(tile)
+          } else {
+            tilesAbove.push(
+              Tile.mkWithCachedClips(
+                new Rectangle({left: left + w * i, right: left + w * (i + 1), bottom: bottom + h * j, top: bottom + h * (j + 1)}),
+              ),
+            )
+          }
+        }
+      }
+    } else {
+      tilesAbove = new Array<Tile>(4)
+    }
+    if (!regenerate) {
+      this.generateSubtilesWithoutTileClips(left, w, bottom, h, tilesAbove, lowerTile)
+    }
+    const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
+    const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
+    cycleOverAllCurveClips()
+    if (!regenerate) {
+      return this.addSubtilesToLevel(tilesAbove, levelTiles, xp, yp, allTilesAreSmall)
+    } else {
+      addRemoveSubtiles()
+      return true
+    }
 
+    function addRemoveSubtiles() {
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          const tile = levelTiles.get(xp * 2 + i, yp * 2 + j)
+          if (!tile) {
+            const k = i * 2 + j
+            if (tilesAbove[k].curveClipsLength > 0) {
+              levelTiles.set(xp * 2 + i, yp * 2 + j, tilesAbove[k])
+            }
+          } else {
+            if (tile.isEmpty()) {
+              levelTiles.delete(xp * 2 + i, yp * 2 + j)
+            }
+          }
+        }
+      }
+    }
+
+    // local functions
+    function cycleOverAllCurveClips() {
+      if (lowerTile.cachedClipsLength > 0) {
+        subdivideWithCachedClips()
+      } else {
+        subdivideNoCachedClips()
+      }
+    }
+    function subdivideWithCachedClips() {
+      //create temparary PointPairMap to store the result of the intersection
+      // each entry in the map is an array of curves corresponding to the intersections with one subtile
+
+      const tempMap = new PointPairMap<Array<ICurve[]>>()
+      for (const [pp, cs] of lowerTile.getCachedClips()) {
+        const arr: Array<ICurve[]> = [[], [], [], []]
+        tempMap.set(pp, arr)
+        // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
+        const xs = intersectWithMiddleLines(cs)
+
+        Assert.assert(xs.length >= 2)
+        for (let u = 0; u < xs.length - 1; u++) {
+          const t = (xs[u][1] + xs[u + 1][1]) / 2
+          const p = cs.value(t)
+          const i = p.x <= left + w ? 0 : 1
+          const j = p.y <= bottom + h ? 0 : 1
+          const k = 2 * i + j
+          const tr = xs.length > 2 ? cs.trim(xs[u][1], xs[u + 1][1]) : cs
+          arr[k].push(tr)
+          tilesAbove[k].addCachedClip(tr)
+        }
+      }
+      for (const cs of lowerTile.getCurveClips()) {
+        const trs = tempMap.getPP(cs.curve.start, cs.curve.end)
+        for (let i = 0; i < 4; i++) {
+          const tile = tilesAbove[i]
+
+          for (const tr of trs[i]) {
+            tile.addCurveClip({edge: cs.edge, curve: tr})
+          }
+        }
+      }
+    }
+
+    function subdivideNoCachedClips() {
+      for (const cs of lowerTile.getCurveClips()) {
+        // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
+        const xs = intersectWithMiddleLines(cs.curve)
+
+        for (let u = 0; u < xs.length - 1; u++) {
+          const t = (xs[u][1] + xs[u + 1][1]) / 2
+          const p = cs.curve.value(t)
+          const i = p.x <= left + w ? 0 : 1
+          const j = p.y <= bottom + h ? 0 : 1
+          const k = 2 * i + j
+          const tile = tilesAbove[k]
+          // do we have a cached clip?
+          let tr = tile.findCachedClip(xs[u][0], xs[u + 1][0])
+          if (tr != null) {
+            tile.addCurveClip({edge: cs.edge, curve: tr})
+            continue
+          }
+          tr = xs.length > 2 ? cs.curve.trim(xs[u][1], xs[u + 1][1]) : cs.curve
+          if (!tr) continue // could no trim!
+          tile.addCachedClip(tr)
+          tile.addCurveClip({edge: cs.edge, curve: tr})
+        }
+      }
+    }
+
+    function intersectWithMiddleLines(seg: ICurve): Array<[Point, number]> {
+      // point, parameter
+      const xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true)).concat(
+        Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)),
+      )
+      xs.sort((a, b) => a.par0 - b.par0)
+      const filteredXs: Array<[Point, number]> = [[seg.start, seg.parStart]]
+      for (let i = 0; i < xs.length; i++) {
+        const ii = xs[i]
+        if (ii.par0 > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
+          filteredXs.push([ii.x, ii.par0])
+        }
+      }
+      if (seg.parEnd > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
+        filteredXs.push([seg.end, seg.parEnd])
+      }
+      return filteredXs
+    }
+  }
+
+  /** returns the updated value of allTilesAreSmall */
+  private addSubtilesToLevel(tdArr: Tile[], levelTiles: IntPairMap<Tile>, xp: number, yp: number, allTilesAreSmall: boolean) {
+    //debCount++
+    for (let i = 0; i < 2; i++)
+      for (let j = 0; j < 2; j++) {
+        const tile = tdArr[i * 2 + j]
+        if (!tile.isEmpty()) {
+          levelTiles.set(2 * xp + i, 2 * yp + j, tile)
+          // try {
+          //   if (debCount % 10 === 0) {
+          //     const cc = Array.from(tile.getCurveClips())
+
+          //     // SvgDebugWriter.dumpDebugCurves(
+          //     //   './tmp/tile' + debCount + '-' + (2 * xp + i) + '-' + (2 * yp + j) + '.svg',
+          //     //   cc
+          //     //     .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
+          //     //     .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.rect.perimeter())])
+          //     //     .concat(tile.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+          //     //     .concat(tile.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+          //     // )
+          //   }
+          // } catch (e) {}
+          if (allTilesAreSmall && tile.entityCount > this.tileCapacity) {
+            //console.log('found a tile at level', z, ' with ', tile.elementCount, 'elements, which is greater than', this.tileCapacity)
+            allTilesAreSmall = false
+          }
+        }
+      }
+
+    return allTilesAreSmall
+  }
+
+  private generateSubtilesWithoutTileClips(left: number, w: number, bottom: number, h: number, tilesAbove: Tile[], upperTile: Tile) {
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++) {
         const tileRect = new Rectangle({
@@ -638,66 +834,8 @@ export class TileMap {
           bottom: bottom + h * j,
           top: bottom + h * (j + 1),
         })
-        tdArr[i * 2 + j] = this.generateSubTileWithoutEdgeClips(upperTile, tileRect)
+        tilesAbove[i * 2 + j] = this.generateSubTileExceptEdgeClips(upperTile, tileRect)
       }
-
-    cycleOverAllCurveClips()
-    for (let i = 0; i < 2; i++)
-      for (let j = 0; j < 2; j++) {
-        const tile = tdArr[i * 2 + j]
-
-        if (!tile.isEmpty()) {
-          levelTiles.set(2 * xp + i, 2 * yp + j, tile)
-          if (allTilesAreSmall && tile.entityCount > this.tileCapacity) {
-            //console.log('found a tile at level', z, ' with ', tile.elementCount, 'elements, which is greater than', this.tileCapacity)
-            allTilesAreSmall = false
-          }
-        }
-      }
-    return allTilesAreSmall
-
-    function cycleOverAllCurveClips() {
-      const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
-      const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
-      for (const cs of upperTile.curveClips) {
-        // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
-        const xs = Array.from(Curve.getAllIntersections(cs.curve, horizontalMiddleLine, true)).concat(
-          Array.from(Curve.getAllIntersections(cs.curve, verticalMiddleLine, true)),
-        )
-        xs.sort((a, b) => a.par0 - b.par0)
-        const filteredXs = [cs.curve.parStart]
-        for (let i = 0; i < xs.length; i++) {
-          const ii = xs[i]
-          if (ii.par0 > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-            filteredXs.push(ii.par0)
-          }
-        }
-        if (cs.curve.parEnd > filteredXs[filteredXs.length - 1] + GeomConstants.distanceEpsilon) {
-          filteredXs.push(cs.curve.parEnd)
-        }
-        for (let u = 0; u < filteredXs.length - 1; u++) {
-          const tr = filteredXs.length > 2 ? cs.curve.trim(filteredXs[u], filteredXs[u + 1]) : cs.curve
-          if (!tr) continue // could no trim!
-          const del = (tr.parEnd - tr.parStart) / 5
-
-          let t = tr.parStart
-          const trBb = tr.boundingBox
-          for (let r = 0; r < 6; r++, t += del) {
-            const p = tr.value(t)
-            const i = p.x <= left + w ? 0 : 1
-            const j = p.y <= bottom + h ? 0 : 1
-            const k = 2 * i + j
-            const tile = tdArr[k]
-
-            if (tile.rect.containsRect(trBb)) {
-              //   Assert.assert(tile.rect.contains(p))
-              pushToClips(tile.curveClips, cs.edge, tr)
-              break
-            }
-          }
-        }
-      }
-    }
   }
 
   innerClips(curve: ICurve, verticalMiddleLine: LineSegment, horizontalMiddleLine: LineSegment): Array<ICurve> {
@@ -746,8 +884,9 @@ export class TileMap {
     return ret
   }
 
-  private generateSubTileWithoutEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
-    const tile = Tile.mk([], [], [], [], tileRect)
+  private generateSubTileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
+    const tile = Tile.mkWithCachedClips(tileRect)
+
     for (const n of upperTile.nodes) {
       if (n.boundingBox.intersects(tileRect)) {
         tile.nodes.push(n)
@@ -819,3 +958,20 @@ function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
     clips.push({curve: c, edge: e})
   }
 }
+// function dumpTiles(tileMap: IntPairMap<Tile>, z: number) {
+//   for (const [p, tile] of tileMap.keyValues()) {
+//     try {
+//       const cc = Array.from(tile.getCurveClips()).map((c) => c.curve)
+//       SvgDebugWriter.dumpDebugCurves(
+//         './tmp/filteredTile' + z + '-' + p.x + '-' + p.y + '.svg',
+//         cc
+//           .map((c) => DebugCurve.mkDebugCurveCI('Green', c))
+//           .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.rect.perimeter())])
+//           .concat(tile.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+//           .concat(tile.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+//       )
+//     } catch (Error) {
+//       console.log(Error.message)
+//     }
+//   }
+// }
