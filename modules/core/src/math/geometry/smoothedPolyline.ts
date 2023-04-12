@@ -70,7 +70,7 @@ export class SmoothedPolyline {
       const corner = Curve.findCorner(a)
       if (corner == null) break
       const bezierSeg = SmoothedPolyline.createBezierSegOnSite(corner.b)
-      if (curve.segs.length === 0) {
+      if (curve.segments.length === 0) {
         if (!Point.closeDistEps(a.point, bezierSeg.start)) Curve.addLineSegment(curve, a.point, bezierSeg.start)
       } else if (!Point.closeDistEps(curve.end, bezierSeg.start)) Curve.continueWithLineSegmentP(curve, bezierSeg.start)
       curve.addSegment(bezierSeg)
@@ -79,12 +79,12 @@ export class SmoothedPolyline {
 
     /*Assert.assert(a.next.next == null )*/
 
-    if (curve.segs.length === 0) {
+    if (curve.segments.length === 0) {
       if (!Point.closeDistEps(a.point, a.next.point)) {
         Curve.addLineSegment(curve, a.point, a.next.point)
       } else {
         const w = 5
-        curve.segs.push(new BezierSeg(a.point, a.point.add(new Point(w, w)), a.point.add(new Point(-w, w)), b.point))
+        curve.segments.push(new BezierSeg(a.point, a.point.add(new Point(w, w)), a.point.add(new Point(-w, w)), b.point))
       }
     } else if (!Point.closeDistEps(curve.end, a.next.point)) Curve.continueWithLineSegmentP(curve, a.next.point)
     return curve

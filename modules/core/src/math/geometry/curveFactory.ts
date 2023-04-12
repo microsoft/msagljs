@@ -121,7 +121,7 @@ export class CurveFactory {
 
   static isRoundedRect(ic: ICurve): RoundedRectRadii | undefined {
     if (!(ic instanceof Curve)) return
-    const segs = ic.segs
+    const segs = ic.segments
     if (segs.length !== 8 && segs.length !== 4) return
     const full = segs.length === 8 ? true : false
     let radX: number

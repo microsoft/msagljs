@@ -832,7 +832,7 @@ export class SmoothedPolylineCalculator {
       }
     }
 
-    if (curve.segs.length > 0 && !Point.closeDistEps(curve.end, seg.start)) {
+    if (curve.segments.length > 0 && !Point.closeDistEps(curve.end, seg.start)) {
       curve.addSegment(LineSegment.mkPP(curve.end, seg.start))
     }
 

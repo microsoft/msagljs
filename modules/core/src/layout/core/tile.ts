@@ -107,7 +107,7 @@ export class Tile {
     } else if ('curve' in data) {
       Assert.assert(this.rect.containsRect(data.curve.boundingBox), 'CurveClip.curve is not in tile')
       if (data.curve instanceof Curve) {
-        for (const seg of data.curve.segs) {
+        for (const seg of data.curve.segments) {
           this.addCurveClip({edge: data.edge, curve: seg})
         }
       } else {

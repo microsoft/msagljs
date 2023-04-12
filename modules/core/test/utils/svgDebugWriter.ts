@@ -138,7 +138,7 @@ export class SvgDebugWriter {
     yield 'M'
     yield SvgDebugWriter.pointToString(iCurve.start)
     const iscurve = iCurve instanceof Curve
-    if (iscurve) for (const segment of (iCurve as Curve).segs) yield SvgDebugWriter.segmentString(segment)
+    if (iscurve) for (const segment of (iCurve as Curve).segments) yield SvgDebugWriter.segmentString(segment)
     else {
       const islineSeg = iCurve instanceof LineSegment
       if (islineSeg) {

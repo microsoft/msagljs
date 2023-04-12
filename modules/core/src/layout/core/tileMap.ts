@@ -102,7 +102,7 @@ export class TileMap {
       const geomEdge = GeomEdge.getGeom(e)
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
-        for (const seg of c.segs) {
+        for (const seg of c.segments) {
           topLevelTile.addElement({edge: e, curve: seg})
         }
       } else {
@@ -951,7 +951,7 @@ export class TileMap {
 }
 function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
   if (c instanceof Curve) {
-    for (const seg of c.segs) {
+    for (const seg of c.segments) {
       clips.push({curve: seg, edge: e})
     }
   } else {

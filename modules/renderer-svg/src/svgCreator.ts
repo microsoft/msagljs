@@ -534,7 +534,7 @@ function* curveStringTokens(iCurve: ICurve): IterableIterator<string> {
   yield 'M'
   yield pointToString(iCurve.start)
   const iscurve = iCurve instanceof Curve
-  if (iscurve) for (const segment of iCurve.segs) yield segmentString(segment)
+  if (iscurve) for (const segment of iCurve.segments) yield segmentString(segment)
   else {
     const islineSeg = iCurve instanceof LineSegment
     if (islineSeg) {

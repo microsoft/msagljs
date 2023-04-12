@@ -543,8 +543,8 @@ export class LayoutEditor {
     const isCurve = geomEdge.curve instanceof Curve
     if (isCurve) {
       const curve = geomEdge.curve as Curve
-      if (curve.segs.length > 0) yield curve.start
-      for (let i = 0; i < curve.segs.length; i++) yield curve.segs[i].end
+      if (curve.segments.length > 0) yield curve.start
+      for (let i = 0; i < curve.segments.length; i++) yield curve.segments[i].end
     }
     yield geomEdge.target.center
   }
@@ -838,7 +838,7 @@ export class LayoutEditor {
     if (c instanceof Curve) {
       const sipar = c.getSegIndexParam(t.portParameter)
       const segPar = sipar.par
-      const seg = c.segs[sipar.segIndex]
+      const seg = c.segments[sipar.segIndex]
       if (segPar - seg.parStart < seg.parEnd - segPar) {
         if (seg.start.sub(pointOnCurve).length < this.viewer.smoothedPolylineCircleRadius * 2) {
           t.portParameter -= segPar - seg.parStart
