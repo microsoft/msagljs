@@ -36,6 +36,7 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
 import {PivotMDS} from '../../../src/layout/mds/pivotMDS'
+import {Bundle} from '../../../src/layout/core/tile'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')
@@ -271,12 +272,14 @@ function dumpTiles(tileMap: TileMap) {
     const ts = tilesOfLevel.filter(tileIsCool)
     for (const tile of ts) {
       try {
-        const cc = Array.from(tile.data.getCurveClips()).filter(clipIsCool)
+        const cc = Array.from(tile.data.getBundles())
+          .filter(bundleIsCool)
+          .map((b) => b.clip)
 
         SvgDebugWriter.dumpDebugCurves(
           './tmp/tile' + z + '-' + tile.x + '-' + tile.y + '.svg',
           cc
-            .map((c) => DebugCurve.mkDebugCurveCI('Green', c.curve))
+            .map((c) => DebugCurve.mkDebugCurveCI('Green', c))
             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.data.rect.perimeter())])
             .concat(tile.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
             .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
@@ -288,13 +291,13 @@ function dumpTiles(tileMap: TileMap) {
   }
 }
 
-function clipIsCool(c: CurveClip) {
-  return c.edge.source.id == 'NED' && c.edge.target.id == 'STEFFON'
+function bundleIsCool(bundle: Bundle) {
+  for (const edge of bundle.edges) if (edge.source.id == 'NED' && edge.target.id == 'STEFFON') return true
 }
 
 function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): unknown {
-  for (const c of t.data.getCurveClips()) {
-    if (clipIsCool(c)) return true
+  for (const c of t.data.getBundles()) {
+    if (bundleIsCool(c)) return true
   }
   return false
 }

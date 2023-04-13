@@ -1,102 +1,98 @@
 import {Rectangle} from '../../math/geometry/rectangle'
 import {GeomNode} from './geomNode'
-import {GeomEdge} from './geomEdge'
 import {Edge} from '../../structs/edge'
 import {GeomLabel} from './geomLabel'
 import {Point} from '../../math/geometry/point'
-import {Entity} from '../../structs/entity'
 import {CurveClip, ArrowHeadData} from './tileMap'
 import {Curve, ICurve} from '../../math/geometry'
 import {PointPairMap} from '../../utils/pointPairMap'
 import {PointPair} from '../../math/geometry/pointPair'
 import {Assert} from '../../utils/assert'
 
-/** keeps all the data needed to render a tile */
+export type Bundle = {clip: ICurve; edges: Edge[]}
+
+/** keeps the data needed to render a tile, and some fields for optimizations */
 export class Tile {
-  static mkWithCachedClips(tileRect: Rectangle) {
-    const t = new Tile(tileRect)
-    t.initCachedClips()
-    return t
-  }
   get cachedClipsLength() {
-    return this.cachedClips ? this.cachedClips.size : 0
+    return this.bundleTable ? this.bundleTable.size : 0
   }
   constructor(rect: Rectangle) {
-    this.curveClips = []
     this.arrowheads = []
     this.nodes = []
     this.labels = []
     this.rect = rect
+    this.bundleTable = new PointPairMap<Bundle>()
   }
-  addCachedClip(curve: ICurve) {
-    Assert.assert(!(curve instanceof Curve), 'CurveClip.curve is not a Curve')
-    if (this.cachedClips) {
-      this.cachedClips.set(new PointPair(curve.start, curve.end), curve)
+  /** returns an array for edges passing through the curve */
+  addToBundlesOrFetchFromBundles(clip: ICurve): Edge[] {
+    Assert.assert(!(clip instanceof Curve), 'CurveClip.curve is not a Curve')
+
+    const pp = new PointPair(clip.start, clip.end)
+    const bundle = this.bundleTable.get(pp)
+    if (bundle) {
+      return bundle.edges
     }
+    const ret: Edge[] = []
+    this.bundleTable.set(new PointPair(clip.start, clip.end), {clip: clip, edges: ret})
+    return ret
   }
-  findCachedClip(p0: Point, p1: Point): ICurve {
-    return this.cachedClips.get(new PointPair(p0, p1))
+
+  findCreateBundlePP(p0: Point, p1: Point): Bundle | undefined {
+    return this.bundleTable.get(new PointPair(p0, p1))
   }
+
+  findCreateBundle(seg: ICurve): Bundle | undefined {
+    const pp = new PointPair(seg.start, seg.end)
+    const ret = this.bundleTable.get(pp)
+    if (ret) return ret
+    const b = {clip: seg, edges: new Array<Edge>()}
+    this.bundleTable.set(pp, b)
+    return b
+  }
+
   addCurveClip(cc: CurveClip) {
-    Assert.assert(!(cc.curve instanceof Curve), 'CurveClip.curve is not a Curve')
-    this.curveClips.push(cc)
+    Assert.assert(!(cc.curve instanceof Curve), 'CurveClip.curve should not be a Curve!')
+    this.findCreateBundle(cc.curve).edges.push(cc.edge)
   }
-  private curveClips: CurveClip[]
+
   arrowheads: {tip: Point; edge: Edge; base: Point}[]
   nodes: GeomNode[]
   labels: GeomLabel[]
   rect: Rectangle
   // for each pair of points, we keep a cached curve, it is unique
-  private cachedClips: PointPairMap<ICurve>
-  initCachedClips() {
-    this.cachedClips = new PointPairMap<ICurve>()
+  private bundleTable: PointPairMap<{clip: ICurve; edges: Edge[]}>;
+
+  *getBundles(): IterableIterator<Bundle> {
+    yield* this.bundleTable.values()
   }
-  *getCachedClips(): IterableIterator<[PointPair, ICurve]> {
-    yield* this.cachedClips
-  }
-  get curveClipsLength() {
-    return this.curveClips.length
+  get curveBundlesLength() {
+    return this.bundleTable.size
   }
 
   isEmpty(): boolean {
-    return this.curveClips.length == 0 && this.arrowheads.length == 0 && this.nodes.length == 0 && this.labels.length == 0
-  }
-
-  *getCurveClips(): IterableIterator<CurveClip> {
-    yield* this.curveClips
+    return this.bundleTable.size == 0 && this.arrowheads.length == 0 && this.nodes.length == 0 && this.labels.length == 0
   }
 
   initCurveClips() {
-    if (this.cachedClips) this.cachedClips.clear()
-
-    this.curveClips = []
-  }
-  /** an edge can be returned several times, once for every element pointing at it */
-  *entitiesOfTile(): IterableIterator<Entity> {
-    for (const cc of this.curveClips) {
-      yield cc.edge
-    }
-
-    for (const label of this.labels) {
-      yield (label.parent as GeomEdge).edge
-    }
-    for (const arrowhead of this.arrowheads) {
-      yield arrowhead.edge
-    }
-    for (const gnode of this.nodes) {
-      yield gnode.node
+    if (this.bundleTable) {
+      this.bundleTable.clear()
+    } else {
+      this.bundleTable = new PointPairMap<Bundle>()
     }
   }
+
   /** clears all arrays but does not touch this.rect */
   clear() {
-    this.curveClips = []
     this.arrowheads = []
     this.nodes = []
     this.labels = []
+    if (this.bundleTable) this.bundleTable.clear()
+    else this.bundleTable = new PointPairMap<Bundle>()
   }
 
+  /** returns the number of entities that will be rendered for a tile: each bundle is counted as one entity */
   get entityCount() {
-    return this.curveClips.length + this.arrowheads.length + this.labels.length + this.nodes.length
+    return this.bundleTable.size + this.arrowheads.length + this.labels.length + this.nodes.length
   }
 
   addElement(data: CurveClip | ArrowHeadData | GeomLabel | GeomNode) {
