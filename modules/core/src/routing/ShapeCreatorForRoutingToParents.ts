@@ -58,7 +58,7 @@ export class ShapeCreatorForRoutingToParents {
       return
     }
 
-    nodesToShapes.set(n, new RelativeShape(() => n.boundaryCurve))
+    nodesToShapes.set(n, new RelativeShape(n))
   }
 
   static NumberOfActiveNodesIsUnderThreshold(inParentEdges: Array<GeomEdge>, outParentEdges: Array<GeomEdge>, threshold: number): boolean {

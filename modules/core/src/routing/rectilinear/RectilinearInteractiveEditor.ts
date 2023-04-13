@@ -171,7 +171,7 @@ export class RectilinearInteractiveEditor {
   //  Create a Shape with a single relative port at its center.
 
   public static CreateShapeWithRelativeNodeAtCenter(node: GeomNode): Shape {
-    const shape = new RelativeShape(() => node.boundaryCurve)
+    const shape = new RelativeShape(node)
     shape.Ports.add(
       new RelativeFloatingPort(
         () => node.boundaryCurve,

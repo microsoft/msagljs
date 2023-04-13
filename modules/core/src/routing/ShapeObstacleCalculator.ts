@@ -17,7 +17,7 @@ export class ShapeObstacleCalculator {
   tightHierarchy: RectangleNode<Polyline, Point>
 
   coupleHierarchy: RectangleNode<TightLooseCouple, Point>
-
+  loosePolylinesToNodes = new Map<Polyline, Set<Node>>()
   RootOfLooseHierarchy: RectangleNode<Shape, Point>
 
   constructor(shape: Shape, tightPadding: number, loosePadding: number, shapesToTightLooseCouples: Map<Shape, TightLooseCouple>) {
@@ -28,6 +28,7 @@ export class ShapeObstacleCalculator {
   }
 
   ShapesToTightLooseCouples: Map<Shape, TightLooseCouple>
+  tightToShape: Map<Polyline, Shape>
   TightPadding: number
 
   LoosePadding: number
@@ -42,7 +43,9 @@ export class ShapeObstacleCalculator {
 
     this.CreateTightObstacles()
     this.CreateTigthLooseCouples(randomizationShift)
-    this.FillTheMapOfShapeToTightLooseCouples()
+    if (this.OverlapsDetected) {
+      this.FillTheMapOfShapeToTightLooseCouples()
+    }
   }
   FillTheMapOfShapeToTightLooseCouples() {
     const childrenShapeHierarchy = CreateRectNodeOnArrayOfRectNodes(this.MainShape.Children.map((s) => mkRectangleNode(s, s.BoundingBox)))
@@ -66,7 +69,10 @@ export class ShapeObstacleCalculator {
       const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(this.tightHierarchy, tightPolyline, this.LoosePadding)
       const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizationShift)
       const looseShape = new Shape(loosePoly)
-      couples.push(TightLooseCouple.mk(tightPolyline, looseShape, distance))
+      const cpl = TightLooseCouple.mk(tightPolyline, looseShape, distance)
+      this.ShapesToTightLooseCouples.set(this.tightToShape.get(tightPolyline), cpl)
+
+      couples.push(cpl)
     }
 
     this.coupleHierarchy = CreateRectNodeOnArrayOfRectNodes(
@@ -75,6 +81,7 @@ export class ShapeObstacleCalculator {
   }
 
   CreateTightObstacles() {
+    this.tightToShape = new Map<Polyline, Shape>()
     const tightObstacles = new Set<Polyline>(this.MainShape.Children.map(this.InitialTightPolyline.bind(this)))
     const initialNumberOfTightObstacles: number = tightObstacles.size
     this.tightHierarchy = InteractiveObstacleCalculator.RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacles)
@@ -82,16 +89,19 @@ export class ShapeObstacleCalculator {
   }
 
   InitialTightPolyline(shape: Shape): Polyline {
-    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
+    let poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
     const stickingPointsArray = flattenArray(this.LoosePolylinesUnderShape(shape), (p) => p).filter(
       (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
     if (stickingPointsArray.length == 0) {
+      if (this.tightToShape) this.tightToShape.set(poly, shape)
       return poly
     }
     const pts = Array.from(poly).concat(stickingPointsArray)
-    return Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(pts))
+    poly = Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(pts))
+    if (this.tightToShape) this.tightToShape.set(poly, shape)
+    return poly
   }
 
   LoosePolylinesUnderShape(shape: Shape): Array<Polyline> {

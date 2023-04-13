@@ -52,6 +52,7 @@ import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
 import {Node} from '..'
 import {edgeNodesBelongToSet} from '../structs/graph'
 import {initRandom} from '../utils/random'
+import {RelativeShape} from './RelativeShape'
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
@@ -224,9 +225,16 @@ export class SplineRouter extends Algorithm {
     this.RemoveRoot()
   }
   calcLooseShapesToNodes() {
+    this.loosePolylinesToNodes = new Map<Polyline, Set<Node>>()
+    if (!this.OverlapsDetected) {
+      for (const [nodeShape, cpl] of this.shapesToTightLooseCouples) {
+        this.loosePolylinesToNodes.set(cpl.LooseShape.BoundaryCurve as Polyline, new Set<Node>([(<RelativeShape>nodeShape).node.node]))
+      }
+      return
+    }
+
     const nodeTree = createRectangleNodeOnData(this.geomGraph.nodesBreadthFirst, (n) => n.boundingBox)
     const looseTree = this.GetLooseHierarchy()
-    this.loosePolylinesToNodes = new Map<Polyline, Set<Node>>()
     CrossRectangleNodes(looseTree, nodeTree, (poly, geomNode) => {
       if (Curve.CurveIsInsideOther(geomNode.boundaryCurve, poly)) {
         let polyNodes = this.loosePolylinesToNodes.get(poly)

@@ -44,7 +44,7 @@ export class ShapeCreator {
 
   static CreateShapeWithCenterPort(node: GeomNode): Shape {
     // Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
-    const shape = new RelativeShape(() => node.boundaryCurve)
+    const shape = new RelativeShape(node)
 
     const port = RelativeFloatingPort.mk(
       () => node.boundaryCurve,
@@ -71,7 +71,7 @@ export class ShapeCreator {
   static CreateShapeWithClusterBoundaryPort(cluster: GeomGraph): Shape {
     // Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
     // Assert.assert(cluster instanceof GeomGraph)
-    const shape = new RelativeShape(() => cluster.boundaryCurve)
+    const shape = new RelativeShape(cluster)
 
     const port = ClusterBoundaryPort.mk(
       () => cluster.boundaryCurve,

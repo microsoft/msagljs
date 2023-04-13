@@ -531,7 +531,6 @@ export class TileMap {
     this.levels[z] = new IntPairMap<Tile>(tilesInRow)
     /** the width and the height of z-th level tile */
     const allTilesAreSmall = this.subdivideTilesOnLevel(z)
-    console.log('total cache clips', this.countCacheClips(z), ', and total clips = ', this.countClips(z))
     if (allTilesAreSmall) {
       console.log('done subdividing at level', z, 'because each tile contains less than', this.tileCapacity)
       return true
