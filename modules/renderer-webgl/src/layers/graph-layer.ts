@@ -1,5 +1,5 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
-import { TextLayer, TextLayerProps } from '@deck.gl/layers/typed'
+import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {GeomNode, TileData, TileMap} from 'msagl-js'
 import {Matrix4} from '@math.gl/core'
 
@@ -8,7 +8,7 @@ import {getEdgeLayer, getArrowHeadLayer, getEdgeLabelLayer} from './get-edge-lay
 import GraphHighlighter from './graph-highlighter'
 import {ParsedGraphStyle, ParsedGraphNodeLayerStyle, ParsedGraphEdgeLayerStyle} from '../styles/graph-style-evaluator'
 
-import type { _Tile2DHeader, NonGeoBoundingBox } from '@deck.gl/geo-layers/typed'
+import type {_Tile2DHeader, NonGeoBoundingBox} from '@deck.gl/geo-layers/typed'
 
 type GraphLayerProps = TextLayerProps<GeomNode> & {
   highlighter: GraphHighlighter
@@ -32,28 +32,28 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
   }
 
   override updateState({props, oldProps, changeFlags}: UpdateParameters<this>) {
-    const {graphStyle} = props;
+    const {graphStyle} = props
     if (changeFlags.dataChanged || graphStyle !== oldProps.graphStyle) {
       // @ts-ignore
       const data = props.data as TileData
       const filterContext = {
-        tileMap: props.tileMap
+        tileMap: props.tileMap,
       }
       const layerMap: Record<string, TileData> = {}
       for (const layer of graphStyle.layers) {
-        const layerData = new TileData()
+        const layerData = new TileData(null)
         layerMap[layer.id] = layerData
 
         if (layer.type === 'node') {
-          layerData.nodes = layer.filter ? data.nodes.filter(n => layer.filter(n.node, filterContext)) : data.nodes
+          layerData.nodes = layer.filter ? data.nodes.filter((n) => layer.filter(n.node, filterContext)) : data.nodes
         }
         if (layer.type === 'edge') {
-          layerData.curveClips = layer.filter ? data.curveClips.filter(c => layer.filter(c.edge, filterContext)) : data.curveClips
-          layerData.arrowheads = layer.filter ? data.arrowheads.filter(a => layer.filter(a.edge, filterContext)) : data.arrowheads
-          layerData.labels = layer.filter ? data.labels.filter(l => layer.filter(l.parent.entity, filterContext)) : data.labels
+          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => layer.filter(c.edge, filterContext)) : data.curveClips
+          layerData.arrowheads = layer.filter ? data.arrowheads.filter((a) => layer.filter(a.edge, filterContext)) : data.arrowheads
+          layerData.labels = layer.filter ? data.labels.filter((l) => layer.filter(l.parent.entity, filterContext)) : data.labels
         }
       }
-      this.setState({ layerMap })
+      this.setState({layerMap})
     }
   }
 
@@ -65,7 +65,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
   }
 
   filterSubLayer({layer, viewport}: any) {
-    const layerStyle = layer.props.layerStyle as (ParsedGraphNodeLayerStyle | ParsedGraphEdgeLayerStyle)
+    const layerStyle = layer.props.layerStyle as ParsedGraphNodeLayerStyle | ParsedGraphEdgeLayerStyle
     const {zoom} = viewport
     return layerStyle.minZoom <= zoom && layerStyle.maxZoom >= zoom
   }
@@ -84,48 +84,68 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
         layerStyle: layer,
         modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize / 4]),
         parameters: {
-          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount]
-        }
+          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount],
+        },
       })
 
       if (data.nodes?.length > 0) {
-        subLayers.push(getNodeLayers({
-          ...subLayerProps,
-          data: data.nodes,
-          getPickingColor: (n, {target}) => highlighter.encodeNodeIndex(n, target),
-          nodeDepth: highlighter.nodeDepth,
+        subLayers.push(
+          getNodeLayers(
+            {
+              ...subLayerProps,
+              data: data.nodes,
+              getPickingColor: (n, {target}) => highlighter.encodeNodeIndex(n, target),
+              nodeDepth: highlighter.nodeDepth,
 
-          // From renderer layout options
-          fontFamily,
-          fontWeight,
-          lineHeight,
-        }, layer as ParsedGraphNodeLayerStyle))
+              // From renderer layout options
+              fontFamily,
+              fontWeight,
+              lineHeight,
+            },
+            layer as ParsedGraphNodeLayerStyle,
+          ),
+        )
       }
 
       if (data.curveClips?.length > 0) {
-        subLayers.push(getEdgeLayer({
-          ...subLayerProps,
-          data: data.curveClips,
-          getDepth: highlighter.edgeDepth,
-          resolution,
-        }, layer as ParsedGraphEdgeLayerStyle))
+        subLayers.push(
+          getEdgeLayer(
+            {
+              ...subLayerProps,
+              data: data.curveClips,
+              getDepth: highlighter.edgeDepth,
+              resolution,
+            },
+            layer as ParsedGraphEdgeLayerStyle,
+          ),
+        )
       }
-      
+
       if (data.arrowheads?.length > 0) {
-        subLayers.push(getArrowHeadLayer({
-          ...subLayerProps,
-          data: data.arrowheads,
-        }, layer as ParsedGraphEdgeLayerStyle))
+        subLayers.push(
+          getArrowHeadLayer(
+            {
+              ...subLayerProps,
+              data: data.arrowheads,
+            },
+            layer as ParsedGraphEdgeLayerStyle,
+          ),
+        )
       }
-      
+
       if (data.labels?.length > 0) {
-        subLayers.push(getEdgeLabelLayer({
-          ...subLayerProps,
-          data: data.labels,
-          fontFamily,
-          fontWeight,
-          lineHeight,
-        }, layer as ParsedGraphEdgeLayerStyle))
+        subLayers.push(
+          getEdgeLabelLayer(
+            {
+              ...subLayerProps,
+              data: data.labels,
+              fontFamily,
+              fontWeight,
+              lineHeight,
+            },
+            layer as ParsedGraphEdgeLayerStyle,
+          ),
+        )
       }
 
       return subLayers

@@ -13,6 +13,20 @@ export type Bundle = {clip: ICurve; edges: Edge[]}
 
 /** keeps the data needed to render a tile, and some fields for optimizations */
 export class Tile {
+  private _curveClips: CurveClip[] = []
+  public get curveClips(): CurveClip[] {
+    if (this._curveClips.length > 0) return this._curveClips
+    return Array.from(this.getBundles())
+      .map((b) =>
+        b.edges.map((e) => {
+          return {curve: b.clip, edge: e}
+        }),
+      )
+      .flat()
+  }
+  public set curveClips(value: CurveClip[]) {
+    this._curveClips = value
+  }
   get cachedClipsLength() {
     return this.bundleTable ? this.bundleTable.size : 0
   }

@@ -292,10 +292,12 @@ function dumpTiles(tileMap: TileMap) {
 }
 
 function bundleIsCool(bundle: Bundle) {
+  return true
   for (const edge of bundle.edges) if (edge.source.id == 'NED' && edge.target.id == 'STEFFON') return true
 }
 
-function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): unknown {
+function tileIsCool(t: {x: number; y: number; data: import('../../../src').TileData}): boolean {
+  return true
   for (const c of t.data.getBundles()) {
     if (bundleIsCool(c)) return true
   }
