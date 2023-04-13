@@ -7,6 +7,7 @@ import {VisibilityEdge} from './VisibilityEdge'
 import {VisibilityVertex} from './VisibilityVertex'
 
 export class VisibilityGraph {
+  activeVertices: Set<VisibilityVertex> = new Set<VisibilityVertex>()
   private *edges_(): IterableIterator<VisibilityEdge> {
     for (const u of this.pointToVertexMap.values()) {
       for (const e of u.OutEdges) yield e
@@ -16,22 +17,18 @@ export class VisibilityGraph {
   get Edges(): IterableIterator<VisibilityEdge> {
     return this.edges_()
   }
-  // needed for shortest path calculations
-  _prevEdgesMap: Map<VisibilityVertex, VisibilityEdge> = new Map<VisibilityVertex, VisibilityEdge>()
-
-  visVertexToId: Map<VisibilityVertex, number> = new Map<VisibilityVertex, number>()
-
   ClearPrevEdgesTable() {
-    this._prevEdgesMap.clear()
+    for (const v of this.activeVertices) v.prevEdge = null
+    this.activeVertices.clear()
   }
 
   ShrinkLengthOfPrevEdge(v: VisibilityVertex, lengthMultiplier: number) {
-    this._prevEdgesMap.get(v).LengthMultiplier = lengthMultiplier
+    v.prevEdge.LengthMultiplier = lengthMultiplier
   }
 
   // needed for shortest path calculations
   PreviosVertex(v: VisibilityVertex): VisibilityVertex {
-    const prev: VisibilityEdge = this._prevEdgesMap.get(v)
+    const prev: VisibilityEdge = v.prevEdge
     if (!prev) return null
 
     if (prev.Source === v) {
@@ -43,7 +40,8 @@ export class VisibilityGraph {
 
   SetPreviousEdge(v: VisibilityVertex, e: VisibilityEdge) {
     /*Assert.assert(v === e.Source || v === e.Target)*/
-    this._prevEdgesMap.set(v, e)
+    this.activeVertices.add(v)
+    v.prevEdge = e
   }
 
   // the default is just to return a new VisibilityVertex

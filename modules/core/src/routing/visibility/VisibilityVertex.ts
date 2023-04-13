@@ -10,6 +10,7 @@ export class VisibilityVertex {
   _isShortestPathTerminal: boolean
 
   _inEdges = new Array<VisibilityEdge>()
+  prevEdge: VisibilityEdge
 
   get InEdges(): Array<VisibilityEdge> {
     return this._inEdges
