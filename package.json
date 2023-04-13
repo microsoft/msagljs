@@ -45,7 +45,8 @@
     "ts-jest": "^29.0.4",
     "typescript": "^4.6.3",
     "typescript-json-schema": "^0.55.0",
-    "xml-writer": "^1.7.0"
+    "xml-writer": "^1.7.0",
+    "node-gyp": "^8.4.1"
   },
   "lint-staged": {
     "modules/**/*.{js,ts}": [
