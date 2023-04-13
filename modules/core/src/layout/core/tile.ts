@@ -51,10 +51,6 @@ export class Tile {
     return ret
   }
 
-  findCreateBundlePP(p0: Point, p1: Point): Bundle | undefined {
-    return this.bundleTable.get(new PointPair(p0, p1))
-  }
-
   findCreateBundle(seg: ICurve): Bundle | undefined {
     const pp = new PointPair(seg.start, seg.end)
     const ret = this.bundleTable.get(pp)
@@ -73,7 +69,10 @@ export class Tile {
   nodes: GeomNode[]
   labels: GeomLabel[]
   rect: Rectangle
-  // for each pair of points, we keep a cached curve, it is unique
+
+  /** There is only one curve passing between given two points.
+   * bundleTable is a map from a pair of points to a curve and an array of edges passing through the curve.
+   */
   private bundleTable: PointPairMap<{clip: ICurve; edges: Edge[]}>;
 
   *getBundles(): IterableIterator<Bundle> {

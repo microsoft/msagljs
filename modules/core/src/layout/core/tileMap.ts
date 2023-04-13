@@ -96,6 +96,14 @@ export class TileMap {
     const arrows = topLevelTile.arrowheads
     const geomLabels = topLevelTile.labels
     for (const e of this.geomGraph.graph.deepEdges) {
+      addEdgeToTiles(e)
+    }
+    // geomLabels and arrowheads are sorted, because edges are sorted: all arrays of TileData are sorted by rank
+    topLevelTile.nodes = Array.from(this.geomGraph.nodesBreadthFirst)
+    tileMap.set(0, 0, topLevelTile)
+    this.levels.push(tileMap)
+
+    function addEdgeToTiles(e: Edge) {
       const geomEdge = GeomEdge.getGeom(e)
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
@@ -115,16 +123,6 @@ export class TileMap {
         geomLabels.push(geomEdge.label)
       }
     }
-    // geomLabels and arrowheads are sorted, because edges are sorted: all arrays of TileData are sorted by rank
-    topLevelTile.nodes = Array.from(this.geomGraph.nodesBreadthFirst)
-    tileMap.set(0, 0, topLevelTile)
-    this.levels.push(tileMap)
-    // SvgDebugWriter.dumpICurves(
-    //   './tmp/tile0.svg',
-    //   Array.from(topLevelTile.getCurveClips())
-    //     .map((c) => c.curve)
-    //     .concat(topLevelTile.nodes.map((n) => n.boundaryCurve)),
-    // )
   }
 
   /**
@@ -150,6 +148,7 @@ export class TileMap {
       this.nodeIndexInSortedNodes.set(sortedNodes[i], i)
     }
 
+    // filter out entities that are not visible on lower layers.
     // do not filter the uppermost layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
       this.filterOutEntities(this.levels[i], sortedNodes, i)
@@ -410,13 +409,6 @@ export class TileMap {
       }
     }
     this.removeEmptyTiles(z)
-
-    let totalCount = 0
-    for (const t of levelToReduce.keyValues()) {
-      totalCount += t[1].entityCount
-    }
-    console.log('added', k, 'nodes to level', z, ', in total', totalCount, 'elements')
-
     //dumpTiles(levelToReduce, z)
     return k
   }
