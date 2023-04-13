@@ -1,7 +1,6 @@
 import {Queue} from 'queue-typescript'
-import {GeomConstants, ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
+import {GeomConstants, Point, Polyline} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
-import {createRectangleNodeOnData, RectangleNode} from '../../math/geometry/RTree/rectangleNode'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
@@ -25,7 +24,6 @@ export class PathOptimizer {
   private sourcePoly: Polyline
   private targetPoly: Polyline
   private d: Diagonal[]
-  private polyRTree: RectangleNode<Polyline, Point>
   setCdt(cdt: Cdt) {
     this.cdt = cdt
     this.cdt.SetInEdges()
@@ -35,7 +33,6 @@ export class PathOptimizer {
         if (s.Owner != null) polys.add(s.Owner as Polyline)
       }
     }
-    this.polyRTree = createRectangleNodeOnData(polys, (p) => p.boundingBox)
   }
 
   triangles = new Set<Tr>()
@@ -203,13 +200,11 @@ export class PathOptimizer {
     this.refineFunnel() //dc)
   }
   findPoly(p: Point): Polyline {
-    const polys = Array.from(this.polyRTree.AllHitItems_(p))
-    if (polys.length == null) {
-      return null
+    const site = this.cdt.FindSite(p)
+    for (const edge of site.Edges) {
+      const poly = edge.lowerSite.Owner ?? edge.upperSite.Owner
+      return poly
     }
-    if (polys.length == 1) return polys[0]
-    polys.sort((a, b) => a.boundingBox.diagonal - b.boundingBox.diagonal)
-    return polys[0]
   }
   /** Because of the floating point operations we might miss some triangles and get a polygon collapsing to a point somewhere inside of the polyline.
    * This point will correspond to a site adjacent to more than two edges from 'perimeter'.
