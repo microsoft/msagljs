@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer-webgl",
-  "version": "1.1.12",
+  "version": "1.1.13",
   "description": "WebGL renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,8 +27,8 @@
     "encode-icon-atlas": "node -e \"console.log(fs.readFileSync('./src/layers/arrows.svg').toString('base64'))\""
   },
   "dependencies": {
-    "@msagl/parser": "^1.1.10",
-    "@msagl/renderer-common": "^1.1.12",
+    "@msagl/parser": "^1.1.11",
+    "@msagl/renderer-common": "^1.1.13",
     "@types/d3-color": "^3.1.0",
     "@types/d3-scale": "^4.0.0",
     "d3-color": "^3.1.0",
