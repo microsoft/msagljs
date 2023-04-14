@@ -3,13 +3,14 @@ import * as path from 'path'
 import {parseDot} from '../src/dotparser'
 import {Color, DrawingNode, DrawingGraph, DrawingEdge} from '../../core/src/drawing'
 import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
-import {AttributeRegistry} from 'msagl-js'
+import {AttributeRegistry} from '@msagl/core'
 
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../../core/test/data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
     const graph = parseDot(graphStr)
+    //@ts-ignore
     return <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   } catch (Error) {
     // console.log('file = ' + fileName + ' error:' + Error.message)
@@ -53,6 +54,7 @@ test('parse with colors ', () => {
     '}'
   const graph = parseDot(dotString)
   expect(graph != null).toBe(true)
+  //@ts-ignore
   const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   const ddNode: DrawingNode = drawingGraph.findNode('d')
   expect(ddNode != null).toBe(true)

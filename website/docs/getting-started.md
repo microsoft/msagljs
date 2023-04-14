@@ -9,18 +9,18 @@ sidebar_position: 2
 Using NPM packages:
 
 ```bash npm2yarn
-npm install msagl-js @msagl/parser @msagl/renderer
+npm install @msagl/core @msagl/parser @msagl/renderer
 ```
 
 ```js
-import { Graph } from 'msagl-js'
-import { Renderer } from '@msagl/renderer'
+import { Graph } from '@msagl/core'
+import { Renderer } from '@msagl/renderer-svg'
 ```
 
 Using script tags:
 
 ```html
-<script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@msagl/core@latest/dist.min.js"></script>
 <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
 <script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
 ```
@@ -47,9 +47,9 @@ This code can be run in the browser.
 
 ```ts build
 import { parseDot } from '@msagl/parser'
-import { Renderer } from '@msagl/renderer'
+import { RendererSvg } from '@msagl/renderer-svg'
 
-const renderer = new Renderer()
+const renderer = new RendererSvg()
 const graph = parseDot(`
 graph G {
 	kspacey -- swilliams;
@@ -65,9 +65,9 @@ Render a graph from JSON:
 
 ```ts build
 import { parseJSON } from '@msagl/parser'
-import { Renderer } from '@msagl/renderer'
+import { RendererSvg } from '@msagl/renderer-svg'
 
-const renderer = new Renderer()
+const renderer = new RendererSvg()
 const graph = parseJSON({
   nodes: [
     { id: 'kspacey' },

@@ -27,8 +27,8 @@ renderer.setOptions(options: LayoutOptions)
 ## Usage of SVG Renderer
 
 ```ts build
-import {parseDot} from '@msagl/parser'
-import {RendererSvg} from '@msagl/renderer'
+import { parseDot } from '@msagl/parser'
+import { RendererSvg } from '@msagl/renderer-svg'
 
 const renderer = new RendererSvg()
 const graph = parseDot(`

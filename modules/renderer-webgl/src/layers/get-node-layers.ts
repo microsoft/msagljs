@@ -1,7 +1,7 @@
 import {LayersList, Color, Position} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomGraph, Node, Entity} from 'msagl-js'
-import {DrawingNode, DrawingObject, ShapeEnum} from 'msagl-js/drawing'
+import {GeomNode, GeomGraph, Node, Entity} from '@msagl/core'
+import {DrawingNode, DrawingObject, ShapeEnum} from '@msagl/core/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 import {ParsedGraphNodeLayerStyle} from '../styles/graph-style-evaluator'
@@ -15,51 +15,49 @@ type NodeLayerProps = GeometryLayerProps<GeomNode> &
 
 export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayerStyle): LayersList {
   return [
-    new GeometryLayer<GeomNode>(
-      props,
-      {
-        id: `${props.id}-node-boundary`,
-        lineWidthUnits: 'pixels',
-        getPosition: getNodeCenter,
-        getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
-        getShape: (e: GeomNode) => getShapeFromNode(e.node),
-        cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
-        getLineColor: getNodeColor,
-        getFillColor: getNodeFillColor,
+    new GeometryLayer<GeomNode>(props, {
+      id: `${props.id}-node-boundary`,
+      lineWidthUnits: 'pixels',
+      getPosition: getNodeCenter,
+      getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
+      getShape: (e: GeomNode) => getShapeFromNode(e.node),
+      cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
+      getLineColor: getNodeColor,
+      getFillColor: getNodeFillColor,
 
-        extensions: [new GraphStyleExtension({
+      extensions: [
+        new GraphStyleExtension({
           overrideProps: {
             opacity: style.opacity,
             sizeScale: style.size,
             getFillColor: style.fillColor,
             getLineWidth: style.strokeWidth,
             getLineColor: style.strokeColor,
-          }
-        })]
-      }
-    ),
+          },
+        }),
+      ],
+    }),
 
-    new TextLayer<GeomNode>(
-      props,
-      {
-        id: `${props.id}-node-label`,
-        getPosition: getLabelPosition,
-        getText: getLabelText,
-        getSize: getLabelSize,
-        getColor: getNodeColor,
-        billboard: false,
-        sizeUnits: 'common',
-        characterSet: 'auto',
+    new TextLayer<GeomNode>(props, {
+      id: `${props.id}-node-label`,
+      getPosition: getLabelPosition,
+      getText: getLabelText,
+      getSize: getLabelSize,
+      getColor: getNodeColor,
+      billboard: false,
+      sizeUnits: 'common',
+      characterSet: 'auto',
 
-        extensions: [new GraphStyleExtension({
+      extensions: [
+        new GraphStyleExtension({
           overrideProps: {
             opacity: style.opacity,
             getColor: style.labelColor,
-            sizeScale: style.labelSize
-          }
-        })]
-      }
-    ),
+            sizeScale: style.labelSize,
+          },
+        }),
+      ],
+    }),
   ]
 }
 
@@ -160,5 +158,5 @@ function getShapeFromNode(node: Node): SHAPE {
 }
 
 function getDrawingObj<T extends DrawingObject>(e: Entity): T {
-  return DrawingObject.getDrawingObj(e) as T;
+  return DrawingObject.getDrawingObj(e) as T
 }

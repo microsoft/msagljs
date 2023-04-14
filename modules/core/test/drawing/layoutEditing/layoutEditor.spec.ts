@@ -14,7 +14,7 @@
 //   GeomNode,
 //   Curve,
 //   Entity,
-// } from 'msagl-js'
+// } from '@msagl/core'
 // import {
 //   InsertionMode,
 //   IViewer,
@@ -24,7 +24,7 @@
 //   IViewerObject,
 //   LayoutEditor,
 //   ModifierKeysEnum,
-// } from 'msagl-js/drawing'
+// } from '@msagl/core/drawing'
 // import {edgesAreAttached, parseDotGraph} from '../../utils/testUtils'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 // import {PointLocation, Polyline, Size} from '../../../src/math/geometry'

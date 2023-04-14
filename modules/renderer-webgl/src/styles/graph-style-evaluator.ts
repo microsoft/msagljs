@@ -1,6 +1,13 @@
-import {Entity, Node, Edge, TileMap } from 'msagl-js'
-import {DrawingObject, DrawingNode, DrawingEdge, ShapeEnum} from 'msagl-js/drawing'
-import {GraphStyleSpecification, EntityFilter, InterpolatorContext, Interpolation, GraphNodeLayerStyle, GraphEdgeLayerStyle} from './graph-style-spec'
+import {Entity, Node, Edge, TileMap} from '@msagl/core'
+import {DrawingObject, DrawingNode, DrawingEdge, ShapeEnum} from '@msagl/core/drawing'
+import {
+  GraphStyleSpecification,
+  EntityFilter,
+  InterpolatorContext,
+  Interpolation,
+  GraphNodeLayerStyle,
+  GraphEdgeLayerStyle,
+} from './graph-style-spec'
 import {scaleLinear} from 'd3-scale'
 import {rgb} from 'd3-color'
 
@@ -21,7 +28,7 @@ type FilterContext = {
   tileMap?: TileMap
 }
 
-export type ValueOrInterpolator<OutputT> = ((context: InterpolatorContext) => OutputT) | OutputT | null;
+export type ValueOrInterpolator<OutputT> = ((context: InterpolatorContext) => OutputT) | OutputT | null
 
 export type ParsedGraphNodeLayerStyle = ParsedGraphLayerStyle & {
   type: 'node'
@@ -56,22 +63,15 @@ export function parseGraphStyle(style: GraphStyleSpecification): ParsedGraphStyl
   }
 
   return {
-    layers: parsedLayers
+    layers: parsedLayers,
   }
 }
 
-function parseLayerStyle(layer: GraphNodeLayerStyle, layerIndex: number): ParsedGraphNodeLayerStyle;
-function parseLayerStyle(layer: GraphEdgeLayerStyle, layerIndex: number): ParsedGraphEdgeLayerStyle;
+function parseLayerStyle(layer: GraphNodeLayerStyle, layerIndex: number): ParsedGraphNodeLayerStyle
+function parseLayerStyle(layer: GraphEdgeLayerStyle, layerIndex: number): ParsedGraphEdgeLayerStyle
 
 function parseLayerStyle(layer: GraphNodeLayerStyle | GraphEdgeLayerStyle, layerIndex: number) {
-  const {
-    type,
-    id = `layer-${layerIndex}`,
-    filter,
-    visible = true,
-    minZoom = -Infinity,
-    maxZoom = Infinity,
-  } = layer;
+  const {type, id = `layer-${layerIndex}`, filter, visible = true, minZoom = -Infinity, maxZoom = Infinity} = layer
 
   let interpolators
 
@@ -106,13 +106,13 @@ function parseLayerStyle(layer: GraphNodeLayerStyle | GraphEdgeLayerStyle, layer
     visible,
     minZoom,
     maxZoom,
-    ...interpolators
+    ...interpolators,
   }
 }
 
 function parseInterpolation<ValueT extends number | string, OutputT = ValueT>(
   valueOrInterpolation: ValueT | Interpolation<ValueT> | undefined,
-  transform?: (input: ValueT) => OutputT
+  transform?: (input: ValueT) => OutputT,
 ): ValueOrInterpolator<OutputT> {
   if (!valueOrInterpolation) {
     return null
@@ -129,25 +129,28 @@ function parseInterpolation<ValueT extends number | string, OutputT = ValueT>(
           const inputValue = context[input] as number
           const value = scale(inputValue)
           return (transform ? transform(value) : value) as OutputT
-        };
+        }
       }
 
       case 'power': {
         const base = interpolationParameters[0] || 2
 
-        const scale = scaleLinear(inputStops.map(x => Math.pow(base, x)), outputStops)
+        const scale = scaleLinear(
+          inputStops.map((x) => Math.pow(base, x)),
+          outputStops,
+        )
         scale.clamp(true)
         return (context: InterpolatorContext) => {
           const inputValue = context[input] as number
           const value = scale(Math.pow(base, inputValue))
           return (transform ? transform(value) : value) as OutputT
-        };
+        }
       }
 
       case 'step': {
         return (context: InterpolatorContext) => {
           const inputValue = context[input] as number
-          const i = inputStops.findIndex(x => x > inputValue)
+          const i = inputStops.findIndex((x) => x > inputValue)
           let value: ValueT
           if (i < 0) {
             value = outputStops[outputStops.length - 1]
@@ -155,7 +158,7 @@ function parseInterpolation<ValueT extends number | string, OutputT = ValueT>(
             value = outputStops[i]
           }
           return (transform ? transform(value) : value) as OutputT
-        };
+        }
       }
 
       default:
@@ -210,10 +213,7 @@ function parseFilter(filter: EntityFilter | EntityFilter[] | undefined): ((e: En
       getProperty = (e: Entity, context: FilterContext) => {
         if ('source' in e) {
           // is edge
-          return Math.min(
-            context.tileMap?.nodeRank.get((e as Edge).source),
-            context.tileMap?.nodeRank.get((e as Edge).target)
-          )
+          return Math.min(context.tileMap?.nodeRank.get((e as Edge).source), context.tileMap?.nodeRank.get((e as Edge).target))
         }
         return context.tileMap?.nodeRank.get(e as Node)
       }
@@ -247,5 +247,5 @@ function parseFilter(filter: EntityFilter | EntityFilter[] | undefined): ((e: En
 }
 
 function getDrawingObj<T extends DrawingObject>(e: Entity): T {
-  return DrawingObject.getDrawingObj(e) as T;
+  return DrawingObject.getDrawingObj(e) as T
 }

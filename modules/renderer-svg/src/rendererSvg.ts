@@ -1,4 +1,4 @@
-import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from 'msagl-js/drawing'
+import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from '@msagl/core/drawing'
 import {
   AttributeRegistry,
   buildRTreeWithInterpolatedEdges,
@@ -18,10 +18,10 @@ import {
   Node,
   Label,
   Entity,
-} from 'msagl-js'
+} from '@msagl/core'
 import {SvgCreator, SvgViewerObject} from './svgCreator'
 import {graphToJSON} from '@msagl/parser'
-import {IViewer, LayoutEditor, viewerObj, InsertionMode} from 'msagl-js/drawing'
+import {IViewer, LayoutEditor, viewerObj, InsertionMode} from '@msagl/core/drawing'
 import {default as panZoom, PanZoom} from 'panzoom'
 import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/renderer-common'
 

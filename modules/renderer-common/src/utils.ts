@@ -1,4 +1,4 @@
-import {GeomGraph, GeomNode} from 'msagl-js'
+import {GeomGraph, GeomNode} from '@msagl/core'
 
 export function deepEqual(a: any, b: any): boolean {
   if (a === b) {

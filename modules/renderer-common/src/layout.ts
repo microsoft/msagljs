@@ -10,7 +10,7 @@ import {
   FastIncrementalLayoutSettings,
   ILayoutSettings,
   DrawingGraph,
-} from 'msagl-js'
+} from '@msagl/core'
 
 import {parseJSON, graphToJSON} from '@msagl/parser'
 import {LayoutOptions} from '.'

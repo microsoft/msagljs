@@ -1,5 +1,5 @@
 import {parseJSON, graphToJSON} from '@msagl/parser'
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph} from '@msagl/core/drawing'
 import {layoutGraph} from '../layout'
 
 export default function initLayoutWorker() {

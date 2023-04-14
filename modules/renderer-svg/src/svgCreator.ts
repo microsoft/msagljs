@@ -27,7 +27,7 @@ import {
   SmoothedPolyline,
   GeomLabel,
   Entity,
-} from 'msagl-js'
+} from '@msagl/core'
 import {
   DrawingEdge,
   DrawingObject,
@@ -40,7 +40,7 @@ import {
   IViewerEdge,
   IViewerObject,
   viewerObj,
-} from 'msagl-js/drawing'
+} from '@msagl/core/drawing'
 import {String} from 'typescript-string-operations'
 
 export class SvgViewerObject extends Attribute implements IViewerObject {

@@ -1,5 +1,5 @@
-import {Size} from 'msagl-js'
-import {TextMeasurerOptions} from 'msagl-js/drawing'
+import {Size} from '@msagl/core'
+import {TextMeasurerOptions} from '@msagl/core/drawing'
 
 export default class TextMeasurer {
   opts: TextMeasurerOptions = {

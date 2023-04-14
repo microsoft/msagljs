@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, TileData, TileMap} from 'msagl-js'
+import {GeomNode, TileData, TileMap} from '@msagl/core'
 import {Matrix4} from '@math.gl/core'
 
 import {getNodeLayers} from './get-node-layers'

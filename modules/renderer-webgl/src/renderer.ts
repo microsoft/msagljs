@@ -3,12 +3,12 @@ import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
 // import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph} from '@msagl/core/drawing'
 
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated} from 'msagl-js'
+import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated} from '@msagl/core'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -235,7 +235,7 @@ export default class Renderer extends EventSource {
     const fontSettings = this._textMeasurer.opts
 
     const geomGraph = GeomGraph.getGeom(this._graph)
-    
+
     if (!geomGraph) {
       return
     }

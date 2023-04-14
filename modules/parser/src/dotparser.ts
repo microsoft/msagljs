@@ -21,7 +21,7 @@ import {
   Label,
   AttributeRegistry,
   Assert,
-} from 'msagl-js'
+} from '@msagl/core'
 import {Graph as JSONGraph, Attr} from 'dotparser'
 import {
   ArrowTypeEnum,
@@ -34,7 +34,7 @@ import {
   StyleEnum,
   OrderingEnum,
   DirTypeEnum,
-} from 'msagl-js/drawing'
+} from '@msagl/core/drawing'
 
 import {parseColor} from './utils'
 import {parseJSON} from './jsonparser'
@@ -828,7 +828,7 @@ export function graphToJSON(graph: Graph): JSONGraph {
    * Edge belongs to the first Graph which is a common ancestor of the edge source and the edge target.
    */
   const idToLevels = getNodeLevels(graph)
-  const ret =  {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
+  const ret = {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
   return ret
 }
 

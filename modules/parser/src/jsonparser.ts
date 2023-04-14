@@ -1,5 +1,5 @@
-import {Graph, Node} from 'msagl-js'
-import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum, DrawingGraph} from 'msagl-js/drawing'
+import {Graph, Node} from '@msagl/core'
+import {DrawingEdge, DrawingNode, ArrowTypeEnum, ShapeEnum, DrawingGraph} from '@msagl/core/drawing'
 import {Graph as JSONGraph} from 'dotparser'
 
 import {parseJSONGraph} from './dotparser'

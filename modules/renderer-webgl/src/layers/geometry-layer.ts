@@ -6,7 +6,7 @@ import {picking} from '@luma.gl/shadertools'
 
 import {nodeDepthModuleVs} from './graph-highlighter'
 
-// TODO - Use ShapeEnum from msagl-js
+// TODO - Use ShapeEnum from @msagl/core
 export enum SHAPE {
   Rectangle = 0,
   Oval = 1,
@@ -339,7 +339,8 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
   }
 
   draw({uniforms}: any) {
-    const {stroked, filled, cornerRadius, sizeScale, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} = this.props
+    const {stroked, filled, cornerRadius, sizeScale, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} =
+      this.props
 
     this.state.model
       .setUniforms(uniforms)

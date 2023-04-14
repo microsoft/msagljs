@@ -2,8 +2,8 @@ import GL from '@luma.gl/constants'
 import {Buffer, Framebuffer, Texture2D} from '@luma.gl/webgl'
 import {withParameters} from '@luma.gl/gltools'
 import {Model, Transform} from '@luma.gl/engine'
-import {Graph, GeomGraph, GeomNode} from 'msagl-js'
-import {DrawingEdge, DrawingObject} from 'msagl-js/drawing'
+import {Graph, GeomGraph, GeomNode} from '@msagl/core'
+import {DrawingEdge, DrawingObject} from '@msagl/core/drawing'
 
 export const nodeDepthModuleVs = `
 uniform sampler2D nodeDepth;
@@ -37,7 +37,7 @@ export default class GraphHighlighter {
   private _hasBidirectionalEdge: boolean
   private _nodeMap: Map<string, number>
   private _nodeList: GeomNode[]
-  private _lastSourceId?: string | null;
+  private _lastSourceId?: string | null
   private _model: Model
   private _transform: Transform
   private _nodeDepthTextures: Texture2D[]
@@ -251,7 +251,7 @@ export default class GraphHighlighter {
       [GL.COLOR_ATTACHMENT0]: texture,
     })
 
-    const gl = this._gl;
+    const gl = this._gl
     withParameters(
       gl,
       {
@@ -407,8 +407,8 @@ void main(void) {
 }
 
 function encodePickingColor(i: number, out: number[]): number[] {
-  out[0] = (i + 1) & 255;
-  out[1] = ((i + 1) >> 8) & 255;
-  out[2] = (((i + 1) >> 8) >> 8) & 255;
+  out[0] = (i + 1) & 255
+  out[1] = ((i + 1) >> 8) & 255
+  out[2] = (((i + 1) >> 8) >> 8) & 255
   return out
 }
