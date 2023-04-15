@@ -12,8 +12,8 @@ esbuild.build({
   outfile: OUTPUT,
   plugins: [
     externalGlobalPlugin({
-      'msagl-js': 'globalThis.msagl',
-      'msagl-js/drawing': 'globalThis.msagl',
+      '@msagl/core': 'globalThis.msagl',
+      '@msagl/core/drawing': 'globalThis.msagl',
     }),
   ],
 })
