@@ -9,8 +9,8 @@
     "noEmit": true,
     "esModuleInterop": true,
     "paths": {
-      "msagl-js": ["./modules/core/src"],
-      "msagl-js/drawing": ["./modules/core/src/drawing"],
+      "@msagl/core": ["./modules/core/src"],
+      "@msagl/core/drawing": ["./modules/core/src/drawing"],
       "@msagl/parser": ["./modules/parser/src"],
       "@msagl/renderer-common": ["./modules/renderer-common/src"],
       "@msagl/renderer-svg": ["./modules/renderer-svg/src"],
