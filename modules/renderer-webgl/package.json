@@ -34,7 +34,7 @@
     "d3-color": "^3.1.0",
     "d3-scale": "^4.0.0",
     "deck.gl": "^8.8.20",
-    "msagl-js": "^1.1.10"
+    "@msagl/core": "^1.1.10"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }

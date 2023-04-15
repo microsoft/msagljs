@@ -6039,18 +6039,6 @@ ms@2.1.2, ms@^2.0.0:
   resolved "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-msagl-js@^1.1.10:
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/msagl-js/-/msagl-js-1.1.10.tgz#23ca1f58c0eaf2b3d0c8d7110a260df05ca87d69"
-  integrity sha512-j6Sp7IsyNmB9AaZUh2A+2G07eflfLVCdGoJ1E2neyW6JeXSEylrv9jjTGFGC5RwgIfHACmDCzWAP+UxhCGOR2Q==
-  dependencies:
-    "@esfx/collections" "^1.0.0"
-    "@esfx/collections-sortedmap" "^1.0.0"
-    queue-typescript "^1.0.1"
-    reliable-random "^0.0.1"
-    stack-typescript "^1.0.4"
-    typescript-string-operations "^1.4.1"
-
 multimatch@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/multimatch/-/multimatch-5.0.0.tgz"

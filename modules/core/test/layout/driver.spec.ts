@@ -1,5 +1,4 @@
-import {GeomGraph} from '../../src'
-import {DrawingGraph} from '../../src/drawing/drawingGraph'
+import {DrawingGraph, GeomGraph} from '../../src'
 import {layoutGeomGraph} from '../../src/layout/driver'
 import * as testUtils from '../utils/testUtils'
 

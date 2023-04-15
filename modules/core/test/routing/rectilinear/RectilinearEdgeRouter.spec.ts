@@ -12,8 +12,8 @@ import {
   Rectangle,
   routeRectilinearEdges,
   Polyline,
+  DrawingGraph,
 } from '../../../src'
-import {DrawingGraph} from '../../../src/drawing'
 import {PolylinePoint} from '../../../src/math/geometry/polylinePoint'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {RectilinearEdgeRouter} from '../../../src/routing/rectilinear/RectilinearEdgeRouter'

@@ -26,9 +26,8 @@ import {
   FastIncrementalLayoutSettings,
   CurveClip,
   MdsLayoutSettings,
+  DrawingGraph,
 } from '../../../src'
-import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {buildRTreeWithInterpolatedEdges, getGeomIntersectedObjects} from '../../../src/layout/core/geomGraph'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {initRandom} from '../../../src/utils/random'
@@ -37,6 +36,7 @@ import {nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 import {createGeometry} from '../mds/SingleSourceDistances.spec'
 import {PivotMDS} from '../../../src/layout/mds/pivotMDS'
 import {Bundle} from '../../../src/layout/core/tile'
+import {ArrowTypeEnum} from '../../../src/drawing/arrowTypeEnum'
 test('subgraphs', () => {
   const graph = new Graph()
   const graphA = new Graph('a')

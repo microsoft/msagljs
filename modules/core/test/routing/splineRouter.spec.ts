@@ -16,8 +16,8 @@ import {
   GeomEdge,
   BundlingSettings,
   AttributeRegistry,
+  DrawingGraph,
 } from '../../src'
-import {DrawingEdge, DrawingGraph, DrawingNode} from '../../src/drawing'
 import {GeomObject} from '../../src/layout/core/geomObject'
 import {SplineRouter} from '../../src/routing/splineRouter'
 import {sortedList} from '../layout/sortedBySizeListOfgvFiles'
@@ -25,12 +25,15 @@ import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {generateRandomGeomGraph, measureTextSize, runMDSLayout, setNode} from '../utils/testUtils'
 import {join} from 'path'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
-import {ArrowTypeEnum} from '../../src/drawing/arrowTypeEnum'
-import {ShapeEnum} from '../../src/drawing/shapeEnum'
+
 import {initRandom} from '../../src/utils/random'
 import {EdgeRoutingSettings} from '../../src/routing/EdgeRoutingSettings'
 import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
 import {parseJSON} from '../../../parser/src/jsonparser'
+import {ArrowTypeEnum} from '../../src/drawing/arrowTypeEnum'
+import {DrawingEdge} from '../../src/drawing/drawingEdge'
+import {DrawingNode} from '../../src/drawing/drawingNode'
+import {ShapeEnum} from '../../src/drawing/shapeEnum'
 
 const socialNodes = [
   'Grenn',
