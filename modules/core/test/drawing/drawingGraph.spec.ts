@@ -1,5 +1,4 @@
-import {GeomGraph} from '../../src'
-import {DrawingGraph} from '../../src/drawing/drawingGraph'
+import {DrawingGraph, GeomGraph} from '../../src'
 import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
 import {layoutGraphWithMds} from '../../src/layout/mds/pivotMDS'
 import {measureTextSize, parseDotGraph} from '../utils/testUtils'

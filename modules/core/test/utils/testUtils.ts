@@ -169,7 +169,6 @@ export function parseDotGraph(fileName: string, absolutePath = false): Graph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
-    //@ts-ignore
     return parseDot(graphStr)
   } catch (Error) {
     const str = 'file = ' + fileName + ' error:' + Error.message
@@ -180,7 +179,7 @@ export function parseJSONFile(fileName: string, absolutePath = false): Graph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../data', fileName)
     const graphStr = fs.readFileSync(fpath, 'utf-8')
-    //@ts-ignore
+
     return parseJSONGraph(JSON.parse(graphStr))
   } catch (Error) {
     console.log('file = ' + fileName + ' error:' + Error.message)

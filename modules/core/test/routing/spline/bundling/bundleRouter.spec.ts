@@ -12,8 +12,8 @@ import {
   Graph,
   Edge,
   GeomEdge,
+  DrawingGraph,
 } from '../../../../src'
-import {DrawingGraph} from '../../../../src/drawing/drawingGraph'
 import {GeomObject} from '../../../../src/layout/core/geomObject'
 import {BundlingSettings} from '../../../../src/routing/BundlingSettings'
 import {EdgeRoutingMode} from '../../../../src/routing/EdgeRoutingMode'

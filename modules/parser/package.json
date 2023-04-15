@@ -25,7 +25,7 @@
   "dependencies": {
     "@types/parse-color": "^1.0.1",
     "dotparser": "^1.1.1",
-    "msagl-js": "^1.1.10",
+    "@msagl/core": "^1.1.10",
     "parse-color": "^1.0.0"
   }
 }

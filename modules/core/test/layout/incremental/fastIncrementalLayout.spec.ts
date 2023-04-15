@@ -1,5 +1,3 @@
-import {TextMeasurerOptions} from '../../../src/drawing/color'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {IPsepCola} from '../../../src/layout/incremental/iPsepCola'
 import {IPsepColaSetting} from '../../../src/layout/incremental/iPsepColaSettings'
@@ -12,6 +10,8 @@ import {layoutGeomGraph} from '../../../src/layout/driver'
 import {Size} from '../../../src/math/geometry'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
+import {TextMeasurerOptions} from '../../../src/drawing/color'
+import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)

@@ -26,7 +26,7 @@
   "dependencies": {
     "@msagl/parser": "^1.1.11",
     "@msagl/renderer-common": "^1.1.13",
-    "msagl-js": "^1.1.10",
+    "@msagl/core": "^1.1.10",
     "panzoom": "^9.4.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"

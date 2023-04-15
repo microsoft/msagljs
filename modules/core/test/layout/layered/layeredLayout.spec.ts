@@ -20,7 +20,6 @@ import {
   LayerDirectionEnum,
   Graph,
   GeomEdge,
-  Edge,
   MdsLayoutSettings,
   EdgeRoutingMode,
   layoutGraphWithMds,
@@ -30,17 +29,17 @@ import {
   SplineRouter,
   AttributeRegistry,
   TileMap,
+  DrawingGraph,
 } from '../../../src'
-import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode} from '../../../src/drawing'
 import {parseDot, parseJSON} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, PointLocation, Polyline} from '../../../src/math/geometry'
+import {Curve, CurveFactory, ICurve, LineSegment, parameterSpan, Point, Polyline} from '../../../src/math/geometry'
 import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
-import {TextMeasurerOptions} from '../../../src/drawing/color'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {pointIsOnSegment} from '../../../src/math/geometry/lineSegment'
+import { TextMeasurerOptions } from '../../../src/drawing/color'
 type P = [number, number]
 
 test('map test', () => {

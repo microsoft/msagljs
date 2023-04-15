@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@msagl/parser": "^1.1.11",
-    "msagl-js": "^1.1.10"
+    "@msagl/core": "^1.1.10"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }
