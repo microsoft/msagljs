@@ -1,6 +1,6 @@
 {
   "name": "graph-style-example",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "private": true,
   "description": "Public demo for @msagl/core",
   "main": "index.js",
@@ -11,10 +11,10 @@
   "author": "xiac@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/parser": "^1.1.11",
-    "@msagl/renderer-webgl": "^1.1.13",
-    "monaco-editor": "^0.36.1",
-    "@msagl/core": "^1.1.10"
+    "@msagl/core": "^1.1.12",
+    "@msagl/parser": "^1.1.12",
+    "@msagl/renderer-webgl": "^1.1.14",
+    "monaco-editor": "^0.36.1"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",

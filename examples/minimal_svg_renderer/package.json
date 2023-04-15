@@ -1,6 +1,6 @@
 {
   "name": "minimal-svg-renderer",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "private": true,
   "description": "Public demo for svg from @msagl/core",
   "main": "main.js",
@@ -10,9 +10,9 @@
   "author": "levnach@microsoft.com",
   "license": "MIT",
   "dependencies": {
-    "@msagl/parser": "^1.1.11",
-    "@msagl/renderer-svg": "^1.1.13",
-    "@msagl/core": "^1.1.10"
+    "@msagl/core": "^1.1.12",
+    "@msagl/parser": "^1.1.12",
+    "@msagl/renderer-svg": "^1.1.14"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",
