@@ -17,10 +17,7 @@ import {PlaneTransformation} from '../../../src/math/geometry/planeTransformatio
 import {MdsLayoutSettings} from '../../../src/layout/mds/mDSLayoutSettings'
 import {GeomEdge} from '../../../src/layout/core/geomEdge'
 import {GeomGraph} from '../../../src/layout/core/geomGraph'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
-import {DrawingObject} from '../../../src/drawing/drawingObject'
-import {DrawingEdge} from '../../../src/drawing/drawingEdge'
-import { DrawingNode } from '../../../src/drawing/drawingNode'
+import {DrawingEdge, DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
 
 test('point', () => {
   const p = new Point(1, 2)

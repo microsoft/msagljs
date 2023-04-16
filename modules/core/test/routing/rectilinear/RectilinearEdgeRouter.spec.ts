@@ -12,7 +12,6 @@ import {
   Rectangle,
   routeRectilinearEdges,
   Polyline,
-  DrawingGraph,
 } from '../../../src'
 import {PolylinePoint} from '../../../src/math/geometry/polylinePoint'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
@@ -20,6 +19,7 @@ import {RectilinearEdgeRouter} from '../../../src/routing/rectilinear/Rectilinea
 
 import {sortedList} from '../../layout/sortedBySizeListOfgvFiles'
 import {generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from '../../utils/testUtils'
+import {DrawingGraph} from '../../../../drawing/src'
 test('empty graph', () => {
   const gg = new GeomGraph(new Graph('graph'))
 

@@ -1,5 +1,5 @@
 import parseCSSColor from 'parse-color'
-import {Color} from '@msagl/core/drawing'
+import {Color} from '@msagl/drawing'
 
 export function parseColor(s: string): Color {
   const p = parseCSSColor(s)

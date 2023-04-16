@@ -1,6 +1,6 @@
 import {IViewerObject} from './iViewerObject'
-import {Edge} from '../../structs/edge'
 import {IViewerNode} from './iViewerNode'
+import {Edge} from '@msagl/core'
 
 export interface IViewerEdge extends IViewerObject {
   selectedForEditing: boolean

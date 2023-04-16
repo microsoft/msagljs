@@ -1,5 +1,5 @@
 import {EdgeRoutingMode} from '@msagl/core'
-import {TextMeasurerOptions} from '@msagl/core/drawing'
+import {TextMeasurerOptions} from '@msagl/drawing'
 
 export {layoutGraph, layoutGraphOnWorker} from './layout'
 export {default as TextMeasurer} from './text-measurer'

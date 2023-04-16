@@ -3,7 +3,7 @@ import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
 // import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
-import {DrawingGraph} from '@msagl/core/drawing'
+import {DrawingGraph} from '@msagl/drawing'
 
 import GraphLayer from './layers/graph-layer'
 

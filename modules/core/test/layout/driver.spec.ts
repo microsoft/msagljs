@@ -1,6 +1,7 @@
-import {DrawingGraph, GeomGraph} from '../../src'
+import {GeomGraph} from '@msagl/core'
 import {layoutGeomGraph} from '../../src/layout/driver'
 import * as testUtils from '../utils/testUtils'
+import {DrawingGraph} from '@msagl/drawing'
 
 test('layoutGeomGraph', () => {
   const g = testUtils.parseDotGraph('graphvis/clust.gv')

@@ -24,7 +24,7 @@ import {
 } from '../math/geometry/RTree/rectangleNode'
 import {CurvePort} from '../layout/core/curvePort'
 import {BundlingSettings} from './BundlingSettings'
-import {Assert, CancelToken, Edge, GeomGraph} from '..'
+import {Assert, CancelToken, GeomGraph} from '..'
 import {EdgeRoutingSettings} from './EdgeRoutingSettings'
 import {ShapeCreatorForRoutingToParents} from './ShapeCreatorForRoutingToParents'
 import {Port} from '../layout/core/port'

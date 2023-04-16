@@ -29,7 +29,6 @@ import {
   SplineRouter,
   AttributeRegistry,
   TileMap,
-  DrawingGraph,
 } from '../../../src'
 import {parseDot, parseJSON} from '@msagl/parser'
 import {Arrowhead} from '../../../src/layout/core/arrowhead'
@@ -39,7 +38,8 @@ import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {DebugCurve} from '../../../src/math/geometry/debugCurve'
 import {pointIsOnSegment} from '../../../src/math/geometry/lineSegment'
-import { TextMeasurerOptions } from '../../../src/drawing/color'
+import {DrawingGraph} from '../../../../drawing/src'
+import {TextMeasurerOptions} from '../../../../drawing/src/color'
 type P = [number, number]
 
 test('map test', () => {

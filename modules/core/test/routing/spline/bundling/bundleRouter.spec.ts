@@ -1,3 +1,4 @@
+import {DrawingGraph} from '../../../../../drawing/src'
 import {
   GeomGraph,
   Rectangle,
@@ -12,7 +13,6 @@ import {
   Graph,
   Edge,
   GeomEdge,
-  DrawingGraph,
 } from '../../../../src'
 import {GeomObject} from '../../../../src/layout/core/geomObject'
 import {BundlingSettings} from '../../../../src/routing/BundlingSettings'

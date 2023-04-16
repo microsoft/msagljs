@@ -1,5 +1,5 @@
 import {Size} from '@msagl/core'
-import {TextMeasurerOptions} from '@msagl/core/drawing'
+import {TextMeasurerOptions} from '@msagl/drawing'
 
 export default class TextMeasurer {
   opts: TextMeasurerOptions = {

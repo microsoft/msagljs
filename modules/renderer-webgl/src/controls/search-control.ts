@@ -1,5 +1,5 @@
 import {GeomNode, Graph, Node} from '@msagl/core'
-import {DrawingNode} from '@msagl/core/drawing'
+import {DrawingNode} from '@msagl/drawing'
 
 import type Renderer from '../renderer'
 import type {IRendererControl} from '../renderer'

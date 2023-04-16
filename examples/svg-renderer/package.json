@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "@msagl/core": "^1.1.12",
+    "@msagl/drawing": "^1.1.12",
     "@msagl/renderer-svg": "^1.1.14"
   },
   "devDependencies": {

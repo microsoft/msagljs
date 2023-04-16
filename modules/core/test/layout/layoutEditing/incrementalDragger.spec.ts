@@ -1,12 +1,8 @@
-import {graphToJSON} from '../../../../parser/src/dotparser'
-import {IncrementalDragger} from '../../../src/drawing/layoutEditing/incrementalDragger'
-import {GeomGraph, GeomNode} from '../../../src/layout/core'
-import {GeomObject} from '../../../src/layout/core/geomObject'
-import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
-import {Point} from '../../../src/math/geometry'
+import {GeomGraph, GeomNode, GeomObject, Point, SugiyamaLayoutSettings} from '@msagl/core'
 import {parseJSONFile} from '../../utils/testUtils'
 import * as fs from 'fs'
-
+import {graphToJSON} from '@msagl/parser'
+import {IncrementalDragger} from '@msagl/drawing'
 test('incremental drag', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
 

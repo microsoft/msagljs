@@ -1,7 +1,6 @@
-import {DrawingGraph, GeomGraph} from '../../src'
-import {layoutGraphWithSugiayma} from '../../src/layout/layered/layeredLayout'
-import {layoutGraphWithMds} from '../../src/layout/mds/pivotMDS'
+import {GeomGraph, layoutGraphWithMds, layoutGraphWithSugiayma} from '@msagl/core'
 import {measureTextSize, parseDotGraph} from '../utils/testUtils'
+import {DrawingGraph} from '@msagl/drawing'
 
 // xtest('drawingGraph layout', () => {
 //  const abstract_gv =
@@ -88,7 +87,7 @@ function layoutGeomGraph(geomGraph: GeomGraph, directed: boolean) {
     layoutGraphWithMds(geomGraph, null)
   }
 }
-xtest('clusters', () => {
+test('clusters', () => {
   const g = parseDotGraph('graphvis/clust3.gv')
   const dg = DrawingGraph.getDrawingObj(g) as DrawingGraph
   dg.createGeometry(measureTextSize)

@@ -40,7 +40,7 @@ import {
   IViewerEdge,
   IViewerObject,
   viewerObj,
-} from '@msagl/core/drawing'
+} from '@msagl/drawing'
 import {String} from 'typescript-string-operations'
 
 export class SvgViewerObject extends Attribute implements IViewerObject {

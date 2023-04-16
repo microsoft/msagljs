@@ -5,7 +5,7 @@ import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 import {EdgeRoutingMode, geometryIsCreated, Graph} from '@msagl/core'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
-import {DrawingObject} from '@msagl/core/drawing'
+import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/gameofthrones.json'

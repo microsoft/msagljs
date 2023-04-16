@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@msagl/core": "^1.1.12",
+    "@msagl/drawing": "^1.1.12",
     "@types/parse-color": "^1.0.1",
     "dotparser": "^1.1.1",
     "parse-color": "^1.0.0"

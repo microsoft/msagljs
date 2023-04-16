@@ -1,10 +1,6 @@
-import {Rectangle, Point} from '../../../../src'
-import {DebugCurve} from '../../../../src/math/geometry/debugCurve'
-import {OptimalRectanglePacking} from '../../../../src/math/geometry/rectanglePacking/OptimalRectanglePacking'
-import {PackingConstants} from '../../../../src/math/geometry/rectanglePacking/PackingConstants'
-import {GreedyRectanglePacking} from '../../../../src/math/geometry/rectanglePacking/RectanglePacking'
-import {random} from '../../../../src/utils/random'
+import {DebugCurve, GreedyRectanglePacking, OptimalRectanglePacking, PackingConstants, Point, Rectangle} from '@msagl/core'
 import {SvgDebugWriter} from '../../../utils/svgDebugWriter'
+import {random} from '../../../../src/utils/random'
 
 test('RectanglePackingTwoSquares', () => {
   const rectangles = []

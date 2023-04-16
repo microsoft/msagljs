@@ -1,15 +1,6 @@
-import {GeomObject} from '../../layout/core/geomObject'
-import {Attribute} from '../../structs/attribute'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
-import {Edge} from '../../structs/edge'
-import {Entity} from '../../structs/entity'
-import {Graph} from '../../structs/graph'
-import {Node} from '../../structs/node'
-import {Label} from '../../structs/label'
-import {Assert} from '../../utils/assert'
+import {Entity, Attribute, Point, Assert, Graph, Node, Edge, GeomObject, Label, AttributeRegistry} from '@msagl/core'
 import {DrawingObject} from '../drawingObject'
-import {Point} from '../../math/geometry'
-import {constructor} from '../../routing/ConstrainedDelaunayTriangulation/ThreeArray'
+
 type UndoChangeData = Map<Entity, {old: Attribute; new: Attribute}[]>
 type UndoDeleteData = {deletedEnts: Set<Entity>}
 type UndoInsertData = {insertedEnts: Set<Entity>}

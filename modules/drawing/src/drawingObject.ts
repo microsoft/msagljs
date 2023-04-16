@@ -4,10 +4,7 @@ import {StyleEnum} from './styleEnum'
 import {RankEnum} from './rankEnum'
 import {DirTypeEnum} from './dirTypeEnum'
 import {OrderingEnum} from './orderingEnum'
-import {LayerDirectionEnum, Size} from '..'
-import {Entity} from '../structs/entity'
-import {Attribute} from '../structs/attribute'
-import {AttributeRegistry} from '../structs/attributeRegistry'
+import {Attribute, AttributeRegistry, Entity, LayerDirectionEnum, Size} from '@msagl/core'
 /** DrawingObject ment to be an attribute on an Entity, with some additional information necessery for rendering. Many fields of this class support of Dot language */
 export abstract class DrawingObject extends Attribute {
   rebind(e: Entity): void {
@@ -210,7 +207,7 @@ export abstract class DrawingObject extends Attribute {
     this.fontsize = DrawingObject.defaultLabelFontSize
   }
 
-  static getDrawingObj(attrCont: Entity): DrawingObject {
+  static getDrawingObj(attrCont: Entity): DrawingObject | null {
     if (attrCont == null) {
       return null
     } else {

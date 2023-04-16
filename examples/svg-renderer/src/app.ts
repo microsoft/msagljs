@@ -4,9 +4,9 @@ import {RendererSvg} from '@msagl/renderer-svg'
 import {EdgeRoutingMode, layoutIsCalculated, geometryIsCreated, Entity, GeomNode, Node} from '@msagl/core'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
-import {InsertionMode} from '@msagl/core/src/drawing/layoutEditing/iViewer'
+
 import {AttributeRegistry} from '@msagl/core'
-import {DrawingNode} from '@msagl/core/drawing'
+import {DrawingNode, InsertionMode} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 import {LayoutOptions} from '@msagl/renderer-common'
 

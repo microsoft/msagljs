@@ -2,8 +2,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import {parseDot} from '../src/dotparser'
 import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
-import {DrawingGraph, DrawingNode, Color, DrawingEdge} from '../../core/src/drawing/'
+
 import {AttributeRegistry} from '../../core/src/structs/attributeRegistry'
+import {DrawingGraph, DrawingNode, Color, DrawingEdge} from '../../drawing/src'
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../../core/test/data', fileName)

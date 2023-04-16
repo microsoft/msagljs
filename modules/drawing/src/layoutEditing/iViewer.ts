@@ -1,12 +1,6 @@
 /**   the interface for the viewer for editing the graph layout, and the graph */
 
-import {GeomEdge} from '../../layout/core'
-import {EventHandler} from '../../layout/core/geomObject'
-import {Point} from '../../math/geometry'
-import {PlaneTransformation} from '../../math/geometry/planeTransformation'
-import {Edge} from '../../structs/edge'
-import {Node} from '../../structs/node'
-import {Graph} from '../../structs/graph'
+import {Edge, EventHandler, GeomEdge, Graph, PlaneTransformation, Point, Node} from '@msagl/core'
 import {IViewerEdge} from './iViewerEdge'
 import {IViewerGraph} from './iViewerGraph'
 import {IViewerNode} from './iViewerNode'

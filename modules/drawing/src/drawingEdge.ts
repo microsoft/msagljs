@@ -1,4 +1,4 @@
-import {Entity} from '../structs/entity'
+import {Entity} from '@msagl/core'
 import {ArrowTypeEnum} from './arrowTypeEnum'
 import {DrawingObject} from './drawingObject'
 

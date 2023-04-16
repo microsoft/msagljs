@@ -1,4 +1,4 @@
-import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from '@msagl/core/drawing'
+import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from '@msagl/drawing'
 import {
   AttributeRegistry,
   buildRTreeWithInterpolatedEdges,
@@ -21,7 +21,7 @@ import {
 } from '@msagl/core'
 import {SvgCreator, SvgViewerObject} from './svgCreator'
 import {graphToJSON} from '@msagl/parser'
-import {IViewer, LayoutEditor, viewerObj, InsertionMode} from '@msagl/core/drawing'
+import {IViewer, LayoutEditor, viewerObj, InsertionMode} from '@msagl/drawing'
 import {default as panZoom, PanZoom} from 'panzoom'
 import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/renderer-common'
 

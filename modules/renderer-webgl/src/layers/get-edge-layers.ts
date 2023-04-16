@@ -2,7 +2,7 @@ import {Unit, Accessor, Color, Layer, LayerProps, DefaultProps} from '@deck.gl/c
 import {Buffer} from '@luma.gl/webgl'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {ICurve, Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
-import {DrawingEdge, DrawingObject} from '@msagl/core/drawing'
+import {DrawingEdge, DrawingObject} from '@msagl/drawing'
 import {iconMapping} from './arrows'
 
 import CurveLayer, {CurveLayerProps} from './curve-layer'

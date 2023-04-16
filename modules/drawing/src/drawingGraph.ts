@@ -1,21 +1,27 @@
-import {ArrowTypeEnum, DrawingEdge} from '.'
+import {
+  Arrowhead,
+  CurveFactory,
+  Edge,
+  GeomEdge,
+  GeomGraph,
+  GeomLabel,
+  GeomNode,
+  Graph,
+  ICurve,
+  Label,
+  Point,
+  Rectangle,
+  Size,
+  SugiyamaLayoutSettings,
+  Node,
+} from '@msagl/core'
 
-import {TextMeasurerOptions} from '.'
-import {Arrowhead} from '../layout/core/arrowhead'
-import {GeomEdge} from '../layout/core/geomEdge'
-import {GeomGraph} from '../layout/core/geomGraph'
-import {GeomLabel} from '../layout/core/geomLabel'
-import {GeomNode} from '../layout/core/geomNode'
-import {Size, Rectangle, Point, ICurve, CurveFactory} from '../math/geometry'
-import {Edge} from '../structs/edge'
-import {Node} from '../structs/node'
-import {Graph} from '../structs/graph'
-import {DrawingNode} from './drawingNode'
 import {DrawingObject} from './drawingObject'
+import {DrawingNode} from './drawingNode'
+import {TextMeasurerOptions} from './textMeasurerOptions'
+import {ArrowTypeEnum} from './arrowTypeEnum'
+import {DrawingEdge} from './drawingEdge'
 import {ShapeEnum} from './shapeEnum'
-import {Label} from '../structs/label'
-import {SugiyamaLayoutSettings} from '../layout/layered/sugiyamaLayoutSettings'
-
 type GraphVisData = {
   sameRanks: string[][]
   minRanks: string[]
@@ -53,7 +59,7 @@ export class DrawingGraph extends DrawingNode {
     return this.entity as Graph
   }
 
-  findNode(id: string): DrawingNode {
+  findNode(id: string): DrawingNode | null {
     const gr = this.graph
     const n = gr.findNode(id)
     if (n == null) return null
@@ -100,16 +106,10 @@ export class DrawingGraph extends DrawingNode {
 
     if (drawingEdge.arrowhead != ArrowTypeEnum.none) {
       geomEdge.targetArrowhead = new Arrowhead()
-    } else {
-      geomEdge.targetArrowhead = null
     }
-
     if (drawingEdge.arrowtail != ArrowTypeEnum.none) {
       geomEdge.sourceArrowhead = new Arrowhead()
-    } else {
-      geomEdge.sourceArrowhead = null
     }
-
     if (drawingEdge.labelText) {
       const size = this.textMeasure(drawingEdge.labelText, {
         fontSize: drawingEdge.fontsize,

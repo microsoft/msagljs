@@ -3,7 +3,7 @@ import {Buffer, Framebuffer, Texture2D} from '@luma.gl/webgl'
 import {withParameters} from '@luma.gl/gltools'
 import {Model, Transform} from '@luma.gl/engine'
 import {Graph, GeomGraph, GeomNode} from '@msagl/core'
-import {DrawingEdge, DrawingObject} from '@msagl/core/drawing'
+import {DrawingEdge, DrawingObject} from '@msagl/drawing'
 
 export const nodeDepthModuleVs = `
 uniform sampler2D nodeDepth;

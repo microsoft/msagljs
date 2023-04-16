@@ -1,9 +1,7 @@
 import {DrawingObject} from './drawingObject'
 import {Color} from './color'
 import {ShapeEnum} from './shapeEnum'
-import {Node} from '../structs/node'
-import {Attr} from 'dotparser'
-import {Attribute} from '../structs/attribute'
+import {Node, Attribute} from '@msagl/core'
 export class DrawingNode extends DrawingObject {
   clone(): Attribute {
     throw new Error('Method not implemented.')
@@ -95,6 +93,6 @@ export class DrawingNode extends DrawingObject {
   }
 
   get id(): string {
-    return this.node ? this.node.id : null
+    return this.node ? this.node.id : ''
   }
 }

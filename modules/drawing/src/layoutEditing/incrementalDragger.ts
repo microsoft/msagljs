@@ -1,9 +1,4 @@
-import {GeomGraph, GeomNode, GeomEdge} from '../../layout/core'
-import {ILayoutSettings} from '../../layout/iLayoutSettings'
-import {Point, Rectangle, Polyline, Curve} from '../../math/geometry'
-import {SplineRouter} from '../../routing/splineRouter'
-import {Graph} from '../../structs/graph'
-
+import {Curve, GeomEdge, GeomGraph, GeomNode, Graph, ILayoutSettings, Point, Polyline, Rectangle, SplineRouter} from '@msagl/core'
 import {BumperPusher} from './bumperPusher'
 import {LabelFixture} from './labelFixture'
 

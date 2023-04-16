@@ -24,7 +24,7 @@
 //   IViewerObject,
 //   LayoutEditor,
 //   ModifierKeysEnum,
-// } from '@msagl/core/drawing'
+// } from '@msagl/drawing'
 // import {edgesAreAttached, parseDotGraph} from '../../utils/testUtils'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 // import {PointLocation, Polyline, Size} from '../../../src/math/geometry'

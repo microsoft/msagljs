@@ -9,11 +9,11 @@ import {
   LayerDirectionEnum,
   FastIncrementalLayoutSettings,
   ILayoutSettings,
-  DrawingGraph,
 } from '@msagl/core'
 
 import {parseJSON, graphToJSON} from '@msagl/parser'
 import {LayoutOptions} from '.'
+import {DrawingGraph} from '@msagl/drawing'
 
 let layoutWorker: Worker = null
 let layoutInProgress = false

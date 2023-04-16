@@ -1,7 +1,4 @@
-import {Point} from '../../math/geometry'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
-import {Entity} from '../../structs/entity'
-import {Assert} from '../../utils/assert'
+import {Assert, AttributeRegistry, Entity, Point} from '@msagl/core'
 import {UndoRedoAction} from './undoRedoAction'
 
 export class UndoList {

@@ -1,27 +1,34 @@
 //      the editor of a graph() layout
 import {SortedMap} from '@esfx/collections-sortedmap'
-import {GeomEdge, GeomGraph, GeomLabel, GeomNode} from '../../layout/core'
-import {Arrowhead} from '../../layout/core/arrowhead'
-
-import {GeomObject} from '../../layout/core/geomObject'
-import {RelativeFloatingPort} from '../../layout/core/relativeFloatingPort'
-import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
-import {ILayoutSettings} from '../../layout/iLayoutSettings'
-import {Point, Curve, LineSegment, ICurve, PointLocation} from '../../math/geometry'
-import {CornerSite} from '../../math/geometry/cornerSite'
-import {IntersectionInfo} from '../../math/geometry/intersectionInfo'
-import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
-import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
-import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
-import {SplineRouter} from '../../routing/splineRouter'
-import {StraightLineEdges} from '../../routing/StraightLineEdges'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
-import {Entity} from '../../structs/entity'
-import {Graph} from '../../structs/graph'
-import {Assert} from '../../utils/assert'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {UndoList} from './undoRedoActionsList'
+import {
+  RelativeFloatingPort,
+  StraightLineEdges,
+  EdgeLabelPlacement,
+  RectilinearInteractiveEditor,
+  Point,
+  Entity,
+  GeomEdge,
+  GeomGraph,
+  GeomObject,
+  ILayoutSettings,
+  EdgeRoutingMode,
+  GeomLabel,
+  Curve,
+  LineSegment,
+  GeomNode,
+  SplineRouter,
+  Arrowhead,
+  AttributeRegistry,
+  Assert,
+  ICurve,
+  SmoothedPolyline,
+  CornerSite,
+  IntersectionInfo,
+  PointLocation,
+} from '@msagl/core'
 
 export enum DraggingMode {
   Incremental,

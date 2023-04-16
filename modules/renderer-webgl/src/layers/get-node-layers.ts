@@ -1,7 +1,7 @@
 import {LayersList, Color, Position} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {GeomNode, GeomGraph, Node, Entity} from '@msagl/core'
-import {DrawingNode, DrawingObject, ShapeEnum} from '@msagl/core/drawing'
+import {DrawingNode, DrawingObject, ShapeEnum} from '@msagl/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
 import {ParsedGraphNodeLayerStyle} from '../styles/graph-style-evaluator'

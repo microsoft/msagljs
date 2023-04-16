@@ -1,5 +1,5 @@
 import {Entity, Node, Edge, TileMap} from '@msagl/core'
-import {DrawingObject, DrawingNode, DrawingEdge, ShapeEnum} from '@msagl/core/drawing'
+import {DrawingObject, DrawingNode, DrawingEdge, ShapeEnum} from '@msagl/drawing'
 import {
   GraphStyleSpecification,
   EntityFilter,

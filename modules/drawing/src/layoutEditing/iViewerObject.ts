@@ -1,5 +1,5 @@
-import {DrawingObject} from '../../drawing/drawingObject'
-import {Entity} from '../../structs/entity'
+import {Entity} from '@msagl/core'
+import {DrawingObject} from '..'
 
 export interface IViewerObject {
   /**  the corresponding Entity*/

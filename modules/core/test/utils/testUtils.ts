@@ -1,36 +1,55 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import {
-  GeomEdge,
-  Point,
-  interpolateICurve,
-  MdsLayoutSettings,
-  GeomGraph,
-  ICurve,
-  CurveFactory,
-  GeomNode,
-  Graph,
-  Size,
-  Node,
-  Edge,
-  layoutGeomGraph,
-  Curve,
-} from '../../src'
 
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
 import {parseDot} from '@msagl/parser'
-import {DrawingGraph, TextMeasurerOptions} from '../../src/drawing'
-import {layoutGraphWithMds} from '../../src/layout/mds/pivotMDS'
-import {DrawingObject} from '../../src/drawing/drawingObject'
-import {GeomObject} from '../../src/layout/core/geomObject'
-import {IntPairSet} from '../../src/utils/IntPairSet'
-import {initRandom, randomInt} from '../../src/utils/random'
+import {DrawingGraph, DrawingObject, TextMeasurerOptions} from '@msagl/drawing'
+import {
+  Node,
+  Assert,
+  Curve,
+  CurveFactory,
+  Edge,
+  GeomEdge,
+  GeomGraph,
+  GeomNode,
+  GeomObject,
+  Graph,
+  ICurve,
+  MdsLayoutSettings,
+  Point,
+  PointLocation,
+  Rectangle,
+  Size,
+  interpolateICurve,
+  layoutGeomGraph,
+  layoutGraphWithMds,
+} from '@msagl/core'
 import {Queue} from 'queue-typescript'
-import {Assert} from '../../src/utils/assert'
 import {parseJSONGraph} from '../../../parser/src/dotparser'
 import {IPsepColaSetting} from '../../src/layout/incremental/iPsepColaSettings'
-import {PointLocation} from '../../src/math/geometry'
+import {IntPairSet} from '../../src/utils/IntPairSet'
+import {initRandom, randomInt} from '../../src/utils/random'
 import {SvgDebugWriter} from './svgDebugWriter'
+export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve, labelRect: (s: string) => Rectangle): GeomGraph {
+  for (const n of g.shallowNodes) {
+    if (n instanceof Graph) {
+      const subG = n as unknown as Graph
+      GeomGraph.mkWithGraphAndLabel(subG, null)
+      createGeometry(subG, nodeBoundaryFunc, labelRect)
+    } else {
+      const gn = new GeomNode(n)
+      //const tsize = getTextSize(drawingNode.label.text, drawingNode.fontname)
+      const drawingObject = DrawingObject.getDrawingObj(n)
+      const text = drawingObject ? drawingObject.labelText ?? n.id : n.id
+      gn.boundaryCurve = nodeBoundaryFunc(text)
+    }
+  }
+  for (const e of g.deepEdges) {
+    new GeomEdge(e)
+  }
+  return GeomGraph.mkWithGraphAndLabel(g, null)
+}
 
 function edgeIsAttached(e: Edge): boolean {
   return pointIsAttached(edgeStart(e), e.source) && pointIsAttached(edgeEnd(e), e.target)

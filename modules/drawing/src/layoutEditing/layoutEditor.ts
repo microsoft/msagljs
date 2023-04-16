@@ -1,42 +1,51 @@
-import {ArrowTypeEnum} from '../../drawing/arrowTypeEnum'
-import {DrawingEdge} from '../../drawing/drawingEdge'
-import {DrawingNode} from '../../drawing/drawingNode'
-import {DrawingObject} from '../../drawing/drawingObject'
-import {GeomLabel} from '../../layout/core'
-
-import {Arrowhead} from '../../layout/core/arrowhead'
-import {CurvePort} from '../../layout/core/curvePort'
-import {FloatingPort} from '../../layout/core/floatingPort'
-import {GeomEdge} from '../../layout/core/geomEdge'
-import {GeomGraph} from '../../layout/core/geomGraph'
-import {GeomNode} from '../../layout/core/geomNode'
-import {GeomObject} from '../../layout/core/geomObject'
-import {Port} from '../../layout/core/port'
-import {layoutGeomGraph} from '../../layout/driver'
-import {EdgeLabelPlacement} from '../../layout/edgeLabelPlacement'
-import {Polyline, Point, Curve, Rectangle, LineSegment, ICurve, PointLocation, Size} from '../../math/geometry'
-import {CornerSite} from '../../math/geometry/cornerSite'
-import {SmoothedPolyline} from '../../math/geometry/smoothedPolyline'
-import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
-import {InteractiveEdgeRouter} from '../../routing/interactiveEdgeRouter'
-import {RectilinearInteractiveEditor} from '../../routing/rectilinear/RectilinearInteractiveEditor'
-import {StraightLineEdges} from '../../routing/StraightLineEdges'
-import {AttributeRegistry} from '../../structs/attributeRegistry'
-import {Edge} from '../../structs/edge'
-import {Entity} from '../../structs/entity'
-import {Graph} from '../../structs/graph'
-import {Label} from '../../structs/label'
-import {Node} from '../../structs/node'
-import {Assert} from '../../utils/assert'
+import {
+  Node,
+  Arrowhead,
+  Assert,
+  AttributeRegistry,
+  Curve,
+  Edge,
+  EdgeLabelPlacement,
+  EdgeRoutingMode,
+  Entity,
+  GeomEdge,
+  GeomGraph,
+  GeomLabel,
+  GeomNode,
+  GeomObject,
+  Graph,
+  ICurve,
+  Label,
+  LineSegment,
+  Point,
+  Polyline,
+  Rectangle,
+  RectilinearInteractiveEditor,
+  Size,
+  SmoothedPolyline,
+  StraightLineEdges,
+  layoutGeomGraph,
+  InteractiveEdgeRouter,
+  FloatingPort,
+  Port,
+  PointLocation,
+  CornerSite,
+  CurvePort,
+} from '@msagl/core'
+import {IViewerObject} from './iViewerObject'
 
 import {DraggingMode, GeometryGraphEditor} from './geomGraphEditor'
-import {InsertionMode, IViewer} from './iViewer'
-import {IViewerEdge} from './iViewerEdge'
-import {IViewerNode} from './iViewerNode'
-import {IViewerObject} from './iViewerObject'
-import {ModifierKeysEnum} from './modifierKeys'
 import {ObjectUnderMouseCursorChangedEventArgs} from './objectUnderMouseCursorChangedEventArgs'
 import {PolylineCornerType} from './polylineCornerType'
+import {IViewer, InsertionMode} from './iViewer'
+import {ArrowTypeEnum} from '../arrowTypeEnum'
+import {DrawingEdge} from '../drawingEdge'
+import {DrawingNode} from '../drawingNode'
+import {DrawingObject} from '../drawingObject'
+import {IViewerEdge} from './iViewerEdge'
+import {IViewerNode} from './iViewerNode'
+import {ModifierKeysEnum} from './modifierKeys'
+
 type DelegateForIViewerObject = (o: IViewerObject) => void
 type DelegateForEdge = (e: IViewerEdge) => void
 
