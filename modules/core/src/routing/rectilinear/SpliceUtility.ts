@@ -7,7 +7,7 @@ export class SpliceUtility {
   // Most of the original contents of this file have been subsumed into ObstacleTree and TransientGraphUtility.
   static MungeClosestIntersectionInfo(rayOrigin: Point, closestIntersection: IntersectionInfo, isHorizontal: boolean): Point {
     const bbox: Rectangle = closestIntersection.seg1.boundingBox
-    const closest: Point = GeomConstants.RoundPoint(closestIntersection.x).clone()
+    const closest: Point = Point.RoundPoint(closestIntersection.x).clone()
     return isHorizontal
       ? new Point(SpliceUtility.MungeIntersect(rayOrigin.x, closest.x, bbox.left, bbox.right), closest.y)
       : new Point(closest.x, SpliceUtility.MungeIntersect(rayOrigin.y, closest.y, bbox.bottom, bbox.top))
@@ -27,6 +27,6 @@ export class SpliceUtility {
       }
     }
 
-    return GeomConstants.RoundDouble(intersect)
+    return Point.RoundDouble(intersect)
   }
 }

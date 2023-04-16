@@ -65,7 +65,7 @@ export class ObstaclePortEntrance {
     )
     const xxs = Curve.getAllIntersections(lineSeg, oport.Obstacle.VisibilityPolyline, true)
     /*Assert.assert(1 === xxs.length, 'Expected one intersection')*/
-    this.VisibilityBorderIntersect = GeomConstants.RoundPoint(xxs[0].x)
+    this.VisibilityBorderIntersect = Point.RoundPoint(xxs[0].x)
     const t = {pacList: <PointAndCrossingsList>null}
     this.MaxVisibilitySegment = obstacleTree.CreateMaxVisibilitySegment(this.VisibilityBorderIntersect, this.OutwardDirection, t)
     this.pointAndCrossingsList = t.pacList

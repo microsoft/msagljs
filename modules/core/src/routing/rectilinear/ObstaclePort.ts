@@ -25,7 +25,7 @@ export class ObstaclePort {
     this.Port = port
     this.Obstacle = obstacle
     this.PortEntrances = new Array<ObstaclePortEntrance>()
-    this.Location = GeomConstants.RoundPoint(this.Port.Location)
+    this.Location = Point.RoundPoint(this.Port.Location)
   }
 
   CreatePortEntrance(unpaddedBorderIntersect: Point, outDir: Direction, obstacleTree: ObstacleTree) {
@@ -53,7 +53,7 @@ export class ObstaclePort {
 
   // PortManager will recreate the Port if it detects this (this.Location has already been rounded).
   get LocationHasChanged(): boolean {
-    return !Point.closeDistEps(this.Location, GeomConstants.RoundPoint(this.Port.Location))
+    return !Point.closeDistEps(this.Location, Point.RoundPoint(this.Port.Location))
   }
 
   // The curve associated with the port.

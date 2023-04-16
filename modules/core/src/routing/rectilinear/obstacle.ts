@@ -103,7 +103,7 @@ export class Obstacle {
 
   static mk(a: Point, b: Point, scanlineOrdinal: number) {
     const obs = new Obstacle(null, 0)
-    obs.PaddedPolyline = Polyline.mkClosedFromPoints([GeomConstants.RoundPoint(a), GeomConstants.RoundPoint(b)])
+    obs.PaddedPolyline = Polyline.mkClosedFromPoints([Point.RoundPoint(a), Point.RoundPoint(b)])
     obs.Ordinal = scanlineOrdinal
     return obs
   }
@@ -141,7 +141,7 @@ export class Obstacle {
     // in later operations (intersections and event ordering).
     let ppt: PolylinePoint = polyline.startPoint
     do {
-      ppt.point = GeomConstants.RoundPoint(ppt.point)
+      ppt.point = Point.RoundPoint(ppt.point)
       ppt = ppt.nextOnPolyline
     } while (ppt !== polyline.startPoint)
 

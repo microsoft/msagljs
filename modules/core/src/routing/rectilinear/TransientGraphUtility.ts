@@ -385,8 +385,8 @@ export class TransientGraphUtility {
     //                || (PointComparer.GetPureDirectionVV(maxVisibilitySegment.start, startVertex.point) === dir)), "Inconsistent direction found", this.ObstacleTree, this.VisGraph);
     const oppositeFarBound: number = StaticGraphUtility.GetRectangleBound(limitRect, dir)
     const maxDesiredSplicePoint: Point = StaticGraphUtility.IsVerticalD(dir)
-      ? GeomConstants.RoundPoint(new Point(startVertex.point.x, oppositeFarBound))
-      : GeomConstants.RoundPoint(new Point(oppositeFarBound, startVertex.point.y))
+      ? Point.RoundPoint(new Point(startVertex.point.x, oppositeFarBound))
+      : Point.RoundPoint(new Point(oppositeFarBound, startVertex.point.y))
     if (Point.closeDistEps(maxDesiredSplicePoint, startVertex.point)) {
       // Nothing to do.
       return

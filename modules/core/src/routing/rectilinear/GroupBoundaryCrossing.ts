@@ -29,7 +29,7 @@ export class GroupBoundaryCrossing {
   BoundaryWidth = GeomConstants.distanceEpsilon
 
   GetInteriorVertexPoint(outerVertex: Point): Point {
-    return GeomConstants.RoundPoint(outerVertex.add(CompassVector.toPoint(this.DirectionToInside).mul(this.BoundaryWidth)))
+    return Point.RoundPoint(outerVertex.add(CompassVector.toPoint(this.DirectionToInside).mul(this.BoundaryWidth)))
   }
 
   toString(): string {

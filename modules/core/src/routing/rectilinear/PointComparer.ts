@@ -99,7 +99,7 @@ export class PointComparer {
   //  //  unlikely to be a graph coordinate (it's probably a line intersection way out of range).
   //  if (Math.log10(Math.abs(d)) < 14 - GeomConstants.distanceEpsilonPrecision) {
   //    /*Assert.assert(
-  //      Math.abs(GeomConstants.RoundDouble(d) - d) <
+  //      Math.abs(Point.RoundDouble(d) - d) <
   //        PointComparer.DifferenceEpsilon,
   //      'unRounded value passed',
   //    )*/

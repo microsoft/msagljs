@@ -38,7 +38,7 @@ export class InteractiveEdgeRouter extends Algorithm {
       return
     }
     const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
-    
+
     this.pathOptimizer.run(poly)
     edge.curve = this.pathOptimizer.poly.toCurve()
     // SvgDebugWriter.dumpDebugCurves('./tmp/edge' + debCount++ + '.svg', [
@@ -1018,7 +1018,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   GetVertex(point: Point): VisibilityVertex {
     let v: VisibilityVertex = this.visibilityGraph.FindVertex(point)
     if (v == null && this.LookForRoundedVertices) {
-      v = this.visibilityGraph.FindVertex(GeomConstants.RoundPoint(point))
+      v = this.visibilityGraph.FindVertex(Point.RoundPoint(point))
     }
 
     return v

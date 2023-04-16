@@ -1,6 +1,7 @@
 ﻿// written in assumption of a single parent
-
-import {GeomEdge, GeomGraph, GeomNode} from '..'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {GeomNode} from '../layout/core/geomNode'
 import {GeomObject} from '../layout/core/geomObject'
 import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'

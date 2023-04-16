@@ -74,12 +74,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     // The Port.Location values are not necessarily rounded by the caller.  The values
     // will be rounded upon acquisition in PortManager.cs.  PointComparer.Equal expects
     // all values to be rounded.
-    if (
-      !Point.closeDistEps(
-        GeomConstants.RoundPoint(edgeGeometry.sourcePort.Location),
-        GeomConstants.RoundPoint(edgeGeometry.targetPort.Location),
-      )
-    ) {
+    if (!Point.closeDistEps(Point.RoundPoint(edgeGeometry.sourcePort.Location), Point.RoundPoint(edgeGeometry.targetPort.Location))) {
       this.EdgesToRoute.push(edgeGeometry)
     } else {
       this.selfEdges.push(edgeGeometry)
