@@ -1,1 +1,1 @@
-export {SvgRenderer as RendererSvg} from './rendererSvg'
+export {RendererSvg} from './rendererSvg'
