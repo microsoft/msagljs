@@ -90,6 +90,7 @@ const config = configure({
             "noEmit": true,
             "esModuleInterop": true,
             "skipLibCheck": true,
+            "version": "0.0.1",
           },
         }
       }
