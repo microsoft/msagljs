@@ -89,6 +89,7 @@ const config = configure({
             "importHelpers": true,
             "noEmit": true,
             "esModuleInterop": true,
+            "skipLibCheck": true,
           },
         }
       }
