@@ -341,20 +341,16 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   ProcessEvent(p: SweepEvent) {
     // Assert.assert(this.invariant())
 
-    const vertexEvent = p instanceof VertexEvent
-    if (vertexEvent) {
+    if (p instanceof VertexEvent) {
       this.ProcessVertexEvent(p)
     } else {
-      const rightIntersectionEvent = p instanceof RightIntersectionEvent
-      if (rightIntersectionEvent) {
+      if (p instanceof RightIntersectionEvent) {
         this.ProcessRightIntersectionEvent(p)
       } else {
-        const leftIntersectionEvent = p instanceof LeftIntersectionEvent
-        if (leftIntersectionEvent) {
+        if (p instanceof LeftIntersectionEvent) {
           this.ProcessLeftIntersectionEvent(p)
         } else {
-          const coneClosure = p instanceof ConeClosureEvent
-          if (coneClosure) {
+          if (p instanceof ConeClosureEvent) {
             if (!p.ConeToClose.Removed) {
               this.RemoveCone(p.ConeToClose)
             }
@@ -460,8 +456,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   }
 
   TryCreateConeClosureForRightSide(rightSide: BrokenConeSide) {
-    const isConeLeftSide = rightSide.Cone.LeftSide instanceof ConeLeftSide
-    if (isConeLeftSide) {
+    if (rightSide.Cone.LeftSide instanceof ConeLeftSide) {
       const coneLeftSide = rightSide.Cone.LeftSide
       if (
         Point.getTriangleOrientation(coneLeftSide.Start, coneLeftSide.Start.add(coneLeftSide.Direction), rightSide.EndVertex.point) ==
@@ -591,13 +586,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   //         }
   // #endif
   AddConeAndEnqueueEvents(vertexEvent: VertexEvent) {
-    const isLeftVertexEvent = vertexEvent instanceof LeftVertexEvent
-    if (isLeftVertexEvent) {
+    if (vertexEvent instanceof LeftVertexEvent) {
       const nextPoint: PolylinePoint = vertexEvent.Vertex.nextOnPolyline
       this.CloseConesAddConeAtLeftVertex(<LeftVertexEvent>vertexEvent, nextPoint)
     } else {
-      const isRightVertexEvent = vertexEvent instanceof RightVertexEvent
-      if (isRightVertexEvent) {
+      if (vertexEvent instanceof RightVertexEvent) {
         const nextPoint: PolylinePoint = vertexEvent.Vertex.prevOnPolyline
         this.CloseConesAddConeAtRightVertex(<RightVertexEvent>vertexEvent, nextPoint)
       } else {
@@ -674,12 +667,11 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
   LookForIntersectionOfObstacleSideAndRightConeSide(obstacleSideStart: Point, obstacleSideVertex: PolylinePoint) {
     const node: RBNode<ConeSide> = this.GetLastNodeToTheLeftOfPointInRightSegmentTree(obstacleSideStart)
     if (node != null) {
-      const isConeRightSide = node.item instanceof ConeRightSide
-      if (isConeRightSide) {
+      if (node.item instanceof ConeRightSide) {
         const intersection = Point.IntervalIntersectsRay(
           obstacleSideStart,
           obstacleSideVertex.point,
-          (<ConeRightSide>node.item).Start,
+          node.item.Start,
           this.ConeRightSideDirection,
         )
         if (intersection && this.SegmentIsNotHorizontal(intersection, obstacleSideVertex.point)) {
@@ -917,16 +909,9 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   LookForIntersectionWithConeLeftSide(leftNode: RBNode<ConeSide>) {
     // Show(new Ellipse(1, 1, leftNode.item.start));
-    const isConeLeftSide = leftNode.item instanceof ConeLeftSide
-    if (isConeLeftSide) {
-      const coneLeftSide = <ConeLeftSide>leftNode.item
 
-      // leftNode = leftSegmentTree.TreePredecessor(leftNode);
-      // if (leftNode != null) {
-      //    var seg = leftNode.item as ObstacleSideSegment;
-      //    if (seg != null)
-      //        TryIntersectionOfConeLeftSideAndObstacleConeSide(coneLeftSide, seg);
-      // }
+    if (leftNode.item instanceof ConeLeftSide) {
+      const coneLeftSide = leftNode.item
       const rightObstacleSide: RightObstacleSide = this.FindFirstObstacleSideToTheLeftOfPoint(coneLeftSide.Start)
       if (rightObstacleSide != null) {
         this.TryIntersectionOfConeLeftSideAndObstacleSide(coneLeftSide, rightObstacleSide)
@@ -936,7 +921,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       leftNode = this.leftConeSides.next(leftNode)
       if (leftNode != null) {
         if (leftNode.item instanceof ConeLeftSide) {
-          this.TryIntersectionOfConeLeftSideAndObstacleConeSide(<ConeLeftSide>leftNode.item, seg)
+          this.TryIntersectionOfConeLeftSideAndObstacleConeSide(leftNode.item, seg)
         }
       }
     }
@@ -944,15 +929,9 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
 
   LookForIntersectionWithConeRightSide(rightNode: RBNode<ConeSide>) {
     // Show(new Ellipse(10, 5, rightNode.item.start));
-    const isConeRightSide = rightNode.item instanceof ConeRightSide
-    if (isConeRightSide) {
+
+    if (rightNode.item instanceof ConeRightSide) {
       const crs = rightNode.item
-      // rightNode = rightSegmentTree.TreeSuccessor(rightNode);
-      // if (rightNode != null) {
-      //    var seg = rightNode.item as ObstacleSideSegment;
-      //    if (seg != null)
-      //        TryIntersectionOfConeRightSideAndObstacleConeSide(coneRightSide, seg);
-      // }
       const leftObstacleSide: LeftObstacleSide = this.FindFirstObstacleSideToToTheRightOfPoint(crs.Start)
       if (leftObstacleSide != null) {
         this.TryIntersectionOfConeRightSideAndObstacleSide(crs, leftObstacleSide)
@@ -962,7 +941,7 @@ export class LineSweeper extends LineSweeperBase /*implements IConeSweeper*/ {
       rightNode = this.rightConeSides.previous(rightNode)
       if (rightNode != null) {
         if (rightNode.item instanceof ConeRightSide) {
-          this.TryIntersectionOfConeRightSideAndObstacleConeSide(<ConeRightSide>rightNode.item, seg)
+          this.TryIntersectionOfConeRightSideAndObstacleConeSide(rightNode.item, seg)
         }
       }
     }
