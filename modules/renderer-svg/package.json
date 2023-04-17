@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer-svg",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "Svg renderer for MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,9 +24,9 @@
     "build-worker": "esbuild ./worker.js --outfile=dist/worker.min.js --bundle --minify"
   },
   "dependencies": {
-    "@msagl/core": "^1.1.13",
-    "@msagl/parser": "^1.1.13",
-    "@msagl/renderer-common": "^1.1.15",
+    "@msagl/core": "^1.1.14",
+    "@msagl/parser": "^1.1.14",
+    "@msagl/renderer-common": "^1.1.16",
     "panzoom": "^9.4.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
