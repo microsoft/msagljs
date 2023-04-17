@@ -29,7 +29,6 @@ renderer.setOptions(options: LayoutOptions)
 ```ts build
 import { parseDot } from '@msagl/parser'
 import { RendererSvg } from '@msagl/renderer-svg'
-
 const renderer = new RendererSvg()
 const graph = parseDot(`
 graph G {
@@ -39,6 +38,7 @@ graph G {
 	hford -- lwilson;
 	lwilson -- kbacon;
 }`)
+renderer.setGraph(graph)
 ```
 
 ## Renderer with SVG API

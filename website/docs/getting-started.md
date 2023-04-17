@@ -21,8 +21,9 @@ Using script tags:
 
 ```html
 <script src="https://unpkg.com/@msagl/core@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@msagl/drawing@latest/dist.min.js"></script>
 <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
-<script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@msagl/renderer-svg@latest/dist.min.js"></script>
 ```
 
 ```js
