@@ -404,14 +404,11 @@ export class SvgCreator {
 
   private drawLabel(node: Node, dn: DrawingObject, nodeGroup: SVGElement) {
     if (!dn) return
-    if (!dn.labelText || dn.labelText.length == 0) return
+    if (!dn.labelText || dn.labelText.length == 0 || dn.measuredTextSize == null) return
 
-    if (dn instanceof DrawingNode) {
-      this.writeLabelText(node, dn.measuredTextSize, nodeGroup, 'nodeLabel')
-    } else {
-      throw new Error('not implemented')
-    }
+    this.writeLabelText(node, dn.measuredTextSize, nodeGroup, 'nodeLabel')
   }
+
   private writeLabelText(node: Node, measuredTextSize: Size, nodeGroup: SVGElement, id: string) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
