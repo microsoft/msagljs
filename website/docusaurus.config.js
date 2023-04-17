@@ -78,6 +78,7 @@ const config = configure({
       meta: "build",
       nodeBin: "tsc",
       npmPackage: "typescript",
+      version: "0.0.1",
       inputFiles: {
         "tsconfig.json": {
           "compilerOptions": {
@@ -90,7 +91,6 @@ const config = configure({
             "noEmit": true,
             "esModuleInterop": true,
             "skipLibCheck": true,
-            "version": "0.0.1",
           },
         }
       }
