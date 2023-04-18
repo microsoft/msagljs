@@ -14,14 +14,14 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "2.3.1",
-    "@docusaurus/module-type-aliases": "^2.3.1",
-    "@docusaurus/preset-classic": "2.3.1",
+    "@docusaurus/core": "^2.4.0",
+    "@docusaurus/module-type-aliases": "^2.4.0",
+    "@docusaurus/preset-classic": "^2.4.0",
     "@mdx-js/react": "^1.6.22",
     "@msagl/core": "^1.1.14",
     "@msagl/parser": "^1.1.14",
     "@msagl/renderer-svg": "^1.1.16",
-    "@rise4fun/docusaurus-plugin-rise4fun": "^2.0.0",
+    "@rise4fun/docusaurus-plugin-rise4fun": "^2.1.0",
     "@svgdotjs/svg.js": "^3.1.2",
     "@tsconfig/docusaurus": "^1.0.7",
     "clsx": "^1.2.1",
