@@ -381,6 +381,7 @@ export class RendererSvg implements IViewer {
     return this.Dpi
   }
   LineThicknessForEditing = 2
+  /** controls if the layout can be changed by mouse or touch interactions */
   layoutEditingEnabled = true
   private get insertingNode() {
     return this.insertionMode == InsertionMode.Node

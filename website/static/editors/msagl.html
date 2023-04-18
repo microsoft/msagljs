@@ -6,6 +6,7 @@ html>
   <body>
     <script type="module">
       const renderer = new msagl.RendererSvg()
+      renderer.layoutEditingEnabled=false
       // handle rendering of dot sources
       window.addEventListener('message', (ev) => {
         const { type, dot } = ev.data
