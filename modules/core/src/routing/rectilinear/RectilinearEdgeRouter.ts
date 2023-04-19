@@ -5,7 +5,7 @@
 // Copyright Microsoft Corporation.
 
 import {Nudger} from './nudging/Nudger'
-import {ICurve, Point} from '../../math/geometry'
+import {ICurve, LineSegment, Point} from '../../math/geometry'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../../layout/core/geomEdge'
 import {GeomGraph} from '../../layout/core/geomGraph'
@@ -493,7 +493,19 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.GraphGenerator.Clear()
     this.InitObstacleTree()
     this.GraphGenerator.GenerateVisibilityGraph()
+    // if (DebugObject.dumpDebugCurves) DebugObject.dumpDebugCurves('./tmp/rvg.svg', this.mkDC())
   }
+
+  // mkDC(): Array<DebugCurve> {
+  //   const dc = new Array<DebugCurve>()
+  //   dc.push(
+  //     ...Array.from(this.VisibilityGraph.Edges).map((e) =>
+  //       DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.SourcePoint, e.TargetPoint)),
+  //     ),
+  //   )
+  //   dc.push(...this.Obstacles.map((o) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Red', o.BoundaryCurve)))
+  //   return dc
+  // }
 
   private static CalculateArrowheads(edgeGeom: GeomEdge) {
     Arrowhead.trimSplineAndCalculateArrowheadsII(edgeGeom, edgeGeom.sourcePort.Curve, edgeGeom.targetPort.Curve, edgeGeom.curve, true)

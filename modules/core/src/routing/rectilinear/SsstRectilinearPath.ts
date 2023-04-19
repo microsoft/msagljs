@@ -501,6 +501,7 @@ export class SsstRectilinearPath {
 
   private EnqueueInitialVerticesFromSource(cost: number) {
     const bestEntry = new VertexEntry(this.Source, null, 0, 0, cost)
+    bestEntry.IsClosed = true
     // This routine is only called once so don't worry about optimizing foreach.where
     for (const edge of this.Source.OutEdges) {
       if (!SsstRectilinearPath.IsPassable(edge)) continue

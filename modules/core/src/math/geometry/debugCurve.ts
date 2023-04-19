@@ -1,5 +1,10 @@
 import {ICurve} from './icurve'
+// define a reference to a function that will be set by the caller
+// to dump the debug curves to a file
 
+export const DebugObject: {dumpDebugCurves: (fileName: string, debugCurves: DebugCurve[]) => void} = {
+  dumpDebugCurves: null,
+}
 export class DebugCurve {
   pen: number
   color: string
