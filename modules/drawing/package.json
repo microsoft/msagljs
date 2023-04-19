@@ -1,6 +1,6 @@
 {
   "name": "@msagl/drawing",
-  "version": "1.1.14",
+  "version": "1.1.15",
   "description": "Drawing attributes for MSAGL",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,6 +23,6 @@
     "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js"
   },
   "dependencies": {
-    "@msagl/core": "^1.1.14"
+    "@msagl/core": "^1.1.15"
   }
 }
