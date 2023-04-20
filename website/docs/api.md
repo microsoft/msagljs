@@ -6,8 +6,8 @@ sidebar_position: 4
 
 ## Use the layout engine directly
 
-When you interact with a renderer, many details are hidden under the hood but here we expose them.
-We need to address first some classes that are involved.
+When you interact with a renderer, many details are hidden under the hood.
+Here, to show how to call the engine directly, we need to say a few words on the classes involved.
 
 Let us describe the design of Node, Graph, and Edge.
 
@@ -58,18 +58,18 @@ const c = new Node('c')
 graph.addNode(c)
 // create edges b->c, and d->a
 const bc = new Edge(b, c)
-new Edge(c, d)
+new Edge(b, c)
 ```
 
 The last statement of the code above
 
 ```ts
-new Edge(c, d)
+new Edge(b, c)
 ```
 
-creates an instance of class Edge and adds it to c.outEdges and d.inEdges:
-this way the edge is 'not lost', but attached to the graph.
-For the engine to run the layout the nodes geometry is needed. For this examples we create circular nodes.
+creates an instance of class Edge and adds it to b.outEdges and c.inEdges.
+This way the edge the edge is attached to the graph.
+For the engine to run the layout, the nodes geometry is needed. For this examples we create circular nodes.
 
 ```ts
 // create a geometry node gb
@@ -80,9 +80,49 @@ gb.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
 The two lines above create a GeomNode, gb, corresponding to node 'b',
 which is actually an Attribute that is stored in the array of attributes of node 'b'.
 The code also sets the boundary curve describing the shape of 'gb': in this case it is
-a circle of radius 20 and the center at the origin of the plane. The layout might transform the
+a circle with the radius of length 20 and the center at the origin of the plane. The layout might transform the
 curve later by changing the circle center. We also need to create geometry attributes for each element of the graph
-to interact with the layout.
+to interact with the layout, and, finally, call the layout engine. Below the whole working example.
+
+```ts build
+import {
+  CurveFactory,
+  Edge,
+  GeomEdge,
+  GeomGraph,
+  GeomNode,
+  Graph,
+  Node,
+  Point,
+  layoutGeomGraph,
+} from '@msagl/core'
+const graph = new Graph()
+// add some nodes and edges to the graph.
+// add a node with id 'b'
+const b = new Node('b')
+graph.addNode(b)
+// add a node with id 'c'
+const c = new Node('c')
+graph.addNode(c)
+// create edges b->c, and d->a
+const bc = new Edge(b, c)
+const geomGraph = new GeomGraph(graph)
+const gbc: GeomEdge = new GeomEdge(bc)
+const gb = new GeomNode(b)
+gb.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
+const gc = new GeomNode(c)
+gc.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
+layoutGeomGraph(geomGraph)
+
+console.log(gbc.curve)
+```
+
+This code produces the output 'LineSegment {
+parStart: 0,
+parEnd: 1,
+start: Point { x*: 49.99999999999999, y*: 30 },
+end: Point { x*: 70, y*: 30 }
+}'
 
 ## Renderer with Deck.gl
 

@@ -2,39 +2,31 @@
 
 // import * as fs from 'fs'
 // import * as path from 'path'
-import {DrawingNode, DrawingObject} from '@msagl/drawing'
-import {
-  AttributeRegistry,
-  Bundle,
-  CancelToken,
-  DebugCurve,
-  Edge,
-  GeomEdge,
-  GeomGraph,
-  GeomNode,
-  GeomObject,
-  Graph,
-  LayeredLayout,
-  LineSegment,
-  MdsLayoutSettings,
-  Node,
-  PivotMDS,
-  Point,
-  Size,
-  SplineRouter,
-  SugiyamaLayoutSettings,
-  TileMap,
-  buildRTree,
-  buildRTreeWithInterpolatedEdges,
-  getGeomIntersectedObjects,
-  intersectedObjects,
-} from '@msagl/core'
+import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomNode, Graph, Node, Point, layoutGeomGraph} from '@msagl/core'
 // import {createGeometry, nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 // import {initRandom} from '../../../src/utils/random'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 
 test('geomGraph', () => {
-  const dg = new DrawingNode(null)
+  const graph = new Graph()
+  // add some nodes and edges to the graph.
+  // add a node with id 'b'
+  const b = new Node('b')
+  graph.addNode(b)
+  // add a node with id 'c'
+  const c = new Node('c')
+  graph.addNode(c)
+  // create edges b->c, and d->a
+  const bc = new Edge(b, c)
+  const geomGraph = new GeomGraph(graph)
+  const gbc: GeomEdge = new GeomEdge(bc)
+  const gb = new GeomNode(b)
+  gb.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
+  const gc = new GeomNode(c)
+  gc.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
+  layoutGeomGraph(geomGraph)
+
+  console.log(gbc.curve)
 })
 
 test('subgraphs', () => {
