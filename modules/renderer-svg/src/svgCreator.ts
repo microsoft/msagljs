@@ -189,7 +189,6 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
-    this.svg.setAttribute('style', 'border: 1px solid black')
 
     this.open()
     this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
