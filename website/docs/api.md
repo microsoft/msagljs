@@ -7,11 +7,14 @@ sidebar_position: 4
 ## Use the layout engine directly
 
 When you interact with a renderer, many details are hidden under the hood.
-Here, to show how to call the engine directly, we need to say a few words on the classes involved.
+Here, to show how to call the engine directly
 
+### Create a geometry graph and call the default layout
+
+We need to say a few words on the classes involved.
 Let us describe the design of Node, Graph, and Edge.
 
-Edge is the simplest: it has the source and the target that are Nodes.
+Edge is the simplest of these three: it has the source and the target that are Nodes.
 Node has three sets of Edges: outEdges, inEdges, and selfEdges.
 If you have an object of Node available you can iterate over all edges adjacent to it.
 For example, to process all edges having node 'n' as the source do the following:
@@ -22,8 +25,8 @@ for (const e of n.outEdges()) {
 }
 ```
 
-Graph extends Node, but in addition it has a NodeCollection, which is just a wrapper
-around Map<string, Node>: this way a Graph can reference its nodes. To create a sub-graph we just
+Graph extends Node, but in addition it has a NodeCollection, which is a wrapper
+of Map<string, Node>: this way a Graph can reference its nodes. To create a sub-graph we just
 add a Graph as a new node to the graph.
 
 ```ts
@@ -32,17 +35,17 @@ const subgraph = new Graph('a')
 graph.addNode(subgraph)
 ```
 
-This design seems minimal and efficient enough to maintain the graph structure. For example, to iterate over edges of the graph
+This design seems minimal and efficient enough to maintain the graph structure. For example, to iterate over all edges of the graph
 we go over the nodes in the graph's NodeCollection and iterate over outgoing and self-edge of the nodes.
 
-The classes Graph, Node, and Edge extends class Entity. Entity has a field parent that is also an Entity.
+The classes Graph, Node, and Edge extend class Entity. Entity has a field parent that is also an Entity.
 This way a Node, and an Edge, have a reference to the Graph they belongs to.
 There is a class Label to facilitate labelled edges. The parent of a Label is the labeled edge.
 
-Entity has an array of Attributes. The Attributes are handy to keep additional information about different things.
+Entity has an array of Attributes. The Attributes keep additional information associated with the graph entities.
 There are geometry attributes, drawing attributes, and some others.
 The geometry attributes are needed to create a layout. The drawing attributes are used during rendering.
-The attributes are a convenient mechanism to avoid the duplication of the graph structure.
+The attributes are a convenient mechanism to avoid a duplication of the graph structure.
 
 Now we can return to the engine level layout example.
 
@@ -113,16 +116,25 @@ gb.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
 const gc = new GeomNode(c)
 gc.boundaryCurve = CurveFactory.mkCircle(20, new Point(0, 0))
 layoutGeomGraph(geomGraph)
-
 console.log(gbc.curve)
 ```
 
-This code produces the output 'LineSegment {
-parStart: 0,
-parEnd: 1,
-start: Point { x*: 49.99999999999999, y*: 30 },
-end: Point { x*: 70, y*: 30 }
-}'
+This code produces the following output:  
+'LineSegment {  
+ parStart: 0,  
+ parEnd: 1,  
+ start: Point { x*: 49.99999999999999, y*: 30},  
+ end: Point { x*: 70, y*: 30 }  
+ }'
+The example above calls the layout engine and it works. In many cases we would like to control the engine a bit more.
+We describe three main methods of the layout that are implemented in the package.
+
+### Sugiyama scheme, or layered layout.
+
+This paragraph gives some scientific background that can be skipped by a user that needs to start coding.
+This layout sometimes is also called the hierarchical layout. It is probably one of the most popular layouts in the World.
+There is a good article on it at https://en.wikipedia.org/wiki/Layered_graph_drawing.
+The implementation here closely follows https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf. The differences of the implementation are described in in two papers: https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf, https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf.
 
 ## Renderer with Deck.gl
 
