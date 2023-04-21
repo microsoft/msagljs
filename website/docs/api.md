@@ -131,10 +131,44 @@ We describe three main methods of the layout that are implemented in the package
 
 ### Sugiyama scheme, or layered layout.
 
-This paragraph gives some scientific background that can be skipped by a user that needs to start coding.
-This layout sometimes is also called the hierarchical layout. It is probably one of the most popular layouts in the World.
+#### Scientific references
+
+If you are need to start coding, please skip this section. Sugiayama scheme sometimes is also called the hierarchical layout. It is probably one of the most popular layouts in the World.
 There is a good article on it at https://en.wikipedia.org/wiki/Layered_graph_drawing.
-The implementation here closely follows https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf. The differences of the implementation are described in in two papers: https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf, https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf.
+The implementation here closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
+
+#### Enforce Sugiama Scheme with the API
+
+There are two ways to ensure the Sugiyama Scheme. One way is to call
+
+```ts
+function layoutGraphWithSugiayma(
+  geomGraph: GeomGraph,
+  cancelToken: CancelToken,
+  transformToScreen: boolean,
+)
+```
+
+The first parameter of the function is the graph under layout, the second is cancelToken to enable the method cancellation. The third argument, transformToScreen, when set to true will cause the geometry flip around the x-axis: transformation of the graph geometry by mapping (x,y) to (x, -y) and then shifting the graph into the first quadrand of the plane with the left-bottom of the graph at (0,0). The cancellation token is ignored by now, so null can be used for it.
+
+Another method is to use property
+
+```ts
+GeomGraph.layoutSettings = new SugiyamaLayoutSettings()
+// change the settings that you need
+
+layoutGraphWithSugiayma(geomGraph, null, false)
+// or call layoutGeomGraph(geomGraph) and the setting will be respected
+```
+
+The most popular settings to change in SugiyamaLayoutSettings is the layerDirection.
+
+```ts
+SugiamaLayoutSettings.layerDirection: LayerDirectionEnum
+```
+
+LayerDirectionEnum has values {TB, LR, BT, RL}, where TB means Top-Bottom, and is the default, LR means Left - Right, BT means Bottom - Top, and RL means Right - Left.
+This meaning of the enum comes from [Graphvis's rankdir](https://graphviz.org/docs/attrs/rankdir/). To avoid layouts which are too wide for a graph with long node labels the value LR is often used.
 
 ## Renderer with Deck.gl
 

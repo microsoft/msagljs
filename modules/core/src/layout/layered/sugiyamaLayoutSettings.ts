@@ -145,7 +145,8 @@ export class SugiyamaLayoutSettings implements ILayoutSettings {
     if (this.transformIsRotation(Math.PI / 2)) return LayerDirectionEnum.LR
     if (this.transformIsRotation(-Math.PI / 2)) return LayerDirectionEnum.RL
     if (this.transformIsRotation(Math.PI)) return LayerDirectionEnum.BT
-    return LayerDirectionEnum.None
+
+    throw new Error('unexpected layout direction')
   }
   set layerDirection(value: LayerDirectionEnum) {
     switch (value) {

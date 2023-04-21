@@ -45,9 +45,9 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   ll.run()
 }
 /** Executes the layered layout following the Sugiyama Scheme.
- * Cancel token allows to cancel the layout run(tbd).
+ * Cancel token allows to cancel the layout run(is ignored by now).
  * If "transformToScreen" is true then the y-coordinate of the graph will be reversed:
- * and the graph will be positioned in the first quarter with letf-bottom = (0,0)
+ * and the graph will be positioned in the first quadrand with left-bottom = (0,0)
  */
 export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken, transformToScreen: boolean) {
   const ss: ILayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
