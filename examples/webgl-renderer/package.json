@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
-    "build": "rm -rf dist && esbuild ./src/app.ts --outfile=dist/app.js --bundle --minify && cp index.html spinner.gif dist"
+    "build": "rm -rf ../../website/static/renderer-webgl/* && esbuild ./src/app.js --outfile=../../website/static/renderer-svg/app.js --bundle --minify && cp index.html  spinner.gif ../../website/static/renderer-webgl"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",

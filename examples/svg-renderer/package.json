@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "esbuild ./src/app.js --sourcemap --servedir=. --outfile=app.js --bundle",
-    "build": "rm -rf dist && esbuild ./src/app.js --outfile=dist/app.js --bundle --minify && cp index.html dist"
+    "build": "rm -rf ../../website/static/renderer-svg/* && esbuild ./src/app.js --outfile=../../website/static/renderer-svg/app.js --bundle --minify && cp index.html ../../website/static/renderer-svg"
   },
   "author": "levnach@microsoft.com",
   "license": "MIT",
