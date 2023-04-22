@@ -120,22 +120,19 @@ console.log(gbc.curve)
 ```
 
 This code produces the following output:  
-'LineSegment {  
- parStart: 0,  
- parEnd: 1,  
- start: Point { x*: 49.99999999999999, y*: 30},  
- end: Point { x*: 70, y*: 30 }  
- }'
-The example above calls the layout engine and it works. In many cases we would like to control the engine a bit more.
-We describe three main methods of the layout that are implemented in the package.
+'LineSegment {parStart: 0, parEnd: 1, start: Point { x*: 49.99999999999999, y*: 30},  
+ end: Point { x*: 70, y*: 30 }}'  
+In many cases we would like to control the engine more than in the previos example.
+We describe three methods of the layout that are implemented in the package.
 
 ### Sugiyama scheme, or layered layout.
 
-#### Scientific references
+#### Short description of the method
 
-If you are need to start coding, please skip this section. Sugiayama scheme sometimes is also called the hierarchical layout. It is probably one of the most popular layouts in the World.
-There is a good article on it at https://en.wikipedia.org/wiki/Layered_graph_drawing.
-The implementation here closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
+If you need to start coding right away, please skip this section. Sugiayama scheme sometimes is also called the hierarchical layout. It is probably one of the most popular layouts in the World. The layout is meant for directed graph where the nodes organized in horizontal layers and the edges are rendered downword according to their direction.
+It is possible to achieve for an acyclic graph.  
+There is a good article describing the layout at https://en.wikipedia.org/wiki/Layered_graph_drawing.
+The implementation in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
 
 #### Enforce Sugiama Scheme with the API
 
@@ -154,13 +151,18 @@ The first parameter of the function is the graph under layout, the second is can
 Another method is to use property
 
 ```ts
-GeomGraph.layoutSettings = new SugiyamaLayoutSettings()
+geomGraph.layoutSettings = new SugiyamaLayoutSettings()
 // change the settings that you need
-
-layoutGraphWithSugiayma(geomGraph, null, false)
+//try to move layers closer to each other
+geomGraph.layoutSettings.yLayerSep /= 2
+// change more settings here...
+// call the layout engine
+geomGraph.layoutSettings.layoutGraphWithSugiayma(geomGraph, null, false)
 // or call layoutGeomGraph(geomGraph) and the setting will be respected
 ```
 
+In general, SugiyamaLayoutSetting property correspond to the attributes of Dot language.
+The documentation on Dot can be a good reference.
 The most popular settings to change in SugiyamaLayoutSettings is the layerDirection.
 
 ```ts
@@ -168,7 +170,35 @@ SugiamaLayoutSettings.layerDirection: LayerDirectionEnum
 ```
 
 LayerDirectionEnum has values {TB, LR, BT, RL}, where TB means Top-Bottom, and is the default, LR means Left - Right, BT means Bottom - Top, and RL means Right - Left.
-This meaning of the enum comes from [Graphvis's rankdir](https://graphviz.org/docs/attrs/rankdir/). To avoid layouts which are too wide for a graph with long node labels the value LR is often used.
+This meaning of the enum comes from [Graphvis's rankdir](https://graphviz.org/docs/attrs/rankdir/). To avoid layouts which are too wide for a graph with long node labels the value LR is often used. If you use "Edit" button on the graph below and change 'rankdir' to TB then you will get a layout with a wide and low bounding box.
+
+```dot edit
+digraph G {
+	rankdir ="LR"
+	a [label = "long label for a"]
+	b [label = "long label for b"]
+	c [label = "long label for c"]
+	e [label = "long label for e"]
+	d [label = "sync node" ]
+	a -> d
+	b -> d
+	c -> d
+    e -> d
+}
+```
+
+Function 'layoutGraphWithSugiayma()' does not require that geomGraph.layoutSettings is set, but if this property is undefined or
+its type is not SugiamaLayoutSettings then a new SugiamaLayoutSettings() is created and assigned to the property. Function 'layoutGeomGraph()' also can change this property as we will describe later.
+
+### Pivot Multidimensional Scaling, or Pivot MDS
+
+#### The method backgrownd
+
+MDS tries to place the graph on the two dimensional plane with the least distortion of the distances between the nodes. You can find more details on [Wikipedia](https://en.wikipedia.org/wiki/Multidimensional_scaling). The method disregards the directions of the edges. Pivot MDS, which is implemented in MSAGL, is a variant of MDS that uses only a subset of pivot nodes for the calculation, making it faster and suitable for large graphs. While MDS uses an n by n matrix for the distances between the nodes, where n is the number of nodes, Pivot MDS uses a k\*n matrix of the distances between each node and each of k pivot nodes. The implementation of Pivot MDS in the package follows [Eigensolver methods for progressive...](https://kops.uni-konstanz.de/bitstream/handle/123456789/5741/bp_empmdsld_06.pdf?sequence=1&isAllowed=y).
+
+Pivot MDS ignores the node sizes and tends to create layouts where the nodes overlap each other. That is why it is followed by an additional step of overlap removal with the algorithm of [GTree](https://arxiv.org/pdf/1608.02653). In addition, MDS does not route the nodes, so the edge routing is performed according to [Fast edge-routing for large graphs](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf).
+
+####
 
 ## Renderer with Deck.gl
 

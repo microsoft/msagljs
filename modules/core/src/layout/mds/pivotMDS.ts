@@ -9,10 +9,7 @@ import {MdsGraphLayout} from './mDSGraphLayout'
 import {MdsLayoutSettings} from './mDSLayoutSettings'
 
 export function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToken = null) {
-  let mdsSettings: MdsLayoutSettings
-  if (geomGraph.layoutSettings && geomGraph.layoutSettings instanceof MdsLayoutSettings)
-    mdsSettings = <MdsLayoutSettings>geomGraph.layoutSettings
-  else mdsSettings = new MdsLayoutSettings()
+  const mdsSettings = geomGraph.layoutSettings instanceof MdsLayoutSettings ? geomGraph.layoutSettings : new MdsLayoutSettings()
 
   enforceLayoutSettings(geomGraph, mdsSettings)
 

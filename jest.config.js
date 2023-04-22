@@ -7,6 +7,8 @@ module.exports = {
     '@msagl/drawing': '<rootDir>/modules/drawing/src',
     '@msagl/core': '<rootDir>/modules/core/src',
     '@msagl/parser': '<rootDir>/modules/parser/src',
-    '@msagl/renderer': '<rootDir>/modules/renderer/src',
+    '@msagl/renderer-common': '<rootDir>/modules/renderer-common/src',
+    '@msagl/renderer-svg': '<rootDir>/modules/renderer-svg/src',
+    '@msagl/renderer-webgl': '<rootDir>/modules/renderer-svg/webgl',
   },
 }

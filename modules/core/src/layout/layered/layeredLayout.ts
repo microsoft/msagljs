@@ -798,7 +798,7 @@ function SnapDeltaUp(y: number, gridSize: number) {
   const delta = y - k * gridSize
   /*Assert.assert(delta >= 0 && delta < gridSize)*/
   if (Math.abs(delta) < 0.0001) {
-    // ???
+    // do not snap
     return 0
   }
   return gridSize - delta
