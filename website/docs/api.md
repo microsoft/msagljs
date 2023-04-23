@@ -134,7 +134,7 @@ It is possible to achieve for an acyclic graph.
 There is a good article describing the layout at https://en.wikipedia.org/wiki/Layered_graph_drawing.
 The implementation in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
 
-#### Enforce Sugiama Scheme with the API
+#### Calling Sugiama Scheme
 
 There are two ways to ensure the Sugiyama Scheme. One way is to call
 
@@ -196,7 +196,26 @@ its type is not SugiamaLayoutSettings then a new SugiamaLayoutSettings() is crea
 
 MDS tries to place the graph on the two dimensional plane with the least distortion of the distances between the nodes. You can find more details on [Wikipedia](https://en.wikipedia.org/wiki/Multidimensional_scaling). The method disregards the directions of the edges. Pivot MDS, which is implemented in MSAGL, is a variant of MDS that uses only a subset of pivot nodes for the calculation, making it faster and suitable for large graphs. While MDS uses an n by n matrix for the distances between the nodes, where n is the number of nodes, Pivot MDS uses a k\*n matrix of the distances between each node and each of k pivot nodes. The implementation of Pivot MDS in the package follows [Eigensolver methods for progressive...](https://kops.uni-konstanz.de/bitstream/handle/123456789/5741/bp_empmdsld_06.pdf?sequence=1&isAllowed=y).
 
-Pivot MDS ignores the node sizes and tends to create layouts where the nodes overlap each other. That is why it is followed by an additional step of overlap removal with the algorithm of [GTree](https://arxiv.org/pdf/1608.02653). In addition, MDS does not route the nodes, so the edge routing is performed according to [Fast edge-routing for large graphs](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf).
+Pivot MDS ignores the node sizes and tends to create layouts where the nodes overlap each other. That is why it is followed by an additional step of overlap removal with the algorithm of [GTree](https://arxiv.org/pdf/1608.02653). Another additional step, because MDS does not route the edges, is edge routing which is described in [Fast edge-routing for large graphs](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf).
+
+#### Calling MDS
+
+Use
+
+```ts
+function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToken = null).
+```
+
+This will create default 'MDSLayoutSettings'.
+If the graph has several thousands node then the default settings might cause a slow run.
+Set IterationsWithMajorization to zero, to speed up.
+
+```ts
+const settings =
+  (new MDSLayoutSettings.settings.IterationsWithMajorization() = 0)
+```
+
+Each iteration with majorization step improves the node positions in a quadratic in the number of nodes time and can be sacrificed for the performance.
 
 ####
 
