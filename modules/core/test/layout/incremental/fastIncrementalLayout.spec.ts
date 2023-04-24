@@ -1,5 +1,5 @@
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {IPsepCola} from '../../../src/layout/incremental/iPsepCola'
+import {IPsepCola as IPSepCola} from '../../../src/layout/incremental/iPsepCola'
 import {IPsepColaSetting} from '../../../src/layout/incremental/iPsepColaSettings'
 import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
 import {sortedList} from '../sortedBySizeListOfgvFiles'
@@ -21,10 +21,10 @@ xtest('filclust', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   if (dg == null) return
   const gg = createGeometry(dg, measureTextSize)
-  const filSettings = new IPsepColaSetting()
-  filSettings.AvoidOverlaps = true
-  const fil = new IPsepCola(gg, filSettings, 2)
-  fil.run()
+  const setting = new IPsepColaSetting()
+  setting.AvoidOverlaps = true
+  const runner = new IPSepCola(gg, setting, 2)
+  runner.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/fil.svg', gg)
 })
 

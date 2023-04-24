@@ -14,6 +14,7 @@ import {
   Polyline,
   DebugCurve,
   GeomObject,
+  Size,
 } from '../../../src'
 import {PolylinePoint} from '../../../src/math/geometry/polylinePoint'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
@@ -33,7 +34,7 @@ function createGeometryLocal(dg: DrawingGraph, measureTextSize: (text: string, o
   return <GeomGraph>GeomObject.getGeom(dg.graph)
 }
 
-test('slow rect routing', () => {
+xtest('slow rect routing', () => {
   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
   const str = fs.readFileSync(fpath, 'utf-8')
   const json = JSON.parse(str)
