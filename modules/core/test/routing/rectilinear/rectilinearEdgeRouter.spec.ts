@@ -13,16 +13,35 @@ import {
   routeRectilinearEdges,
   Polyline,
   DebugCurve,
+  GeomObject,
 } from '../../../src'
 import {PolylinePoint} from '../../../src/math/geometry/polylinePoint'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {RectilinearEdgeRouter} from '../../../src/routing/rectilinear/RectilinearEdgeRouter'
 
 import {sortedList} from '../../layout/sortedBySizeListOfgvFiles'
-import {generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from '../../utils/testUtils'
-import {DrawingGraph} from '../../../../drawing/src'
+import {createGeometry, generateRandomGeomGraph, measureTextSize, runMDSLayoutNoSubgraphs} from '../../utils/testUtils'
+import {DrawingGraph, TextMeasurerOptions} from '../../../../drawing/src'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {DebugObject} from '../../../src/math/geometry/debugCurve'
+import * as path from 'path'
+import * as fs from 'fs'
+import {parseJSON} from '../../../../parser/src/dotparser'
+
+function createGeometryLocal(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
+  dg.createGeometry(measureTextSize)
+  return <GeomGraph>GeomObject.getGeom(dg.graph)
+}
+
+test('slow rect routing', () => {
+  const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
+  const str = fs.readFileSync(fpath, 'utf-8')
+  const json = JSON.parse(str)
+  const graph = parseJSON(json)
+  const rr = RectilinearEdgeRouter.constructorGNAN(GeomGraph.getGeom(graph), null, 1, 3)
+  rr.run()
+  //SvgDebugWriter.writeGeomGraph('./tmp/gameOfThrones.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+})
 
 test('two nodes rect', () => {
   const gg = new GeomGraph(new Graph('graph'))
