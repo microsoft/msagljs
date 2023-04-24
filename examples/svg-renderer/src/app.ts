@@ -14,7 +14,6 @@ const viewer = document.getElementById('viewer')
 viewer.setAttribute('style', 'touch-action: none;')
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
-
 const svgRenderer = new RendererSvg(viewer)
 const graphExamplesSelect = createDotGraphsSelect()
 let objectWithEditedLabel: Entity
