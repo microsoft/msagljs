@@ -130,8 +130,7 @@ We describe three methods of the layout that are implemented in the package.
 #### Short description of the method
 
 Sugiayama scheme sometimes is also called the hierarchical layout. It is meant for a directed graph. It organizes the nodes in horizontal layers and renders the edges following their direction.
-These conditions are possible to achieve for an acyclic graph. For a graph with cycles the method eliminates those.  
-There is a good article describing the layout at https://en.wikipedia.org/wiki/Layered_graph_drawing.
+There is an [article](https://en.wikipedia.org/wiki/Layered_graph_drawing.) describing the method.  
 The implementation in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
 
 #### Calling Sugiama Scheme
@@ -200,13 +199,11 @@ Pivot MDS ignores the node sizes and tends to create layouts where the nodes ove
 
 #### Calling MDS
 
-Use
-
+Calling
 ```ts
 function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToken = null).
 ```
-
-This will create default 'MDSLayoutSettings'.
+will create default 'MDSLayoutSettings' and calculate the layout.
 If the graph has several thousands node then the default settings might cause a slow run.
 Instead, create MDSLayoutSettings yourself and set IterationsWithMajorization to zero, to speed up.
 
@@ -218,28 +215,55 @@ geomGraph.layoutSettings = settings
 
 Each iteration with majorization step improves the node positions in a quadratic in the number of nodes time and can be sacrificed for the performance.
 
-####
-#IPSepCola 
-It is a variant of a force directed layout with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration.
-It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  See docs for CalculateLayout method (below) to see how to use it incrementally.
-The method is described in [IPSepCola](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/6715571_IPSep-CoLa_An_Incremental_Procedure_for_Separation_Constraint_Layout_of_Graphs/links/0fcfd5081c588735c8000000/IPSep-CoLa-An-Incremental-Procedure-for-Separation-Constraint-Layout-of-Graphs.pdf). Here IPSepCola start by applying MDS and then improves on it.
+### IPSepCola 
+It is a variant of a force directed layout with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration,
+ where n is the number of node in a graph.
+It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  
+The method is described in [IPSepCola](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/6715571_IPSep-CoLa_An_Incremental_Procedure_for_Separation_Constraint_Layout_of_Graphs/links/0fcfd5081c588735c8000000/IPSep-CoLa-An-Incremental-Procedure-for-Separation-Constraint-Layout-of-Graphs.pdf). In MSAGL IPSepCola starts by applying MDS and then improves on it.
 
 #### Calling IPSepCola
 ```ts
-const setting = new IPsepColaSetting()
+const settings = new IPsepColaSetting()
 /**
- * The third algorithm is the constraint level.
- * The value 2 of the constraint level means that the algorithm will try to satisfy most of the separation constraints, i.e. node separation, 
- * but it will also allow some flexibility for improving the layout quality. 
- * It is a moderate level of constraint enforcement that balances between strictness and aesthetics.
+ * The third parameter of the method is the constraint level.
+ * The value 2 of the constraint level means that the algorithm will try to satisfy most of the separation constraints, i.e. node separation.
  */
-const runner = new IPSepCola(gg, setting, 2)
+const runner = new IPSepCola(geomGraph, settings, 2)
 runner.run()  
 ```
 ### How the default layout works
-When 'layoutGeomGraph()' is called for a GeomGraph with undefined layout setting then the layout 
-is defined by the following logic. If the graph is directed and the number of nodes in the graph is not greater than 2000, and the number of edges in the graph is not greater than 4000
+When 'layoutGeomGraph()' is called for a GeomGraph with undefined layout settings then a layout is  
+chosen by the following logic: If the graph is directed, and the number of nodes in the graph is not greater than 2000, and the number of edges in the graph is not greater than 4000
 then the Sugiyama Scheme is called. Otherwise, IPSepCola is called.
+
+Graph is directed, for MSAGL, if it has at least one directed edge, and edge e is directed if e.sourceArrowhead or e.targetArrowhead is not null.
+## Edge routing
+There are following edge routing modes 
+```ts
+export enum EdgeRoutingMode {
+  Spline,
+
+  SplineBundling,
+
+  StraightLine,
+
+  SugiyamaSplines,
+
+  Rectilinear,
+
+  RectilinearToCenter,
+
+  None,
+}
+```
+This mode can be set as follows
+```ts 
+const ss = new MdsLayoutSettings()
+// any other layout setting will also work
+ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
+```
+'SugiyamaSpline' is used only with the Sugiyama Scheme. The rest of the modes can be used with any layout. If the mode is None the edges are not routed. 
+
 
 ## Renderer with Deck.gl
 
