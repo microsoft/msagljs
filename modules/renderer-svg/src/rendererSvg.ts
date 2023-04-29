@@ -37,6 +37,7 @@ export class RendererSvg implements IViewer {
   sourcePortLocatiton: Point
   targetPortLocatiton: Point
   keyDownListener: (e: KeyboardEvent) => void
+  container: HTMLElement
   addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
     this.keyDownListener = callback
   }
@@ -166,6 +167,7 @@ export class RendererSvg implements IViewer {
   }
 
   constructor(container: HTMLElement = document.body) {
+    this.container = container
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
@@ -184,7 +186,7 @@ export class RendererSvg implements IViewer {
     container.addEventListener('pointerup', (e) => {
       if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
-      this.panZoom.resume()
+      if (this.panZoom) this.panZoom.resume()
     })
 
     this.layoutEditor = new LayoutEditor(this)
@@ -304,14 +306,17 @@ export class RendererSvg implements IViewer {
     if (this.panZoom) {
       this.panZoom.dispose()
     }
-    this.panZoom = panZoom(this._svgCreator.svg, {
+    this.panZoom = panZoom(this._svgCreator.superTransGroup, {
       onTouch: () => {
         // `e` - is the current touch event.
 
         return false // tells the library to not preventDefault.
       },
     })
-    this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
+    //this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
+    this.panZoom.showRectangle(this._svgCreator.getShowRect())
+    //   console.log(this._svgCreator.svg.getBoundingClientRect())
+
     this.layoutEditor.viewerGraphChanged()
     if (this.graph.deepEdgesCount > 2000 && this.graph.nodeCountDeep > 1000) {
       this.layoutEditingEnabled = false

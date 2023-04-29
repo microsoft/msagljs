@@ -458,6 +458,7 @@ export class LayoutEditor {
   }
 
   MouseDownPointAndMouseUpPointsAreFarEnoughOnScreen(e: PointerEvent): boolean {
+    if (this.mouseDownScreenPoint == null) return false
     const x: number = e.clientX
     const y: number = e.clientY
     const dx: number = (this.mouseDownScreenPoint.x - x) / this.viewer.DpiX
