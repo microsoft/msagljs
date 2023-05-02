@@ -22,7 +22,6 @@ import {
 import {SvgCreator, SvgViewerObject} from './svgCreator'
 import {graphToJSON} from '@msagl/parser'
 import {IViewer, LayoutEditor, viewerObj, InsertionMode} from '@msagl/drawing'
-import {default as panZoom, PanZoom} from 'panzoom'
 import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/renderer-common'
 
 function svgViewerObj(ent: Entity): SvgViewerObject {
@@ -50,7 +49,6 @@ export class RendererSvg implements IViewer {
       }
     }
   }
-  panZoom: PanZoom
 
   get smoothedPolylineRadiusWithNoScale(): number {
     return this.Dpi * 0.05
@@ -172,7 +170,7 @@ export class RendererSvg implements IViewer {
 
     container.addEventListener('pointerdown', (e) => {
       if (this.layoutEditor.viewerMouseDown(this, e)) {
-        this.panZoom.pause()
+        // no panZoom
       }
     })
 
@@ -184,9 +182,8 @@ export class RendererSvg implements IViewer {
     container.addEventListener('pointerup', (e) => {
       if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
-      this.panZoom.resume()
     })
-
+    container.addEventListener('wheel', (e) => this._svgCreator.handleMouseWheel(e))
     this.layoutEditor = new LayoutEditor(this)
   }
   private _insertionMode: InsertionMode
@@ -301,17 +298,7 @@ export class RendererSvg implements IViewer {
     if (!this._graph) return
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
-    if (this.panZoom) {
-      this.panZoom.dispose()
-    }
-    this.panZoom = panZoom(this._svgCreator.svg, {
-      onTouch: () => {
-        // `e` - is the current touch event.
-
-        return false // tells the library to not preventDefault.
-      },
-    })
-    this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
+    // this._svgCreator.open()
     this.layoutEditor.viewerGraphChanged()
     if (this.graph.deepEdgesCount > 2000 && this.graph.nodeCountDeep > 1000) {
       this.layoutEditingEnabled = false

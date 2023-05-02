@@ -143,8 +143,8 @@ export class SvgCreator {
     const entity = objectToInvalidate.entity
     if (entity instanceof Graph) {
       if (entity.parent == null) {
-        this.setGraphWidthAndHightAttributes()
-        this.setTransformForTranformGroup()
+        // this.setGraphWidthAndHightAttributes()
+        // this.setTransformForTranformGroup()
       } else {
         this.drawNode(entity)
       }
@@ -177,6 +177,26 @@ export class SvgCreator {
     this.container = container
   }
 
+  //
+
+  // Add a method to update the root transform on the mouse wheel rotation
+  handleMouseWheel(event) {
+    const delta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail))
+    const scaleDelta = 1 + delta * 0.1 // adjust the scale based on the delta value
+
+    // get the current transform attribute of the this.svg element
+    const currentTransform = this.svg.getAttribute('transform')
+    const scale = parseFloat(currentTransform.match(/scale\(([^)]+)\)/)[1])
+    const translateXMatch = currentTransform.match(/translate\(([^)]+)\)/)
+    const translateYMatch = currentTransform.match(/translate\([^,]+,([^)]+)\)/)
+    const translateX = translateXMatch ? parseFloat(translateXMatch[1]) : 0
+    const translateY = translateYMatch ? parseFloat(translateYMatch[1]) : 0
+    // calculate the new scale and update the transform attribute
+    const newScale = scale * scaleDelta
+    const newTransform = `translate(${translateX}, ${translateY}) scale(${newScale})`
+    this.svg.setAttribute('transform', newTransform)
+  }
+
   private clearContainer() {
     while (this.container.childNodes.length > 0) this.container.removeChild(this.container.firstChild)
   }
@@ -190,7 +210,6 @@ export class SvgCreator {
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
 
-    this.open()
     this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
     // After the y flip the top has moved to -top : translating it to zero
@@ -202,6 +221,7 @@ export class SvgCreator {
       this.drawEdge(edge)
       this.drawEdgeLabel(edge.label)
     }
+    this.open()
   }
   private setTransformForTranformGroup() {
     this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
@@ -466,14 +486,15 @@ export class SvgCreator {
   }
 
   private open() {
-    this.setGraphWidthAndHightAttributes()
-  }
+    const geomBBox = this.geomGraph.boundingBox
+    // @ts-ignore
+    const containerBBox = this.svg.getBBox()
+    const scale = Math.min(containerBBox.width / geomBBox.width, containerBBox.height / geomBBox.height)
+    const translateX = (containerBBox.width - geomBBox.width * scale) / 2
+    const translateY = (containerBBox.height - geomBBox.height * scale) / 2
 
-  private setGraphWidthAndHightAttributes() {
-    this.svg.setAttribute('viewBox', this.getViewBoxString())
-  }
-  getViewBoxString(): string {
-    return String.Format('0 0 {0} {1}', this.geomGraph.width, this.geomGraph.height)
+    this.svg.setAttribute('transform', `translate(${translateX}, ${translateY}) scale(${scale})`)
+    this.svg.setAttribute('viewBox', `0 0 ${geomBBox.width} ${geomBBox.height}`)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
