@@ -160,11 +160,11 @@ export class SvgCreator {
   }
 
   getSvgString(): string {
-    if (this.svg == null) return null
-    return new XMLSerializer().serializeToString(this.svg)
+    if (this.root == null) return null
+    return new XMLSerializer().serializeToString(this.root)
   }
   static arrowAngle = 25
-  svg: SVGElement
+  root: SVGElement
   transformGroup: SVGElement
   graph: Graph
   get geomGraph(): GeomGraph {
@@ -180,12 +180,12 @@ export class SvgCreator {
   //
 
   // Add a method to update the root transform on the mouse wheel rotation
-  handleMouseWheel(event) {
+  handleMouseWheel(event: PointerEvent) {
     const delta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail))
     const scaleDelta = 1 + delta * 0.1 // adjust the scale based on the delta value
 
     // get the current transform attribute of the this.svg element
-    const currentTransform = this.svg.getAttribute('transform')
+    const currentTransform = this.root.getAttribute('transform')
     const scale = parseFloat(currentTransform.match(/scale\(([^)]+)\)/)[1])
     const translateXMatch = currentTransform.match(/translate\(([^)]+)\)/)
     const translateYMatch = currentTransform.match(/translate\([^,]+,([^)]+)\)/)
@@ -194,7 +194,7 @@ export class SvgCreator {
     // calculate the new scale and update the transform attribute
     const newScale = scale * scaleDelta
     const newTransform = `translate(${translateX}, ${translateY}) scale(${newScale})`
-    this.svg.setAttribute('transform', newTransform)
+    this.root.setAttribute('transform', newTransform)
   }
 
   private clearContainer() {
@@ -208,9 +208,9 @@ export class SvgCreator {
     this.clearContainer()
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
-    this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
+    this.root = this.createAndBindWithGraph(graph, 'svg', this.container)
 
-    this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
+    this.root.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
     // After the y flip the top has moved to -top : translating it to zero
     this.setTransformForTranformGroup()
@@ -229,8 +229,8 @@ export class SvgCreator {
 
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
-    if (!this.svg) return PlaneTransformation.getIdentity()
-    const tr = (this.svg as SVGGraphicsElement).getScreenCTM()
+    if (!this.root) return PlaneTransformation.getIdentity()
+    const tr = (this.root as SVGGraphicsElement).getScreenCTM()
     const m = new PlaneTransformation(tr.a, tr.b, tr.e, tr.c, tr.d, tr.f)
     const flip = new PlaneTransformation(1, 0, -this.geomGraph.left, 0, -1, this.geomGraph.top)
     // first we apply flip then m
@@ -239,7 +239,7 @@ export class SvgCreator {
 
   getScale(): number {
     try {
-      return (this.svg as SVGGraphicsElement).getScreenCTM().a
+      return (this.root as SVGGraphicsElement).getScreenCTM().a
     } catch (error) {
       return 1
     }
@@ -488,13 +488,13 @@ export class SvgCreator {
   private open() {
     const geomBBox = this.geomGraph.boundingBox
     // @ts-ignore
-    const containerBBox = this.svg.getBBox()
+    const containerBBox = this.root.getBBox()
     const scale = Math.min(containerBBox.width / geomBBox.width, containerBBox.height / geomBBox.height)
     const translateX = (containerBBox.width - geomBBox.width * scale) / 2
     const translateY = (containerBBox.height - geomBBox.height * scale) / 2
 
-    this.svg.setAttribute('transform', `translate(${translateX}, ${translateY}) scale(${scale})`)
-    this.svg.setAttribute('viewBox', `0 0 ${geomBBox.width} ${geomBBox.height}`)
+    this.root.setAttribute('transform', `translate(${translateX}, ${translateY}) scale(${scale})`)
+    this.root.setAttribute('viewBox', `0 0 ${geomBBox.width} ${geomBBox.height}`)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {

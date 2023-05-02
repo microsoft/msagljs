@@ -36,6 +36,9 @@ export class RendererSvg implements IViewer {
   sourcePortLocatiton: Point
   targetPortLocatiton: Point
   keyDownListener: (e: KeyboardEvent) => void
+  isPanning: boolean
+  prevX: number
+  prevY: number
   addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
     this.keyDownListener = callback
   }
@@ -98,7 +101,32 @@ export class RendererSvg implements IViewer {
   //   this._objectTree = value
   // }
 
+  handleMouseMove(event: PointerEvent) {
+    if (this.isPanning) {
+      const currentTransform = this._svgCreator.root.getAttribute('transform')
+      const translateXMatch = currentTransform.match(/translate\(([^)]+)\)/)
+      const translateYMatch = currentTransform.match(/translate\([^,]+,([^)]+)\)/)
+      const translateX = translateXMatch ? parseFloat(translateXMatch[1]) : 0
+      const translateY = translateYMatch ? parseFloat(translateYMatch[1]) : 0
+
+      const deltaX = event.clientX - this.prevX
+      const deltaY = event.clientY - this.prevY
+      const scale = getScaleFromTransform(currentTransform)
+      const newTranslateX = translateX + deltaX / scale
+      const newTranslateY = translateY + deltaY / scale
+
+      const newTransform = `translate(${newTranslateX}, ${newTranslateY}) scale(${scale})`
+      this._svgCreator.root.setAttribute('transform', newTransform)
+
+      this.prevX = event.clientX
+      this.prevY = event.clientY
+    }
+  }
+
   private processMouseMove(e: PointerEvent): void {
+    if (this.isPanning) {
+      this.handleMouseMove(e)
+    }
     this.mousePosition = new Point(e.clientX, e.clientY)
 
     if (this == null || this._svgCreator == null) {
@@ -171,6 +199,10 @@ export class RendererSvg implements IViewer {
     container.addEventListener('pointerdown', (e) => {
       if (this.layoutEditor.viewerMouseDown(this, e)) {
         // no panZoom
+      } else {
+        this.isPanning = true
+        this.prevX = e.clientX
+        this.prevY = e.clientY
       }
     })
 
@@ -182,6 +214,7 @@ export class RendererSvg implements IViewer {
     container.addEventListener('pointerup', (e) => {
       if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
+      this.isPanning = false
     })
     container.addEventListener('wheel', (e) => this._svgCreator.handleMouseWheel(e))
     this.layoutEditor = new LayoutEditor(this)
@@ -529,4 +562,9 @@ function isRemoved(entity: Entity): boolean {
     }
     return false
   }
+}
+
+function getScaleFromTransform(transform: string) {
+  const match = transform.match(/scale\(([^)]+)\)/)
+  return match ? parseFloat(match[1]) : 1
 }
