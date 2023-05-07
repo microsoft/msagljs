@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-MSAGL-JS[https://github.com/microsoft/msagljs] is a JavaScript implementation of several graph layout algorithms together with viewer and editor components. In most parts is a port of .NET layout engine [MSAGL](https://github.com/microsoft/automatic-graph-layout). MSAGL-JS is currently under development and it comprises the following modules:
+[MSAGL-JS](https://github.com/microsoft/msagljs) is a JavaScript implementation of several graph layout algorithms together with graph viewer and editor components. In most parts is a port of .NET layout engine [MSAGL](https://github.com/microsoft/automatic-graph-layout). MSAGL-JS is currently under development and it comprises the following modules:
 
 - `@msagl/core`: the core graph data structures and layout engine
 - `@msagl/parser`: convert common formats to MSAGL Graph instances
