@@ -147,7 +147,7 @@ function layoutGraphWithSugiayma(
 
 The first parameter of the function is the graph under layout, the second is cancelToken to enable the method cancellation. The third argument, transformToScreen, when set to true will cause the geometry flip around the x-axis: transformation of the graph geometry by mapping (x,y) to (x, -y) and then shifting the graph into the first quadrand of the plane with the left-bottom of the graph at (0,0). The cancellation token is ignored by now, so null can be used for it.
 
-Another method is to use property
+Another method is to use property GeometryGraph.layoutSettings.
 
 ```ts
 geomGraph.layoutSettings = new SugiyamaLayoutSettings()
@@ -200,9 +200,11 @@ Pivot MDS ignores the node sizes and tends to create layouts where the nodes ove
 #### Calling MDS
 
 Calling
+
 ```ts
 function layoutGraphWithMds(geomGraph: GeomGraph, cancelToken: CancelToken = null).
 ```
+
 will create default 'MDSLayoutSettings' and calculate the layout.
 If the graph has several thousands node then the default settings might cause a slow run.
 Instead, create MDSLayoutSettings yourself and set IterationsWithMajorization to zero, to speed up.
@@ -215,13 +217,15 @@ geomGraph.layoutSettings = settings
 
 Each iteration with majorization step improves the node positions in a quadratic in the number of nodes time and can be sacrificed for the performance.
 
-### IPSepCola 
+### IPSepCola
+
 It is a variant of a force directed layout with approximate computation of long-range node-node repulsive forces to achieve O(n log n) running time per iteration,
- where n is the number of node in a graph.
+where n is the number of node in a graph.
 It can be invoked on an existing layout (for example, as computed by MDS) to beautify it.  
 The method is described in [IPSepCola](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/6715571_IPSep-CoLa_An_Incremental_Procedure_for_Separation_Constraint_Layout_of_Graphs/links/0fcfd5081c588735c8000000/IPSep-CoLa-An-Incremental-Procedure-for-Separation-Constraint-Layout-of-Graphs.pdf). In MSAGL IPSepCola starts by applying MDS and then improves on it.
 
 #### Calling IPSepCola
+
 ```ts
 const settings = new IPsepColaSetting()
 /**
@@ -229,16 +233,21 @@ const settings = new IPsepColaSetting()
  * The value 2 of the constraint level means that the algorithm will try to satisfy most of the separation constraints, i.e. node separation.
  */
 const runner = new IPSepCola(geomGraph, settings, 2)
-runner.run()  
+runner.run()
 ```
+
 ### How the default layout works
+
 When 'layoutGeomGraph()' is called for a GeomGraph with undefined layout settings then a layout is  
 chosen by the following logic: If the graph is directed, and the number of nodes in the graph is not greater than 2000, and the number of edges in the graph is not greater than 4000
 then the Sugiyama Scheme is called. Otherwise, IPSepCola is called.
 
 Graph is directed, for MSAGL, if it has at least one directed edge, and edge e is directed if e.sourceArrowhead or e.targetArrowhead is not null.
+
 ## Edge routing
-There are following edge routing modes 
+
+There are following edge routing modes
+
 ```ts
 export enum EdgeRoutingMode {
   Spline,
@@ -256,14 +265,16 @@ export enum EdgeRoutingMode {
   None,
 }
 ```
+
 This mode can be set as follows
-```ts 
+
+```ts
 const ss = new MdsLayoutSettings()
 // any other layout setting will also work
 ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
 ```
-'SugiyamaSpline' is used only with the Sugiyama Scheme. The rest of the modes can be used with any layout. If the mode is None the edges are not routed. 
 
+'SugiyamaSpline' is used only with the Sugiyama Scheme. The rest of the modes can be used with any layout. If the mode is None the edges are not routed.
 
 ## Renderer with Deck.gl
 
