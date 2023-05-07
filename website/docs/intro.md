@@ -4,12 +4,12 @@ sidebar_position: 1
 
 # Introduction
 
-`@msagl/core` is a JavaScript implementation of advanced graph layout algorithms. It is a port of .NET layout engine [MSAGL](https://github.com/microsoft/automatic-graph-layout). `@msagl/core` is currently under development and it comprises the following modules:
+MSAGL-JS[https://github.com/microsoft/msagljs] is a JavaScript implementation of several graph layout algorithms together with viewer and editor components. In most parts is a port of .NET layout engine [MSAGL](https://github.com/microsoft/automatic-graph-layout). MSAGL-JS is currently under development and it comprises the following modules:
 
 - `@msagl/core`: the core graph data structures and layout engine
 - `@msagl/parser`: convert common formats to MSAGL Graph instances
 - `@msagl/renderer-webgl`: a WebGL-powered rendering component
 - `@msagl/renderer-svg`: an SVG-powered rendering component
 
-To browse a large graph please use [the Web-GL example](https://microsoft.github.io/msagljs/renderer-webgl/index.html),
-and for browsing and editing a smaller graph use [the SVG example](https://microsoft.github.io/msagljs/renderer-svg/index.html)
+To browse a large graph please use [Web-GL renderer example](https://microsoft.github.io/msagljs/renderer-webgl/index.html),
+and to browse and to edit a smaller graph use [SVG-renderer example](https://microsoft.github.io/msagljs/renderer-svg/index.html)
