@@ -147,10 +147,8 @@ export class SvgCreator {
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
     if (entity instanceof Graph) {
-      if (entity.parent == null) {
-        this.setGraphWidthAndHightAttributes()
-        this.setTransformForTranformGroup()
-      } else {
+      if (entity.parent) {
+        // ignore the root graph
         this.drawNode(entity)
       }
     } else if (entity instanceof Node) {
@@ -196,7 +194,6 @@ export class SvgCreator {
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
 
-    this.open()
     this.superTransGroup = document.createElementNS(svgns, 'g')
     this.superTransGroup.setAttribute('transform', 'matrix(1,0,0,1, 0, 0)')
     this.svg.appendChild(this.superTransGroup)
@@ -474,14 +471,6 @@ export class SvgCreator {
     }
   }
 
-  private open() {
-    this.setGraphWidthAndHightAttributes()
-  }
-
-  private setGraphWidthAndHightAttributes() {
-    const bbox = this.svg.getBoundingClientRect()
-    this.svg.setAttribute('viewBox', this.getViewBoxString(bbox))
-  }
   getViewBoxString(bbox: DOMRect): string {
     return String.Format('0 0 {0} {1}', bbox.width, bbox.height)
   }

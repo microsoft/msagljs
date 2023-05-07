@@ -313,7 +313,7 @@ export class RendererSvg implements IViewer {
         return false // tells the library to not preventDefault.
       },
     })
-    //this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
+
     this.panZoom.showRectangle(this._svgCreator.getShowRect())
     //   console.log(this._svgCreator.svg.getBoundingClientRect())
 
@@ -367,6 +367,8 @@ export class RendererSvg implements IViewer {
     if (this.graph !== objectToInvalidate.entity && isRemoved(objectToInvalidate.entity)) {
       const svgElem = (objectToInvalidate.entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject).svgData
       svgElem.remove()
+    } else if (this.graph == objectToInvalidate.entity) {
+      this.panZoom.showRectangle(this._svgCreator.getShowRect())
     } else {
       this._svgCreator.invalidate(objectToInvalidate)
     }
