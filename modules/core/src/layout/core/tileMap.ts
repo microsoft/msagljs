@@ -607,16 +607,13 @@ export class TileMap {
     }
     const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
     const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
-    cycleOverAllCurveClipsAboveTile()
+    subdivideWithCachedClipsAboveTile()
     for (const tile of levelTiles.values()) {
       if (tile.entityCount > this.tileCapacity) return false
     }
     return true
 
     // local functions
-    function cycleOverAllCurveClipsAboveTile() {
-      subdivideWithCachedClipsAboveTile()
-    }
     function subdivideWithCachedClipsAboveTile() {
       //create temparary PointPairMap to store the result of the intersection
       // each entry in the map is an array of curves corresponding to the intersections with one subtile
@@ -627,13 +624,12 @@ export class TileMap {
         const xs = intersectWithMiddleLines(cs)
 
         Assert.assert(xs.length >= 2)
-        for (let u = 0; u < xs.length - 1; u++) {
-          const t = (xs[u][1] + xs[u + 1][1]) / 2
+        if(xs.length==2){
+          const t = (xs[0][1] + xs[1][1]) / 2
           const p = cs.value(t)
           const i = p.x <= left + w ? 0 : 1
           const j = p.y <= bottom + h ? 0 : 1
           const k = 2 * i + j
-          const tr = xs.length > 2 ? cs.trim(xs[u][1], xs[u + 1][1]) : cs
           const key = keys[k]
           let tile = levelTiles.getI(key)
           if (!tile) {
@@ -642,7 +638,27 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          const edgeArray = tile.addToBundlesOrFetchFromBundles(tr)
+          const edgeArray = tile.addToBundlesOrFetchFromBundles(cs.parStart, cs.parEnd, cs)
+          for (const edge of bundle.edges) {
+            edgeArray.push(edge)
+          }
+        } else
+        for (let u = 0; u < xs.length - 1; u++) {
+          const t = (xs[u][1] + xs[u + 1][1]) / 2
+          const p = cs.value(t)
+          const i = p.x <= left + w ? 0 : 1
+          const j = p.y <= bottom + h ? 0 : 1
+          const k = 2 * i + j
+          //const tr = cs.trim(xs[u][1], xs[u + 1][1]) 
+          const key = keys[k]
+          let tile = levelTiles.getI(key)
+          if (!tile) {
+            const l = left + i * w
+            const b = bottom + j * h
+            tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
+            levelTiles.setPair(key, tile)
+          }
+          const edgeArray = tile.addToBundlesOrFetchFromBundles(xs[u][1], xs[u + 1][1], cs)
           for (const edge of bundle.edges) {
             edgeArray.push(edge)
           }

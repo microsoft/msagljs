@@ -37,17 +37,19 @@ export class Tile {
     this.rect = rect
     this.bundleTable = new PointPairMap<Bundle>()
   }
-  /** returns an array for edges passing through the curve */
-  addToBundlesOrFetchFromBundles(clip: ICurve): Edge[] {
-    Assert.assert(!(clip instanceof Curve), 'CurveClip.curve is not a Curve')
+  /**
+   *  
+   * returns the array of edges passing through the curve */
+  addToBundlesOrFetchFromBundles(s:number, e:number, curveToClip: ICurve): Edge[] {
+    Assert.assert(!(curveToClip instanceof Curve), 'CurveClip.curve is not a Curve')
 
-    const pp = new PointPair(clip.start, clip.end)
+    const pp = new PointPair(curveToClip.value(s), curveToClip.value(e))
     const bundle = this.bundleTable.get(pp)
     if (bundle) {
       return bundle.edges
     }
     const ret: Edge[] = []
-    this.bundleTable.set(new PointPair(clip.start, clip.end), {clip: clip, edges: ret})
+    this.bundleTable.set(pp, {clip: curveToClip.trim(s,e), edges: ret})
     return ret
   }
 
