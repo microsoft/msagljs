@@ -7,7 +7,7 @@ sidebar_position: 4
 ## Use the layout engine directly
 
 When you interact with a renderer, many details are hidden under the hood.
-Here, to show how to call the engine directly
+Here we show how to call the engine directly
 
 ### Create a geometry graph and call the default layout
 
@@ -71,8 +71,8 @@ new Edge(b, c)
 ```
 
 creates an instance of class Edge and adds it to b.outEdges and c.inEdges.
-This way the edge the edge is attached to the graph.
-For the engine to run the layout, the nodes geometry is needed. For this examples we create circular nodes.
+This way the edge is attached to the graph.
+For the engine to run the layout, each node has to have node.boundaryCurve defined. In this examples we create circular nodes.
 
 ```ts
 // create a geometry node gb
@@ -84,7 +84,7 @@ The two lines above create a GeomNode, gb, corresponding to node 'b',
 which is actually an Attribute that is stored in the array of attributes of node 'b'.
 The code also sets the boundary curve describing the shape of 'gb': in this case it is
 a circle with the radius of length 20 and the center at the origin of the plane. The layout might transform the
-curve later by changing the circle center. We also need to create geometry attributes for each element of the graph
+curve later by changing the circle center. In general, the layout does not depend on the node.boundaryCurve initial positions. We create geometry attributes for each element of the graph
 to interact with the layout, and, finally, call the layout engine. Below the whole working example.
 
 ```ts build
