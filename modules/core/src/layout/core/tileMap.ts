@@ -28,6 +28,11 @@ export function tileIsEmpty(sd: Tile): boolean {
 //const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
+  /** returns a number k >= 1, not necceserily an integer. If 1 is returned, that means no change. 
+   * If k > 1 is returned than it is safe to scale up the node k-times
+   * z is the zoom level */ 
+  additionalNodeScale:(n:Node, z:number)=>number
+  private nodeScales:Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */

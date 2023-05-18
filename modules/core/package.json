@@ -28,7 +28,8 @@
     "queue-typescript": "^1.0.1",
     "reliable-random": "^0.0.1",
     "stack-typescript": "^1.0.4",
-    "typescript-string-operations": "^1.4.1"
+    "typescript-string-operations": "^1.4.1",
+    "hilbert-rtree": "^2.0.2"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }

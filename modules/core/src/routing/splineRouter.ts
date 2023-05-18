@@ -8,7 +8,7 @@ import {Curve, CurveFactory, ICurve, LineSegment, PointLocation, Polyline, Recta
 import {PolylinePoint} from '../math/geometry/polylinePoint'
 import {closeDistEps} from '../utils/compare'
 import {PointSet} from '../utils/PointSet'
-import {RTree} from '../math/geometry/RTree/rTree'
+import {BinaryRTree} from '../math/geometry/RTree/rTree'
 import {LineSweeper} from './spline/coneSpanner/LineSweeper'
 import {VisibilityGraph} from './visibility/VisibilityGraph'
 import {TightLooseCouple} from './TightLooseCouple'
@@ -94,7 +94,7 @@ export class SplineRouter extends Algorithm {
   portsToShapes: Map<Port, Shape>
   portsToEnterableShapes: Map<Port, Set<Shape>>
 
-  portRTree: RTree<Point, Point>
+  portRTree: BinaryRTree<Point, Point>
 
   looseRoot: Shape
 
