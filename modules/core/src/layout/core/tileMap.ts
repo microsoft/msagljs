@@ -15,6 +15,8 @@ import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
 import {Assert} from '../../utils/assert'
+import {RTree} from 'hilbert-rtree/build'
+
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
@@ -28,11 +30,35 @@ export function tileIsEmpty(sd: Tile): boolean {
 //const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
-  /** returns a number k >= 1, not necceserily an integer. If 1 is returned, that means no change. 
+  sortedNodes: Node[]
+  numberOfNodesOnLevel: number[] = []
+  /** returns a number k >= 1, not necceserily an integer. If 1 is returned, that means no change.
    * If k > 1 is returned than it is safe to scale up the node k-times
-   * z is the zoom level */ 
-  additionalNodeScale:(n:Node, z:number)=>number
-  private nodeScales:Map<Node, number>[] = []
+   * z is the zoom level */
+  additionalNodeScale(n: Node, z: number) {
+    const zflo = Math.floor(z)
+    const zn = zflo + 1
+    let scalesOnLevel = this.nodeScales[zflo]
+    let floorScale = 1
+    if (scalesOnLevel) {
+      const t = scalesOnLevel.get(n)
+      if (t) {
+        floorScale = t
+      }
+    }
+
+    let nextScale = 1
+    scalesOnLevel = this.nodeScales[zn]
+    if (scalesOnLevel) {
+      const t = scalesOnLevel.get(n)
+      if (t) {
+        nextScale = t
+      }
+    }
+
+    return floorScale + (z - zflo) * nextScale
+  }
+  private nodeScales: Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
@@ -148,16 +174,17 @@ export class TileMap {
         break
       }
     }
-    const sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
-    for (let i = 0; i < sortedNodes.length; i++) {
-      this.nodeIndexInSortedNodes.set(sortedNodes[i], i)
+    this.sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
+    for (let i = 0; i < this.sortedNodes.length; i++) {
+      this.nodeIndexInSortedNodes.set(this.sortedNodes[i], i)
     }
 
     // filter out entities that are not visible on lower layers.
     // do not filter the uppermost layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      this.filterOutEntities(this.levels[i], sortedNodes, i)
+      this.numberOfNodesOnLevel.push(this.filterOutEntities(this.levels[i], i))
     }
+    this.numberOfNodesOnLevel.push(this.sortedNodes.length)
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
@@ -171,10 +198,153 @@ export class TileMap {
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
-    this.calculateNodeRank(sortedNodes)
+    this.calculateNodeRank()
+    this.makeSomeNodesVizible()
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
+  private makeSomeNodesVizible() {
+    for (let levelIndex = 0; levelIndex < this.levels.length - 1; levelIndex++) {
+      this.calculateNodeAdditionalScales(levelIndex)
+    }
+  }
+  calculateNodeAdditionalScalesOnLevelZero() {
+    const tree = new RTree()
+    // we always get at least one intersection with the whole graph record
+    tree.batchInsert([
+      {
+        x: this.geomGraph.left,
+        y: this.geomGraph.bottom,
+        width: this.geomGraph.width,
+        height: this.geomGraph.height,
+        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+      },
+    ]) // to init with the whol
+    const scales = new Map<Node, number>()
+    this.nodeScales.push(scales)
+    // with this scale the node will be rendered at level[this.level.length -1]
+    let scale = Math.pow(2, this.levels.length - 1)
+    for (let j = 0; j < this.numberOfNodesOnLevel[0]; j++) {
+      const n = this.sortedNodes[j]
+
+      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+      if (scale < 1.1) break // getting almost no enlargement
+      scales.set(n, scale)
+    }
+  }
+
+  findMaxScaleToNotIntersectTree(n: Node, tree: RTree, maxScale: number): number {
+    const geomNode = GeomNode.getGeom(n)
+    let nodeBB = geomNode.boundingBox
+    // make sure that we are not rendering the node outside of  the the graph bounding box
+    maxScale = Math.min(this.keepInsideGraphBoundingBox(nodeBB), maxScale)
+
+    const ret = this.intersectWithTreeAndGetScale(tree, nodeBB, maxScale)
+    // use the resulting bounding box and insert it to the tree
+    nodeBB = geomNode.boundingBox.clone()
+    nodeBB.scaleAroundCenter(ret)
+    tree.insert({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height, data: {node: n, nodeBB: nodeBB}})
+    return ret
+  }
+  /** returns the maximal scale keeping nodeBB inside of the graph bounding box */
+  private keepInsideGraphBoundingBox(nodeBB: Rectangle): number {
+    const graphBB = this.geomGraph.boundingBox
+    const w = nodeBB.width / 2
+    const h = nodeBB.height / 2
+
+    const keepInsideScale = Math.min(
+      // left stays inside
+      (nodeBB.center.x - graphBB.left) / w,
+      // top stays inside
+      (graphBB.top - nodeBB.center.y) / h,
+      // right stays inside
+      (graphBB.right - nodeBB.center.x) / w,
+      //bottom stays inside
+      (nodeBB.center.y - graphBB.bottom) / h,
+    )
+    return keepInsideScale
+  }
+
+  intersectWithTreeAndGetScale(tree: RTree, nodeBB: Rectangle, maxScale: number): number {
+    const xx = tree.search({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height}) as {
+      node: Node
+      nodeBB: Rectangle
+    }[]
+    if (xx.length == 1) return maxScale // there is always one intersection with the whole graph
+    let scale = maxScale
+    for (const x of xx) {
+      if (x.node == this.geomGraph.graph) continue
+      scale = this.diminishScaleToAvoidTree(x.node, x.nodeBB, nodeBB)
+      if (scale == 1) return scale // no separation
+    }
+    return scale
+  }
+  diminishScaleToAvoidTree(intersectedNode: Node, intersectedRect: Rectangle, nodeBB: Rectangle): number {
+    Assert.assert(intersectedRect.intersects(nodeBB))
+
+    let scaleX: number
+    const x = nodeBB.center.x
+    const y = nodeBB.center.y
+    const h = nodeBB.height / 2
+    const w = nodeBB.width / 2
+    if (x < intersectedRect.left) {
+      scaleX = (intersectedRect.left - x) / h
+    } else if (x > intersectedRect.right) {
+      scaleX = (x - intersectedRect.right) / h
+    } else {
+      return 1
+    }
+
+    let scaleY: number
+    if (y < intersectedRect.bottom) {
+      scaleY = (intersectedRect.bottom - y) / w
+    } else if (y > intersectedRect.top) {
+      scaleY = (y - intersectedRect.top) / w
+    } else {
+      return scaleX
+    }
+
+    return Math.min(scaleX, scaleY)
+  }
+
+  calculateNodeAdditionalScales(levelIndex: number) {
+    const tree = new RTree()
+    // we always get at least one intersection with the whole graph record
+    tree.batchInsert([
+      {
+        x: this.geomGraph.left,
+        y: this.geomGraph.bottom,
+        width: this.geomGraph.width,
+        height: this.geomGraph.height,
+        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+      },
+    ]) // to init with the whole graph bounding box
+    const scales = new Map<Node, number>()
+    this.nodeScales.push(scales)
+    let scale = Math.pow(2, this.levels.length - 1 - levelIndex)
+    for (let j = 0; j < this.numberOfNodesOnLevel[levelIndex]; j++) {
+      const n = this.sortedNodes[j]
+      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+      if (scale <= 1) break
+      scales.set(n, scale)
+    }
+  }
+
+  findMaxScale(n: Node, levelIndex: number, tree: RTree, maxScale: number): number {
+    const geomNode = GeomNode.getGeom(n)
+    let boundingBox = geomNode.boundingBox.clone()
+    boundingBox.scaleAroundCenter(maxScale)
+    let ret = maxScale
+    while (ret > 1 && treeIntersectsRect(tree, boundingBox)) {
+      ret /= 2
+      if (ret < 1) ret = 1
+    }
+    boundingBox = geomNode.boundingBox.clone()
+    boundingBox.scaleAroundCenter(ret)
+    tree.insert({x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height})
+    return ret
+  }
+
   private needToSubdivide() {
     let needSubdivide = false
     for (const tile of this.levels[0].values()) {
@@ -386,11 +556,11 @@ export class TileMap {
   //   const gNodes = new Set<Node>(this.geomGraph.graph.nodesBreadthFirst)
   //   return setsAreEqual(gNodes, lastLayerNodes)
   // }
-  private calculateNodeRank(sortedNodes: Node[]) {
+  private calculateNodeRank() {
     this.nodeRank = new Map<Node, number>()
-    const n = sortedNodes.length
+    const n = this.sortedNodes.length
     for (let i = 0; i < n; i++) {
-      this.nodeRank.set(sortedNodes[i], -Math.log10((i + 1) / n))
+      this.nodeRank.set(this.sortedNodes[i], -Math.log10((i + 1) / n))
     }
   }
   private compareByPagerank(u: Node, v: Node): number {
@@ -402,13 +572,13 @@ export class TileMap {
    * An edge and its attributes is inserted just after its source and the target are inserted.
    * The nodes are sorted by rank here.  */
 
-  private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
+  private filterOutEntities(levelToReduce: IntPairMap<Tile>, z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.getCurveClips[i].edge}
     const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
-    for (; k < nodes.length; k++) {
-      const node = nodes[k]
+    for (; k < this.sortedNodes.length; k++) {
+      const node = this.sortedNodes[k]
       if (!this.addNodeToLevel(levelToReduce, node, dataByEntityMap)) {
         break
       }
@@ -629,7 +799,7 @@ export class TileMap {
         const xs = intersectWithMiddleLines(cs)
 
         Assert.assert(xs.length >= 2)
-        if(xs.length==2){
+        if (xs.length == 2) {
           const t = (xs[0][1] + xs[1][1]) / 2
           const p = cs.value(t)
           const i = p.x <= left + w ? 0 : 1
@@ -648,26 +818,26 @@ export class TileMap {
             edgeArray.push(edge)
           }
         } else
-        for (let u = 0; u < xs.length - 1; u++) {
-          const t = (xs[u][1] + xs[u + 1][1]) / 2
-          const p = cs.value(t)
-          const i = p.x <= left + w ? 0 : 1
-          const j = p.y <= bottom + h ? 0 : 1
-          const k = 2 * i + j
-          //const tr = cs.trim(xs[u][1], xs[u + 1][1]) 
-          const key = keys[k]
-          let tile = levelTiles.getI(key)
-          if (!tile) {
-            const l = left + i * w
-            const b = bottom + j * h
-            tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
-            levelTiles.setPair(key, tile)
+          for (let u = 0; u < xs.length - 1; u++) {
+            const t = (xs[u][1] + xs[u + 1][1]) / 2
+            const p = cs.value(t)
+            const i = p.x <= left + w ? 0 : 1
+            const j = p.y <= bottom + h ? 0 : 1
+            const k = 2 * i + j
+            //const tr = cs.trim(xs[u][1], xs[u + 1][1])
+            const key = keys[k]
+            let tile = levelTiles.getI(key)
+            if (!tile) {
+              const l = left + i * w
+              const b = bottom + j * h
+              tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
+              levelTiles.setPair(key, tile)
+            }
+            const edgeArray = tile.addToBundlesOrFetchFromBundles(xs[u][1], xs[u + 1][1], cs)
+            for (const edge of bundle.edges) {
+              edgeArray.push(edge)
+            }
           }
-          const edgeArray = tile.addToBundlesOrFetchFromBundles(xs[u][1], xs[u + 1][1], cs)
-          for (const edge of bundle.edges) {
-            edgeArray.push(edge)
-          }
-        }
       }
     }
 
@@ -868,6 +1038,12 @@ function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
   } else {
     clips.push({curve: c, edge: e})
   }
+}
+
+function treeIntersectsRect(tree: RTree, boundingBox: Rectangle): boolean {
+  const bb = {x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height}
+  const a = tree.search(bb)
+  return a && a.length > 0
 }
 // function dumpTiles(tileMap: IntPairMap<Tile>, z: number) {
 //   for (const [p, tile] of tileMap.keyValues()) {

@@ -1,8 +1,23 @@
 //import {parseDot, parseJSON} from '@msagl/parser'
 
-// import * as fs from 'fs'
-// import * as path from 'path'
-import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomNode, Graph, Node, Point, layoutGeomGraph} from '@msagl/core'
+import * as fs from 'fs'
+import * as path from 'path'
+import {
+  CurveFactory,
+  DebugCurve,
+  Edge,
+  GeomEdge,
+  GeomGraph,
+  GeomNode,
+  Graph,
+  LineSegment,
+  Node,
+  Point,
+  TileMap,
+  layoutGeomGraph,
+} from '@msagl/core'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+import {parseJSON} from '../../../../parser/src/dotparser'
 // import {createGeometry, nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 // import {initRandom} from '../../../src/utils/random'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
@@ -190,17 +205,17 @@ test('subgraphs', () => {
 //   }
 // })
 
-// test('tiles gameofthrones', () => {
-//   const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
-//   const str = fs.readFileSync(fpath, 'utf-8')
-//   const json = JSON.parse(str)
-//   const graph = parseJSON(json)
-//   const geomGraph = GeomGraph.getGeom(graph)
-//   SvgDebugWriter.writeGeomGraph('./tmp/debug.svg', geomGraph)
-//   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
-//   ts.buildUpToLevel(6)
-//   //dumpTiles(ts)
-// })
+test('tiles gameofthrones', () => {
+  const fpath = path.join(__dirname, '../../data/JSONfiles/got.JSON')
+  const str = fs.readFileSync(fpath, 'utf-8')
+  const json = JSON.parse(str)
+  const graph = parseJSON(json)
+  const geomGraph = GeomGraph.getGeom(graph)
+  SvgDebugWriter.writeGeomGraph('./tmp/debug.svg', geomGraph)
+  const ts = new TileMap(geomGraph, geomGraph.boundingBox)
+  ts.buildUpToLevel(6)
+  dumpTiles(ts)
+})
 
 // test('mds with length', () => {
 //   const dotString =
@@ -255,33 +270,28 @@ test('subgraphs', () => {
 
 //   //  dumpTiles(tileMap)
 // })
-// function dumpTiles(tileMap: TileMap) {
-//   for (let z = 0; ; z++) {
-//     const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
-//     if (tilesOfLevel.length == 0) {
-//       break
-//     }
-//     const ts = tilesOfLevel.filter(tileIsCool)
-//     for (const tile of ts) {
-//       try {
-//         const cc = Array.from(tile.data.getBundles())
-//           .filter(bundleIsCool)
-//           .map((b) => b.clip)
-
-//         SvgDebugWriter.dumpDebugCurves(
-//           './tmp/tile' + z + '-' + tile.x + '-' + tile.y + '.svg',
-//           cc
-//             .map((c) => DebugCurve.mkDebugCurveCI('Green', c))
-//             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.data.rect.perimeter())])
-//             .concat(tile.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-//             .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
-//         )
-//       } catch (Error) {
-//         console.log(Error.message)
-//       }
-//     }
-//   }
-// }
+function dumpTiles(tileMap: TileMap) {
+  for (let z = 0; ; z++) {
+    const tilesOfLevel = Array.from(tileMap.getTilesOfLevel(z))
+    if (tilesOfLevel.length == 0) {
+      break
+    }
+    const ts = tilesOfLevel
+    for (const tile of ts) {
+      try {
+        SvgDebugWriter.dumpDebugCurves(
+          './tmp/tile' + z + '-' + tile.x + '-' + tile.y + '.svg',
+          []
+            .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.data.rect.perimeter())])
+            .concat(tile.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
+            .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+        )
+      } catch (Error) {
+        console.log(Error.message)
+      }
+    }
+  }
+}
 
 // function bundleIsCool(bundle: Bundle) {
 //   return true
