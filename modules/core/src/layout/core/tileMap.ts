@@ -56,7 +56,7 @@ export class TileMap {
       }
     }
 
-    return floorScale + (z - zflo) * nextScale
+    return (zn - z) * floorScale + (z - zflo) * nextScale
   }
   private nodeScales: Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
