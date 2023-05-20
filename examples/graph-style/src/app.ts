@@ -1,14 +1,14 @@
+import {dropZone} from './drag-n-drop'
 import {Renderer as WebGLRenderer} from '@msagl/renderer-webgl'
-import {loadGraphFromUrl} from '@msagl/parser'
+import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 import {createEditor} from './editor'
 import defaultStyle from './default-style'
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/composers.json'
-// const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
+//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/composers.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
 
 const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 renderer.setStyle(defaultStyle)
-
 ;(async () => {
   const editor = createEditor(document.getElementById('editor'))
   editor.setValue(JSON.stringify(defaultStyle, null, 2))
@@ -27,3 +27,8 @@ renderer.setStyle(defaultStyle)
     }
   })
 })()
+// File selector
+dropZone('drop-target', async (f: File) => {
+  const graph = await loadGraphFromFile(f)
+  renderer.setGraph(graph)
+})

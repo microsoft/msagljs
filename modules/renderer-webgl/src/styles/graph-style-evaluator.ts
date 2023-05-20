@@ -211,11 +211,15 @@ function parseFilter(filter: EntityFilter | EntityFilter[] | undefined): ((e: En
       break
     case 'rank':
       getProperty = (e: Entity, context: FilterContext) => {
-        if ('source' in e) {
-          // is edge
-          return Math.min(context.tileMap?.nodeRank.get((e as Edge).source), context.tileMap?.nodeRank.get((e as Edge).target))
+        if (context.tileMap && context.tileMap.nodeRank) {
+          if ('source' in e) {
+            // is edge
+            return Math.min(context.tileMap?.nodeRank.get((e as Edge).source), context.tileMap?.nodeRank.get((e as Edge).target))
+          }
+          return context.tileMap?.nodeRank.get(e as Node)
+        } else {
+          return 1
         }
-        return context.tileMap?.nodeRank.get(e as Node)
       }
       break
     default:
