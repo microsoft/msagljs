@@ -1,6 +1,5 @@
 import {Point} from '..'
 import {PointPair} from '../math/geometry/pointPair'
-import {PointMap} from './PointMap'
 
 export class PointPairMap<T> {
   m: Map<string, T> = new Map<string, T>()
@@ -54,20 +53,23 @@ function getPP(sKey: string): PointPair {
   const secondS = pointString[1]
 
   // Remove the parentheses and split by comma
-  let parts = firstS.slice(1, -1).split(',')
+  let parts = firstS.split(',')
 
   // Convert the parts to numbers
   const first = new Point(Number(parts[0]), Number(parts[1]))
-  parts = secondS.slice(1, -1).split(',')
+  parts = secondS.split(',')
   const second = new Point(Number(parts[0]), Number(parts[1]))
   const pp = new PointPair(first, second)
   return pp
 }
 
 function getKeyPP(first: Point, second: Point): string {
-  return [first.toString(), second.toString()].sort().join(' ')
+  return [localToString(first), localToString(second)].sort().join(' ')
 }
 
 function getKey(pp: PointPair): string {
   return getKeyPP(pp.first, pp.second)
+}
+function localToString(p: Point):string {  
+  return p.x.toString() + ',' + p.y.toString() 
 }
