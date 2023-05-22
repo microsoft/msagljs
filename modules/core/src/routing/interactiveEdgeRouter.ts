@@ -33,11 +33,9 @@ import {PathOptimizer} from './spline/pathOptimizer'
 // import {Assert} from '../utils/assert'
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
-    if (edge.smoothedPolyline == null) {
-      // TODO : can we do something here
-      return
-    }
-    const poly: Polyline = Polyline.mkFromPoints(edge.smoothedPolyline)
+    const poly: Polyline = edge.smoothedPolyline
+      ? Polyline.mkFromPoints(edge.smoothedPolyline)
+      : Polyline.mkFromPoints(edge.getSmoothPolyPoints())
 
     this.pathOptimizer.run(poly)
     edge.curve = this.pathOptimizer.poly.toCurve()
@@ -792,8 +790,8 @@ export class InteractiveEdgeRouter extends Algorithm {
       this._polyline = new Polyline()
       this._polyline.addPoint(ls.start)
       this._polyline.addPoint(ls.end)
-      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
-      edge.curve = edge.smoothedPolyline.createCurve()
+      const smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
+      edge.curve = smoothedPolyline.createCurve()
       return edge
     }
 
@@ -808,8 +806,7 @@ export class InteractiveEdgeRouter extends Algorithm {
         this._polyline.addPoint(this.SourcePort.Location)
         this._polyline.addPoint(ls.start)
         this._polyline.addPoint(ls.end)
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
-        edge.curve = edge.smoothedPolyline.createCurve()
+        edge.curve = SmoothedPolyline.mkFromPoints(this._polyline).createCurve()
         return edge
       }
     }
@@ -820,8 +817,7 @@ export class InteractiveEdgeRouter extends Algorithm {
       this._polyline.PrependPoint(this.SourcePort.Location)
     }
 
-    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(this._polyline)
-    edge.curve = edge.smoothedPolyline.createCurve()
+    edge.curve = SmoothedPolyline.mkFromPoints(this._polyline).createCurve()
     return edge
   }
 

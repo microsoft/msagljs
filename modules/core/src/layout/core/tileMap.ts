@@ -219,7 +219,7 @@ export class TileMap {
         height: this.geomGraph.height,
         data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
       },
-    ]) // to init with the whol
+    ]) // to init with the whole
     const scales = new Map<Node, number>()
     this.nodeScales.push(scales)
     // with this scale the node will be rendered at level[this.level.length -1]
@@ -559,8 +559,9 @@ export class TileMap {
   private calculateNodeRank() {
     this.nodeRank = new Map<Node, number>()
     const n = this.sortedNodes.length
+    const log_n_10 = Math.log10(n)
     for (let i = 0; i < n; i++) {
-      this.nodeRank.set(this.sortedNodes[i], -Math.log10((i + 1) / n))
+      this.nodeRank.set(this.sortedNodes[i], log_n_10 - Math.log10(i + 1))
     }
   }
   private compareByPagerank(u: Node, v: Node): number {
@@ -702,6 +703,7 @@ export class TileMap {
    */
 
   private subdivideLevel(z: number): boolean {
+    console.log('subdivideLevel', z)
     const tilesInRow = Math.pow(2, z)
     this.levels[z] = new IntPairMap<Tile>(tilesInRow)
     /** the width and the height of z-th level tile */
@@ -742,13 +744,15 @@ export class TileMap {
   }
 
   private subdivideTilesOnLevel(z: number) {
+    const tileCount = 0
     let allTilesAreSmall = true
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      const tileIsSmall = this.subdivideTile(key, z, tile, false)
-      allTilesAreSmall &&= tileIsSmall
+      const res = this.subdivideTile(key, z, tile, false)
+      allTilesAreSmall &&= res.allSmall
     }
     this.removeEmptyTiles(z)
+    console.log('generated for level', this.levels[z].size, 'tiles')
     return allTilesAreSmall
   }
 
@@ -759,7 +763,7 @@ export class TileMap {
     /** this is the tile we are subdividing */
     lowerTile: Tile,
     regenerate: boolean,
-  ) {
+  ): {count: number; allSmall: boolean} {
     const {w, h} = this.getWHOnLevel(z)
     /** this is the map we collect new tiles to */
     const levelTiles = this.levels[z]
@@ -783,10 +787,17 @@ export class TileMap {
     const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
     const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
     subdivideWithCachedClipsAboveTile()
-    for (const tile of levelTiles.values()) {
-      if (tile.entityCount > this.tileCapacity) return false
+    let r = 0
+    let allSmall = true
+    for (const key of keys) {
+      const tile = levelTiles.get(key.x, key.y)
+      if (tile == null) continue
+      r++
+      if (tile.entityCount > this.tileCapacity) {
+        allSmall = false
+      }
     }
-    return true
+    return {count: r, allSmall: allSmall}
 
     // local functions
     function subdivideWithCachedClipsAboveTile() {
@@ -988,6 +999,7 @@ export class TileMap {
       arrowheadBox.add(arrowhead.base.sub(dRotated))
       if (arrowheadBox.intersects(tileRect)) tile.arrowheads.push(arrowhead)
     }
+    if (tile.isEmpty()) return null
     return tile
   }
   // clipIsLegal(

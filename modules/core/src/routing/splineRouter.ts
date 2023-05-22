@@ -463,6 +463,7 @@ export class SplineRouter extends Algorithm {
       }
     } else {
       for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
+        if (i % 1000 == 0) console.log(i)
         this.routeEdge(interactiveEdgeRouter, edgeGeometryGroup.edges[i])
       }
     }
@@ -514,6 +515,7 @@ export class SplineRouter extends Algorithm {
       interactiveEdgeRouter.rerouteEdge(edge)
       Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     } catch (e: any) {
+      console.log('failed')
       // It is fine for reroute to fail
       // Just do nothing in this case: the edge will remain unchanged.
       // this happens when the polyline corresponding to the edge is crossing a loose polyline, passinge too close to a node.
@@ -930,7 +932,7 @@ export class SplineRouter extends Algorithm {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
     }
 
-    edge.smoothedPolyline = t.smoothedPolyline
+    edge.smoothedPolyline = null // t.smoothedPolyline
     if (edge.curve == null) {
       throw new Error()
     }

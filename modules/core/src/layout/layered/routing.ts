@@ -153,7 +153,6 @@ export class Routing extends Algorithm {
           CornerSite.mkSiteSP(s, p0)
           const c: Curve = polyline.createCurve()
           intEdge.curve = c
-          intEdge.edge.smoothedPolyline = polyline
           offset = dx
           if (intEdge.edge.label != null) {
             offset += intEdge.edge.label.width
@@ -202,10 +201,8 @@ export class Routing extends Algorithm {
     const spline: ICurve = scalc.getSpline(optimizeShortEdges)
     if (edgePath.reversed) {
       edgePath.curve = spline.reverse()
-      edgePath.underlyingPolyline = scalc.Reverse().GetPolyline
     } else {
       edgePath.curve = spline
-      edgePath.underlyingPolyline = scalc.GetPolyline
     }
   }
 

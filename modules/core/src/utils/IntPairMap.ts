@@ -71,4 +71,12 @@ export class IntPairMap<T> {
       }
     }
   }
+  get size() {
+    let r = 0
+    for (let i = 0; i < this.arrayOfMaps.length; i++) {
+      const map = this.arrayOfMaps[i]
+      r += map.size
+    }
+    return r
+  }
 }

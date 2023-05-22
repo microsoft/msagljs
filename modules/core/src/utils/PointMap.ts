@@ -1,5 +1,51 @@
 import {Point} from '../math/geometry/point'
+// suggest class that uses Map<string, T> instead of Map<Point, T>
+// and has methods like setxy, getxy, hasxy, deleteP, keys, values, entries
+// and has size property
+// and has clear method
+// and has iterator
+// and has constructor
+// and has delete method
+// and has has method
+// and has get method
+// and has set method
+// and has size property
+// and has keys method
+// and has values method
+// and has entries method
+// export class PairMap<T> {
+//   // A private property to store the map entries
+//   private map: Map<string, T>;
 
+//   // A constructor that initializes the map
+//   constructor() {
+//     this.map = new Map();
+//   }
+
+//   // A method to generate a unique key for each unordered pair of numbers
+//   private getKey(a: number, b: number): string {
+//     // Sort the numbers and join them with a separator
+//     return [a, b].sort().join("_");
+//   }
+
+//   // A method to set a value for a given pair of numbers
+//   public set(a: number, b: number, value: T): void {
+//     // Get the key for the pair
+//     const key = this.getKey(a, b);
+//     // Set the value in the map
+//     this.map.set(key, value);
+//   }
+
+//   // A method to get a value for a given pair of numbers
+//   public get(a: number, b: number): T | undefined {
+//     // Get the key for the pair
+//     const key = this.getKey(a, b);
+//     // Get the value from the map
+//     return this.map.get(key);
+//   }
+
+//   // Other methods as needed ...
+// }
 export class PointMap<T> {
   mapOfMaps: Map<number, Map<number, T>>
   private size_ = 0

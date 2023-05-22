@@ -16,8 +16,9 @@ import {
   TileMap,
   layoutGeomGraph,
 } from '@msagl/core'
-import {SvgDebugWriter} from '../../utils/svgDebugWriter'
+//import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 import {parseJSON} from '../../../../parser/src/dotparser'
+import {SvgDebugWriter} from '../../utils/svgDebugWriter'
 // import {createGeometry, nodeBoundaryFunc, parseDotGraph} from '../../utils/testUtils'
 // import {initRandom} from '../../../src/utils/random'
 // import {SvgDebugWriter} from '../../utils/svgDebugWriter'
@@ -211,10 +212,10 @@ test('tiles gameofthrones', () => {
   const json = JSON.parse(str)
   const graph = parseJSON(json)
   const geomGraph = GeomGraph.getGeom(graph)
-  SvgDebugWriter.writeGeomGraph('./tmp/debug.svg', geomGraph)
+  //SvgDebugWriter.writeGeomGraph('./tmp/debug.svg', geomGraph)
   const ts = new TileMap(geomGraph, geomGraph.boundingBox)
   ts.buildUpToLevel(6)
-  dumpTiles(ts)
+  //dumpTiles(ts)
 })
 
 // test('mds with length', () => {
@@ -284,7 +285,8 @@ function dumpTiles(tileMap: TileMap) {
           []
             .concat([DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Black', tile.data.rect.perimeter())])
             .concat(tile.data.nodes.map((n) => DebugCurve.mkDebugCurveCI('Red', n.boundaryCurve)))
-            .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l))),
+            .concat(tile.data.arrowheads.map((t) => LineSegment.mkPP(t.base, t.tip)).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Blue', l)))
+            .concat(tile.data.curveClips.map((c) => c.curve).map((l) => DebugCurve.mkDebugCurveWCI(1, 'Green', l))),
         )
       } catch (Error) {
         console.log(Error.message)

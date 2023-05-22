@@ -256,7 +256,7 @@ export default class Renderer extends EventSource {
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
     const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
+    const numberOfLevels = tileMap.buildUpToLevel(5) // MaxZoom - startZoom)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')
