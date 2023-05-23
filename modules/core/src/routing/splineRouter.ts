@@ -341,12 +341,21 @@ export class SplineRouter extends Algorithm {
       this.CalculateShapeToBoundaries(child)
     }
 
+    let loosePaddingMax = Number.POSITIVE_INFINITY
+    if (shape instanceof RelativeShape) {
+      const node = shape.node
+      const padding = node.padding
+      this.tightPadding = Math.min(this.tightPadding, 0.4 * padding)
+      loosePaddingMax = 0.4 * padding
+    }
+
     this.obstacleCalculator = new ShapeObstacleCalculator(
       shape,
       this.tightPadding,
-      this.AdjustedLoosePadding,
+      Math.min(this.AdjustedLoosePadding, loosePaddingMax),
       this.shapesToTightLooseCouples,
     )
+
     this.obstacleCalculator.Calculate(0.01)
     this.OverlapsDetected ||= this.obstacleCalculator.OverlapsDetected
   }
@@ -481,7 +490,6 @@ export class SplineRouter extends Algorithm {
     }
     try {
       const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
-
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
       console.log(e)

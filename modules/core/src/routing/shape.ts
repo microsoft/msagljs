@@ -2,11 +2,11 @@ import {Queue} from 'queue-typescript'
 import {Port} from '../layout/core/port'
 import {ICurve} from '../math/geometry/icurve'
 import {Rectangle} from '../math/geometry/rectangle'
-
+let id_global = 0
 export class Shape {
+  id: number
   private parents: Set<Shape> = new Set<Shape>()
   private children: Set<Shape> = new Set<Shape>()
-  
 
   public get Parents(): Array<Shape> {
     return Array.from(this.parents.values())
@@ -20,6 +20,9 @@ export class Shape {
     return this.boundaryCurve
   }
   set BoundaryCurve(value: ICurve) {
+    if (this.id == 769) {
+      console.log('setting boundary curve for 769')
+    }
     this.boundaryCurve = value
   }
 
@@ -52,6 +55,10 @@ export class Shape {
 
   /**  Constructor taking the curve of the shape.*/
   public constructor(boundaryCurve: ICurve = null) {
+    this.id = id_global++
+    if (this.id == 603) {
+      console.log('creating 603')
+    }
     this.BoundaryCurve = boundaryCurve
   }
 

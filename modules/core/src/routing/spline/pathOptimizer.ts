@@ -1,17 +1,19 @@
 import {Queue} from 'queue-typescript'
-import {GeomConstants, Point, Polyline} from '../../math/geometry'
+import {GeomConstants, ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
 import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
+//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
+//import {DebugCurve} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is not assumed that the polyline passes only through the sites of the cdt.
 //  */
-// let debCount = 0
-// let drawCount = 0
+let debCount = 0
+let drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -156,7 +158,7 @@ export class PathOptimizer {
 
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline) {
-    //++debCount
+    console.log('debCount=', ++debCount)
     this.triangles.clear()
 
     this.poly = poly
@@ -164,15 +166,17 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    // if (debCount == 123) {
+    // if (debCount == 101) {
     //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
     // }
     this.findChannelTriangles()
-    // if (debCount == 123) this.debugDraw(Array.from(this.triangles), null, null, poly)
+    // if (debCount == 101) this.debugDraw(Array.from(this.triangles), null, null, poly)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
-    // this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
+    // if (debCount == 101) {
+    //   this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
+    // }
     const localCdt = new Cdt(
       [],
       [],
@@ -181,7 +185,9 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    // (debCount == 2835) // this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
+    // if (debCount == 101) {
+    //   this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
+    // }
 
     const sleeve: FrontEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
     if (sleeve == null) {

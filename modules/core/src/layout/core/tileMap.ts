@@ -752,7 +752,7 @@ export class TileMap {
       allTilesAreSmall &&= res.allSmall
     }
     this.removeEmptyTiles(z)
-    console.log('generated for level', this.levels[z].size, 'tiles')
+    console.log('generated', this.levels[z].size, 'tiles')
     return allTilesAreSmall
   }
 
