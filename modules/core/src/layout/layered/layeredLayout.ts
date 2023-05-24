@@ -705,7 +705,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   GluedDagSkeletonEdges(): PolyIntEdge[] {
-    const ret = new IntPairMap<PolyIntEdge>(this.IntGraph.nodeCount)
+    const ret = new IntPairMap<PolyIntEdge>()
     for (const [k, v] of this.database.Multiedges.keyValues()) {
       if (k.isDiagonal()) continue
       const e = this.verticalConstraints.gluedIntEdge(v[0])
@@ -771,7 +771,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   SetGluedEdgesWeights() {
-    const gluedPairsToGluedEdge = new IntPairMap<PolyIntEdge>(this.IntGraph.nodeCount)
+    const gluedPairsToGluedEdge = new IntPairMap<PolyIntEdge>()
     for (const ie of this.gluedDagSkeletonForLayering.edges) gluedPairsToGluedEdge.set(ie.source, ie.target, ie)
 
     for (const [k, v] of this.database.Multiedges.keyValues())

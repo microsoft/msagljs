@@ -117,11 +117,11 @@ export class TileMap {
       }
       n++
     }
-    return new Size(w * 3, h * 3)
+    return new Size(w * 10, h * 10)
   }
 
   private fillTheLowestLayer() {
-    const tileMap = new IntPairMap<Tile>(1)
+    const tileMap = new IntPairMap<Tile>()
     const topLevelTile = new Tile(this.topLevelTileRect)
 
     const arrows = topLevelTile.arrowheads
@@ -705,7 +705,7 @@ export class TileMap {
   private subdivideLevel(z: number): boolean {
     console.log('subdivideLevel', z)
     const tilesInRow = Math.pow(2, z)
-    this.levels[z] = new IntPairMap<Tile>(tilesInRow)
+    this.levels[z] = new IntPairMap<Tile>()
     /** the width and the height of z-th level tile */
     const allTilesAreSmall = this.subdivideTilesOnLevel(z)
     if (allTilesAreSmall) {
@@ -715,7 +715,7 @@ export class TileMap {
     const {w, h} = this.getWHOnLevel(z)
 
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
-      console.log('done subdividing at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
+      console.log('done subdividing at level', z, ' because of tile size = ', w, h, 'is less than ', this.minTileSize)
       return true
     }
     return false

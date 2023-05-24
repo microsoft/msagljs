@@ -23,8 +23,7 @@ export class MstOnDelaunayTriangulation {
     }
 
     const intPairs = proximityEdges.map((t) => new IntPair(t.source, t.target))
-    const n = intPairs.reduce((a, t) => Math.max(a, Math.max(t.x, t.y)), 0)
-    const weighting = new IntPairMap<MstEdge>(n + 1)
+    const weighting = new IntPairMap<MstEdge>()
     for (let i = 0; i < proximityEdges.length; i++) {
       weighting.setPair(intPairs[i], proximityEdges[i])
     }
@@ -55,7 +54,7 @@ export class MstOnDelaunayTriangulation {
   }
 
   static GetEdges(siteArray: CdtSite[], siteIndex: Map<CdtSite, number>): IntPairMap<CdtEdge> {
-    const d = new IntPairMap<CdtEdge>(siteArray.length)
+    const d = new IntPairMap<CdtEdge>()
     for (let i = 0; i < siteArray.length; i++) {
       const site = siteArray[i]
       const sourceIndex = siteIndex.get(site)

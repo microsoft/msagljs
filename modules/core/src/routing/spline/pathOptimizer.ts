@@ -39,117 +39,6 @@ export class PathOptimizer {
 
   triangles = new Set<Tr>()
 
-  private findChannelTriangles() {
-    this.passedTrs.clear()
-    //  this.extendPassedTrsByContainingPoint(this.poly.start)
-    // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.passedTrs).map(trianglePerimeter))
-    for (let p = this.poly.startPoint; p.next != null; p = p.next) {
-      this.addPiercedTrianglesOnSegment(p.point, p.next.point)
-    }
-
-    this.addSourceTargetTriangles()
-  }
-
-  addSourceTargetTriangles() {
-    this.addPolyTrianglesForEndStart(this.poly.start)
-    this.addPolyTrianglesForEndStart(this.poly.end)
-  }
-
-  private findSiteTriangle(p: Point): Tr {
-    const site = this.cdt.FindSite(p)
-    if (site.Edges)
-      for (const e of site.Edges) {
-        let t = e.CcwTriangle
-        if (t && triangleIsInsideOfObstacle(t)) {
-          return t
-        }
-        t = e.CwTriangle
-        if (t && triangleIsInsideOfObstacle(t)) {
-          return t
-        }
-      }
-    if (site.InEdges)
-      for (const e of site.InEdges) {
-        let t = e.CcwTriangle
-        if (t && triangleIsInsideOfObstacle(t)) {
-          return t
-        }
-        t = e.CwTriangle
-        if (t && triangleIsInsideOfObstacle(t)) {
-          return t
-        }
-      }
-    return null
-  }
-  private addPolyTrianglesForEndStart(p: Point) {
-    const trs = new Set<Tr>()
-    const q = new Queue<Tr>(this.findSiteTriangle(p))
-    while (q.length) {
-      const t = q.dequeue()
-      for (const e of t.Edges) {
-        const ot = e.GetOtherTriangle_T(t)
-        if (ot && !trs.has(ot) && triangleIsInsideOfObstacle(ot)) {
-          q.enqueue(ot)
-          trs.add(ot)
-        }
-      }
-    }
-    for (const t of trs) {
-      this.triangles.add(t)
-    }
-  }
-  /** this.passedTriangles is an array of triangles containing 'end' on the function exit,
-   * but on entering the end becomes start of the next segment
-   */
-  addPiercedTrianglesOnSegment(start: Point, end: Point) {
-    this.extendPassedTrsByContainingPoint(start)
-    this.createThreader(start, end)
-    if (this.passedTrs.size) {
-      this.front = new Queue<FrontEdge>()
-      return
-    }
-    for (const tr of this.threadThrough()) {
-      this.triangles.add(tr)
-
-      // this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, this.poly, Array.from(this.triangles).map(trianglePerimeter))
-    }
-  }
-  edgeCanBePierced(e: CdtEdge): boolean {
-    const a = e.lowerSite.Owner
-    const b = e.upperSite.Owner
-    // adjacent to source or target
-    if (a == this.sourcePoly || b == this.targetPoly || b == this.sourcePoly || a == this.targetPoly) return true
-    // connects to different polylines
-    if (a != b && a !== null && b !== null) return true
-    return false
-  }
-
-  padTriangle(t: Tr, eps: number): ThreeArray<Point> {
-    const m = t.Sites.item0.point
-      .add(t.Sites.item1.point)
-      .add(t.Sites.item2.point)
-      .mul(1 / 3)
-
-    const ta = new ThreeArray<Point>()
-    ta.setItem(0, padSite(t.Sites.item0))
-    ta.setItem(1, padSite(t.Sites.item1))
-    ta.setItem(2, padSite(t.Sites.item2))
-    return ta
-
-    function padSite(s: CdtSite): Point {
-      const d = s.point.sub(m)
-      const len = d.length
-      return m.add(d.mul((len + eps) / len))
-    }
-  }
-
-  insideSourceOrTargetPoly(t: Tr): boolean {
-    const owner = t.Sites.item0.Owner
-    if (owner === this.sourcePoly || owner === this.targetPoly) {
-      if (owner === t.Sites.item1.Owner && owner === t.Sites.item2.Owner) return true
-    }
-    return false
-  }
   private outsideOfObstacles(t: Tr): boolean {
     if (t == null) return false
     const owner = t.Sites.item0.Owner ?? t.Sites.item1.Owner
@@ -158,7 +47,7 @@ export class PathOptimizer {
 
   /** following "https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf" */
   run(poly: Polyline) {
-    console.log('debCount=', ++debCount)
+    // console.log('debCount=', ++debCount)
     this.triangles.clear()
 
     this.poly = poly
@@ -166,15 +55,15 @@ export class PathOptimizer {
     if (poly.count <= 2 || this.cdt == null) return
     this.sourcePoly = this.findPoly(poly.start)
     this.targetPoly = this.findPoly(poly.end)
-    // if (debCount == 101) {
+    // if (debCount == 132) {
     //   this.debugDraw(Array.from(this.cdt.GetTriangles()), null, null, poly)
     // }
     this.findChannelTriangles()
-    // if (debCount == 101) this.debugDraw(Array.from(this.triangles), null, null, poly)
+    // if (debCount == 132) this.debugDraw(Array.from(this.triangles), null, null, poly)
 
     let perimeter = this.getPerimeterEdges()
     perimeter = this.fillTheCollapedSites(perimeter)
-    // if (debCount == 101) {
+    // if (debCount == 132) {
     //   this.debugDraw(Array.from(this.cdt.GetTriangles()), perimeter, null, this.poly)
     // }
     const localCdt = new Cdt(
@@ -185,7 +74,7 @@ export class PathOptimizer {
       }),
     )
     localCdt.run()
-    // if (debCount == 101) {
+    // if (debCount == 132) {
     //   this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
     // }
 
@@ -202,8 +91,57 @@ export class PathOptimizer {
       return
     }
     this.initDiagonals(sleeve)
-    //const dc = getDebugCurvesFromCdt(localCdt)
-    this.refineFunnel() //dc)
+    this.refineFunnel()
+  }
+  /**A function that returns an array of all crossed triangles
+   * by a line segment from start to end
+   * assuming the initial triangle contains the start point*/
+  private getAllCrossedTriangles(t: Tr, start: Point, end: Point): {triangles: Tr[]; containsEnd: Tr} {
+    // Initialize an empty array to store the crossed triangles
+    let crossed: Tr[] = []
+    // Initialize a queue to store the triangles to visit
+    let queue: Tr[] = []
+    let containsEnd: Tr | null = null
+    // Add the initial triangle to the queue
+    queue.push(t)
+    // Loop until the queue is empty
+    while (queue.length > 0) {
+      // Dequeue a triangle from the queue
+      let current = queue.pop()!
+      if (containsEnd == null && current.containsPoint(end)) {
+        containsEnd = current
+      }
+      // Check if the triangle intersects the line segment
+      if (current.intersectsLine(start, end, 0)) {
+        // Add the triangle to the crossed array
+        crossed.push(current)
+        // Loop through the neighbors of the triangle
+        for (const e of current.Edges) {
+          // Check if the neighbor exists and is not already in the crossed array or the queue
+          const tr = e.GetOtherTriangle_T(current)
+          if (tr && !crossed.includes(tr) && !queue.includes(tr)) {
+            // Add the neighbor to the queue
+            queue.push(tr)
+          }
+        }
+      }
+    }
+    // Return the crossed array
+    return {triangles: crossed, containsEnd: containsEnd!}
+  }
+
+  findChannelTriangles() {
+    const site = this.cdt.FindSite(this.poly.start)
+    let t = site.Triangles().next().value
+
+    this.triangles.clear()
+    for (let p = this.poly.startPoint; p.next != null; p = p.next) {
+      const res = this.getAllCrossedTriangles(t, p.point, p.next.point)
+      t = res.containsEnd
+      for (const tr of res.triangles) {
+        if (this.outsideOfObstacles(tr)) this.triangles.add(tr)
+      }
+    }
   }
   findPoly(p: Point): Polyline {
     const site = this.cdt.FindSite(p)
@@ -469,36 +407,7 @@ export class PathOptimizer {
       }
     }
   }
-  // test(peremiter: Set<CdtEdge>, originalPoly: Polyline) {
-  //   for (const t of this.triangles) {
-  //     if (this.insideSourceOrTargetPoly(t)) continue
-  //     const per = trianglePerimeter(t)
 
-  //     const x = Curve.intersectionOne(originalPoly, per, false)
-  //     if (x == null) {
-  //       this.debugDraw(Array.from(this.triangles), peremiter, this.poly, originalPoly, [per])
-  //     }
-  //     Assert.assert(x != null, 'triangle is separated from the polyline')
-  //   }
-  //   // for (const obs of this.polyRTree.GetNodeItemsIntersectingRectangle(this.poly.boundingBox)) {
-  //   //   if (obs == this.sourcePoly || obs == this.targetPoly) continue
-  //   //   const xs = Curve.getAllIntersections(this.poly, obs, false)
-  //   //   if (xs.length == 2) {
-  //   //     for (const p of pointsBetweenIntersections(this.poly, xs)) {
-  //   //       if (Curve.PointRelativeToCurveLocation(p, obs) == PointLocation.Inside) {
-  //   //         //// this.debugDraw(Array.from(this.triangles), peremiter, this.poly, originalPoly, [obs])
-  //   //         console.log(debCount)
-  //   //       }
-  //   //     }
-  //   //   }
-  //   //   function* pointsBetweenIntersections(a: ICurve, xx: Array<IntersectionInfo>): IterableIterator<Point> {
-  //   //     xx.sort((x, y) => x.par0 - y.par0)
-  //   //     for (let i = 0; i < xx.length - 1; i++) {
-  //   //       yield a.value((xx[i].par0 + xx[i + 1].par0) / 2)
-  //   //     }
-  //   //   }
-  //   // }
-  // }
   private initDiagonals(sleeve: FrontEdge[]) {
     for (const sleeveEdge of sleeve) {
       const e = sleeveEdge.edge
@@ -560,168 +469,6 @@ export class PathOptimizer {
     return perimeter
   }
   // threader region
-
-  start: Point
-  end: Point
-
-  front = new Queue<FrontEdge>()
-  passedTrs = new Set<Tr>()
-  canPierce(tr: Tr, e: Ed) {
-    return tr && !this.visitedInThreader.has(e.GetOtherTriangle_T(tr)) && this.edgeCanBePierced(e)
-  }
-  visitedInThreader = new Set<Tr>()
-
-  createThreader(start: Point, end: Point) {
-    this.start = start
-    this.end = end
-    this.visitedInThreader.clear()
-    const passedTriClone = Array.from(this.passedTrs).map((p) => p)
-    this.passedTrs.clear()
-    for (const t of passedTriClone) {
-      this.initFront(t)
-    }
-
-    //Assert.assert(Tr.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
-  }
-  /**This method finds the edges of the current triangle that 
-   * is pierced by a segment (start,end). It assumes that the start 
-   * point is inside or on the boundary of the current triangle, 
-   *  and the end point is outside. 
-   * The function works by computing the sign of each vertex
-   *  of the current triangle with respect to the segment.
-   *  The sign is zero if the vertex is on the segment, 
-   * positive if it is to the right of the segment  (when looking from the start point to the end point), 
-   * and negative if it is to the left.
-   * The function then checks if there are two consecutive 
-   * vertices with different signs. If so, it means that the edge between them is pierced by the segment. The function returns that edge as the result.
-
-The function also sets the positiveSign and negativeSign fields to store the signs of the vertices on either side of the pierced edge. This is useful for finding the next triangle in the path of the segment. */
-
-  initFront(tr: Tr) {
-    if (tr.containsPoint(this.end)) {
-      this.passedTrs.add(tr)
-      this.triangles.add(tr)
-    }
-    const sign0 = this.GetHyperplaneSign(tr.Sites.item0)
-    const sign1 = this.GetHyperplaneSign(tr.Sites.item1)
-
-    if (this.canPierce(tr, tr.Edges.item0) && sign0 !== sign1) {
-      if (Point.getTriangleOrientation(this.end, tr.Sites.item0.point, tr.Sites.item1.point) == TriangleOrientation.Clockwise) {
-        const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item0, rightSign: sign0, leftSign: sign1}
-        this.enqueueInFront(frontEdge)
-      }
-    }
-    const sign2 = this.GetHyperplaneSign(tr.Sites.item2)
-    if (this.canPierce(tr, tr.Edges.item1) && sign1 !== sign2) {
-      if (Point.getTriangleOrientation(this.end, tr.Sites.item1.point, tr.Sites.item2.point) == TriangleOrientation.Clockwise) {
-        const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item1, rightSign: sign1, leftSign: sign2}
-        this.enqueueInFront(frontEdge)
-      }
-    }
-
-    if (this.canPierce(tr, tr.Edges.item2) && sign0 !== sign2) {
-      if (Point.getTriangleOrientation(this.end, tr.Sites.item2.point, tr.Sites.item0.point) == TriangleOrientation.Clockwise) {
-        const frontEdge: FrontEdge = {source: tr, edge: tr.Edges.item2, rightSign: sign2, leftSign: sign0}
-        this.enqueueInFront(frontEdge)
-      }
-    }
-  }
-  enqueueInFront(frontEdge: FrontEdge) {
-    this.front.enqueue(frontEdge)
-  }
-  /** returns true if arrived into the triangle containing end */
-  private processFrontEdge(fe: FrontEdge) {
-    //Assert.assert(this.negativeSign < this.positiveSign)
-    const tr = targetOfFrontEdge(fe)
-    if (tr == null) return
-    this.visitedInThreader.add(tr)
-    if (tr.containsPoint(this.end)) {
-      this.passedTrs.add(tr)
-      return
-    }
-
-    const i = tr.Edges.index(fe.edge)
-    // th. pierced edge index
-    const oppositeSite = tr.Sites.getItem(i + 2)
-
-    const e1 = this.canPierce(tr, tr.Edges.getItem(i + 1))
-    const e2 = this.canPierce(tr, tr.Edges.getItem(i + 2))
-    if (!e1 && !e2) return
-    const oppositeSiteSign = this.GetHyperplaneSign(oppositeSite)
-    if (e1 && oppositeSiteSign < fe.rightSign) {
-      this.enqueueInFront({source: tr, edge: tr.Edges.getItem(i + 1), leftSign: oppositeSiteSign, rightSign: fe.rightSign})
-    }
-    if (e2 && oppositeSiteSign > fe.leftSign) {
-      this.enqueueInFront({source: tr, edge: tr.Edges.getItem(i + 2), leftSign: fe.leftSign, rightSign: oppositeSiteSign})
-    }
-  }
-  extendPassedTrsByContainingPoint(p: Point) {
-    const site = this.cdt.FindSite(p)
-    if (site) {
-      for (const t of site.Triangles()) {
-        if (this.outsideOfObstacles(t)) {
-          this.passedTrs.add(t)
-          this.triangles.add(t)
-        }
-      }
-    } else {
-      // no site found for p: it must be on the boundary of a triangle
-      // t = get one of the triangles in this.passedTrs
-      const t = this.passedTrs.values().next().value
-      for (const e of t.Edges) {
-        const ot = e.GetOtherTriangle_T(t)
-        if (this.outsideOfObstacles(ot) && ot.containsPoint(p)) {
-          this.passedTrs.add(ot)
-          this.triangles.add(ot)
-          break // there will be only one
-        }
-      }
-    }
-  }
-  *neigborsInChannel(t: Tr): IterableIterator<Tr> {
-    for (const e of t.Edges) {
-      if (this.edgeCanBePierced(e) === false) continue
-      const ot = e.GetOtherTriangle_T(t)
-      if (this.visitedInThreader.has(ot)) continue
-      yield ot
-    }
-  }
-
-  //        void ShowDebug(Array<Tr> cdtTriangles, CdtEdge cdtEdge, Tr cdtTriangle) {
-  //            var l = new Array<DebugCurve> { new DebugCurve(10,"red",new LineSegment(start,end)) };
-  //            if(cdtEdge!=null)
-  //                l.Add(new DebugCurve(100,3,"navy", new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
-  //            AddTriangleToListOfDebugCurves(l,cdtTriangle,100,2,"brown");
-  //            LayoutAlgorithmSettings.ShowDebugCurvesEnumeration(l);
-  //
-  //        }
-  //        static void AddTriangleToListOfDebugCurves(Array<DebugCurve> debugCurves,Tr triangle,byte transparency,double width,string color) {
-  //            foreach(var cdtEdge of triangle.Edges) {
-  //                debugCurves.Add(new DebugCurve(transparency,width,color,new LineSegment(cdtEdge.upperSite.point,cdtEdge.lowerSite.point)));
-  //            }
-  //        }
-  private GetHyperplaneSign(cdtSite: CdtSite): number {
-    const area = Point.signedDoubledTriangleArea(this.start, cdtSite.point, this.end)
-    if (area > GeomConstants.distanceEpsilon) {
-      return 1
-    }
-
-    if (area < -GeomConstants.distanceEpsilon) {
-      return -1
-    }
-
-    return 0
-  }
-
-  *threadThrough(): IterableIterator<Tr> {
-    while (this.front.length) {
-      const fe = this.front.dequeue()
-      this.processFrontEdge(fe)
-    }
-    for (const tr of this.visitedInThreader) {
-      yield tr
-    }
-  }
 }
 
 function triangleIsInsideOfObstacle(t: Tr): boolean {
@@ -729,18 +476,4 @@ function triangleIsInsideOfObstacle(t: Tr): boolean {
     return true // one of the sites corresponds to a Port
   }
   return t.Sites.item0.Owner == t.Sites.item1.Owner && t.Sites.item0.Owner == t.Sites.item2.Owner
-}
-// function getDebugCurvesFromCdt(localCdt: Cdt): Array<DebugCurve> {
-//   const es = new Set<E>()
-//   for (const t of localCdt.GetTriangles()) {
-//     for (const e of t.Edges) es.add(e)
-//   }
-//   return Array.from(es).map((e) => DebugCurve.mkDebugCurveTWCI(100, 1, 'Navy', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point)))
-// }
-function trianglePerimeter(currentTriangle: Tr): Polyline {
-  return Polyline.mkClosedFromPoints(Array.from(currentTriangle.Sites).map((s) => s.point))
-}
-
-function targetOfFrontEdge(fe: FrontEdge) {
-  return fe.edge.GetOtherTriangle_T(fe.source)
 }

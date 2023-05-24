@@ -2,7 +2,7 @@ import {IntPairMap} from '../../src/utils/IntPairMap'
 import {initRandom, randomInt} from '../../src/utils/random'
 
 test('trivial IntPairMap', () => {
-  const m = new IntPairMap<number>(3)
+  const m = new IntPairMap<number>()
   m.set(0, 0, 0)
   m.set(1, 1, 2)
   m.set(2, 2, 4)
@@ -19,7 +19,7 @@ test('trivial IntPairMap', () => {
 xtest('intpairmap speed', () => {
   initRandom(0)
   const n = 1000
-  const m = new IntPairMap<number>(n)
+  const m = new IntPairMap<number>()
   const ms = new Map<string, number>()
   console.time('intPairs')
   for (let i = 0; i < 1000000; i++) {
