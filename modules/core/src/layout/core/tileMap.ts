@@ -4,7 +4,7 @@ import {GeomNode} from './geomNode'
 import {GeomEdge} from './geomEdge'
 import {Edge} from '../../structs/edge'
 import {IntPairMap} from '../../utils/IntPairMap'
-import {Curve} from '../../math/geometry/curve'
+import {Curve, clipWithRectangle} from '../../math/geometry/curve'
 import {GeomLabel} from './geomLabel'
 import {Point} from '../../math/geometry/point'
 import {GeomGraph} from './geomGraph'
@@ -20,7 +20,7 @@ import {RTree} from 'hilbert-rtree/build'
 /** Represents a part of the curve containing in a tile.
  * One tile can have several parts of clips corresponding to the same curve.
  */
-export type CurveClip = {curve: ICurve; edge?: Edge}
+export type CurveClip = {curve: ICurve; edge?: Edge, startPar:number, endPar:number}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
 export function tileIsEmpty(sd: Tile): boolean {
@@ -139,10 +139,10 @@ export class TileMap {
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
         for (const seg of c.segs) {
-          topLevelTile.addElement({edge: e, curve: seg})
+          topLevelTile.addElement({edge: e, curve: seg, startPar:seg.parStart, endPar: seg.parEnd})
         }
       } else {
-        topLevelTile.addElement({edge: e, curve: c})
+        topLevelTile.addElement({edge: e, curve: c, startPar:c.parStart, endPar: c.parEnd})
       }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -193,7 +193,7 @@ export class TileMap {
     for (let i = this.levels.length - 2; i >= 0; i--) {
       const activeNodes = this.setOfNodesOnTheLevel(i)
       sr.rerouteOnSubsetOfNodes(activeNodes)
-      this.regenerateCurveClipsUpToLayer(i, activeNodes)
+      this.regenerateCurveClipsUpToLevel(i, activeNodes)
     }
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
@@ -397,7 +397,7 @@ export class TileMap {
   //   }
   // }
 
-  regenerateCurveClipsUpToLayer(levelIndex: number, activeNodes: Set<Node>) {
+  regenerateCurveClipsUpToLevel(levelIndex: number, activeNodes: Set<Node>) {
     this.clearCurveClipsInLevelsUpTo(levelIndex)
     for (const t of this.levels[0].values()) {
       this.regenerateCurveClipsUnderTileUpToLevel(t, levelIndex, activeNodes)
@@ -416,7 +416,14 @@ export class TileMap {
     t.initCurveClips()
     for (const geomEdge of this.geomGraph.deepEdges) {
       if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
-      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve})
+      if (geomEdge.curve instanceof Curve) {
+        for (const seg of geomEdge.curve.segs) {
+      t.addElement({edge: geomEdge.edge, curve: seg, startPar:seg.parStart, 
+        endPar:seg.parEnd})    
+        }
+      } else {
+      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar:geomEdge.curve.parStart, 
+        endPar:geomEdge.curve.parEnd})}
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -664,12 +671,12 @@ export class TileMap {
   private transferDataOfLevelToMap(levelToReduce: IntPairMap<Tile>): Map<Entity, EntityDataInTile[]> {
     const entityToData = new Map<Entity, EntityDataInTile[]>()
     for (const tile of levelToReduce.values()) {
-      for (const bundle of tile.getBundles()) {
-        for (const edge of bundle.edges) {
+      for (const clip of tile.curveClips) {
+        const edge = clip.edge
           const arr = getCreateEntityDataArray(edge)
-          arr.push({tile: tile, data: {edge: edge, curve: bundle.clip}})
+          arr.push({tile: tile, data: clip})
         }
-      }
+      
       for (const label of tile.labels) {
         const edge = (label.parent as GeomEdge).edge
         const arr = getCreateEntityDataArray(edge)
@@ -723,18 +730,11 @@ export class TileMap {
   countClips(z: number): number {
     let count = 0
     for (const tile of this.levels[z].values()) {
-      count += tile.curveBundlesLength
+      count += tile.curveClips.length
     }
     return count
   }
-  countCacheClips(z: number): any {
-    let count = 0
-    for (const tile of this.levels[z].values()) {
-      count += tile.cachedClipsLength
-    }
-    return count
-  }
-
+  
   private getWHOnLevel(z: number) {
     for (let i = this.tileSizes.length; i <= z; i++) {
       const s = this.tileSizes[i - 1]
@@ -804,14 +804,14 @@ export class TileMap {
       //create temparary PointPairMap to store the result of the intersection
       // each entry in the map is an array of curves corresponding to the intersections with one subtile
 
-      for (const bundle of lowerTile.getBundles()) {
+      for (const clip of lowerTile.curveClips) {
         // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
-        const cs = bundle.clip
-        const xs = intersectWithMiddleLines(cs)
+        const cs = clip.curve
+        const xs = intersectWithMiddleLines(cs, clip.startPar, clip.endPar)
 
         Assert.assert(xs.length >= 2)
         if (xs.length == 2) {
-          const t = (xs[0][1] + xs[1][1]) / 2
+          const t = (xs[0] + xs[1]) / 2
           const p = cs.value(t)
           const i = p.x <= left + w ? 0 : 1
           const j = p.y <= bottom + h ? 0 : 1
@@ -824,13 +824,11 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          const edgeArray = tile.addToBundlesOrFetchFromBundles(cs.parStart, cs.parEnd, cs)
-          for (const edge of bundle.edges) {
-            edgeArray.push(edge)
-          }
+          tile.addCurveClip({curve:cs, edge:clip.edge, startPar:xs[0], endPar:xs[1] })
+          
         } else
           for (let u = 0; u < xs.length - 1; u++) {
-            const t = (xs[u][1] + xs[u + 1][1]) / 2
+            const t = (xs[u] + xs[u + 1]) / 2
             const p = cs.value(t)
             const i = p.x <= left + w ? 0 : 1
             const j = p.y <= bottom + h ? 0 : 1
@@ -844,31 +842,20 @@ export class TileMap {
               tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
               levelTiles.setPair(key, tile)
             }
-            const edgeArray = tile.addToBundlesOrFetchFromBundles(xs[u][1], xs[u + 1][1], cs)
-            for (const edge of bundle.edges) {
-              edgeArray.push(edge)
-            }
+            tile.addCurveClip({curve:cs, edge:clip.edge, startPar:xs[u], endPar:xs[u+1] })
+            
           }
       }
     }
 
-    function intersectWithMiddleLines(seg: ICurve): Array<[Point, number]> {
+    function intersectWithMiddleLines(seg: ICurve, start:number, end:number): Array<number> {
       // point, parameter
-      const xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true)).concat(
+      let xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true)).concat(
         Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)),
-      )
-      xs.sort((a, b) => a.par0 - b.par0)
-      const filteredXs: Array<[Point, number]> = [[seg.start, seg.parStart]]
-      for (let i = 0; i < xs.length; i++) {
-        const ii = xs[i]
-        if (ii.par0 > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
-          filteredXs.push([ii.x, ii.par0])
-        }
-      }
-      if (seg.parEnd > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
-        filteredXs.push([seg.end, seg.parEnd])
-      }
-      return filteredXs
+      ).map(x=>x.par0)
+      xs.sort((a, b) => a - b)
+      return [start].concat(xs.filter(x=>x >= start && x <= end)).concat(end)
+      
     }
   }
 
@@ -1041,15 +1028,6 @@ export class TileMap {
   //   }
   //   return true
   // }
-}
-function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
-  if (c instanceof Curve) {
-    for (const seg of c.segs) {
-      clips.push({curve: seg, edge: e})
-    }
-  } else {
-    clips.push({curve: c, edge: e})
-  }
 }
 
 function treeIntersectsRect(tree: RTree, boundingBox: Rectangle): boolean {
