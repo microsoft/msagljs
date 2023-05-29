@@ -922,7 +922,7 @@ export class TileMap {
           bottom: bottom + h * j,
           top: bottom + h * (j + 1),
         })
-        const tile = this.generateSubTileExceptEdgeClips(upperTile, tileRect)
+        const tile = this.generateOneSubtileExceptEdgeClips(upperTile, tileRect)
         if (tile) {
           this.levels[z].set(keysAbove[k].x, keysAbove[k].y, tile)
         }
@@ -976,7 +976,7 @@ export class TileMap {
     return ret
   }
 
-  private generateSubTileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
+  private generateOneSubtileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
     const tile = new Tile(tileRect)
 
     for (const n of upperTile.nodes) {
