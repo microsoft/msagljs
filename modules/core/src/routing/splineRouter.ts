@@ -195,6 +195,8 @@ export class SplineRouter extends Algorithm {
     if (this.geomGraph.isEmpty()) {
       return
     }
+    console.time('SplineRouter')
+
     const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
     if (
       this.BundlingSettings == null &&
@@ -209,6 +211,7 @@ export class SplineRouter extends Algorithm {
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
+    console.timeEnd('SplineRouter')
   }
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
@@ -472,7 +475,6 @@ export class SplineRouter extends Algorithm {
       }
     } else {
       for (let i = 0; i < edgeGeometryGroup.edges.length; i++) {
-        if (i % 1000 == 0) console.log(i)
         this.routeEdge(interactiveEdgeRouter, edgeGeometryGroup.edges[i])
       }
     }
