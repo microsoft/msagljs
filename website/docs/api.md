@@ -272,20 +272,24 @@ In this mode the edges are routed around the nodes. The method is rather fast, b
 precize complexity measure. For a graph with 2K nodes+edges it can do the routing in less than a second or two. For a graph with 17k nodes+edges it might require half a minute.
 
 The algorithm runs shortest paths on [a graph spanner](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf) as the first step and then optimizes the paths by using [the funnel algorithm](https://www.sciencedirect.com/science/article/pii/002200008990041X/pdf?md5=aa398f6c4c6e17f6aa1688b7e5545cb9&pid=1-s2.0-002200008990041X-main.pdf).
+Here is an example of the routing:
+
 ![Alt text](/images/splineRouting.svg#gh-light-mode-only)
 ![Alt text](/images/splineRouting.dark.svg#gh-dark-mode-only)
 
 ### "SplineBundling" routing mode
 
-This algorithm routes edges in the metroline style. The method is described in [“Edge routing with ordered bundles”](“https://arxiv.org/pdf/1209.4227.pdf”). The algorithm is not very efficient and is slower than the spline routing.
+This algorithm routes edges in the metroline style. The method is described in [“Edge routing with ordered bundles”](https://arxiv.org/pdf/1209.4227.pdf). The algorithm is not very efficient and is slower than the spline routing.
+In the drawing below the layout is the same but the edges are routed with the SplineBundling algorithm.
+
 ![Alt text](/images/bundleRouting.svg#gh-light-mode-only)
 ![Alt text](/images/bundleRouting.dark.svg#gh-dark-mode-only)
 
 ### "Rectilinear" routing mode
 
-The method routes edges with segments parallel to the coordinate axes, with an optional arcs at the corners. The mode is not fast, slower than the "SplineBundling", and might slow down considerably even on a graph with 90 nodes.
+The method routes edges with segments parallel to the coordinate axes, with an optional arcs at the corners. The mode is not fast, slower than "SplineBundling", and might slow down considerably even on a graph with 90 nodes.
 ![Alt text](/images/rectRouting.svg#gh-light-mode-only)
-![Alt text](/images/rectRouting.dark.svg.svg#gh-dark-mode-only)
+![Alt text](/images/rectRouting.dark.svg#gh-dark-mode-only)
 
 ### "StraightLine" routing mode
 

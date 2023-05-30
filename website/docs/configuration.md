@@ -9,16 +9,16 @@ The renderer options accept the following fields:
 - `layoutType: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPSepCola' | 'MDS'` - algorithm used to layout the graph.
   By default, if all the edges in the graph are undirected, IPSepCola algorithm is used; otherwise, the graph is laid out with the Sugiyama Scheme.
 
-  [Sugiyama](https://en.wikipedia.org/wiki/Layered_graph_drawing) TB :layered top-to-bottom.
+  "Sugiyama TB": creates a layered top-to-bottom illustrated below.
+  ![dark](/images/showAPI_dark.svg#gh-dark-mode-only)
+  ![light](/images/showAPI.svg#gh-light-mode-only)
 
-  ![Alt text](/images/showAPI.svg#gh-light-mode-only)
-  ![Alt text](/images/showAPI_dark.svg#gh-dark-mode-only)
+[IPSepCola](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/6715571_IPSep-CoLa_An_Incremental_Procedure_for_Separation_Constraint_Layout_of_Graphs/links/0fcfd5081c588735c8000000/IPSep-CoLa-An-Incremental-Procedure-for-Separation-Constraint-Layout-of-Graphs.pdf) An Incremental Procedure for Separation Constraint Layout of Graphs: illustrated below.
 
-  [IPSepCola](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/6715571_IPSep-CoLa_An_Incremental_Procedure_for_Separation_Constraint_Layout_of_Graphs/links/0fcfd5081c588735c8000000/IPSep-CoLa-An-Incremental-Procedure-for-Separation-Constraint-Layout-of-Graphs.pdf) An Incremental Procedure for Separation Constraint Layout of Graphs:
-  ![Alt text](/images/awilliams_whitebg.svg#gh-light-mode-only)
-  ![Alt text](/images/awilliams_blackbg.svg#gh-dark-mode-only)
+![dark](/images/awilliams_blackbg.svg#gh-dark-mode-only)
+![light](/images/awilliams_whitebg.svg#gh-light-mode-only).
 
-  [MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf): Pivot Multidemensional Scaling:
+[MDS](https://pubsys.mmsp-kn.de/pubsys/publishedFiles/BrPi06.pdf): Pivot Multidemensional Scaling:
 
 ![Alt text](/images/mdsShowAPI.svg#gh-light-mode-only)
 ![Alt text](/images/mdsShowAPI_dark.svg#gh-dark-mode-only)

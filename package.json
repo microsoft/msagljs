@@ -55,6 +55,9 @@
     ]
   },
   "dependencies": {
+    "@docusaurus/core": "^2.4.1",
+    "@docusaurus/module-type-aliases": "^2.4.1",
+    "@docusaurus/preset-classic": "^2.4.1",
     "madge": "^6.0.0",
     "yarn": "^1.22.19"
   }
