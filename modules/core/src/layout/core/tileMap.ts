@@ -18,14 +18,12 @@ import {Assert} from '../../utils/assert'
 import {RTree} from 'hilbert-rtree/build'
 
 /** Represents a part of the curve containing in a tile.
+ * The tile part of the curve is defined by the startPar and endPar.
  * One tile can have several parts of clips corresponding to the same curve.
  */
-export type CurveClip = {curve: ICurve; edge?: Edge, startPar:number, endPar:number}
+export type CurveClip = {curve: ICurve; edge?: Edge; startPar: number; endPar: number}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
-export function tileIsEmpty(sd: Tile): boolean {
-  return sd.arrowheads.length === 0 && sd.curveBundlesLength === 0 && sd.nodes.length === 0
-}
 
 //const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
@@ -139,10 +137,10 @@ export class TileMap {
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
         for (const seg of c.segs) {
-          topLevelTile.addElement({edge: e, curve: seg, startPar:seg.parStart, endPar: seg.parEnd})
+          topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
         }
       } else {
-        topLevelTile.addElement({edge: e, curve: c, startPar:c.parStart, endPar: c.parEnd})
+        topLevelTile.addElement({edge: e, curve: c, startPar: c.parStart, endPar: c.parEnd})
       }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -418,12 +416,11 @@ export class TileMap {
       if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
       if (geomEdge.curve instanceof Curve) {
         for (const seg of geomEdge.curve.segs) {
-      t.addElement({edge: geomEdge.edge, curve: seg, startPar:seg.parStart, 
-        endPar:seg.parEnd})    
+          t.addElement({edge: geomEdge.edge, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
         }
       } else {
-      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar:geomEdge.curve.parStart, 
-        endPar:geomEdge.curve.parEnd})}
+        t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar: geomEdge.curve.parStart, endPar: geomEdge.curve.parEnd})
+      }
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -673,10 +670,10 @@ export class TileMap {
     for (const tile of levelToReduce.values()) {
       for (const clip of tile.curveClips) {
         const edge = clip.edge
-          const arr = getCreateEntityDataArray(edge)
-          arr.push({tile: tile, data: clip})
-        }
-      
+        const arr = getCreateEntityDataArray(edge)
+        arr.push({tile: tile, data: clip})
+      }
+
       for (const label of tile.labels) {
         const edge = (label.parent as GeomEdge).edge
         const arr = getCreateEntityDataArray(edge)
@@ -734,7 +731,7 @@ export class TileMap {
     }
     return count
   }
-  
+
   private getWHOnLevel(z: number) {
     for (let i = this.tileSizes.length; i <= z; i++) {
       const s = this.tileSizes[i - 1]
@@ -824,8 +821,7 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          tile.addCurveClip({curve:cs, edge:clip.edge, startPar:xs[0], endPar:xs[1] })
-          
+          tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[0], endPar: xs[1]})
         } else
           for (let u = 0; u < xs.length - 1; u++) {
             const t = (xs[u] + xs[u + 1]) / 2
@@ -842,20 +838,18 @@ export class TileMap {
               tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
               levelTiles.setPair(key, tile)
             }
-            tile.addCurveClip({curve:cs, edge:clip.edge, startPar:xs[u], endPar:xs[u+1] })
-            
+            tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[u], endPar: xs[u + 1]})
           }
       }
     }
 
-    function intersectWithMiddleLines(seg: ICurve, start:number, end:number): Array<number> {
+    function intersectWithMiddleLines(seg: ICurve, start: number, end: number): Array<number> {
       // point, parameter
-      let xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true)).concat(
-        Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)),
-      ).map(x=>x.par0)
+      let xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true))
+        .concat(Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)))
+        .map((x) => x.par0)
       xs.sort((a, b) => a - b)
-      return [start].concat(xs.filter(x=>x >= start && x <= end)).concat(end)
-      
+      return [start].concat(xs.filter((x) => x >= start && x <= end)).concat(end)
     }
   }
 

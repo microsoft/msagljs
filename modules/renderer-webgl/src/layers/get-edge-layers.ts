@@ -142,7 +142,7 @@ function getControlPoints(c: ICurve): number[] {
 function* getCurves(data: Iterable<CurveClip>, transform: (segment: ICurve, datum: CurveClip, index: number) => ICurve): Generator<ICurve> {
   let j = 0
   for (const cc of data) {
-    const {curve} = cc
+    const {curve} = cc // we need cc.startPal and cc.endPar xiaoji
     // @ts-ignore
     transform(curve, cc, j)
     yield curve
