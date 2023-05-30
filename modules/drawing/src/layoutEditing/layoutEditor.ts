@@ -1203,7 +1203,7 @@ export class LayoutEditor {
   // // }
 
   static RectRouting(mode: EdgeRoutingMode): boolean {
-    return mode == EdgeRoutingMode.Rectilinear || mode == EdgeRoutingMode.RectilinearToCenter
+    return mode == EdgeRoutingMode.Rectilinear
   }
 
   // // EnumerateNodeBoundaryCurves(): IterableIterator<ICurve> {

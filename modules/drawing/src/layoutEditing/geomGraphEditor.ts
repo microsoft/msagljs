@@ -119,7 +119,7 @@ export class GeometryGraphEditor {
       this.registerForUndoDrag(o.entity)
     }
     if (this.geomEdgeWithSmoothedPolylineExposed == null) {
-      if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear && this.EdgeRoutingMode !== EdgeRoutingMode.RectilinearToCenter) {
+      if (this.EdgeRoutingMode !== EdgeRoutingMode.Rectilinear) {
         this.dragObjectsForNonRectilinearCase(delta, draggingMode)
       } else {
         this.DragObjectsForRectilinearCase(delta)

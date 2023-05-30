@@ -131,11 +131,11 @@ We describe three methods of the layout that are implemented in the package.
 
 Sugiayama scheme sometimes is also called the hierarchical layout. It is meant for a directed graph. It organizes the nodes in horizontal layers and renders the edges following their direction.
 There is an [article](https://en.wikipedia.org/wiki/Layered_graph_drawing.) describing the method.  
-The implementation in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
+The implementation of the scheme in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
 
 #### Calling Sugiama Scheme
 
-There are two ways to ensure the Sugiyama Scheme. One way is to call
+There are two ways to ensure the Sugiyama Scheme. One way is to use the high level API:
 
 ```ts
 function layoutGraphWithSugiayma(
@@ -157,11 +157,11 @@ geomGraph.layoutSettings.yLayerSep /= 2
 // change more settings here...
 // call the layout engine
 geomGraph.layoutSettings.layoutGraphWithSugiayma(geomGraph, null, false)
-// or call layoutGeomGraph(geomGraph) and the setting will be respected
+// or call
+layoutGeomGraph(geomGraph) // and the setting will be respected
 ```
 
-In general, SugiyamaLayoutSetting property correspond to the attributes of Dot language.
-The documentation on Dot can be a good reference.
+In general, SugiyamaLayoutSetting property corresponds to the attributes of [Dot language](https://graphviz.org/doc/info/lang.html).
 The most popular settings to change in SugiyamaLayoutSettings is the layerDirection.
 
 ```ts
@@ -169,7 +169,7 @@ SugiamaLayoutSettings.layerDirection: LayerDirectionEnum
 ```
 
 LayerDirectionEnum has values {TB, LR, BT, RL}, where TB means Top-Bottom, and is the default, LR means Left - Right, BT means Bottom - Top, and RL means Right - Left.
-This meaning of the enum comes from [Graphvis's rankdir](https://graphviz.org/docs/attrs/rankdir/). To avoid layouts which are too wide for a graph with long node labels the value LR is often used. If you use "Edit" button on the graph below and change 'rankdir' to TB then you will get a layout with a wide and low bounding box.
+This enum comes from [Graphvis's rankdir](https://graphviz.org/docs/attrs/rankdir/). To avoid layouts which are too wide for a graph with long node labels the value LR is often used. If you use "Edit" button on the graph below and change 'rankdir' to TB then you will get a layout with a wide and low bounding box.
 
 ```dot edit
 digraph G {
@@ -236,10 +236,10 @@ const runner = new IPSepCola(geomGraph, settings, 2)
 runner.run()
 ```
 
-### How the default layout works
+### The default layout
 
 When 'layoutGeomGraph()' is called for a GeomGraph with undefined layout settings then a layout is  
-chosen by the following logic: If the graph is directed, and the number of nodes in the graph is not greater than 2000, and the number of edges in the graph is not greater than 4000
+chosen by the following logic: If the graph is directed, and the number of nodes in the graph is not greater than 2000, and the number of edges in the graph is not greater than 4000,
 then the Sugiyama Scheme is called. Otherwise, IPSepCola is called.
 
 Graph is directed, for MSAGL, if it has at least one directed edge, and edge e is directed if e.sourceArrowhead or e.targetArrowhead is not null.
@@ -260,21 +260,36 @@ export enum EdgeRoutingMode {
 
   Rectilinear,
 
-  RectilinearToCenter,
-
   None,
 }
 ```
 
-This mode can be set as follows
-
-```ts
-const ss = new MdsLayoutSettings()
-// any other layout setting will also work
-ss.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SplineBundling
-```
-
 'SugiyamaSpline' is used only with the Sugiyama Scheme. The rest of the modes can be used with any layout. If the mode is None the edges are not routed.
+
+### "Spline" routing mode
+
+In this mode the edges are routed around the nodes. The method is rather fast, but unfortunately we do not have a
+precize complexity measure. For a graph with 2K nodes+edges it can do the routing in less than a second or two. For a graph with 17k nodes+edges it might require half a minute.
+
+The algorithm runs shortest paths on [a graph spanner](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf) as the first step and then optimizes the paths by using [the funnel algorithm](https://www.sciencedirect.com/science/article/pii/002200008990041X/pdf?md5=aa398f6c4c6e17f6aa1688b7e5545cb9&pid=1-s2.0-002200008990041X-main.pdf).
+![Alt text](/images/splineRouting.svg#gh-light-mode-only)
+![Alt text](/images/splineRouting.dark.svg#gh-dark-mode-only)
+
+### "SplineBundling" routing mode
+
+This algorithm routes edges in the metroline style. The method is described in [“Edge routing with ordered bundles”](“https://arxiv.org/pdf/1209.4227.pdf”). The algorithm is not very efficient and is slower than the spline routing.
+![Alt text](/images/bundleRouting.svg#gh-light-mode-only)
+![Alt text](/images/bundleRouting.dark.svg#gh-dark-mode-only)
+
+### "Rectilinear" routing mode
+
+The method routes edges with segments parallel to the coordinate axes, with an optional arcs at the corners. The mode is not fast, slower than the "SplineBundling", and might slow down considerably even on a graph with 90 nodes.
+![Alt text](/images/rectRouting.svg#gh-light-mode-only)
+![Alt text](/images/rectRouting.dark.svg.svg#gh-dark-mode-only)
+
+### "StraightLine" routing mode
+
+It is the fastest mode that routes each edge as a straight line clipped at the source and the target. This mode is a good fallback for a very large graph.
 
 ## Renderer with Deck.gl
 
