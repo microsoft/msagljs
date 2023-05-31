@@ -1112,7 +1112,8 @@ function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }
-/** Each line of the file is a string in format sourceId\ttargetId. That is two words separated by a tabulation symbol.
+/** Each line of the file is a string in format sourceId\ttargetId.
+ * That is two words separated by a tabulation symbol, by a comma, or by a space.
  * The edges are considered directed.
  */
 export function parseTXT(content: string): Graph {

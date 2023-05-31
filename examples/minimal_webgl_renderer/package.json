@@ -1,8 +1,8 @@
 {
-  "name": "minimal-svg-renderer",
+  "name": "minimal-renderer-webgl",
   "version": "1.1.16",
   "private": true,
-  "description": "Public demo for svg renderer",
+  "description": "Public demo for webgl renderer for @msagl/",
   "main": "main.js",
   "scripts": {
     "build": "rm -rf dist && esbuild ./src/main.ts --outfile=dist/main.js --bundle --minify && cp src/index.html dist"
