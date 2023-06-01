@@ -1,4 +1,3 @@
-import {dropZone} from './drag-n-drop'
 import {Renderer as WebGLRenderer} from '@msagl/renderer-webgl'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 import {createEditor} from './editor'
@@ -27,8 +26,23 @@ renderer.setStyle(defaultStyle)
     }
   })
 })()
+
+document.getElementById('open-btn').onclick = async () => {
+  const file = await chooseFile();
+  if (file) {
+    const graph = await loadGraphFromFile(file)
+    renderer.setGraph(graph)
+  }
+}
+
 // File selector
-dropZone('drop-target', async (f: File) => {
-  const graph = await loadGraphFromFile(f)
-  renderer.setGraph(graph)
-})
+function chooseFile(): Promise<File> {
+  return new Promise(resolve => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.onchange = () => {
+      resolve(input.files?.[0])
+    }
+    input.click()
+  })
+}
