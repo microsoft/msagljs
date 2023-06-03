@@ -1,3 +1,4 @@
 digraph  {
   node_1 [label="ID: 1\ntype: 48\nnbr out: 0\nnbr chi: 11"];
+  node_1 -> node_1
 }
