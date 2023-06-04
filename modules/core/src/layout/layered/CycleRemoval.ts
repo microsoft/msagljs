@@ -31,7 +31,7 @@ export class CycleRemoval {
   }
 
   static getFeedbackSet(graph: BasicGraphOnEdges<IEdge>): IEdge[] {
-    const feedbackSet = new IntPairMap<IEdge>(graph.nodeCount)
+    const feedbackSet = new IntPairMap<IEdge>()
     if (graph == null || graph.nodeCount === 0) return []
     const status = new Array<VertStatus>(graph.nodeCount).fill(VertStatus.NotVisited)
     for (let vertex = 0; vertex < graph.nodeCount; vertex++) {

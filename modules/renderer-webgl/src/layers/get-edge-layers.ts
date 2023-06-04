@@ -1,7 +1,6 @@
-import {Unit, Accessor, Color, Layer, LayerProps, DefaultProps} from '@deck.gl/core/typed'
-import {Buffer} from '@luma.gl/webgl'
+import {Layer} from '@deck.gl/core/typed'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {ICurve, Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
+import {Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
 import {DrawingEdge, DrawingObject} from '@msagl/drawing'
 import {iconMapping} from './arrows'
 
@@ -10,42 +9,24 @@ import {CURVE} from './curve-layer'
 import {ParsedGraphEdgeLayerStyle} from '../styles/graph-style-evaluator'
 import GraphStyleExtension from './graph-style-extension'
 
-type EdgeLayerProps = CurveLayerProps<ICurve> & {
+type EdgeLayerProps = CurveLayerProps<CurveClip> & {
   resolution?: number
 }
 
 export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerStyle): Layer {
-  // @ts-ignore
-  if (!props.data._curves) {
-    // @ts-ignore
-    props.data._curves = Array.from(
-      getCurves(props.data as Iterable<CurveClip>, (segment: ICurve, datum: CurveClip, index: number) => {
-        // @ts-expect-error
-        segment.__source = {
-          parent: this,
-          object: datum,
-          index: index,
-        }
-        return segment
-      }),
-    )
-  }
 
-  return new CurveLayer<ICurve>(props, {
+  return new CurveLayer<CurveClip>(props, {
     id: `${props.id}-edge`,
-    // @ts-ignore
-    data: props.data._curves,
+    data: props.data,
     getCurveType,
     getControlPoints,
-    getRange: (d: ICurve) => {
-      // @ts-ignore
-      return [d.parStart, d.parEnd]
+    getRange: (d: CurveClip) => {
+      return [d.startPar, d.endPar]
     },
     widthUnits: 'pixels',
     // one vertex per 4 pixels
-    getResolution: (d: ICurve) => {
-      // @ts-ignore
-      return d.length * props.resolution
+    getResolution: (d: CurveClip) => {
+      return d.curve.length * props.resolution
     },
     // @ts-ignore
     clipByInstance: false,
@@ -106,6 +87,7 @@ export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>, style: Parse
     getColor: getLabelColor,
     getPosition: (d: GeomLabel) => [d.center.x, d.center.y],
     sizeUnits: 'common',
+    characterSet: 'auto',
 
     extensions: [
       new GraphStyleExtension({
@@ -119,17 +101,18 @@ export function getEdgeLabelLayer(props: TextLayerProps<GeomLabel>, style: Parse
   })
 }
 
-function getCurveType(c: ICurve): CURVE {
-  if (c instanceof Ellipse) {
+function getCurveType(cc: CurveClip): CURVE {
+  if (cc.curve instanceof Ellipse) {
     return CURVE.Arc
   }
-  if (c instanceof BezierSeg) {
+  if (cc.curve instanceof BezierSeg) {
     return CURVE.Bezier
   }
   return CURVE.Line
 }
 
-function getControlPoints(c: ICurve): number[] {
+function getControlPoints(cc: CurveClip): number[] {
+  const c = cc.curve;
   if (c instanceof Ellipse) {
     return [c.center, c.aAxis, c.bAxis].flatMap(pointToArray)
   }
@@ -137,18 +120,6 @@ function getControlPoints(c: ICurve): number[] {
     return c.b.flatMap(pointToArray)
   }
   return [c.start, c.end].flatMap(pointToArray)
-}
-
-function* getCurves(data: Iterable<CurveClip>, transform: (segment: ICurve, datum: CurveClip, index: number) => ICurve): Generator<ICurve> {
-  let j = 0
-  for (const cc of data) {
-    const {curve} = cc
-    // @ts-ignore
-    transform(curve, cc, j)
-    yield curve
-
-    j++
-  }
 }
 
 function pointToArray(p: Point): [number, number] {

@@ -2,7 +2,7 @@
 
 ![Test Status](https://github.com/microsoft/msagljs/workflows/Test%20Status/badge.svg?branch=master)
 
-`msagl-js` is a JavaScript implementation of advanced graph layout algorithms.
+`MSAGLJS` is a JavaScript implementation of advanced graph layout algorithms.
 
 - [Read the documentation](https://microsoft.github.io/msagljs/)
 

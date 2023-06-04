@@ -8,7 +8,7 @@ import {Curve, CurveFactory, ICurve, LineSegment, PointLocation, Polyline, Recta
 import {PolylinePoint} from '../math/geometry/polylinePoint'
 import {closeDistEps} from '../utils/compare'
 import {PointSet} from '../utils/PointSet'
-import {RTree} from '../math/geometry/RTree/rTree'
+import {BinaryRTree} from '../math/geometry/RTree/rTree'
 import {LineSweeper} from './spline/coneSpanner/LineSweeper'
 import {VisibilityGraph} from './visibility/VisibilityGraph'
 import {TightLooseCouple} from './TightLooseCouple'
@@ -94,7 +94,7 @@ export class SplineRouter extends Algorithm {
   portsToShapes: Map<Port, Shape>
   portsToEnterableShapes: Map<Port, Set<Shape>>
 
-  portRTree: RTree<Point, Point>
+  portRTree: BinaryRTree<Point, Point>
 
   looseRoot: Shape
 
@@ -195,6 +195,8 @@ export class SplineRouter extends Algorithm {
     if (this.geomGraph.isEmpty()) {
       return
     }
+    console.time('SplineRouter')
+
     const obstacles = ShapeCreator.GetShapes(this.geomGraph, this.edges)
     if (
       this.BundlingSettings == null &&
@@ -209,6 +211,7 @@ export class SplineRouter extends Algorithm {
     this.GetOrCreateRoot()
     this.RouteOnRoot()
     this.RemoveRoot()
+    console.timeEnd('SplineRouter')
   }
 
   /** Uses the existing routes and optimizing them only to avoid 'activeNodes'.   */
@@ -341,12 +344,21 @@ export class SplineRouter extends Algorithm {
       this.CalculateShapeToBoundaries(child)
     }
 
+    let loosePaddingMax = Number.POSITIVE_INFINITY
+    if (shape instanceof RelativeShape) {
+      const node = shape.node
+      const padding = node.padding
+      this.tightPadding = Math.min(this.tightPadding, 0.4 * padding)
+      loosePaddingMax = 0.4 * padding
+    }
+
     this.obstacleCalculator = new ShapeObstacleCalculator(
       shape,
       this.tightPadding,
-      this.AdjustedLoosePadding,
+      Math.min(this.AdjustedLoosePadding, loosePaddingMax),
       this.shapesToTightLooseCouples,
     )
+
     this.obstacleCalculator.Calculate(0.01)
     this.OverlapsDetected ||= this.obstacleCalculator.OverlapsDetected
   }
@@ -480,7 +492,6 @@ export class SplineRouter extends Algorithm {
     }
     try {
       const cdtOnLooseObstacles = this.getCdtFromPassport(obstacleShapes)
-
       interactiveEdgeRouter.pathOptimizer.setCdt(cdtOnLooseObstacles)
     } catch (e: any) {
       console.log(e)
@@ -514,6 +525,7 @@ export class SplineRouter extends Algorithm {
       interactiveEdgeRouter.rerouteEdge(edge)
       Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.sourcePort.Curve, edge.targetPort.Curve, edge.curve, false)
     } catch (e: any) {
+      console.log('failed')
       // It is fine for reroute to fail
       // Just do nothing in this case: the edge will remain unchanged.
       // this happens when the polyline corresponding to the edge is crossing a loose polyline, passinge too close to a node.
@@ -930,7 +942,7 @@ export class SplineRouter extends Algorithm {
       edge.curve = GeomEdge.RouteSelfEdge(edge.sourcePort.Curve, Math.max(this.LoosePadding * 2, edge.GetMaxArrowheadLength()), t)
     }
 
-    edge.smoothedPolyline = t.smoothedPolyline
+    edge.smoothedPolyline = null // t.smoothedPolyline
     if (edge.curve == null) {
       throw new Error()
     }

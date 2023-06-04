@@ -1,6 +1,6 @@
 import {LinkedList} from '@esfx/collections'
 import {GeomConstants, ICurve, Point, Rectangle, Size} from '../math/geometry'
-import {RTree, mkRTree} from '../math/geometry/RTree/rTree'
+import {BinaryRTree, mkRTree} from '../math/geometry/RTree/rTree'
 import {Algorithm} from '../utils/algorithm'
 import {CancelToken} from '../utils/cancelToken'
 import {closeDistEps} from '../utils/compare'
@@ -153,9 +153,9 @@ export class EdgeLabelPlacement extends Algorithm {
 
   edges: GeomEdge[]
 
-  obstacleMaps: RTree<IObstacle, Point>[] = []
+  obstacleMaps: BinaryRTree<IObstacle, Point>[] = []
 
-  labelObstacleMap: RTree<IObstacle, Point>
+  labelObstacleMap: BinaryRTree<IObstacle, Point>
 
   edgeInfos: Map<GeomEdge, LabelInfo> = new Map<GeomEdge, LabelInfo>()
 

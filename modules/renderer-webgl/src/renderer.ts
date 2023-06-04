@@ -218,6 +218,7 @@ export default class Renderer extends EventSource {
 
   private async _layoutGraph(forceUpdate: boolean) {
     if (this._layoutWorkerUrl) {
+      console.log('layout on worker')
       this._graph = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate)
     } else {
       layoutGraph(this._graph, this._layoutOptions, forceUpdate)
@@ -256,7 +257,7 @@ export default class Renderer extends EventSource {
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
     const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(20) // MaxZoom - startZoom)
+    const numberOfLevels = tileMap.buildUpToLevel(8) // MaxZoom - startZoom)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')

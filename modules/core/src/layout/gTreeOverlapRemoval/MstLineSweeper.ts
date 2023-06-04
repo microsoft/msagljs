@@ -1,7 +1,7 @@
 import {Interval} from '../../math/geometry/Interval'
 import {Point} from '../../math/geometry/point'
 import {Size} from '../../math/geometry/rectangle'
-import {RTree, mkRTree} from '../../math/geometry/RTree/rTree'
+import {BinaryRTree, mkRTree} from '../../math/geometry/RTree/rTree'
 import {BinaryHeapPriorityQueue} from '../../structs/BinaryHeapPriorityQueue'
 
 import {GTreeOverlapRemoval} from './gTreeOverlapRemoval'
@@ -12,7 +12,7 @@ export class MstLineSweeper {
   _nodeSizes: Size[]
   _nodePositions: Point[]
   _forLayers: boolean
-  _intervalTree: RTree<number, number>
+  _intervalTree: BinaryRTree<number, number>
   _q: BinaryHeapPriorityQueue
   _numberOfOverlaps = 0
 

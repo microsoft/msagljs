@@ -350,15 +350,6 @@ export class RendererSvg implements IViewer {
   set objectUnderMouseCursor(value) {
     if (this._objectUnderMouse !== value) {
       this._objectUnderMouse = value
-      // if (value) {
-      //   console.log(this._objectUnderMouse.entity)
-      // } else {
-      //   if (this.layoutEditor.insertingEdge) {
-      //     console.log('no selection')
-      //   } else {
-      //     console.log('no sel: no insert')
-      //   }
-      // }
     }
   }
   invalidate(objectToInvalidate: IViewerObject): void {

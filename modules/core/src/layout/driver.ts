@@ -5,7 +5,7 @@ import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
 import {SugiyamaLayoutSettings} from './layered/sugiyamaLayoutSettings'
-import {FastIncrementalLayoutSettings, GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
+import {FastIncrementalLayoutSettings, GeomNode, LayeredLayout, MdsLayoutSettings, Point} from '..'
 import {PivotMDS} from './mds/pivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
 import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
@@ -124,6 +124,7 @@ function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken, edgeLenght
 export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken = null): void {
   createSettingsIfNeeded(geomGraph)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
+  shiftToFirstQuarter(geomGraph)
 }
 
 export function getEdgeRoutingSettingsFromAncestorsOrDefault(geomGraph: GeomGraph): EdgeRoutingSettings {
@@ -170,6 +171,9 @@ export function layoutGeomGraphDetailed(
   if (geomG.graph.isEmpty()) {
     return
   }
+  // @ts-ignore
+  const gn = geomG.shallowNodes.next()
+
   if (geomG.parent == null) {
     //console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount, 'edges')
     //console.time('layout')
@@ -328,13 +332,16 @@ export function geometryIsCreated(graph: Graph): boolean {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false
     if (n instanceof Graph) {
-      if (geometryIsCreated(n) === false) return false
+      if (geometryIsCreated(n) === false) {
+        return false
+      }
     }
   }
   for (const e of graph.edges) {
     const ge = GeomEdge.getGeom(e) as GeomEdge
     if (ge == null) return false
   }
+
   return true
 }
 
@@ -356,4 +363,11 @@ export function layoutIsCalculated(graph: Graph): boolean {
   }
   // todo: consider adding more checks. For example, check that the bounding boxes of subgraphs make sense, and the edge curves are attached to the nodes
   return true
+}
+function shiftToFirstQuarter(geomGraph: GeomGraph) {
+  const lb = geomGraph.boundingBox.leftBottom
+  if (lb.x < 0 || lb.y < 0) {
+    const delta = new Point(-lb.x, -lb.y)
+    geomGraph.translate(delta)
+  }
 }

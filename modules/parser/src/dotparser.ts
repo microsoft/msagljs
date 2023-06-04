@@ -62,7 +62,9 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           {
             const geom = getOrCreateGeomObj(entity) as GeomNode
             const json = JSON.parse(str) as ICurveJSONTyped
+
             const curve = JSONToICurve(json)
+
             if (geom instanceof GeomGraph) {
               geom.boundingBox = curve.boundingBox
             } else {
@@ -71,13 +73,15 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           }
 
           break
-
+        case 'geomEdge': {
+          const geom = getOrCreateGeomObj(entity) as GeomEdge
+          break
+        }
         case 'sourceArrowhead': {
           const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
           if (geomEdge.sourceArrowhead == null) {
             geomEdge.sourceArrowhead = new Arrowhead()
           }
-          geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
         }
         case 'targetArrowhead': {
@@ -85,7 +89,26 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           if (geomEdge.targetArrowhead == null) {
             geomEdge.targetArrowhead = new Arrowhead()
           }
-          geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          break
+        }
+        case 'sourceArrowheadTip': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.sourceArrowhead == null) {
+            geomEdge.sourceArrowhead = new Arrowhead()
+          }
+          if (str !== 'none') {
+            geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          }
+          break
+        }
+        case 'targetArrowheadTip': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.targetArrowhead == null) {
+            geomEdge.targetArrowhead = new Arrowhead()
+          }
+          if (str !== 'none') {
+            geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          }
           break
         }
         case 'geomEdgeLabel': {
@@ -726,7 +749,7 @@ export function parseDot(graphStr: string): Graph {
 //     const dp = new DotParser([ast])
 //     return dp.parse()
 //   } catch (Error) {
-//     console.log(Error.message)
+//
 //     return null
 //   }
 // }
@@ -735,7 +758,8 @@ export function parseDot(graphStr: string): Graph {
 export function parseJSONGraph(jsonObj: JSONGraph): Graph {
   try {
     const dp = new DotParser([jsonObj])
-    return dp.parse()
+    const ret = dp.parse()
+    return ret
   } catch (Error) {
     console.log(Error.message)
     return null
@@ -881,15 +905,22 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
-  if (geomEdge && geomEdge.curve) {
-    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
+  if (geomEdge) {
+    yield {type: 'attr', id: 'geomEdge', eq: 'none'}
+    if (geomEdge.curve) yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
 
     if (geomEdge.sourceArrowhead) {
-      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'sourceArrowhead', eq: 'none'}
+      if (geomEdge.sourceArrowhead.tipPosition) {
+        yield {type: 'attr', id: 'sourceArrowheadTip', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+      }
     }
 
     if (geomEdge.targetArrowhead) {
-      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'targetArrowhead', eq: 'none'}
+      if (geomEdge.targetArrowhead.tipPosition) {
+        yield {type: 'attr', id: 'targetArrowheadTip', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+      }
     }
     if (edge.label) {
       const bb = edge.label.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox
@@ -1112,8 +1143,7 @@ function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }
-/** Each line of the file is a string in format sourceId\ttargetId.
- * That is two words separated by a tabulation symbol, by a comma, or by a space.
+/** Each line of the file is a string in format sourceId\ttargetId. That is two words separated by a tabulation symbol.
  * The edges are considered directed.
  */
 export function parseTXT(content: string): Graph {

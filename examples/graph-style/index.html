@@ -27,16 +27,26 @@
         flex-grow: 1;
         height: 100%;
       }
-      #update-btn {
+      #controls {
         position: absolute;
         z-index: 1;
-        border: none;
         margin: 12px;
+      }
+      #controls button {
+        border: none;
+        margin: 2px;
         padding: 8px;
+        cursor: pointer;
+      }
+      #open-btn {
+        background: #888;
+        color: white;
+      }
+      #update-btn {
         background: red;
         color: white;
       }
-      #update-btn .error {
+      #controls .error {
         color: red;
         position: absolute;
         left: 80px;
@@ -48,10 +58,11 @@
     <main>
       <div id="editor"></div>
       <div id="viewer">
-        <button id="update-btn">
-          Update
+        <div id="controls">
+          <button id="open-btn">Open</button>
+          <button id="update-btn">Update</button>
           <div class="error"></div>
-        </button>
+        </div>
       </div>
     </main>
     <script type="module" src="./app.js"></script>

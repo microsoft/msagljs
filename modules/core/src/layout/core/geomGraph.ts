@@ -6,7 +6,7 @@ import {GeomEdge} from './geomEdge'
 import {PlaneTransformation} from '../../math/geometry/planeTransformation'
 import {Point} from '../../math/geometry/point'
 import {OptimalRectanglePacking} from '../../math/geometry/rectanglePacking/OptimalRectanglePacking'
-import {mkRTree, RTree} from '../../math/geometry/RTree/rTree'
+import {mkRTree, BinaryRTree} from '../../math/geometry/RTree/rTree'
 import {Curve, ICurve, interpolateICurve, PointLocation} from '../../math/geometry'
 import {RRect} from './RRect'
 import {IGeomGraph} from '../initialLayout/iGeomGraph'
@@ -395,7 +395,7 @@ export function pumpTheBoxToTheGraph(igraph: IGeomGraph, t: {b: Rectangle}) {
 }
 
 /** iterate over the graph objects intersected by a rectangle: by default, return only the intersected nodes */
-export function* intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<Entity> {
+export function* intersectedObjects(rtree: BinaryRTree<Entity, Point>, rect: Rectangle, onlyNodes = true): IterableIterator<Entity> {
   const result = rtree.GetAllIntersecting(rect)
   if (onlyNodes) {
     for (const r of result) {
@@ -409,7 +409,7 @@ export function* intersectedObjects(rtree: RTree<Entity, Point>, rect: Rectangle
   }
 }
 
-export function buildRTree(graph: Graph): RTree<Entity, Point> {
+export function buildRTree(graph: Graph): BinaryRTree<Entity, Point> {
   const data: Array<[Rectangle, Entity]> = (Array.from(graph.nodesBreadthFirst) as Array<Entity>)
     .concat(Array.from(graph.deepEdges) as Array<Entity>)
     .map((o) => [GeomObject.getGeom(o).boundingBox, o])
@@ -419,7 +419,7 @@ export function buildRTree(graph: Graph): RTree<Entity, Point> {
 type PpEdge = {edge: Edge; pp: PointPair}
 export type HitTreeNodeType = Entity | PpEdge
 
-export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, slack: number, point: Point): IterableIterator<GeomObject> {
+export function* getGeomIntersectedObjects(tree: BinaryRTree<HitTreeNodeType, Point>, slack: number, point: Point): IterableIterator<GeomObject> {
   if (!tree) return
   const rect = Rectangle.mkSizeCenter(new Size(slack * 2), point)
   for (const t of tree.RootNode.AllHitItems(rect, null)) {
@@ -444,7 +444,7 @@ export function* getGeomIntersectedObjects(tree: RTree<HitTreeNodeType, Point>, 
   }
 }
 
-export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): RTree<HitTreeNodeType, Point> {
+export function buildRTreeWithInterpolatedEdges(graph: Graph, slack: number): BinaryRTree<HitTreeNodeType, Point> {
   if (graph == null) return null
   const nodes: Array<[Rectangle, HitTreeNodeType]> = Array.from(graph.nodesBreadthFirst).map((n) => [GeomNode.getGeom(n).boundingBox, n])
 

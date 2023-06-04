@@ -35,7 +35,7 @@ export class ShapeObstacleCalculator {
   MainShape: Shape
   OverlapsDetected: boolean
 
-  Calculate(randomizationShift: number) {
+  Calculate(randomizationShift: number, maxPadding: number = Number.MAX_VALUE) {
     initRandom(3) // keep it the same all the time, otherwise the path optimizer migth not work
     if (this.MainShape.Children.length === 0) {
       return

@@ -18,6 +18,7 @@ import {MdsLayoutSettings} from '../../../src/layout/mds/mDSLayoutSettings'
 import {GeomEdge} from '../../../src/layout/core/geomEdge'
 import {GeomGraph} from '../../../src/layout/core/geomGraph'
 import {DrawingEdge, DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
+import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -198,6 +199,19 @@ test('graph arrowsize', () => {
   const jsonOfG: JSONGraph = graphToJSON(g)
   const newG = parseJSONGraph(jsonOfG)
   expect(newG != null).toBe(true)
+})
+
+test('geomEdge is restored', () => {
+  const g = parseDotGraph('graphvis/arrowsize.gv')
+  DrawingGraph.getDrawingGraph(g).createGeometry()
+  for (const e of g.deepEdges) {
+    expect(e.getAttr(AttributeRegistry.GeomObjectIndex) != null).toBe(true)
+  }
+  const jsonOfG: JSONGraph = graphToJSON(g)
+  const newG = parseJSONGraph(jsonOfG)
+  for (const e of newG.deepEdges) {
+    expect(e.getAttr(AttributeRegistry.GeomObjectIndex) != null).toBe(true)
+  }
 })
 
 test('directed is preserved', () => {

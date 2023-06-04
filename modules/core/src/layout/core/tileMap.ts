@@ -4,7 +4,7 @@ import {GeomNode} from './geomNode'
 import {GeomEdge} from './geomEdge'
 import {Edge} from '../../structs/edge'
 import {IntPairMap} from '../../utils/IntPairMap'
-import {Curve} from '../../math/geometry/curve'
+import {Curve, clipWithRectangle} from '../../math/geometry/curve'
 import {GeomLabel} from './geomLabel'
 import {Point} from '../../math/geometry/point'
 import {GeomGraph} from './geomGraph'
@@ -15,19 +15,48 @@ import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
 import {Assert} from '../../utils/assert'
+import {RTree} from 'hilbert-rtree/build'
+
 /** Represents a part of the curve containing in a tile.
+ * The tile part of the curve is defined by the startPar and endPar.
  * One tile can have several parts of clips corresponding to the same curve.
  */
-export type CurveClip = {curve: ICurve; edge?: Edge}
+export type CurveClip = {curve: ICurve; edge?: Edge; startPar: number; endPar: number}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
-export function tileIsEmpty(sd: Tile): boolean {
-  return sd.arrowheads.length === 0 && sd.curveBundlesLength === 0 && sd.nodes.length === 0
-}
 
 //const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
 export class TileMap {
+  sortedNodes: Node[]
+  numberOfNodesOnLevel: number[] = []
+  /** returns a number k >= 1, not necceserily an integer. If 1 is returned, that means no change.
+   * If k > 1 is returned than it is safe to scale up the node k-times
+   * z is the zoom level */
+  additionalNodeScale(n: Node, z: number) {
+    const zflo = Math.floor(z)
+    const zn = zflo + 1
+    let scalesOnLevel = this.nodeScales[zflo]
+    let floorScale = 1
+    if (scalesOnLevel) {
+      const t = scalesOnLevel.get(n)
+      if (t) {
+        floorScale = t
+      }
+    }
+
+    let nextScale = 1
+    scalesOnLevel = this.nodeScales[zn]
+    if (scalesOnLevel) {
+      const t = scalesOnLevel.get(n)
+      if (t) {
+        nextScale = t
+      }
+    }
+
+    return (zn - z) * floorScale + (z - zflo) * nextScale
+  }
+  private nodeScales: Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
@@ -86,11 +115,11 @@ export class TileMap {
       }
       n++
     }
-    return new Size(w * 3, h * 3)
+    return new Size(w * 10, h * 10)
   }
 
   private fillTheLowestLayer() {
-    const tileMap = new IntPairMap<Tile>(1)
+    const tileMap = new IntPairMap<Tile>()
     const topLevelTile = new Tile(this.topLevelTileRect)
 
     const arrows = topLevelTile.arrowheads
@@ -108,10 +137,10 @@ export class TileMap {
       const c = GeomEdge.getGeom(e).curve
       if (c instanceof Curve) {
         for (const seg of c.segs) {
-          topLevelTile.addElement({edge: e, curve: seg})
+          topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
         }
       } else {
-        topLevelTile.addElement({edge: e, curve: c})
+        topLevelTile.addElement({edge: e, curve: c, startPar: c.parStart, endPar: c.parEnd})
       }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -143,16 +172,17 @@ export class TileMap {
         break
       }
     }
-    const sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
-    for (let i = 0; i < sortedNodes.length; i++) {
-      this.nodeIndexInSortedNodes.set(sortedNodes[i], i)
+    this.sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
+    for (let i = 0; i < this.sortedNodes.length; i++) {
+      this.nodeIndexInSortedNodes.set(this.sortedNodes[i], i)
     }
 
     // filter out entities that are not visible on lower layers.
     // do not filter the uppermost layer: it should show everything
     for (let i = 0; i < this.levels.length - 1; i++) {
-      this.filterOutEntities(this.levels[i], sortedNodes, i)
+      this.numberOfNodesOnLevel.push(this.filterOutEntities(this.levels[i], i))
     }
+    this.numberOfNodesOnLevel.push(this.sortedNodes.length)
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
@@ -161,15 +191,158 @@ export class TileMap {
     for (let i = this.levels.length - 2; i >= 0; i--) {
       const activeNodes = this.setOfNodesOnTheLevel(i)
       sr.rerouteOnSubsetOfNodes(activeNodes)
-      this.regenerateCurveClipsUpToLayer(i, activeNodes)
+      this.regenerateCurveClipsUpToLevel(i, activeNodes)
     }
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
-    this.calculateNodeRank(sortedNodes)
+    this.calculateNodeRank()
+    this.makeSomeNodesVizible()
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
+  private makeSomeNodesVizible() {
+    for (let levelIndex = 0; levelIndex < this.levels.length - 1; levelIndex++) {
+      this.calculateNodeAdditionalScales(levelIndex)
+    }
+  }
+  calculateNodeAdditionalScalesOnLevelZero() {
+    const tree = new RTree()
+    // we always get at least one intersection with the whole graph record
+    tree.batchInsert([
+      {
+        x: this.geomGraph.left,
+        y: this.geomGraph.bottom,
+        width: this.geomGraph.width,
+        height: this.geomGraph.height,
+        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+      },
+    ]) // to init with the whole
+    const scales = new Map<Node, number>()
+    this.nodeScales.push(scales)
+    // with this scale the node will be rendered at level[this.level.length -1]
+    let scale = Math.pow(2, this.levels.length - 1)
+    for (let j = 0; j < this.numberOfNodesOnLevel[0]; j++) {
+      const n = this.sortedNodes[j]
+
+      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+      if (scale < 1.1) break // getting almost no enlargement
+      scales.set(n, scale)
+    }
+  }
+
+  findMaxScaleToNotIntersectTree(n: Node, tree: RTree, maxScale: number): number {
+    const geomNode = GeomNode.getGeom(n)
+    let nodeBB = geomNode.boundingBox
+    // make sure that we are not rendering the node outside of  the the graph bounding box
+    maxScale = Math.min(this.keepInsideGraphBoundingBox(nodeBB), maxScale)
+
+    const ret = this.intersectWithTreeAndGetScale(tree, nodeBB, maxScale)
+    // use the resulting bounding box and insert it to the tree
+    nodeBB = geomNode.boundingBox.clone()
+    nodeBB.scaleAroundCenter(ret)
+    tree.insert({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height, data: {node: n, nodeBB: nodeBB}})
+    return ret
+  }
+  /** returns the maximal scale keeping nodeBB inside of the graph bounding box */
+  private keepInsideGraphBoundingBox(nodeBB: Rectangle): number {
+    const graphBB = this.geomGraph.boundingBox
+    const w = nodeBB.width / 2
+    const h = nodeBB.height / 2
+
+    const keepInsideScale = Math.min(
+      // left stays inside
+      (nodeBB.center.x - graphBB.left) / w,
+      // top stays inside
+      (graphBB.top - nodeBB.center.y) / h,
+      // right stays inside
+      (graphBB.right - nodeBB.center.x) / w,
+      //bottom stays inside
+      (nodeBB.center.y - graphBB.bottom) / h,
+    )
+    return keepInsideScale
+  }
+
+  intersectWithTreeAndGetScale(tree: RTree, nodeBB: Rectangle, maxScale: number): number {
+    const xx = tree.search({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height}) as {
+      node: Node
+      nodeBB: Rectangle
+    }[]
+    if (xx.length == 1) return maxScale // there is always one intersection with the whole graph
+    let scale = maxScale
+    for (const x of xx) {
+      if (x.node == this.geomGraph.graph) continue
+      scale = this.diminishScaleToAvoidTree(x.node, x.nodeBB, nodeBB)
+      if (scale == 1) return scale // no separation
+    }
+    return scale
+  }
+  diminishScaleToAvoidTree(intersectedNode: Node, intersectedRect: Rectangle, nodeBB: Rectangle): number {
+    Assert.assert(intersectedRect.intersects(nodeBB))
+
+    let scaleX: number
+    const x = nodeBB.center.x
+    const y = nodeBB.center.y
+    const h = nodeBB.height / 2
+    const w = nodeBB.width / 2
+    if (x < intersectedRect.left) {
+      scaleX = (intersectedRect.left - x) / h
+    } else if (x > intersectedRect.right) {
+      scaleX = (x - intersectedRect.right) / h
+    } else {
+      return 1
+    }
+
+    let scaleY: number
+    if (y < intersectedRect.bottom) {
+      scaleY = (intersectedRect.bottom - y) / w
+    } else if (y > intersectedRect.top) {
+      scaleY = (y - intersectedRect.top) / w
+    } else {
+      return scaleX
+    }
+
+    return Math.min(scaleX, scaleY)
+  }
+
+  calculateNodeAdditionalScales(levelIndex: number) {
+    const tree = new RTree()
+    // we always get at least one intersection with the whole graph record
+    tree.batchInsert([
+      {
+        x: this.geomGraph.left,
+        y: this.geomGraph.bottom,
+        width: this.geomGraph.width,
+        height: this.geomGraph.height,
+        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+      },
+    ]) // to init with the whole graph bounding box
+    const scales = new Map<Node, number>()
+    this.nodeScales.push(scales)
+    let scale = Math.pow(2, this.levels.length - 1 - levelIndex)
+    for (let j = 0; j < this.numberOfNodesOnLevel[levelIndex]; j++) {
+      const n = this.sortedNodes[j]
+      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+      if (scale <= 1) break
+      scales.set(n, scale)
+    }
+  }
+
+  findMaxScale(n: Node, levelIndex: number, tree: RTree, maxScale: number): number {
+    const geomNode = GeomNode.getGeom(n)
+    let boundingBox = geomNode.boundingBox.clone()
+    boundingBox.scaleAroundCenter(maxScale)
+    let ret = maxScale
+    while (ret > 1 && treeIntersectsRect(tree, boundingBox)) {
+      ret /= 2
+      if (ret < 1) ret = 1
+    }
+    boundingBox = geomNode.boundingBox.clone()
+    boundingBox.scaleAroundCenter(ret)
+    tree.insert({x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height})
+    return ret
+  }
+
   private needToSubdivide() {
     let needSubdivide = false
     for (const tile of this.levels[0].values()) {
@@ -222,7 +395,7 @@ export class TileMap {
   //   }
   // }
 
-  regenerateCurveClipsUpToLayer(levelIndex: number, activeNodes: Set<Node>) {
+  regenerateCurveClipsUpToLevel(levelIndex: number, activeNodes: Set<Node>) {
     this.clearCurveClipsInLevelsUpTo(levelIndex)
     for (const t of this.levels[0].values()) {
       this.regenerateCurveClipsUnderTileUpToLevel(t, levelIndex, activeNodes)
@@ -241,7 +414,13 @@ export class TileMap {
     t.initCurveClips()
     for (const geomEdge of this.geomGraph.deepEdges) {
       if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
-      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve})
+      if (geomEdge.curve instanceof Curve) {
+        for (const seg of geomEdge.curve.segs) {
+          t.addElement({edge: geomEdge.edge, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
+        }
+      } else {
+        t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar: geomEdge.curve.parStart, endPar: geomEdge.curve.parEnd})
+      }
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -381,11 +560,12 @@ export class TileMap {
   //   const gNodes = new Set<Node>(this.geomGraph.graph.nodesBreadthFirst)
   //   return setsAreEqual(gNodes, lastLayerNodes)
   // }
-  private calculateNodeRank(sortedNodes: Node[]) {
+  private calculateNodeRank() {
     this.nodeRank = new Map<Node, number>()
-    const n = sortedNodes.length
+    const n = this.sortedNodes.length
+    const log_n_10 = Math.log10(n)
     for (let i = 0; i < n; i++) {
-      this.nodeRank.set(sortedNodes[i], -Math.log10((i + 1) / n))
+      this.nodeRank.set(this.sortedNodes[i], log_n_10 - Math.log10(i + 1))
     }
   }
   private compareByPagerank(u: Node, v: Node): number {
@@ -397,13 +577,13 @@ export class TileMap {
    * An edge and its attributes is inserted just after its source and the target are inserted.
    * The nodes are sorted by rank here.  */
 
-  private filterOutEntities(levelToReduce: IntPairMap<Tile>, nodes: Node[], z: number) {
+  private filterOutEntities(levelToReduce: IntPairMap<Tile>, z: number) {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.getCurveClips[i].edge}
     const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
     let k = 0
-    for (; k < nodes.length; k++) {
-      const node = nodes[k]
+    for (; k < this.sortedNodes.length; k++) {
+      const node = this.sortedNodes[k]
       if (!this.addNodeToLevel(levelToReduce, node, dataByEntityMap)) {
         break
       }
@@ -488,12 +668,12 @@ export class TileMap {
   private transferDataOfLevelToMap(levelToReduce: IntPairMap<Tile>): Map<Entity, EntityDataInTile[]> {
     const entityToData = new Map<Entity, EntityDataInTile[]>()
     for (const tile of levelToReduce.values()) {
-      for (const bundle of tile.getBundles()) {
-        for (const edge of bundle.edges) {
-          const arr = getCreateEntityDataArray(edge)
-          arr.push({tile: tile, data: {edge: edge, curve: bundle.clip}})
-        }
+      for (const clip of tile.curveClips) {
+        const edge = clip.edge
+        const arr = getCreateEntityDataArray(edge)
+        arr.push({tile: tile, data: clip})
       }
+
       for (const label of tile.labels) {
         const edge = (label.parent as GeomEdge).edge
         const arr = getCreateEntityDataArray(edge)
@@ -527,8 +707,9 @@ export class TileMap {
    */
 
   private subdivideLevel(z: number): boolean {
+    console.log('subdivideLevel', z)
     const tilesInRow = Math.pow(2, z)
-    this.levels[z] = new IntPairMap<Tile>(tilesInRow)
+    this.levels[z] = new IntPairMap<Tile>()
     /** the width and the height of z-th level tile */
     const allTilesAreSmall = this.subdivideTilesOnLevel(z)
     if (allTilesAreSmall) {
@@ -538,7 +719,7 @@ export class TileMap {
     const {w, h} = this.getWHOnLevel(z)
 
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
-      console.log('done subdividing at level', z, ' because of the tile size = ', w, h, ' less than ', this.minTileSize)
+      console.log('done subdividing at level', z, ' because of tile size = ', w, h, 'is less than ', this.minTileSize)
       return true
     }
     return false
@@ -546,14 +727,7 @@ export class TileMap {
   countClips(z: number): number {
     let count = 0
     for (const tile of this.levels[z].values()) {
-      count += tile.curveBundlesLength
-    }
-    return count
-  }
-  countCacheClips(z: number): any {
-    let count = 0
-    for (const tile of this.levels[z].values()) {
-      count += tile.cachedClipsLength
+      count += tile.curveClips.length
     }
     return count
   }
@@ -567,13 +741,15 @@ export class TileMap {
   }
 
   private subdivideTilesOnLevel(z: number) {
+    const tileCount = 0
     let allTilesAreSmall = true
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      const tileIsSmall = this.subdivideTile(key, z, tile, false)
-      allTilesAreSmall &&= tileIsSmall
+      const res = this.subdivideTile(key, z, tile, false)
+      allTilesAreSmall &&= res.allSmall
     }
     this.removeEmptyTiles(z)
+    console.log('generated', this.levels[z].size, 'tiles')
     return allTilesAreSmall
   }
 
@@ -584,7 +760,7 @@ export class TileMap {
     /** this is the tile we are subdividing */
     lowerTile: Tile,
     regenerate: boolean,
-  ) {
+  ): {count: number; allSmall: boolean} {
     const {w, h} = this.getWHOnLevel(z)
     /** this is the map we collect new tiles to */
     const levelTiles = this.levels[z]
@@ -608,24 +784,31 @@ export class TileMap {
     const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
     const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
     subdivideWithCachedClipsAboveTile()
-    for (const tile of levelTiles.values()) {
-      if (tile.entityCount > this.tileCapacity) return false
+    let r = 0
+    let allSmall = true
+    for (const key of keys) {
+      const tile = levelTiles.get(key.x, key.y)
+      if (tile == null) continue
+      r++
+      if (tile.entityCount > this.tileCapacity) {
+        allSmall = false
+      }
     }
-    return true
+    return {count: r, allSmall: allSmall}
 
     // local functions
     function subdivideWithCachedClipsAboveTile() {
       //create temparary PointPairMap to store the result of the intersection
       // each entry in the map is an array of curves corresponding to the intersections with one subtile
 
-      for (const bundle of lowerTile.getBundles()) {
+      for (const clip of lowerTile.curveClips) {
         // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
-        const cs = bundle.clip
-        const xs = intersectWithMiddleLines(cs)
+        const cs = clip.curve
+        const xs = intersectWithMiddleLines(cs, clip.startPar, clip.endPar)
 
         Assert.assert(xs.length >= 2)
-        if(xs.length==2){
-          const t = (xs[0][1] + xs[1][1]) / 2
+        if (xs.length == 2) {
+          const t = (xs[0] + xs[1]) / 2
           const p = cs.value(t)
           const i = p.x <= left + w ? 0 : 1
           const j = p.y <= bottom + h ? 0 : 1
@@ -638,51 +821,35 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          const edgeArray = tile.addToBundlesOrFetchFromBundles(cs.parStart, cs.parEnd, cs)
-          for (const edge of bundle.edges) {
-            edgeArray.push(edge)
-          }
+          tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[0], endPar: xs[1]})
         } else
-        for (let u = 0; u < xs.length - 1; u++) {
-          const t = (xs[u][1] + xs[u + 1][1]) / 2
-          const p = cs.value(t)
-          const i = p.x <= left + w ? 0 : 1
-          const j = p.y <= bottom + h ? 0 : 1
-          const k = 2 * i + j
-          //const tr = cs.trim(xs[u][1], xs[u + 1][1]) 
-          const key = keys[k]
-          let tile = levelTiles.getI(key)
-          if (!tile) {
-            const l = left + i * w
-            const b = bottom + j * h
-            tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
-            levelTiles.setPair(key, tile)
+          for (let u = 0; u < xs.length - 1; u++) {
+            const t = (xs[u] + xs[u + 1]) / 2
+            const p = cs.value(t)
+            const i = p.x <= left + w ? 0 : 1
+            const j = p.y <= bottom + h ? 0 : 1
+            const k = 2 * i + j
+            //const tr = cs.trim(xs[u][1], xs[u + 1][1])
+            const key = keys[k]
+            let tile = levelTiles.getI(key)
+            if (!tile) {
+              const l = left + i * w
+              const b = bottom + j * h
+              tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
+              levelTiles.setPair(key, tile)
+            }
+            tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[u], endPar: xs[u + 1]})
           }
-          const edgeArray = tile.addToBundlesOrFetchFromBundles(xs[u][1], xs[u + 1][1], cs)
-          for (const edge of bundle.edges) {
-            edgeArray.push(edge)
-          }
-        }
       }
     }
 
-    function intersectWithMiddleLines(seg: ICurve): Array<[Point, number]> {
+    function intersectWithMiddleLines(seg: ICurve, start: number, end: number): Array<number> {
       // point, parameter
-      const xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true)).concat(
-        Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)),
-      )
-      xs.sort((a, b) => a.par0 - b.par0)
-      const filteredXs: Array<[Point, number]> = [[seg.start, seg.parStart]]
-      for (let i = 0; i < xs.length; i++) {
-        const ii = xs[i]
-        if (ii.par0 > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
-          filteredXs.push([ii.x, ii.par0])
-        }
-      }
-      if (seg.parEnd > filteredXs[filteredXs.length - 1][1] + GeomConstants.distanceEpsilon) {
-        filteredXs.push([seg.end, seg.parEnd])
-      }
-      return filteredXs
+      let xs = Array.from(Curve.getAllIntersections(seg, horizontalMiddleLine, true))
+        .concat(Array.from(Curve.getAllIntersections(seg, verticalMiddleLine, true)))
+        .map((x) => x.par0)
+      xs.sort((a, b) => a - b)
+      return [start].concat(xs.filter((x) => x >= start && x <= end)).concat(end)
     }
   }
 
@@ -736,7 +903,7 @@ export class TileMap {
           bottom: bottom + h * j,
           top: bottom + h * (j + 1),
         })
-        const tile = this.generateSubTileExceptEdgeClips(upperTile, tileRect)
+        const tile = this.generateOneSubtileExceptEdgeClips(upperTile, tileRect)
         if (tile) {
           this.levels[z].set(keysAbove[k].x, keysAbove[k].y, tile)
         }
@@ -790,7 +957,7 @@ export class TileMap {
     return ret
   }
 
-  private generateSubTileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
+  private generateOneSubtileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
     const tile = new Tile(tileRect)
 
     for (const n of upperTile.nodes) {
@@ -813,6 +980,7 @@ export class TileMap {
       arrowheadBox.add(arrowhead.base.sub(dRotated))
       if (arrowheadBox.intersects(tileRect)) tile.arrowheads.push(arrowhead)
     }
+    if (tile.isEmpty()) return null
     return tile
   }
   // clipIsLegal(
@@ -855,14 +1023,11 @@ export class TileMap {
   //   return true
   // }
 }
-function pushToClips(clips: CurveClip[], e: Edge, c: ICurve) {
-  if (c instanceof Curve) {
-    for (const seg of c.segs) {
-      clips.push({curve: seg, edge: e})
-    }
-  } else {
-    clips.push({curve: c, edge: e})
-  }
+
+function treeIntersectsRect(tree: RTree, boundingBox: Rectangle): boolean {
+  const bb = {x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height}
+  const a = tree.search(bb)
+  return a && a.length > 0
 }
 // function dumpTiles(tileMap: IntPairMap<Tile>, z: number) {
 //   for (const [p, tile] of tileMap.keyValues()) {

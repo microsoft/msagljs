@@ -13,7 +13,14 @@ export class Arrowhead {
   length = Arrowhead.defaultArrowheadLength
   width = 0
   tipPosition: Point
-
+  toJSON(): string {
+    let str = '{'
+    if (this.tipPosition) {
+      str += '"tipPosition": ' + this.tipPosition.toJSON()
+    }
+    str += '}'
+    return str
+  }
   clone(): Arrowhead {
     const r = new Arrowhead()
     r.length = this.length
@@ -22,7 +29,7 @@ export class Arrowhead {
     return r
   }
   constructor() {
-   // just for debug
+    // just for debug
     this.length = Arrowhead.defaultArrowheadLength
   }
   // the edgeGeometry.Curve is trimmed already by the node boundaries</param>
