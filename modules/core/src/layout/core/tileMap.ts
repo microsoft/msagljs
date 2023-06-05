@@ -15,7 +15,7 @@ import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
 import {Assert} from '../../utils/assert'
-import {RTree} from 'hilbert-rtree/build'
+//import {RTree} from 'hilbert-rtree/build'
 
 /** Represents a part of the curve containing in a tile.
  * The tile part of the curve is defined by the startPar and endPar.
@@ -30,32 +30,6 @@ type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel
 export class TileMap {
   sortedNodes: Node[]
   numberOfNodesOnLevel: number[] = []
-  /** returns a number k >= 1, not necceserily an integer. If 1 is returned, that means no change.
-   * If k > 1 is returned than it is safe to scale up the node k-times
-   * z is the zoom level */
-  additionalNodeScale(n: Node, z: number) {
-    const zflo = Math.floor(z)
-    const zn = zflo + 1
-    let scalesOnLevel = this.nodeScales[zflo]
-    let floorScale = 1
-    if (scalesOnLevel) {
-      const t = scalesOnLevel.get(n)
-      if (t) {
-        floorScale = t
-      }
-    }
-
-    let nextScale = 1
-    scalesOnLevel = this.nodeScales[zn]
-    if (scalesOnLevel) {
-      const t = scalesOnLevel.get(n)
-      if (t) {
-        nextScale = t
-      }
-    }
-
-    return (zn - z) * floorScale + (z - zflo) * nextScale
-  }
   private nodeScales: Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
@@ -197,53 +171,53 @@ export class TileMap {
     //   this.checkLevel(i)
     // }
     this.calculateNodeRank()
-    this.makeSomeNodesVizible()
+    //this.makeSomeNodesVizible()
     //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
-  private makeSomeNodesVizible() {
-    for (let levelIndex = 0; levelIndex < this.levels.length - 1; levelIndex++) {
-      this.calculateNodeAdditionalScales(levelIndex)
-    }
-  }
-  calculateNodeAdditionalScalesOnLevelZero() {
-    const tree = new RTree()
-    // we always get at least one intersection with the whole graph record
-    tree.batchInsert([
-      {
-        x: this.geomGraph.left,
-        y: this.geomGraph.bottom,
-        width: this.geomGraph.width,
-        height: this.geomGraph.height,
-        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
-      },
-    ]) // to init with the whole
-    const scales = new Map<Node, number>()
-    this.nodeScales.push(scales)
-    // with this scale the node will be rendered at level[this.level.length -1]
-    let scale = Math.pow(2, this.levels.length - 1)
-    for (let j = 0; j < this.numberOfNodesOnLevel[0]; j++) {
-      const n = this.sortedNodes[j]
+  // private makeSomeNodesVizible() {
+  //   for (let levelIndex = 0; levelIndex < this.levels.length - 1; levelIndex++) {
+  //     this.calculateNodeAdditionalScales(levelIndex)
+  //   }
+  // }
+  // calculateNodeAdditionalScalesOnLevelZero() {
+  //   const tree = new RTree()
+  //   // we always get at least one intersection with the whole graph record
+  //   tree.batchInsert([
+  //     {
+  //       x: this.geomGraph.left,
+  //       y: this.geomGraph.bottom,
+  //       width: this.geomGraph.width,
+  //       height: this.geomGraph.height,
+  //       data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+  //     },
+  //   ]) // to init with the whole
+  //   const scales = new Map<Node, number>()
+  //   this.nodeScales.push(scales)
+  //   // with this scale the node will be rendered at level[this.level.length -1]
+  //   let scale = Math.pow(2, this.levels.length - 1)
+  //   for (let j = 0; j < this.numberOfNodesOnLevel[0]; j++) {
+  //     const n = this.sortedNodes[j]
 
-      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
-      if (scale < 1.1) break // getting almost no enlargement
-      scales.set(n, scale)
-    }
-  }
+  //     scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+  //     if (scale < 1.1) break // getting almost no enlargement
+  //     scales.set(n, scale)
+  //   }
+  // }
 
-  findMaxScaleToNotIntersectTree(n: Node, tree: RTree, maxScale: number): number {
-    const geomNode = GeomNode.getGeom(n)
-    let nodeBB = geomNode.boundingBox
-    // make sure that we are not rendering the node outside of  the the graph bounding box
-    maxScale = Math.min(this.keepInsideGraphBoundingBox(nodeBB), maxScale)
+  // findMaxScaleToNotIntersectTree(n: Node, tree: RTree, maxScale: number): number {
+  //   const geomNode = GeomNode.getGeom(n)
+  //   let nodeBB = geomNode.boundingBox
+  //   // make sure that we are not rendering the node outside of  the the graph bounding box
+  //   maxScale = Math.min(this.keepInsideGraphBoundingBox(nodeBB), maxScale)
 
-    const ret = this.intersectWithTreeAndGetScale(tree, nodeBB, maxScale)
-    // use the resulting bounding box and insert it to the tree
-    nodeBB = geomNode.boundingBox.clone()
-    nodeBB.scaleAroundCenter(ret)
-    tree.insert({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height, data: {node: n, nodeBB: nodeBB}})
-    return ret
-  }
+  //   const ret = this.intersectWithTreeAndGetScale(tree, nodeBB, maxScale)
+  //   // use the resulting bounding box and insert it to the tree
+  //   nodeBB = geomNode.boundingBox.clone()
+  //   nodeBB.scaleAroundCenter(ret)
+  //   tree.insert({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height, data: {node: n, nodeBB: nodeBB}})
+  //   return ret
+  // }
   /** returns the maximal scale keeping nodeBB inside of the graph bounding box */
   private keepInsideGraphBoundingBox(nodeBB: Rectangle): number {
     const graphBB = this.geomGraph.boundingBox
@@ -263,20 +237,20 @@ export class TileMap {
     return keepInsideScale
   }
 
-  intersectWithTreeAndGetScale(tree: RTree, nodeBB: Rectangle, maxScale: number): number {
-    const xx = tree.search({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height}) as {
-      node: Node
-      nodeBB: Rectangle
-    }[]
-    if (xx.length == 1) return maxScale // there is always one intersection with the whole graph
-    let scale = maxScale
-    for (const x of xx) {
-      if (x.node == this.geomGraph.graph) continue
-      scale = this.diminishScaleToAvoidTree(x.node, x.nodeBB, nodeBB)
-      if (scale == 1) return scale // no separation
-    }
-    return scale
-  }
+  // intersectWithTreeAndGetScale(tree: RTree, nodeBB: Rectangle, maxScale: number): number {
+  //   const xx = tree.search({x: nodeBB.left, y: nodeBB.bottom, width: nodeBB.width, height: nodeBB.height}) as {
+  //     node: Node
+  //     nodeBB: Rectangle
+  //   }[]
+  //   if (xx.length == 1) return maxScale // there is always one intersection with the whole graph
+  //   let scale = maxScale
+  //   for (const x of xx) {
+  //     if (x.node == this.geomGraph.graph) continue
+  //     scale = this.diminishScaleToAvoidTree(x.node, x.nodeBB, nodeBB)
+  //     if (scale == 1) return scale // no separation
+  //   }
+  //   return scale
+  // }
   diminishScaleToAvoidTree(intersectedNode: Node, intersectedRect: Rectangle, nodeBB: Rectangle): number {
     Assert.assert(intersectedRect.intersects(nodeBB))
 
@@ -305,43 +279,43 @@ export class TileMap {
     return Math.min(scaleX, scaleY)
   }
 
-  calculateNodeAdditionalScales(levelIndex: number) {
-    const tree = new RTree()
-    // we always get at least one intersection with the whole graph record
-    tree.batchInsert([
-      {
-        x: this.geomGraph.left,
-        y: this.geomGraph.bottom,
-        width: this.geomGraph.width,
-        height: this.geomGraph.height,
-        data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
-      },
-    ]) // to init with the whole graph bounding box
-    const scales = new Map<Node, number>()
-    this.nodeScales.push(scales)
-    let scale = Math.pow(2, this.levels.length - 1 - levelIndex)
-    for (let j = 0; j < this.numberOfNodesOnLevel[levelIndex]; j++) {
-      const n = this.sortedNodes[j]
-      scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
-      if (scale <= 1) break
-      scales.set(n, scale)
-    }
-  }
+  // calculateNodeAdditionalScales(levelIndex: number) {
+  //   const tree = new RTree()
+  //   // we always get at least one intersection with the whole graph record
+  //   tree.batchInsert([
+  //     {
+  //       x: this.geomGraph.left,
+  //       y: this.geomGraph.bottom,
+  //       width: this.geomGraph.width,
+  //       height: this.geomGraph.height,
+  //       data: {node: this.geomGraph.graph, nodeBB: this.geomGraph.boundingBox},
+  //     },
+  //   ]) // to init with the whole graph bounding box
+  //   const scales = new Map<Node, number>()
+  //   this.nodeScales.push(scales)
+  //   let scale = Math.pow(2, this.levels.length - 1 - levelIndex)
+  //   for (let j = 0; j < this.numberOfNodesOnLevel[levelIndex]; j++) {
+  //     const n = this.sortedNodes[j]
+  //     scale = this.findMaxScaleToNotIntersectTree(n, tree, scale)
+  //     if (scale <= 1) break
+  //     scales.set(n, scale)
+  //   }
+  // }
 
-  findMaxScale(n: Node, levelIndex: number, tree: RTree, maxScale: number): number {
-    const geomNode = GeomNode.getGeom(n)
-    let boundingBox = geomNode.boundingBox.clone()
-    boundingBox.scaleAroundCenter(maxScale)
-    let ret = maxScale
-    while (ret > 1 && treeIntersectsRect(tree, boundingBox)) {
-      ret /= 2
-      if (ret < 1) ret = 1
-    }
-    boundingBox = geomNode.boundingBox.clone()
-    boundingBox.scaleAroundCenter(ret)
-    tree.insert({x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height})
-    return ret
-  }
+  // findMaxScale(n: Node, levelIndex: number, tree: RTree, maxScale: number): number {
+  //   const geomNode = GeomNode.getGeom(n)
+  //   let boundingBox = geomNode.boundingBox.clone()
+  //   boundingBox.scaleAroundCenter(maxScale)
+  //   let ret = maxScale
+  //   while (ret > 1 && treeIntersectsRect(tree, boundingBox)) {
+  //     ret /= 2
+  //     if (ret < 1) ret = 1
+  //   }
+  //   boundingBox = geomNode.boundingBox.clone()
+  //   boundingBox.scaleAroundCenter(ret)
+  //   tree.insert({x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height})
+  //   return ret
+  // }
 
   private needToSubdivide() {
     let needSubdivide = false
@@ -1024,11 +998,11 @@ export class TileMap {
   // }
 }
 
-function treeIntersectsRect(tree: RTree, boundingBox: Rectangle): boolean {
-  const bb = {x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height}
-  const a = tree.search(bb)
-  return a && a.length > 0
-}
+// function treeIntersectsRect(tree: RTree, boundingBox: Rectangle): boolean {
+//   const bb = {x: boundingBox.left, y: boundingBox.bottom, width: boundingBox.width, height: boundingBox.height}
+//   const a = tree.search(bb)
+//   return a && a.length > 0
+// }
 // function dumpTiles(tileMap: IntPairMap<Tile>, z: number) {
 //   for (const [p, tile] of tileMap.keyValues()) {
 //     try {
