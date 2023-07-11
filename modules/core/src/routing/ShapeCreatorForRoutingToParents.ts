@@ -1,6 +1,7 @@
 ﻿// written in assumption of a single parent
-
-import {GeomEdge, GeomGraph, GeomNode} from '..'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {GeomNode} from '../layout/core/geomNode'
 import {GeomObject} from '../layout/core/geomObject'
 import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
@@ -58,7 +59,7 @@ export class ShapeCreatorForRoutingToParents {
       return
     }
 
-    nodesToShapes.set(n, new RelativeShape(() => n.boundaryCurve))
+    nodesToShapes.set(n, new RelativeShape(n))
   }
 
   static NumberOfActiveNodesIsUnderThreshold(inParentEdges: Array<GeomEdge>, outParentEdges: Array<GeomEdge>, threshold: number): boolean {

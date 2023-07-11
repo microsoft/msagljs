@@ -125,7 +125,7 @@ export class PortManager {
       return null
     }
 
-    const roundedLocation = GeomConstants.RoundPoint(port.Location)
+    const roundedLocation = Point.RoundPoint(port.Location)
     if (PointLocation.Outside === Curve.PointRelativeToCurveLocation(roundedLocation, obstacle.InputShape.BoundaryCurve)) {
       // Obstacle.Port is outside Obstacle.Shape; handle it as a FreePoint.
       return null
@@ -160,7 +160,7 @@ export class PortManager {
         }
       }
     } else {
-      vertices.push(this.VisGraph.FindVertex(GeomConstants.RoundPoint(port.Location)))
+      vertices.push(this.VisGraph.FindVertex(Point.RoundPoint(port.Location)))
     }
     return vertices
   }
@@ -513,8 +513,8 @@ export class PortManager {
   private CreateObstaclePortEntrancesFromPoints(oport: ObstaclePort) {
     const graphBox = this.graphGenerator.ObstacleTree.GraphBox
     const curveBox = Rectangle.mkPP(
-      GeomConstants.RoundPoint(oport.PortCurve.boundingBox.leftBottom),
-      GeomConstants.RoundPoint(oport.PortCurve.boundingBox.rightTop),
+      Point.RoundPoint(oport.PortCurve.boundingBox.leftBottom),
+      Point.RoundPoint(oport.PortCurve.boundingBox.rightTop),
     )
     // This Port does not have a PortEntry, so we'll have visibility edges to its location
     // in the Horizontal and Vertical directions (possibly all 4 directions, if not on boundary).
@@ -527,7 +527,7 @@ export class PortManager {
     // to the padded extreme boundary ScanSegment, and the Nudger will modify paths as appropriate
     // to remove unnecessary bends.
     // Use the unrounded port location to intersect with its curve.
-    const location: Point = GeomConstants.RoundPoint(oport.PortLocation)
+    const location: Point = Point.RoundPoint(oport.PortLocation)
     let found = false
     const t: {xx0: Point; xx1: Point} = {xx0: null, xx1: null}
 
@@ -579,8 +579,8 @@ export class PortManager {
     // Important:  the LineSegment must be the first arg to GetAllIntersections so RawIntersection works.
     const xxs = Curve.getAllIntersections(lineSeg, curve, true)
     /*Assert.assert(2 === xxs.length, 'Expected two intersections')*/
-    t.xx0 = GeomConstants.RoundPoint(xxs[0].x)
-    t.xx1 = GeomConstants.RoundPoint(xxs[1].x)
+    t.xx0 = Point.RoundPoint(xxs[0].x)
+    t.xx1 = Point.RoundPoint(xxs[1].x)
   }
 
   private CreatePortEntrancesAtBorderIntersections(
@@ -915,7 +915,7 @@ export class PortManager {
     }
 
     // FreePoint.
-    return Rectangle.mkOnPoints([GeomConstants.RoundPoint(port.Location)])
+    return Rectangle.mkOnPoints([Point.RoundPoint(port.Location)])
   }
 
   AddToLimitRectangle(location: Point) {
@@ -941,9 +941,9 @@ export class PortManager {
   // This is private because it depends on LimitRectangle
   private AddFreePointToGraph(location: Point): FreePoint {
     // This is a FreePoint, either a Waypoint or a Port not in an Obstacle.Ports list.
-    // We can't modify the Port.Location as the caller owns that, so GeomConstants.RoundPoint it
+    // We can't modify the Port.Location as the caller owns that, so Point.RoundPoint it
     // at the point at which we acquire it.
-    location = GeomConstants.RoundPoint(location)
+    location = Point.RoundPoint(location)
     // If the point already exists before FreePoint creation, there's nothing to do.
     const vertex = this.VisGraph.FindVertex(location)
     const freePoint = this.FindOrCreateFreePoint(location)

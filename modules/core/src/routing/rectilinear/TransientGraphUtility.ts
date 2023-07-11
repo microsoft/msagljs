@@ -385,8 +385,8 @@ export class TransientGraphUtility {
     //                || (PointComparer.GetPureDirectionVV(maxVisibilitySegment.start, startVertex.point) === dir)), "Inconsistent direction found", this.ObstacleTree, this.VisGraph);
     const oppositeFarBound: number = StaticGraphUtility.GetRectangleBound(limitRect, dir)
     const maxDesiredSplicePoint: Point = StaticGraphUtility.IsVerticalD(dir)
-      ? GeomConstants.RoundPoint(new Point(startVertex.point.x, oppositeFarBound))
-      : GeomConstants.RoundPoint(new Point(oppositeFarBound, startVertex.point.y))
+      ? Point.RoundPoint(new Point(startVertex.point.x, oppositeFarBound))
+      : Point.RoundPoint(new Point(oppositeFarBound, startVertex.point.y))
     if (Point.closeDistEps(maxDesiredSplicePoint, startVertex.point)) {
       // Nothing to do.
       return
@@ -519,19 +519,20 @@ export class TransientGraphUtility {
 
   private SpliceGroupBoundaryCrossing(currentVertex: VisibilityVertex, pac: PointAndCrossings, dirToInside: Direction) {
     const crossings: GroupBoundaryCrossing[] = PointAndCrossingsList.ToCrossingArray(pac.Crossings, dirToInside)
+
     if (crossings != null) {
       const outerVertex = this.VisGraph.FindVertex(pac.Location) ?? this.AddVertex(pac.Location)
-      this.AddVertex(pac.Location)
+
       if (!currentVertex.point.equal(outerVertex.point)) {
         this.FindOrAddEdgeVV(currentVertex, outerVertex)
       }
 
       const interiorPoint = crossings[0].GetInteriorVertexPoint(pac.Location)
       const interiorVertex = this.VisGraph.FindVertex(interiorPoint) ?? this.AddVertex(interiorPoint)
-      this.AddVertex(interiorPoint)
+
       // FindOrAddEdge splits an existing edge so may not return the portion bracketed by outerVertex and interiorVertex.
-      this.FindOrAddEdgeVV(outerVertex, interiorVertex)
-      const edge = this.VisGraph.FindEdgePP(outerVertex.point, interiorVertex.point)
+      const edge = this.FindOrAddEdgeVV(outerVertex, interiorVertex)
+      //const edge = this.VisGraph.FindEdgePP(outerVertex.point, interiorVertex.point)
       const crossingsArray = crossings.map((c) => c.Group.InputShape)
       edge.IsPassable = () => crossingsArray.some((s) => s.IsTransparent)
     }

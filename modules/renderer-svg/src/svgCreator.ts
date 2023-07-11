@@ -27,7 +27,7 @@ import {
   SmoothedPolyline,
   GeomLabel,
   Entity,
-} from 'msagl-js'
+} from '@msagl/core'
 import {
   DrawingEdge,
   DrawingObject,
@@ -40,7 +40,7 @@ import {
   IViewerEdge,
   IViewerObject,
   viewerObj,
-} from 'msagl-js/drawing'
+} from '@msagl/drawing'
 import {String} from 'typescript-string-operations'
 
 export class SvgViewerObject extends Attribute implements IViewerObject {
@@ -88,6 +88,11 @@ export class SvgViewerEdge extends SvgViewerObject implements IViewerEdge {
 }
 /** this class creates SVG content for a given Graph */
 export class SvgCreator {
+  getShowRect(): DOMRect {
+    const bb = this.geomGraph.boundingBox
+    return new DOMRect(bb.left, -bb.top, bb.width, bb.height)
+  }
+
   removeRubberEdge() {
     this.rubberEdge.remove()
     this.rubberEdge = null
@@ -142,10 +147,8 @@ export class SvgCreator {
   invalidate(objectToInvalidate: IViewerObject) {
     const entity = objectToInvalidate.entity
     if (entity instanceof Graph) {
-      if (entity.parent == null) {
-        this.setGraphWidthAndHightAttributes()
-        this.setTransformForTranformGroup()
-      } else {
+      if (entity.parent) {
+        // ignore the root graph
         this.drawNode(entity)
       }
     } else if (entity instanceof Node) {
@@ -165,6 +168,7 @@ export class SvgCreator {
   }
   static arrowAngle = 25
   svg: SVGElement
+  superTransGroup: SVGElement
   transformGroup: SVGElement
   graph: Graph
   get geomGraph(): GeomGraph {
@@ -189,10 +193,11 @@ export class SvgCreator {
     this.graph = graph
     this.graph.setAttr(AttributeRegistry.ViewerIndex, null)
     this.svg = this.createAndBindWithGraph(graph, 'svg', this.container)
-    this.svg.setAttribute('style', 'border: 1px solid black')
 
-    this.open()
-    this.svg.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
+    this.superTransGroup = document.createElementNS(svgns, 'g')
+    this.superTransGroup.setAttribute('transform', 'matrix(1,0,0,1, 0, 0)')
+    this.svg.appendChild(this.superTransGroup)
+    this.superTransGroup.appendChild((this.transformGroup = document.createElementNS(svgns, 'g')))
 
     // After the y flip the top has moved to -top : translating it to zero
     this.setTransformForTranformGroup()
@@ -205,15 +210,15 @@ export class SvgCreator {
     }
   }
   private setTransformForTranformGroup() {
-    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', -this.geomGraph.left, this.geomGraph.top))
+    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', 0, 0))
   }
 
   /** gets transform from svg to the client window coordinates */
   getTransform(): PlaneTransformation {
     if (!this.svg) return PlaneTransformation.getIdentity()
-    const tr = (this.svg as SVGGraphicsElement).getScreenCTM()
+    const tr = (this.superTransGroup as SVGGraphicsElement).getScreenCTM()
     const m = new PlaneTransformation(tr.a, tr.b, tr.e, tr.c, tr.d, tr.f)
-    const flip = new PlaneTransformation(1, 0, -this.geomGraph.left, 0, -1, this.geomGraph.top)
+    const flip = new PlaneTransformation(1, 0, 0, 0, -1, 0)
     // first we apply flip then m
     return m.multiply(flip)
   }
@@ -404,14 +409,11 @@ export class SvgCreator {
 
   private drawLabel(node: Node, dn: DrawingObject, nodeGroup: SVGElement) {
     if (!dn) return
-    if (!dn.labelText || dn.labelText.length == 0) return
+    if (!dn.labelText || dn.labelText.length == 0 || dn.measuredTextSize == null) return
 
-    if (dn instanceof DrawingNode) {
-      this.writeLabelText(node, dn.measuredTextSize, nodeGroup, 'nodeLabel')
-    } else {
-      throw new Error('not implemented')
-    }
+    this.writeLabelText(node, dn.measuredTextSize, nodeGroup, 'nodeLabel')
   }
+
   private writeLabelText(node: Node, measuredTextSize: Size, nodeGroup: SVGElement, id: string) {
     const geomNode = <GeomNode>GeomNode.getGeom(node)
     const drawingNode = <DrawingNode>DrawingObject.getDrawingObj(node)
@@ -469,15 +471,8 @@ export class SvgCreator {
     }
   }
 
-  private open() {
-    this.setGraphWidthAndHightAttributes()
-  }
-
-  private setGraphWidthAndHightAttributes() {
-    this.svg.setAttribute('viewBox', this.getViewBoxString())
-  }
-  getViewBoxString(): string {
-    return String.Format('0 0 {0} {1}', this.geomGraph.width, this.geomGraph.height)
+  getViewBoxString(bbox: DOMRect): string {
+    return String.Format('0 0 {0} {1}', bbox.width, bbox.height)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {

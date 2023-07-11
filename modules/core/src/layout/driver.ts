@@ -5,7 +5,7 @@ import {Edge} from '../structs/edge'
 import {Graph, shallowConnectedComponents} from '../structs/graph'
 import {GeomEdge} from './core/geomEdge'
 import {SugiyamaLayoutSettings} from './layered/sugiyamaLayoutSettings'
-import {FastIncrementalLayoutSettings, GeomNode, LayeredLayout, MdsLayoutSettings} from '..'
+import {FastIncrementalLayoutSettings, GeomNode, LayeredLayout, MdsLayoutSettings, Point} from '..'
 import {PivotMDS} from './mds/pivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
 import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
@@ -104,13 +104,13 @@ function figureOutSettings(geomGraph: GeomGraph): any {
 
   return directed ? new SugiyamaLayoutSettings() : new IPsepColaSetting()
 }
-function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
+function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken, edgeLenght: (e: GeomEdge) => number = () => 1) {
   createSettingsIfNeeded(geomGraph)
   if (geomGraph.layoutSettings instanceof SugiyamaLayoutSettings) {
     const ll = new LayeredLayout(geomGraph, <SugiyamaLayoutSettings>geomGraph.layoutSettings, cancelToken)
     ll.run()
   } else if (geomGraph.layoutSettings instanceof MdsLayoutSettings) {
-    const pivotMds = new PivotMDS(geomGraph, cancelToken, () => 1, <MdsLayoutSettings>geomGraph.layoutSettings)
+    const pivotMds = new PivotMDS(geomGraph, cancelToken, edgeLenght, <MdsLayoutSettings>geomGraph.layoutSettings)
     pivotMds.run()
   } else if (geomGraph.layoutSettings instanceof IPsepColaSetting) {
     const layout = new InitialLayout(geomGraph, geomGraph.layoutSettings)
@@ -124,6 +124,7 @@ function layoutEngine(geomGraph: GeomGraph, cancelToken: CancelToken) {
 export function layoutGeomGraph(geomGraph: GeomGraph, cancelToken: CancelToken = null): void {
   createSettingsIfNeeded(geomGraph)
   layoutGeomGraphDetailed(geomGraph, cancelToken, layoutEngine, routeEdges, optimalPackingRunner)
+  shiftToFirstQuarter(geomGraph)
 }
 
 export function getEdgeRoutingSettingsFromAncestorsOrDefault(geomGraph: GeomGraph): EdgeRoutingSettings {
@@ -160,16 +161,21 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
 export function layoutGeomGraphDetailed(
   geomG: GeomGraph,
   cancelToken: CancelToken,
-  layoutEngine: (g: GeomGraph, cancelToken: CancelToken) => void,
+  layoutEngine: (g: GeomGraph, cancelToken: CancelToken, edgeLength: (e: GeomEdge) => number) => void,
   edgeRouter: (g: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken) => void,
   packing: (g: GeomGraph, subGraphs: GeomGraph[]) => void,
   randomSeed = 1,
+  /** used only for PivotMDS */
+  edgeLength: (e: GeomEdge) => number = () => 1,
 ) {
   if (geomG.graph.isEmpty()) {
     return
   }
+  // @ts-ignore
+  const gn = geomG.shallowNodes.next()
+
   if (geomG.parent == null) {
-    //console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount(), 'edges')
+    //console.log('loading graph', geomG.id, 'with', geomG.deepNodeCount, 'nodes, and', geomG.graph.deepEdgesCount, 'edges')
     //console.time('layout')
     // go over some intitial settings only on the top level
     initRandom(randomSeed)
@@ -204,7 +210,6 @@ export function layoutGeomGraphDetailed(
   }
 
   // end of layoutGeomGraphDetailed body
-
   function getUnroutedEdges(g: GeomGraph): Array<GeomEdge> {
     const edges = []
     for (const n of g.nodesBreadthFirst) {
@@ -246,10 +251,10 @@ export function layoutGeomGraphDetailed(
 
   function layoutComps() {
     if (connectedGraphs.length === 1) {
-      layoutEngine(geomG, cancelToken)
+      layoutEngine(geomG, cancelToken, edgeLength)
     } else {
       for (const cg of connectedGraphs) {
-        layoutEngine(cg, cancelToken)
+        layoutEngine(cg, cancelToken, edgeLength)
         cg.boundingBox = cg.pumpTheBoxToTheGraphWithMargins()
       }
       packing(geomG, connectedGraphs)
@@ -303,8 +308,10 @@ export function routeRectilinearEdges(
   cancelToken: CancelToken,
   nodePadding = 1,
   cornerFitRadius = 3,
+  edgeSeparatian = 3,
 ) {
   const rr = RectilinearEdgeRouter.constructorGNAN(geomG, edgesToRoute, nodePadding, cornerFitRadius)
+  rr.edgeSeparatian = edgeSeparatian
   rr.run()
 }
 function positionLabelsIfNeeded(geomG: GeomGraph, edges: GeomEdge[]) {
@@ -325,13 +332,16 @@ export function geometryIsCreated(graph: Graph): boolean {
     const gn = GeomObject.getGeom(n) as GeomNode
     if (gn == null || gn.boundaryCurve == null) return false
     if (n instanceof Graph) {
-      if (geometryIsCreated(n) === false) return false
+      if (geometryIsCreated(n) === false) {
+        return false
+      }
     }
   }
   for (const e of graph.edges) {
     const ge = GeomEdge.getGeom(e) as GeomEdge
     if (ge == null) return false
   }
+
   return true
 }
 
@@ -353,4 +363,11 @@ export function layoutIsCalculated(graph: Graph): boolean {
   }
   // todo: consider adding more checks. For example, check that the bounding boxes of subgraphs make sense, and the edge curves are attached to the nodes
   return true
+}
+function shiftToFirstQuarter(geomGraph: GeomGraph) {
+  const lb = geomGraph.boundingBox.leftBottom
+  if (lb.x < 0 || lb.y < 0) {
+    const delta = new Point(-lb.x, -lb.y)
+    geomGraph.translate(delta)
+  }
 }

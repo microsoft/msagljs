@@ -2,12 +2,12 @@
 // We assume that the boundaries are not set for the shape children yet
 
 import {Point} from '..'
-// import {SvgDebugWriter} from '../../test/utils/svgDebugWriter'
 import {Curve, PointLocation} from '../math/geometry'
 import {ConvexHull} from '../math/geometry/convexHull'
 import {Polyline} from '../math/geometry/polyline'
 import {CreateRectNodeOnArrayOfRectNodes, mkRectangleNode, RectangleNode} from '../math/geometry/RTree/rectangleNode'
 import {CrossRectangleNodes} from '../math/geometry/RTree/rectangleNodeUtils'
+import {initRandom} from '../utils/random'
 import {flattenArray} from '../utils/setOperations'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {Shape} from './shape'
@@ -17,7 +17,7 @@ export class ShapeObstacleCalculator {
   tightHierarchy: RectangleNode<Polyline, Point>
 
   coupleHierarchy: RectangleNode<TightLooseCouple, Point>
-
+  loosePolylinesToNodes = new Map<Polyline, Set<Node>>()
   RootOfLooseHierarchy: RectangleNode<Shape, Point>
 
   constructor(shape: Shape, tightPadding: number, loosePadding: number, shapesToTightLooseCouples: Map<Shape, TightLooseCouple>) {
@@ -28,20 +28,24 @@ export class ShapeObstacleCalculator {
   }
 
   ShapesToTightLooseCouples: Map<Shape, TightLooseCouple>
+  tightToShape: Map<Polyline, Shape>
   TightPadding: number
 
   LoosePadding: number
   MainShape: Shape
   OverlapsDetected: boolean
 
-  Calculate(randomizeLoosePolylines: boolean) {
+  Calculate(randomizationShift: number, maxPadding: number = Number.MAX_VALUE) {
+    initRandom(3) // keep it the same all the time, otherwise the path optimizer migth not work
     if (this.MainShape.Children.length === 0) {
       return
     }
 
     this.CreateTightObstacles()
-    this.CreateTigthLooseCouples(randomizeLoosePolylines)
-    this.FillTheMapOfShapeToTightLooseCouples()
+    this.CreateTigthLooseCouples(randomizationShift)
+    if (this.OverlapsDetected) {
+      this.FillTheMapOfShapeToTightLooseCouples()
+    }
   }
   FillTheMapOfShapeToTightLooseCouples() {
     const childrenShapeHierarchy = CreateRectNodeOnArrayOfRectNodes(this.MainShape.Children.map((s) => mkRectangleNode(s, s.BoundingBox)))
@@ -59,12 +63,16 @@ export class ShapeObstacleCalculator {
     return Curve.PointRelativeToCurveLocation(shape.BoundaryCurve.start, tightPolyline) === PointLocation.Inside
   }
 
-  CreateTigthLooseCouples(randomizeLoosePolylines: boolean) {
+  CreateTigthLooseCouples(randomizationShift: number) {
     const couples = new Array<TightLooseCouple>()
     for (const tightPolyline of this.tightHierarchy.GetAllLeaves()) {
       const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(this.tightHierarchy, tightPolyline, this.LoosePadding)
-      const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizeLoosePolylines)
-      couples.push(TightLooseCouple.mk(tightPolyline, new Shape(loosePoly), distance))
+      const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizationShift)
+      const looseShape = new Shape(loosePoly)
+      const cpl = TightLooseCouple.mk(tightPolyline, looseShape, distance)
+      this.ShapesToTightLooseCouples.set(this.tightToShape.get(tightPolyline), cpl)
+
+      couples.push(cpl)
     }
 
     this.coupleHierarchy = CreateRectNodeOnArrayOfRectNodes(
@@ -73,6 +81,7 @@ export class ShapeObstacleCalculator {
   }
 
   CreateTightObstacles() {
+    this.tightToShape = new Map<Polyline, Shape>()
     const tightObstacles = new Set<Polyline>(this.MainShape.Children.map(this.InitialTightPolyline.bind(this)))
     const initialNumberOfTightObstacles: number = tightObstacles.size
     this.tightHierarchy = InteractiveObstacleCalculator.RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacles)
@@ -80,16 +89,19 @@ export class ShapeObstacleCalculator {
   }
 
   InitialTightPolyline(shape: Shape): Polyline {
-    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
+    let poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, this.TightPadding)
     const stickingPointsArray = flattenArray(this.LoosePolylinesUnderShape(shape), (p) => p).filter(
       (p) => Curve.PointRelativeToCurveLocation(p, poly) === PointLocation.Outside,
     )
 
-    if (stickingPointsArray.length <= 0) {
+    if (stickingPointsArray.length == 0) {
+      if (this.tightToShape) this.tightToShape.set(poly, shape)
       return poly
     }
     const pts = Array.from(poly).concat(stickingPointsArray)
-    return Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(pts))
+    poly = Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(pts))
+    if (this.tightToShape) this.tightToShape.set(poly, shape)
+    return poly
   }
 
   LoosePolylinesUnderShape(shape: Shape): Array<Polyline> {

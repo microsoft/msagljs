@@ -1,79 +1,75 @@
 import {Point} from '..'
 import {PointPair} from '../math/geometry/pointPair'
-import {PointMap} from './PointMap'
 
 export class PointPairMap<T> {
-  mapOfMaps: PointMap<PointMap<T>>
-  private size_ = 0
+  m: Map<string, T> = new Map<string, T>()
   clear() {
-    this.mapOfMaps.clear()
-    this.size_ = 0
+    this.m.clear()
   }
 
   get size(): number {
-    return this.size_
+    return this.m.size
   }
-  set(pp: PointPair, v: T) {
-    const x = pp._first
-    const y = pp._second
-    let m = this.mapOfMaps.get(x)
-    if (m == null) this.mapOfMaps.set(x, (m = new PointMap<T>()))
 
-    if (!m.has(y)) {
-      this.size_++
-    }
-    m.set(y, v)
+  set(pp: PointPair, v: T) {
+    this.m.set(getKey(pp), v)
   }
 
   delete(pp: PointPair) {
-    const x = pp._first
-    const y = pp._second
-
-    const m = this.mapOfMaps.get(x)
-    if (m != null) {
-      if (m.deleteP(y)) this.size_--
-    }
+    this.m.delete(getKey(pp))
   }
 
   has(pp: PointPair): boolean {
-    const m = this.mapOfMaps.get(pp._first)
-    return m != null && m.has(pp._second)
+    return this.m.has(getKey(pp))
   }
 
-  get_(p: Point, q: Point) {
+  getPP(p: Point, q: Point) {
     return this.get(new PointPair(p, q))
   }
   get(pp: PointPair): T {
-    const m = this.mapOfMaps.get(pp._first)
-    if (m == null) return
-
-    return m.get(pp._second)
-  }
-  constructor() {
-    this.mapOfMaps = new PointMap<PointMap<T>>()
+    return this.m.get(getKey(pp))
   }
 
   *keys(): IterableIterator<PointPair> {
-    for (const p of this.mapOfMaps) {
-      for (const yp of p[1]) {
-        yield new PointPair(p[0], yp[0])
-      }
+    for (const sKey of this.m.keys()) {
+      const pp = getPP(sKey)
+      yield pp
     }
   }
 
   *[Symbol.iterator](): IterableIterator<[PointPair, T]> {
-    for (const [x, m] of this.mapOfMaps) {
-      for (const [y, t] of m) {
-        yield [new PointPair(x, y), t]
-      }
+    for (const [x, t] of this.m) {
+      yield [getPP(x), t]
     }
   }
 
   *values(): IterableIterator<T> {
-    for (const p of this.mapOfMaps) {
-      for (const yV of p[1]) {
-        yield yV[1]
-      }
-    }
+    yield* this.m.values()
   }
+}
+function getPP(sKey: string): PointPair {
+  const pointString = sKey.split(' ')
+  const firstS = pointString[0]
+  const secondS = pointString[1]
+
+  // Remove the parentheses and split by comma
+  let parts = firstS.split(',')
+
+  // Convert the parts to numbers
+  const first = new Point(Number(parts[0]), Number(parts[1]))
+  parts = secondS.split(',')
+  const second = new Point(Number(parts[0]), Number(parts[1]))
+  const pp = new PointPair(first, second)
+  return pp
+}
+
+function getKeyPP(first: Point, second: Point): string {
+  return [localToString(first), localToString(second)].sort().join(' ')
+}
+
+function getKey(pp: PointPair): string {
+  return getKeyPP(pp.first, pp.second)
+}
+function localToString(p: Point):string {  
+  return p.x.toString() + ',' + p.y.toString() 
 }

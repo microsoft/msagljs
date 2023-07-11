@@ -1,6 +1,6 @@
 import {LinkedList} from '@esfx/collections'
 import {GeomConstants, ICurve, Point, Rectangle, Size} from '../math/geometry'
-import {RTree, mkRTree} from '../math/geometry/RTree/rTree'
+import {BinaryRTree, mkRTree} from '../math/geometry/RTree/rTree'
 import {Algorithm} from '../utils/algorithm'
 import {CancelToken} from '../utils/cancelToken'
 import {closeDistEps} from '../utils/compare'
@@ -153,9 +153,9 @@ export class EdgeLabelPlacement extends Algorithm {
 
   edges: GeomEdge[]
 
-  obstacleMaps: RTree<IObstacle, Point>[] = []
+  obstacleMaps: BinaryRTree<IObstacle, Point>[] = []
 
-  labelObstacleMap: RTree<IObstacle, Point>
+  labelObstacleMap: BinaryRTree<IObstacle, Point>
 
   edgeInfos: Map<GeomEdge, LabelInfo> = new Map<GeomEdge, LabelInfo>()
 
@@ -727,7 +727,7 @@ export class EdgeLabelPlacement extends Algorithm {
           if (isRectangleObstacle) {
             const isCluster = obstacle.data instanceof GeomGraph
             // ...and the cluster is a grandparent of the source or target...
-            if (isCluster != null && (source.node.isDescendantOf(obstacle.data.graph) || target.node.isDescendantOf(obstacle.data))) {
+            if (isCluster && (source.node.isDescendantOf(obstacle.data.graph) || target.node.isDescendantOf(obstacle.data))) {
               // ...don't consider the overlap to be a conflict.
               continue
             }

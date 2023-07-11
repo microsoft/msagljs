@@ -10,9 +10,9 @@ export class CdtThreader {
   start: Point
 
   end: Point
-
+  /** >0, if one of the ends of piercedEdge is to the right of (start, end) line, 0 - if it is on the line */
   positiveSign: number
-
+  /** <0, if one of the ends of piercedEdge is to the left of (start, end) line, 0 - if it is on the line */
   negativeSign: number
 
   private currentPiercedEdge: CdtEdge
@@ -33,6 +33,19 @@ export class CdtThreader {
     this.end = end
     //Assert.assert(CdtTriangle.PointLocationForTriangle(start, startTriangle) !== PointLocation.Outside)
   }
+  /**This method finds the first edge of the current triangle that 
+   * is pierced by a segment (start,end). It assumes that the start 
+   * point is inside or on the boundary of the current triangle, 
+   *  and the end point is outside. 
+   * The function works by computing the sign of each vertex
+   *  of the current triangle with respect to the segment.
+   *  The sign is zero if the vertex is on the segment, 
+   * positive if it is to the right of the segment  (when looking from the start point to the end point), 
+   * and negative if it is to the left.
+   * The function then checks if there are two consecutive 
+   * vertices with different signs. If so, it means that the edge between them is pierced by the segment. The function returns that edge as the result.
+
+The function also sets the positiveSign and negativeSign fields to store the signs of the vertices on either side of the pierced edge. This is useful for finding the next triangle in the path of the segment. */
 
   private FindFirstPiercedEdge(): CdtEdge {
     //Assert.assert(CdtTriangle.PointLocationForTriangle(this.start, this.currentTriangle) !== PointLocation.Outside)

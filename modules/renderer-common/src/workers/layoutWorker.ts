@@ -1,5 +1,5 @@
 import {parseJSON, graphToJSON} from '@msagl/parser'
-import {DrawingGraph} from 'msagl-js/drawing'
+import {DrawingGraph} from '@msagl/drawing'
 import {layoutGraph} from '../layout'
 
 export default function initLayoutWorker() {
@@ -9,12 +9,9 @@ export default function initLayoutWorker() {
         const graph = parseJSON(data.graph)
 
         console.debug('graph transfer to worker', Date.now() - data.timestamp + ' ms')
-
-        const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph) || new DrawingGraph(graph)
-        // GeomEdge is missing without this step
-        drawingGraph.createGeometry()
+        //geometry has to be created before layout, and transfered to worker
         layoutGraph(graph, data.options, data.forceUpdate)
-
+        console.debug('layout done', Date.now() - data.timestamp + ' ms')
         postMessage({
           type: 'layout-done',
           timestamp: Date.now(),

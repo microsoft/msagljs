@@ -78,6 +78,7 @@ const config = configure({
       meta: "build",
       nodeBin: "tsc",
       npmPackage: "typescript",
+      version: "0.0.1",
       inputFiles: {
         "tsconfig.json": {
           "compilerOptions": {
@@ -89,10 +90,22 @@ const config = configure({
             "importHelpers": true,
             "noEmit": true,
             "esModuleInterop": true,
+            "skipLibCheck": true,
           },
         }
       }
-    }]
+    },
+    {
+      lang: "dot",
+      html: "./tools/msagl.html",
+      timeout: 120000,
+      outputFiles: [
+        {
+          name: "output.svg",
+          title: "Generated graph",
+        },
+      ]
+    },]
   },
   sideEditor: {
     editors: [

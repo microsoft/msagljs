@@ -5,7 +5,7 @@
 // Copyright Microsoft Corporation.
 
 import {Nudger} from './nudging/Nudger'
-import {ICurve, Point} from '../../math/geometry'
+import {ICurve, LineSegment, Point} from '../../math/geometry'
 import {CancelToken} from '../../utils/cancelToken'
 import {GeomEdge} from '../../layout/core/geomEdge'
 import {GeomGraph} from '../../layout/core/geomGraph'
@@ -38,10 +38,11 @@ export class RectilinearEdgeRouter extends Algorithm {
 
   Padding = 0
 
-  // The radius of the arc inscribed into the path corners.
+  /**  The radius of the arc inscribed into the path corners. */
 
   CornerFitRadius = 0
-
+  /** the minimal distance between to parrallel segments */
+  edgeSeparatian = 3
   // The relative penalty of a bend, representated as a percentage of the Manhattan distance between
   // two ports being connected.
 
@@ -73,12 +74,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     // The Port.Location values are not necessarily rounded by the caller.  The values
     // will be rounded upon acquisition in PortManager.cs.  PointComparer.Equal expects
     // all values to be rounded.
-    if (
-      !Point.closeDistEps(
-        GeomConstants.RoundPoint(edgeGeometry.sourcePort.Location),
-        GeomConstants.RoundPoint(edgeGeometry.targetPort.Location),
-      )
-    ) {
+    if (!Point.closeDistEps(Point.RoundPoint(edgeGeometry.sourcePort.Location), Point.RoundPoint(edgeGeometry.targetPort.Location))) {
       this.EdgesToRoute.push(edgeGeometry)
     } else {
       this.selfEdges.push(edgeGeometry)
@@ -463,7 +459,7 @@ export class RectilinearEdgeRouter extends Algorithm {
     const ancestorSets = this.ObsTree.SpatialAncestorsAdjusted ? SplineRouter.GetAncestorSetsMap(this.Obstacles) : this.AncestorsSets
     // Using VisibilityPolyline retains any reflection/staircases on the convex hull borders; using
     // PaddedPolyline removes them.
-    Nudger.NudgePaths(edgePaths, this.CornerFitRadius, this.PaddedObstacles, ancestorSets, this.RemoveStaircases)
+    Nudger.NudgePaths(edgePaths, this.edgeSeparatian, this.PaddedObstacles, ancestorSets, this.RemoveStaircases)
     // Nudger.NudgePaths(edgePaths, CornerFitRadius, this.ObstacleTree.GetAllPrimaryObstacles().Select(obs => obs.VisibilityPolyline), ancestorSets, RemoveStaircases);
   }
 
@@ -497,7 +493,19 @@ export class RectilinearEdgeRouter extends Algorithm {
     this.GraphGenerator.Clear()
     this.InitObstacleTree()
     this.GraphGenerator.GenerateVisibilityGraph()
+    // if (DebugObject.dumpDebugCurves) DebugObject.dumpDebugCurves('./tmp/rvg.svg', this.mkDC())
   }
+
+  // mkDC(): Array<DebugCurve> {
+  //   const dc = new Array<DebugCurve>()
+  //   dc.push(
+  //     ...Array.from(this.VisibilityGraph.Edges).map((e) =>
+  //       DebugCurve.mkDebugCurveTWCI(100, 1, 'Blue', LineSegment.mkPP(e.SourcePoint, e.TargetPoint)),
+  //     ),
+  //   )
+  //   dc.push(...this.Obstacles.map((o) => DebugCurve.mkDebugCurveTWCI(100, 2, 'Red', o.BoundaryCurve)))
+  //   return dc
+  // }
 
   private static CalculateArrowheads(edgeGeom: GeomEdge) {
     Arrowhead.trimSplineAndCalculateArrowheadsII(edgeGeom, edgeGeom.sourcePort.Curve, edgeGeom.targetPort.Curve, edgeGeom.curve, true)
@@ -580,6 +588,9 @@ export class RectilinearEdgeRouter extends Algorithm {
   // }
 
   static FitArcsIntoCorners(radius: number, polyline: Point[]): ICurve {
+    if (radius == 0) {
+      return Polyline.mkFromPoints(polyline)
+    }
     const ellipses = RectilinearEdgeRouter.GetFittedArcSegs(radius, polyline)
     const curve = new Curve()
     let prevEllipse: Ellipse = null

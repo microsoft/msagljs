@@ -335,7 +335,7 @@ test('TestConvexHull4', () => {
   const points = [
     new Point(0.31698, -9.230142),
     new Point(-14.24348, 29.42568),
-    new Point(-14.24348, 46.527387),
+    new Point(-14.24348, 46.541867),
     new Point(-1.835356, 72.715731),
     new Point(7.602116, 87.795607),
     new Point(9.312994, 89.506485),

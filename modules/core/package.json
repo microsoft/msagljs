@@ -1,6 +1,6 @@
 {
-  "name": "msagl-js",
-  "version": "1.1.4",
+  "name": "@msagl/core",
+  "version": "1.1.16",
   "description": "MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,6 @@
   "files": [
     "dist",
     "dist.min.js",
-    "drawing",
     "src"
   ],
   "publishConfig": {

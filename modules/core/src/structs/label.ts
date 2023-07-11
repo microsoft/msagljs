@@ -1,4 +1,3 @@
-import {Edge} from './edge'
 import {Entity} from './entity'
 
 export class Label extends Entity {

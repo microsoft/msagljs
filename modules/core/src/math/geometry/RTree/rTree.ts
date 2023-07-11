@@ -5,8 +5,8 @@ import {RectangleNode, mkRectangleNode, CreateRectNodeOnArrayOfRectNodes as Crea
 // It is very similar to "R-TREES. A DYNAMIC INDEX STRUCTURE FOR SPATIAL SEARCHING" by Antonin Guttman
 
 // Create the query tree for a given enumerable of T keyed by Rectangles
-export function mkRTree<T, P>(rectsAndData: Array<[IRectangle<P>, T]>): RTree<T, P> {
-  return new RTree<T, P>(CreateRectNodeOnArrayOfRectNodes(rectsAndData.map(([k, v]) => mkRectangleNode<T, P>(v, k))))
+export function mkRTree<T, P>(rectsAndData: Array<[IRectangle<P>, T]>): BinaryRTree<T, P> {
+  return new BinaryRTree<T, P>(CreateRectNodeOnArrayOfRectNodes(rectsAndData.map(([k, v]) => mkRectangleNode<T, P>(v, k))))
 }
 
 function TransferFromSibling<T, P>(parent: RectangleNode<T, P>, sibling: RectangleNode<T, P>) {
@@ -68,7 +68,7 @@ function NumberOfIntersectedIsLessThanBoundOnNode<T, P>(
   )
 }
 
-export class RTree<T, P> {
+export class BinaryRTree<T, P> {
   private _rootNode: RectangleNode<T, P>
 
   // Removes everything from the tree

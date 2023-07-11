@@ -1,4 +1,4 @@
-import {Layer, project32, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
+import {Layer, project32, Position, Color, UNIT, Unit, Accessor, LayerProps, UpdateParameters, DefaultProps} from '@deck.gl/core/typed'
 import GL from '@luma.gl/constants'
 import {Model, Geometry} from '@luma.gl/engine'
 import {Texture2D} from '@luma.gl/webgl'
@@ -6,7 +6,7 @@ import {picking} from '@luma.gl/shadertools'
 
 import {nodeDepthModuleVs} from './graph-highlighter'
 
-// TODO - Use ShapeEnum from msagl-js
+// TODO - Use ShapeEnum from @msagl/core
 export enum SHAPE {
   Rectangle = 0,
   Oval = 1,
@@ -19,6 +19,8 @@ export type GeometryLayerProps<DataT = any> = {
   lineWidthMinPixels?: number
   lineWidthMaxPixels?: number
 
+  sizeScale?: number
+
   stroked?: boolean
   filled?: boolean
 
@@ -28,11 +30,11 @@ export type GeometryLayerProps<DataT = any> = {
   nodeDepth?: Texture2D
   highlightColors?: number[][]
 
-  getPickingColor?: Accessor<DataT, number[]>
-  getPosition?: Accessor<DataT, number[]>
+  getPickingColor?: Accessor<DataT, Color>
+  getPosition?: Accessor<DataT, Position>
   getSize?: Accessor<DataT, [number, number]>
-  getFillColor?: Accessor<DataT, number[]>
-  getLineColor?: Accessor<DataT, number[]>
+  getFillColor?: Accessor<DataT, Color>
+  getLineColor?: Accessor<DataT, Color>
   getLineWidth?: Accessor<DataT, number>
   getShape?: Accessor<DataT, SHAPE>
 } & LayerProps<DataT>
@@ -42,6 +44,8 @@ const defaultProps: DefaultProps<GeometryLayerProps> = {
   lineWidthScale: {type: 'number', min: 0, value: 1},
   lineWidthMinPixels: {type: 'number', min: 0, value: 0},
   lineWidthMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
+
+  sizeScale: {type: 'number', min: 0, value: 1},
 
   stroked: true,
   filled: true,
@@ -80,6 +84,7 @@ attribute vec3 instancePickingColors;
 
 uniform mat4 depthHighlightColors;
 uniform float opacity;
+uniform float sizeScale;
 uniform float lineWidthScale;
 uniform float lineWidthMinPixels;
 uniform float lineWidthMaxPixels;
@@ -111,11 +116,11 @@ void main(void) {
 
   geometry.uv = positions.xy;
 
-  vec3 offset = vec3((instanceSizes + 1.0) / 2.0 * positions.xy, 0.0);
+  vec3 offset = vec3((instanceSizes * sizeScale + 1.0) / 2.0 * positions.xy, 0.0);
   DECKGL_FILTER_SIZE(offset, geometry);
   
   vPosition = offset.xy;
-  shape = vec4(instanceSizes, lineWidthCommon, instanceShapes);
+  shape = vec4(instanceSizes * sizeScale, lineWidthCommon, instanceShapes);
 
   gl_Position = project_position_to_clipspace(instancePositions, instancePositions64Low, offset, geometry.position);
 
@@ -160,6 +165,11 @@ float smoothedgeCommon(float edge, float x) {
   return smoothstep(edge - radius, edge + radius, x);
 }
 
+float smoothedgeCommon(float edge, float x, float maxRadius) {
+  float radius = min(0.5 / project_uScale, maxRadius);
+  return smoothstep(edge - radius, edge + radius, x);
+}
+
 float inRectangle(vec2 halfSize, float radius) {
   vec2 edgeVec = halfSize - abs(vPosition);
   float edgeDistance = min(edgeVec.x, edgeVec.y);
@@ -169,7 +179,8 @@ float inRectangle(vec2 halfSize, float radius) {
   }
   vec2 cornerVec = radius - edgeVec;
   cornerVec *= float(cornerVec.x > 0.0 && cornerVec.y > 0.0);
-  return smoothedgeCommon(length(cornerVec), radius) * inside;
+  float outCorner = smoothedgeCommon(radius, length(cornerVec), radius / 2.0);
+  return inside * (1.0 - outCorner);
 }
 
 float inOval(vec2 halfSize) {
@@ -328,7 +339,8 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
   }
 
   draw({uniforms}: any) {
-    const {stroked, filled, cornerRadius, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} = this.props
+    const {stroked, filled, cornerRadius, sizeScale, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} =
+      this.props
 
     this.state.model
       .setUniforms(uniforms)
@@ -336,6 +348,7 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         stroked,
         filled,
         cornerRadius,
+        sizeScale,
         lineWidthUnits: UNIT[lineWidthUnits],
         lineWidthScale,
         lineWidthMinPixels,

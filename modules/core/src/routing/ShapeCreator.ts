@@ -13,11 +13,11 @@ import {RelativeShape} from './RelativeShape'
 import {Shape} from './shape'
 
 export class ShapeCreator {
-  // For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
-  // according to the cluster hierarchy
-
-  // graph with edges to route and nodes/clusters to route around
-  // <returns>the set of obstacles with correct cluster hierarchy and ports</returns>
+  /**  For a given graph finds the obstacles for nodes and clusters, correctly parenting the obstacles
+       according to the cluster hierarchy
+       graph with edges to route and nodes/clusters to route around.
+       Returns the set of obstacles with correct cluster hierarchy and ports
+  */
   public static GetShapes(graph: GeomGraph, edges: GeomEdge[] = Array.from(graph.shallowEdges)): Array<Shape> {
     const nodesToShapes = new Map<GeomNode, Shape>()
     getShapesUnderGraph(graph, nodesToShapes)
@@ -44,7 +44,7 @@ export class ShapeCreator {
 
   static CreateShapeWithCenterPort(node: GeomNode): Shape {
     // Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
-    const shape = new RelativeShape(() => node.boundaryCurve)
+    const shape = new RelativeShape(node)
 
     const port = RelativeFloatingPort.mk(
       () => node.boundaryCurve,
@@ -71,7 +71,7 @@ export class ShapeCreator {
   static CreateShapeWithClusterBoundaryPort(cluster: GeomGraph): Shape {
     // Assert.assert(ApproximateComparer.Close(node.BoundaryCurve.BoundingBox, node.BoundingBox), "node's curve doesn't fit its bounds!");
     // Assert.assert(cluster instanceof GeomGraph)
-    const shape = new RelativeShape(() => cluster.boundaryCurve)
+    const shape = new RelativeShape(cluster)
 
     const port = ClusterBoundaryPort.mk(
       () => cluster.boundaryCurve,
@@ -110,12 +110,14 @@ export class ShapeCreator {
   }
 
   static FixPortAtSource(port: Port, e: GeomEdge) {
+    if (e == null) return
     if (e.sourcePort == null) {
       e.sourcePort = port
     }
   }
 
   static FixPortAtTarget(port: Port, e: GeomEdge) {
+    if (e == null) return
     if (e.targetPort == null) {
       e.targetPort = port
     }

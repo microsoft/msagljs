@@ -1,12 +1,8 @@
-import {graphToJSON} from '../../../../parser/src/dotparser'
-import {GeomGraph, GeomNode} from '../../../src/layout/core'
-import {GeomObject} from '../../../src/layout/core/geomObject'
-import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
-import {Point} from '../../../src/math/geometry'
+import {GeomGraph, GeomNode, GeomObject, Point, SugiyamaLayoutSettings} from '@msagl/core'
 import {parseJSONFile} from '../../utils/testUtils'
 import * as fs from 'fs'
-import {IncrementalDragger} from '../../../src/drawing/layoutEditing/incrementalDragger'
-
+import {graphToJSON} from '@msagl/parser'
+import {IncrementalDragger} from '@msagl/drawing'
 test('incremental drag', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
 
@@ -43,7 +39,8 @@ function edgesAreAttachedToNode(gNode: GeomNode): boolean {
     }
   }
   for (const ge of gNode.inEdges()) {
-    const p = ge.targetArrowhead ? ge.targetArrowhead.tipPosition : ge.curve.end
+    const p = ge.targetArrowhead && ge.targetArrowhead.tipPosition ? ge.targetArrowhead.tipPosition : ge.curve.end
+
     const close = pointCloseToNodeBoundary(p, gNode)
     if (close === false) {
       return false
@@ -51,7 +48,7 @@ function edgesAreAttachedToNode(gNode: GeomNode): boolean {
   }
   for (const ge of gNode.selfEdges()) {
     {
-      const p = ge.sourceArrowhead ? ge.sourceArrowhead.tipPosition : ge.curve.start
+      const p = ge.sourceArrowhead && ge.sourceArrowhead.tipPosition ? ge.sourceArrowhead.tipPosition : ge.curve.start
       const close = pointCloseToNodeBoundary(p, gNode)
       if (close === false) {
         return false

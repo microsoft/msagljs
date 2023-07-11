@@ -8,6 +8,9 @@
   "references": [
     {
       "path": "../core/tsconfig.prod.json"
+    },
+    {
+      "path": "../renderer-common/tsconfig.prod.json"
     }
   ],
   "include": ["src/**/*"]

@@ -1,4 +1,3 @@
-export {parseDot, graphToJSON, parseTXT} from './dotparser'
-export {parseJSON} from './jsonparser'
+export {parseDot, graphToJSON, parseTXT, parseJSON} from './dotparser'
 import {loadGraphFromFile, loadGraphFromUrl} from './dotparser'
 export {loadGraphFromFile, loadGraphFromUrl}

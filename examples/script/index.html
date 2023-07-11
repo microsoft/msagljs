@@ -1,31 +1,26 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>MSAGL</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-    </style>
   </head>
-
   <body>
-    <script src="https://unpkg.com/msagl-js@latest/dist.min.js"></script>
+    <!--    Include the MSAGL latest npm package library through a script tag-->
+    <script src="https://unpkg.com/@msagl/core@latest/dist.min.js"></script>
+    <script src="https://unpkg.com/@msagl/drawing@latest/dist.min.js"></script>
     <script src="https://unpkg.com/@msagl/parser@latest/dist.min.js"></script>
-    <script src="https://unpkg.com/@msagl/renderer@latest/dist.min.js"></script>
-    <script>
-      fetch('https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv')
-        .then((resp) => resp.text())
-        .then((data) => {
-          const graph = msagl.parseDot(data)
-          const renderer = new msagl.Renderer()
-          renderer.setGraph(graph)
+    <script src="https://unpkg.com/@msagl/renderer-svg@latest/dist.min.js"></script>
 
-          const searchControl = new msagl.SearchControl()
-          renderer.addControl(searchControl)
-        })
+    <script>
+      const svgRenderer = new msagl.RendererSvg()
+      let dotString = ` graph G {
+       	kspacey -- swilliams;
+      	swilliams -- kbacon;
+      	bpitt -- kbacon;
+      	hford -- lwilson;
+      	lwilson -- kbacon;
+      }`
+      let graph = msagl.parseDot(dotString)
+      svgRenderer.setGraph(graph)
     </script>
   </body>
 </html>

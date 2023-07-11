@@ -1,6 +1,8 @@
-{
+{"editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
   "singleQuote": true,
-  "semi": false,
+ "editor.formatOnPaste": false,  
+   "semi": false,
   "useTabs": false,
   "bracketSpacing": false,
   "printWidth": 140,

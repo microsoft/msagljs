@@ -246,7 +246,7 @@ export class SvgDebugWriter {
   static dumpICurves(fileName: string, icurves: ICurve[]) {
     const w = new SvgDebugWriter(fileName)
     const dcs = icurves.map((c) => DebugCurve.mkDebugCurveI(c))
-    w.writeDebugCurves(dcs, false)
+    w.writeDebugCurves(dcs, true)
     w.close()
   }
   static dumpDebugCurves(fileName: string, debugCurves: DebugCurve[]) {
@@ -328,6 +328,7 @@ export class SvgDebugWriter {
   }
 
   private writeEdge(edge: GeomEdge) {
+    if (edge == null) return
     const icurve = edge.curve // mkFromeSmothPolyline(edge.underlyingPolyline)
     if (icurve == null) return
     this.xw.startElement('path')

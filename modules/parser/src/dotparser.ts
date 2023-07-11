@@ -1,4 +1,4 @@
-import parse, {AttrStmt, EdgeStmt, NodeId, NodeStmt, Stmt, Subgraph} from 'dotparser'
+import parse, {Attr, Graph as JSONGraph, AttrStmt, EdgeStmt, NodeId, NodeStmt, Stmt, Subgraph} from 'dotparser'
 import {
   Edge,
   Graph,
@@ -21,8 +21,8 @@ import {
   Label,
   AttributeRegistry,
   Assert,
-} from 'msagl-js'
-import {Graph as JSONGraph, Attr} from 'dotparser'
+} from '@msagl/core'
+
 import {
   ArrowTypeEnum,
   DrawingEdge,
@@ -34,11 +34,9 @@ import {
   StyleEnum,
   OrderingEnum,
   DirTypeEnum,
-} from 'msagl-js/drawing'
+} from '@msagl/drawing'
 
 import {parseColor} from './utils'
-import {parseJSON} from './jsonparser'
-// import {Assert} from '../../core/src/utils/assert'
 
 function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any) {
   for (const attr of o.attr_list) {
@@ -64,7 +62,9 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           {
             const geom = getOrCreateGeomObj(entity) as GeomNode
             const json = JSON.parse(str) as ICurveJSONTyped
+
             const curve = JSONToICurve(json)
+
             if (geom instanceof GeomGraph) {
               geom.boundingBox = curve.boundingBox
             } else {
@@ -73,13 +73,15 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           }
 
           break
-
+        case 'geomEdge': {
+          const geom = getOrCreateGeomObj(entity) as GeomEdge
+          break
+        }
         case 'sourceArrowhead': {
           const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
           if (geomEdge.sourceArrowhead == null) {
             geomEdge.sourceArrowhead = new Arrowhead()
           }
-          geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
           break
         }
         case 'targetArrowhead': {
@@ -87,7 +89,26 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           if (geomEdge.targetArrowhead == null) {
             geomEdge.targetArrowhead = new Arrowhead()
           }
-          geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          break
+        }
+        case 'sourceArrowheadTip': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.sourceArrowhead == null) {
+            geomEdge.sourceArrowhead = new Arrowhead()
+          }
+          if (str !== 'none') {
+            geomEdge.sourceArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          }
+          break
+        }
+        case 'targetArrowheadTip': {
+          const geomEdge = getOrCreateGeomObj(entity) as GeomEdge
+          if (geomEdge.targetArrowhead == null) {
+            geomEdge.targetArrowhead = new Arrowhead()
+          }
+          if (str !== 'none') {
+            geomEdge.targetArrowhead.tipPosition = Point.fromJSON(JSON.parse(str))
+          }
           break
         }
         case 'geomEdgeLabel': {
@@ -728,7 +749,7 @@ export function parseDot(graphStr: string): Graph {
 //     const dp = new DotParser([ast])
 //     return dp.parse()
 //   } catch (Error) {
-//     console.log(Error.message)
+//
 //     return null
 //   }
 // }
@@ -737,7 +758,8 @@ export function parseDot(graphStr: string): Graph {
 export function parseJSONGraph(jsonObj: JSONGraph): Graph {
   try {
     const dp = new DotParser([jsonObj])
-    return dp.parse()
+    const ret = dp.parse()
+    return ret
   } catch (Error) {
     console.log(Error.message)
     return null
@@ -828,7 +850,8 @@ export function graphToJSON(graph: Graph): JSONGraph {
    * Edge belongs to the first Graph which is a common ancestor of the edge source and the edge target.
    */
   const idToLevels = getNodeLevels(graph)
-  return {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
+  const ret = {type: getGraphType(graph), id: graph.id, children: createChildren(graph, idToLevels)}
+  return ret
 }
 
 function edgeStmt(edge: Edge): EdgeStmt {
@@ -882,15 +905,22 @@ function createChildren(graph: Graph, nodeLevels: Map<string, number>): Array<St
 
 function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
   const geomEdge = GeomObject.getGeom(edge) as GeomEdge
-  if (geomEdge && geomEdge.curve) {
-    yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
+  if (geomEdge) {
+    yield {type: 'attr', id: 'geomEdge', eq: 'none'}
+    if (geomEdge.curve) yield {type: 'attr', id: 'edgeCurve', eq: JSON.stringify(iCurveToJSON(geomEdge.curve))}
 
     if (geomEdge.sourceArrowhead) {
-      yield {type: 'attr', id: 'sourceArrowhead', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'sourceArrowhead', eq: 'none'}
+      if (geomEdge.sourceArrowhead.tipPosition) {
+        yield {type: 'attr', id: 'sourceArrowheadTip', eq: JSON.stringify(geomEdge.sourceArrowhead.tipPosition.toJSON())}
+      }
     }
 
     if (geomEdge.targetArrowhead) {
-      yield {type: 'attr', id: 'targetArrowhead', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+      yield {type: 'attr', id: 'targetArrowhead', eq: 'none'}
+      if (geomEdge.targetArrowhead.tipPosition) {
+        yield {type: 'attr', id: 'targetArrowheadTip', eq: JSON.stringify(geomEdge.targetArrowhead.tipPosition.toJSON())}
+      }
     }
     if (edge.label) {
       const bb = edge.label.getAttr(AttributeRegistry.GeomObjectIndex).boundingBox
@@ -898,7 +928,7 @@ function* getEdgeAttrs(edge: Edge): IterableIterator<Attr> {
       yield {type: 'attr', id: 'geomEdgeLabel', eq: JSON.stringify(rJSON)}
     }
   }
-  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(edge))
+  yield* attrIter(DrawingObject.getDrawingObj(edge))
 }
 
 function getNodeStatement(node: Node): NodeStmt | Subgraph {
@@ -929,13 +959,99 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
     yield getNodeBoundaryCurve(node)
   }
 
-  yield* drawingObjAttrIter(DrawingObject.getDrawingObj(node))
+  yield* attrIter(DrawingObject.getDrawingObj(node))
 }
 
-function* drawingObjAttrIter(drawingObj: DrawingObject) {
-  if (drawingObj) {
-    for (const attr of drawingObj.attrIter()) {
-      yield attr
+function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
+  if (drObj.color && drObj.color.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'color', eq: drObj.color.toString()}
+  }
+  if (drObj.fillColor) {
+    yield {type: 'attr', id: 'fillColor', eq: drObj.fillColor.toString()}
+  }
+  if (drObj.labelfontcolor && drObj.labelfontcolor.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'labelfontcolor', eq: drObj.labelfontcolor.toString()}
+  }
+  if (!(drObj.labelText == null || drObj.labelText === '') && drObj.entity && drObj.labelText !== drObj.id) {
+    yield {type: 'attr', id: 'label', eq: drObj.labelText}
+  }
+  if (drObj.fontColor && drObj.fontColor.keyword.toLowerCase() !== 'black') {
+    yield {type: 'attr', id: 'fontColor', eq: drObj.fontColor.toString()}
+  }
+
+  if (drObj.styles && drObj.styles.length) {
+    const styleString = drObj.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
+    yield {type: 'attr', id: 'style', eq: styleString}
+  }
+  if (drObj.pencolor && drObj.pencolor.keyword !== 'black') {
+    yield {type: 'attr', id: 'pencolor', eq: drObj.pencolor.toString()}
+  }
+  if (drObj.penwidth && drObj.penwidth !== 1) {
+    yield {type: 'attr', id: 'penwidth', eq: drObj.penwidth.toString()}
+  }
+  if (drObj.rankdir) {
+    yield {type: 'attr', id: 'rankdir', eq: drObj.rankdir.toString()}
+  }
+  if (drObj.fontname && drObj.fontname !== DrawingObject.defaultLabelFontName) {
+    yield {type: 'attr', id: 'fontname', eq: drObj.fontname}
+  }
+  if (drObj.margin) {
+    yield {type: 'attr', id: 'margin', eq: drObj.margin.toString()}
+  }
+  if (drObj.fontsize && drObj.fontsize !== DrawingObject.defaultLabelFontSize) {
+    yield {type: 'attr', id: 'fontsize', eq: drObj.fontsize.toString()}
+  }
+  if (drObj.orientation) {
+    yield {type: 'attr', id: 'orientation', eq: drObj.orientation.toString()}
+  }
+  if (drObj.ranksep) {
+    yield {type: 'attr', id: 'ranksep', eq: drObj.ranksep.toString()}
+  }
+  if (drObj.arrowtail) {
+    yield {type: 'attr', id: 'arrowtail', eq: ArrowTypeEnum[drObj.arrowtail]}
+  }
+  if (drObj.arrowhead) {
+    yield {type: 'attr', id: 'arrowhead', eq: ArrowTypeEnum[drObj.arrowhead]}
+  }
+  if (drObj.ordering) {
+    yield {type: 'attr', id: 'ordering', eq: drObj.ordering.toString()}
+  }
+  if (drObj.bgcolor) {
+    yield {type: 'attr', id: 'bgcolor', eq: drObj.bgcolor.toString()}
+  }
+  if (drObj.pos) {
+    yield {type: 'attr', id: 'pos', eq: drObj.pos.toString()}
+  }
+  if (drObj.nodesep) {
+    yield {type: 'attr', id: 'nodesep', eq: drObj.nodesep.toString()}
+  }
+  if (drObj.arrowsize) {
+    yield {type: 'attr', id: 'arrowsize', eq: drObj.arrowsize.toString()}
+  }
+  if (drObj.samehead) {
+    yield {type: 'attr', id: 'samehead', eq: drObj.samehead.toString()}
+  }
+  if (drObj.layersep) {
+    yield {type: 'attr', id: 'layersep', eq: drObj.layersep.toString()}
+  }
+  if (drObj.clusterRank) {
+    yield {type: 'attr', id: 'clusterrank', eq: drObj.clusterRank.toString()}
+  }
+  if (drObj.measuredTextSize) {
+    yield {type: 'attr', id: 'measuredTextSize', eq: JSON.stringify(drObj.measuredTextSize)}
+  }
+  if (drObj instanceof DrawingNode) {
+    if (drObj.shape && drObj.shape !== ShapeEnum.box) {
+      yield {type: 'attr', id: 'shape', eq: drObj.shape.toString()}
+    }
+    if (drObj.xRad && drObj.xRad !== 3) {
+      yield {type: 'attr', id: 'xRad', eq: drObj.xRad.toString()}
+    }
+    if (drObj.yRad && drObj.yRad !== 3) {
+      yield {type: 'attr', id: 'yRad', eq: drObj.yRad.toString()}
+    }
+    if (drObj.padding && drObj.padding !== 2) {
+      yield {type: 'attr', id: 'padding', eq: drObj.padding.toString()}
     }
   }
 }
@@ -1009,7 +1125,7 @@ function addDefaultNodeStmt(children: Stmt[], graph: Graph) {
   if (dg == null) return
   const defaultDrawingNode = dg.defaultNodeObject
   if (defaultDrawingNode) {
-    children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(drawingObjAttrIter(defaultDrawingNode))})
+    children.push({type: 'attr_stmt', target: 'node', attr_list: Array.from(attrIter(defaultDrawingNode))})
   }
 }
 
@@ -1037,8 +1153,8 @@ export function parseTXT(content: string): Graph {
     for (const l of lines) {
       if (l.length == 0) continue
       if (l.charAt(0) == '#') continue
-      const st = l.split(/\t/)
-      if (st.length != 2) {
+      const st = l.split(/\t| |,/)
+      if (st.length < 2) {
         console.log('cannot parse', l)
         return null
       }
@@ -1071,7 +1187,11 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
 
   if (file.name.toLowerCase().endsWith('.json')) {
     graph = parseJSON(JSON.parse(content))
-  } else if (file.name.toLowerCase().endsWith('.txt')) {
+  } else if (
+    file.name.toLowerCase().endsWith('.txt') ||
+    file.name.toLowerCase().endsWith('.tsv') ||
+    file.name.toLowerCase().endsWith('.csv')
+  ) {
     graph = parseTXT(content)
   } else {
     graph = parseDot(content)
@@ -1099,4 +1219,85 @@ export async function loadGraphFromUrl(url: string): Promise<Graph> {
   }
   if (graph) graph.id = fileName
   return graph
+}
+
+type SimpleJSONGraph = {
+  /** List of nodes in the graph */
+  nodes: {
+    /** Id of the node */
+    id: number | string
+    /** Weight of the node */
+    weight?: number
+    /** Label text of the node */
+    label?: string
+    /** Shape of the node. Default `box` */
+    shape?: keyof typeof ShapeEnum
+    /** [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) of the node */
+    color?: string
+  }[]
+
+  /** List of edges in the graph */
+  edges: {
+    /** Id of the source node */
+    source: number | string
+    /** Id of the target node */
+    target: number | string
+    /** Whether the edge is directed. Default `true` */
+    directed?: boolean
+    /** Weight of the edge */
+    weight?: number
+    /** Type of the arrow at the source. Default `none` */
+    arrowhead?: keyof typeof ArrowTypeEnum
+    /** Type of the arrow at the target. Default `none` */
+    arrowtail?: keyof typeof ArrowTypeEnum
+    /** [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) of the edge */
+    color?: string
+  }[]
+}
+
+export function parseJSON(json: JSONGraph | SimpleJSONGraph): Graph {
+  if ('nodes' in json) {
+    return parseSimpleJSON(json)
+  }
+  return parseJSONGraph(json)
+}
+
+export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
+  const g = new Graph()
+
+  for (const node of json.nodes) {
+    const id = String(node.id)
+    const n = g.addNode(new Node(id))
+    const dn = new DrawingNode(n)
+
+    const {label = id, shape = 'box'} = node
+    dn.labelText = label
+    dn.ShapeEnum = ShapeEnum[shape]
+
+    if ('weight' in node) {
+      dn.weight = node.weight
+    }
+    if ('color' in node) {
+      dn.color = parseColor(node.color)
+    }
+  }
+  for (const edge of json.edges) {
+    const e = g.setEdge(String(edge.source), String(edge.target))
+    const de = new DrawingEdge(e, false)
+
+    const {arrowhead = 'none', arrowtail = 'none', directed = true} = edge
+    de.arrowhead = ArrowTypeEnum[arrowhead]
+    de.arrowtail = ArrowTypeEnum[arrowtail]
+    de.directed = directed
+
+    if ('weight' in edge) {
+      de.weight = edge.weight
+    }
+    if ('color' in edge) {
+      de.color = parseColor(edge.color)
+    }
+  }
+
+  new DrawingGraph(g) // create the DrawingAttribute on the graph
+  return g
 }

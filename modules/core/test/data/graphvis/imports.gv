@@ -1,0 +1,20 @@
+digraph abstract {
+	size="6,6";
+	DrawingGraph -> {Arrowhead,
+  CurveFactory,
+  EdgeClass,
+  GeomEdge,
+  GeomGraph,
+  GeomLabel,
+  GeomNode,
+  GraphClass,
+  ICurve,
+  Label,
+  Point,
+  Rectangle,
+  Size,
+  SugiyamaLayoutSettings,
+  NodeClass, DrawingNode, DrawingObject, DrawingEdge, TextMeasurerOptions, ArrowTypeEnum, ShapeEnum};
+	DrawingNode->{DrawingObject, ShapeEnum, NodeClass, Attribute}
+
+}

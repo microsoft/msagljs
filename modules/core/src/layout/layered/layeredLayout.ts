@@ -45,9 +45,9 @@ function layeredLayoutRunner(geomGraph: GeomGraph, cancelToken: CancelToken) {
   ll.run()
 }
 /** Executes the layered layout following the Sugiyama Scheme.
- * Cancel token allows to cancel the layout run(tbd).
+ * Cancel token allows to cancel the layout run(is ignored by now).
  * If "transformToScreen" is true then the y-coordinate of the graph will be reversed:
- * and the graph will be positioned in the first quarter with letf-bottom = (0,0)
+ * and the graph will be positioned in the first quadrand with left-bottom = (0,0)
  */
 export function layoutGraphWithSugiayma(geomGraph: GeomGraph, cancelToken: CancelToken, transformToScreen: boolean) {
   const ss: ILayoutSettings = geomGraph.layoutSettings ? geomGraph.layoutSettings : new SugiyamaLayoutSettings()
@@ -705,7 +705,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   GluedDagSkeletonEdges(): PolyIntEdge[] {
-    const ret = new IntPairMap<PolyIntEdge>(this.IntGraph.nodeCount)
+    const ret = new IntPairMap<PolyIntEdge>()
     for (const [k, v] of this.database.Multiedges.keyValues()) {
       if (k.isDiagonal()) continue
       const e = this.verticalConstraints.gluedIntEdge(v[0])
@@ -771,7 +771,7 @@ export class LayeredLayout extends Algorithm {
   }
 
   SetGluedEdgesWeights() {
-    const gluedPairsToGluedEdge = new IntPairMap<PolyIntEdge>(this.IntGraph.nodeCount)
+    const gluedPairsToGluedEdge = new IntPairMap<PolyIntEdge>()
     for (const ie of this.gluedDagSkeletonForLayering.edges) gluedPairsToGluedEdge.set(ie.source, ie.target, ie)
 
     for (const [k, v] of this.database.Multiedges.keyValues())
@@ -798,7 +798,7 @@ function SnapDeltaUp(y: number, gridSize: number) {
   const delta = y - k * gridSize
   /*Assert.assert(delta >= 0 && delta < gridSize)*/
   if (Math.abs(delta) < 0.0001) {
-    // ???
+    // do not snap
     return 0
   }
   return gridSize - delta

@@ -7,11 +7,7 @@ import {Graph as JSONGraph} from 'dotparser'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SplineRouter} from '../../../src/routing/splineRouter'
 import {initRandom, random} from '../../../src/utils/random'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {layoutGeomGraph, layoutIsCalculated} from '../../../src/layout/driver'
-import {DrawingObject} from '../../../src/drawing/drawingObject'
-import {DrawingNode} from '../../../src/drawing/drawingNode'
-import {DrawingEdge} from '../../../src/drawing/drawingEdge'
 import {layoutGraphWithSugiayma} from '../../../src/layout/layered/layeredLayout'
 import {SugiyamaLayoutSettings} from '../../../src/layout/layered/sugiyamaLayoutSettings'
 import {CommonLayoutSettings} from '../../../src/layout/commonLayoutSettings'
@@ -21,6 +17,8 @@ import {PlaneTransformation} from '../../../src/math/geometry/planeTransformatio
 import {MdsLayoutSettings} from '../../../src/layout/mds/mDSLayoutSettings'
 import {GeomEdge} from '../../../src/layout/core/geomEdge'
 import {GeomGraph} from '../../../src/layout/core/geomGraph'
+import {DrawingEdge, DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
+import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
 
 test('point', () => {
   const p = new Point(1, 2)
@@ -201,6 +199,19 @@ test('graph arrowsize', () => {
   const jsonOfG: JSONGraph = graphToJSON(g)
   const newG = parseJSONGraph(jsonOfG)
   expect(newG != null).toBe(true)
+})
+
+test('geomEdge is restored', () => {
+  const g = parseDotGraph('graphvis/arrowsize.gv')
+  DrawingGraph.getDrawingGraph(g).createGeometry()
+  for (const e of g.deepEdges) {
+    expect(e.getAttr(AttributeRegistry.GeomObjectIndex) != null).toBe(true)
+  }
+  const jsonOfG: JSONGraph = graphToJSON(g)
+  const newG = parseJSONGraph(jsonOfG)
+  for (const e of newG.deepEdges) {
+    expect(e.getAttr(AttributeRegistry.GeomObjectIndex) != null).toBe(true)
+  }
 })
 
 test('directed is preserved', () => {

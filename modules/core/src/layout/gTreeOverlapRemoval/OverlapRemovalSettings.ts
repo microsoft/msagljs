@@ -12,7 +12,7 @@ export class OverlapRemovalSettings {
 
   workInInches: boolean
 
-  randomizeAllPointsOnStart = false
+  private randomizationShift = 0.1
 
   // If true, the overlap iteration process stops after maxIterat iterations.
   public get StopOnMaxIterat(): boolean {
@@ -55,11 +55,11 @@ export class OverlapRemovalSettings {
   }
 
   //
-  public get RandomizeAllPointsOnStart(): boolean {
-    return this.randomizeAllPointsOnStart
+  public get RandomizationShift(): number {
+    return this.randomizationShift
   }
-  public set RandomizeAllPointsOnStart(value: boolean) {
-    this.randomizeAllPointsOnStart = value
+  public set RandomizationShift(value: number) {
+    this.randomizationShift = value
   }
 
   // Clones the settings together with the stressmajorization settings
@@ -70,7 +70,7 @@ export class OverlapRemovalSettings {
     settings.StopOnMaxIterat = this.StopOnMaxIterat
     settings.NodeSeparation = this.NodeSeparation
     settings.RandomizationSeed = this.RandomizationSeed
-    settings.RandomizeAllPointsOnStart = this.randomizeAllPointsOnStart
+    settings.RandomizationShift = this.randomizationShift
     return settings
   }
 }

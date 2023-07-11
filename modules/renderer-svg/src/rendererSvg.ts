@@ -1,4 +1,4 @@
-import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from 'msagl-js/drawing'
+import {DrawingGraph, IViewerEdge, IViewerGraph, IViewerNode, IViewerObject, ModifierKeysEnum} from '@msagl/drawing'
 import {
   AttributeRegistry,
   buildRTreeWithInterpolatedEdges,
@@ -18,10 +18,10 @@ import {
   Node,
   Label,
   Entity,
-} from 'msagl-js'
+} from '@msagl/core'
 import {SvgCreator, SvgViewerObject} from './svgCreator'
 import {graphToJSON} from '@msagl/parser'
-import {IViewer, LayoutEditor, viewerObj, InsertionMode} from 'msagl-js/drawing'
+import {IViewer, LayoutEditor, viewerObj, InsertionMode} from '@msagl/drawing'
 import {default as panZoom, PanZoom} from 'panzoom'
 import {LayoutOptions, TextMeasurer, layoutGraph, deepEqual} from '@msagl/renderer-common'
 
@@ -31,12 +31,13 @@ function svgViewerObj(ent: Entity): SvgViewerObject {
 /**
  * This class renders an MSAGL graph with SVG and enables the graph editing.
  */
-export class SvgRenderer implements IViewer {
+export class RendererSvg implements IViewer {
   /** debug feature : TODO - redesign */
   rubberEdgeStart: Point
   sourcePortLocatiton: Point
   targetPortLocatiton: Point
   keyDownListener: (e: KeyboardEvent) => void
+  container: HTMLElement
   addKeyDownListener(callback: (e: KeyboardEvent) => void): void {
     this.keyDownListener = callback
   }
@@ -166,6 +167,7 @@ export class SvgRenderer implements IViewer {
   }
 
   constructor(container: HTMLElement = document.body) {
+    this.container = container
     this._textMeasurer = new TextMeasurer()
     this._svgCreator = new SvgCreator(container)
     this._svgCreator.getSmoothedPolylineRadius = () => this.smoothedPolylineCircleRadius
@@ -184,7 +186,7 @@ export class SvgRenderer implements IViewer {
     container.addEventListener('pointerup', (e) => {
       if (!this.layoutEditingEnabled) return
       this.layoutEditor.viewerMouseUp(this, e)
-      this.panZoom.resume()
+      if (this.panZoom) this.panZoom.resume()
     })
 
     this.layoutEditor = new LayoutEditor(this)
@@ -301,14 +303,20 @@ export class SvgRenderer implements IViewer {
     if (!this._graph) return
     this._objectTree = null
     this._svgCreator.setGraph(this._graph)
-    this.panZoom = panZoom(this._svgCreator.svg, {
+    if (this.panZoom) {
+      this.panZoom.dispose()
+    }
+    this.panZoom = panZoom(this._svgCreator.superTransGroup, {
       onTouch: () => {
         // `e` - is the current touch event.
 
         return false // tells the library to not preventDefault.
       },
     })
-    this.panZoom.showRectangle(this._svgCreator.svg.getBoundingClientRect())
+
+    this.panZoom.showRectangle(this._svgCreator.getShowRect())
+    //   console.log(this._svgCreator.svg.getBoundingClientRect())
+
     this.layoutEditor.viewerGraphChanged()
     if (this.graph.deepEdgesCount > 2000 && this.graph.nodeCountDeep > 1000) {
       this.layoutEditingEnabled = false
@@ -342,15 +350,6 @@ export class SvgRenderer implements IViewer {
   set objectUnderMouseCursor(value) {
     if (this._objectUnderMouse !== value) {
       this._objectUnderMouse = value
-      // if (value) {
-      //   console.log(this._objectUnderMouse.entity)
-      // } else {
-      //   if (this.layoutEditor.insertingEdge) {
-      //     console.log('no selection')
-      //   } else {
-      //     console.log('no sel: no insert')
-      //   }
-      // }
     }
   }
   invalidate(objectToInvalidate: IViewerObject): void {
@@ -359,6 +358,8 @@ export class SvgRenderer implements IViewer {
     if (this.graph !== objectToInvalidate.entity && isRemoved(objectToInvalidate.entity)) {
       const svgElem = (objectToInvalidate.entity.getAttr(AttributeRegistry.ViewerIndex) as SvgViewerObject).svgData
       svgElem.remove()
+    } else if (this.graph == objectToInvalidate.entity) {
+      this.panZoom.showRectangle(this._svgCreator.getShowRect())
     } else {
       this._svgCreator.invalidate(objectToInvalidate)
     }
@@ -378,6 +379,7 @@ export class SvgRenderer implements IViewer {
     return this.Dpi
   }
   LineThicknessForEditing = 2
+  /** controls if the layout can be changed by mouse or touch interactions */
   layoutEditingEnabled = true
   private get insertingNode() {
     return this.insertionMode == InsertionMode.Node

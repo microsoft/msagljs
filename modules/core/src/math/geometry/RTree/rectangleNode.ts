@@ -206,20 +206,6 @@ export class RectangleNode<T, P> {
     return this === this.Parent.Left
   }
 
-  // brings the first leaf which rectangle was hit and the delegate is happy with the object
-  FirstHitNodePF(point: P, hitTestForPointDelegate: (point: P, data: T) => HitTestBehavior): RectangleNode<T, P> {
-    if (this.irect.contains_point(point)) {
-      if (this.IsLeaf) {
-        if (hitTestForPointDelegate != null) {
-          return hitTestForPointDelegate(point, this.UserData) === HitTestBehavior.Stop ? this : null
-        }
-        return this
-      }
-      return this.Left.FirstHitNodePF(point, hitTestForPointDelegate) ?? this.Right.FirstHitNodePF(point, hitTestForPointDelegate)
-    }
-    return null
-  }
-
   // brings the first leaf which rectangle was intersected
   FirstIntersectedNode(r: IRectangle<P>): RectangleNode<T, P> {
     if (r.intersects_rect(this.irect)) {
@@ -238,7 +224,7 @@ export class RectangleNode<T, P> {
 
     return this.Left.FirstHitNodeWithPredicate(point, hitTest) ?? this.Right.FirstHitNodeWithPredicate(point, hitTest)
   }
-  public FirstHitByRectWithPredicate(rect: IRectangle<P>, hitTest: (t: T) => HitTestBehavior): RectangleNode<T, P> {
+  private FirstHitByRectWithPredicate(rect: IRectangle<P>, hitTest: (t: T) => HitTestBehavior): RectangleNode<T, P> {
     if (!this.irect.intersects_rect(rect)) return null
 
     if (this.IsLeaf) {

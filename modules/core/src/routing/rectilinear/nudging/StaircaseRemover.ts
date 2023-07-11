@@ -1,6 +1,6 @@
 import {Point, Rectangle, CompassVector, Curve, GeomConstants, LineSegment, Polyline} from '../../../math/geometry'
 import {RectangleNode} from '../../../math/geometry/RTree/rectangleNode'
-import {RTree} from '../../../math/geometry/RTree/rTree'
+import {BinaryRTree} from '../../../math/geometry/RTree/rTree'
 
 import {closeDistEps} from '../../../utils/compare'
 import {Path} from './Path'
@@ -9,14 +9,14 @@ import {SegWithIndex} from './SegWithIndex'
 export class StaircaseRemover {
   Paths: Array<Path>
 
-  HierarchyOfObstacles: RTree<Polyline, Point>
+  HierarchyOfObstacles: BinaryRTree<Polyline, Point>
 
-  segTree: RTree<SegWithIndex, Point> = new RTree<SegWithIndex, Point>(null)
+  segTree: BinaryRTree<SegWithIndex, Point> = new BinaryRTree<SegWithIndex, Point>(null)
 
   crossedOutPaths: Set<Path> = new Set<Path>()
 
   constructor(paths: Array<Path>, hierarchyOfObstacles: RectangleNode<Polyline, Point>) {
-    this.HierarchyOfObstacles = new RTree<Polyline, Point>(hierarchyOfObstacles)
+    this.HierarchyOfObstacles = new BinaryRTree<Polyline, Point>(hierarchyOfObstacles)
     this.Paths = paths
   }
 
@@ -101,7 +101,7 @@ export class StaircaseRemover {
 
   // ignoring crossing at ls.Start
 
-  static IsCrossing(ls: LineSegment, rTree: RTree<SegWithIndex, Point>, segsToIgnore: SegWithIndex[]): boolean {
+  static IsCrossing(ls: LineSegment, rTree: BinaryRTree<SegWithIndex, Point>, segsToIgnore: SegWithIndex[]): boolean {
     for (const seg of rTree.GetAllIntersecting(ls.boundingBox)) if (segsToIgnore.findIndex((p) => p === seg) === -1) return true
 
     return false

@@ -1,28 +1,8 @@
-import {CurveFactory, Edge, GeomEdge, GeomGraph, GeomNode, Graph, ICurve, Node, Point, Rectangle} from '../../../src'
-import {DrawingObject} from '../../../src/drawing/drawingObject'
+import {CurveFactory, Edge, GeomEdge, GeomNode, Graph, Node, Point} from '@msagl/core'
 import {GeomObject} from '../../../src/layout/core/geomObject'
 import {SingleSourceDistances} from '../../../src/layout/mds/SingleSourceDistances'
 import {closeDistEps} from '../../../src/utils/compare'
-
-export function createGeometry(g: Graph, nodeBoundaryFunc: (s: string) => ICurve, labelRect: (s: string) => Rectangle): GeomGraph {
-  for (const n of g.shallowNodes) {
-    if (n instanceof Graph) {
-      const subG = n as unknown as Graph
-      GeomGraph.mkWithGraphAndLabel(subG, null)
-      createGeometry(subG, nodeBoundaryFunc, labelRect)
-    } else {
-      const gn = new GeomNode(n)
-      //const tsize = getTextSize(drawingNode.label.text, drawingNode.fontname)
-      const drawingObject = DrawingObject.getDrawingObj(n)
-      const text = drawingObject ? drawingObject.labelText ?? n.id : n.id
-      gn.boundaryCurve = nodeBoundaryFunc(text)
-    }
-  }
-  for (const e of g.deepEdges) {
-    new GeomEdge(e)
-  }
-  return GeomGraph.mkWithGraphAndLabel(g, null)
-}
+import {createGeometry} from '../../utils/testUtils'
 
 test('single source distances', () => {
   const graph = new Graph()

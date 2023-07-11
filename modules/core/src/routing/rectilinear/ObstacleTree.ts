@@ -631,8 +631,8 @@ export class ObstacleTree {
     // means we're on the border (and 3 shouldn't happen anymore with the curve intersection fixes and
     // PointIsInsideRectangle check above).  So the interesting case is that we have 2 intersections.
     if (2 === xxs.length) {
-      const firstInt: Point = GeomConstants.RoundPoint(xxs[0].x)
-      const secondInt: Point = GeomConstants.RoundPoint(xxs[1].x)
+      const firstInt: Point = Point.RoundPoint(xxs[0].x)
+      const secondInt: Point = Point.RoundPoint(xxs[1].x)
       // If we're on either intersection, we're on the border rather than inside.
       if (
         !PointComparer.EqualPP(location, firstInt) &&
@@ -745,7 +745,7 @@ export class ObstacleTree {
       this.restrictedIntersectionTestSegment.end,
     )
     for (const intersectionInfo of intersections) {
-      const intersect = GeomConstants.RoundPoint(intersectionInfo.x)
+      const intersect = Point.RoundPoint(intersectionInfo.x)
 
       const dirToIntersect = PointComparer.GetDirections(this.currentRestrictedRay.start, intersect)
       if (dirToIntersect === CompassVector.OppositeDir(testDirection)) {
@@ -777,7 +777,7 @@ export class ObstacleTree {
       // If there was only one intersection and it is quite close to an end, ignore it.
       // If there is more than one intersection, we have crossed the obstacle so we want it.
       if (numberOfGoodIntersections === 1) {
-        const intersect = GeomConstants.RoundPoint(closestIntersectionInfo.x)
+        const intersect = Point.RoundPoint(closestIntersectionInfo.x)
         if (
           Point.closeIntersections(intersect, this.currentRestrictedRay.start) ||
           Point.closeIntersections(intersect, this.currentRestrictedRay.end)
@@ -798,7 +798,7 @@ export class ObstacleTree {
   private AddGroupIntersectionsToRestrictedRay(obstacle: Obstacle, intersections: Array<IntersectionInfo>) {
     // We'll let the lines punch through any intersections with groups, but track the location so we can enable/disable crossing.
     for (const intersectionInfo of intersections) {
-      const intersect = GeomConstants.RoundPoint(intersectionInfo.x)
+      const intersect = Point.RoundPoint(intersectionInfo.x)
       // Skip intersections that are past the end of the restricted segment (though there may still be some
       // there if we shorten it later, but we'll skip them later).
       const distSquared = intersect.sub(this.currentRestrictedRay.start).lengthSquared

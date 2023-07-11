@@ -1,5 +1,0 @@
-{
-  "internal": true,
-  "main": "../dist/drawing/index.js",
-  "types": "../dist/drawing/index.d.ts"
-}

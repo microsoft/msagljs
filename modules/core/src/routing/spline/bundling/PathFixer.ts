@@ -5,7 +5,7 @@ import {PointPair} from '../../../math/geometry/pointPair'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {createRectangleNodeOnData} from '../../../math/geometry/RTree/rectangleNode'
 import {CrossRectangleNodesSameType} from '../../../math/geometry/RTree/rectangleNodeUtils'
-import {RTree} from '../../../math/geometry/RTree/rTree'
+import {BinaryRTree} from '../../../math/geometry/RTree/rTree'
 import {compareNumbers} from '../../../utils/compare'
 import {PointMap} from '../../../utils/PointMap'
 import {PointPairMap} from '../../../utils/pointPairMap'
@@ -58,7 +58,7 @@ export class PathFixer {
     }
 
     const splittingPoints = new PointPairMap<Point[]>()
-    const treeOfVertices = new RTree<Point, Point>(null)
+    const treeOfVertices = new BinaryRTree<Point, Point>(null)
     for (const vertex of this.Vertices()) {
       const r = Rectangle.mkOnPoints([vertex.point])
       r.pad(GeomConstants.intersectionEpsilon)
@@ -236,7 +236,7 @@ export class PathFixer {
     return removed
   }
 
-  IntersectTwoEdges(a: PointPair, b: PointPair, splittingPoints: PointPairMap<Array<Point>>, tree: RTree<Point, Point>) {
+  IntersectTwoEdges(a: PointPair, b: PointPair, splittingPoints: PointPairMap<Array<Point>>, tree: BinaryRTree<Point, Point>) {
     const x: Point = LineSegment.IntersectPPPP(a.first, a.second, b.first, b.second)
     if (x) {
       const vertex: Point = this.FindExistingVertexOrCreateNew(tree, x)
@@ -246,7 +246,7 @@ export class PathFixer {
     }
   }
 
-  FindExistingVertexOrCreateNew(tree: RTree<Point, Point>, x: Point): Point {
+  FindExistingVertexOrCreateNew(tree: BinaryRTree<Point, Point>, x: Point): Point {
     const p = tree.RootNode.FirstHitNode(x)
     if (p != null) {
       return p.UserData

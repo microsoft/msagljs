@@ -19,7 +19,7 @@ import {Polygon} from './visibility/Polygon'
 export class InteractiveObstacleCalculator {
   IgnoreTightPadding: boolean
   /** if set to true the vertices of the loose polylines would be randomly shifted by a small amont */
-  randomizeLoosePolylines = false
+  randomizationShift = 0.01
   ObstaclesIntersectLine(a: Point, b: Point) {
     return this.ObstaclesIntersectICurve(LineSegment.mkPP(a, b))
   }
@@ -53,24 +53,24 @@ export class InteractiveObstacleCalculator {
   }
 
   /** surrounds the given polyline with the given offset, optionally randomizes the output */
-  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number, randomize: boolean): Polyline {
+  static LoosePolylineWithFewCorners(tightPolyline: Polyline, p: number, randomizationShift: number): Polyline {
     if (p < GeomConstants.distanceEpsilon) {
       return tightPolyline
     }
 
-    return InteractiveObstacleCalculator.CreateLoosePolylineOnBisectors(tightPolyline, p, randomize)
+    return InteractiveObstacleCalculator.CreateLoosePolylineOnBisectors(tightPolyline, p, randomizationShift)
   }
 
-  static CreateLoosePolylineOnBisectors(tightPolyline: Polyline, offset: number, randomize: boolean): Polyline {
+  static CreateLoosePolylineOnBisectors(tightPolyline: Polyline, offset: number, randomizationShift: number): Polyline {
     const ps = Array.from(InteractiveObstacleCalculator.BisectorPoints(tightPolyline, offset))
-    if (randomize) randomizePoints()
+    if (randomizationShift) randomizePoints()
     const convHull = ConvexHull.CalculateConvexHull(ps)
     return Polyline.mkClosedFromPoints(convHull)
 
     function randomizePoints() {
       for (let i = 0; i < ps.length; i++) {
         const p = ps[i]
-        ps[i] = new Point(p.x + 0.001 * random(), p.y + 0.001 * random())
+        ps[i] = new Point(p.x + (2 * random() - 1) * randomizationShift, p.y + (2 * random() - 1) * randomizationShift)
       }
     }
   }
@@ -88,9 +88,7 @@ export class InteractiveObstacleCalculator {
         this.LoosePadding,
       )
       this.tightPolylinesToLooseDistances.set(tightPolyline, distance)
-      this.LooseObstacles.push(
-        InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, this.randomizeLoosePolylines),
-      )
+      this.LooseObstacles.push(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, this.randomizationShift))
     }
 
     this.RootOfLooseHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(this.LooseObstacles)
@@ -158,7 +156,7 @@ export class InteractiveObstacleCalculator {
     if (overlappingPairSet.size === 0) {
       for (const polyline of polysWithoutPadding) {
         const distance = InteractiveObstacleCalculator.FindMaxPaddingForTightPolyline(polylineHierarchy, polyline, this.TightPadding)
-        this.TightObstacles.add(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(polyline, distance, this.randomizeLoosePolylines))
+        this.TightObstacles.add(InteractiveObstacleCalculator.LoosePolylineWithFewCorners(polyline, distance, this.randomizationShift))
       }
 
       this.RootOfTightHierarchy = InteractiveObstacleCalculator.CalculateHierarchy(Array.from(this.TightObstacles))

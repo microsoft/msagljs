@@ -51,7 +51,7 @@ export class SugiyamaLayoutSettings implements ILayoutSettings {
     if (this.verticalConstraints) r.verticalConstraints = this.verticalConstraints
     if (this.horizontalConstraints) r.horizontalConstraints = this.horizontalConstraints
     if (this.NoGainAdjacentSwapStepsBound != 5) r.horizontalConstraints = this.horizontalConstraints
-    if (this.RepetitionCoefficientForOrdering != 1) r.RepetitionCoefficientForOrdering = this.RepetitionCoefficientForOrdering
+    if (this.NoGainStepsForOrderingMultiplier != 1) r.RepetitionCoefficientForOrdering = this.NoGainStepsForOrderingMultiplier
     if (this.AspectRatio) r.AspectRatio = this.AspectRatio
     if (this.MaxNumberOfPassesInOrdering != 24) r.MaxNumberOfPassesInOrdering = this.MaxNumberOfPassesInOrdering
     if (this.BrandesThreshold != 600) r.BrandesThreshold = this.BrandesThreshold
@@ -73,7 +73,7 @@ export class SugiyamaLayoutSettings implements ILayoutSettings {
     if (s.verticalConstraints) r.verticalConstraints = s.verticalConstraints
     if (s.horizontalConstraints) r.horizontalConstraints = s.horizontalConstraints
     if (s.NoGainAdjacentSwapStepsBound) r.horizontalConstraints = s.horizontalConstraints
-    if (s.RepetitionCoefficientForOrdering) r.RepetitionCoefficientForOrdering = s.RepetitionCoefficientForOrdering
+    if (s.RepetitionCoefficientForOrdering) r.NoGainStepsForOrderingMultiplier = s.RepetitionCoefficientForOrdering
     if (s.AspectRatio) r.AspectRatio = s.AspectRatio
     if (s.MaxNumberOfPassesInOrdering) r.MaxNumberOfPassesInOrdering = s.MaxNumberOfPassesInOrdering
     if (s.BrandesThreshold) r.BrandesThreshold = s.BrandesThreshold
@@ -103,30 +103,41 @@ export class SugiyamaLayoutSettings implements ILayoutSettings {
   horizontalConstraints = new HorizontalConstraintsForSugiyama()
 
   NoGainAdjacentSwapStepsBound = 5
-  RepetitionCoefficientForOrdering = 1
+  /** the adjacent swaps will proceed by NoGainAdjacentSwapStepsBound*NoGainStepsForOrderingMultiplier  */
+  NoGainStepsForOrderingMultiplier = 1
+  /**  Aspect ratio of the layout. Ignored it zero.*/
   AspectRatio = 0
+  /** the maximum number of going up and down through the layers to untangle the edges */
   MaxNumberOfPassesInOrdering = 24
   /**  When the number of vertices in the proper layered graph
    is at least threshold  we switch to a fast, but not so accurate,
    method for x-coordinates calculations. */
   BrandesThreshold = 600
+  /**  The coefficient for the label corners preserve heuristic,
+   * that allows for an edge to pass through the bounding box of a label, close to its corner*/
   LabelCornersPreserveCoefficient = 0.1
+  /** the minimal node size */
   MinNodeHeight = (72 * 0.5) / 4
   MinNodeWidth = (72 * 0.75) / 4
+  /**  The grid snapping mode: snap up, down on neither */
   SnapToGridByY = SnapToGridByY.None
-  yLayerSep = 10 * 3
+  /** the minimum distance between two layer horizontal lines passing througt the node centers */
+  private yLayerSep = 10 * 3
+  /** the transform can be an identity, or rotation on Pi/2, -Pi/2, or Pi */
   transform: PlaneTransformation = PlaneTransformation.getIdentity()
+  GridSizeByY = 0
+  GridSizeByX = 0
+  /** the minimum distance between two layer horizontal lines passing througt the node centers */
   get LayerSeparation() {
     return this.yLayerSep
   }
   set LayerSeparation(value) {
     this.yLayerSep = Math.max(10 * 3, value)
   }
+
   ActualLayerSeparation(layersAreDoubled: boolean) {
     return layersAreDoubled ? this.LayerSeparation / 2.0 : this.LayerSeparation
   }
-  GridSizeByY = 0
-  GridSizeByX = 0
 
   constructor() {
     this.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
@@ -145,7 +156,8 @@ export class SugiyamaLayoutSettings implements ILayoutSettings {
     if (this.transformIsRotation(Math.PI / 2)) return LayerDirectionEnum.LR
     if (this.transformIsRotation(-Math.PI / 2)) return LayerDirectionEnum.RL
     if (this.transformIsRotation(Math.PI)) return LayerDirectionEnum.BT
-    return LayerDirectionEnum.None
+
+    throw new Error('unexpected layout direction')
   }
   set layerDirection(value: LayerDirectionEnum) {
     switch (value) {

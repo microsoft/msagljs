@@ -11,8 +11,40 @@ import {Point} from '../../math/geometry/point'
 import {Arrowhead} from './arrowhead'
 import {AttributeRegistry} from '../../structs/attributeRegistry'
 import {Entity} from '../../structs/entity'
+import {Curve, LineSegment} from '../../math/geometry'
+import {Ellipse} from '../../math/geometry/ellipse'
+import {BezierSeg} from '../../math/geometry/bezierSeg'
 
 export class GeomEdge extends GeomObject {
+  *getSmoothPolyPoints(): Iterable<Point> {
+    yield this.source.center
+    if (this.curve instanceof Curve) {
+      yield* this.getCurvePoints(this.curve)
+    } else if (this.curve instanceof LineSegment) {
+      yield this.curve.start
+      yield this.curve.end
+    } else if (this.curve instanceof Ellipse) {
+      yield this.curve.start
+      yield this.curve.value((this.curve.parStart + this.curve.parEnd) / 0.5)
+      yield this.curve.end
+    } else if (this.curve instanceof BezierSeg) {
+      yield this.curve.start
+      yield this.curve.value(0.25)
+      yield this.curve.value(0.75)
+      yield this.curve.end
+    }
+    yield this.target.center
+  }
+  private *getCurvePoints(curve: Curve): Iterable<Point> {
+    for (const e of curve.segs) {
+      yield e.start
+      if (e instanceof BezierSeg) {
+        const p = topOfBezierSeg(e)
+        if (p) yield p
+      }
+    }
+    yield curve.end
+  }
   static getGeom(e: Entity): GeomEdge {
     return GeomObject.getGeom(e) as GeomEdge
   }
@@ -193,4 +225,7 @@ export class GeomEdge extends GeomObject {
   }
   /** this field is used for editing */
   labelAttachmentParameter: number
+}
+function topOfBezierSeg(e: BezierSeg) {
+  return Point.lineLineIntersection(e.b[0], e.b[1], e.b[2], e.b[3])
 }

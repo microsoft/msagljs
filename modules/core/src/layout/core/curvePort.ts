@@ -1,4 +1,5 @@
-import {ICurve, Point} from '../..'
+import {ICurve} from '../../math/geometry/icurve'
+import {Point} from '../../math/geometry/point'
 import {Port} from './port'
 
 export class CurvePort extends Port {

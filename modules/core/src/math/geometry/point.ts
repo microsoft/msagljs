@@ -19,6 +19,12 @@ export function distPP(a: Point, b: Point) {
 }
 /** represents a point with two coordinates on the plane */
 export class Point {
+  static RoundPoint(point: Point): Point {
+    return new Point(Point.RoundDouble(point.x), Point.RoundDouble(point.y))
+  }
+  static RoundDouble(num: number): number {
+    return Math.round(num * GeomConstants.mult) / GeomConstants.mult
+  }
   toJSON(): PointJSON {
     return {x: this.x, y: this.y}
   }

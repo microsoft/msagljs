@@ -1,5 +1,5 @@
 import {ICurve} from './icurve'
-import {Point, PointJSON} from './point'
+import {Point, PointJSON, TriangleOrientation} from './point'
 import {Parallelogram} from './parallelogram'
 import {PlaneTransformation} from './planeTransformation'
 import {Rectangle} from './rectangle'
@@ -255,15 +255,11 @@ return xx;
   static IntersectPPPP(a: Point, b: Point, c: Point, d: Point): Point | undefined {
     const r = Point.lineLineIntersection(a, b, c, d)
     if (r == null) return
-    if (LineSegment.xIsBetweenPoints(a, b, r) && LineSegment.xIsBetweenPoints(c, d, r)) {
+    if (pointIsOnSegment(r, a, b) && pointIsOnSegment(r, c, d)) {
       return r
     } else {
       return undefined
     }
-  }
-
-  static xIsBetweenPoints(a: Point, b: Point, x: Point): boolean {
-    return a.sub(x).dot(b.sub(x)) <= GeomConstants.distanceEpsilon
   }
 
   //
@@ -364,4 +360,38 @@ return xx;
       dist: w.add(u.mul(parab_).sub(v.mul(parcd_))).length, // return the closest distance
     }
   }
+}
+/** a - is the point to test
+ * [c,b] - is the segment
+ * The function actually checks that a is inside of the bounding box of [c,b].
+ * ! Use it only when a,b,c are collinear !
+ */
+export function pointIsOnSegment(a: Point, b: Point, c: Point): boolean {
+  return (
+    a.x >= Math.min(b.x, c.x) - GeomConstants.distanceEpsilon &&
+    a.y >= Math.min(b.y, c.y) - GeomConstants.distanceEpsilon &&
+    a.x <= Math.max(b.x, c.x) + GeomConstants.distanceEpsilon &&
+    a.y <= Math.max(b.y, c.y) + GeomConstants.distanceEpsilon
+  )
+}
+/** returns true if segments intersect */
+export function segmentsIntersect(a: Point, b: Point, c: Point, d: Point): boolean {
+  const abc = Point.getTriangleOrientation(a, b, c)
+  const abd = Point.getTriangleOrientation(a, b, d)
+  const cda = Point.getTriangleOrientation(c, d, a)
+  const cdb = Point.getTriangleOrientation(c, d, b)
+
+  // if abc != abd then ab separates c and d
+  // if cda != cdb then cd separates b and a
+  if (abc != abd && cda != cdb) return true
+
+  // If the orientations are collinear and the points lie on the segments,
+  // the segments intersect
+  if (abc == TriangleOrientation.Collinear && pointIsOnSegment(c, a, b)) return true
+  if (abd == TriangleOrientation.Collinear && pointIsOnSegment(d, a, b)) return true
+  if (cda == TriangleOrientation.Collinear && pointIsOnSegment(a, c, d)) return true
+  if (cdb == TriangleOrientation.Collinear && pointIsOnSegment(b, c, d)) return true
+
+  // Otherwise, the segments do not intersect
+  return false
 }

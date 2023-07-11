@@ -1,6 +1,6 @@
 {
   "name": "@msagl/renderer-common",
-  "version": "1.1.5",
+  "version": "1.1.18",
   "description": "common utils for MSAGL renderers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,8 +22,9 @@
     "build": "tsc --build tsconfig.prod.json"
   },
   "dependencies": {
-    "msagl-js": "^1.1.4",
-    "@msagl/parser": "^1.1.4"
+    "@msagl/core": "^1.1.16",
+    "@msagl/drawing": "^1.1.16",
+    "@msagl/parser": "^1.1.16"
   },
   "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
 }

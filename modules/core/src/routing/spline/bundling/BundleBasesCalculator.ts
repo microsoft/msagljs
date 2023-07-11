@@ -1,5 +1,7 @@
 ﻿import {HashSet} from '@esfx/collections'
-import {ICurve, Point} from '../../..'
+import {Point} from '../../../math/geometry/point'
+//import missing symbols
+import {ICurve} from '../../../math/geometry/icurve'
 import {Curve, PointLocation, LineSegment, GeomConstants, parameterSpan} from '../../../math/geometry'
 import {Ellipse} from '../../../math/geometry/ellipse'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'

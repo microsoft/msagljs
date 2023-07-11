@@ -1,29 +1,47 @@
-import {GeomEdge} from './layout/core/geomEdge'
-import {
+export {GeomEdge} from './layout/core/geomEdge'
+export {RectangleNode} from './math/geometry/RTree/rectangleNode'
+export {insertRange} from './utils/setOperations'
+export {
   buildRTree,
   buildRTreeWithInterpolatedEdges,
   GeomGraph,
-  HitTreeNodeType,
+  HitTreeNodeType as GeomHitTreeNodeType,
   getGeomIntersectedObjects,
   intersectedObjects,
 } from './layout/core/geomGraph'
-import {CurveClip, TileMap} from './layout/core/tileMap'
-import {TileData} from './layout/core/tileData'
-import {GeomLabel} from './layout/core/geomLabel'
-import {GeomNode} from './layout/core/geomNode'
-import {EventHandler} from './layout/core/geomObject'
-import {ILayoutSettings} from './layout/iLayoutSettings'
-import {PlaneTransformation} from './math/geometry/planeTransformation'
-import {RTree} from './math/geometry/RTree/rTree'
-import {SmoothedPolyline} from './math/geometry/smoothedPolyline'
-import {Attribute} from './structs/attribute'
-import {pageRank} from './structs/graph'
-import {Label} from './structs/label'
-import {Assert} from './utils/assert'
-import {IntPairMap} from './utils/IntPairMap'
-import {DrawingGraph} from './drawing'
+export {createRectangleNodeOnData} from './math/geometry/RTree/rectangleNode'
+export {CurveClip, TileMap} from './layout/core/tileMap'
+export {Bundle, Tile as TileData} from './layout/core/tile'
+export {GeomLabel} from './layout/core/geomLabel'
+export {GeomNode} from './layout/core/geomNode'
+export {EventHandler} from './layout/core/geomObject'
+export {ILayoutSettings} from './layout/iLayoutSettings'
+export {PlaneTransformation} from './math/geometry/planeTransformation'
+export {BinaryRTree as RTree} from './math/geometry/RTree/rTree'
+export {SmoothedPolyline} from './math/geometry/smoothedPolyline'
+export {Attribute} from './structs/attribute'
+export {pagerank as pageRank} from './structs/graph'
+export {Label} from './structs/label'
+export {Assert} from './utils/assert'
+export {IntPairMap} from './utils/IntPairMap'
+export {PolylinePoint} from './math/geometry/polylinePoint'
+export {PivotMDS} from './layout/mds/pivotMDS'
+export {RectilinearInteractiveEditor} from './routing/rectilinear/RectilinearInteractiveEditor'
+export {EdgeLabelPlacement} from './layout/edgeLabelPlacement'
+export {StraightLineEdges} from './routing/StraightLineEdges'
+export {RelativeFloatingPort} from './layout/core/relativeFloatingPort'
+export {InteractiveEdgeRouter} from './routing/interactiveEdgeRouter'
+export {FloatingPort} from './layout/core/floatingPort'
+export {CurvePort} from './layout/core/curvePort'
+export {Port} from './layout/core/port'
+export {PointLocation} from './math/geometry'
+export {CornerSite} from './math/geometry/cornerSite'
+export {IntersectionInfo} from './math/geometry/intersectionInfo'
+export {OptimalRectanglePacking} from './math/geometry/rectanglePacking/OptimalRectanglePacking'
+export {PackingConstants} from './math/geometry/rectanglePacking/PackingConstants'
+export {GreedyRectanglePacking} from './math/geometry/rectanglePacking/RectanglePacking'
+export {DebugCurve} from './math/geometry/debugCurve'
 
-export {GeomGraph, GeomLabel, GeomNode, GeomEdge, DrawingGraph}
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {CancelToken} from './utils/cancelToken'
@@ -53,6 +71,7 @@ export {Curve, CurveJSON, clipWithRectangle} from './math/geometry/curve'
 export {BezierSeg, BezierJSON} from './math/geometry/bezierSeg'
 export {LineSegment, LineSegmentJSON} from './math/geometry/lineSegment'
 export {Polyline, PolylineJSON} from './math/geometry/polyline'
+
 export {GeomObject} from './layout/core/geomObject'
 export {Arrowhead} from './layout/core/arrowhead'
 export {setNewParent} from './structs/graph'
@@ -60,23 +79,3 @@ export {Entity} from './structs/entity'
 export {ICurveJSONTyped, iCurveToJSON, JSONToICurve} from './math/geometry/icurve'
 export {AttributeRegistry} from './structs/attributeRegistry'
 export {IPsepColaSetting as FastIncrementalLayoutSettings} from './layout/incremental/iPsepColaSettings'
-export {ILayoutSettings}
-export {EventHandler}
-export {PlaneTransformation}
-export {
-  RTree,
-  buildRTree,
-  intersectedObjects,
-  HitTreeNodeType as GeomHitTreeNodeType,
-  buildRTreeWithInterpolatedEdges,
-  getGeomIntersectedObjects,
-  Label,
-  Assert,
-  Attribute,
-  SmoothedPolyline,
-  IntPairMap,
-  pageRank,
-  TileMap,
-  TileData,
-  CurveClip,
-}

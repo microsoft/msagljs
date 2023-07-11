@@ -124,7 +124,7 @@ export class Ordering extends Algorithm {
 
   tryReverse = true
   get NoGainStepsBound() {
-    return this.SugSettings.NoGainAdjacentSwapStepsBound * this.SugSettings.RepetitionCoefficientForOrdering
+    return this.SugSettings.NoGainAdjacentSwapStepsBound * this.SugSettings.NoGainStepsForOrderingMultiplier
   }
 
   // gets the random seed for some random choices inside of layer ordering
@@ -158,7 +158,7 @@ export class Ordering extends Algorithm {
 
   // an upper limit on a number of passes in layer ordering
   get MaxOfIterations() {
-    return this.SugSettings.MaxNumberOfPassesInOrdering * this.SugSettings.RepetitionCoefficientForOrdering
+    return this.SugSettings.MaxNumberOfPassesInOrdering * this.SugSettings.NoGainStepsForOrderingMultiplier
   }
 
   static OrderLayers(

@@ -40,10 +40,10 @@ export class PathRefiner {
     if (!points || points.length === 0) return
     const arr = []
 
-    let p: Point = GeomConstants.RoundPoint(points[0])
+    let p: Point = Point.RoundPoint(points[0])
     arr.push(p)
     for (let i = 1; i < points.length; i++) {
-      const np = GeomConstants.RoundPoint(points[i])
+      const np = Point.RoundPoint(points[i])
       if (!p.equal(np)) {
         p = np
         arr.push(p)

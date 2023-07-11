@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {parseDot} from '../src/dotparser'
-import {Color, DrawingNode, DrawingGraph, DrawingEdge} from '../../core/src/drawing'
 import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
-import {AttributeRegistry} from 'msagl-js'
 
+import {AttributeRegistry} from '../../core/src/structs/attributeRegistry'
+import {DrawingGraph, DrawingNode, Color, DrawingEdge} from '../../drawing/src'
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../../core/test/data', fileName)
@@ -53,6 +53,7 @@ test('parse with colors ', () => {
     '}'
   const graph = parseDot(dotString)
   expect(graph != null).toBe(true)
+  //@ts-ignore
   const drawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   const ddNode: DrawingNode = drawingGraph.findNode('d')
   expect(ddNode != null).toBe(true)

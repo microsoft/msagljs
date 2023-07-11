@@ -1,19 +1,21 @@
 import {dropZone} from './drag-n-drop'
-import {Renderer as WebGLRenderer, SearchControl, LayoutOptions} from '@msagl/renderer-webgl'
+import {LayoutOptions} from '@msagl/renderer-common'
+import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
-import {EdgeRoutingMode, geometryIsCreated, Graph} from 'msagl-js'
+import {EdgeRoutingMode, geometryIsCreated, Graph} from '@msagl/core'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
-import {DrawingObject} from 'msagl-js/drawing'
+import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/a.gv'
+
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
 
 /// Debug on main thread
-const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
+// const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 /// Test worker with local build
-// const renderer = new Renderer(document.getElementById('viewer'), './worker.js')
+const renderer = new WebGLRenderer(document.getElementById('viewer'), './worker.js')
 /// Test published version
 // const renderer = new Renderer(document.getElementById('viewer'), 'https://unpkg.com/@msagl/renderer@latest/dist/worker.min.js')
 renderer.addControl(new SearchControl())
@@ -36,7 +38,7 @@ async function updateRender(graphOrSettings: Graph | LayoutOptions, settings?: L
 const dotFileSelect = <HTMLSelectElement>document.getElementById('gv')
 for (const name of SAMPLE_DOT) {
   const option = document.createElement('option')
-  option.value = `${name}.gv`
+  option.value = name
   option.innerText = name
   dotFileSelect.appendChild(option)
 }
@@ -45,8 +47,7 @@ dotFileSelect.onchange = () => {
   const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
     updateRender(graph)
-    document.getElementById('graph-name').innerText =
-      graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString + ')'
+    document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
   })
 }
 
@@ -91,16 +92,14 @@ fontSelect.onchange = () => {
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
   updateRender(graph)
-  document.getElementById('graph-name').innerText =
-    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
+  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   const hasGeom = geometryIsCreated(graph)
   updateRender(graph, hasGeom ? null : getSettings())
 
-  document.getElementById('graph-name').innerText =
-    graph.id + '(' + graph.nodeCountDeep.toString() + ',' + graph.deepEdgesCount.toString() + ')'
+  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })()
 
 function getSettings(): LayoutOptions {

@@ -1,7 +1,5 @@
-import {TextMeasurerOptions} from '../../../src/drawing/color'
-import {DrawingGraph} from '../../../src/drawing/drawingGraph'
 import {GeomObject} from '../../../src/layout/core/geomObject'
-import {IPsepCola} from '../../../src/layout/incremental/iPsepCola'
+import {IPsepCola as IPSepCola} from '../../../src/layout/incremental/iPsepCola'
 import {IPsepColaSetting} from '../../../src/layout/incremental/iPsepColaSettings'
 import {parseDotGraph, measureTextSize, runFastIncLayout} from '../../utils/testUtils'
 import {sortedList} from '../sortedBySizeListOfgvFiles'
@@ -12,6 +10,7 @@ import {layoutGeomGraph} from '../../../src/layout/driver'
 import {Size} from '../../../src/math/geometry'
 import {EdgeRoutingMode} from '../../../src/routing/EdgeRoutingMode'
 import {AttributeRegistry} from '../../../src/structs/attributeRegistry'
+import {DrawingGraph, TextMeasurerOptions} from '../../../../drawing/src'
 
 function createGeometry(dg: DrawingGraph, measureTextSize: (text: string, opts: Partial<TextMeasurerOptions>) => Size): GeomGraph {
   dg.createGeometry(measureTextSize)
@@ -22,10 +21,10 @@ xtest('filclust', () => {
   const dg = DrawingGraph.getDrawingGraph(parseDotGraph('graphvis/clust.gv'))
   if (dg == null) return
   const gg = createGeometry(dg, measureTextSize)
-  const filSettings = new IPsepColaSetting()
-  filSettings.AvoidOverlaps = true
-  const fil = new IPsepCola(gg, filSettings, 2)
-  fil.run()
+  const setting = new IPsepColaSetting()
+  setting.AvoidOverlaps = true
+  const runner = new IPSepCola(gg, setting, 2)
+  runner.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/fil.svg', gg)
 })
 
@@ -134,7 +133,7 @@ xtest('layout 150-250 gv files with fil', () => {
       expect(1).toBe(0)
     }
     if (dg != null) {
-      SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
+      //SvgDebugWriter.writeGeomGraph('./tmp/filinc_' + f + '.svg', GeomObject.getGeom(dg.graph) as GeomGraph)
     }
   }
 })

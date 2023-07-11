@@ -36,7 +36,7 @@ export class Database {
     }
   }
   constructor(n: number) {
-    this.Multiedges = new IntPairMap(n)
+    this.Multiedges = new IntPairMap()
   }
   registerOriginalEdgeInMultiedges(edge: PolyIntEdge) {
     let o = this.Multiedges.get(edge.source, edge.target)

@@ -1,36 +1,34 @@
+import {join} from 'path'
+import {
+  AttributeRegistry,
+  BundlingSettings,
+  CurveFactory,
+  Edge,
+  EdgeRoutingMode,
+  EdgeRoutingSettings,
+  GeomEdge,
+  GeomGraph,
+  GeomNode,
+  GeomObject,
+  Graph,
+  MdsLayoutSettings,
+  Node,
+  PlaneTransformation,
+  Point,
+  Rectangle,
+  SplineRouter,
+  SugiyamaLayoutSettings,
+  layoutGraphWithMds,
+  layoutGraphWithSugiayma,
+} from '@msagl/core'
+import {ArrowTypeEnum, DrawingEdge, DrawingGraph, DrawingNode, ShapeEnum} from '@msagl/drawing'
 import * as fs from 'fs'
 import * as path from 'path'
-import {
-  Node,
-  GeomGraph,
-  Rectangle,
-  SugiyamaLayoutSettings,
-  layoutGraphWithSugiayma,
-  Point,
-  GeomNode,
-  CurveFactory,
-  Graph,
-  Edge,
-  MdsLayoutSettings,
-  layoutGraphWithMds,
-  GeomEdge,
-  BundlingSettings,
-  AttributeRegistry,
-} from '../../src'
-import {DrawingEdge, DrawingGraph, DrawingNode} from '../../src/drawing'
-import {GeomObject} from '../../src/layout/core/geomObject'
-import {SplineRouter} from '../../src/routing/splineRouter'
+import {parseJSON} from '../../../parser/src/dotparser'
+import {initRandom} from '../../src/utils/random'
 import {sortedList} from '../layout/sortedBySizeListOfgvFiles'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
-import {generateRandomGeomGraph, measureTextSize, runMDSLayout, setNode} from '../utils/testUtils'
-import {join} from 'path'
-import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
-import {ArrowTypeEnum} from '../../src/drawing/arrowTypeEnum'
-import {ShapeEnum} from '../../src/drawing/shapeEnum'
-import {initRandom} from '../../src/utils/random'
-import {EdgeRoutingSettings} from '../../src/routing/EdgeRoutingSettings'
-import {PlaneTransformation} from '../../src/math/geometry/planeTransformation'
-import {parseJSON} from '../../../parser/src/jsonparser'
+import {measureTextSize, setNode, runMDSLayout, generateRandomGeomGraph} from '../utils/testUtils'
 
 const socialNodes = [
   'Grenn',
