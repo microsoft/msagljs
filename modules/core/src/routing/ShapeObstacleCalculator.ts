@@ -12,6 +12,7 @@ import {flattenArray} from '../utils/setOperations'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {Shape} from './shape'
 import {TightLooseCouple} from './TightLooseCouple'
+import {Node} from '../structs/node'
 
 export class ShapeObstacleCalculator {
   tightHierarchy: RectangleNode<Polyline, Point>
