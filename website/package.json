@@ -1,6 +1,6 @@
 {
   "name": "website",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -18,9 +18,9 @@
     "@docusaurus/module-type-aliases": "^2.4.0",
     "@docusaurus/preset-classic": "^2.4.0",
     "@mdx-js/react": "^1.6.22",
-    "@msagl/core": "^1.1.16",
-    "@msagl/parser": "^1.1.16",
-    "@msagl/renderer-svg": "^1.1.18",
+    "@msagl/core": "^1.1.17",
+    "@msagl/parser": "^1.1.17",
+    "@msagl/renderer-svg": "^1.1.19",
     "@rise4fun/docusaurus-plugin-rise4fun": "^2.1.0",
     "@svgdotjs/svg.js": "^3.1.2",
     "@tsconfig/docusaurus": "^1.0.7",
