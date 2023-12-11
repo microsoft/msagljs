@@ -257,7 +257,7 @@ export class LayerInserter {
   // or a middle of a multi edge
   static RegisterDontStepOnVertex(db: Database, parent: PolyIntEdge) {
     if (db.Multiedges.get(parent.source, parent.target).length > 1) {
-      const e = parent.LayerEdges[parent.LayerEdges.length / 2]
+      const e = parent.LayerEdges[Math.floor(parent.LayerEdges.length / 2)]
       db.MultipleMiddles.add(e.Source)
     }
   }
