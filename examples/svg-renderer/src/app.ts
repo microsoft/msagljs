@@ -167,12 +167,23 @@ dropZone('drop-target', async (f: File) => {
 
 function layoutGrapForCy(graph: Graph) {
   let i = 0
-  const nodes = Array.from(graph.nodesBreadthFirst).map(node => ({ data: { id: node.id } }))
+  const nodes = Array.from(graph.nodesBreadthFirst).map(node => ({ data: { id: node.id, label: node.getAttr(AttributeRegistry.DrawingObjectIndex).labelText } }))
   const edges = Array.from(graph.deepEdges).map(edge => ({ data: { id: 'e' + i++, source: edge.source.id, target: edge.target.id } }))
 
   // Add the elements to the cytoscape instance
-  const elements = nodes.concat(edges)
+  const elements: { data: { id: string; label: any; }; }[] = nodes.concat(edges)
+  cy.elements().remove()
   cy.add(elements)
+   // Set style to display labels
+  cy.style([
+    {
+      selector: 'node',
+      style: {
+        'label': 'data(label)'
+      }
+    }
+  ]).update();
+
   cy.layout({ name: 'klay' }).run()
 }
 
