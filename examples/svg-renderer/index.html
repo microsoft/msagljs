@@ -64,11 +64,19 @@
         right: 0;
       }
       #viewer svg {
-        width: 100%;
+        width: 50%;
         height: 100%;
         margin: 0;
       }
-
+      #cy {
+    position: absolute;
+    left: 50vw; /* Adjust this value as needed */
+    top: 50px;
+    width: 50vw; /* Adjust this value as needed */
+    height: 100vh;
+    background-color: green;
+    z-index: 1;
+}
       #dot_files {
         width: 20vw;
         height: 50px;
@@ -179,7 +187,7 @@
     </div>
 
     <div id="viewer"></div>
-
+    <div id="cy"></div>
     <div id="settings">
       <div>
         <label>Layout:</label>
