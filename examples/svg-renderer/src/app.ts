@@ -16,6 +16,7 @@ cytoscape.use( klay );
 const viewer = document.getElementById('viewer')
 const cy = cytoscape({
   container: document.getElementById('cy'), // container to render in
+  wheelSensitivity: 0.1,
 });
 viewer.setAttribute('style', 'touch-action: none;')
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
@@ -168,8 +169,8 @@ dropZone('drop-target', async (f: File) => {
 function layoutGrapForCy(graph: Graph) {
   let i = 0
   const nodes = Array.from(graph.nodesBreadthFirst).map(node => ({ data: { id: node.id, label: node.getAttr(AttributeRegistry.DrawingObjectIndex).labelText } }))
-  const edges = Array.from(graph.deepEdges).map(edge => ({ data: { id: 'e' + i++, source: edge.source.id, target: edge.target.id } }))
-
+  const edges = Array.from(graph.deepEdges).map(edge => ({ data: { id: 'e' + i++, source: edge.source.id, target:edge.target.id, label:edge.getAttr(AttributeRegistry.DrawingObjectIndex).labelText,  }}))
+  
   // Add the elements to the cytoscape instance
   const elements: { data: { id: string; label: any; }; }[] = nodes.concat(edges)
   cy.elements().remove()
@@ -179,7 +180,15 @@ function layoutGrapForCy(graph: Graph) {
     {
       selector: 'node',
       style: {
-        'label': 'data(label)'
+        'label': 'data(label)',
+        'font-size': '10px'
+      }
+    },
+    {
+      selector: 'edge',
+      style: {
+        'label': 'data(label)',
+        'font-size': '8px'
       }
     }
   ]).update();
