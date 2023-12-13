@@ -8,9 +8,9 @@ import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
+//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data///graphvis/a.gv'
 
-
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/p2.gv'
 /// Debug on main thread
 // const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 /// Test worker with local build
