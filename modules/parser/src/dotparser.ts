@@ -963,13 +963,13 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
 }
 
 function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
-  if (drObj.color && drObj.color.keyword.toLowerCase() !== 'black') {
+  if (drObj.color) {
     yield {type: 'attr', id: 'color', eq: drObj.color.toString()}
   }
   if (drObj.fillColor) {
     yield {type: 'attr', id: 'fillColor', eq: drObj.fillColor.toString()}
   }
-  if (drObj.labelfontcolor && drObj.labelfontcolor.keyword.toLowerCase() !== 'black') {
+  if (drObj.labelfontcolor) {
     yield {type: 'attr', id: 'labelfontcolor', eq: drObj.labelfontcolor.toString()}
   }
   if (!(drObj.labelText == null || drObj.labelText === '') && drObj.entity && drObj.labelText !== drObj.id) {
