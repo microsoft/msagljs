@@ -628,6 +628,7 @@ export class TileMap {
         tile.addElement(data)
       }
       if (e.label) {
+        if (dataByEntity.get(e.label))
         for (const edt of dataByEntity.get(e.label)) {
           const tile = edt.tile
           const data = edt.data
