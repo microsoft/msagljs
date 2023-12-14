@@ -2,12 +2,12 @@
 sidebar_position: 3
 ---
 
-# Configuration
+# Configuration of the renderers
 
 The renderer options accept the following fields:
 
-- `layoutType: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPSepCola' | 'MDS'` - algorithm used to layout the graph.
-  By default, if all the edges in the graph are undirected, IPSepCola algorithm is used; otherwise, the graph is laid out with the Sugiyama Scheme.
+- `layoutType: 'default' | 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPSepCola' | 'MDS'` - algorithm used to layout the graph.
+  When the 'default' option is usde and all the edges in the graph are undirected, IPSepCola algorithm is used; otherwise, the graph is laid out with the Sugiyama Scheme.
 
   "Sugiyama TB": creates a layered top-to-bottom illustrated below.
   ![dark](/images/showAPI_dark.svg#gh-dark-mode-only)
