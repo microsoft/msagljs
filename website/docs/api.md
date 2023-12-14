@@ -2,17 +2,16 @@
 sidebar_position: 4
 ---
 
-# API
+# API of @msagl/core
 
 ## Use the layout engine directly
 
 When you interact with a renderer, many details are hidden under the hood.
-Here we show how to call the engine directly
+Here we show how to call the engine, @msagl/core, directly.
 
-### Create a geometry graph and call the default layout
+### Create the graph, add geometry attributes to it, and call the default layout
 
-We need to say a few words on the classes involved.
-Let us describe the design of Node, Graph, and Edge.
+First we need to say a few words on the classes involved: Node, Graph, and Edge.
 
 Edge is the simplest of these three: it has the source and the target that are Nodes.
 Node has three sets of Edges: outEdges, inEdges, and selfEdges.
@@ -26,8 +25,7 @@ for (const e of n.outEdges()) {
 ```
 
 Graph extends Node, but in addition it has a NodeCollection, which is a wrapper
-of Map<string, Node>: this way a Graph can reference its nodes. To create a sub-graph we just
-add a Graph as a new node to the graph.
+of Map<string, Node>: this way a Graph references its nodes. To create a sub-graph we add a Graph as a new node to the graph.
 
 ```ts
 const graph = new Graph()
@@ -40,14 +38,14 @@ we go over the nodes in the graph's NodeCollection and iterate over outgoing and
 
 The classes Graph, Node, and Edge extend class Entity. Entity has a field parent that is also an Entity.
 This way a Node, and an Edge, have a reference to the Graph they belongs to.
-There is a class Label to facilitate labelled edges. The parent of a Label is the labeled edge.
+Class Label facilitates labelled edges. The parent of a Label is the labeled edge.
 
-Entity has an array of Attributes. The Attributes keep additional information associated with the graph entities.
+Importantly, class Entity has an array of Attributes. The Attributes keep additional information associated with the graph entities.
 There are geometry attributes, drawing attributes, and some others.
 The geometry attributes are needed to create a layout. The drawing attributes are used during rendering.
-The attributes are a convenient mechanism to avoid a duplication of the graph structure.
+By using attributes we avoid a duplication of the graph structure.
 
-Now we can return to the engine level layout example.
+Now we show how to create a graph in lay it out with @msagl/core.
 
 ```ts
 //First we create a Graph, the underlying structure to keep your graph.
