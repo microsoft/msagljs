@@ -73,19 +73,6 @@ layoutSelect.onchange = () => {
   updateRender(getSettings())
 }
 
-// Settings: font
-const fontSelect = <HTMLSelectElement>document.getElementById('fonts')
-for (const f of FONT) {
-  const option = document.createElement('option')
-  option.value = f
-  option.innerText = f
-  option.style.fontFamily = f
-  fontSelect.appendChild(option)
-}
-fontSelect.onchange = () => {
-  updateRender(getSettings())
-}
-
 // File selector
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
@@ -102,11 +89,8 @@ dropZone('drop-target', async (f: File) => {
 
 function getSettings(): LayoutOptions {
   const opts: LayoutOptions = {
-    label: {
-      fontFamily: fontSelect.value,
-    },
+    
   }
-  DrawingObject.defaultLabelFontName = opts.label.fontFamily
   switch (layoutSelect.value) {
     case 'lr':
       opts.layoutType = 'Sugiyama LR'

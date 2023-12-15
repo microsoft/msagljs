@@ -4,11 +4,10 @@ sidebar_position: 2
 
 # Getting Started
 
-There are three main scenarios for using MSAGL:
-using the core layout engine, using the SVG renderer, and using the Deck.gl renderer.
-If you are only interested in getting the layout of a graph, you can use the core layout engine, that is `@msagl/core` package.
-If your intention is to render, and possibly edit, a graph in an Internet browser, you can use the SVG renderer, that is in the `@msagl/renderer-svg` package.
-The third option, the Deck.gl renderer, from the `@msagl/renderer-webgl` package, is where you explore a larger graph in an Internet browser. The renderer uses the visualization style similar to online maps.
+There are three main scenarios for using MSAGL. You can interact with the core layout engine, or the SVG renderer, or the Deck.gl renderer.
+* If you are only interested in getting the layout of a graph, you can use the core layout engine, that is `@msagl/core` package.
+* If your intention is to render, and possibly edit, a graph in an Internet browser, you can use the SVG renderer, that is in the `@msagl/renderer-svg` package.
+* The third option, the Deck.gl renderer, from the `@msagl/renderer-webgl` package, is where you explore a larger graph in an Internet browser. The renderer uses the visualization style similar to online maps.
 
 ## Installation
 

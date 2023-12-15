@@ -101,11 +101,6 @@ layoutSelect.onchange = () => {
   svgRenderer.setOptions(getLayoutOptions())
 }
 
-const fontSelect = createFontSelect()
-fontSelect.onchange = () => {
-  svgRenderer.setOptions(getLayoutOptions())
-}
-
 const svgSaveDiv = document.getElementById('save-svg')
 svgSaveDiv.onclick = () => {
   const svgString = svgRenderer.getSvgString()
@@ -156,18 +151,6 @@ dropZone('drop-target', async (f: File) => {
 
 })()
 
-function createFontSelect() {
-  const fontSelect = <HTMLSelectElement>document.getElementById('fonts')
-  for (const f of FONT) {
-    const option = document.createElement('option')
-    option.value = f
-    option.innerText = f
-    option.style.fontFamily = f
-    fontSelect.appendChild(option)
-  }
-  return fontSelect
-}
-
 function createLayoutSelect() {
   const layoutSelect = <HTMLSelectElement>document.getElementById('layouts')
   for (const l in LAYOUT) {
@@ -204,9 +187,7 @@ function createDotGraphsSelect() {
 
 function getLayoutOptions(): LayoutOptions {
   const opts: LayoutOptions = {
-    label: {
-      fontFamily: fontSelect.value,
-    },
+    
   }
 
   switch (layoutSelect.value) {
