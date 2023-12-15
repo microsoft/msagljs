@@ -45,7 +45,7 @@ There are geometry attributes, drawing attributes, and some others.
 The geometry attributes are needed to create a layout. The drawing attributes are used during rendering.
 By using attributes we avoid a duplication of the graph structure.
 
-Now we show how to create a graph in lay it out with @msagl/core.
+Now we show how to create a graph and lay it out with @msagl/core.
 
 ```ts
 //First we create a Graph, the underlying structure to keep your graph.

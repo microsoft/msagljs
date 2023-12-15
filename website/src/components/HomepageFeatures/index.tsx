@@ -5,7 +5,7 @@ import styles from './styles.module.css';
 const FeatureList = [
   
   {
-    title: 'Get started',
+    title: 'Intro & Get started',
     Svg: require('@site/static/img/undraw_start_building_re_xani.svg').default,
     description: (
       <>
