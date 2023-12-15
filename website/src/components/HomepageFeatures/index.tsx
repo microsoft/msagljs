@@ -3,36 +3,44 @@ import clsx from 'clsx';
 import styles from './styles.module.css';
 
 const FeatureList = [
+  
   {
-    title: 'Incredible Layouts',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'Get started',
+    Svg: require('@site/static/img/undraw_start_building_re_xani.svg').default,
     description: (
       <>
-        Yes they look good.
+        Installation etc
       </>
     ),
+    action: 'Learn More',
+    actionLink: '/msagljs/docs/intro'
   },
   {
-    title: 'Gazzilion of nodes',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'SVG and WebGL',
+    Svg: require('@site/static/img/undraw_image_viewer_re_7ejc.svg').default,
     description: (
       <>
-        Bring them on.
+        SVG and WebGL renderers for MSAGL
       </>
     ),
+    action: 'Learn More',
+    actionLink: '/msagljs/docs/configuration'
   },
   {
-    title: 'Svg and WebGL',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'Interacting with the engine',
+    Svg: require('@site/static/img/gear-svgrepo-com.svg').default,
     description: (
       <>
-        Pick your poison.
+        Call the engine directly
       </>
     ),
+    action: 'Learn More',
+    actionLink: '/msagljs/docs/api'
   },
+  
 ];
 
-function Feature({ Svg, title, description }) {
+function Feature({ Svg, title, description, action, actionLink }) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
@@ -41,6 +49,9 @@ function Feature({ Svg, title, description }) {
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
         <p>{description}</p>
+        {action && actionLink && (
+          <a href={actionLink} className="button button--primary">{action}</a>
+        )}
       </div>
     </div>
   );
