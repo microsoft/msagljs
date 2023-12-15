@@ -3,7 +3,6 @@
   "version": "1.1.19",
   "private": true,
   "description": "Public demo for @msagl/core",
-  "main": "index.js",
   "scripts": {
     "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
     "build": "rm -rf ../../website/static/renderer-webgl/* && esbuild ./src/app.js --outfile=../../website/static/renderer-webgl/app.js --bundle --minify && cp index.html  spinner.gif ../../website/static/renderer-webgl"
