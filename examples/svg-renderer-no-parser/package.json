@@ -12,7 +12,7 @@
   "dependencies": {
     "@msagl/core": "^1.1.17",
     "@msagl/drawing": "^1.1.17",
-    "@msagl/renderer-svg-no-parser": "^1.1.19",
+    "@msagl/renderer-svg": "^1.1.19",
     "cytoscape": "^3.2.0",
     "cytoscape-klay": "^3.1.4"
   },
