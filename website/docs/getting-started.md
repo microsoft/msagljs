@@ -30,9 +30,46 @@ npm install @msagl/renderer-webgl
 ```
 
 ## Usage of renderers
+  
+### Create a graph and pass it to the render
 
-The renderers can accept a graph in a [DOT](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>) format.
-Pressing the "Edit" button below brings a pane where the graph can be edited and rendered.
+Here is a fragment from the [example](https://microsoft.github.io/msagljs/renderer-svg/index.html),
+where a Graph object, together with two nodes and an edge, is created from scratch.
+You can read about involved types in [API of @msagl/core](./api.md). 
+``` ts build
+import {RendererSvg} from '@msagl/renderer-svg'
+import {Node, Graph, Edge} from '@msagl/core'
+
+const viewer = document.getElementById('viewer')
+const svgRenderer = new RendererSvg(viewer)
+svgRenderer.layoutEditingEnabled = false
+
+const graph = createGraph()
+svgRenderer.setGraph(graph)
+
+function createGraph(): Graph {
+  //First we create a Graph object
+  const graph = new Graph()
+  // add some nodes and edges to the graph.
+  // add a node with id 'b'
+  const b = new Node('b')
+  graph.addNode(b)
+  // add a node with id 'c'
+  const c = new Node('c')
+  graph.addNode(c)
+  // create edge from b to c
+  const bc = new Edge(b, c)
+  new Edge(b, c)
+  return graph
+}
+```
+
+### Create a Graph object from a file
+#### From DOT 
+A graph can be created from a string in [DOT format](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>), by using function ``parseDot()`` in package '@msagl/parser'.
+The function uses [Andrei Kascha's dotparser](https://github.com/anvaka/dotparser). 
+Below is a *live* example: Pressing the "Edit" button brings a pane where the graph DOT string and a "Run" button. The string can be edited and 
+the graph will be dynamically reloaded on clicking "Run" button.
 
 ```dot edit
 graph G {
@@ -44,7 +81,7 @@ graph G {
 }
 ```
 
-Below is an example of the minimal TypeScript code to render a graph with the SVG renderer.
+Here is some of the behind the scene code.
 
 ```ts build
 import { parseDot } from '@msagl/parser'
@@ -64,8 +101,8 @@ graph G {
 // calculate the layout and render
 renderer.setGraph(graph)
 ```
-
-Here we render a graph, parsed from a JSON string, with the DeckGL renderer
+#### From JSON
+Here we render a graph parsed from a JSON string with the DeckGL renderer
 
 ```ts build
 import { parseJSON } from '@msagl/parser'
@@ -94,10 +131,10 @@ const graph: Graph = parseJSON({
 // attach the graph to the renderer: this causes the layout engine to run and the graph to be rendered
 renderer.setGraph(graph)
 ```
-
+Function ``function parseJSON(json: JSONGraph | SimpleJSONGraph): Graph`` can accept an object of [SimpleJSONGraph ](https://github.com/microsoft/msagljs/blob/e36c5693cd07f2a6e28d8775c7afbb54226c2022/modules/parser/src/dotparser.ts#L1224) type, or as [Graph of dotparser](https://github.com/anvaka/dotparser/blob/934be0396f4e89f9554c52e088ff5a4ae3e5fe94/index.d.ts#L53).
+#### From ".txt", "tsv", or ".csv"
 Function 'parseTXT()' from @msagl/parser will try to parse a file with extention '.txt', '.tsv',
-or '.csv'. Each line of the file defines an edge and expected to follow pattern "sourceId\ttargetId",
-"sourceId targetId", or "sourceId,targetId": this creating a directe edge sourceId->targetId.
-That is two words, indicating the IDs of the edge source and the edge target,
-separated by a tabulation symbol, by a space, or by a comma.
- Explain parseJSON!!!!! 
+or '.csv'. Each line of the file defines an edge and expected to follow pattern "sourceId targetId".
+The blank between sourceId and targetId can be replaced by a comma, or a tab character.
+
+ 

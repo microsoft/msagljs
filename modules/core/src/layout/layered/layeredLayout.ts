@@ -492,6 +492,7 @@ export class LayeredLayout extends Algorithm {
     this.OptimizeEdgeLabelsLocations()
 
     this.engineLayerArrays = layerArrays
+  
     this.StraightensShortEdges()
 
     this.CalculateOriginalGraphBox()
@@ -564,6 +565,8 @@ export class LayeredLayout extends Algorithm {
   }
 
   StraightensShortEdges() {
+    // it seems this heuristic is not needed for small graphs
+    if (this.anchors.length < 20) return
     // eslint-disable-next-line no-empty
     for (; this.StraightenEdgePaths(); ) {}
   }

@@ -1,0 +1,25 @@
+{
+  "name": "svg-example",
+  "version": "1.1.19",
+  "private": true,
+  "description": "Public demo for svg from @msagl/core",
+  "scripts": {
+    "start": "esbuild ./src/app.ts --sourcemap --servedir=. --outdir=. --bundle",
+    "build": "rm -rf ../../website/static/renderer-svg-no-parser/* && esbuild ./src/app.js --outfile=../../website/static/renderer-svg-no-parser/app.js --bundle --minify && cp index.html ../../website/static/renderer-svg-no-parser"
+  },
+  "author": "levnach@microsoft.com",
+  "license": "MIT",
+  "dependencies": {
+    "@msagl/core": "^1.1.17",
+    "@msagl/drawing": "^1.1.17",
+    "@msagl/renderer-svg-no-parser": "^1.1.19",
+    "cytoscape": "^3.2.0",
+    "cytoscape-klay": "^3.1.4"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.19.16",
+    "@types/cytoscape-klay": "^3.1.4",
+    "esbuild": "^0.14.27",
+    "typescript": "^4.5.5"
+  }
+}

@@ -101,7 +101,8 @@ export class DrawingGraph extends DrawingNode {
     return geomGraph
   }
   private createEdgeGeometry(e: Edge) {
-    const drawingEdge = <DrawingEdge>DrawingEdge.getDrawingObj(e)
+    // if the drawing edge is not defined, we create it as a directed edge
+    const drawingEdge = <DrawingEdge>DrawingEdge.getDrawingObj(e) || new DrawingEdge(e, true)
     const geomEdge = new GeomEdge(e)
 
     if (drawingEdge.arrowhead != ArrowTypeEnum.none) {
@@ -183,13 +184,14 @@ export class DrawingGraph extends DrawingNode {
 
   createNodeGeometry(n: Node, center = new Point(0, 0)): void {
     if (n instanceof Graph) {
-      const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n)
+      const subDg = <DrawingGraph>DrawingObject.getDrawingObj(n) || new DrawingGraph(n)
       const geomGraph = new GeomGraph(n)
       if (subDg.labelText) {
         geomGraph.labelSize = subDg.measuredTextSize = measureTextSize(subDg, this.textMeasure)
       }
     } else {
-      const drawingNode = <DrawingNode>DrawingNode.getDrawingObj(n)
+      // if the drawingNode attribute is not defined, we create a new DrawingNode
+      const drawingNode = <DrawingNode>DrawingNode.getDrawingObj(n) || new DrawingNode(n)
       let textSize = new Size(1, 1)
       if (drawingNode.labelText) {
         textSize = measureTextSize(drawingNode, this.textMeasure)
