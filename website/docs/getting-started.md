@@ -33,7 +33,7 @@ npm install @msagl/renderer-webgl
   
 ### Create a graph and pass it to the render
 
-Here is a fragment from the [example](https://microsoft.github.io/msagljs/renderer-svg/index.html),
+Here is a fragment from the [example](https://microsoft.github.io/msagljs/renderer-svg-no-parser/index.html),
 where a Graph object, together with two nodes and an edge, is created from scratch.
 You can read about involved types in [API of @msagl/core](./api.md). 
 ``` ts build
