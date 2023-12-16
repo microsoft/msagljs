@@ -31,7 +31,7 @@ npm install @msagl/renderer-webgl
 
 ## Usage of renderers
   
-### Create a graph and pass it to the render
+### Create a graph and pass it to the renderer
 
 Here is a fragment from the [example](https://microsoft.github.io/msagljs/renderer-svg-no-parser/index.html),
 where a Graph object, together with two nodes and an edge, is created from scratch.
