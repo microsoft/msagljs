@@ -130,6 +130,8 @@ We describe three methods of the layout that are implemented in the package.
 Sugiayama scheme sometimes is also called the hierarchical layout. It is meant for a directed graph. It organizes the nodes in horizontal layers and renders the edges following their direction.
 There is an [article](https://en.wikipedia.org/wiki/Layered_graph_drawing.) describing the method.  
 The implementation of the scheme in MSAGL closely follows [the paper of Dot/Graphviz authors](https://www.researchgate.net/profile/Emden-Gansner/publication/3187542_A_Technique_for_Drawing_Directed_Graphs/links/5c0abd024585157ac1b04523/A-Technique-for-Drawing-Directed-Graphs.pdf). The differences of the implementation of MSAGL with the Dot approach are mostly described in [Drawing Graphs with GLEE](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gd2007-glee.pdf) and [Improving Layered Graph Layouts with Edge Bundling](https://elar.urfu.ru/bitstream/10995/111368/1/2-s2.0-79952265484.pdf). The improvements are in the fast calculation of the layers, and the edge routing.
+##### Current limtitations
+The constraint functionality for Sugiyama scheme is not implemented yet.
 
 #### Calling Sugiama Scheme
 
