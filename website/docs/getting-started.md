@@ -68,8 +68,8 @@ function createGraph(): Graph {
 #### From DOT 
 A graph can be created from a string in [DOT format](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)#:~:text=DOT%20is%20a%20graph%20description,programs%20can%20process%20DOT%20files.>), by using function ``parseDot()`` in package '@msagl/parser'.
 The function uses [Andrei Kascha's dotparser](https://github.com/anvaka/dotparser). 
-Below is a *live* example: Pressing the "Edit" button brings a pane where the graph DOT string and a "Run" button. The string can be edited and 
-the graph will be dynamically reloaded on clicking "Run" button.
+Below is a *live* example: Pressing the "Edit" button brings a pane with the graph DOT string and a "Run" button. The string can be edited and 
+the graph is reloaded on a "Run" button click.
 
 ```dot edit
 graph G {
