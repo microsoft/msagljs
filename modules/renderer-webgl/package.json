@@ -36,5 +36,8 @@
     "d3-scale": "^4.0.0",
     "deck.gl": "^8.8.20"
   },
-  "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7"
+  "gitHead": "07dc5720f142d48f0d8f1dd08a49723ae150d6f7",
+  "devDependencies": {
+    "apache-arrow": "^14.0.2"
+  }
 }

@@ -38,7 +38,7 @@ export type CurveLayerProps<DataT> = {
   getRange?: Accessor<DataT, [number, number]>
   getWidth?: Accessor<DataT, number>
   getColor?: Accessor<DataT, Color>
-} & LayerProps<DataT>
+} & LayerProps
 
 const defaultProps: DefaultProps<CurveLayerProps<any>> = {
   widthUnits: 'common',
