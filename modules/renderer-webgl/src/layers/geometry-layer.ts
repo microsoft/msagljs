@@ -37,7 +37,7 @@ export type GeometryLayerProps<DataT = any> = {
   getLineColor?: Accessor<DataT, Color>
   getLineWidth?: Accessor<DataT, number>
   getShape?: Accessor<DataT, SHAPE>
-} & LayerProps<DataT>
+} & LayerProps
 
 const defaultProps: DefaultProps<GeometryLayerProps> = {
   lineWidthUnits: 'common',
