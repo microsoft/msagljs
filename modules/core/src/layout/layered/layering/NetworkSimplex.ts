@@ -622,7 +622,7 @@ export class NetworkSimplex implements LayerCalculator {
         for (const f of this.graph.edges) {
           cut += this.edgeSourceTargetVal(f, e) * f.weight
         }
-        if (e.cut !== cut) console.log(String.Format('cuts are wrong for {0}; should be {1} but is {2}', e, cut, e.cut))
+        if (e.cut !== cut) console.log(String.format('cuts are wrong for {0}; should be {1} but is {2}', e, cut, e.cut))
       }
     }
   }

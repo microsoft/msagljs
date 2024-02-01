@@ -46,6 +46,6 @@ export class Stem {
   }
 
   toString(): string {
-    return String.Format('Stem({0},{1})', this.Start, this.End)
+    return String.format('Stem({0},{1})', this.Start, this.End)
   }
 }

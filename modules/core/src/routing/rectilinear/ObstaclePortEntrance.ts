@@ -216,7 +216,7 @@ export class ObstaclePortEntrance {
   }
 
   public toString(): string {
-    return String.Format(
+    return String.format(
       '{0} {1}~{2} {3}',
       this.ObstaclePort.Location,
       this.UnpaddedBorderIntersect,

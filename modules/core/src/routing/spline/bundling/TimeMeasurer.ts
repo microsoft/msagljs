@@ -19,7 +19,7 @@
 //    internal static void DebugOutput(string str) {
 // #if TEST_MSAGL && TEST_MSAGL
 //        timer.Stop();
-//        System.Diagnostics.Debug.Write("{0}: ", String.Format("{0:0.000}", timer.Duration));
+//        System.Diagnostics.Debug.Write("{0}: ", String.format("{0:0.000}", timer.Duration));
 //        System.Diagnostics.Debug.WriteLine(str);
 // #endif
 //    }

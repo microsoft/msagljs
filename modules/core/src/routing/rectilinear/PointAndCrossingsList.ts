@@ -138,6 +138,6 @@ export class PointAndCrossingsList {
   }
 
   ToString(): string {
-    return String.Format('{0} [{1}]', this.ListOfPointsAndCrossings.length, this.index)
+    return String.format('{0} [{1}]', this.ListOfPointsAndCrossings.length, this.index)
   }
 }

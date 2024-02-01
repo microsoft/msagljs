@@ -210,7 +210,7 @@ export class SvgCreator {
     }
   }
   private setTransformForTranformGroup() {
-    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', 0, 0))
+    this.transformGroup.setAttribute('transform', String.format('matrix(1,0,0,-1, {0},{1})', 0, 0))
   }
 
   /** gets transform from svg to the client window coordinates */
@@ -472,7 +472,7 @@ export class SvgCreator {
   }
 
   getViewBoxString(bbox: DOMRect): string {
-    return String.Format('0 0 {0} {1}', bbox.width, bbox.height)
+    return String.format('0 0 {0} {1}', bbox.width, bbox.height)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {

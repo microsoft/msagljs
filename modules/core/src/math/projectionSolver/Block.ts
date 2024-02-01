@@ -75,7 +75,7 @@ export class Block {
 
   // <returns>A string representation of the Block.</returns>
   toString(): string {
-    return String.Format('[Block: nvars = {0} refpos = {1:F5} scale = {2:F5}]', this.Variables.length, this.ReferencePos, this.Scale)
+    return String.format('[Block: nvars = {0} refpos = {1:F5} scale = {2:F5}]', this.Variables.length, this.ReferencePos, this.Scale)
   }
 
   // The dummy parent node that saves us from having to do null testing.
