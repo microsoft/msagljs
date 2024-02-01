@@ -356,17 +356,18 @@ export class SvgCreator {
     path.setAttribute('stroke-width', drObj.penwidth.toString())
     if (drObj.styles && drObj.styles.length) {
       for (const style of drObj.styles) {
-        this.attachStyleToPath(path, style)
+        this.attachStyleToPath(path, style, drObj.penwidth)
       }
     }
   }
-  private attachStyleToPath(path: SVGElement, style: StyleEnum) {
+  private attachStyleToPath(path: SVGElement, style: StyleEnum, width: number = 1) {
     switch (style) {
       case StyleEnum.dashed:
         path.setAttribute('stroke-dasharray', '5')
         break
       case StyleEnum.dotted:
-        path.setAttribute('stroke-dasharray', '2')
+        path.setAttribute('stroke-dasharray', width.toString())
+        path.setAttribute('stroke-linecup', 'round')
         break
       default:
         //todo: support more styles
@@ -436,7 +437,7 @@ export class SvgCreator {
 
     textEl.setAttribute('text-anchor', 'middle')
     textEl.setAttribute('x', rect.center.x.toString())
-    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.fontColor))
+    textEl.setAttribute('fill', msaglToSvgColor(drawingObject.labelfontcolor))
     textEl.setAttribute('font-family', drawingObject.fontname)
     textEl.setAttribute('font-size', fontSize.toString() + 'px')
     textEl.setAttribute('transform', 'scale(1,-1)')
