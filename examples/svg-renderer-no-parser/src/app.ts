@@ -1,6 +1,6 @@
 import {RendererSvg} from '@msagl/renderer-svg'
 import {Node, Graph, Edge} from '@msagl/core'
-import { DrawingEdge, Color, StyleEnum } from '@msagl/drawing'
+import { DrawingEdge, Color, StyleEnum, ShapeEnum } from '@msagl/drawing'
 import { DrawingNode } from '@msagl/drawing'
 
 const viewer = document.getElementById('viewer')
@@ -32,9 +32,16 @@ function createGraph(): Graph {
   const c_d = new DrawingNode(c)
   c_d.labelfontcolor = Color.Cyan
 
+  // by default the node geometry is a rectangle with smoothened corners,
+  // but we can change the geometry by using, CurveFactory.mkCircle, CurveFactory.mkEllipse, CurveFactory.mkPolygon,etc
+  // Or, alternatively we can use Shape attribute to change the shape of the node.
+  // Here we change the shape of the node to diamond
+  c_d.shape = ShapeEnum.diamond
+
   graph.addNode(c)
   // create edge from b to c
   const bc = new Edge(b, c)
+
   // set the bc drawing edge attributes
   const bc_d = new DrawingEdge(bc, true)
   bc_d.color = Color.Red
@@ -47,7 +54,7 @@ function createGraph(): Graph {
   // set the obc drawing edge attributes
   const obc_d = new DrawingEdge(obc, true)
   obc_d.color = Color.Blue
-  obc_d.penwidth = 0.3
+  obc_d.penwidth = 1
   obc_d.styles.push(StyleEnum.dotted) 
   return graph
 }

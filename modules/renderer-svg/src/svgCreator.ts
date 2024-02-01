@@ -346,6 +346,7 @@ export class SvgCreator {
     this.setStroke(path, DrawingEdge.getDrawingObj(edge))
     const points = getArrowheadPoints(base, arrowhead.tipPosition)
     path.setAttribute('points', pointsToString(points))
+    path.setAttribute('fill', msaglToSvgColor(edge.getAttr(AttributeRegistry.DrawingObjectIndex).color))
     return path
   }
 
