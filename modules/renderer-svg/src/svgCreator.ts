@@ -506,11 +506,11 @@ export class SvgCreator {
 const svgns = 'http://www.w3.org/2000/svg'
 
 function curveString(iCurve: ICurve): string {
-  return String.Join(' ', Array.from(curveStringTokens(iCurve)))
+  return String.join(' ', Array.from(curveStringTokens(iCurve)))
 }
 
 function smoothedPolylineToString(sp: SmoothedPolyline): string {
-  return String.Join(' ', Array.from(tokensOfSmoothedPolyline(sp)))
+  return String.join(' ', Array.from(tokensOfSmoothedPolyline(sp)))
 }
 function* tokensOfSmoothedPolyline(sp: SmoothedPolyline): IterableIterator<string> {
   let first = true
@@ -582,7 +582,7 @@ function ellipseToString(ellipse: Ellipse): string {
   const largeArc = Math.abs(ellipse.parEnd - ellipse.parStart) >= Math.PI ? '1' : '0'
   const sweepFlag = ellipse.orientedCounterclockwise() ? '1' : '0'
 
-  return String.Join(
+  return String.join(
     ' ',
     'A',
     ellipseRadiuses(ellipse),
@@ -596,7 +596,7 @@ function ellipseRadiuses(ellipse: Ellipse): string {
   return doubleToString(ellipse.aAxis.length) + ',' + doubleToString(ellipse.bAxis.length)
 }
 function pointsToString(points: Point[]) {
-  return String.Join(
+  return String.join(
     ' ',
     points.map((p) => pointToString(p)),
   )
