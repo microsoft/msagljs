@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      actions: read
-      contents: read
+      actions: write
+      contents: write
       deployments: write
       packages: none
       pull-requests: write
