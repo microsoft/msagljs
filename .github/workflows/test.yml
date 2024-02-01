@@ -16,7 +16,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      deployments: read
+      deployments: write
       packages: none
       pull-requests: write
       security-events: write
