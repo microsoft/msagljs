@@ -32,10 +32,10 @@ function createGraph(): Graph {
   const c_d = new DrawingNode(c)
   c_d.labelfontcolor = Color.Cyan
 
-  // by default the node geometry is a rectangle with smoothened corners,
-  // but we can change the geometry by using, CurveFactory.mkCircle, CurveFactory.mkEllipse, CurveFactory.mkPolygon,etc
-  // Or, alternatively we can use Shape attribute to change the shape of the node.
-  // Here we change the shape of the node to diamond
+  // By default the node geometry is a rectangle with smoothened corners with dimensions obtained from the label size, 
+  // but we can change the geometry by using CurveFactory.mkCircle, CurveFactory.mkEllipse, CurveFactory.mkPolygon,etc, to customize the node shape.
+  // Or, alternatively, we can use ShapeEnum to change the shape of the node.
+  // Here we change the shape of the node to diamond by using ShapeEnum
   c_d.shape = ShapeEnum.diamond
 
   graph.addNode(c)
@@ -45,13 +45,12 @@ function createGraph(): Graph {
   // set the bc drawing edge attributes
   const bc_d = new DrawingEdge(bc, true)
   bc_d.color = Color.Red
-  // bc_d.width = 6 // is not supported in the svg renderer currently
+  
   bc_d.penwidth = 0.1
-  // bc_d.fillColor = Color.Green // not supported in the svg renderer currently
   bc_d.styles.push(StyleEnum.dashed)
 
-  const obc = new Edge(b, c) // another edge from b to c
-  // set the obc drawing edge attributes
+  // set the bc drawing edge attributes
+  const obc = new Edge(b, c) // another edge from b to c  
   const obc_d = new DrawingEdge(obc, true)
   obc_d.color = Color.Blue
   obc_d.penwidth = 1
