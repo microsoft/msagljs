@@ -49,8 +49,8 @@ function createGraph(): Graph {
   bc_d.penwidth = 0.1
   bc_d.styles.push(StyleEnum.dashed)
 
-  // set the bc drawing edge attributes
   const obc = new Edge(b, c) // another edge from b to c  
+  // set the obc drawing edge attributes
   const obc_d = new DrawingEdge(obc, true)
   obc_d.color = Color.Blue
   obc_d.penwidth = 1
