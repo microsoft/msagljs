@@ -32,10 +32,9 @@ function createGraph(): Graph {
   const c_d = new DrawingNode(c)
   c_d.labelfontcolor = Color.Cyan
 
-  // By default the node geometry is a rectangle with smoothened corners with dimensions obtained from the label size, 
-  // but we can change the geometry by using CurveFactory.mkCircle, CurveFactory.mkEllipse, CurveFactory.mkPolygon,etc, to customize the node shape.
-  // Or, alternatively, we can use ShapeEnum to change the shape of the node.
-  // Here we change the shape of the node to diamond by using ShapeEnum
+  // By default, the node geometry is a rectangle with smoothened corners with dimensions obtained from the label size, 
+  // but we can change the geometry by using CurveFactory.mkCircle, CurveFactory.mkEllipse, CurveFactory.mkPolygon,etc.
+  // Or, alternatively, we can use ShapeEnum: Here we use it to change the shape of the node to diamond.
   c_d.shape = ShapeEnum.diamond
 
   graph.addNode(c)
