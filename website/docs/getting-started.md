@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Getting Started
 
-MSAGL usage primarily falls into three categories: interacting with the core layout engine, the SVG renderer, or the Deck.gl renderer.
+MSAGLJS usage primarily falls into three categories: interacting with the core layout engine, the SVG renderer, or the Deck.gl renderer.
 * If you are only interested in getting the layout of a graph, you can use the core layout engine, that is `@msagl/core` package.
 * If your intention is to render, and possibly edit, a graph in an Internet browser, you can use the SVG renderer, that is in the `@msagl/renderer-svg` package.
 * The third option, the Deck.gl renderer, from the `@msagl/renderer-webgl` package, is where you explore a larger graph in an Internet browser. The renderer uses the visualization style similar to online maps.
@@ -28,7 +28,24 @@ If you use the Deck.gl renderer, you need to install @msagl/renderer-webgl:
 ```bash npm2yarn
 npm install @msagl/renderer-webgl
 ```
-
+## Build
+We recommend building MSAGLJS under linux, or under Windows WSL.
+```bash npm2yarn
+npm run build
+```
+builds MSAGLJS locally when run in the root of the repository.
+## Running the examples
+To run the examples locally, with your local changes, follow this pattern:
+```
+cd examples/webgl-renderer
+yarn start
+```   
+You should see output similar to the one below:
+```
+> Local:   http://127.0.0.1:8001/
+> Network: http://172.31.24.74:8001
+```
+Follow (ctrl+click), or copy paste one of these link addresses in a browser to run the example.
 ## Usage of renderers
   
 ### Create a graph and pass it to the renderer
