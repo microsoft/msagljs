@@ -33,7 +33,7 @@ We recommend building MSAGLJS under linux, or under Windows WSL.
 ```bash npm2yarn
 npm run build
 ```
-builds MSAGLJS locally when run in the root of the repository.
+builds MSAGLJS locally when ran in the root of the repository.
 ## Running the examples
 To run the examples locally, with your local changes, follow this pattern:
 ```
