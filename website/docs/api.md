@@ -271,7 +271,8 @@ export enum EdgeRoutingMode {
 In this mode the edges are routed around the nodes. The method is rather fast, but unfortunately we do not have a
 precize complexity measure. For a graph with 2K nodes+edges it can do the routing in less than a second or two. For a graph with 17k nodes+edges it might require half a minute.
 
-The algorithm runs shortest paths on [a graph spanner](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf) as the first step and then optimizes the paths by using [the funnel algorithm](https://www.sciencedirect.com/science/article/pii/002200008990041X/pdf?md5=aa398f6c4c6e17f6aa1688b7e5545cb9&pid=1-s2.0-002200008990041X-main.pdf).
+The algorithm runs shortest paths on [a graph spanner](https://www.researchgate.net/profile/Tim-Dwyer-5/publication/43433413_Fast_Edge-Routing_for_Large_Graphs/links/0fcfd511cb774446dd000000/Fast-Edge-Routing-for-Large-Graphs.pdf) as the first step and then optimizes the paths by using [the funnel algorithm](https://www.sciencedirect.com/science/article/pii/002200008990041X/pdf?md5=aa398f6c4c6e17f6aa1688b7e5545cb9&pid=1-s2.0-002200008990041X-main.pdf). The implementation in MSAGLJS uses a new version of routing compared with
+MSAGL.NET. This version is described [here](https://github.com/levnach/paper_msagljs/blob/main/main.pdf).
 Here is an example of the routing:
 
 ![Alt text](/images/splineRouting.svg#gh-light-mode-only)
