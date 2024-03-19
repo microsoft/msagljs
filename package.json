@@ -2,7 +2,7 @@
   "name": "msagl",
   "version": "0.0.46",
   "description": "MSAGL in JavaScript",
-  "private": false,
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/microsoft/msagljs"
