@@ -253,6 +253,7 @@ export class RendererSvg implements IViewer {
 
   /** when the graph is set : the geometry for it is created and the layout is done */
   setGraph(graph: Graph, options: LayoutOptions = this._layoutOptions) {
+    if (! graph) return
     if (this._graph === graph) {
       this.setOptions(options)
     } else {

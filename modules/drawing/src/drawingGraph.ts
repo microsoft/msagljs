@@ -86,7 +86,8 @@ export class DrawingGraph extends DrawingNode {
     const geomGraph = new GeomGraph(this.graph)
     this.textMeasure = textMeasure
     const opts: Partial<TextMeasurerOptions> = {fontFamily: this.fontname, fontSize: this.fontsize, fontStyle: 'normal'}
-    geomGraph.labelSize = textMeasure(this.labelText, opts)
+    if (this.labelText)
+      geomGraph.labelSize = textMeasure(this.labelText, opts)
     for (const n of this.graph.nodesBreadthFirst) {
       this.createNodeGeometry(n)
     }

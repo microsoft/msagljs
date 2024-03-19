@@ -28,6 +28,7 @@ export abstract class GeomObject extends Attribute {
     super(entity, AttributeRegistry.GeomObjectIndex)
   }
   static getGeom(attrCont: Entity): GeomObject {
+    if (attrCont == null) return null
     return attrCont.getAttr(AttributeRegistry.GeomObjectIndex)
   }
   get parent(): GeomObject {

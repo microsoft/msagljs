@@ -736,8 +736,14 @@ export function parseDot(graphStr: string): Graph {
   try {
     const dp = new DotParser(parse(graphStr))
     return dp.parse()
-  } catch (Error) {
+  } 
+  catch (peg$SyntaxError) {
     console.log('cannot parse the graph')
+    console.log(peg$SyntaxError.message)
+    console.log('start: line =', peg$SyntaxError.location.start.line, 'col=', peg$SyntaxError.location.start.column, 'offset=', peg$SyntaxError.location.start.offset)
+    console.log('end: line =', peg$SyntaxError.location.end.line, 'col=', peg$SyntaxError.location.end.column, 'offset=', peg$SyntaxError.location.end.offset)
+    console.log('expected=', peg$SyntaxError.expected)
+    console.log('found=', peg$SyntaxError.found)
     return null
   }
 }
