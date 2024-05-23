@@ -71,6 +71,6 @@ export class Tangent {
   }
 
   toString(): string {
-    return String.format('{0},{1}', this.Start, this.End)
+    return String.Format('{0},{1}', this.Start, this.End)
   }
 }

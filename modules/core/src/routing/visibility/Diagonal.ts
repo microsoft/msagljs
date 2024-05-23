@@ -4,7 +4,7 @@ import {RBNode} from '../../math/RBTree/rbNode'
 import {Tangent} from './Tangent'
 export class Diagonal {
   toString(): string {
-    return String.format('{0},{1}', this.Start, this.End)
+    return String.Format('{0},{1}', this.Start, this.End)
   }
 
   get Start(): Point {

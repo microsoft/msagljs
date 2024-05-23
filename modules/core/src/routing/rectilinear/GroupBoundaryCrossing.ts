@@ -33,6 +33,6 @@ export class GroupBoundaryCrossing {
   }
 
   toString(): string {
-    return String.format('{0} {1}', this.DirectionToInside, this.Group)
+    return String.Format('{0} {1}', this.DirectionToInside, this.Group)
   }
 }

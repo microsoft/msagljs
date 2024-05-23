@@ -736,6 +736,6 @@ export class TransientGraphUtility {
   }
 
   toString(): string {
-    return String.format('{0} {1}', this.AddedVertices.length, this.edgesToRestore.length)
+    return String.Format('{0} {1}', this.AddedVertices.length, this.edgesToRestore.length)
   }
 }

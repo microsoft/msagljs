@@ -1,5 +1,4 @@
 //      the editor of a graph() layout
-import {SortedMap} from '@esfx/collections-sortedmap'
 import {IncrementalDragger} from './incrementalDragger'
 import {IViewerNode} from './iViewerNode'
 import {UndoList} from './undoRedoActionsList'
@@ -514,7 +513,8 @@ export class GeometryGraphEditor {
     nodeSeparation: number,
   ) {
     const middleAngles = GeometryGraphEditor.GetMiddleAnglesOfMultiedge(multiedge, node)
-    const edges = Array.from(middleAngles.values()) // the edges should be sorted here
+    const sortedKeys = Array.from(middleAngles.keys()).sort((a, b) => a - b);
+    const edges = sortedKeys.map(key => middleAngles.get(key)); // the edges should be sorted here
 
     const separation: number = nodeSeparation * 6
     const k: number = edges.length / 2
@@ -551,8 +551,8 @@ export class GeometryGraphEditor {
     }
   }
 
-  static GetMiddleAnglesOfMultiedge(multiedge: Array<GeomEdge>, node: GeomNode): SortedMap<number, GeomEdge> {
-    const ret = new SortedMap<number, GeomEdge>()
+  static GetMiddleAnglesOfMultiedge(multiedge: Array<GeomEdge>, node: GeomNode): Map<number, GeomEdge> {
+    const ret = new Map<number, GeomEdge>()
     const firstEdge: GeomEdge = multiedge[0]
     const a: Point = node.center
     const b: Point = GeometryGraphEditor.Middle(firstEdge.curve)

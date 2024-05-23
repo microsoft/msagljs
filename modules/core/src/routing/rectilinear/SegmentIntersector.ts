@@ -30,7 +30,7 @@ class SegEvent {
   }
 
   ToString(): string {
-    return String.format('{0} {1} {2} {3}', this.EventType, this.IsVertical, this.Site, this.Segment)
+    return String.Format('{0} {1} {2} {3}', this.EventType, this.IsVertical, this.Site, this.Segment)
   }
 }
 enum SegEventType {

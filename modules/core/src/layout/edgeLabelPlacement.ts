@@ -1,4 +1,3 @@
-import {LinkedList} from '@esfx/collections'
 import {GeomConstants, ICurve, Point, Rectangle, Size} from '../math/geometry'
 import {BinaryRTree, mkRTree} from '../math/geometry/RTree/rTree'
 import {Algorithm} from '../utils/algorithm'
@@ -78,28 +77,28 @@ class PointSet {
   Outer: Point
 }
 class PointSetList {
-  points: LinkedList<PointSet> = new LinkedList<PointSet>()
+  points: PointSet[] = []
 
   coveredLength = 0
 
   AddFirst(p: PointSet): number {
-    if (this.points.size !== 0) {
-      const q = this.points.first.value
-      this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length
+    if (this.points.length !== 0) {
+      const q = this.points[0];
+      this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length;
     }
 
-    this.points.insertBefore(null, p)
-    return this.coveredLength
+    this.points.unshift(p);
+    return this.coveredLength;
   }
 
   AddLast(p: PointSet): number {
-    if (this.points.size !== 0) {
-      const q: PointSet = this.points.last.value
-      this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length
-    }
-
-    this.points.insertAfter(null, p)
-    return this.coveredLength
+    if (this.points.length !== 0) {
+      const q: PointSet = this.points[this.points.length - 1];
+      this.coveredLength = this.coveredLength + p.Center.sub(q.Center).length;
+   }
+  
+    this.points.push(p);
+    return this.coveredLength;
   }
 }
 

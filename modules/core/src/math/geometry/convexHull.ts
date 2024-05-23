@@ -191,7 +191,7 @@ export class ConvexHull {
     //        let hullPoint = convexHull[convexHull.closestParameter(point)];
     //        //  This can be too restrictive if very close points are put into the hull.  It is probably
     //        //  better to clean up in the caller before doing this, but this assert can also be relaxed.
-    //        Assert.assert(ApproximateComparer.Close(point, hullPoint, (ApproximateComparer.IntersectionEpsilon * 20)), String.format("not CloseIntersections: initial point {0}, hull point {1}", point, hullPoint));
+    //        Assert.assert(ApproximateComparer.Close(point, hullPoint, (ApproximateComparer.IntersectionEpsilon * 20)), String.Format("not CloseIntersections: initial point {0}, hull point {1}", point, hullPoint));
     //    }
 
     // }

@@ -210,7 +210,7 @@ export class SvgCreator {
     }
   }
   private setTransformForTranformGroup() {
-    this.transformGroup.setAttribute('transform', String.format('matrix(1,0,0,-1, {0},{1})', 0, 0))
+    this.transformGroup.setAttribute('transform', String.Format('matrix(1,0,0,-1, {0},{1})', 0, 0))
   }
 
   /** gets transform from svg to the client window coordinates */
@@ -361,7 +361,7 @@ export class SvgCreator {
       }
     }
   }
-  private attachStyleToPath(path: SVGElement, style: StyleEnum, width: number = 1) {
+  private attachStyleToPath(path: SVGElement, style: StyleEnum, width = 1) {
     switch (style) {
       case StyleEnum.dashed:
         path.setAttribute('stroke-dasharray', '5')
@@ -474,7 +474,7 @@ export class SvgCreator {
   }
 
   getViewBoxString(bbox: DOMRect): string {
-    return String.format('0 0 {0} {1}', bbox.width, bbox.height)
+    return String.Format('0 0 {0} {1}', bbox.width, bbox.height)
   }
 
   private createAndBindWithGraph(entity: Entity, name: string, group: any): SVGElement {
@@ -508,11 +508,11 @@ export class SvgCreator {
 const svgns = 'http://www.w3.org/2000/svg'
 
 function curveString(iCurve: ICurve): string {
-  return String.join(' ', Array.from(curveStringTokens(iCurve)))
+  return String.Join(' ', Array.from(curveStringTokens(iCurve)))
 }
 
 function smoothedPolylineToString(sp: SmoothedPolyline): string {
-  return String.join(' ', Array.from(tokensOfSmoothedPolyline(sp)))
+  return String.Join(' ', Array.from(tokensOfSmoothedPolyline(sp)))
 }
 function* tokensOfSmoothedPolyline(sp: SmoothedPolyline): IterableIterator<string> {
   let first = true
@@ -584,7 +584,7 @@ function ellipseToString(ellipse: Ellipse): string {
   const largeArc = Math.abs(ellipse.parEnd - ellipse.parStart) >= Math.PI ? '1' : '0'
   const sweepFlag = ellipse.orientedCounterclockwise() ? '1' : '0'
 
-  return String.join(
+  return String.Join(
     ' ',
     'A',
     ellipseRadiuses(ellipse),
@@ -598,7 +598,7 @@ function ellipseRadiuses(ellipse: Ellipse): string {
   return doubleToString(ellipse.aAxis.length) + ',' + doubleToString(ellipse.bAxis.length)
 }
 function pointsToString(points: Point[]) {
-  return String.join(
+  return String.Join(
     ' ',
     points.map((p) => pointToString(p)),
   )

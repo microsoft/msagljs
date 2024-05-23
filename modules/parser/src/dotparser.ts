@@ -731,7 +731,7 @@ class DotParser {
   }
 }
 
-/** parses a string representing a Graph in DOT format */
+/** parses a string representing a Graph in DOT Format */
 export function parseDot(graphStr: string): Graph {
   try {
     const dp = new DotParser(parse(graphStr))
@@ -748,7 +748,7 @@ export function parseDot(graphStr: string): Graph {
   }
 }
 
-// /** parses a string representing a Graph in JSON format, corresponding to JSONGraph type */
+// /** parses a string representing a Graph in JSON Format, corresponding to JSONGraph type */
 // export function parseJSON(graphStr: string): Graph {
 //   try {
 //     const ast: JSONGraph = JSON.parse(graphStr)
@@ -1149,7 +1149,7 @@ function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }
-/** Each line of the file is a string in format sourceId\ttargetId. That is two words separated by a tabulation symbol.
+/** Each line of the file is a string in Format sourceId\ttargetId. That is two words separated by a tabulation symbol.
  * The edges are considered directed.
  */
 export function parseTXT(content: string): Graph {

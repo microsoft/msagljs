@@ -98,7 +98,7 @@ export class SvgDebugWriter {
   }
 
   private static pointsToString(points: Point[]) {
-    return String.join(
+    return String.Join(
       ' ',
       points.map((p) => SvgDebugWriter.pointToString(p)),
     )
@@ -116,7 +116,7 @@ export class SvgDebugWriter {
     const largeArc = Math.abs(ellipse.parEnd - ellipse.parStart) >= Math.PI ? '1' : '0'
     const sweepFlag = ellipse.orientedCounterclockwise() ? '1' : '0'
 
-    return String.join(
+    return String.Join(
       ' ',
       'A',
       this.ellipseRadiuses(ellipse),
@@ -131,7 +131,7 @@ export class SvgDebugWriter {
   }
 
   static curveString(iCurve: ICurve): string {
-    return String.join(' ', Array.from(SvgDebugWriter.curveStringTokens(iCurve)))
+    return String.Join(' ', Array.from(SvgDebugWriter.curveStringTokens(iCurve)))
   }
 
   private static *curveStringTokens(iCurve: ICurve): IterableIterator<string> {

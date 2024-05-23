@@ -80,6 +80,6 @@ export class GroupBoundaryCrossingMap {
   }
 
   toString(): string {
-    return String.format('{0}', this.pointCrossingMap.size)
+    return String.Format('{0}', this.pointCrossingMap.size)
   }
 }

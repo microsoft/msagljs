@@ -91,7 +91,7 @@ export class Constraint {
 
   // <returns>A string representation of the Constraint.</returns>
   ToString(): string {
-    return String.format(
+    return String.Format(
       '  Cst: [{0}] [{1}] {2} {3:F5} vio {4:F5} Lm {5:F5}/{6:F5} {7}actv',
       this.Left,
       this.Right,
