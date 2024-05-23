@@ -6,7 +6,6 @@ import {LayerArrays} from '../LayerArrays'
 import {ProperLayeredGraph} from '../ProperLayeredGraph'
 import {SugiyamaLayoutSettings} from '../sugiyamaLayoutSettings'
 import {OrderingMeasure} from './orderingMeasure'
-import {SortedMap} from '@esfx/collections-sortedmap'
 import {CancelToken} from '../../../utils/cancelToken'
 import {LayerEdge} from '../layerEdge'
 import {Stack} from 'stack-typescript'
@@ -288,7 +287,7 @@ export class Ordering extends Algorithm {
   // sorts layerToSort according to medianValues
   // if medianValues[i] is -1 then layer[i] does not move
   Sort(layerToSort: number, medianValues: number[]) {
-    const s = new SortedMap<number, any>()
+    const s = new Map<number, any>()
     const vertices = this.layers[layerToSort]
     let i = 0
 
@@ -324,11 +323,11 @@ export class Ordering extends Algorithm {
       }
     }
 
-    const senum = s.values()
-
-    for (i = 0; i < vertices.length; ) {
+    const senum = Array.from(s).sort((a,b)=>a[0]-b[0]).map(a=>a[1])
+    let j = 0
+    for (i = 0; i < vertices.length;  ) {
       if (medianValues[i] !== -1) {
-        const o = senum.next().value
+        const o = senum[j++]
         if (typeof o === 'number') vertices[i++] = o as number
         else {
           const al = o as number[]
