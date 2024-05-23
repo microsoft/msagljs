@@ -19,6 +19,11 @@ test('disc', () => {
   dFast = MinimumEnclosingDisc.LinearComputation(ps)
   expect(discsAreClose(dSlow, dFast)).toBe(true)
 
+  ps.push(new Point(1,1))
+  dSlow = MinimumEnclosingDisc.SlowComputation(ps)
+  dFast = MinimumEnclosingDisc.LinearComputation(ps)
+  expect(discsAreClose(dSlow, dFast)).toBe(true)
+
   //   SvgDebugWriter.dumpICurves(
   //     './tmp/disc1.svg',
   //     [CurveFactory.mkCircle(dSlow.Radius, dSlow.Center)].concat(ps.map((a) => CurveFactory.mkCircle(dSlow.Radius / 12, a))),

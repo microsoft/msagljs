@@ -1,7 +1,8 @@
 //  implementation of the "MoveToFront" method for computing the minimum enclosing disc of a collection of points.
 //  Runs in time linear in the number of points.  After Welzl'1991.
 
-import {LinkedList, LinkedListNode} from '@esfx/collections'
+//import {LinkedList, LinkedListNode} from '@esfx/collections'
+import {SinglyLinkedList as LinkedList, SinglyLinkedListNode as LinkedListNode} from "linked-list-typed"
 import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
 import {Disc} from './disc'
@@ -79,7 +80,7 @@ export class MoveToFront {
       return md
     }
 
-    let lnode: LinkedListNode<number> = this.L.first
+    let lnode: LinkedListNode<number> = this.L.head
     while (lnode != null && lnode != lPtr) {
       const lnext: LinkedListNode<number> = lnode.next
       const p: number = lnode.value
@@ -88,8 +89,8 @@ export class MoveToFront {
         _b.push(p)
         Assert.assert(!this.collinear3(_b), 'Collinear points on boundary of minimal enclosing disc')
         md = this.mtf_md(lnode, _b)
-        this.L.deleteNode(lnode)
-        this.L.insertNodeBefore(null, lnode)
+        this.L.delete(lnode)
+        this.L.unshift(lnode.value)
       }
 
       lnode = lnext
