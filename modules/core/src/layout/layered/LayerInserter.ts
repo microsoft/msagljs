@@ -6,7 +6,6 @@ import {LayerArrays} from './LayerArrays'
 import {LayerEdge} from './layerEdge'
 import {PolyIntEdge} from './polyIntEdge'
 import {ProperLayeredGraph} from './ProperLayeredGraph'
-import { SortedMap } from '@rimbu/sorted';
 // Preparing the graph for x-coordinate calculation by inserting dummy nodes into the layers
 export class LayerInserter {
   intGraph: BasicGraph<GeomNode, PolyIntEdge>
@@ -180,7 +179,7 @@ export class LayerInserter {
   // dummy nodes.
   SortNewOddLayers() {
     for (let i = 1; i < this.Nla.Layers.length; i += 2) {
-      let sd = SortedMap.empty<number, number | number[]>()
+      const sd = new Map<number, number | number[]>()
       
       const layer = this.Nla.Layers[i]
       for (const v of layer) {
@@ -192,24 +191,27 @@ export class LayerInserter {
 
         const x = this.Nla.x[predecessor] + this.Nla.x[successor]
 
-        if (sd.hasKey(x)) {
+        if (sd.has(x)) {
           const o = sd.get(x)
           if (typeof o === 'number') {
             const l = new Array<number>()
             l.push(o)
             l.push(v)
-            sd = sd.set(x, l)
+            sd.set(x, l)
           } else {
             const l = o as number[]
             l.push(v)
           }
         } else {
-          sd = sd.set(x, v)
+          sd.set(x, v)
         }
       }
+       // Create a sorted array from the Map
+      const sortedEntries = Array.from(sd.entries()).sort((a, b) => a[0] - b[0]);
+
       //fill the layer according to this order
       let c = 0
-      for (const v of sd.streamValues())
+      for (const v of sortedEntries.map(e=>e[1]))
         if (typeof v === 'number') {
           layer[c++] = v
         } else {

@@ -6,7 +6,6 @@ import {join} from 'path'
 import * as fs from 'fs'
 
 import {sortedList} from '../sortedBySizeListOfgvFiles'
-import { SortedMap } from '@rimbu/sorted'
 
 import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize, parseJSONFile, edgesAreAttached} from '../../utils/testUtils'
 import {
@@ -42,18 +41,6 @@ import {pointIsOnSegment} from '../../../src/math/geometry/lineSegment'
 import {DrawingGraph} from '../../../../drawing/src'
 import {TextMeasurerOptions} from '../../../../drawing/src/color'
 type P = [number, number]
-
-
-test('should maintain sorted order of keys', () => {
-  let map = SortedMap.empty<string, number>()
-  map = map.addEntry(['b', 2])
-  map = map.addEntry(['a', 1])
-  map = map.addEntry(['c', 3])
-
- 
-  const keys = Array.from(map.streamKeys())
-  expect(keys).toEqual(['a', 'b', 'c'])
-})
 
 
 test('map test', () => {
@@ -97,26 +84,6 @@ test('layered layout glued graph', () => {
   for (const e of ll.gluedDagSkeletonForLayering.edges) {
     expect(e.weight).toBe(2)
   }
-})
-
-test('sorted map', () => {
-  let m = SortedMap.empty<number, number>()
-  m = m.set(0, 0)
-  m = m.set(-1, -1)
-  m = m.set(2, 2)
-  const a = []
-  expect(m.size).toBeGreaterThan(0)
-  for (const [k, v] of m.stream()) {
-    expect(k).toBe(v)
-    a.push(k)
-  }
-  for (const t of a) {
-    expect(m.get(t)).toBe(t)
-  }
-  expect(a[0]).toBe(-1)
-  expect(a[1]).toBe(0)
-  expect(a[2]).toBe(2)
-  expect(m.size === 3)
 })
 
 test('show API', () => {
