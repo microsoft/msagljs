@@ -1,4 +1,4 @@
-import {SortedMap} from '@esfx/collections-sortedmap'
+//import {SortedMap} from '@esfx/collections-sortedmap'
 import * as path from 'path'
 import {StringBuilder} from 'typescript-string-operations'
 
@@ -6,6 +6,7 @@ import {join} from 'path'
 import * as fs from 'fs'
 
 import {sortedList} from '../sortedBySizeListOfgvFiles'
+import { SortedMap } from '@rimbu/sorted'
 
 import {outputGraph, edgeString, parseDotGraph, setNode, measureTextSize, parseJSONFile, edgesAreAttached} from '../../utils/testUtils'
 import {
@@ -41,6 +42,19 @@ import {pointIsOnSegment} from '../../../src/math/geometry/lineSegment'
 import {DrawingGraph} from '../../../../drawing/src'
 import {TextMeasurerOptions} from '../../../../drawing/src/color'
 type P = [number, number]
+
+
+test('should maintain sorted order of keys', () => {
+  let map = SortedMap.empty<string, number>()
+  map = map.addEntry(['b', 2])
+  map = map.addEntry(['a', 1])
+  map = map.addEntry(['c', 3])
+
+ 
+  const keys = Array.from(map.streamKeys())
+  expect(keys).toEqual(['a', 'b', 'c'])
+})
+
 
 test('map test', () => {
   const m = new Map<number, string>()
@@ -86,12 +100,13 @@ test('layered layout glued graph', () => {
 })
 
 test('sorted map', () => {
-  const m = new SortedMap<number, number>()
-  m.set(0, 0)
-  m.set(-1, -1)
-  m.set(2, 2)
+  let m = SortedMap.empty<number, number>()
+  m = m.set(0, 0)
+  m = m.set(-1, -1)
+  m = m.set(2, 2)
   const a = []
-  for (const [k, v] of m.entries()) {
+  expect(m.size).toBeGreaterThan(0)
+  for (const [k, v] of m.stream()) {
     expect(k).toBe(v)
     a.push(k)
   }
@@ -333,6 +348,8 @@ export function qualityMetric(gg: GeomGraph): number {
   }
   return r
 }
+
+
 
 test('flip transform', () => {
   const g = new GeomGraph(new Graph('graph'))

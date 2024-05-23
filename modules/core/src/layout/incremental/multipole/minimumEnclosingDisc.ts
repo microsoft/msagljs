@@ -1,7 +1,6 @@
 //  implementation of the "MoveToFront" method for computing the minimum enclosing disc of a collection of points.
 //  Runs in time linear in the number of points.  After Welzl'1991.
 
-//import {LinkedList, LinkedListNode} from '@esfx/collections'
 import {SinglyLinkedList as LinkedList, SinglyLinkedListNode as LinkedListNode} from "linked-list-typed"
 import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
