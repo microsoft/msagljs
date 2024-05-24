@@ -157,7 +157,6 @@ export class PathRefiner {
         pointProjPairs.push([pathLinkedPoint.Next.Point, x])
       }
     }
-    console.log("called")
     pointProjPairs.sort((a,b)=>a[1]-b[1])
     const points:Point[] = pointProjPairs.map(a=>a[0])
     const coordToIndex = new Map<number, number>()
