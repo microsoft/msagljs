@@ -1,4 +1,3 @@
-//import {SortedMap} from '@esfx/collections-sortedmap'
 import * as path from 'path'
 import {StringBuilder} from 'typescript-string-operations'
 

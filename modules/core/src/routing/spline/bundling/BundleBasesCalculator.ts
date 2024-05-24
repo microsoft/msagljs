@@ -1,5 +1,4 @@
-﻿import {HashSet} from '@esfx/collections'
-import {Point} from '../../../math/geometry/point'
+﻿import {Point} from '../../../math/geometry/point'
 //import missing symbols
 import {ICurve} from '../../../math/geometry/icurve'
 import {Curve, PointLocation, LineSegment, GeomConstants, parameterSpan} from '../../../math/geometry'
@@ -324,7 +323,7 @@ export class BundleBasesCalculator {
 
   static CostDeltaThreshold = 0.01
 
-  fixedBundles = new HashSet<BundleInfo>()
+  fixedBundles = new Set<BundleInfo>()
 
   RotateBundlesToDiminishCost() {
     let parameterChange: number = BundleBasesCalculator.MaxParameterChange

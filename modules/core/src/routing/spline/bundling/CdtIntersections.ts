@@ -1,5 +1,4 @@
-﻿import {HashSet} from '@esfx/collections'
-import {Point} from '../../..'
+﻿import {Point} from '../../..'
 import {Polyline, LineSegment, PointLocation, GeomConstants} from '../../../math/geometry'
 import {PolylinePoint} from '../../../math/geometry/polylinePoint'
 import {BundlingSettings} from '../../BundlingSettings'
@@ -90,7 +89,7 @@ export class CdtIntersections {
       return obstacles
     }
 
-    const checkedSites = new HashSet<CdtSite>()
+    const checkedSites = new Set<CdtSite>()
 
     for (const t of list) {
       for (const s of t.Sites) {
