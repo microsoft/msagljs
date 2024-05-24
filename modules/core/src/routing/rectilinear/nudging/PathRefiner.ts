@@ -4,14 +4,11 @@
 
 import {Point} from '../../../math/geometry/point'
 import {Direction} from '../../../math/geometry/direction'
-import {GeomConstants} from '../../../math/geometry/geomConstants'
 import {LinkedPoint} from './LinkedPoint'
 import {LinkedPointSplitter} from './LinkedPointSplitter'
 import {Path} from './Path'
 import {PathMerger} from './PathMerger'
-import {PointByDelegateComparer} from './PointByDelegateComparer'
 import {closeDistEps} from '../../../utils/compare'
-import {SortedMap} from '@esfx/collections-sortedmap'
 
 type PointProjection = (p: Point) => number
 
@@ -146,32 +143,32 @@ export class PathRefiner {
   // pathLinkedVertices belong to a line parallel to the direction of the refinement
 
   static RefineCollinearBucket(pathLinkedVertices: Iterable<LinkedPoint>, projectionToDirection: PointProjection) {
-    const dict = new SortedMap<Point, number>(new PointByDelegateComparer(projectionToDirection))
+    const coords = new Set<number>()
+    const pointProjPairs = new Array<[Point, number]>()
     for (const pathLinkedPoint of pathLinkedVertices) {
-      if (!dict.has(pathLinkedPoint.Point)) {
-        dict.set(pathLinkedPoint.Point, 0)
+      let x = projectionToDirection(pathLinkedPoint.Point)
+      if (!coords.has(x)) {
+        coords.add(x)
+        pointProjPairs.push([pathLinkedPoint.Point, x])
       }
-
-      if (!dict.has(pathLinkedPoint.Next.Point)) {
-        dict.set(pathLinkedPoint.Next.Point, 0)
+      x = projectionToDirection(pathLinkedPoint.Next.Point)
+      if (!coords.has(x)) {
+        coords.add(x)
+        pointProjPairs.push([pathLinkedPoint.Next.Point, x])
       }
     }
-
-    const arrayOfPoints = new Array(dict.size)
-    let i = 0
-    for (const point of dict.keys()) {
-      arrayOfPoints[i++] = point
-    }
-
-    for (i = 0; i < arrayOfPoints.length; i++) {
-      dict.set(arrayOfPoints[i], i)
-    }
+    console.log("called")
+    pointProjPairs.sort((a,b)=>a[1]-b[1])
+    const points:Point[] = pointProjPairs.map(a=>a[0])
+    const coordToIndex = new Map<number, number>()
+    for (let i = 0; i < pointProjPairs.length; i++)
+      coordToIndex.set(pointProjPairs[i][1], i )
 
     for (const pathLinkedVertex of pathLinkedVertices) {
-      i = dict.get(pathLinkedVertex.Point)
-      const j: number = dict.get(pathLinkedVertex.Next.Point)
+      const i = coordToIndex.get(projectionToDirection(pathLinkedVertex.Point))
+      const j = coordToIndex.get(projectionToDirection(pathLinkedVertex.Next.Point))
       if (Math.abs(j - i) > 1) {
-        PathRefiner.InsertPoints(pathLinkedVertex, arrayOfPoints, i, j)
+        PathRefiner.InsertPoints(pathLinkedVertex, points, i, j)
       }
     }
   }
