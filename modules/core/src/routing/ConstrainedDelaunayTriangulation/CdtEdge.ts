@@ -76,7 +76,7 @@ export class CdtEdge {
 
   // A string that represents the current object.
   public toString(): string {
-    return String.Format('({0},{1})', this.upperSite, this.lowerSite)
+    return String.format('({0},{1})', this.upperSite, this.lowerSite)
   }
 
   public OtherSite(site: CdtSite): CdtSite {

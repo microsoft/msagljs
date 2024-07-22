@@ -11,6 +11,6 @@ export class LayerEdge {
     this.Weight = weight
   }
   toString() {
-    return String.Format('{0}->{1}', this.Source, this.Target)
+    return String.format('{0}->{1}', this.Source, this.Target)
   }
 }

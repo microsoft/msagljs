@@ -45,7 +45,7 @@ export class VisibilityEdge {
   }
 
   toString(): string {
-    return String.Format('{0}->{1} ({2})', this.Source, this.Target, this.Weight)
+    return String.format('{0}->{1} ({2})', this.Source, this.Target, this.Weight)
   }
 
   ReversedClone(): VisibilityEdge {

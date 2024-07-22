@@ -152,7 +152,7 @@ export class CdtTriangle {
   //         // A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
   //         // <filterpriority>2</filterpriority>
   //         public override string ToString() {
-  //             return String.Format("({0},{1},{2}", Sites[0], Sites[1], Sites[2]);
+  //             return String.format("({0},{1},{2}", Sites[0], Sites[1], Sites[2]);
   //         }
   // #endif
   OppositeSite(cdtEdge: CdtEdge): CdtSite {

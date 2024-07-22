@@ -141,7 +141,7 @@ export class Variable {
 
   // <returns>A string representation of the variable.</returns>
   public toString(): string {
-    return String.Format('{0} {1:F5} ({2:F5}) {3:F5} {4:F5}', this.Name, this.ActualPos, this.DesiredPos, this.Weight, this.Scale)
+    return String.format('{0} {1:F5} ({2:F5}) {3:F5} {4:F5}', this.Name, this.ActualPos, this.DesiredPos, this.Weight, this.Scale)
   }
 
   // Gets the string representation of UserData.

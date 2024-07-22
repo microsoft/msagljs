@@ -47,7 +47,7 @@ export class DfDvNode {
   }
 
   toString(): string {
-    return String.Format(
+    return String.format(
       '{0} {1}{2} - {3}{4} ({5})',
       '',
       this.IsLeftToRight ? '' : '*',
