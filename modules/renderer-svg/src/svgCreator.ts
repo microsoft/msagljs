@@ -308,7 +308,7 @@ export class SvgCreator {
 
     const geomLabel = edgeLabel.getAttr(AttributeRegistry.GeomObjectIndex)
     if (!geomLabel) return
-    this.drawLabelAtXY(edgeLabel, DrawingEdge.getDrawingObj(edgeLabel.parent), geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
+    this.drawLabelAtXY(DrawingEdge.getDrawingObj(edgeLabel.parent), geomLabel.boundingBox, labelSvgGroup, 'edgeLabel')
     const attachPromptId = 'attachPrompt'
     if (edgeLabel.getAttr(AttributeRegistry.ViewerIndex).markedForDragging) {
       this.addLabelAttachmentPrompt(edgeLabel, geomLabel, labelSvgGroup, attachPromptId)
@@ -429,10 +429,10 @@ export class SvgCreator {
           ),
         )
       : Rectangle.creatRectangleWithSize(measuredTextSize, geomNode.center)
-    this.drawLabelAtXY(null, drawingNode, rect, nodeGroup, id)
+    this.drawLabelAtXY(drawingNode, rect, nodeGroup, id)
   }
 
-  private drawLabelAtXY(label: Label, drawingObject: DrawingObject, rect: Rectangle, group: SVGElement, id: string) {
+  private drawLabelAtXY(drawingObject: DrawingObject, rect: Rectangle, group: SVGElement, id: string) {
     const fontSize = drawingObject.fontsize
     const textEl = this.createOrGetWithId(group, 'text', id) as SVGTextElement
 
