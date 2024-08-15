@@ -2,7 +2,6 @@ import {Queue} from 'queue-typescript'
 import {Port} from '../layout/core/port'
 import {ICurve} from '../math/geometry/icurve'
 import {Rectangle} from '../math/geometry/rectangle'
-let id_global = 0
 export class Shape {
   private parents: Set<Shape> = new Set<Shape>()
   private children: Set<Shape> = new Set<Shape>()

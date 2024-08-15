@@ -29,14 +29,14 @@ export class ShapeObstacleCalculator {
   }
 
   ShapesToTightLooseCouples: Map<Shape, TightLooseCouple>
-  tightToShape: Map<Polyline, Shape>
+  tightToShapes: Map<Polyline, Array<Shape>> // polyline forms a tight bound for each shape from this.tightToShape.get(polyline)
   TightPadding: number
 
   LoosePadding: number
   MainShape: Shape
   OverlapsDetected: boolean
 
-  Calculate(randomizationShift: number, maxPadding: number = Number.MAX_VALUE) {
+  Calculate(randomizationShift: number) {
     initRandom(3) // keep it the same all the time, otherwise the path optimizer migth not work
     if (this.MainShape.Children.length === 0) {
       return
@@ -71,7 +71,9 @@ export class ShapeObstacleCalculator {
       const loosePoly = InteractiveObstacleCalculator.LoosePolylineWithFewCorners(tightPolyline, distance, randomizationShift)
       const looseShape = new Shape(loosePoly)
       const cpl = TightLooseCouple.mk(tightPolyline, looseShape, distance)
-      this.ShapesToTightLooseCouples.set(this.tightToShape.get(tightPolyline), cpl)
+      const shapes = this.tightToShapes.get(tightPolyline)
+      for (const shape of shapes)
+        this.ShapesToTightLooseCouples.set(shape, cpl)
 
       couples.push(cpl)
     }
@@ -82,10 +84,11 @@ export class ShapeObstacleCalculator {
   }
 
   CreateTightObstacles() {
-    this.tightToShape = new Map<Polyline, Shape>()
+    this.tightToShapes = new Map<Polyline, Array<Shape>>()
     const tightObstacles = new Set<Polyline>(this.MainShape.Children.map(this.InitialTightPolyline.bind(this)))
     const initialNumberOfTightObstacles: number = tightObstacles.size
-    this.tightHierarchy = InteractiveObstacleCalculator.RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacles)
+    this.tightHierarchy = InteractiveObstacleCalculator.
+      RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacles, this.tightToShapes)
     this.OverlapsDetected = initialNumberOfTightObstacles > tightObstacles.size
   }
 
@@ -96,12 +99,16 @@ export class ShapeObstacleCalculator {
     )
 
     if (stickingPointsArray.length == 0) {
-      if (this.tightToShape) this.tightToShape.set(poly, shape)
+      if (this.tightToShapes)
+        this.tightToShapes.set(poly, [shape]) 
+        
       return poly
     }
     const pts = Array.from(poly).concat(stickingPointsArray)
     poly = Polyline.mkClosedFromPoints(ConvexHull.CalculateConvexHull(pts))
-    if (this.tightToShape) this.tightToShape.set(poly, shape)
+    if (this.tightToShapes)
+      this.tightToShapes.set(poly, [shape])
+     
     return poly
   }
 

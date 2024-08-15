@@ -793,3 +793,28 @@ test('edge to a parent', () => {
     // SvgDebugWriter.writeGeomGraph('./tmp/edge_to_parent_bundl.svg', gg)
   }
 })
+
+test('overlap test', () => {
+  const g = GeomGraph.mk('graph', Rectangle.mkEmpty());
+  const as = g.graph.addNode(new Node('a'));
+  const a = new GeomNode(as);
+  a.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 3, 3, new Point(0, 0))
+
+  const bs = g.graph.addNode(new Node('b'));
+  const b = new GeomNode(bs);
+  b.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(40, 20, 3, 3, new Point(-10, 210))
+
+  const es = g.graph.addNode(new Node('e'));
+  const e = new GeomNode(es);
+  e.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(60, 20, 3, 3, new Point(0, 50))
+
+  const fs = g.graph.addNode(new Node('f'));
+  const f = new GeomNode(fs);
+  f.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(60, 20, 3, 3, new Point(20, 60))
+
+  g.setEdge('a', 'b');
+
+  const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6);
+  sr.run();
+  SvgDebugWriter.writeGeomGraph('./tmp/overlap_test.svg', g);
+})

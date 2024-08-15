@@ -1,4 +1,4 @@
-import {Assert, Rectangle} from '..'
+import {Rectangle} from '..'
 import {LineSegment} from '../math/geometry'
 import {ConvexHull} from '../math/geometry/convexHull'
 import {Curve, PointLocation} from '../math/geometry/curve'
@@ -15,7 +15,7 @@ import {IntPair} from '../utils/IntPair'
 import {random} from '../utils/random'
 import {flattenArray} from '../utils/setOperations'
 import {Polygon} from './visibility/Polygon'
-
+import {Shape} from './shape'
 export class InteractiveObstacleCalculator {
   IgnoreTightPadding: boolean
   /** if set to true the vertices of the loose polylines would be randomly shifted by a small amont */
@@ -199,11 +199,11 @@ export class InteractiveObstacleCalculator {
 
     return CreateRectNodeOnArrayOfRectNodes(rectNodes)
   }
-  static RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacleSet: Set<Polyline>): RectangleNode<Polyline, Point> {
+  static RemovePossibleOverlapsInTightPolylinesAndCalculateHierarchy(tightObstacleSet: Set<Polyline>, tightToShapes:Map<Polyline, Array<Shape>> = null): RectangleNode<Polyline, Point> {
     let hierarchy = InteractiveObstacleCalculator.CalculateHierarchy(Array.from(tightObstacleSet))
     let overlappingPairSet: Set<[Polyline, Polyline]>
     while ((overlappingPairSet = InteractiveObstacleCalculator.GetOverlappedPairSet(hierarchy)).size > 0) {
-      hierarchy = InteractiveObstacleCalculator.ReplaceTightObstaclesWithConvexHulls(tightObstacleSet, Array.from(overlappingPairSet))
+      hierarchy = InteractiveObstacleCalculator.ReplaceTightObstaclesWithConvexHulls(tightObstacleSet, Array.from(overlappingPairSet), tightToShapes)
     }
 
     return hierarchy
@@ -220,8 +220,8 @@ export class InteractiveObstacleCalculator {
 
   static ReplaceTightObstaclesWithConvexHulls(
     tightObsts: Set<Polyline>,
-    overlappingPairSet: Array<[Polyline, Polyline]>,
-  ): RectangleNode<Polyline, Point> {
+    overlappingPairSet: Array<[Polyline, Polyline]>, tightToShapes: 
+                   Map<Polyline, Array<Shape> > = null ): RectangleNode<Polyline, Point> {
     const overlapping = new Set<Polyline>()
     for (const pair of overlappingPairSet) {
       overlapping.add(pair[0])
@@ -238,10 +238,15 @@ export class InteractiveObstacleCalculator {
       const polys = component.map((i) => intToPoly[i])
       const points = flattenArray(polys, (p) => p)
       const convexHull = ConvexHull.createConvexHullAsClosedPolyline(points)
-      for (const localpoly of polys) {
-        tightObsts.delete(localpoly)
+      const shapesInsideTheHull = new Array<Shape>()
+      for (const poly of polys) {
+        tightObsts.delete(poly)
+        if (tightToShapes == null) continue
+        shapesInsideTheHull.push(...tightToShapes.get(poly))
+        tightToShapes.delete(poly)
       }
-
+      if (tightToShapes != null) tightToShapes.set(convexHull, shapesInsideTheHull)
+      
       tightObsts.add(convexHull)
     }
 
