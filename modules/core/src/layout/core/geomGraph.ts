@@ -87,7 +87,7 @@ export class GeomGraph extends GeomNode {
   calculateBoundsFromChildren() {
     const bb = Rectangle.mkEmpty()
     for (const n of this.shallowNodes) {
-      bb.addRecSelf(n.boundingBoxWithPadding)
+      bb.addRecSelf(n.boundingBox)
     }
     bb.padEverywhere(this.margins)
     return bb

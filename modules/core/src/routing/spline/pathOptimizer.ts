@@ -1,19 +1,17 @@
 import {Queue} from 'queue-typescript'
-import {GeomConstants, ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
+import {ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from '../ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle as Tr} from '../ConstrainedDelaunayTriangulation/CdtTriangle'
-import {ThreeArray} from '../ConstrainedDelaunayTriangulation/ThreeArray'
-//import {SvgDebugWriter} from '../../../test/utils/svgDebugWriter'
-//import {DebugCurve} from '../../math/geometry/debugCurve'
+// import {DebugCurve, writeDebugCurves} from '../../math/geometry/debugCurve'
 /** Optimize path locally, without changing its topology.
  * The obstacles are represented by constrained edges of cdd, the Delaunay triangulation.
  * It is not assumed that the polyline passes only through the sites of the cdt.
 //  */
-let debCount = 0
-let drawCount = 0
+// let debCount = 0
+// let drawCount = 0
 /** the target of s would be otherTriange:  s.edge.getOtherTriangle_T(s.source) */
 type FrontEdge = {source: Tr; edge: Ed; leftSign?: number; rightSign?: number}
 /** nextR and nextL are defined only for an apex */
@@ -92,22 +90,23 @@ export class PathOptimizer {
     }
     this.initDiagonals(sleeve)
     this.refineFunnel()
+    // this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
   }
   /**A function that returns an array of all crossed triangles
    * by a line segment from start to end
    * assuming the initial triangle contains the start point*/
   private getAllCrossedTriangles(t: Tr, start: Point, end: Point): {triangles: Tr[]; containsEnd: Tr} {
     // Initialize an empty array to store the crossed triangles
-    let crossed: Tr[] = []
+    const crossed: Tr[] = []
     // Initialize a queue to store the triangles to visit
-    let queue: Tr[] = []
+    const queue: Tr[] = []
     let containsEnd: Tr | null = null
     // Add the initial triangle to the queue
     queue.push(t)
     // Loop until the queue is empty
     while (queue.length > 0) {
       // Dequeue a triangle from the queue
-      let current = queue.pop()!
+      const current = queue.pop()!
       if (containsEnd == null && current.containsPoint(end)) {
         containsEnd = current
       }
@@ -231,7 +230,7 @@ export class PathOptimizer {
   //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Violet', this.sourcePoly))
   //   dc.push(DebugCurve.mkDebugCurveTWCI(200, 0.5, 'Magenta', this.targetPoly))
 
-  //   SvgDebugWriter.dumpDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
+  //   writeDebugCurves('./tmp/poly' + ++drawCount + '.svg', dc)
   // }
 
   private refineFunnel(/*dc: Array<DebugCurve>*/) {

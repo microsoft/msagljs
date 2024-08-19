@@ -13,7 +13,6 @@ import {Entity} from '../../structs/entity'
 
 export type GeomNodeJSON = {
   boundaryCurve: ICurveJSON
-  padding: number
 }
 export class GeomNode extends GeomObject {
   /** clones but does not bind to the entity */
@@ -27,7 +26,7 @@ export class GeomNode extends GeomObject {
     this.boundaryCurve.translate(delta)
   }
   toJSON(): GeomNodeJSON {
-    return {boundaryCurve: this.boundaryCurve, padding: this.padding}
+    return {boundaryCurve: this.boundaryCurve}
   }
   static minHeight = 2
   static minWidth = 3
@@ -35,8 +34,7 @@ export class GeomNode extends GeomObject {
   get node(): Node {
     return this.entity as Node
   }
-  padding = 1
-
+  
   private _boundaryCurve: ICurve
   public get boundaryCurve(): ICurve {
     return this._boundaryCurve
@@ -123,12 +121,6 @@ export class GeomNode extends GeomObject {
     }
   }
 
-  /** creates a new rectangle equal to the padded  */
-  get boundingBoxWithPadding() {
-    const ret = this.boundingBox.clone()
-    ret.pad(this.padding)
-    return ret
-  }
   // the bounding box of the node
   get boundingBox() {
     return this.boundaryCurve ? this.boundaryCurve.boundingBox : null

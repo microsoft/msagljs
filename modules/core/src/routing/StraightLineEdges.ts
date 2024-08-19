@@ -22,15 +22,15 @@ export function straightLineEdgePatcher(geomGraph: GeomGraph, edgesToRoute: Geom
       if (cancelToken && cancelToken.canceled) {
         return
       }
-      StraightLineEdges.RouteEdge(e, geomGraph.padding)
+      StraightLineEdges.RouteEdge(e)
     }
   } else {
     for (const n of geomGraph.nodesBreadthFirst) {
       if (cancelToken && cancelToken.canceled) {
         return
       }
-      for (const e of n.outEdges()) if (e.curve == null) StraightLineEdges.RouteEdge(e, geomGraph.padding)
-      for (const e of n.selfEdges()) if (e.curve == null) StraightLineEdges.RouteEdge(e, geomGraph.padding)
+      for (const e of n.outEdges()) if (e.curve == null) StraightLineEdges.RouteEdge(e)
+      for (const e of n.selfEdges()) if (e.curve == null) StraightLineEdges.RouteEdge(e)
     }
   }
 }
@@ -51,14 +51,14 @@ export class StraightLineEdges extends Algorithm {
   run() {
     SplineRouter.CreatePortsIfNeeded(this.edges)
     for (const geomedge of this.edges) {
-      StraightLineEdges.RouteEdge(geomedge, this.padding)
+      StraightLineEdges.RouteEdge(geomedge)
     }
   }
 
   // populate the geometry including curve and arrowhead positioning for the given geomedge using simple
   // straight line routing style.  Self edges will be drawn as a loop, padding is used to control the
   // size of the loop.
-  static RouteEdge(geomedge: GeomEdge, padding: number) {
+  static RouteEdge(geomedge: GeomEdge) {
     const eg = geomedge
     if (eg.sourcePort == null) {
       eg.sourcePort = RelativeFloatingPort.mk(
@@ -74,14 +74,14 @@ export class StraightLineEdges extends Algorithm {
       )
     }
 
-    if (!StraightLineEdges.ContainmentLoop(eg, padding)) {
+    if (!StraightLineEdges.ContainmentLoop(eg)) {
       eg.curve = StraightLineEdges.GetEdgeLine(geomedge)
     }
 
     Arrowhead.trimSplineAndCalculateArrowheadsII(eg, eg.sourcePort.Curve, eg.targetPort.Curve, geomedge.curve, false)
   }
 
-  static ContainmentLoop(eg: GeomEdge, padding: number): boolean {
+  static ContainmentLoop(eg: GeomEdge): boolean {
     const sourceCurve = eg.sourcePort.Curve
     const targetCurve = eg.targetPort.Curve
     if (sourceCurve == null || targetCurve == null) {
@@ -93,21 +93,21 @@ export class StraightLineEdges extends Algorithm {
     const targetInSource: boolean = targetBox.containsRect(sourceBox)
     const sourceInTarget: boolean = !targetInSource && sourceBox.containsRect(targetBox)
     if (targetInSource || sourceInTarget) {
-      eg.curve = StraightLineEdges.CreateLoop(targetBox, sourceBox, sourceInTarget, padding)
+      eg.curve = StraightLineEdges.CreateLoop(targetBox, sourceBox, sourceInTarget)
       return true
     }
 
     return false
   }
 
-  static CreateLoop(targetBox: Rectangle, sourceBox: Rectangle, sourceContainsTarget: boolean, padding: number): Curve {
+  static CreateLoop(targetBox: Rectangle, sourceBox: Rectangle, sourceContainsTarget: boolean): Curve {
     return sourceContainsTarget
-      ? StraightLineEdges.CreateLoop_(targetBox, sourceBox, padding, false)
-      : StraightLineEdges.CreateLoop_(sourceBox, targetBox, padding, true)
+      ? StraightLineEdges.CreateLoop_(targetBox, sourceBox, false)
+      : StraightLineEdges.CreateLoop_(sourceBox, targetBox, true)
   }
 
   // creates a loop from sourceBox center to the closest point on the targetBox boundary
-  static CreateLoop_(sourceBox: Rectangle, targetBox: Rectangle, howMuchToStickOut: number, reverse: boolean): Curve {
+  static CreateLoop_(sourceBox: Rectangle, targetBox: Rectangle, reverse: boolean): Curve {
     const center = sourceBox.center
     const closestPoint = StraightLineEdges.FindClosestPointOnBoxBoundary(sourceBox.center, targetBox)
     let dir = closestPoint.sub(center)
@@ -117,6 +117,7 @@ export class StraightLineEdges extends Algorithm {
         ? Math.min(center.y - targetBox.bottom, targetBox.top - center.y)
         : Math.min(center.x - targetBox.left, targetBox.right - center.x)) / 2 //divide over 2 to not miss the rect
 
+    const howMuchToStickOut = 1
     const width = Math.min(howMuchToStickOut, maxWidth)
     if (dir.length <= GeomConstants.distanceEpsilon) {
       dir = new Point(1, 0)

@@ -208,3 +208,11 @@ export class DebugCurve {
     'AntiqueWhite',
   ]
 }
+// Define the lambda function outside of the class
+export let writeDebugCurves = function (fileName: string, debugCurves: DebugCurve[]): void {
+  console.log('should be set from outside')
+}
+// Function to set a new lambda function
+export function setWriteDebugCurves(newFunction: (fileName: string, debugCurves: DebugCurve[]) => void): void {
+  writeDebugCurves = newFunction
+}

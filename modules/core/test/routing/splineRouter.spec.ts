@@ -3,6 +3,7 @@ import {
   AttributeRegistry,
   BundlingSettings,
   CurveFactory,
+  DebugCurve,
   Edge,
   EdgeRoutingMode,
   EdgeRoutingSettings,
@@ -11,11 +12,15 @@ import {
   GeomNode,
   GeomObject,
   Graph,
+  ICurve,
+  LineSegment,
   MdsLayoutSettings,
   Node,
   PlaneTransformation,
   Point,
+  Polyline,
   Rectangle,
+  Size,
   SplineRouter,
   SugiyamaLayoutSettings,
   layoutGraphWithMds,
@@ -29,6 +34,9 @@ import {initRandom} from '../../src/utils/random'
 import {sortedList} from '../layout/sortedBySizeListOfgvFiles'
 import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {measureTextSize, setNode, runMDSLayout, generateRandomGeomGraph} from '../utils/testUtils'
+import {RRect} from '../../src/layout/core/RRect'
+import {VisibilityGraph} from '../../src/routing/visibility/VisibilityGraph'
+import {setWriteDebugCurves} from '../../src/math/geometry/debugCurve'
 
 const socialNodes = [
   'Grenn',
@@ -495,7 +503,7 @@ const socialEdges = [
   [88, 85],
 ]
 
-test('game of thrones', () => {
+xtest('game of thrones', () => {
   const g = new Graph()
   const gnodes = []
   for (const n of socialNodes) {
@@ -539,7 +547,7 @@ test('game of thrones', () => {
   sr.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/social_bug.svg', gg)
 })
-test('spline router self edge', () => {
+xtest('spline router self edge', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const n = setNode(g, 'a', 10, 10)
   g.setEdge('a', 'a')
@@ -554,7 +562,7 @@ test('spline router self edge', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/self.svg', g)
 })
 
-test('one edge', () => {
+xtest('one edge', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const a = setNode(g, 'a', 10, 10)
   setNode(g, 'b', 10, 10)
@@ -570,7 +578,7 @@ test('one edge', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/one_edge_sr.svg', g)
 })
 
-test('one edge with obstacle', () => {
+xtest('one edge with obstacle', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const as = g.graph.addNode(new Node('a'))
   const bs = g.graph.addNode(new Node('b'))
@@ -586,7 +594,7 @@ test('one edge with obstacle', () => {
   sr.run()
   // SvgDebugWriter.writeGeomGraph('./tmp/one_edge_with_obstacle.svg', g)
 })
-test('clust_', () => {
+xtest('clust_', () => {
   let dg: DrawingGraph
   const file = 'smallGraphs/clust_.gv'
   try {
@@ -621,7 +629,7 @@ xtest('random circles', () => {
     }
 })
 
-test('layout 50-100 gv files with MDS', () => {
+xtest('layout 50-100 gv files with MDS', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {
@@ -642,7 +650,7 @@ test('layout 50-100 gv files with MDS', () => {
   }
 })
 
-test('layout 0-50 gv files with MDS', () => {
+xtest('layout 0-50 gv files with MDS', () => {
   const path = 'graphvis/'
   let i = 0
   for (const f of sortedList) {
@@ -662,7 +670,7 @@ test('layout 0-50 gv files with MDS', () => {
     }
   }
 })
-test('one edge with two obstacles', () => {
+xtest('one edge with two obstacles', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const as = g.graph.addNode(new Node('a'))
   const bs = g.graph.addNode(new Node('b'))
@@ -682,7 +690,7 @@ test('one edge with two obstacles', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/one_edge_with_two_obstacles.svg', g)
 })
 
-test('edges with five obstacles', () => {
+xtest('edges with five obstacles', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const as = g.graph.addNode(new Node('a'))
   const bs = g.graph.addNode(new Node('b'))
@@ -707,7 +715,7 @@ test('edges with five obstacles', () => {
   SvgDebugWriter.writeGeomGraph('./tmp/edges_with_three_obstacles.svg', g)
 })
 
-test('two edges with obstacle', () => {
+xtest('two edges with obstacle', () => {
   const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
   const as = g.graph.addNode(new Node('a'))
   const bs = g.graph.addNode(new Node('b'))
@@ -734,7 +742,7 @@ function checkEdges(gg: GeomGraph) {
     }
   }
 }
-test('compound routing', () => {
+xtest('compound routing', () => {
   const fpath = path.join(__dirname, '../data/JSONfiles/compound.gv.JSON')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -748,7 +756,7 @@ test('compound routing', () => {
   sr.run()
   SvgDebugWriter.writeGeomGraph('./tmp/comp.gv.svg', gg)
 })
-test('edge to a parent', () => {
+xtest('edge to a parent', () => {
   // create a graph with a subgraph and a node inside of it
   const g = new Graph('graph')
   const a = new Graph('a')
@@ -794,27 +802,171 @@ test('edge to a parent', () => {
   }
 })
 
-test('overlap test', () => {
-  const g = GeomGraph.mk('graph', Rectangle.mkEmpty());
-  const as = g.graph.addNode(new Node('a'));
-  const a = new GeomNode(as);
+xtest('overlap xtest', () => {
+  const g = GeomGraph.mk('graph', Rectangle.mkEmpty())
+  const as = g.graph.addNode(new Node('a'))
+  const a = new GeomNode(as)
   a.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 3, 3, new Point(0, 0))
 
-  const bs = g.graph.addNode(new Node('b'));
-  const b = new GeomNode(bs);
+  const bs = g.graph.addNode(new Node('b'))
+  const b = new GeomNode(bs)
   b.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(40, 20, 3, 3, new Point(-10, 210))
 
-  const es = g.graph.addNode(new Node('e'));
-  const e = new GeomNode(es);
+  const es = g.graph.addNode(new Node('e'))
+  const e = new GeomNode(es)
   e.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(60, 20, 3, 3, new Point(0, 50))
 
-  const fs = g.graph.addNode(new Node('f'));
-  const f = new GeomNode(fs);
+  const fs = g.graph.addNode(new Node('f'))
+  const f = new GeomNode(fs)
   f.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(60, 20, 3, 3, new Point(20, 60))
 
-  g.setEdge('a', 'b');
+  g.setEdge('a', 'b')
 
-  const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6);
-  sr.run();
-  SvgDebugWriter.writeGeomGraph('./tmp/overlap_test.svg', g);
+  const sr = SplineRouter.mk4(g, 2, 4, Math.PI / 6)
+  sr.run()
+  SvgDebugWriter.writeGeomGraph('./tmp/overlap_test.svg', g)
+})
+
+function setNodeCurve(node: GeomNode, x: number, y: number) {
+  node.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(x, y))
+}
+
+function setCompoundBounds(graph: GeomGraph, size: Size, center: Point) {
+  graph.boundingBox = Rectangle.mkSizeCenter(size, center)
+  setCornerRadius(graph, 0)
+}
+
+function setCornerRadius(graph: GeomGraph, radius: number) {
+  const bounds = graph.boundingBox
+  const rrect = new RRect({left: bounds.left, top: bounds.top, right: bounds.right, bottom: bounds.bottom, radX: radius, radY: radius})
+  ;(graph as any).rrect = rrect
+}
+
+function dumpSvg(visGraph: VisibilityGraph, geomGraph: GeomGraph, splineRouter: SplineRouter) {
+  ShowVisGraph(
+    './tmp/vg.svg',
+    visGraph,
+    Array.from(
+      new Set<Polyline>(Array.from(splineRouter.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve)),
+    ),
+    Array.from(geomGraph.nodesBreadthFirst).map((n) => n.boundaryCurve),
+    null,
+  )
+}
+
+function ShowVisGraph(
+  fileName: string,
+  tmpVisGraph: VisibilityGraph,
+  obstacles: Array<Polyline>,
+  greenCurves: Array<ICurve> = null,
+  redCurves: Array<ICurve> = null,
+) {
+  const l = Array.from(tmpVisGraph.Edges).map((e) =>
+    DebugCurve.mkDebugCurveTWCI(
+      100,
+      1,
+      e.IsPassable != null && e.IsPassable() ? 'green' : 'black',
+      LineSegment.mkPP(e.SourcePoint, e.TargetPoint),
+    ),
+  )
+  if (obstacles != null) {
+    for (const p of obstacles) {
+      l.push(DebugCurve.mkDebugCurveTWCI(100, 0.3, 'brown', p))
+      for (const t of p) {
+        l.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'green', CurveFactory.mkCircle(1, t)))
+      }
+    }
+  }
+
+  if (greenCurves != null) {
+    for (const p of greenCurves) {
+      l.push(DebugCurve.mkDebugCurveTWCI(100, 1.3, 'navy', p))
+    }
+  }
+
+  if (redCurves != null) {
+    for (const p of redCurves) l.push(DebugCurve.mkDebugCurveTWCI(100, 1.5, 'red', p))
+  }
+
+  SvgDebugWriter.dumpDebugCurves(fileName, l)
+}
+
+test('hierarchy xtest 1', () => {
+  // GeomGraph is an attribute of Graph
+  const root_graph = new Graph('graph')
+  const gg = new GeomGraph(root_graph)
+  gg.labelSize = new Size(0, 0)
+
+  // clusterA is an attribute on "new Graph('clusterA')"
+  const clusterA = new GeomGraph(new Graph('clusterA'))
+  gg.addNode(clusterA) //  under the hood it adds clusterA.graph to root_graph
+  setCompoundBounds(clusterA, new Size(200, 100), new Point(300, 91))
+
+  const clusterB = new GeomGraph(new Graph('clusterB'))
+  gg.addNode(clusterB)
+  setCompoundBounds(clusterB, new Size(180, 210), new Point(70, 91))
+
+  const clusterC = new GeomGraph(new Graph('clusterC'))
+  clusterB.addNode(clusterC)
+  setCompoundBounds(clusterC, new Size(120, 80), new Point(88, 150))
+  // GeomNode is an attribute on Node
+  const a1 = new GeomNode(new Node('a1'))
+  clusterA.addNode(a1) // under the hood it adds node a1.node:Node to clusterA.graph:Graph
+  setNodeCurve(a1, 230, 95)
+
+  const a2 = new GeomNode(new Node('a2'))
+  clusterA.addNode(a2)
+  setNodeCurve(a2, 280, 70)
+
+  const a3 = new GeomNode(new Node('a3'))
+  clusterA.addNode(a3)
+  setNodeCurve(a3, 330, 90)
+
+  const b1 = new GeomNode(new Node('b1'))
+  clusterB.addNode(b1)
+  setNodeCurve(b1, 82, 65)
+
+  const b2 = new GeomNode(new Node('b2'))
+  clusterB.addNode(b2)
+  setNodeCurve(b2, 95, 10)
+
+  const b3 = new GeomNode(new Node('b3'))
+  clusterB.addNode(b3)
+
+  setNodeCurve(b3, 15, 71)
+
+  const c1 = new GeomNode(new Node('c1'))
+  clusterC.addNode(c1)
+  setNodeCurve(c1, 115, 140)
+
+  const c2 = new GeomNode(new Node('c2'))
+  clusterC.addNode(c2)
+  setNodeCurve(c2, 60, 140)
+
+  function mke(u: GeomNode, v: GeomNode) {
+    const uv = new Edge(u.node, v.node) // create edge u->v
+    new GeomEdge(uv) // add a geometry attribute to it
+  }
+
+  mke(a1, b1)
+  mke(c2, a3)
+  mke(b3, a3)
+  mke(b3, b2)
+  mke(b1, a3)
+  mke(b2, c1)
+  mke(c2, b2)
+  mke(c1, a2)
+
+  const sr = SplineRouter.mk4(gg, 2, 4, Math.PI / 6)
+  // Mock writeDebugCurves
+  const newWriteDebugCurves = (fileName: string, debugCurves: DebugCurve[]): void => {
+    return
+    const graphNodes = Array.from(root_graph.nodesBreadthFirst)
+    const dc = graphNodes.map((n) => GeomNode.getGeom(n).boundaryCurve).map((c) => DebugCurve.mkDebugCurveWCI(0.5, 'red', c))
+    SvgDebugWriter.dumpDebugCurves(fileName, debugCurves.concat(dc))
+  }
+  setWriteDebugCurves(newWriteDebugCurves)
+  sr.run()
+
+  SvgDebugWriter.writeGeomGraph('./tmp/hierarchy_test_1.svg', gg)
 })

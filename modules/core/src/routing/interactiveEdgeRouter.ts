@@ -30,7 +30,6 @@ import {PointVisibilityCalculator} from './visibility/PointVisibilityCalculator'
 import {BezierSeg} from '../math/geometry/bezierSeg'
 import {CornerSite} from '../math/geometry/cornerSite'
 import {PathOptimizer} from './spline/pathOptimizer'
-// import {Assert} from '../utils/assert'
 export class InteractiveEdgeRouter extends Algorithm {
   rerouteEdge(edge: GeomEdge) {
     const poly: Polyline = edge.smoothedPolyline

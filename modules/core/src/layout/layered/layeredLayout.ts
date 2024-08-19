@@ -762,7 +762,7 @@ export class LayeredLayout extends Algorithm {
       settings.LabelCornersPreserveCoefficient,
     )
 
-    anchors[i].padding = intGraph.nodes[i].padding
+    anchors[i].padding = 1
   }
 
   CreateGluedDagSkeletonForLayering() {

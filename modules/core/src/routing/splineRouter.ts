@@ -53,6 +53,7 @@ import {Node} from '..'
 import {edgeNodesBelongToSet} from '../structs/graph'
 import {initRandom} from '../utils/random'
 import {RelativeShape} from './RelativeShape'
+
 /**  routing edges around shapes */
 export class SplineRouter extends Algorithm {
   // setting this to true forces the calculation to go on even when node overlaps are present
@@ -344,13 +345,7 @@ export class SplineRouter extends Algorithm {
       this.CalculateShapeToBoundaries(child)
     }
 
-    let loosePaddingMax = Number.POSITIVE_INFINITY
-    if (shape instanceof RelativeShape) {
-      const node = shape.node
-      const padding = node.padding
-      this.tightPadding = Math.min(this.tightPadding, 0.4 * padding)
-      loosePaddingMax = 0.4 * padding
-    }
+    const loosePaddingMax = Number.POSITIVE_INFINITY
 
     this.obstacleCalculator = new ShapeObstacleCalculator(
       shape,
@@ -1084,59 +1079,8 @@ export class SplineRouter extends Algorithm {
     this.portRTree = mkRTree(Array.from(setOfPortLocations.values()).map((p) => [Rectangle.rectangleOnPoint(p), p]))
     this.visGraph = new VisibilityGraph()
     this.FillVisibilityGraphUnderShape(this.root)
-    // debug start
-    //this.dumpSvg()
-    // throw new Error()
   }
 
-  // dumpSvg() {
-  //  SplineRouter.ShowVisGraph(
-  //    './tmp/vg.svg',
-  //    this.visGraph,
-  //    Array.from(new Set<Polyline>(Array.from(this.shapesToTightLooseCouples.values()).map((tl) => <Polyline>tl.LooseShape.BoundaryCurve))),
-  //    Array.from(this.geomGraph.shallowNodes)
-  //      .map((n) => n.boundaryCurve)
-  //      .concat(Array.from(this.root.Descendants()).map((d) => d.BoundaryCurve)),
-  //    null,
-  //  )
-  // }
-
-  static ShowVisGraph(
-    fileName: string,
-    tmpVisGraph: VisibilityGraph,
-    obstacles: Array<Polyline>,
-    greenCurves: Array<ICurve> = null,
-    redCurves: Array<ICurve> = null,
-  ) {
-    const l = Array.from(tmpVisGraph.Edges).map((e) =>
-      DebugCurve.mkDebugCurveTWCI(
-        100,
-        1,
-        e.IsPassable != null && e.IsPassable() ? 'green' : 'black',
-        LineSegment.mkPP(e.SourcePoint, e.TargetPoint),
-      ),
-    )
-    if (obstacles != null) {
-      for (const p of obstacles) {
-        l.push(DebugCurve.mkDebugCurveTWCI(100, 0.3, 'brown', p))
-        for (const t of p) {
-          l.push(DebugCurve.mkDebugCurveTWCI(100, 1, 'green', CurveFactory.mkCircle(1, t)))
-        }
-      }
-    }
-
-    if (greenCurves != null) {
-      for (const p of greenCurves) {
-        l.push(DebugCurve.mkDebugCurveTWCI(100, 10, 'navy', p))
-      }
-    }
-
-    if (redCurves != null) {
-      for (const p of redCurves) l.push(DebugCurve.mkDebugCurveTWCI(100, 10, 'red', p))
-    }
-
-    // SvgDebugWriter.dumpDebugCurves(fileName, l)
-  }
   private ProcessHookAnyWherePorts(setOfPortLocations: PointSet) {
     for (const edge of this.edges) {
       if (!(edge.sourcePort instanceof HookUpAnywhereFromInsidePort || edge.sourcePort instanceof ClusterBoundaryPort)) {
