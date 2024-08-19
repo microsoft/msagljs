@@ -1,6 +1,6 @@
 {
   "name": "@msagl/core",
-  "version": "1.1.21",
+  "version": "1.1.22",
   "description": "MSAGL in JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
