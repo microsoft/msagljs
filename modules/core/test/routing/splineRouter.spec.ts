@@ -891,7 +891,7 @@ function ShowVisGraph(
   SvgDebugWriter.dumpDebugCurves(fileName, l)
 }
 
-test('hierarchy xtest 1', () => {
+test('hierarchy test 1', () => {
   // GeomGraph is an attribute of Graph
   const root_graph = new Graph('graph')
   const gg = new GeomGraph(root_graph)
