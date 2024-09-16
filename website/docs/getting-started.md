@@ -20,7 +20,7 @@ npm install @msagl/core
 If you use the SVG renderer, you need to install @msagl/renderer-svg:
 
 ```bash npm2yarn
-npm install @msagl/renderer-svg.
+npm install @msagl/renderer-svg
 ```
 
 If you use the Deck.gl renderer, you need to install @msagl/renderer-webgl:
