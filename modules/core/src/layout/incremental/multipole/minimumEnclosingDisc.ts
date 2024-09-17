@@ -1,118 +1,97 @@
 //  implementation of the "MoveToFront" method for computing the minimum enclosing disc of a collection of points.
 //  Runs in time linear in the number of points.  After Welzl'1991.
+// The code has been borrowed from https://github.com/rowanwins/smallest-enclosing-circle/blob/90b932b310c3113fff7808c5611cbdb26fca2016/src/main.js#L1
 
-import {SinglyLinkedList as LinkedList, SinglyLinkedListNode as LinkedListNode} from "linked-list-typed"
 import {Point} from '../../../math/geometry'
 import {Assert} from '../../../utils/assert'
+import {randomInt} from '../../../utils/random'
 import {Disc} from './disc'
-class MinDisc {
-  public disc: Disc
 
-  public boundary: Array<number>
-
-  public constructor(ps: Point[], b: Array<number>) {
-    this.boundary = b
-    Assert.assert(b.length <= 3)
-    switch (b.length) {
-      case 0:
-        this.disc = null
-        break
-      case 1:
-        this.disc = Disc.constructorP(ps[b[0]])
-        break
-      case 2:
-        this.disc = Disc.constructorPP(ps[b[0]], ps[b[1]])
-        break
-      case 3:
-        this.disc = Disc.constructorPPP(ps[b[0]], ps[b[1]], ps[b[2]])
-        break
-    }
-  }
-
-  public contains(p: Point): boolean {
-    if (this.disc == null) {
-      return false
-    }
-
-    return this.disc.Contains(p)
-  }
+function wetzls(points: Point[]) {
+  // clone and then shuffle the points
+  const clonedPoints = points.slice()
+  shuffle(clonedPoints)
+  return mec(clonedPoints, points.length, [], 0)
 }
 
-export class MoveToFront {
-  L: LinkedList<number>
-
-  ps: Point[]
-
-  //  minimum enclosing disc
-
-  public disc: Disc
-
-  //  list of 2 or 3 points lying on the boundary
-
-  public boundary: Array<number>
-
-  //  Constructs the minimum enclosing disc for the specified points
-
-  public constructor(ps: Point[]) {
-    this.ps = ps
-    this.L = new LinkedList<number>()
-    for (let i = 0; i < this.ps.length; i++) {
-      this.L.push(i)
-    }
-
-    const md: MinDisc = this.mtf_md(null, new Array<number>())
-    this.disc = md.disc
-    this.boundary = md.boundary
+function shuffle(a: Point[]): Point[] {
+  let j, x, i
+  for (i = a.length - 1; i > 0; i--) {
+    j = randomInt(i + 1)
+    x = a[i]
+    a[i] = a[j]
+    a[j] = x
   }
-  collinear3(b: Array<number>): boolean {
-    if (b.length == 3) {
-      return Disc.Collinear(this.ps[b[0]], this.ps[b[1]], this.ps[b[2]])
-    }
+  return a
+}
 
-    return false
+function mec(points: Point[], n: number, boundary: Point[], b: number): {x: number; y: number; r: number} {
+  let localCircle = null
+
+  if (b === 3) localCircle = calcCircle3(boundary[0], boundary[1], boundary[2])
+  else if (n === 1 && b === 0) localCircle = {x: points[0].x, y: points[0].y, r: 0}
+  else if (n === 0 && b === 2) localCircle = calcCircle2(boundary[0], boundary[1])
+  else if (n === 1 && b === 1) localCircle = calcCircle2(boundary[0], points[0])
+  else {
+    localCircle = mec(points, n - 1, boundary, b)
+    if (!isInCircle(points[n - 1], localCircle)) {
+      boundary[b++] = points[n - 1]
+      localCircle = mec(points, n - 1, boundary, b)
+    }
   }
 
-  mtf_md(lPtr: LinkedListNode<number>, b: Array<number>): MinDisc {
-    Assert.assert(b.length <= 3)
-    let md: MinDisc = new MinDisc(this.ps, b)
-    if (b.length == 3) {
-      return md
-    }
+  return localCircle
+}
 
-    let lnode: LinkedListNode<number> = this.L.head
-    while (lnode != null && lnode != lPtr) {
-      const lnext: LinkedListNode<number> = lnode.next
-      const p: number = lnode.value
-      if (!md.contains(this.ps[p])) {
-        const _b: Array<number> = Array.from(b)
-        _b.push(p)
-        Assert.assert(!this.collinear3(_b), 'Collinear points on boundary of minimal enclosing disc')
-        md = this.mtf_md(lnode, _b)
-        this.L.delete(lnode)
-        this.L.unshift(lnode.value)
-      }
+function calcCircle3(p1: Point, p2: Point, p3: Point) {
+  const p1x = p1.x,
+    p1y = p1.y,
+    p2x = p2.x,
+    p2y = p2.y,
+    p3x = p3.x,
+    p3y = p3.y,
+    a = p2x - p1x,
+    b = p2y - p1y,
+    c = p3x - p1x,
+    d = p3y - p1y,
+    e = a * (p2x + p1x) * 0.5 + b * (p2y + p1y) * 0.5,
+    f = c * (p3x + p1x) * 0.5 + d * (p3y + p1y) * 0.5,
+    det = a * d - b * c,
+    cx = (d * e - b * f) / det,
+    cy = (-c * e + a * f) / det
 
-      lnode = lnext
-    }
+  return {x: cx, y: cy, r: Math.sqrt((p1x - cx) * (p1x - cx) + (p1y - cy) * (p1y - cy))}
+}
 
-    return md
-  }
+function calcCircle2(p1: Point, p2: Point) {
+  const p1x = p1.x,
+    p1y = p1.y,
+    p2x = p2.x,
+    p2y = p2.y,
+    cx = 0.5 * (p1x + p2x),
+    cy = 0.5 * (p1y + p2y)
+
+  return {x: cx, y: cy, r: Math.sqrt((p1x - cx) * (p1x - cx) + (p1y - cy) * (p1y - cy))}
+}
+
+function isInCircle(p: Point, c: {x: any; y: any; r: any}) {
+  return (c.x - p.x) * (c.x - p.x) + (c.y - p.y) * (c.y - p.y) <= c.r * c.r
 }
 
 /** static methods for obtaining a minimum enclosing disc of a collection of points */
 
 export class MinimumEnclosingDisc {
-  //  linear-time computation using the move-to-front heuristic by Welzl
+  /**  linear-time computation using the move-to-front heuristic by Welzl */
 
-  //  <returns>Smallest disc that encloses all the points</returns>
   public static LinearComputation(points: Point[]): Disc {
-    const m: MoveToFront = new MoveToFront(points)
-    return m.disc
+    const circle = wetzls(points)
+    const d = new Disc()
+    d.Center = new Point(circle.x, circle.y)
+    d.Radius = circle.r
+    return d
   }
 
-  //  Computing the minimum enclosing disc the slow stupid way.  Just for testing purposes.
-
-  //  <returns>Smallest disc that encloses all the points</returns>
+  //  Computing the minimum enclosing disc the naive way for testing purposes.
   public static SlowComputation(points: Point[]): Disc {
     const n: number = points.length
     let mc: Disc = null

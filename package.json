@@ -55,6 +55,7 @@
     ]
   },
   "dependencies": {
+    "@types/smallest-enclosing-circle": "^1.0.3",
     "madge": "^6.0.0",
     "yarn": "^1.22.19"
   }

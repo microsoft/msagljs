@@ -10,6 +10,9 @@ export class Disc {
   get Center(): Point {
     return this.c
   }
+  set Center(p: Point) {
+    this.c = p
+  }
 
   //  radius
 
@@ -18,6 +21,10 @@ export class Disc {
   /**   Radius of disc */
   get Radius(): number {
     return this.r
+  }
+  set Radius(r: number) {
+    this.r = r
+    this.r2 = r * r
   }
 
   private r2: number

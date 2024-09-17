@@ -23,7 +23,6 @@
     "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js"
   },
   "dependencies": {
-    "linked-list-typed": "^1.52.0",
     "queue-typescript": "^1.0.1",
     "reliable-random": "^0.0.1",
     "stack-typescript": "^1.0.4",
