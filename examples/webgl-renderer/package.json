@@ -15,7 +15,7 @@
     "@msagl/renderer-webgl": "^1.1.19"
   },
   "devDependencies": {
-    "esbuild": "^0.14.27",
+    "esbuild": "^0.25.0",
     "typescript": "^4.5.5"
   }
 }
