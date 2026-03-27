@@ -67,7 +67,15 @@ export function getArrowHeadLayer(
     getAngle: (d) => getArrowAngle(d.tip, d.base),
     billboard: false,
     sizeUnits: 'common',
-    extensions: [],
+    extensions: [
+      new GraphStyleExtension({
+        overrideProps: {
+          opacity: style.opacity,
+          sizeScale: style.arrowSize,
+          getColor: style.arrowColor,
+        },
+      }),
+    ],
   })
 }
 
