@@ -2,7 +2,7 @@ import {Layer} from '@deck.gl/core/typed'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
 import {DrawingEdge, DrawingObject} from '@msagl/drawing'
-import {iconMapping} from './arrows'
+import {iconMapping, getIconAtlas} from './arrows'
 
 import CurveLayer, {CurveLayerProps} from './curve-layer'
 import {CURVE} from './curve-layer'
@@ -55,9 +55,10 @@ export function getArrowHeadLayer(
     tip: Point
     edge: Edge
     base: Point
-  }>(props, {
+  }>({
+    ...props,
     id: `${props.id}-arrowhead`,
-    iconAtlas: 'deck://arrowAtlas',
+    iconAtlas: getIconAtlas(),
     iconMapping,
     getPosition: (d) => [d.tip.x, d.tip.y],
     getColor: (d) => getEdgeColor(d.edge),
@@ -66,16 +67,7 @@ export function getArrowHeadLayer(
     getAngle: (d) => getArrowAngle(d.tip, d.base),
     billboard: false,
     sizeUnits: 'common',
-
-    extensions: [
-      new GraphStyleExtension({
-        overrideProps: {
-          opacity: style.opacity,
-          sizeScale: style.arrowSize,
-          getColor: style.arrowColor,
-        },
-      }),
-    ],
+    extensions: [],
   })
 }
 

@@ -1289,12 +1289,15 @@ export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
   }
   for (const edge of json.edges) {
     const e = g.setEdge(String(edge.source), String(edge.target))
-    const de = new DrawingEdge(e, false)
+    const {directed = true} = edge
+    const de = new DrawingEdge(e, directed)
 
-    const {arrowhead = 'none', arrowtail = 'none', directed = true} = edge
-    de.arrowhead = ArrowTypeEnum[arrowhead]
-    de.arrowtail = ArrowTypeEnum[arrowtail]
-    de.directed = directed
+    if ('arrowhead' in edge) {
+      de.arrowhead = ArrowTypeEnum[edge.arrowhead]
+    }
+    if ('arrowtail' in edge) {
+      de.arrowtail = ArrowTypeEnum[edge.arrowtail]
+    }
 
     if ('weight' in edge) {
       de.weight = edge.weight
