@@ -14,7 +14,7 @@ function createIconAtlas(): HTMLCanvasElement {
   canvas.width = CELL * 4
   canvas.height = CELL
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to get 2D canvas context for icon atlas')
+  if (!ctx) throw new Error('Failed to get 2D canvas context for icon atlas. Canvas 2D rendering may not be available in this environment.')
   ctx.fillStyle = 'black'
   ctx.strokeStyle = 'black'
   ctx.lineJoin = 'round'
