@@ -15,7 +15,9 @@ export type PointJSON = {
 }
 
 export function distPP(a: Point, b: Point) {
-  return a.sub(b).length
+  const dx = a.x - b.x
+  const dy = a.y - b.y
+  return Math.sqrt(dx * dx + dy * dy)
 }
 /** represents a point with two coordinates on the plane */
 export class Point {

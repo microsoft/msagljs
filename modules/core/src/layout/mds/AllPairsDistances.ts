@@ -67,10 +67,14 @@ export class AllPairsDistances extends Algorithm {
     l /= graph.edgeCount // average of lengths
     let i = 0
     for (const u of graph.shallowNodes) {
+      const ux = u.center.x
+      const uy = u.center.y
       let j = 0
       for (const v of graph.shallowNodes) {
         if (i !== j) {
-          const duv: number = u.center.sub(v.center).length
+          const dx = ux - v.center.x
+          const dy = uy - v.center.y
+          const duv = Math.sqrt(dx * dx + dy * dy)
           const Duv: number = l * D[i][j]
           const d: number = Duv - duv
           stress += (d * d) / (Duv * Duv)

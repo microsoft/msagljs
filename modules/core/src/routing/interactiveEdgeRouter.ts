@@ -261,7 +261,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   CalculateEdgeTargetVisibilityGraph(location: Point) {
     this.targetVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-      Array.from(this.GetActivePolylines()),
+      this.GetActivePolylines(),
       this.VisibilityGraph,
       location,
       VisibilityKind.Tangent,
@@ -270,7 +270,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   CalculateSourcePortVisibilityGraph() {
     this.sourceVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-      Array.from(this.GetActivePolylines()),
+      this.GetActivePolylines(),
       this.VisibilityGraph,
       this.StartPointOfEdgeRouting,
       VisibilityKind.Tangent,
@@ -1609,7 +1609,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
       this.sourceVV = this.AddTransientVisibilityEdgesForPort(this.sourcePort.Location, this.SourceLoosePolyline)
     } else {
       this.sourceVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-        Array.from(this.GetActivePolylines()).filter((p) => p !== this.SourceLoosePolyline),
+        this.GetActivePolylinesWithException(this.SourceLoosePolyline),
         this.VisibilityGraph,
         this.StartPointOfEdgeRouting,
         VisibilityKind.Tangent,
