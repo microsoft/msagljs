@@ -8,6 +8,7 @@
     "lib": ["dom", "es2018"],
     "importHelpers": true,
     "esModuleInterop": true,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "skipLibCheck": true
   }
 }

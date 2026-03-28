@@ -36,7 +36,11 @@ jobs:
       - run: yarn
       - run: yarn build
       - run: yarn test
-      - run: yarn build:docs
+      - name: Build docs
+        run: |
+          # Patch puppeteer launch to add --no-sandbox for CI
+          sed -i 's/launch({ headless: true })/launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] })/' node_modules/@rise4fun/docusaurus-remark-plugin-compile-code/lib/index.js
+          yarn build:docs
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}

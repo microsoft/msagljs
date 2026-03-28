@@ -8,6 +8,7 @@ export type GraphStyleExtensionOptions = {
 };
 
 export default class GraphStyleExtension extends LayerExtension<GraphStyleExtensionOptions> {
+  static extensionName = 'GraphStyleExtension'
   private isEnabled: boolean = false
   private isDynamic: boolean = false
 

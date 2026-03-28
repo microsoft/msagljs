@@ -24,7 +24,8 @@
     "build:docs": "cd website && yarn build"
   },
   "resolutions": {
-    "apache-arrow": "8.0.0"
+    "apache-arrow": "8.0.0",
+    "@types/flatbuffers": "1.10.0"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",

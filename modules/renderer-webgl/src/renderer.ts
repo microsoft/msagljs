@@ -15,8 +15,6 @@ import {Matrix4} from '@math.gl/core'
 import EventSource, {Event} from './event-source'
 
 import GraphHighlighter from './layers/graph-highlighter'
-import {getIconAtlas} from './layers/arrows'
-
 import {GraphStyleSpecification, DefaultGraphStyle} from './styles/graph-style-spec'
 import {parseGraphStyle, ParsedGraphStyle} from './styles/graph-style-evaluator'
 
@@ -78,12 +76,6 @@ export default class Renderer extends EventSource {
       controller: true,
       onLoad: () => {
         this.emit('load')
-
-        const {gl} = this._deck.deckRenderer
-        this._deck._addResources({
-          arrowAtlas: getIconAtlas(gl),
-        })
-
         this._update()
       },
       onClick: ({object}) => {
@@ -356,8 +348,8 @@ export default class Renderer extends EventSource {
       initialViewState: {
         target: [rootTileSize / 2, rootTileSize / 2, 0],
         zoom: startZoom,
-        minZoom: startZoom,
-        maxZoom: MaxZoom,
+        minZoom: startZoom - 2,
+        maxZoom: Math.max(MaxZoom, startZoom + 2),
       },
       onAfterRender: () => {
         if (layer.isLoaded) {

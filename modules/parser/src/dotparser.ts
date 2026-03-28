@@ -1289,13 +1289,35 @@ export function parseSimpleJSON(json: SimpleJSONGraph): Graph {
   }
   for (const edge of json.edges) {
     const e = g.setEdge(String(edge.source), String(edge.target))
-    const de = new DrawingEdge(e, false)
+    const {directed = true} = edge
+    const de = new DrawingEdge(e, directed)
 
-    const {arrowhead = 'none', arrowtail = 'none', directed = true} = edge
-    de.arrowhead = ArrowTypeEnum[arrowhead]
-    de.arrowtail = ArrowTypeEnum[arrowtail]
-    de.directed = directed
+    // Determine explicit defaults for arrowhead/arrowtail rather than relying on DrawingEdge defaults.
+    const defaultArrowheadKey = directed ? 'normal' : 'none'
+    const defaultArrowtailKey = 'none'
 
+    // Resolve the effective keys, falling back to the explicit defaults when the properties are omitted.
+    const arrowheadKey = 'arrowhead' in edge ? edge.arrowhead : defaultArrowheadKey
+    const arrowtailKey = 'arrowtail' in edge ? edge.arrowtail : defaultArrowtailKey
+
+    // Resolve defaults to enum values and validate that they exist on ArrowTypeEnum.
+    const defaultArrowheadEnum = ArrowTypeEnum[defaultArrowheadKey as keyof typeof ArrowTypeEnum]
+    if (defaultArrowheadEnum === undefined) {
+      throw new Error(`Unsupported default arrowhead type '${defaultArrowheadKey}' in parseSimpleJSON`)
+    }
+    const defaultArrowtailEnum = ArrowTypeEnum[defaultArrowtailKey as keyof typeof ArrowTypeEnum]
+    if (defaultArrowtailEnum === undefined) {
+      throw new Error(`Unsupported default arrowtail type '${defaultArrowtailKey}' in parseSimpleJSON`)
+    }
+
+    // Map provided keys to enum values, falling back to the validated defaults if the keys are invalid.
+    const resolvedArrowheadEnum =
+      ArrowTypeEnum[String(arrowheadKey) as keyof typeof ArrowTypeEnum] ?? defaultArrowheadEnum
+    const resolvedArrowtailEnum =
+      ArrowTypeEnum[String(arrowtailKey) as keyof typeof ArrowTypeEnum] ?? defaultArrowtailEnum
+
+    de.arrowhead = resolvedArrowheadEnum
+    de.arrowtail = resolvedArrowtailEnum
     if ('weight' in edge) {
       de.weight = edge.weight
     }
