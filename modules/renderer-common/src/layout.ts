@@ -162,7 +162,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     if (layoutSettings instanceof SugiyamaLayoutSettings) {
       layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
     } else {
-      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
+      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
     }
   } else {
     layoutSettings.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode
