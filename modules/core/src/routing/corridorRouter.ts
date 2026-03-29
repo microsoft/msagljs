@@ -6,10 +6,18 @@
  */
 import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
+import {Rectangle} from '../math/geometry/rectangle'
+import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {Arrowhead} from '../layout/core/arrowhead'
+import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
+import {CancelToken} from '../utils/cancelToken'
 import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
+import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 
 type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
@@ -306,4 +314,85 @@ export function corridorRoute(
   const diagonals = sleeveToDiagonals(sleeve)
   const points = funnelFromDiagonals(source, target, diagonals)
   return Polyline.mkFromPoints(points)
+}
+
+/** Route all edges using the corridor approach.
+ *  Builds a CDT on padded obstacle polylines and routes each edge
+ *  through the CDT dual graph with funnel optimization. */
+export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
+  if (!edgesToRoute || edgesToRoute.length === 0) return
+
+  // ensure ports exist
+  for (const edge of edgesToRoute) {
+    if (edge.sourcePort == null) {
+      const ed = edge
+      new RelativeFloatingPort(
+        () => ed.source.boundaryCurve,
+        () => ed.source.center,
+        new Point(0, 0),
+      )
+    }
+    if (edge.targetPort == null) {
+      const ed = edge
+      new RelativeFloatingPort(
+        () => ed.target.boundaryCurve,
+        () => ed.target.center,
+        new Point(0, 0),
+      )
+    }
+  }
+
+  // build padded obstacle polylines from graph nodes
+  const nodeToPolyline = new Map<unknown, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+  for (const node of geomGraph.nodesBreadthFirst) {
+    if (cancelToken && cancelToken.canceled) return
+    if (node.boundaryCurve == null) continue
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
+    nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+
+  // add bounding box so CDT covers the whole area
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+
+  // build CDT
+  console.time('CorridorRouter CDT')
+  const ports: Point[] = []
+  for (const edge of edgesToRoute) {
+    ports.push(edge.sourcePort.Location)
+    ports.push(edge.targetPort.Location)
+  }
+  const cdt = new Cdt(ports, obstacles, [])
+  cdt.run()
+  console.timeEnd('CorridorRouter CDT')
+
+  // route each edge
+  console.time('CorridorRouter routing')
+  for (const edge of edgesToRoute) {
+    if (cancelToken && cancelToken.canceled) return
+
+    const source = edge.sourcePort.Location
+    const target = edge.targetPort.Location
+    const sourcePoly = nodeToPolyline.get(edge.source)
+    const targetPoly = nodeToPolyline.get(edge.target)
+
+    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
+    if (poly && poly.count >= 2) {
+      const smoothed = SmoothedPolyline.mkFromPoints(poly)
+      edge.curve = smoothed.createCurve()
+      edge.smoothedPolyline = smoothed
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge,
+        edge.source.boundaryCurve,
+        edge.target.boundaryCurve,
+        edge.curve,
+        false,
+      )
+    }
+  }
+  console.timeEnd('CorridorRouter routing')
 }

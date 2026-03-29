@@ -13,4 +13,6 @@ export enum EdgeRoutingMode {
   RectilinearToCenter,
 
   None,
+
+  Corridor,
 }
