@@ -62,14 +62,14 @@ function triangleCentroid(t: CdtTriangle): Point {
 
 /** Check if we can cross this edge.
  *  Non-constrained edges are always crossable.
- *  Constrained edges on source/target obstacle boundaries are crossable. */
-function canCrossEdge(e: CdtEdge, allowedPolys: Set<Polyline>): boolean {
-  if (!e.constrained) return true
-  const ownerUpper = e.upperSite.Owner as Polyline
-  const ownerLower = e.lowerSite.Owner as Polyline
-  if (ownerUpper && allowedPolys.has(ownerUpper)) return true
-  if (ownerLower && allowedPolys.has(ownerLower)) return true
-  return false
+ *  Constrained edges are crossable as long as we don't enter an
+ *  obstacle interior — that check happens via triangleIsInsideObstacle. */
+function canCrossEdge(e: CdtEdge, _allowedPolys: Set<Polyline>): boolean {
+  // The obstacle-interior check on the neighbor triangle (triangleIsInsideObstacle)
+  // is sufficient to prevent entering obstacles. Blocking constrained edge
+  // crossings here is too restrictive — it prevents routing through free-space
+  // channels between touching obstacles.
+  return true
 }
 
 /** A* on the CDT dual graph from sourceTriangle to the triangle containing target.
@@ -150,7 +150,8 @@ function findSleeveAStar(
       if (edgeIntoT !== undefined && e === edgeIntoT) continue
       const ot = e.GetOtherTriangle_T(t)
       if (ot == null) continue
-      if (triangleIsInsideObstacle(ot, allowedPolys)) continue
+      // Allow entering an obstacle triangle if it contains the target
+      if (triangleIsInsideObstacle(ot, allowedPolys) && !ot.containsPoint(target)) continue
 
       const otCentroid = triangleCentroid(ot)
       const edgeCost = tCentroid.sub(otCentroid).length
@@ -472,8 +473,6 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
 
     const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
     if (poly && poly.count >= 2) {
-      // Use line segments, not Bezier smoothing — Bezier curves bulge
-      // outside the corridor and can cross through obstacle nodes.
       edge.curve = poly.toCurve()
       edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
     } else {
