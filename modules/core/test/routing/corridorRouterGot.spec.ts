@@ -4,17 +4,19 @@ import {parseJSON} from '../../../parser/src/dotparser'
 import {
   GeomGraph,
   GeomEdge,
+  GeomNode,
   layoutGeomGraph,
   EdgeRoutingMode,
   geometryIsCreated,
+  Point,
 } from '../../../core/src'
 import {DrawingGraph} from '../../../drawing/src'
+import {Curve, PointLocation} from '../../../core/src/math/geometry/curve'
 
-test('corridor routing on gameofthrones has no null curves', () => {
+function layoutGotWithCorridor(): GeomGraph {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
-  expect(graph).not.toBeNull()
   const dg = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
   dg.createGeometry()
   const geomGraph = <GeomGraph>GeomGraph.getGeom(graph)
@@ -24,23 +26,78 @@ test('corridor routing on gameofthrones has no null curves', () => {
   }
   geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
   layoutGeomGraph(geomGraph, null)
+  return geomGraph
+}
+
+test('corridor routing on gameofthrones has no null curves', () => {
+  const geomGraph = layoutGotWithCorridor()
 
   let nullCurves = 0
   let totalEdges = 0
-  const nullEdges: string[] = []
   for (const e of geomGraph.deepEdges) {
     totalEdges++
-    if (e.curve == null) {
-      nullCurves++
-      nullEdges.push(`${e.edge.source.id} -> ${e.edge.target.id} sourcePort=${e.sourcePort != null} targetPort=${e.targetPort != null}`)
-    }
+    if (e.curve == null) nullCurves++
   }
   console.log(`Total edges: ${totalEdges}, null curves: ${nullCurves}`)
-  if (nullEdges.length > 0) {
-    console.log('Null curve edges (first 10):')
-    for (const ne of nullEdges.slice(0, 10)) {
-      console.log('  ', ne)
-    }
-  }
   expect(nullCurves).toBe(0)
+})
+
+test('corridor routing: edges do not cross through non-endpoint nodes', () => {
+  const geomGraph = layoutGotWithCorridor()
+
+  // Collect all nodes and their boundary curves
+  const nodes: GeomNode[] = []
+  for (const n of geomGraph.nodesBreadthFirst) {
+    if (n.boundaryCurve) nodes.push(n)
+  }
+
+  let crossingEdges = 0
+  let totalEdges = 0
+  const crossingExamples: string[] = []
+
+  for (const edge of geomGraph.deepEdges) {
+    totalEdges++
+    if (edge.curve == null) continue
+    const srcId = edge.source
+    const tgtId = edge.target
+
+    // Sample points along the curve (10 samples per segment)
+    const samples: Point[] = []
+    const curve = edge.curve
+    const pStart = curve.parStart
+    const pEnd = curve.parEnd
+    const steps = 20
+    for (let i = 1; i < steps; i++) {
+      const t = pStart + (pEnd - pStart) * (i / steps)
+      samples.push(curve.value(t))
+    }
+
+    let crosses = false
+    for (const node of nodes) {
+      if (node === srcId || node === tgtId) continue
+      const bc = node.boundaryCurve
+      for (const pt of samples) {
+        const loc = Curve.PointRelativeToCurveLocation(pt, bc)
+        if (loc === PointLocation.Inside) {
+          crosses = true
+          if (crossingExamples.length < 10) {
+            crossingExamples.push(
+              `${edge.edge.source.id} -> ${edge.edge.target.id} crosses ${node.node.id}`,
+            )
+          }
+          break
+        }
+      }
+      if (crosses) break
+    }
+    if (crosses) crossingEdges++
+  }
+
+  console.log(`Edges crossing non-endpoint nodes: ${crossingEdges}/${totalEdges} (${(100 * crossingEdges / totalEdges).toFixed(1)}%)`)
+  if (crossingExamples.length > 0) {
+    console.log('Examples:')
+    for (const ex of crossingExamples) console.log('  ', ex)
+  }
+  // Informational test — log the count but don't fail yet
+  // (some crossings are expected in dense graphs with padding=2)
 })

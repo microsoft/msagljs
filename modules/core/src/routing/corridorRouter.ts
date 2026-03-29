@@ -446,14 +446,15 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
 
     const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
     if (poly && poly.count >= 2) {
-      const smoothed = SmoothedPolyline.mkFromPoints(poly)
-      edge.curve = smoothed.createCurve()
-      edge.smoothedPolyline = smoothed
+      // Use line segments, not Bezier smoothing — Bezier curves bulge
+      // outside the corridor and can cross through obstacle nodes.
+      edge.curve = poly.toCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
     } else {
       // fallback: straight line
-      const smoothed = SmoothedPolyline.mkFromPoints([source, target])
-      edge.curve = smoothed.createCurve()
-      edge.smoothedPolyline = smoothed
+      const fallback = Polyline.mkFromPoints([source, target])
+      edge.curve = fallback.toCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
     }
     Arrowhead.trimSplineAndCalculateArrowheadsII(
       edge,
