@@ -8,7 +8,6 @@ import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
-import {Curve, PointLocation} from '../math/geometry/curve'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomGraph} from '../layout/core/geomGraph'
@@ -17,6 +16,7 @@ import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
 import {CancelToken} from '../utils/cancelToken'
 import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
+import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 
@@ -186,19 +186,39 @@ function recoverSleeve(
 /** Convert a sleeve into diagonals for the funnel algorithm.
  *  Each diagonal is the shared edge between consecutive triangles,
  *  with left/right determined by the orientation relative to the
- *  opposite site in the source triangle. */
-function sleeveToDiagonals(sleeve: FrontEdge[]): Diagonal[] {
+ *  opposite site in the source triangle.
+ *  When collapse info is provided, obstacle boundary vertices are
+ *  virtually moved to the node center — this eliminates sharp turns
+ *  near source/target without modifying the actual CDT. */
+function sleeveToDiagonals(
+  sleeve: FrontEdge[],
+  collapseSource?: {poly: Polyline; center: Point},
+  collapseTarget?: {poly: Polyline; center: Point},
+): Diagonal[] {
+  function collapse(site: CdtSite): Point {
+    if (collapseSource && site.Owner === collapseSource.poly) return collapseSource.center
+    if (collapseTarget && site.Owner === collapseTarget.poly) return collapseTarget.center
+    return site.point
+  }
+
   const diagonals: Diagonal[] = []
   for (const fe of sleeve) {
     const e = fe.edge
+    const lowerPt = collapse(e.lowerSite)
+    const upperPt = collapse(e.upperSite)
+
+    // Skip degenerate diagonals (both endpoints collapsed to same point)
+    if (lowerPt.equal(upperPt)) continue
+
+    // Use original geometry for the orientation check
     const oppSite = fe.source.OppositeSite(e)
     if (
       Point.getTriangleOrientation(oppSite.point, e.lowerSite.point, e.upperSite.point) ===
       TriangleOrientation.Counterclockwise
     ) {
-      diagonals.push({left: e.upperSite.point, right: e.lowerSite.point})
+      diagonals.push({left: upperPt, right: lowerPt})
     } else {
-      diagonals.push({right: e.upperSite.point, left: e.lowerSite.point})
+      diagonals.push({right: upperPt, left: lowerPt})
     }
   }
   return diagonals
@@ -352,97 +372,16 @@ function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]
   }
 }
 
-/** Trim waypoints inside source/target padded obstacles from the funnel path.
- *  The funnel from center-to-center passes through obstacle corners at the
- *  source/target ends, creating sharp turns. This function removes those
- *  obstacle-interior waypoints, keeping: [source_center, first_free_space_point,
- *  ...free_space..., last_free_space_point, target_center].
- *  The straight center→first_free segment exits the node in the optimal
- *  direction; arrowhead trimming clips it at the actual boundary. */
-function trimObstacleInterior(
-  points: Point[],
-  sourcePoly?: Polyline,
-  targetPoly?: Polyline,
-  allObstacles?: Polyline[],
-): Point[] {
-  if (points.length <= 2) return points
-  const source = points[0]
-  const target = points[points.length - 1]
-
-  // Find first waypoint outside source obstacle
-  let firstFree = 1
-  if (sourcePoly) {
-    for (let i = 1; i < points.length - 1; i++) {
-      if (Curve.PointRelativeToCurveLocation(points[i], sourcePoly) === PointLocation.Outside) {
-        firstFree = i
-        break
-      }
-    }
-  }
-
-  // Find last waypoint outside target obstacle
-  let lastFree = points.length - 2
-  if (targetPoly) {
-    for (let i = points.length - 2; i > firstFree; i--) {
-      if (Curve.PointRelativeToCurveLocation(points[i], targetPoly) === PointLocation.Outside) {
-        lastFree = i
-        break
-      }
-    }
-  }
-
-  // Verify the trimmed center→free-space segments don't cross other obstacles.
-  // If they do, fall back to keeping the original obstacle-corner waypoints.
-  const result = [source, ...points.slice(firstFree, lastFree + 1), target]
-
-  if (allObstacles) {
-    const firstFreePt = points[firstFree]
-    const lastFreePt = points[lastFree]
-    if (
-      segmentCrossesObstacle(source, firstFreePt, allObstacles, sourcePoly, targetPoly) ||
-      segmentCrossesObstacle(lastFreePt, target, allObstacles, sourcePoly, targetPoly)
-    ) {
-      // Fall back: keep original path (with obstacle corners)
-      return points
-    }
-  }
-
-  return result
-}
-
-/** Check if a line segment from a to b crosses any obstacle (excluding allowed ones). */
-function segmentCrossesObstacle(
-  a: Point,
-  b: Point,
-  obstacles: Polyline[],
-  ...allowed: (Polyline | undefined)[]
-): boolean {
-  const allowedSet = new Set(allowed.filter((p) => p != null))
-  // Sample the midpoint — if it's inside any non-allowed obstacle, we have a crossing.
-  const mid = a.add(b).mul(0.5)
-  for (const obs of obstacles) {
-    if (allowedSet.has(obs)) continue
-    if (Curve.PointRelativeToCurveLocation(mid, obs) !== PointLocation.Outside) {
-      return true
-    }
-  }
-  return false
-}
-
 /** Route a single edge through the CDT using the corridor approach.
- *  Two-pass strategy:
- *  1. Route center-to-center through the CDT to find the globally optimal path
- *  2. Trim obstacle-interior waypoints so edges leave/enter nodes in the
- *     direction of the first/last free-space waypoint (optimal direction).
- *     Arrowhead trimming then clips the center→free-space segment at the
- *     actual node boundary. */
+ *  Virtually collapses source/target obstacle boundaries to their centers
+ *  in the funnel diagonals, so the funnel routes directly from/to
+ *  node centers without sharp turns at obstacle corners. */
 export function corridorRoute(
   cdt: Cdt,
   source: Point,
   target: Point,
   sourcePoly?: Polyline,
   targetPoly?: Polyline,
-  allObstacles?: Polyline[],
 ): Polyline | null {
   const sourceTriangle = findContainingTriangle(cdt, source)
   if (!sourceTriangle) return null
@@ -458,11 +397,17 @@ export function corridorRoute(
     return Polyline.mkFromPoints([source, target])
   }
 
-  const diagonals = sleeveToDiagonals(sleeve)
-  const funnelPts = funnelFromDiagonals(source, target, diagonals)
+  // Collapse source/target obstacle boundaries to their centers
+  const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+  const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+  const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
 
-  const trimmed = trimObstacleInterior(funnelPts, sourcePoly, targetPoly, allObstacles)
-  return Polyline.mkFromPoints(trimmed)
+  if (diagonals.length === 0) {
+    return Polyline.mkFromPoints([source, target])
+  }
+
+  const points = funnelFromDiagonals(source, target, diagonals)
+  return Polyline.mkFromPoints(points)
 }
 
 /** Route all edges using the corridor approach.
@@ -525,7 +470,7 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
     const sourcePoly = nodeToPolyline.get(edge.source)
     const targetPoly = nodeToPolyline.get(edge.target)
 
-    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly, obstacles)
+    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
     if (poly && poly.count >= 2) {
       // Use line segments, not Bezier smoothing — Bezier curves bulge
       // outside the corridor and can cross through obstacle nodes.

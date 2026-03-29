@@ -34,11 +34,15 @@ test('corridor routing on gameofthrones has no null curves', () => {
 
   let nullCurves = 0
   let totalEdges = 0
+  let hasSourceArrow = 0
+  let hasTargetArrow = 0
   for (const e of geomGraph.deepEdges) {
     totalEdges++
     if (e.curve == null) nullCurves++
+    if (e.sourceArrowhead) hasSourceArrow++
+    if (e.targetArrowhead) hasTargetArrow++
   }
-  console.log(`Total edges: ${totalEdges}, null curves: ${nullCurves}`)
+  console.log(`Total edges: ${totalEdges}, null curves: ${nullCurves}, sourceArrows: ${hasSourceArrow}, targetArrows: ${hasTargetArrow}`)
   expect(nullCurves).toBe(0)
 })
 
