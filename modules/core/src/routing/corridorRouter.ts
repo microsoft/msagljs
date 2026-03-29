@@ -51,11 +51,19 @@ export function findContainingTriangle(cdt: Cdt, point: Point): CdtTriangle | nu
   return null
 }
 
-/** Check if a constrained edge belongs to an allowed obstacle */
-function isAllowedConstrainedEdge(e: CdtEdge, allowedPolys: Set<Polyline>): boolean {
-  if (!e.constrained) return true // non-constrained edges are always crossable
-  // A constrained edge belongs to an allowed obstacle if both its sites
-  // are owned by an allowed polyline
+/** Centroid of a CDT triangle */
+function triangleCentroid(t: CdtTriangle): Point {
+  const a = t.Sites.item0.point
+  const b = t.Sites.item1.point
+  const c = t.Sites.item2.point
+  return new Point((a.x + b.x + c.x) / 3, (a.y + b.y + c.y) / 3)
+}
+
+/** Check if we can cross this edge.
+ *  Non-constrained edges are always crossable.
+ *  Constrained edges on source/target obstacle boundaries are crossable. */
+function canCrossEdge(e: CdtEdge, allowedPolys: Set<Polyline>): boolean {
+  if (!e.constrained) return true
   const ownerUpper = e.upperSite.Owner as Polyline
   const ownerLower = e.lowerSite.Owner as Polyline
   if (ownerUpper && allowedPolys.has(ownerUpper)) return true
@@ -63,37 +71,97 @@ function isAllowedConstrainedEdge(e: CdtEdge, allowedPolys: Set<Polyline>): bool
   return false
 }
 
-/** BFS on the CDT dual graph from sourceTriangle to the triangle containing target.
- *  Returns the sleeve (sequence of FrontEdges) or null if no path is found.
- *  Skips constrained edges (unless belonging to allowed obstacles)
- *  and obstacle-interior triangles. */
-function findSleeveBFS(
+/** A* on the CDT dual graph from sourceTriangle to the triangle containing target.
+ *  Uses Euclidean distance between triangle centroids for edge weights
+ *  and straight-line distance to target as heuristic.
+ *  Returns the sleeve (sequence of FrontEdges) or null if no path is found. */
+function findSleeveAStar(
   sourceTriangle: CdtTriangle,
   target: Point,
   allowedPolys: Set<Polyline>,
 ): FrontEdge[] | null {
-  const edgeMap = new Map<CdtTriangle, CdtEdge | undefined>()
-  edgeMap.set(sourceTriangle, undefined)
-  const queue: CdtTriangle[] = [sourceTriangle]
-  let head = 0
+  // priority queue entry: [f-score, triangle, insertion-order (tiebreak)]
+  const gScore = new Map<CdtTriangle, number>()
+  const cameFromEdge = new Map<CdtTriangle, CdtEdge | undefined>()
 
-  while (head < queue.length) {
-    const t = queue[head++]
+  // simple binary-heap priority queue
+  const open: {f: number; g: number; t: CdtTriangle; seq: number}[] = []
+  let seqCounter = 0
+
+  function heapPush(item: {f: number; g: number; t: CdtTriangle; seq: number}) {
+    open.push(item)
+    let i = open.length - 1
+    while (i > 0) {
+      const parent = (i - 1) >> 1
+      if (open[parent].f < item.f || (open[parent].f === item.f && open[parent].seq < item.seq)) break
+      open[i] = open[parent]
+      open[parent] = item
+      i = parent
+    }
+  }
+
+  function heapPop(): {f: number; g: number; t: CdtTriangle; seq: number} {
+    const top = open[0]
+    const last = open.pop()
+    if (open.length > 0) {
+      open[0] = last
+      let i = 0
+      while (true) {
+        let smallest = i
+        const l = 2 * i + 1
+        const r = 2 * i + 2
+        if (l < open.length && (open[l].f < open[smallest].f || (open[l].f === open[smallest].f && open[l].seq < open[smallest].seq)))
+          smallest = l
+        if (r < open.length && (open[r].f < open[smallest].f || (open[r].f === open[smallest].f && open[r].seq < open[smallest].seq)))
+          smallest = r
+        if (smallest === i) break
+        const tmp = open[i]
+        open[i] = open[smallest]
+        open[smallest] = tmp
+        i = smallest
+      }
+    }
+    return top
+  }
+
+  const sourceCentroid = triangleCentroid(sourceTriangle)
+  const h0 = sourceCentroid.sub(target).length
+  gScore.set(sourceTriangle, 0)
+  cameFromEdge.set(sourceTriangle, undefined)
+  heapPush({f: h0, g: 0, t: sourceTriangle, seq: seqCounter++})
+
+  while (open.length > 0) {
+    const current = heapPop()
+    const t = current.t
+
+    // stale entry?
+    if (current.g > (gScore.get(t) ?? Infinity)) continue
+
     if (t.containsPoint(target)) {
-      return recoverSleeve(sourceTriangle, edgeMap, t)
+      return recoverSleeve(sourceTriangle, cameFromEdge, t)
     }
 
-    const edgeIntoT = edgeMap.get(t)
+    const tCentroid = triangleCentroid(t)
+    const edgeIntoT = cameFromEdge.get(t)
+
     for (const e of t.Edges) {
-      if (!isAllowedConstrainedEdge(e, allowedPolys)) continue
+      if (!canCrossEdge(e, allowedPolys)) continue
       if (edgeIntoT !== undefined && e === edgeIntoT) continue
       const ot = e.GetOtherTriangle_T(t)
       if (ot == null) continue
-      if (edgeMap.has(ot)) continue
       if (triangleIsInsideObstacle(ot, allowedPolys)) continue
 
-      edgeMap.set(ot, e)
-      queue.push(ot)
+      const otCentroid = triangleCentroid(ot)
+      const edgeCost = tCentroid.sub(otCentroid).length
+      const tentativeG = current.g + edgeCost
+
+      const prevG = gScore.get(ot)
+      if (prevG !== undefined && tentativeG >= prevG) continue
+
+      gScore.set(ot, tentativeG)
+      cameFromEdge.set(ot, e)
+      const h = otCentroid.sub(target).length
+      heapPush({f: tentativeG + h, g: tentativeG, t: ot, seq: seqCounter++})
     }
   }
   return null
@@ -304,7 +372,7 @@ export function corridorRoute(
   if (sourcePoly) allowed.add(sourcePoly)
   if (targetPoly) allowed.add(targetPoly)
 
-  const sleeve = findSleeveBFS(sourceTriangle, target, allowed)
+  const sleeve = findSleeveAStar(sourceTriangle, target, allowed)
   if (sleeve == null) return null
 
   if (sleeve.length === 0) {
