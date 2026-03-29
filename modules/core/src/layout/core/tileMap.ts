@@ -14,6 +14,9 @@ import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
+import {routeCorridorEdges} from '../../routing/corridorRouter'
+import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
+import {getEdgeRoutingSettingsFromAncestorsOrDefault} from '../driver'
 import {Assert} from '../../utils/assert'
 //import {RTree} from 'hilbert-rtree/build'
 
@@ -160,12 +163,26 @@ export class TileMap {
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
     // }
-    const sr = new SplineRouter(this.geomGraph, [])
+    const ers = getEdgeRoutingSettingsFromAncestorsOrDefault(this.geomGraph)
+    const useCorridor = ers.EdgeRoutingMode === EdgeRoutingMode.Corridor
 
-    for (let i = this.levels.length - 2; i >= 0; i--) {
-      const activeNodes = this.setOfNodesOnTheLevel(i)
-      sr.rerouteOnSubsetOfNodes(activeNodes)
-      this.regenerateCurveClipsUpToLevel(i, activeNodes)
+    if (useCorridor) {
+      // Corridor routing: reroute the subset edges directly
+      for (let i = this.levels.length - 2; i >= 0; i--) {
+        const activeNodes = this.setOfNodesOnTheLevel(i)
+        const edgesToRoute = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
+        if (edgesToRoute.length > 0) {
+          routeCorridorEdges(this.geomGraph, edgesToRoute, null, ers.Padding)
+        }
+        this.regenerateCurveClipsUpToLevel(i, activeNodes)
+      }
+    } else {
+      const sr = new SplineRouter(this.geomGraph, [])
+      for (let i = this.levels.length - 2; i >= 0; i--) {
+        const activeNodes = this.setOfNodesOnTheLevel(i)
+        sr.rerouteOnSubsetOfNodes(activeNodes)
+        this.regenerateCurveClipsUpToLevel(i, activeNodes)
+      }
     }
     // for (let i = 0; i < this.levels.length; i++) {
     //   this.checkLevel(i)
