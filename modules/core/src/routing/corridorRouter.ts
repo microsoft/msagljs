@@ -427,14 +427,11 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
   bb.pad(Math.max(bb.diagonal / 4, 100))
   obstacles.push(bb.perimeter())
 
-  // build CDT
+  // build CDT — do NOT add port locations as isolated sites,
+  // because ports inside other nodes' obstacles would break
+  // the obstacle-interior check (null-owner sites create holes).
   console.time('CorridorRouter CDT')
-  const ports: Point[] = []
-  for (const edge of edgesToRoute) {
-    ports.push(edge.sourcePort.Location)
-    ports.push(edge.targetPort.Location)
-  }
-  const cdt = new Cdt(ports, obstacles, [])
+  const cdt = new Cdt([], obstacles, [])
   cdt.run()
   console.timeEnd('CorridorRouter CDT')
 
