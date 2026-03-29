@@ -8,6 +8,8 @@ import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
+import {Curve, PointLocation} from '../math/geometry/curve'
+import {LineSegment} from '../math/geometry/lineSegment'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomGraph} from '../layout/core/geomGraph'
@@ -351,6 +353,51 @@ function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]
   }
 }
 
+/** Find exit point from a padded obstacle toward a target direction.
+ *  Returns the intersection of the line(center, target) with the obstacle boundary,
+ *  nudged slightly outward to ensure we're in free space. */
+function exitPoint(center: Point, target: Point, poly: Polyline): Point | null {
+  const line = LineSegment.mkPP(center, target)
+  const xs = Curve.getAllIntersectionsOfLineAndPolyline(line, poly)
+  if (xs.length === 0) return null
+  // pick the intersection closest to center (first exit)
+  let best = xs[0]
+  let bestDist = best.x.sub(center).length
+  for (let i = 1; i < xs.length; i++) {
+    const d = xs[i].x.sub(center).length
+    if (d < bestDist) {
+      best = xs[i]
+      bestDist = d
+    }
+  }
+  // nudge outward by a small epsilon so the point is in free space
+  const dir = target.sub(center)
+  const len = dir.length
+  if (len < 1e-8) return null
+  return best.x.add(dir.mul(0.5 / len))
+}
+
+/** Find entry point into a padded obstacle from an external source direction.
+ *  Returns the intersection closest to the target center. */
+function entryPoint(center: Point, source: Point, poly: Polyline): Point | null {
+  const line = LineSegment.mkPP(center, source)
+  const xs = Curve.getAllIntersectionsOfLineAndPolyline(line, poly)
+  if (xs.length === 0) return null
+  let best = xs[0]
+  let bestDist = best.x.sub(center).length
+  for (let i = 1; i < xs.length; i++) {
+    const d = xs[i].x.sub(center).length
+    if (d < bestDist) {
+      best = xs[i]
+      bestDist = d
+    }
+  }
+  const dir = source.sub(center)
+  const len = dir.length
+  if (len < 1e-8) return null
+  return best.x.add(dir.mul(0.5 / len))
+}
+
 /** Route a single edge through the CDT using the corridor approach.
  *  @param cdt - the Constrained Delaunay Triangulation
  *  @param source - source point
@@ -365,22 +412,39 @@ export function corridorRoute(
   sourcePoly?: Polyline,
   targetPoly?: Polyline,
 ): Polyline | null {
-  const sourceTriangle = findContainingTriangle(cdt, source)
+  // Compute boundary exit/entry points so we route in free space
+  const src = sourcePoly ? exitPoint(source, target, sourcePoly) ?? source : source
+  const tgt = targetPoly ? entryPoint(target, source, targetPoly) ?? target : target
+
+  const sourceTriangle = findContainingTriangle(cdt, src)
   if (!sourceTriangle) return null
 
+  // Only need allowed polys if we're still starting/ending inside an obstacle
   const allowed = new Set<Polyline>()
-  if (sourcePoly) allowed.add(sourcePoly)
-  if (targetPoly) allowed.add(targetPoly)
+  if (sourcePoly && src === source) allowed.add(sourcePoly)
+  if (targetPoly && tgt === target) allowed.add(targetPoly)
 
-  const sleeve = findSleeveAStar(sourceTriangle, target, allowed)
+  const sleeve = findSleeveAStar(sourceTriangle, tgt, allowed)
   if (sleeve == null) return null
 
   if (sleeve.length === 0) {
-    return Polyline.mkFromPoints([source, target])
+    // source and target in same triangle — straight line
+    const pts: Point[] = [source]
+    if (!src.equal(source)) pts.push(src)
+    if (!tgt.equal(target)) pts.push(tgt)
+    pts.push(target)
+    return Polyline.mkFromPoints(pts)
   }
 
   const diagonals = sleeveToDiagonals(sleeve)
-  const points = funnelFromDiagonals(source, target, diagonals)
+  const funnelPts = funnelFromDiagonals(src, tgt, diagonals)
+
+  // Prepend source center and append target center for arrowhead trimming
+  const points: Point[] = [source]
+  for (const p of funnelPts) {
+    if (!p.equal(source) && !p.equal(target)) points.push(p)
+  }
+  points.push(target)
   return Polyline.mkFromPoints(points)
 }
 
