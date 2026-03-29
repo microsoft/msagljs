@@ -9,7 +9,6 @@ import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {Curve, PointLocation} from '../math/geometry/curve'
-import {LineSegment} from '../math/geometry/lineSegment'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomGraph} from '../layout/core/geomGraph'
@@ -353,99 +352,117 @@ function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]
   }
 }
 
-/** Find exit point from a padded obstacle toward a target direction.
- *  Returns the intersection of the line(center, target) with the obstacle boundary,
- *  nudged slightly outward to ensure we're in free space. */
-function exitPoint(center: Point, target: Point, poly: Polyline): Point | null {
-  const line = LineSegment.mkPP(center, target)
-  const xs = Curve.getAllIntersectionsOfLineAndPolyline(line, poly)
-  if (xs.length === 0) return null
-  // pick the intersection closest to center (first exit)
-  let best = xs[0]
-  let bestDist = best.x.sub(center).length
-  for (let i = 1; i < xs.length; i++) {
-    const d = xs[i].x.sub(center).length
-    if (d < bestDist) {
-      best = xs[i]
-      bestDist = d
+/** Trim waypoints inside source/target padded obstacles from the funnel path.
+ *  The funnel from center-to-center passes through obstacle corners at the
+ *  source/target ends, creating sharp turns. This function removes those
+ *  obstacle-interior waypoints, keeping: [source_center, first_free_space_point,
+ *  ...free_space..., last_free_space_point, target_center].
+ *  The straight center→first_free segment exits the node in the optimal
+ *  direction; arrowhead trimming clips it at the actual boundary. */
+function trimObstacleInterior(
+  points: Point[],
+  sourcePoly?: Polyline,
+  targetPoly?: Polyline,
+  allObstacles?: Polyline[],
+): Point[] {
+  if (points.length <= 2) return points
+  const source = points[0]
+  const target = points[points.length - 1]
+
+  // Find first waypoint outside source obstacle
+  let firstFree = 1
+  if (sourcePoly) {
+    for (let i = 1; i < points.length - 1; i++) {
+      if (Curve.PointRelativeToCurveLocation(points[i], sourcePoly) === PointLocation.Outside) {
+        firstFree = i
+        break
+      }
     }
   }
-  // nudge outward by a small epsilon so the point is in free space
-  const dir = target.sub(center)
-  const len = dir.length
-  if (len < 1e-8) return null
-  return best.x.add(dir.mul(0.5 / len))
+
+  // Find last waypoint outside target obstacle
+  let lastFree = points.length - 2
+  if (targetPoly) {
+    for (let i = points.length - 2; i > firstFree; i--) {
+      if (Curve.PointRelativeToCurveLocation(points[i], targetPoly) === PointLocation.Outside) {
+        lastFree = i
+        break
+      }
+    }
+  }
+
+  // Verify the trimmed center→free-space segments don't cross other obstacles.
+  // If they do, fall back to keeping the original obstacle-corner waypoints.
+  const result = [source, ...points.slice(firstFree, lastFree + 1), target]
+
+  if (allObstacles) {
+    const firstFreePt = points[firstFree]
+    const lastFreePt = points[lastFree]
+    if (
+      segmentCrossesObstacle(source, firstFreePt, allObstacles, sourcePoly, targetPoly) ||
+      segmentCrossesObstacle(lastFreePt, target, allObstacles, sourcePoly, targetPoly)
+    ) {
+      // Fall back: keep original path (with obstacle corners)
+      return points
+    }
+  }
+
+  return result
 }
 
-/** Find entry point into a padded obstacle from an external source direction.
- *  Returns the intersection closest to the target center. */
-function entryPoint(center: Point, source: Point, poly: Polyline): Point | null {
-  const line = LineSegment.mkPP(center, source)
-  const xs = Curve.getAllIntersectionsOfLineAndPolyline(line, poly)
-  if (xs.length === 0) return null
-  let best = xs[0]
-  let bestDist = best.x.sub(center).length
-  for (let i = 1; i < xs.length; i++) {
-    const d = xs[i].x.sub(center).length
-    if (d < bestDist) {
-      best = xs[i]
-      bestDist = d
+/** Check if a line segment from a to b crosses any obstacle (excluding allowed ones). */
+function segmentCrossesObstacle(
+  a: Point,
+  b: Point,
+  obstacles: Polyline[],
+  ...allowed: (Polyline | undefined)[]
+): boolean {
+  const allowedSet = new Set(allowed.filter((p) => p != null))
+  // Sample the midpoint — if it's inside any non-allowed obstacle, we have a crossing.
+  const mid = a.add(b).mul(0.5)
+  for (const obs of obstacles) {
+    if (allowedSet.has(obs)) continue
+    if (Curve.PointRelativeToCurveLocation(mid, obs) !== PointLocation.Outside) {
+      return true
     }
   }
-  const dir = source.sub(center)
-  const len = dir.length
-  if (len < 1e-8) return null
-  return best.x.add(dir.mul(0.5 / len))
+  return false
 }
 
 /** Route a single edge through the CDT using the corridor approach.
- *  @param cdt - the Constrained Delaunay Triangulation
- *  @param source - source point
- *  @param target - target point
- *  @param sourcePoly - the obstacle polyline containing the source (may traverse)
- *  @param targetPoly - the obstacle polyline containing the target (may traverse)
- *  @returns optimized polyline, or null if no path found */
+ *  Two-pass strategy:
+ *  1. Route center-to-center through the CDT to find the globally optimal path
+ *  2. Trim obstacle-interior waypoints so edges leave/enter nodes in the
+ *     direction of the first/last free-space waypoint (optimal direction).
+ *     Arrowhead trimming then clips the center→free-space segment at the
+ *     actual node boundary. */
 export function corridorRoute(
   cdt: Cdt,
   source: Point,
   target: Point,
   sourcePoly?: Polyline,
   targetPoly?: Polyline,
+  allObstacles?: Polyline[],
 ): Polyline | null {
-  // Compute boundary exit/entry points so we route in free space
-  const src = sourcePoly ? exitPoint(source, target, sourcePoly) ?? source : source
-  const tgt = targetPoly ? entryPoint(target, source, targetPoly) ?? target : target
-
-  const sourceTriangle = findContainingTriangle(cdt, src)
+  const sourceTriangle = findContainingTriangle(cdt, source)
   if (!sourceTriangle) return null
 
-  // Only need allowed polys if we're still starting/ending inside an obstacle
   const allowed = new Set<Polyline>()
-  if (sourcePoly && src === source) allowed.add(sourcePoly)
-  if (targetPoly && tgt === target) allowed.add(targetPoly)
+  if (sourcePoly) allowed.add(sourcePoly)
+  if (targetPoly) allowed.add(targetPoly)
 
-  const sleeve = findSleeveAStar(sourceTriangle, tgt, allowed)
+  const sleeve = findSleeveAStar(sourceTriangle, target, allowed)
   if (sleeve == null) return null
 
   if (sleeve.length === 0) {
-    // source and target in same triangle — straight line
-    const pts: Point[] = [source]
-    if (!src.equal(source)) pts.push(src)
-    if (!tgt.equal(target)) pts.push(tgt)
-    pts.push(target)
-    return Polyline.mkFromPoints(pts)
+    return Polyline.mkFromPoints([source, target])
   }
 
   const diagonals = sleeveToDiagonals(sleeve)
-  const funnelPts = funnelFromDiagonals(src, tgt, diagonals)
+  const funnelPts = funnelFromDiagonals(source, target, diagonals)
 
-  // Prepend source center and append target center for arrowhead trimming
-  const points: Point[] = [source]
-  for (const p of funnelPts) {
-    if (!p.equal(source) && !p.equal(target)) points.push(p)
-  }
-  points.push(target)
-  return Polyline.mkFromPoints(points)
+  const trimmed = trimObstacleInterior(funnelPts, sourcePoly, targetPoly, allObstacles)
+  return Polyline.mkFromPoints(trimmed)
 }
 
 /** Route all edges using the corridor approach.
@@ -508,7 +525,7 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
     const sourcePoly = nodeToPolyline.get(edge.source)
     const targetPoly = nodeToPolyline.get(edge.target)
 
-    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
+    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly, obstacles)
     if (poly && poly.count >= 2) {
       // Use line segments, not Bezier smoothing — Bezier curves bulge
       // outside the corridor and can cross through obstacle nodes.
