@@ -12,12 +12,12 @@ import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomGraph} from '../layout/core/geomGraph'
 import {Arrowhead} from '../layout/core/arrowhead'
+import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
 import {CancelToken} from '../utils/cancelToken'
 import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
-import {SplineRouter} from './splineRouter'
 
 type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
@@ -390,8 +390,23 @@ export function corridorRoute(
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
-  // ensure ports exist
-  SplineRouter.CreatePortsIfNeeded(edgesToRoute)
+  // ensure ports exist — assign them directly to edges
+  for (const edge of edgesToRoute) {
+    if (edge.sourcePort == null) {
+      const ed = edge
+      ed.sourcePort = RelativeFloatingPort.mk(
+        () => ed.source.boundaryCurve,
+        () => ed.source.center,
+      )
+    }
+    if (edge.targetPort == null) {
+      const ed = edge
+      ed.targetPort = RelativeFloatingPort.mk(
+        () => ed.target.boundaryCurve,
+        () => ed.target.center,
+      )
+    }
+  }
 
   // build padded obstacle polylines from graph nodes
   const nodeToPolyline = new Map<unknown, Polyline>()
