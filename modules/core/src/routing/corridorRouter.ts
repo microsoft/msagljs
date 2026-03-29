@@ -434,14 +434,19 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
       const smoothed = SmoothedPolyline.mkFromPoints(poly)
       edge.curve = smoothed.createCurve()
       edge.smoothedPolyline = smoothed
-      Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge,
-        edge.source.boundaryCurve,
-        edge.target.boundaryCurve,
-        edge.curve,
-        false,
-      )
+    } else {
+      // fallback: straight line
+      const smoothed = SmoothedPolyline.mkFromPoints([source, target])
+      edge.curve = smoothed.createCurve()
+      edge.smoothedPolyline = smoothed
     }
+    Arrowhead.trimSplineAndCalculateArrowheadsII(
+      edge,
+      edge.source.boundaryCurve,
+      edge.target.boundaryCurve,
+      edge.curve,
+      false,
+    )
   }
   console.timeEnd('CorridorRouter routing')
 }
