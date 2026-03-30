@@ -453,22 +453,9 @@ function dumpCombinedFigure(
     if (poly) curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'Gray', poly))
   }
 
-  // 2. Original sleeve triangles (thin blue, dashed)
-  const seen = new Set<CdtTriangle>()
-  for (const fe of sleeve) {
-    if (!seen.has(fe.source)) {
-      seen.add(fe.source)
-      curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.8, 'CornflowerBlue', triangleToPolyline(fe.source), null, [4, 3]))
-    }
-    const ot = fe.edge.GetOtherTriangle_T(fe.source)
-    if (ot && !seen.has(ot)) {
-      seen.add(ot)
-      curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.8, 'CornflowerBlue', triangleToPolyline(ot), null, [4, 3]))
-    }
-  }
-
-  // 3-4. Compute moved positions, then draw only changed diagonals
+  // 2-4. Compute sleeve boundary edges and moved positions
   {
+    // Collect all sleeve triangles
     const allTris: CdtTriangle[] = []
     const seenTris = new Set<CdtTriangle>()
     for (const fe of sleeve) {
@@ -476,6 +463,38 @@ function dumpCombinedFigure(
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
       if (ot && !seenTris.has(ot)) { seenTris.add(ot); allTris.push(ot) }
     }
+
+    // Find boundary edges: edges that belong to exactly one sleeve triangle
+    // An edge of a triangle is a boundary edge if the other triangle sharing it
+    // is not in the sleeve (or doesn't exist).
+    type BoundaryEdge = {s0: CdtSite; s1: CdtSite}
+    const boundaryEdges: BoundaryEdge[] = []
+    for (const t of allTris) {
+      const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
+      for (let i = 0; i < 3; i++) {
+        const s0 = sites[i]
+        const s1 = sites[(i + 1) % 3]
+        // Check if the edge (s0, s1) is shared with another sleeve triangle
+        // by looking at the CDT edges of this triangle
+        let isInterior = false
+        for (const e of t.Edges) {
+          const ot = e.GetOtherTriangle_T(t)
+          if (ot && seenTris.has(ot)) {
+            // This CDT edge is interior — check if it matches (s0, s1)
+            if ((e.lowerSite === s0 && e.upperSite === s1) ||
+                (e.lowerSite === s1 && e.upperSite === s0)) {
+              isInterior = true
+              break
+            }
+          }
+        }
+        if (!isInterior) {
+          boundaryEdges.push({s0, s1})
+        }
+      }
+    }
+
+    // Compute moved positions
     const siteAdj = new Map<CdtSite, {a: Point; b: Point}[]>()
     for (const t of allTris) {
       const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
@@ -513,23 +532,23 @@ function dumpCombinedFigure(
       }
     }
 
-    // Draw ALL original diagonals (orange dashed)
-    for (const fe of sleeve) {
-      const e = fe.edge
-      curves.push(DebugCurve.mkDebugCurveTWCILD(180, 1, 'Orange', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point), null, [6, 3]))
-    }
+    // Draw boundary edges
+    for (const {s0, s1} of boundaryEdges) {
+      const moved0 = movedPos.get(s0)
+      const moved1 = movedPos.get(s1)
+      const changed = moved0 !== undefined || moved1 !== undefined
 
-    // Draw moved diagonals (green solid) — only those that actually changed
-    for (const fe of sleeve) {
-      const e = fe.edge
-      const movedLower = movedPos.get(e.lowerSite)
-      const movedUpper = movedPos.get(e.upperSite)
-      if (movedLower === undefined && movedUpper === undefined) continue
-      const newLower = movedLower ?? e.lowerSite.point
-      const newUpper = movedUpper ?? e.upperSite.point
-      if (newLower.sub(newUpper).length > 1e-8) {
-        curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(newLower, newUpper)))
+      if (changed) {
+        // Original boundary edge (orange dashed)
+        curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(s0.point, s1.point), null, [6, 3]))
+        // Modified boundary edge (green solid)
+        const p0 = moved0 ?? s0.point
+        const p1 = moved1 ?? s1.point
+        if (p0.sub(p1).length > 1e-8) {
+          curves.push(DebugCurve.mkDebugCurveTWCI(230, 1.5, 'Green', LineSegment.mkPP(p0, p1)))
+        }
       }
+      // Unchanged edges: don't render
     }
   }
 
