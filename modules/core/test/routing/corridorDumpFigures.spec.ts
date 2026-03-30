@@ -547,8 +547,10 @@ function dumpCombinedFigure(
         if (p0.sub(p1).length > 1e-8) {
           curves.push(DebugCurve.mkDebugCurveTWCI(230, 1.5, 'Green', LineSegment.mkPP(p0, p1)))
         }
+      } else {
+        // Unchanged boundary edge (thin gray solid)
+        curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'DimGray', LineSegment.mkPP(s0.point, s1.point)))
       }
-      // Unchanged edges: don't render
     }
   }
 
