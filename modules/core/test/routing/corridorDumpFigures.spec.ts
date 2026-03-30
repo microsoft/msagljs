@@ -735,7 +735,6 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
     if (!sleeve) continue
     const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
-    const collapsedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
     const viewBB = Rectangle.mkPP(source, target)
     for (const fe of sleeve) {
       for (const s of [fe.source.Sites.item0, fe.source.Sites.item1, fe.source.Sites.item2]) viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
@@ -764,8 +763,14 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     // Source/target
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
-    // 3) Collapsed path (red)
-    if (collapsedPoly) curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', collapsedPoly.toCurve()))
+    // 3) Path from funnel on the collapsed diagonals (red)
+    if (collapsedDiags.length > 0) {
+      const pathPts = funnelFromDiagonals(source, target, collapsedDiags)
+      if (pathPts.length >= 2) {
+        const pathPoly = Polyline.mkFromPoints(pathPts)
+        curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', pathPoly.toCurve()))
+      }
+    }
     const fname = join(outDir, 'benefit_' + ci + '_' + edge.edge.source.id + '_' + edge.edge.target.id + '.svg')
     SvgDebugWriter.dumpDebugCurves(fname, curves)
     console.log('Wrote ' + fname)
