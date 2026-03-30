@@ -754,10 +754,9 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
         const tri = triangleToPolyline(t)
         // filled triangle
         curves.push(DebugCurve.mkDebugCurveTWCILD(255, 0.5, 'CornflowerBlue', tri, null, null))
-        // Use fillColor for the fill
         const dc = curves[curves.length - 1]
-        dc.fillColor = 'LightBlue'
-        dc.transparency = 80
+        dc.fillColor = 'CornflowerBlue'
+        dc.transparency = 60
       }
       drawFilled(fe.source)
       const ot = fe.edge.GetOtherTriangle_T(fe.source)

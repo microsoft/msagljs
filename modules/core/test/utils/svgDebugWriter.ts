@@ -203,7 +203,10 @@ export class SvgDebugWriter {
 
   writeDebugCurve(c: DebugCurve) {
     this.xw.startElement('path')
-    this.xw.writeAttribute('fill', 'none')
+    this.xw.writeAttribute('fill', c.fillColor ?? 'none')
+    if (c.fillColor && c.transparency < 255) {
+      this.xw.writeAttribute('fill-opacity', (c.transparency / 255).toString())
+    }
     const iCurve = c.icurve
     this.writeStroke(c)
     this.xw.writeAttribute('d', SvgDebugWriter.curveString(iCurve))
