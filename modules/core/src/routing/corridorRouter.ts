@@ -328,32 +328,13 @@ export function sleeveToDiagonals(
   }
   if (raw.length === 0) return []
 
-  // Step 2: Walk right chain looking for target obstacle wrong turn
-  // Find first diagonal whose right end belongs to target obstacle,
-  // check if the turn from prev right end → this end → target center is to the right (CW).
-  // If so, collapse this and all subsequent target-obstacle right ends to center.
-  let collapseRightFromTarget = raw.length // no collapse by default
-  if (collapseTarget) {
-    for (let i = 0; i < raw.length; i++) {
-      if (raw[i].rightSite.Owner !== collapseTarget.poly) continue
-      const prev = i > 0 ? raw[i - 1].right : (collapseSource ? collapseSource.center : raw[0].right)
-      const cur = raw[i].right
-      // Right turn = cross < 0
-      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
-        collapseRightFromTarget = i
-      }
-      break
-    }
-  }
-
-  // Same for left chain with target
+  // Step 2: Walk left chain looking for target obstacle wrong turn
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
       const prev = i > 0 ? raw[i - 1].left : (collapseSource ? collapseSource.center : raw[0].left)
       const cur = raw[i].left
-      // Left turn = cross > 0
       if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
       }
@@ -361,21 +342,7 @@ export function sleeveToDiagonals(
     }
   }
 
-  // Walk right chain for source obstacle (from the end backward)
-  let collapseRightFromSource = -1
-  if (collapseSource) {
-    for (let i = raw.length - 1; i >= 0; i--) {
-      if (raw[i].rightSite.Owner !== collapseSource.poly) continue
-      const next = i < raw.length - 1 ? raw[i + 1].right : (collapseTarget ? collapseTarget.center : raw[raw.length - 1].right)
-      const cur = raw[i].right
-      if (cross2d(next, cur, collapseSource.center) > 1e-10) {
-        collapseRightFromSource = i
-      }
-      break
-    }
-  }
-
-  // Left chain for source
+  // Left chain for source (from the end backward)
   let collapseLeftFromSource = -1
   if (collapseSource) {
     for (let i = raw.length - 1; i >= 0; i--) {
@@ -389,27 +356,16 @@ export function sleeveToDiagonals(
     }
   }
 
-  // Step 3: Build final diagonals with targeted collapse
+  // Step 3: Build final diagonals — only left chain collapse
   const diagonals: Diagonal[] = []
   for (let i = 0; i < raw.length; i++) {
     let leftPt = raw[i].left
-    let rightPt = raw[i].right
+    const rightPt = raw[i].right
 
-    // Collapse source obstacle vertices
-    if (collapseSource) {
-      if (raw[i].leftSite.Owner === collapseSource.poly && i <= collapseLeftFromSource)
-        leftPt = collapseSource.center
-      if (raw[i].rightSite.Owner === collapseSource.poly && i <= collapseRightFromSource)
-        rightPt = collapseSource.center
-    }
-
-    // Collapse target obstacle vertices
-    if (collapseTarget) {
-      if (raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
-        leftPt = collapseTarget.center
-      if (raw[i].rightSite.Owner === collapseTarget.poly && i >= collapseRightFromTarget)
-        rightPt = collapseTarget.center
-    }
+    if (collapseSource && raw[i].leftSite.Owner === collapseSource.poly && i <= collapseLeftFromSource)
+      leftPt = collapseSource.center
+    if (collapseTarget && raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
+      leftPt = collapseTarget.center
 
     // Skip degenerate
     if (leftPt.sub(rightPt).length < 1e-8) continue
