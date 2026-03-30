@@ -398,8 +398,16 @@ function sleeveToDiagonals(
   const diagonals: Diagonal[] = []
   for (const fe of sleeve) {
     const e = fe.edge
-    const lowerPt = getPosition(e.lowerSite)
-    const upperPt = getPosition(e.upperSite)
+    let lowerPt = getPosition(e.lowerSite)
+    let upperPt = getPosition(e.upperSite)
+
+    // Don't narrow the sleeve: if the moved diagonal is shorter, revert moved vertices
+    const origLen = e.lowerSite.point.sub(e.upperSite.point).length
+    const movedLen = lowerPt.sub(upperPt).length
+    if (movedLen < origLen - 1e-8) {
+      lowerPt = e.lowerSite.point
+      upperPt = e.upperSite.point
+    }
 
     if (lowerPt.sub(upperPt).length < 1e-8) continue
 
