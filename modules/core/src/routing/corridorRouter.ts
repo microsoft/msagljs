@@ -294,32 +294,96 @@ function recoverSleeve(
   return ret.reverse()
 }
 
+/** Compute the maximum t ∈ [0,1] such that moving vertex v to v+t*(s-v)
+ *  does not flip the orientation of any triangle using v.
+ *  Each triangle is given as the other two vertices (a, b) — the triangle
+ *  is (v, a, b) and must maintain its original signed-area sign. */
+function legalCollapseT(v: Point, s: Point, triangles: {a: Point; b: Point}[]): number {
+  let tMax = 1.0
+  const dir = s.sub(v)
+
+  for (const {a, b} of triangles) {
+    const edge = b.sub(a)
+    const c0 = edge.x * (v.y - a.y) - edge.y * (v.x - a.x) // cross(b-a, v-a)
+    const c1 = edge.x * dir.y - edge.y * dir.x // cross(b-a, s-v)
+
+    if (c1 < -1e-12) {
+      const tUpper = c0 / (-c1)
+      if (tUpper < tMax) tMax = tUpper
+    }
+  }
+
+  return Math.max(0, Math.min(1, tMax * 0.99)) // small safety margin
+}
+
+/** Collect all sleeve triangles (both sides of each FrontEdge). */
+function collectSleeveTriangles(sleeve: FrontEdge[]): CdtTriangle[] {
+  const seen = new Set<CdtTriangle>()
+  const result: CdtTriangle[] = []
+  for (const fe of sleeve) {
+    if (!seen.has(fe.source)) {
+      seen.add(fe.source)
+      result.push(fe.source)
+    }
+    const ot = fe.edge.GetOtherTriangle_T(fe.source)
+    if (ot && !seen.has(ot)) {
+      seen.add(ot)
+      result.push(ot)
+    }
+  }
+  return result
+}
+
 /** Convert a sleeve into diagonals for the funnel algorithm.
- *  Each diagonal is the shared edge between consecutive triangles,
- *  with left/right determined by the orientation relative to the
- *  opposite site in the source triangle.
- *  When collapse info is provided, obstacle boundary vertices are
- *  virtually moved to the node center — this eliminates sharp turns
- *  near source/target without modifying the actual CDT. */
+ *  Uses legal collapse: each source/target obstacle vertex is moved
+ *  toward the node center as far as possible without flipping any
+ *  sleeve triangle's orientation. */
 function sleeveToDiagonals(
   sleeve: FrontEdge[],
   collapseSource?: {poly: Polyline; center: Point},
   collapseTarget?: {poly: Polyline; center: Point},
 ): Diagonal[] {
-  function collapse(site: CdtSite): Point {
-    if (collapseSource && site.Owner === collapseSource.poly) return collapseSource.center
-    if (collapseTarget && site.Owner === collapseTarget.poly) return collapseTarget.center
-    return site.point
+  // Collect all sleeve triangles and compute per-site legal collapse
+  const allTriangles = collectSleeveTriangles(sleeve)
+
+  // Build map: CdtSite → list of triangles using it (as other-two-vertices pairs)
+  const siteTriangles = new Map<CdtSite, {a: Point; b: Point}[]>()
+  for (const t of allTriangles) {
+    const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
+    for (let i = 0; i < 3; i++) {
+      const s = sites[i]
+      const a = sites[(i + 1) % 3].point
+      const b = sites[(i + 2) % 3].point
+      let list = siteTriangles.get(s)
+      if (!list) { list = []; siteTriangles.set(s, list) }
+      list.push({a, b})
+    }
+  }
+
+  // Compute collapsed positions
+  const sitePosition = new Map<CdtSite, Point>()
+  for (const [site, tris] of siteTriangles) {
+    if (collapseSource && site.Owner === collapseSource.poly) {
+      const t = legalCollapseT(site.point, collapseSource.center, tris)
+      sitePosition.set(site, site.point.add(collapseSource.center.sub(site.point).mul(t)))
+    } else if (collapseTarget && site.Owner === collapseTarget.poly) {
+      const t = legalCollapseT(site.point, collapseTarget.center, tris)
+      sitePosition.set(site, site.point.add(collapseTarget.center.sub(site.point).mul(t)))
+    }
+  }
+
+  function getPosition(site: CdtSite): Point {
+    return sitePosition.get(site) ?? site.point
   }
 
   const diagonals: Diagonal[] = []
   for (const fe of sleeve) {
     const e = fe.edge
-    const lowerPt = collapse(e.lowerSite)
-    const upperPt = collapse(e.upperSite)
+    const lowerPt = getPosition(e.lowerSite)
+    const upperPt = getPosition(e.upperSite)
 
-    // Skip degenerate diagonals (both endpoints collapsed to same point)
-    if (lowerPt.equal(upperPt)) continue
+    // Skip degenerate diagonals
+    if (lowerPt.sub(upperPt).length < 1e-8) continue
 
     // Use original geometry for the orientation check
     const oppSite = fe.source.OppositeSite(e)

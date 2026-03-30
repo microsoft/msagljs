@@ -407,8 +407,8 @@ function findSleeveAsFrontEdges(
   return null
 }
 
-function dumpCollapseFigure(
-  filePrefix: string,
+function dumpCombinedFigure(
+  fileName: string,
   edge: GeomEdge,
   gg: GeomGraph,
   cdt: Cdt,
@@ -423,8 +423,12 @@ function dumpCollapseFigure(
   const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
   if (!sleeve || sleeve.length === 0) return false
 
+  // Get the original (raw) diagonals
   const rawDiags = sleeveToDiagonalsRaw(sleeve)
-  const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
+
+  // Get the legally-collapsed route from corridorRoute
+  const {corridorRoute} = require('../../../core/src/routing/corridorRouter')
+  const untrimmedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
 
   // Compute bounding box from sleeve triangles
   const bb = Rectangle.mkPP(source, target)
@@ -437,107 +441,62 @@ function dumpCollapseFigure(
       bb.addRecSelf(Rectangle.mkPP(s.point, s.point))
     }
   }
-  bb.pad(bb.diagonal * 0.1)
+  bb.pad(bb.diagonal * 0.12)
 
-  function nearbyObstacles(): DebugCurve[] {
-    const curves: DebugCurve[] = []
-    for (const node of gg.nodesBreadthFirst) {
-      if (!node.boundaryCurve || !bb.intersects(node.boundaryCurve.boundingBox)) continue
-      if (node === edge.source || node === edge.target) continue
-      curves.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'DarkGray', node.boundaryCurve))
-      const poly = nodeToPolyline.get(node)
-      if (poly) curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.5, 'Silver', poly, null, [3, 2]))
-    }
-    return curves
+  const curves: DebugCurve[] = []
+
+  // 1. Nearby obstacles
+  for (const node of gg.nodesBreadthFirst) {
+    if (!node.boundaryCurve || !bb.intersects(node.boundaryCurve.boundingBox)) continue
+    if (node === edge.source || node === edge.target) continue
+    curves.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'DarkGray', node.boundaryCurve))
+    const poly = nodeToPolyline.get(node)
+    if (poly) curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.5, 'Silver', poly, null, [3, 2]))
   }
 
-  function sleeveTriangles(): DebugCurve[] {
-    const curves: DebugCurve[] = []
-    const seen = new Set<CdtTriangle>()
-    for (const fe of sleeve) {
-      if (!seen.has(fe.source)) {
-        seen.add(fe.source)
-        curves.push(DebugCurve.mkDebugCurveTWCI(200, 1.2, 'SteelBlue', triangleToPolyline(fe.source)))
-      }
-      const ot = fe.edge.GetOtherTriangle_T(fe.source)
-      if (ot && !seen.has(ot)) {
-        seen.add(ot)
-        curves.push(DebugCurve.mkDebugCurveTWCI(200, 1.2, 'SteelBlue', triangleToPolyline(ot)))
-      }
+  // 2. Original sleeve triangles (thin blue, dashed)
+  const seen = new Set<CdtTriangle>()
+  for (const fe of sleeve) {
+    if (!seen.has(fe.source)) {
+      seen.add(fe.source)
+      curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.8, 'CornflowerBlue', triangleToPolyline(fe.source), null, [4, 3]))
     }
-    return curves
+    const ot = fe.edge.GetOtherTriangle_T(fe.source)
+    if (ot && !seen.has(ot)) {
+      seen.add(ot)
+      curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.8, 'CornflowerBlue', triangleToPolyline(ot), null, [4, 3]))
+    }
   }
 
-  function srcTgtCurves(): DebugCurve[] {
-    const curves: DebugCurve[] = []
-    curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkRed', edge.source.boundaryCurve))
-    curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkBlue', edge.target.boundaryCurve))
-    curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'IndianRed', sourcePoly, null, [4, 2]))
-    curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'SteelBlue', targetPoly, null, [4, 2]))
-    return curves
+  // 3. Modified sleeve boundary (solid green, thicker)
+  // Build from the corridorRoute's actual diagonals (legal collapse)
+  // We need the modified diagonals — reimport sleeveToDiagonals
+  const {sleeveToDiagonals: _unused, ...rest} = require('../../../core/src/routing/corridorRouter')
+  // Actually, just use the untrimmed polyline to draw the modified channel boundary
+  // by getting the legal-collapse diagonals from the corridor router internals
+  // For now, draw the raw diagonals as orange dashed and the route as the modified result
+
+  // 4. Original diagonals (orange dashed, thin)
+  for (const d of rawDiags) {
+    curves.push(DebugCurve.mkDebugCurveTWCILD(180, 1, 'Orange', LineSegment.mkPP(d.left, d.right), null, [6, 3]))
   }
 
-  // --- (a) Before collapse: show raw diagonals ---
-  {
-    const curves: DebugCurve[] = [...nearbyObstacles(), ...sleeveTriangles(), ...srcTgtCurves()]
-    // Draw raw diagonals (orange dashed)
-    for (const d of rawDiags) {
-      curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.5, 'Orange', LineSegment.mkPP(d.left, d.right), null, [5, 3]))
-    }
-    // Draw the edge route (this is the collapsed route — show what the uncollapsed would look like)
-    // The uncollapsed path goes through diagonal endpoints
-    // For uncollapsed: funnel waypoints are at obstacle corners → draw polyline through diagonal corners
-    // Approximate: source → each diagonal endpoint that's on the path side → target
-    if (edge.curve) {
-      // The actual routed curve is already with collapse; for "before", just show the diagonals
-    }
-    SvgDebugWriter.dumpDebugCurves(filePrefix + '_before.svg', curves)
+  // 5. Source/target boundaries
+  curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkRed', edge.source.boundaryCurve))
+  curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkBlue', edge.target.boundaryCurve))
+  curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1, 'IndianRed', sourcePoly, null, [4, 2]))
+  curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1, 'SteelBlue', targetPoly, null, [4, 2]))
+
+  // 6. The legally-collapsed route (solid red, thick)
+  if (untrimmedPoly) {
+    curves.push(DebugCurve.mkDebugCurveTWCI(220, 2.5, 'Red', untrimmedPoly.toCurve()))
   }
 
-  // --- (b) After collapse: show collapsed sleeve boundary + diagonals + untrimmed route ---
-  {
-    const curves: DebugCurve[] = [...nearbyObstacles()]
-
-    // Build the collapsed sleeve boundary: left chain + right chain
-    // The boundary goes: source → left[0] → left[1] → ... → left[n] → target → right[n] → ... → right[0] → source
-    if (collapsedDiags.length > 0) {
-      const leftChain: Point[] = [source]
-      const rightChain: Point[] = [source]
-      for (const d of collapsedDiags) {
-        const lastL = leftChain[leftChain.length - 1]
-        if (!d.left.equal(lastL)) leftChain.push(d.left)
-        const lastR = rightChain[rightChain.length - 1]
-        if (!d.right.equal(lastR)) rightChain.push(d.right)
-      }
-      leftChain.push(target)
-      rightChain.push(target)
-
-      // Draw boundary as a closed polygon: left chain forward, then right chain backward
-      const boundaryPts = [...leftChain, ...rightChain.reverse()]
-      const boundaryPoly = new Polyline()
-      for (const p of boundaryPts) boundaryPoly.addPoint(p)
-      boundaryPoly.closed = true
-      curves.push(DebugCurve.mkDebugCurveTWCI(180, 1.5, 'DarkGreen', boundaryPoly))
-    }
-
-    // Draw the untrimmed path (transparent, rendered before diagonals)
-    const {corridorRoute} = require('../../../core/src/routing/corridorRouter')
-    const untrimmedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
-    if (untrimmedPoly) {
-      curves.push(DebugCurve.mkDebugCurveTWCI(140, 2.5, 'Red', untrimmedPoly.toCurve()))
-    }
-
-    // Draw collapsed diagonals (green dashed) ON TOP of path
-    for (const d of collapsedDiags) {
-      curves.push(DebugCurve.mkDebugCurveTWCILD(220, 1.5, 'Green', LineSegment.mkPP(d.left, d.right), null, [5, 3]))
-    }
-    SvgDebugWriter.dumpDebugCurves(filePrefix + '_after.svg', curves)
-  }
-
+  SvgDebugWriter.dumpDebugCurves(fileName, curves)
   return true
 }
 
-test('dump collapse before/after figures for 5 GOT edges', () => {
+test('dump combined sleeve figure for paper', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -553,19 +512,20 @@ test('dump collapse before/after figures for 5 GOT edges', () => {
 
   const edges = Array.from(gg.deepEdges).filter(e => e.curve != null)
   edges.sort((a, b) => a.source.center.sub(a.target.center).length - b.source.center.sub(b.target.center).length)
-  const mid = Math.floor(edges.length * 0.45)
-  const selected = edges.slice(mid, mid + 5)
 
   const outDir = join(__dirname, '../../../../tmp/corridor_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
+
+  // Generate 10 candidates from the middle range and pick the best
+  const mid = Math.floor(edges.length * 0.4)
+  const selected = edges.slice(mid, mid + 10)
 
   for (let i = 0; i < selected.length; i++) {
     const edge = selected[i]
     const srcName = edge.edge.source.id
     const tgtName = edge.edge.target.id
-    const prefix = join(outDir, `collapse_${i}_${srcName}_${tgtName}`)
-    const ok = dumpCollapseFigure(prefix, edge, gg, cdt, nodeToPolyline)
-    if (ok) console.log(`Wrote ${prefix}_before.svg and ${prefix}_after.svg`)
-    else console.log(`Failed for ${srcName} -> ${tgtName}`)
+    const fname = join(outDir, `combined_${i}_${srcName}_${tgtName}.svg`)
+    const ok = dumpCombinedFigure(fname, edge, gg, cdt, nodeToPolyline)
+    if (ok) console.log(`Wrote ${fname}`)
   }
 })
