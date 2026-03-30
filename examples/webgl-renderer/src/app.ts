@@ -2,7 +2,10 @@ import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer-common'
 import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
-import {EdgeRoutingMode, geometryIsCreated, Graph, GeomGraph, GeomEdge, GeomNode, Point, Rectangle, Polyline} from '@msagl/core'
+import {EdgeRoutingMode, geometryIsCreated, Graph, GeomGraph, GeomEdge, GeomNode, Point, Rectangle, Polyline,
+  findContainingTriangle, findSleeveAStar, sleeveToDiagonals, funnelFromDiagonals,
+  Cdt, InteractiveObstacleCalculator} from '@msagl/core'
+import type {Diagonal} from '@msagl/core'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
@@ -142,7 +145,7 @@ function getSettings(): LayoutOptions {
   return opts
 }
 
-// Debug: dump SVG for a named edge showing route + obstacles
+// Debug: dump SVG for a named edge showing sleeve, both paths, obstacles
 function dumpEdgeSleeve(srcId: string, tgtId: string) {
   const graph = (renderer as any)._graph as Graph
   if (!graph) { console.log('No graph loaded'); return }
@@ -158,46 +161,116 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   }
   if (!foundEdge) { console.log(`Edge ${srcId}-${tgtId} not found`); return }
 
+  // Build CDT
+  const padding = 2
+  const nodeToPolyline = new Map<GeomNode, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+  for (const node of gg.nodesBreadthFirst) {
+    if (node.boundaryCurve == null) continue
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
+    nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+  const cdt = new Cdt([], obstacles, [])
+  cdt.run()
+
   const source = foundEdge.source.center
   const target = foundEdge.target.center
+  const sourcePoly = nodeToPolyline.get(foundEdge.source)
+  const targetPoly = nodeToPolyline.get(foundEdge.target)
+
+  // Find sleeve
+  const allowed = new Set<Polyline>()
+  if (sourcePoly) allowed.add(sourcePoly)
+  if (targetPoly) allowed.add(targetPoly)
+  const srcTri = findContainingTriangle(cdt, source)
+  const sleeve = srcTri ? findSleeveAStar(srcTri, target, allowed) : null
+
+  // Compute raw diagonals and uncollapsed funnel path
+  let rawDiags: Diagonal[] = []
+  let rawPath: Point[] = []
+  if (sleeve && sleeve.length > 0) {
+    rawDiags = sleeveToDiagonals(sleeve)
+    rawPath = funnelFromDiagonals(source, target, rawDiags)
+  }
+
+  // Compute collapsed funnel path
+  let collapsedDiags: Diagonal[] = []
+  let collapsedPath: Point[] = []
+  if (sleeve && sleeve.length > 0) {
+    const cs = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+    const ct = targetPoly ? {poly: targetPoly, center: target} : undefined
+    collapsedDiags = sleeveToDiagonals(sleeve, cs, ct)
+    collapsedPath = funnelFromDiagonals(source, target, collapsedDiags)
+  }
+
+  // Build viewbox from sleeve
   const viewBB = Rectangle.mkPP(source, target)
-  viewBB.pad(viewBB.diagonal * 0.5)
+  if (sleeve) {
+    for (const fe of sleeve) {
+      for (const s of [fe.source.Sites.item0, fe.source.Sites.item1, fe.source.Sites.item2]) {
+        viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
+      }
+      const ot = fe.edge.GetOtherTriangle_T(fe.source)
+      if (ot) for (const s of [ot.Sites.item0, ot.Sites.item1, ot.Sites.item2]) {
+        viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
+      }
+    }
+  }
+  viewBB.pad(viewBB.diagonal * 0.15)
 
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewBB.width}" height="${viewBB.height}" viewBox="${viewBB.left} ${viewBB.bottom} ${viewBB.width} ${viewBB.height}">\n`
   svg += `<g transform="scale(1,-1) translate(0,${-(viewBB.bottom + viewBB.top)})">\n`
 
-  // Draw nearby nodes
+  // Nearby padded obstacles
   for (const node of gg.nodesBreadthFirst) {
     if (!node.boundaryCurve) continue
-    const bc = node.boundaryCurve.boundingBox
-    if (!viewBB.intersects(bc)) continue
-    const isSource = node === foundEdge.source
-    const isTarget = node === foundEdge.target
-    const color = isSource ? 'red' : isTarget ? 'blue' : 'gray'
-    const width = (isSource || isTarget) ? 1.5 : 0.5
-    svg += `<rect x="${bc.left}" y="${bc.bottom}" width="${bc.width}" height="${bc.height}" fill="none" stroke="${color}" stroke-width="${width}"/>\n`
-    // label
-    svg += `<text x="${bc.center.x}" y="${bc.center.y}" text-anchor="middle" font-size="3" fill="${color}" transform="scale(1,-1) translate(0,${-2*bc.center.y})">${node.node.id}</text>\n`
+    const poly = nodeToPolyline.get(node)
+    if (!poly || !viewBB.intersects(poly.boundingBox)) continue
+    if (node === foundEdge.source || node === foundEdge.target) continue
+    const pts = Array.from(poly).map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polygon points="${pts}" fill="none" stroke="gray" stroke-width="0.5"/>\n`
   }
 
-  // Draw all edges from/to source or target that are visible
-  for (const e of gg.deepEdges) {
-    if (!e.curve) continue
-    if (e !== foundEdge) {
-      if (e.source !== foundEdge.source && e.source !== foundEdge.target &&
-          e.target !== foundEdge.source && e.target !== foundEdge.target) continue
+  // Sleeve triangles (dashed blue)
+  if (sleeve) {
+    const seen = new Set()
+    for (const fe of sleeve) {
+      const drawTri = (t: any) => {
+        if (seen.has(t)) return; seen.add(t)
+        const p0 = t.Sites.item0.point, p1 = t.Sites.item1.point, p2 = t.Sites.item2.point
+        svg += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y}" fill="none" stroke="cornflowerblue" stroke-width="0.3" stroke-dasharray="2,1"/>\n`
+      }
+      drawTri(fe.source)
+      const ot = fe.edge.GetOtherTriangle_T(fe.source)
+      if (ot) drawTri(ot)
     }
-    const curve = e.curve
-    const steps = 40
-    const pts: string[] = []
-    for (let i = 0; i <= steps; i++) {
-      const t = curve.parStart + (curve.parEnd - curve.parStart) * (i / steps)
-      const p = curve.value(t)
-      pts.push(`${p.x},${p.y}`)
-    }
-    const color = e === foundEdge ? 'red' : 'lightgray'
-    const w = e === foundEdge ? 1.5 : 0.3
-    svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="${w}"/>\n`
+  }
+
+  // Source/target padded
+  if (sourcePoly) {
+    const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polygon points="${pts}" fill="none" stroke="indianred" stroke-width="1"/>\n`
+  }
+  if (targetPoly) {
+    const pts = Array.from(targetPoly).map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polygon points="${pts}" fill="none" stroke="steelblue" stroke-width="1"/>\n`
+  }
+
+  // Collapsed path (green solid, underneath)
+  if (collapsedPath.length >= 2) {
+    const pts = collapsedPath.map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polyline points="${pts}" fill="none" stroke="green" stroke-width="1.5"/>\n`
+  }
+
+  // Uncollapsed path (orange dashed, on top)
+  if (rawPath.length >= 2) {
+    const pts = rawPath.map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polyline points="${pts}" fill="none" stroke="orange" stroke-width="1" stroke-dasharray="3,2"/>\n`
   }
 
   svg += `</g></svg>`
@@ -206,10 +279,10 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `edge_${srcId}_${tgtId}.svg`
+  a.download = `sleeve_${srcId}_${tgtId}.svg`
   a.click()
   URL.revokeObjectURL(url)
-  console.log(`Downloaded edge_${srcId}_${tgtId}.svg`)
+  console.log(`Downloaded sleeve_${srcId}_${tgtId}.svg`)
 }
 
 ;(window as any).dumpEdgeSleeve = dumpEdgeSleeve

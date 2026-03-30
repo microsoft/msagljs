@@ -21,7 +21,7 @@ import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 
-type Diagonal = {left: Point; right: Point}
+export type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
 
@@ -186,7 +186,7 @@ function dijkstraTree(
  *  Uses Euclidean distance between triangle centroids for edge weights
  *  and straight-line distance to target as heuristic.
  *  Returns the sleeve (sequence of FrontEdges) or null if no path is found. */
-function findSleeveAStar(
+export function findSleeveAStar(
   sourceTriangle: CdtTriangle,
   target: Point,
   allowedPolys: Set<Polyline>,
@@ -297,7 +297,7 @@ function recoverSleeve(
 /** Convert a sleeve into diagonals for the funnel algorithm.
  *  Collapses source/target obstacle vertices to their node centers
  *  to eliminate sharp turns at endpoints. */
-function sleeveToDiagonals(
+export function sleeveToDiagonals(
   sleeve: FrontEdge[],
   collapseSource?: {poly: Polyline; center: Point},
   collapseTarget?: {poly: Polyline; center: Point},
