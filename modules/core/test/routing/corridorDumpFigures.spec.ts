@@ -467,14 +467,8 @@ function dumpCombinedFigure(
     }
   }
 
-  // 3. Original diagonals (orange dashed, thin)
-  for (const d of rawDiags) {
-    curves.push(DebugCurve.mkDebugCurveTWCILD(180, 1, 'Orange', LineSegment.mkPP(d.left, d.right), null, [6, 3]))
-  }
-
-  // 4. Moved/collapsed diagonals (solid green)
+  // 3-4. Compute moved positions, then draw only changed diagonals
   {
-    // Collect all sleeve triangles
     const allTris: CdtTriangle[] = []
     const seenTris = new Set<CdtTriangle>()
     for (const fe of sleeve) {
@@ -482,7 +476,6 @@ function dumpCombinedFigure(
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
       if (ot && !seenTris.has(ot)) { seenTris.add(ot); allTris.push(ot) }
     }
-    // Build site → adjacent triangles map
     const siteAdj = new Map<CdtSite, {a: Point; b: Point}[]>()
     for (const t of allTris) {
       const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
@@ -493,7 +486,6 @@ function dumpCombinedFigure(
         list.push({a: sites[(i+1)%3].point, b: sites[(i+2)%3].point})
       }
     }
-    // Compute moved positions
     const movedPos = new Map<CdtSite, Point>()
     for (const [site, tris] of siteAdj) {
       if (site.Owner === sourcePoly) {
@@ -506,7 +498,7 @@ function dumpCombinedFigure(
           if (c1 < -1e-12) tMax = Math.min(tMax, c0 / (-c1))
         }
         tMax = Math.max(0, Math.min(1, tMax * 0.99))
-        movedPos.set(site, site.point.add(dir.mul(tMax)))
+        if (tMax > 0.01) movedPos.set(site, site.point.add(dir.mul(tMax)))
       } else if (site.Owner === targetPoly) {
         const dir = target.sub(site.point)
         let tMax = 1.0
@@ -517,27 +509,33 @@ function dumpCombinedFigure(
           if (c1 < -1e-12) tMax = Math.min(tMax, c0 / (-c1))
         }
         tMax = Math.max(0, Math.min(1, tMax * 0.99))
-        movedPos.set(site, site.point.add(dir.mul(tMax)))
+        if (tMax > 0.01) movedPos.set(site, site.point.add(dir.mul(tMax)))
       }
     }
-    // Draw moved diagonals (solid green)
+
+    // Draw ALL original diagonals (orange dashed)
     for (const fe of sleeve) {
       const e = fe.edge
-      const lowerPt = movedPos.get(e.lowerSite) ?? e.lowerSite.point
-      const upperPt = movedPos.get(e.upperSite) ?? e.upperSite.point
-      if (lowerPt.sub(upperPt).length < 1e-8) continue
-      curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(lowerPt, upperPt)))
+      curves.push(DebugCurve.mkDebugCurveTWCILD(180, 1, 'Orange', LineSegment.mkPP(e.lowerSite.point, e.upperSite.point), null, [6, 3]))
+    }
+
+    // Draw moved diagonals (green solid) — only those that actually changed
+    for (const fe of sleeve) {
+      const e = fe.edge
+      const movedLower = movedPos.get(e.lowerSite)
+      const movedUpper = movedPos.get(e.upperSite)
+      if (movedLower === undefined && movedUpper === undefined) continue
+      const newLower = movedLower ?? e.lowerSite.point
+      const newUpper = movedUpper ?? e.upperSite.point
+      if (newLower.sub(newUpper).length > 1e-8) {
+        curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(newLower, newUpper)))
+      }
     }
   }
 
   // 5. Source/target padded boundaries only
   curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'IndianRed', sourcePoly))
   curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'SteelBlue', targetPoly))
-
-  // 6. The legally-moved route (thin, transparent red)
-  if (untrimmedPoly) {
-    curves.push(DebugCurve.mkDebugCurveTWCI(120, 1.5, 'Red', untrimmedPoly.toCurve()))
-  }
 
   SvgDebugWriter.dumpDebugCurves(fileName, curves)
   return true
