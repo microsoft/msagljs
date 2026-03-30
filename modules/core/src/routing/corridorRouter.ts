@@ -356,12 +356,21 @@ export function sleeveToDiagonals(
     }
   }
 
-  // Step 3: Build final diagonals — only left chain collapse
+  // Step 3: Build final diagonals
+  // Right chain: always collapse source/target obstacle vertices to center
+  // Left chain: only collapse from the wrong-turn point onward
   const diagonals: Diagonal[] = []
   for (let i = 0; i < raw.length; i++) {
     let leftPt = raw[i].left
-    const rightPt = raw[i].right
+    let rightPt = raw[i].right
 
+    // Right chain: always collapse
+    if (collapseSource && raw[i].rightSite.Owner === collapseSource.poly)
+      rightPt = collapseSource.center
+    if (collapseTarget && raw[i].rightSite.Owner === collapseTarget.poly)
+      rightPt = collapseTarget.center
+
+    // Left chain: targeted collapse only
     if (collapseSource && raw[i].leftSite.Owner === collapseSource.poly && i <= collapseLeftFromSource)
       leftPt = collapseSource.center
     if (collapseTarget && raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
