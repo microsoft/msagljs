@@ -336,18 +336,11 @@ function collectSleeveTriangles(sleeve: FrontEdge[]): CdtTriangle[] {
   return result
 }
 
-/** Check if a line segment from a to b intersects any obstacle polyline
- *  (excluding the source and target obstacles). */
-function segmentHitsObstacle(
-  a: Point, b: Point,
-  obstacles: Polyline[],
-  excludeSource?: Polyline,
-  excludeTarget?: Polyline,
-): boolean {
+/** Check if a line segment from a to b intersects any obstacle in the list. */
+function segmentHitsObstacle(a: Point, b: Point, obstacles: Polyline[]): boolean {
   const seg = LineSegment.mkPP(a, b)
   const segBB = Rectangle.mkPP(a, b)
   for (const obs of obstacles) {
-    if (obs === excludeSource || obs === excludeTarget) continue
     if (!segBB.intersects(obs.boundingBox)) continue
     const xs = Curve.getAllIntersections(seg, obs, false)
     if (xs.length > 0) return true
@@ -405,6 +398,22 @@ function sleeveToDiagonals(
     addNeighbor(upper, lower)
   }
 
+  // Pre-compute nearby obstacles for each site to avoid scanning all obstacles per check
+  const sleeveBB = Rectangle.mkEmpty()
+  for (const t of allTriangles) {
+    for (const s of [t.Sites.item0, t.Sites.item1, t.Sites.item2]) {
+      sleeveBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
+    }
+  }
+  if (collapseSource) sleeveBB.addRecSelf(Rectangle.mkPP(collapseSource.center, collapseSource.center))
+  if (collapseTarget) sleeveBB.addRecSelf(Rectangle.mkPP(collapseTarget.center, collapseTarget.center))
+  sleeveBB.pad(sleeveBB.diagonal * 0.1)
+
+  const nearbyObstacles = obstacles ? obstacles.filter(obs => {
+    if (obs === collapseSource?.poly || obs === collapseTarget?.poly) return false
+    return sleeveBB.intersects(obs.boundingBox)
+  }) : []
+
   // Move each obstacle vertex toward center, then validate against obstacles
   const sitePosition = new Map<CdtSite, Point>()
 
@@ -412,25 +421,34 @@ function sleeveToDiagonals(
     const tOri = legalCollapseT(site.point, center, tris)
     if (tOri < 0.01) return
 
-    if (obstacles && obstacles.length > 0) {
-      const excludeSrc = collapseSource?.poly
-      const excludeTgt = collapseTarget?.poly
-      const neighbors = siteNeighbors.get(site) ?? []
-      const movedPos = site.point.add(center.sub(site.point).mul(tOri))
+    const dir = center.sub(site.point)
+    const neighbors = siteNeighbors.get(site) ?? []
 
-      // Check if the full movement causes boundary edges to hit obstacles
-      let hits = false
-      for (const nb of neighbors) {
-        const nbPos = sitePosition.get(nb) ?? nb.point
-        if (segmentHitsObstacle(movedPos, nbPos, obstacles, excludeSrc, excludeTgt)) {
-          hits = true
-          break
+    if (nearbyObstacles.length > 0 && neighbors.length > 0) {
+      function hitsAtT(t: number): boolean {
+        const pos = site.point.add(dir.mul(t))
+        for (const nb of neighbors) {
+          const nbPos = sitePosition.get(nb) ?? nb.point
+          if (segmentHitsObstacle(pos, nbPos, nearbyObstacles)) return true
         }
+        return false
       }
-      if (hits) return // keep original position
+
+      if (hitsAtT(tOri)) {
+        // Binary search: find largest safe t in [0, tOri]
+        let lo = 0, hi = tOri
+        for (let iter = 0; iter < 6; iter++) {
+          const mid = (lo + hi) / 2
+          if (hitsAtT(mid)) hi = mid
+          else lo = mid
+        }
+        if (lo < 0.01) return // can't move at all
+        sitePosition.set(site, site.point.add(dir.mul(lo)))
+        return
+      }
     }
 
-    sitePosition.set(site, site.point.add(center.sub(site.point).mul(tOri)))
+    sitePosition.set(site, site.point.add(dir.mul(tOri)))
   }
 
   for (const [site, tris] of siteConstraints) {
