@@ -749,21 +749,63 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
       const poly = nodeToPolyline.get(node)
       if (poly) curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'Gray', poly))
     }
-    // 1) Original sleeve (blue solid)
+
+    // 1) Sleeve triangles with light blue fill
     const seen = new Set()
     for (const fe of sleeve) {
-      if (!seen.has(fe.source)) { seen.add(fe.source); curves.push(DebugCurve.mkDebugCurveTWCI(150, 1, 'CornflowerBlue', triangleToPolyline(fe.source))) }
+      const drawFilled = (t: any) => {
+        if (seen.has(t)) return; seen.add(t)
+        const tri = triangleToPolyline(t)
+        // filled triangle
+        curves.push(DebugCurve.mkDebugCurveTWCILD(255, 0.5, 'CornflowerBlue', tri, null, null))
+        // Use fillColor for the fill
+        const dc = curves[curves.length - 1]
+        dc.fillColor = 'LightBlue'
+        dc.transparency = 80
+      }
+      drawFilled(fe.source)
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
-      if (ot && !seen.has(ot)) { seen.add(ot); curves.push(DebugCurve.mkDebugCurveTWCI(150, 1, 'CornflowerBlue', triangleToPolyline(ot))) }
+      if (ot) drawFilled(ot)
     }
-    // 2) Collapsed diagonals (green dashed)
-    for (const d of collapsedDiags) {
-      curves.push(DebugCurve.mkDebugCurveTWCILD(220, 1.5, 'Green', LineSegment.mkPP(d.left, d.right), null, [5, 3]))
+
+    // 2) Original sleeve boundary (orange dashed) — only changed edges
+    const rawDiags = sleeveToDiagonalsRaw(sleeve)
+    // Build boundary from raw diagonals: left chain + right chain
+    const origLeftChain = [source, ...rawDiags.map(d => d.left), target]
+    const origRightChain = [source, ...rawDiags.map(d => d.right), target]
+    // Draw original left chain segments that differ from collapsed
+    const collLeftChain = [source, ...collapsedDiags.map(d => d.left), target]
+    const collRightChain = [source, ...collapsedDiags.map(d => d.right), target]
+
+    // Draw full original boundary as orange dashed
+    for (let k = 0; k < origLeftChain.length - 1; k++) {
+      const a = origLeftChain[k], b = origLeftChain[k + 1]
+      if (a.sub(b).length > 1e-8)
+        curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(a, b), null, [5, 3]))
     }
+    for (let k = 0; k < origRightChain.length - 1; k++) {
+      const a = origRightChain[k], b = origRightChain[k + 1]
+      if (a.sub(b).length > 1e-8)
+        curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(a, b), null, [5, 3]))
+    }
+
+    // 3) Collapsed boundary (green solid)
+    for (let k = 0; k < collLeftChain.length - 1; k++) {
+      const a = collLeftChain[k], b = collLeftChain[k + 1]
+      if (a.sub(b).length > 1e-8)
+        curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(a, b)))
+    }
+    for (let k = 0; k < collRightChain.length - 1; k++) {
+      const a = collRightChain[k], b = collRightChain[k + 1]
+      if (a.sub(b).length > 1e-8)
+        curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(a, b)))
+    }
+
     // Source/target
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
-    // 3) Path from funnel on the collapsed diagonals (red)
+
+    // 4) Path from funnel on the collapsed diagonals (red)
     if (collapsedDiags.length > 0) {
       const pathPts = funnelFromDiagonals(source, target, collapsedDiags)
       if (pathPts.length >= 2) {
