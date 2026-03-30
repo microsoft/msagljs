@@ -729,7 +729,11 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     const target = edge.target.center
     const sourcePoly = nodeToPolyline.get(edge.source)
     const targetPoly = nodeToPolyline.get(edge.target)
-    const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
+    // Use the actual sleeveToDiagonals from corridorRouter (with targeted collapse)
+    const {sleeveToDiagonals: actualSleeveToDiags} = require('../../../core/src/routing/corridorRouter')
+    const cs = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+    const ct = targetPoly ? {poly: targetPoly, center: target} : undefined
+    const collapsedDiags: Diagonal[] = actualSleeveToDiags(sleeve, cs, ct)
     const rawDiags = sleeveToDiagonalsRaw(sleeve)
     const viewBB = Rectangle.mkPP(source, target)
     for (const fe of sleeve) {
