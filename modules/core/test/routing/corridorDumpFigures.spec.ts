@@ -702,7 +702,7 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     if (!sourcePoly || !targetPoly) continue
     const allowed = new Set([sourcePoly, targetPoly])
     const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
-    if (!sleeve || sleeve.length < 3) continue
+    if (!sleeve || sleeve.length < 8) continue  // need longer sleeves
     const rawDiags = sleeveToDiagonalsRaw(sleeve)
     if (rawDiags.length < 2) continue
     const rawPts = funnelFromDiagonals(source, target, rawDiags)
@@ -712,7 +712,11 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     if (!collapsedPoly || collapsedPoly.count < 2) continue
     const collapsedLen = collapsedPoly.toCurve().length
     if (rawLen > collapsedLen + 1) {
-      candidates.push({edge, rawLen, collapsedLen, ratio: rawLen / collapsedLen})
+      // Check collapsed diagonals have some visible (non-degenerate) ones
+      const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
+      if (collapsedDiags.length >= 4) {
+        candidates.push({edge, rawLen, collapsedLen, ratio: rawLen / collapsedLen})
+      }
     }
   }
   candidates.sort((a, b) => b.ratio - a.ratio)

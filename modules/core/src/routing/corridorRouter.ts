@@ -73,9 +73,13 @@ function canCrossEdge(e: CdtEdge, _allowedPolys: Set<Polyline>): boolean {
   return true
 }
 
+/** Midpoint of a CDT edge */
+function edgeMidpoint(e: CdtEdge): Point {
+  return e.lowerSite.point.add(e.upperSite.point).mul(0.5)
+}
+
 /** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
- *  Explores until all target triangles are found (or the whole reachable
- *  graph is explored). Returns the parent-edge map for sleeve recovery. */
+ *  Uses midpoint-to-midpoint distances for edge weights (not centroids). */
 function dijkstraTree(
   sourceTriangle: CdtTriangle,
   targetTriangles: Set<CdtTriangle>,
@@ -142,18 +146,18 @@ function dijkstraTree(
       if (remaining === 0) break
     }
 
-    const tCentroid = triangleCentroid(t)
     const edgeIntoT = cameFromEdge.get(t)
+    // Entry point: midpoint of entering edge, or source centroid for the first triangle
+    const entryPt = edgeIntoT ? edgeMidpoint(edgeIntoT) : triangleCentroid(t)
 
     for (const e of t.Edges) {
       if (edgeIntoT !== undefined && e === edgeIntoT) continue
       const ot = e.GetOtherTriangle_T(t)
       if (ot == null) continue
       if (triangleIsInsideObstacle(ot, allowedPolys)) {
-        // Allow reaching target triangles but don't expand through them
         if (targetTriangles.has(ot) && !foundTargets.has(ot)) {
-          const otCentroid = triangleCentroid(ot)
-          const edgeCost = tCentroid.sub(otCentroid).length
+          const exitPt = edgeMidpoint(e)
+          const edgeCost = entryPt.sub(exitPt).length
           const tentativeG = current.g + edgeCost
           const prevG = gScore.get(ot)
           if (prevG === undefined || tentativeG < prevG) {
@@ -167,8 +171,8 @@ function dijkstraTree(
         continue
       }
 
-      const otCentroid = triangleCentroid(ot)
-      const edgeCost = tCentroid.sub(otCentroid).length
+      const exitPt = edgeMidpoint(e)
+      const edgeCost = entryPt.sub(exitPt).length
       const tentativeG = current.g + edgeCost
 
       const prevG = gScore.get(ot)
@@ -252,8 +256,8 @@ export function findSleeveAStar(
       return recoverSleeve(sourceTriangle, cameFromEdge, t)
     }
 
-    const tCentroid = triangleCentroid(t)
     const edgeIntoT = cameFromEdge.get(t)
+    const entryPt = edgeIntoT ? edgeMidpoint(edgeIntoT) : triangleCentroid(t)
 
     for (const e of t.Edges) {
       if (!canCrossEdge(e, allowedPolys)) continue
@@ -263,8 +267,8 @@ export function findSleeveAStar(
       // Allow entering an obstacle triangle if it contains the target
       if (triangleIsInsideObstacle(ot, allowedPolys) && !ot.containsPoint(target)) continue
 
-      const otCentroid = triangleCentroid(ot)
-      const edgeCost = tCentroid.sub(otCentroid).length
+      const exitPt = edgeMidpoint(e)
+      const edgeCost = entryPt.sub(exitPt).length
       const tentativeG = current.g + edgeCost
 
       const prevG = gScore.get(ot)
@@ -272,7 +276,7 @@ export function findSleeveAStar(
 
       gScore.set(ot, tentativeG)
       cameFromEdge.set(ot, e)
-      const h = otCentroid.sub(target).length
+      const h = exitPt.sub(target).length
       heapPush({f: tentativeG + h, g: tentativeG, t: ot, seq: seqCounter++})
     }
   }
