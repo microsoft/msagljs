@@ -334,88 +334,159 @@ function collectSleeveTriangles(sleeve: FrontEdge[]): CdtTriangle[] {
   return result
 }
 
+/** Build a map from CdtSite to its constraining triangles in the sleeve.
+ *  Only includes triangles where neither other vertex belongs to the same obstacle. */
+function buildSiteConstraints(
+  allTriangles: CdtTriangle[],
+  obstaclePoly: Polyline,
+): Map<CdtSite, {a: Point; b: Point}[]> {
+  const result = new Map<CdtSite, {a: Point; b: Point}[]>()
+  for (const t of allTriangles) {
+    const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
+    for (let i = 0; i < 3; i++) {
+      const s = sites[i]
+      if (s.Owner !== obstaclePoly) continue
+      const sOther1 = sites[(i + 1) % 3]
+      const sOther2 = sites[(i + 2) % 3]
+      if (sOther1.Owner === obstaclePoly || sOther2.Owner === obstaclePoly) continue
+      let list = result.get(s)
+      if (!list) { list = []; result.set(s, list) }
+      list.push({a: sOther1.point, b: sOther2.point})
+    }
+  }
+  return result
+}
+
+/** Check if the turn a → b → c is reflex (clockwise / right turn).
+ *  Returns true if the cross product (b-a) × (c-b) < 0. */
+function isReflexTurn(a: Point, b: Point, c: Point): boolean {
+  const abx = b.x - a.x, aby = b.y - a.y
+  const bcx = c.x - b.x, bcy = c.y - b.y
+  return abx * bcy - aby * bcx < -1e-10
+}
+
+/** Project point p onto line through a and b; return the closest point on the line. */
+function projectOntoLine(p: Point, a: Point, b: Point): Point {
+  const ab = b.sub(a)
+  const len2 = ab.x * ab.x + ab.y * ab.y
+  if (len2 < 1e-20) return a
+  const t = ((p.x - a.x) * ab.x + (p.y - a.y) * ab.y) / len2
+  return a.add(ab.mul(t))
+}
+
 /** Convert a sleeve into diagonals for the funnel algorithm.
- *  Uses legal collapse: each source/target obstacle vertex is moved
- *  toward the node center as far as possible without flipping any
- *  sleeve triangle's orientation. */
+ *  After building raw diagonals, scans the left/right chains for reflex
+ *  turns at source/target obstacle vertices and widens them by moving
+ *  the vertex toward the line connecting its neighbors. */
 function sleeveToDiagonals(
   sleeve: FrontEdge[],
   collapseSource?: {poly: Polyline; center: Point},
   collapseTarget?: {poly: Polyline; center: Point},
 ): Diagonal[] {
-  // Collect all sleeve triangles and compute per-site legal collapse
-  const allTriangles = collectSleeveTriangles(sleeve)
-
-  // Build map: CdtSite → list of constraining triangles
-  // Only use triangles where NEITHER other vertex belongs to the same
-  // collapsing obstacle — those are the free-space boundary triangles.
-  // Triangles with another same-obstacle vertex move together and don't constrain.
-  const siteTriangles = new Map<CdtSite, {a: Point; b: Point}[]>()
-  for (const t of allTriangles) {
-    const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
-
-    for (let i = 0; i < 3; i++) {
-      const s = sites[i]
-      const sOther1 = sites[(i + 1) % 3]
-      const sOther2 = sites[(i + 2) % 3]
-
-      const isSourceSite = collapseSource && s.Owner === collapseSource.poly
-      const isTargetSite = collapseTarget && s.Owner === collapseTarget.poly
-      if (!isSourceSite && !isTargetSite) continue
-
-      const collapsePoly = isSourceSite ? collapseSource.poly : collapseTarget.poly
-
-      // Only constrain from triangles where BOTH other vertices are NOT on this obstacle
-      if (sOther1.Owner === collapsePoly || sOther2.Owner === collapsePoly) continue
-
-      let list = siteTriangles.get(s)
-      if (!list) { list = []; siteTriangles.set(s, list) }
-      list.push({a: sOther1.point, b: sOther2.point})
-    }
-  }
-
-  // Compute collapsed positions
-  const sitePosition = new Map<CdtSite, Point>()
-  for (const [site, tris] of siteTriangles) {
-    if (collapseSource && site.Owner === collapseSource.poly) {
-      const t = legalCollapseT(site.point, collapseSource.center, tris)
-      sitePosition.set(site, site.point.add(collapseSource.center.sub(site.point).mul(t)))
-    } else if (collapseTarget && site.Owner === collapseTarget.poly) {
-      const t = legalCollapseT(site.point, collapseTarget.center, tris)
-      sitePosition.set(site, site.point.add(collapseTarget.center.sub(site.point).mul(t)))
-    }
-  }
-
-  function getPosition(site: CdtSite): Point {
-    return sitePosition.get(site) ?? site.point
-  }
-
-  const diagonals: Diagonal[] = []
+  // Step 1: Build raw diagonals (no modification)
+  const rawDiags: {left: Point; right: Point; leftSite: CdtSite; rightSite: CdtSite}[] = []
   for (const fe of sleeve) {
     const e = fe.edge
-    const lowerPt = getPosition(e.lowerSite)
-    const upperPt = getPosition(e.upperSite)
-
-    // Skip degenerate diagonals
-    if (lowerPt.sub(upperPt).length < 1e-8) continue
-
-    // Skip diagonals where both endpoints belong to the same collapse obstacle —
-    // these are internal edges within the source/target obstacle
-    const lowerOwner = e.lowerSite.Owner
-    const upperOwner = e.upperSite.Owner
-    if (collapseSource && lowerOwner === collapseSource.poly && upperOwner === collapseSource.poly) continue
-    if (collapseTarget && lowerOwner === collapseTarget.poly && upperOwner === collapseTarget.poly) continue
-
-    // Use original geometry for the orientation check
     const oppSite = fe.source.OppositeSite(e)
     if (
       Point.getTriangleOrientation(oppSite.point, e.lowerSite.point, e.upperSite.point) ===
       TriangleOrientation.Counterclockwise
     ) {
-      diagonals.push({left: upperPt, right: lowerPt})
+      rawDiags.push({left: e.upperSite.point, right: e.lowerSite.point, leftSite: e.upperSite, rightSite: e.lowerSite})
     } else {
-      diagonals.push({right: upperPt, left: lowerPt})
+      rawDiags.push({right: e.upperSite.point, left: e.lowerSite.point, leftSite: e.lowerSite, rightSite: e.upperSite})
     }
+  }
+
+  if (rawDiags.length === 0) return []
+
+  // Step 2: Build constraint maps for obstacle vertices
+  const allTriangles = collectSleeveTriangles(sleeve)
+  const sourceConstraints = collapseSource ? buildSiteConstraints(allTriangles, collapseSource.poly) : new Map()
+  const targetConstraints = collapseTarget ? buildSiteConstraints(allTriangles, collapseTarget.poly) : new Map()
+
+  // Mutable positions for sites that get moved
+  const movedPosition = new Map<CdtSite, Point>()
+
+  function getObstaclePoly(site: CdtSite): Polyline | null {
+    if (collapseSource && site.Owner === collapseSource.poly) return collapseSource.poly
+    if (collapseTarget && site.Owner === collapseTarget.poly) return collapseTarget.poly
+    return null
+  }
+
+  function getConstraints(site: CdtSite): {a: Point; b: Point}[] {
+    return sourceConstraints.get(site) ?? targetConstraints.get(site) ?? []
+  }
+
+  function getPos(site: CdtSite): Point {
+    return movedPosition.get(site) ?? site.point
+  }
+
+  // Step 3: Scan left chain for reflex turns and widen
+  // Left chain: source, left[0], left[1], ..., left[n-1], target
+  const source = collapseSource ? collapseSource.center : rawDiags[0].left
+  const target = collapseTarget ? collapseTarget.center : rawDiags[rawDiags.length - 1].left
+
+  // Check consecutive triples on the left chain
+  for (let i = 0; i < rawDiags.length; i++) {
+    const bSite = rawDiags[i].leftSite
+    if (!getObstaclePoly(bSite)) continue // only move obstacle vertices
+
+    const a = i === 0 ? source : getPos(rawDiags[i - 1].leftSite)
+    const b = getPos(bSite)
+    const c = i < rawDiags.length - 1 ? getPos(rawDiags[i + 1].leftSite) : target
+
+    if (isReflexTurn(a, b, c)) {
+      // Move b toward line(a, c) to open up the turn
+      const proj = projectOntoLine(b, a, c)
+      const constraints = getConstraints(bSite)
+      if (constraints.length > 0) {
+        const t = legalCollapseT(bSite.point, proj, constraints)
+        movedPosition.set(bSite, bSite.point.add(proj.sub(bSite.point).mul(t)))
+      } else {
+        movedPosition.set(bSite, proj)
+      }
+    }
+  }
+
+  // Step 4: Same for right chain
+  for (let i = 0; i < rawDiags.length; i++) {
+    const bSite = rawDiags[i].rightSite
+    if (!getObstaclePoly(bSite)) continue
+
+    const a = i === 0 ? source : getPos(rawDiags[i - 1].rightSite)
+    const b = getPos(bSite)
+    const c = i < rawDiags.length - 1 ? getPos(rawDiags[i + 1].rightSite) : target
+
+    // For right chain, reflex turn is the opposite direction
+    if (isReflexTurn(c, b, a)) {
+      const proj = projectOntoLine(b, a, c)
+      const constraints = getConstraints(bSite)
+      if (constraints.length > 0) {
+        const t = legalCollapseT(bSite.point, proj, constraints)
+        movedPosition.set(bSite, bSite.point.add(proj.sub(bSite.point).mul(t)))
+      } else {
+        movedPosition.set(bSite, proj)
+      }
+    }
+  }
+
+  // Step 5: Build final diagonals with moved positions, skip same-obstacle internal edges
+  const diagonals: Diagonal[] = []
+  for (let i = 0; i < rawDiags.length; i++) {
+    const rd = rawDiags[i]
+    const leftPt = getPos(rd.leftSite)
+    const rightPt = getPos(rd.rightSite)
+
+    if (leftPt.sub(rightPt).length < 1e-8) continue
+
+    // Skip diagonals where both endpoints belong to the same collapse obstacle
+    const lOwner = rd.leftSite.Owner
+    const rOwner = rd.rightSite.Owner
+    if (collapseSource && lOwner === collapseSource.poly && rOwner === collapseSource.poly) continue
+    if (collapseTarget && lOwner === collapseTarget.poly && rOwner === collapseTarget.poly) continue
+
+    diagonals.push({left: leftPt, right: rightPt})
   }
   return diagonals
 }
