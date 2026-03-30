@@ -2,7 +2,7 @@ import {dropZone} from './drag-n-drop'
 import {LayoutOptions} from '@msagl/renderer-common'
 import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
-import {EdgeRoutingMode, geometryIsCreated, Graph} from '@msagl/core'
+import {EdgeRoutingMode, geometryIsCreated, Graph, GeomGraph, GeomEdge, GeomNode, Point, Rectangle, Polyline} from '@msagl/core'
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
@@ -141,3 +141,76 @@ function getSettings(): LayoutOptions {
   }
   return opts
 }
+
+// Debug: dump SVG for a named edge showing route + obstacles
+function dumpEdgeSleeve(srcId: string, tgtId: string) {
+  const graph = (renderer as any)._graph as Graph
+  if (!graph) { console.log('No graph loaded'); return }
+  const gg = GeomGraph.getGeom(graph)
+  if (!gg) { console.log('No geometry'); return }
+
+  let foundEdge: GeomEdge | null = null
+  for (const e of gg.deepEdges) {
+    if ((e.edge.source.id === srcId && e.edge.target.id === tgtId) ||
+        (e.edge.source.id === tgtId && e.edge.target.id === srcId)) {
+      foundEdge = e; break
+    }
+  }
+  if (!foundEdge) { console.log(`Edge ${srcId}-${tgtId} not found`); return }
+
+  const source = foundEdge.source.center
+  const target = foundEdge.target.center
+  const viewBB = Rectangle.mkPP(source, target)
+  viewBB.pad(viewBB.diagonal * 0.5)
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewBB.width}" height="${viewBB.height}" viewBox="${viewBB.left} ${viewBB.bottom} ${viewBB.width} ${viewBB.height}">\n`
+  svg += `<g transform="scale(1,-1) translate(0,${-(viewBB.bottom + viewBB.top)})">\n`
+
+  // Draw nearby nodes
+  for (const node of gg.nodesBreadthFirst) {
+    if (!node.boundaryCurve) continue
+    const bc = node.boundaryCurve.boundingBox
+    if (!viewBB.intersects(bc)) continue
+    const isSource = node === foundEdge.source
+    const isTarget = node === foundEdge.target
+    const color = isSource ? 'red' : isTarget ? 'blue' : 'gray'
+    const width = (isSource || isTarget) ? 1.5 : 0.5
+    svg += `<rect x="${bc.left}" y="${bc.bottom}" width="${bc.width}" height="${bc.height}" fill="none" stroke="${color}" stroke-width="${width}"/>\n`
+    // label
+    svg += `<text x="${bc.center.x}" y="${bc.center.y}" text-anchor="middle" font-size="3" fill="${color}" transform="scale(1,-1) translate(0,${-2*bc.center.y})">${node.node.id}</text>\n`
+  }
+
+  // Draw all edges from/to source or target that are visible
+  for (const e of gg.deepEdges) {
+    if (!e.curve) continue
+    if (e !== foundEdge) {
+      if (e.source !== foundEdge.source && e.source !== foundEdge.target &&
+          e.target !== foundEdge.source && e.target !== foundEdge.target) continue
+    }
+    const curve = e.curve
+    const steps = 40
+    const pts: string[] = []
+    for (let i = 0; i <= steps; i++) {
+      const t = curve.parStart + (curve.parEnd - curve.parStart) * (i / steps)
+      const p = curve.value(t)
+      pts.push(`${p.x},${p.y}`)
+    }
+    const color = e === foundEdge ? 'red' : 'lightgray'
+    const w = e === foundEdge ? 1.5 : 0.3
+    svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="${w}"/>\n`
+  }
+
+  svg += `</g></svg>`
+
+  const blob = new Blob([svg], {type: 'image/svg+xml'})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `edge_${srcId}_${tgtId}.svg`
+  a.click()
+  URL.revokeObjectURL(url)
+  console.log(`Downloaded edge_${srcId}_${tgtId}.svg`)
+}
+
+;(window as any).dumpEdgeSleeve = dumpEdgeSleeve
+console.log('Debug: call dumpEdgeSleeve("JOFFREY", "MYCAH") in console to download SVG')

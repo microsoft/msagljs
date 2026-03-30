@@ -612,3 +612,63 @@ test('dump combined sleeve figure for paper', () => {
     if (ok) console.log(`Wrote ${fname}`)
   }
 })
+
+test('dump Mycah edges with sleeve + route', () => {
+  const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
+  const graphStr = fs.readFileSync(fpath, 'utf-8')
+  const graph = parseJSON(JSON.parse(graphStr))
+  const dg = DrawingGraph.getDrawingObj(graph) as any
+  dg.createGeometry()
+  const gg = GeomGraph.getGeom(graph) as any
+  gg.layoutSettings = new (require('../../../core/src').MdsLayoutSettings)()
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  layoutGeomGraph(gg, null)
+
+  const padding = 2
+  const {cdt, nodeToPolyline} = buildCdtAndObstacles(gg, padding)
+  const outDir = join(__dirname, '../../../../tmp/corridor_figs')
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
+
+  let i = 0
+  for (const edge of gg.deepEdges) {
+    if (edge.edge.source.id !== 'MYCAH' && edge.edge.target.id !== 'MYCAH') continue
+    if (edge.curve == null) continue
+    const srcName = edge.edge.source.id
+    const tgtName = edge.edge.target.id
+    const source = edge.source.center
+    const target = edge.target.center
+    const sourcePoly = nodeToPolyline.get(edge.source)
+    const targetPoly = nodeToPolyline.get(edge.target)
+
+    const curves: DebugCurve[] = []
+    const routeBB = Rectangle.mkPP(source, target)
+    routeBB.pad(routeBB.diagonal * 0.5)
+    for (const node of gg.nodesBreadthFirst) {
+      if (!node.boundaryCurve || !routeBB.intersects(node.boundaryCurve.boundingBox)) continue
+      curves.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'DarkGray', node.boundaryCurve))
+      const poly = nodeToPolyline.get(node)
+      if (poly) curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.5, 'Silver', poly, null, [3, 2]))
+    }
+    if (sourcePoly) curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
+    if (targetPoly) curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
+
+    const allowed = new Set<Polyline>()
+    if (sourcePoly) allowed.add(sourcePoly)
+    if (targetPoly) allowed.add(targetPoly)
+    const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
+    if (sleeve) {
+      const seen = new Set<CdtTriangle>()
+      for (const fe of sleeve) {
+        if (!seen.has(fe.source)) { seen.add(fe.source); curves.push(DebugCurve.mkDebugCurveTWCILD(120, 0.6, 'CornflowerBlue', triangleToPolyline(fe.source), null, [3, 2])) }
+        const ot = fe.edge.GetOtherTriangle_T(fe.source)
+        if (ot && !seen.has(ot)) { seen.add(ot); curves.push(DebugCurve.mkDebugCurveTWCILD(120, 0.6, 'CornflowerBlue', triangleToPolyline(ot), null, [3, 2])) }
+      }
+    }
+    curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', edge.curve))
+
+    const fname = join(outDir, 'mycah_' + i + '_' + srcName + '_' + tgtName + '.svg')
+    SvgDebugWriter.dumpDebugCurves(fname, curves)
+    console.log('Wrote ' + fname)
+    i++
+  }
+})
