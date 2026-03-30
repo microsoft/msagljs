@@ -692,7 +692,7 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
 
   const {funnelFromDiagonals, corridorRoute} = require('../../../core/src/routing/corridorRouter')
 
-  const candidates: {edge: any; rawLen: number; collapsedLen: number; ratio: number}[] = []
+  const candidates: {edge: any; rawPts: any[]; collPts: any[]; rawLen: number; collLen: number; ratio: number; sleeve: any}[] = []
   for (const edge of gg.deepEdges) {
     if (edge.curve == null) continue
     const source = edge.source.center
@@ -702,39 +702,35 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     if (!sourcePoly || !targetPoly) continue
     const allowed = new Set([sourcePoly, targetPoly])
     const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
-    if (!sleeve || sleeve.length < 8) continue  // need longer sleeves
+    if (!sleeve || sleeve.length < 6) continue
     const rawDiags = sleeveToDiagonalsRaw(sleeve)
-    if (rawDiags.length < 2) continue
+    const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
+    if (rawDiags.length < 2 || collapsedDiags.length < 3) continue
     const rawPts = funnelFromDiagonals(source, target, rawDiags)
+    const collPts = funnelFromDiagonals(source, target, collapsedDiags)
     let rawLen = 0
     for (let i = 1; i < rawPts.length; i++) rawLen += rawPts[i].sub(rawPts[i-1]).length
-    const collapsedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
-    if (!collapsedPoly || collapsedPoly.count < 2) continue
-    const collapsedLen = collapsedPoly.toCurve().length
-    if (rawLen > collapsedLen + 1) {
-      // Check collapsed diagonals have some visible (non-degenerate) ones
-      const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
-      if (collapsedDiags.length >= 4) {
-        candidates.push({edge, rawLen, collapsedLen, ratio: rawLen / collapsedLen})
-      }
+    let collLen = 0
+    for (let i = 1; i < collPts.length; i++) collLen += collPts[i].sub(collPts[i-1]).length
+    // Want: raw path is longer AND has more waypoints (sharp turns removed by collapse)
+    if (rawLen > collLen + 3 && rawPts.length > collPts.length) {
+      candidates.push({edge, rawPts, collPts, rawLen, collLen, ratio: rawLen / collLen, sleeve})
     }
   }
   candidates.sort((a, b) => b.ratio - a.ratio)
-  console.log('Found ' + candidates.length + ' edges where collapse shortens path')
+  console.log('Found ' + candidates.length + ' edges where collapse removes sharp turns')
   for (const c of candidates.slice(0, 5)) {
-    console.log('  ' + c.edge.edge.source.id + ' -> ' + c.edge.edge.target.id + ': raw=' + c.rawLen.toFixed(1) + ' collapsed=' + c.collapsedLen.toFixed(1) + ' ratio=' + c.ratio.toFixed(3))
+    console.log('  ' + c.edge.edge.source.id + ' -> ' + c.edge.edge.target.id + ': rawPts=' + c.rawPts.length + ' collPts=' + c.collPts.length + ' ratio=' + c.ratio.toFixed(3))
   }
 
   for (let ci = 0; ci < Math.min(5, candidates.length); ci++) {
-    const {edge} = candidates[ci]
+    const {edge, rawPts, collPts, sleeve} = candidates[ci]
     const source = edge.source.center
     const target = edge.target.center
     const sourcePoly = nodeToPolyline.get(edge.source)
     const targetPoly = nodeToPolyline.get(edge.target)
-    const allowed = new Set([sourcePoly, targetPoly])
-    const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
-    if (!sleeve) continue
     const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
+    const rawDiags = sleeveToDiagonalsRaw(sleeve)
     const viewBB = Rectangle.mkPP(source, target)
     for (const fe of sleeve) {
       for (const s of [fe.source.Sites.item0, fe.source.Sites.item1, fe.source.Sites.item2]) viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
@@ -768,8 +764,7 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
       if (ot) drawFilled(ot)
     }
 
-    // 2) Original sleeve boundary (orange dashed) — only changed edges
-    const rawDiags = sleeveToDiagonalsRaw(sleeve)
+    // 2) Original sleeve boundary (orange dashed)
     // Build boundary from raw diagonals: left chain + right chain
     const origLeftChain = [source, ...rawDiags.map(d => d.left), target]
     const origRightChain = [source, ...rawDiags.map(d => d.right), target]
@@ -805,13 +800,16 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
 
-    // 4) Path from funnel on the collapsed diagonals (red)
-    if (collapsedDiags.length > 0) {
-      const pathPts = funnelFromDiagonals(source, target, collapsedDiags)
-      if (pathPts.length >= 2) {
-        const pathPoly = Polyline.mkFromPoints(pathPts)
-        curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', pathPoly.toCurve()))
-      }
+    // 4) Raw funnel path (orange dashed) — shows sharp turns
+    if (rawPts.length >= 2) {
+      const rawPoly = Polyline.mkFromPoints(rawPts)
+      curves.push(DebugCurve.mkDebugCurveTWCILD(220, 1.5, 'Orange', rawPoly.toCurve(), null, [5, 3]))
+    }
+
+    // 5) Collapsed funnel path (red solid) — smooth
+    if (collPts.length >= 2) {
+      const collPoly = Polyline.mkFromPoints(collPts)
+      curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', collPoly.toCurve()))
     }
     const fname = join(outDir, 'benefit_' + ci + '_' + edge.edge.source.id + '_' + edge.edge.target.id + '.svg')
     SvgDebugWriter.dumpDebugCurves(fname, curves)
