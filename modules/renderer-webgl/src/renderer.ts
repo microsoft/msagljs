@@ -42,6 +42,7 @@ export default class Renderer extends EventSource {
   private _highlightedNodeId: string | null
   private _layoutWorkerUrl?: string
   private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
+  private _graphOffset: {x: number; y: number} = {x: 0, y: 0}
 
   constructor(container: HTMLElement = document.body, layoutWorkerUrl?: string) {
     super()
@@ -183,7 +184,7 @@ export default class Renderer extends EventSource {
 
     this._deck.setProps({
       initialViewState: {
-        target: [rectangle.center.x, rectangle.center.y, 0],
+        target: [rectangle.center.x + this._graphOffset.x, rectangle.center.y + this._graphOffset.y, 0],
         zoom: zoom,
         transitionInterpolator: new LinearInterpolator(['target', 'zoom']),
         transitionDuration: 1000,
@@ -255,6 +256,7 @@ export default class Renderer extends EventSource {
     console.time('initial render')
 
     const modelMatrix = new Matrix4().translate([rootTileSize / 2 - rootTile.center.x, rootTileSize / 2 - rootTile.center.y, 0])
+    this._graphOffset = {x: rootTileSize / 2 - rootTile.center.x, y: rootTileSize / 2 - rootTile.center.y}
 
     const layer = new TileLayer<
       TileData,
