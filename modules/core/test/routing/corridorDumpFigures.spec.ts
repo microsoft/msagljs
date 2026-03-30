@@ -445,13 +445,12 @@ function dumpCombinedFigure(
 
   const curves: DebugCurve[] = []
 
-  // 1. Nearby obstacles
+  // 1. Nearby padded obstacles only (no actual node boundaries)
   for (const node of gg.nodesBreadthFirst) {
     if (!node.boundaryCurve || !bb.intersects(node.boundaryCurve.boundingBox)) continue
     if (node === edge.source || node === edge.target) continue
-    curves.push(DebugCurve.mkDebugCurveTWCI(200, 1, 'DarkGray', node.boundaryCurve))
     const poly = nodeToPolyline.get(node)
-    if (poly) curves.push(DebugCurve.mkDebugCurveTWCILD(150, 0.5, 'Silver', poly, null, [3, 2]))
+    if (poly) curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'Gray', poly))
   }
 
   // 2. Original sleeve triangles (thin blue, dashed)
@@ -468,28 +467,76 @@ function dumpCombinedFigure(
     }
   }
 
-  // 3. Modified sleeve boundary (solid green, thicker)
-  // Build from the corridorRoute's actual diagonals (legal collapse)
-  // We need the modified diagonals — reimport sleeveToDiagonals
-  const {sleeveToDiagonals: _unused, ...rest} = require('../../../core/src/routing/corridorRouter')
-  // Actually, just use the untrimmed polyline to draw the modified channel boundary
-  // by getting the legal-collapse diagonals from the corridor router internals
-  // For now, draw the raw diagonals as orange dashed and the route as the modified result
-
-  // 4. Original diagonals (orange dashed, thin)
+  // 3. Original diagonals (orange dashed, thin)
   for (const d of rawDiags) {
     curves.push(DebugCurve.mkDebugCurveTWCILD(180, 1, 'Orange', LineSegment.mkPP(d.left, d.right), null, [6, 3]))
   }
 
-  // 5. Source/target boundaries
-  curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkRed', edge.source.boundaryCurve))
-  curves.push(DebugCurve.mkDebugCurveTWCI(255, 1.5, 'DarkBlue', edge.target.boundaryCurve))
-  curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1, 'IndianRed', sourcePoly, null, [4, 2]))
-  curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1, 'SteelBlue', targetPoly, null, [4, 2]))
+  // 4. Moved/collapsed diagonals (solid green)
+  {
+    // Collect all sleeve triangles
+    const allTris: CdtTriangle[] = []
+    const seenTris = new Set<CdtTriangle>()
+    for (const fe of sleeve) {
+      if (!seenTris.has(fe.source)) { seenTris.add(fe.source); allTris.push(fe.source) }
+      const ot = fe.edge.GetOtherTriangle_T(fe.source)
+      if (ot && !seenTris.has(ot)) { seenTris.add(ot); allTris.push(ot) }
+    }
+    // Build site → adjacent triangles map
+    const siteAdj = new Map<CdtSite, {a: Point; b: Point}[]>()
+    for (const t of allTris) {
+      const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
+      for (let i = 0; i < 3; i++) {
+        const s = sites[i]
+        let list = siteAdj.get(s)
+        if (!list) { list = []; siteAdj.set(s, list) }
+        list.push({a: sites[(i+1)%3].point, b: sites[(i+2)%3].point})
+      }
+    }
+    // Compute moved positions
+    const movedPos = new Map<CdtSite, Point>()
+    for (const [site, tris] of siteAdj) {
+      if (site.Owner === sourcePoly) {
+        const dir = source.sub(site.point)
+        let tMax = 1.0
+        for (const {a, b} of tris) {
+          const ex = b.x - a.x, ey = b.y - a.y
+          const c0 = ex * (site.point.y - a.y) - ey * (site.point.x - a.x)
+          const c1 = ex * dir.y - ey * dir.x
+          if (c1 < -1e-12) tMax = Math.min(tMax, c0 / (-c1))
+        }
+        tMax = Math.max(0, Math.min(1, tMax * 0.99))
+        movedPos.set(site, site.point.add(dir.mul(tMax)))
+      } else if (site.Owner === targetPoly) {
+        const dir = target.sub(site.point)
+        let tMax = 1.0
+        for (const {a, b} of tris) {
+          const ex = b.x - a.x, ey = b.y - a.y
+          const c0 = ex * (site.point.y - a.y) - ey * (site.point.x - a.x)
+          const c1 = ex * dir.y - ey * dir.x
+          if (c1 < -1e-12) tMax = Math.min(tMax, c0 / (-c1))
+        }
+        tMax = Math.max(0, Math.min(1, tMax * 0.99))
+        movedPos.set(site, site.point.add(dir.mul(tMax)))
+      }
+    }
+    // Draw moved diagonals (solid green)
+    for (const fe of sleeve) {
+      const e = fe.edge
+      const lowerPt = movedPos.get(e.lowerSite) ?? e.lowerSite.point
+      const upperPt = movedPos.get(e.upperSite) ?? e.upperSite.point
+      if (lowerPt.sub(upperPt).length < 1e-8) continue
+      curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'Green', LineSegment.mkPP(lowerPt, upperPt)))
+    }
+  }
 
-  // 6. The legally-collapsed route (solid red, thick)
+  // 5. Source/target padded boundaries only
+  curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'IndianRed', sourcePoly))
+  curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'SteelBlue', targetPoly))
+
+  // 6. The legally-moved route (thin, transparent red)
   if (untrimmedPoly) {
-    curves.push(DebugCurve.mkDebugCurveTWCI(220, 2.5, 'Red', untrimmedPoly.toCurve()))
+    curves.push(DebugCurve.mkDebugCurveTWCI(120, 1.5, 'Red', untrimmedPoly.toCurve()))
   }
 
   SvgDebugWriter.dumpDebugCurves(fileName, curves)
