@@ -763,27 +763,9 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
       if (ot) drawFilled(ot)
     }
 
-    // 2) Original sleeve boundary (orange dashed)
-    // Build boundary from raw diagonals: left chain + right chain
-    const origLeftChain = [source, ...rawDiags.map(d => d.left), target]
-    const origRightChain = [source, ...rawDiags.map(d => d.right), target]
-    // Draw original left chain segments that differ from collapsed
+    // 2) Collapsed boundary (green solid)
     const collLeftChain = [source, ...collapsedDiags.map(d => d.left), target]
     const collRightChain = [source, ...collapsedDiags.map(d => d.right), target]
-
-    // Draw full original boundary as orange dashed
-    for (let k = 0; k < origLeftChain.length - 1; k++) {
-      const a = origLeftChain[k], b = origLeftChain[k + 1]
-      if (a.sub(b).length > 1e-8)
-        curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(a, b), null, [5, 3]))
-    }
-    for (let k = 0; k < origRightChain.length - 1; k++) {
-      const a = origRightChain[k], b = origRightChain[k + 1]
-      if (a.sub(b).length > 1e-8)
-        curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(a, b), null, [5, 3]))
-    }
-
-    // 3) Collapsed boundary (green solid)
     for (let k = 0; k < collLeftChain.length - 1; k++) {
       const a = collLeftChain[k], b = collLeftChain[k + 1]
       if (a.sub(b).length > 1e-8)
@@ -799,13 +781,7 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
 
-    // 4) Raw funnel path (orange dashed) — shows sharp turns
-    if (rawPts.length >= 2) {
-      const rawPoly = Polyline.mkFromPoints(rawPts)
-      curves.push(DebugCurve.mkDebugCurveTWCILD(220, 1.5, 'Orange', rawPoly.toCurve(), null, [5, 3]))
-    }
-
-    // 5) Collapsed funnel path (red solid) — smooth
+    // 3) Collapsed funnel path (red solid)
     if (collPts.length >= 2) {
       const collPoly = Polyline.mkFromPoints(collPts)
       curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', collPoly.toCurve()))
