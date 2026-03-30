@@ -423,28 +423,28 @@ function sleeveToDiagonals(
   }
 
   // Step 3: Scan left chain for reflex turns and widen
-  // Left chain: source, left[0], left[1], ..., left[n-1], target
+  // Move reflex obstacle vertices toward their node center (not projection)
   const source = collapseSource ? collapseSource.center : rawDiags[0].left
   const target = collapseTarget ? collapseTarget.center : rawDiags[rawDiags.length - 1].left
 
-  // Check consecutive triples on the left chain
   for (let i = 0; i < rawDiags.length; i++) {
     const bSite = rawDiags[i].leftSite
-    if (!getObstaclePoly(bSite)) continue // only move obstacle vertices
+    const obsPoly = getObstaclePoly(bSite)
+    if (!obsPoly) continue
 
     const a = i === 0 ? source : getPos(rawDiags[i - 1].leftSite)
     const b = getPos(bSite)
     const c = i < rawDiags.length - 1 ? getPos(rawDiags[i + 1].leftSite) : target
 
     if (isReflexTurn(a, b, c)) {
-      // Move b toward line(a, c) to open up the turn
-      const proj = projectOntoLine(b, a, c)
+      // Move toward the node center
+      const center = collapseSource && bSite.Owner === collapseSource.poly ? collapseSource.center : collapseTarget.center
       const constraints = getConstraints(bSite)
       if (constraints.length > 0) {
-        const t = legalCollapseT(bSite.point, proj, constraints)
-        movedPosition.set(bSite, bSite.point.add(proj.sub(bSite.point).mul(t)))
+        const t = legalCollapseT(bSite.point, center, constraints)
+        movedPosition.set(bSite, bSite.point.add(center.sub(bSite.point).mul(t)))
       } else {
-        movedPosition.set(bSite, proj)
+        movedPosition.set(bSite, center)
       }
     }
   }
@@ -452,21 +452,21 @@ function sleeveToDiagonals(
   // Step 4: Same for right chain
   for (let i = 0; i < rawDiags.length; i++) {
     const bSite = rawDiags[i].rightSite
-    if (!getObstaclePoly(bSite)) continue
+    const obsPoly = getObstaclePoly(bSite)
+    if (!obsPoly) continue
 
     const a = i === 0 ? source : getPos(rawDiags[i - 1].rightSite)
     const b = getPos(bSite)
     const c = i < rawDiags.length - 1 ? getPos(rawDiags[i + 1].rightSite) : target
 
-    // For right chain, reflex turn is the opposite direction
     if (isReflexTurn(c, b, a)) {
-      const proj = projectOntoLine(b, a, c)
+      const center = collapseSource && bSite.Owner === collapseSource.poly ? collapseSource.center : collapseTarget.center
       const constraints = getConstraints(bSite)
       if (constraints.length > 0) {
-        const t = legalCollapseT(bSite.point, proj, constraints)
-        movedPosition.set(bSite, bSite.point.add(proj.sub(bSite.point).mul(t)))
+        const t = legalCollapseT(bSite.point, center, constraints)
+        movedPosition.set(bSite, bSite.point.add(center.sub(bSite.point).mul(t)))
       } else {
-        movedPosition.set(bSite, proj)
+        movedPosition.set(bSite, center)
       }
     }
   }
