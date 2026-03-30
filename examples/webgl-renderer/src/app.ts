@@ -233,7 +233,7 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
     if (!poly || !viewBB.intersects(poly.boundingBox)) continue
     if (node === foundEdge.source || node === foundEdge.target) continue
     const pts = Array.from(poly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="gray" stroke-width="0.5"/>\n`
+    svg += `<polygon points="${pts}" fill="none" stroke="gray" stroke-width="1"/>\n`
   }
 
   // Sleeve triangles (dashed blue)
@@ -243,7 +243,7 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
       const drawTri = (t: any) => {
         if (seen.has(t)) return; seen.add(t)
         const p0 = t.Sites.item0.point, p1 = t.Sites.item1.point, p2 = t.Sites.item2.point
-        svg += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y}" fill="none" stroke="cornflowerblue" stroke-width="0.3" stroke-dasharray="2,1"/>\n`
+        svg += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y}" fill="rgba(100,149,237,0.08)" stroke="cornflowerblue" stroke-width="1.5"/>\n`
       }
       drawTri(fe.source)
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
@@ -254,23 +254,23 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   // Source/target padded
   if (sourcePoly) {
     const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="indianred" stroke-width="1"/>\n`
+    svg += `<polygon points="${pts}" fill="none" stroke="indianred" stroke-width="2"/>\n`
   }
   if (targetPoly) {
     const pts = Array.from(targetPoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="steelblue" stroke-width="1"/>\n`
+    svg += `<polygon points="${pts}" fill="none" stroke="steelblue" stroke-width="2"/>\n`
   }
 
   // Collapsed path (green solid, underneath)
   if (collapsedPath.length >= 2) {
     const pts = collapsedPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="green" stroke-width="1.5"/>\n`
+    svg += `<polyline points="${pts}" fill="none" stroke="green" stroke-width="3"/>\n`
   }
 
   // Uncollapsed path (orange dashed, on top)
   if (rawPath.length >= 2) {
     const pts = rawPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="orange" stroke-width="1" stroke-dasharray="3,2"/>\n`
+    svg += `<polyline points="${pts}" fill="none" stroke="orange" stroke-width="2" stroke-dasharray="5,3"/>\n`
   }
 
   svg += `</g></svg>`
