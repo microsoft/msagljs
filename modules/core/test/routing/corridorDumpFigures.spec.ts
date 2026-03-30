@@ -692,43 +692,16 @@ test('dump collapse before/after for paper figure', () => {
   // Find edges where uncollapsed path has a sharp turn near source/target
   // (the collapsed path differs significantly from the uncollapsed one)
   const {corridorRoute} = require('../../../core/src/routing/corridorRouter')
-  const candidates: {edge: any; rawLen: number; collapsedLen: number; diff: number}[] = []
-
+  // Use JOFFREY-MYCAH specifically
+  const selected: {edge: any}[] = []
   for (const edge of gg.deepEdges) {
     if (edge.curve == null) continue
-    const source = edge.source.center
-    const target = edge.target.center
-    const sourcePoly = nodeToPolyline.get(edge.source)
-    const targetPoly = nodeToPolyline.get(edge.target)
-    if (!sourcePoly || !targetPoly) continue
-
-    const allowed = new Set([sourcePoly, targetPoly])
-    const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
-    if (!sleeve || sleeve.length < 3) continue
-
-    const rawDiags = sleeveToDiagonalsRaw(sleeve)
-    const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
-    if (rawDiags.length < 2 || collapsedDiags.length < 1) continue
-
-    // Measure path length difference as proxy for "collapse helps"
-    const collapsedLen = edge.curve.length
-    // Rough raw path: just sum diagonal midpoints as waypoints
-    let rawLen = 0
-    let prev = source
-    for (const d of rawDiags) {
-      const mid = new Point((d.left.x + d.right.x) / 2, (d.left.y + d.right.y) / 2)
-      rawLen += prev.sub(mid).length
-      prev = mid
+    if ((edge.edge.source.id === 'JOFFREY' && edge.edge.target.id === 'MYCAH') ||
+        (edge.edge.source.id === 'MYCAH' && edge.edge.target.id === 'JOFFREY')) {
+      selected.push({edge})
+      break
     }
-    rawLen += prev.sub(target).length
-
-    const diff = Math.abs(rawLen - collapsedLen)
-    if (diff > 5) candidates.push({edge, rawLen, collapsedLen, diff})
   }
-
-  // Sort by diff descending, pick top 5
-  candidates.sort((a, b) => b.diff - a.diff)
-  const selected = candidates.slice(0, 5)
 
   for (let ci = 0; ci < selected.length; ci++) {
     const {edge} = selected[ci]
@@ -780,23 +753,17 @@ test('dump collapse before/after for paper figure', () => {
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'SteelBlue', targetPoly))
 
-    // Uncollapsed path (orange dashed) — draw as polyline through diagonal endpoints
-    // Use raw diagonals: source → left/right chain → target
-    const rawPts = [source]
-    for (const d of rawDiags) {
-      // Pick the endpoint closer to previous point
-      const prev = rawPts[rawPts.length - 1]
-      const toLeft = prev.sub(d.left).length
-      const toRight = prev.sub(d.right).length
-      rawPts.push(toLeft < toRight ? d.right : d.left)
-    }
-    rawPts.push(target)
-    const rawPolyline = Polyline.mkFromPoints(rawPts)
-    curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.5, 'Orange', rawPolyline.toCurve(), null, [6, 3]))
-
-    // Collapsed path (solid green)
+    // Collapsed path (solid green, drawn FIRST so it's underneath)
     if (collapsedPoly) {
-      curves.push(DebugCurve.mkDebugCurveTWCI(220, 2, 'Green', collapsedPoly.toCurve()))
+      curves.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Green', collapsedPoly.toCurve()))
+    }
+
+    // Uncollapsed path (orange dashed, drawn ON TOP to show difference at endpoints)
+    const {funnelFromDiagonals} = require('../../../core/src/routing/corridorRouter')
+    const rawFunnelPts = funnelFromDiagonals(source, target, rawDiags)
+    if (rawFunnelPts.length >= 2) {
+      const rawPolyline = Polyline.mkFromPoints(rawFunnelPts)
+      curves.push(DebugCurve.mkDebugCurveTWCILD(255, 1.5, 'Orange', rawPolyline.toCurve(), null, [4, 2]))
     }
 
     const srcName = edge.edge.source.id

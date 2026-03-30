@@ -333,7 +333,7 @@ function sleeveToDiagonals(
 
 /** Funnel algorithm: find the shortest path through a sequence of diagonals.
  *  Following https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf */
-function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]): Point[] {
+export function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]): Point[] {
   if (diagonals.length === 0) {
     return [source, target]
   }
