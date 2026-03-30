@@ -391,13 +391,7 @@ function sleeveToDiagonals(
 
   function moveToCenter(site: CdtSite, center: Point) {
     if (movedPos.has(site)) return
-    const tris = siteConstraints.get(site)
-    if (tris && tris.length > 0) {
-      const t = legalCollapseT(site.point, center, tris)
-      if (t > 0.01) movedPos.set(site, site.point.add(center.sub(site.point).mul(t)))
-    } else {
-      movedPos.set(site, center)
-    }
+    movedPos.set(site, center)
   }
 
   function getPos(site: CdtSite): Point {
