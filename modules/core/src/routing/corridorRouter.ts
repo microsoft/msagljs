@@ -8,8 +8,6 @@ import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
-import {LineSegment} from '../math/geometry/lineSegment'
-import {Curve} from '../math/geometry/curve'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomNode} from '../layout/core/geomNode'
@@ -336,27 +334,14 @@ function collectSleeveTriangles(sleeve: FrontEdge[]): CdtTriangle[] {
   return result
 }
 
-/** Check if a line segment from a to b intersects any obstacle in the list. */
-function segmentHitsObstacle(a: Point, b: Point, obstacles: Polyline[]): boolean {
-  const seg = LineSegment.mkPP(a, b)
-  const segBB = Rectangle.mkPP(a, b)
-  for (const obs of obstacles) {
-    if (!segBB.intersects(obs.boundingBox)) continue
-    const xs = Curve.getAllIntersections(seg, obs, false)
-    if (xs.length > 0) return true
-  }
-  return false
-}
-
 /** Convert a sleeve into diagonals for the funnel algorithm.
  *  Moves source/target obstacle vertices toward their node center
- *  as far as CDT triangle orientations allow, then validates that
- *  the modified boundary doesn't cross other obstacles. */
+ *  as far as CDT triangle orientations allow, to widen the channel
+ *  and eliminate sharp turns near endpoints. */
 function sleeveToDiagonals(
   sleeve: FrontEdge[],
   collapseSource?: {poly: Polyline; center: Point},
   collapseTarget?: {poly: Polyline; center: Point},
-  obstacles?: Polyline[],
 ): Diagonal[] {
   const allTriangles = collectSleeveTriangles(sleeve)
 
@@ -383,78 +368,16 @@ function sleeveToDiagonals(
     }
   }
 
-  // Collect neighbor sites for each obstacle site (to check boundary edges)
-  // A neighbor is a site connected by a sleeve diagonal that is NOT on the same obstacle
-  const siteNeighbors = new Map<CdtSite, CdtSite[]>()
-  for (const fe of sleeve) {
-    const e = fe.edge
-    const lower = e.lowerSite, upper = e.upperSite
-    function addNeighbor(s: CdtSite, nb: CdtSite) {
-      let list = siteNeighbors.get(s)
-      if (!list) { list = []; siteNeighbors.set(s, list) }
-      if (!list.includes(nb)) list.push(nb)
-    }
-    addNeighbor(lower, upper)
-    addNeighbor(upper, lower)
-  }
-
-  // Pre-compute nearby obstacles for each site to avoid scanning all obstacles per check
-  const sleeveBB = Rectangle.mkEmpty()
-  for (const t of allTriangles) {
-    for (const s of [t.Sites.item0, t.Sites.item1, t.Sites.item2]) {
-      sleeveBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
-    }
-  }
-  if (collapseSource) sleeveBB.addRecSelf(Rectangle.mkPP(collapseSource.center, collapseSource.center))
-  if (collapseTarget) sleeveBB.addRecSelf(Rectangle.mkPP(collapseTarget.center, collapseTarget.center))
-  sleeveBB.pad(sleeveBB.diagonal * 0.1)
-
-  const nearbyObstacles = obstacles ? obstacles.filter(obs => {
-    if (obs === collapseSource?.poly || obs === collapseTarget?.poly) return false
-    return sleeveBB.intersects(obs.boundingBox)
-  }) : []
-
-  // Move each obstacle vertex toward center, then validate against obstacles
+  // Move each obstacle vertex toward center as far as triangle-flip constraints allow
   const sitePosition = new Map<CdtSite, Point>()
-
-  function tryMove(site: CdtSite, center: Point, tris: {a: Point; b: Point}[]) {
-    const tOri = legalCollapseT(site.point, center, tris)
-    if (tOri < 0.01) return
-
-    const dir = center.sub(site.point)
-    const neighbors = siteNeighbors.get(site) ?? []
-
-    if (nearbyObstacles.length > 0 && neighbors.length > 0) {
-      function hitsAtT(t: number): boolean {
-        const pos = site.point.add(dir.mul(t))
-        for (const nb of neighbors) {
-          const nbPos = sitePosition.get(nb) ?? nb.point
-          if (segmentHitsObstacle(pos, nbPos, nearbyObstacles)) return true
-        }
-        return false
-      }
-
-      if (hitsAtT(tOri)) {
-        // Binary search: find largest safe t in [0, tOri]
-        let lo = 0, hi = tOri
-        for (let iter = 0; iter < 6; iter++) {
-          const mid = (lo + hi) / 2
-          if (hitsAtT(mid)) hi = mid
-          else lo = mid
-        }
-        if (lo < 0.01) return // can't move at all
-        sitePosition.set(site, site.point.add(dir.mul(lo)))
-        return
-      }
-    }
-
-    sitePosition.set(site, site.point.add(dir.mul(tOri)))
-  }
 
   for (const [site, tris] of siteConstraints) {
     const center = (collapseSource && site.Owner === collapseSource.poly)
       ? collapseSource.center : collapseTarget!.center
-    tryMove(site, center, tris)
+    const t = legalCollapseT(site.point, center, tris)
+    if (t > 0.01) {
+      sitePosition.set(site, site.point.add(center.sub(site.point).mul(t)))
+    }
   }
   // Also move obstacle vertices with NO free-space constraints (fully interior)
   for (const t of allTriangles) {
@@ -655,7 +578,6 @@ export function corridorRoute(
   target: Point,
   sourcePoly?: Polyline,
   targetPoly?: Polyline,
-  obstacles?: Polyline[],
 ): Polyline | null {
   const sourceTriangle = findContainingTriangle(cdt, source)
   if (!sourceTriangle) return null
@@ -673,7 +595,7 @@ export function corridorRoute(
 
   const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
   const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-  const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget, obstacles)
+  const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
 
   if (diagonals.length === 0) {
     return Polyline.mkFromPoints([source, target])
@@ -796,7 +718,7 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
       // Check if Dijkstra reached this target
       if (!parentMap.has(targetTriangle)) {
         // fallback to individual A* (target may be inside obstacle requiring allowed polys)
-        const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly, obstacles)
+        const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
         if (poly && poly.count >= 2) {
           edge.curve = poly.toCurve()
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
@@ -814,7 +736,7 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
         } else {
           const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
           const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-          const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget, obstacles)
+          const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
           if (diagonals.length === 0) {
             const pts = Polyline.mkFromPoints([source, target])
             edge.curve = pts.toCurve()
