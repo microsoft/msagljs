@@ -564,7 +564,7 @@ export class TileMap {
   }
 
   /** Fills the tiles up to the capacity.
-   * Returns the number of inserted node.
+   * Returns the number of inserted nodes.
    * An edge and its attributes is inserted just after its source and the target are inserted.
    * The nodes are sorted by rank here.  */
 
@@ -572,22 +572,27 @@ export class TileMap {
     // create a map,edgeToIndexOfPrevLevel, from the prevLevel edges to integers,
     // For each edge edgeToIndexOfPrevLevel.get(edge) = min {i: edge == tile.getCurveClips[i].edge}
     const dataByEntityMap = this.transferDataOfLevelToMap(levelToReduce)
-    let k = 0
-    for (; k < this.sortedNodes.length; k++) {
+    const addedNodes = new Set<Node>()
+    for (let k = 0; k < this.sortedNodes.length; k++) {
       const node = this.sortedNodes[k]
-      if (!this.addNodeToLevel(levelToReduce, node, dataByEntityMap)) {
-        break
+      if (this.addNodeToLevel(levelToReduce, node, dataByEntityMap, addedNodes)) {
+        addedNodes.add(node)
       }
     }
     this.removeEmptyTiles(z)
     //dumpTiles(levelToReduce, z)
-    return k
+    return addedNodes.size
   }
 
   /** Goes over all tiles where 'node' had presence and tries to add.
-   *  If the above succeeds then all edges leading to the higher ranking nodes added without consulting with tileCapacity. The edge attributes added as well
+   *  If the above succeeds then all edges leading to already-added nodes are added without consulting with tileCapacity. The edge attributes added as well
    */
-  private addNodeToLevel(levelToReduce: IntPairMap<Tile>, node: Node, dataByEntity: Map<Entity, EntityDataInTile[]>) {
+  private addNodeToLevel(
+    levelToReduce: IntPairMap<Tile>,
+    node: Node,
+    dataByEntity: Map<Entity, EntityDataInTile[]>,
+    addedNodes: Set<Node>,
+  ) {
     const entityToData = dataByEntity.get(node)
     for (const edt of entityToData) {
       const tile = edt.tile
@@ -617,11 +622,9 @@ export class TileMap {
         }
       }
     }
-    const nodeIndex = this.nodeIndexInSortedNodes.get(node)
     for (const e of node.inEdges) {
       const source = e.source
-      const sourceIndex = this.nodeIndexInSortedNodes.get(source)
-      if (sourceIndex > nodeIndex) continue
+      if (!addedNodes.has(source)) continue
       for (const edt of dataByEntity.get(e)) {
         const tile = edt.tile
         const data = edt.data
@@ -637,8 +640,7 @@ export class TileMap {
     }
     for (const e of node.outEdges) {
       const target = e.target
-      const targetIndex = this.nodeIndexInSortedNodes.get(target)
-      if (targetIndex > nodeIndex) continue
+      if (!addedNodes.has(target)) continue
       for (const edt of dataByEntity.get(e)) {
         const tile = edt.tile
         const data = edt.data
