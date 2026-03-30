@@ -673,7 +673,8 @@ test('dump Mycah edges with sleeve + route', () => {
   }
 })
 
-test('dump collapse before/after for paper figure', () => {
+
+test('dump collapse benefit: find edges where collapse shortens path', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -689,22 +690,39 @@ test('dump collapse before/after for paper figure', () => {
   const outDir = join(__dirname, '../../../../tmp/corridor_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
 
-  // Find edges where uncollapsed path has a sharp turn near source/target
-  // (the collapsed path differs significantly from the uncollapsed one)
-  const {corridorRoute} = require('../../../core/src/routing/corridorRouter')
-  // Use JOFFREY-MYCAH specifically
-  const selected: {edge: any}[] = []
+  const {funnelFromDiagonals, corridorRoute} = require('../../../core/src/routing/corridorRouter')
+
+  const candidates: {edge: any; rawLen: number; collapsedLen: number; ratio: number}[] = []
   for (const edge of gg.deepEdges) {
     if (edge.curve == null) continue
-    if ((edge.edge.source.id === 'JOFFREY' && edge.edge.target.id === 'MYCAH') ||
-        (edge.edge.source.id === 'MYCAH' && edge.edge.target.id === 'JOFFREY')) {
-      selected.push({edge})
-      break
+    const source = edge.source.center
+    const target = edge.target.center
+    const sourcePoly = nodeToPolyline.get(edge.source)
+    const targetPoly = nodeToPolyline.get(edge.target)
+    if (!sourcePoly || !targetPoly) continue
+    const allowed = new Set([sourcePoly, targetPoly])
+    const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
+    if (!sleeve || sleeve.length < 3) continue
+    const rawDiags = sleeveToDiagonalsRaw(sleeve)
+    if (rawDiags.length < 2) continue
+    const rawPts = funnelFromDiagonals(source, target, rawDiags)
+    let rawLen = 0
+    for (let i = 1; i < rawPts.length; i++) rawLen += rawPts[i].sub(rawPts[i-1]).length
+    const collapsedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
+    if (!collapsedPoly || collapsedPoly.count < 2) continue
+    const collapsedLen = collapsedPoly.toCurve().length
+    if (rawLen > collapsedLen + 1) {
+      candidates.push({edge, rawLen, collapsedLen, ratio: rawLen / collapsedLen})
     }
   }
+  candidates.sort((a, b) => b.ratio - a.ratio)
+  console.log('Found ' + candidates.length + ' edges where collapse shortens path')
+  for (const c of candidates.slice(0, 5)) {
+    console.log('  ' + c.edge.edge.source.id + ' -> ' + c.edge.edge.target.id + ': raw=' + c.rawLen.toFixed(1) + ' collapsed=' + c.collapsedLen.toFixed(1) + ' ratio=' + c.ratio.toFixed(3))
+  }
 
-  for (let ci = 0; ci < selected.length; ci++) {
-    const {edge} = selected[ci]
+  for (let ci = 0; ci < Math.min(5, candidates.length); ci++) {
+    const {edge} = candidates[ci]
     const source = edge.source.center
     const target = edge.target.center
     const sourcePoly = nodeToPolyline.get(edge.source)
@@ -712,63 +730,39 @@ test('dump collapse before/after for paper figure', () => {
     const allowed = new Set([sourcePoly, targetPoly])
     const sleeve = findSleeveAsFrontEdges(cdt, source, target, allowed)
     if (!sleeve) continue
-
-    // Compute uncollapsed route
-    const rawDiags = sleeveToDiagonalsRaw(sleeve)
-
-    // Compute collapsed route (use corridorRoute which does collapse internally)
+    const collapsedDiags = sleeveToDiagonalsCollapsed(sleeve, sourcePoly, source, targetPoly, target)
     const collapsedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
-
-    // Build bounding box
     const viewBB = Rectangle.mkPP(source, target)
     for (const fe of sleeve) {
-      for (const s of [fe.source.Sites.item0, fe.source.Sites.item1, fe.source.Sites.item2]) {
-        viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
-      }
+      for (const s of [fe.source.Sites.item0, fe.source.Sites.item1, fe.source.Sites.item2]) viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
-      if (ot) for (const s of [ot.Sites.item0, ot.Sites.item1, ot.Sites.item2]) {
-        viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
-      }
+      if (ot) for (const s of [ot.Sites.item0, ot.Sites.item1, ot.Sites.item2]) viewBB.addRecSelf(Rectangle.mkPP(s.point, s.point))
     }
     viewBB.pad(viewBB.diagonal * 0.15)
-
     const curves: DebugCurve[] = []
-
-    // Nearby obstacles
     for (const node of gg.nodesBreadthFirst) {
       if (!node.boundaryCurve || !viewBB.intersects(node.boundaryCurve.boundingBox)) continue
       if (node === edge.source || node === edge.target) continue
-      curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'Gray', (nodeToPolyline.get(node) as any)))
+      const poly = nodeToPolyline.get(node)
+      if (poly) curves.push(DebugCurve.mkDebugCurveTWCI(180, 0.8, 'Gray', poly))
     }
-
-    // Sleeve triangles (thin dashed blue)
+    // 1) Original sleeve (blue solid)
     const seen = new Set()
     for (const fe of sleeve) {
-      if (!seen.has(fe.source)) { seen.add(fe.source); curves.push(DebugCurve.mkDebugCurveTWCILD(130, 0.5, 'CornflowerBlue', triangleToPolyline(fe.source), null, [3, 2])) }
+      if (!seen.has(fe.source)) { seen.add(fe.source); curves.push(DebugCurve.mkDebugCurveTWCI(150, 1, 'CornflowerBlue', triangleToPolyline(fe.source))) }
       const ot = fe.edge.GetOtherTriangle_T(fe.source)
-      if (ot && !seen.has(ot)) { seen.add(ot); curves.push(DebugCurve.mkDebugCurveTWCILD(130, 0.5, 'CornflowerBlue', triangleToPolyline(ot), null, [3, 2])) }
+      if (ot && !seen.has(ot)) { seen.add(ot); curves.push(DebugCurve.mkDebugCurveTWCI(150, 1, 'CornflowerBlue', triangleToPolyline(ot))) }
     }
-
-    // Source/target padded
-    curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'IndianRed', sourcePoly))
-    curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.2, 'SteelBlue', targetPoly))
-
-    // Collapsed path (solid green, drawn FIRST so it's underneath)
-    if (collapsedPoly) {
-      curves.push(DebugCurve.mkDebugCurveTWCI(200, 2, 'Green', collapsedPoly.toCurve()))
+    // 2) Collapsed diagonals (green dashed)
+    for (const d of collapsedDiags) {
+      curves.push(DebugCurve.mkDebugCurveTWCILD(220, 1.5, 'Green', LineSegment.mkPP(d.left, d.right), null, [5, 3]))
     }
-
-    // Uncollapsed path (orange dashed, drawn ON TOP to show difference at endpoints)
-    const {funnelFromDiagonals} = require('../../../core/src/routing/corridorRouter')
-    const rawFunnelPts = funnelFromDiagonals(source, target, rawDiags)
-    if (rawFunnelPts.length >= 2) {
-      const rawPolyline = Polyline.mkFromPoints(rawFunnelPts)
-      curves.push(DebugCurve.mkDebugCurveTWCILD(255, 1.5, 'Orange', rawPolyline.toCurve(), null, [4, 2]))
-    }
-
-    const srcName = edge.edge.source.id
-    const tgtName = edge.edge.target.id
-    const fname = join(outDir, 'collapse_fig_' + ci + '_' + srcName + '_' + tgtName + '.svg')
+    // Source/target
+    curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
+    curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
+    // 3) Collapsed path (red)
+    if (collapsedPoly) curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', collapsedPoly.toCurve()))
+    const fname = join(outDir, 'benefit_' + ci + '_' + edge.edge.source.id + '_' + edge.edge.target.id + '.svg')
     SvgDebugWriter.dumpDebugCurves(fname, curves)
     console.log('Wrote ' + fname)
   }
