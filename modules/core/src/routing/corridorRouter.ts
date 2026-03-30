@@ -294,167 +294,39 @@ function recoverSleeve(
   return ret.reverse()
 }
 
-/** Compute the maximum t ∈ [0,1] such that moving vertex v to v+t*(s-v)
- *  does not flip the orientation of any triangle using v.
- *  Each triangle is given as the other two vertices (a, b) — the triangle
- *  is (v, a, b) and must maintain its original signed-area sign. */
-function legalCollapseT(v: Point, s: Point, triangles: {a: Point; b: Point}[]): number {
-  let tMax = 1.0
-  const dir = s.sub(v)
-
-  for (const {a, b} of triangles) {
-    const edge = b.sub(a)
-    const c0 = edge.x * (v.y - a.y) - edge.y * (v.x - a.x) // cross(b-a, v-a)
-    const c1 = edge.x * dir.y - edge.y * dir.x // cross(b-a, s-v)
-
-    if (c1 < -1e-12) {
-      const tUpper = c0 / (-c1)
-      if (tUpper < tMax) tMax = tUpper
-    }
-  }
-
-  return Math.max(0, Math.min(1, tMax * 0.99)) // small safety margin
-}
-
-/** Collect all sleeve triangles (both sides of each FrontEdge). */
-function collectSleeveTriangles(sleeve: FrontEdge[]): CdtTriangle[] {
-  const seen = new Set<CdtTriangle>()
-  const result: CdtTriangle[] = []
-  for (const fe of sleeve) {
-    if (!seen.has(fe.source)) {
-      seen.add(fe.source)
-      result.push(fe.source)
-    }
-    const ot = fe.edge.GetOtherTriangle_T(fe.source)
-    if (ot && !seen.has(ot)) {
-      seen.add(ot)
-      result.push(ot)
-    }
-  }
-  return result
-}
-
-/** Cross product of (b-a) and (c-a) */
-function cross(a: Point, b: Point, c: Point): number {
-  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
-}
-
 /** Convert a sleeve into diagonals for the funnel algorithm.
- *  After building raw diagonals, checks each left/right chain vertex
- *  that belongs to a source/target obstacle: if it creates a wrong turn
- *  (narrows the channel toward the center), move it to the center,
- *  constrained by CDT triangle orientations. */
+ *  Collapses source/target obstacle vertices to their node centers
+ *  to eliminate sharp turns at endpoints. */
 function sleeveToDiagonals(
   sleeve: FrontEdge[],
   collapseSource?: {poly: Polyline; center: Point},
   collapseTarget?: {poly: Polyline; center: Point},
 ): Diagonal[] {
-  // Step 1: Build raw diagonals with site references
-  type RawDiag = {left: Point; right: Point; leftSite: CdtSite; rightSite: CdtSite}
-  const rawDiags: RawDiag[] = []
+  function collapse(site: CdtSite): Point {
+    if (collapseSource && site.Owner === collapseSource.poly) return collapseSource.center
+    if (collapseTarget && site.Owner === collapseTarget.poly) return collapseTarget.center
+    return site.point
+  }
+
+  const diagonals: Diagonal[] = []
   for (const fe of sleeve) {
     const e = fe.edge
+    const lowerPt = collapse(e.lowerSite)
+    const upperPt = collapse(e.upperSite)
+
+    // Skip degenerate diagonals (both endpoints collapsed to same point)
+    if (lowerPt.sub(upperPt).length < 1e-8) continue
+
+    // Use original geometry for the orientation check
     const oppSite = fe.source.OppositeSite(e)
     if (
       Point.getTriangleOrientation(oppSite.point, e.lowerSite.point, e.upperSite.point) ===
       TriangleOrientation.Counterclockwise
     ) {
-      rawDiags.push({left: e.upperSite.point, right: e.lowerSite.point, leftSite: e.upperSite, rightSite: e.lowerSite})
+      diagonals.push({left: upperPt, right: lowerPt})
     } else {
-      rawDiags.push({right: e.upperSite.point, left: e.lowerSite.point, leftSite: e.lowerSite, rightSite: e.upperSite})
+      diagonals.push({right: upperPt, left: lowerPt})
     }
-  }
-  if (rawDiags.length === 0) return []
-
-  // Step 2: Build constraint map for obstacle sites
-  const allTriangles = collectSleeveTriangles(sleeve)
-  const siteConstraints = new Map<CdtSite, {a: Point; b: Point}[]>()
-  for (const t of allTriangles) {
-    const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
-    for (let i = 0; i < 3; i++) {
-      const s = sites[i]
-      const sOther1 = sites[(i + 1) % 3]
-      const sOther2 = sites[(i + 2) % 3]
-      const isSourceSite = collapseSource && s.Owner === collapseSource.poly
-      const isTargetSite = collapseTarget && s.Owner === collapseTarget.poly
-      if (!isSourceSite && !isTargetSite) continue
-      const collapsePoly = isSourceSite ? collapseSource.poly : collapseTarget.poly
-      if (sOther1.Owner === collapsePoly || sOther2.Owner === collapsePoly) continue
-      let list = siteConstraints.get(s)
-      if (!list) { list = []; siteConstraints.set(s, list) }
-      list.push({a: sOther1.point, b: sOther2.point})
-    }
-  }
-
-  // Moved positions
-  const movedPos = new Map<CdtSite, Point>()
-
-  function moveToCenter(site: CdtSite, center: Point) {
-    if (movedPos.has(site)) return
-    movedPos.set(site, center)
-  }
-
-  function getPos(site: CdtSite): Point {
-    return movedPos.get(site) ?? site.point
-  }
-
-  const sourceCenter = collapseSource?.center
-  const targetCenter = collapseTarget?.center
-
-  // Step 3: Check left chain — scan from source end to target end
-  for (let i = 0; i < rawDiags.length; i++) {
-    const bSite = rawDiags[i].leftSite
-    // Only consider obstacle vertices
-    if (collapseSource && bSite.Owner === collapseSource.poly) {
-      const a = i > 0 ? getPos(rawDiags[i - 1].leftSite) : sourceCenter!
-      const b = bSite.point
-      // If (a, b, source_center) is CCW, b narrows the channel — move it
-      if (cross(a, b, sourceCenter!) < -1e-10) {
-        moveToCenter(bSite, sourceCenter!)
-      }
-    }
-    if (collapseTarget && bSite.Owner === collapseTarget.poly) {
-      const a = i > 0 ? getPos(rawDiags[i - 1].leftSite) : sourceCenter ?? rawDiags[0].left
-      const b = bSite.point
-      if (cross(a, b, targetCenter!) < -1e-10) {
-        moveToCenter(bSite, targetCenter!)
-      }
-    }
-  }
-
-  // Step 4: Check right chain — same logic with opposite turn direction
-  for (let i = 0; i < rawDiags.length; i++) {
-    const bSite = rawDiags[i].rightSite
-    if (collapseSource && bSite.Owner === collapseSource.poly) {
-      const a = i > 0 ? getPos(rawDiags[i - 1].rightSite) : sourceCenter!
-      const b = bSite.point
-      // For right chain, wrong turn is CW (cross > 0)
-      if (cross(a, b, sourceCenter!) > 1e-10) {
-        moveToCenter(bSite, sourceCenter!)
-      }
-    }
-    if (collapseTarget && bSite.Owner === collapseTarget.poly) {
-      const a = i > 0 ? getPos(rawDiags[i - 1].rightSite) : sourceCenter ?? rawDiags[0].right
-      const b = bSite.point
-      if (cross(a, b, targetCenter!) > 1e-10) {
-        moveToCenter(bSite, targetCenter!)
-      }
-    }
-  }
-
-  // Step 5: Build final diagonals
-  const diagonals: Diagonal[] = []
-  for (const rd of rawDiags) {
-    const leftPt = getPos(rd.leftSite)
-    const rightPt = getPos(rd.rightSite)
-
-    if (leftPt.sub(rightPt).length < 1e-8) continue
-
-    // Skip same-obstacle internal edges
-    if (collapseSource && rd.leftSite.Owner === collapseSource.poly && rd.rightSite.Owner === collapseSource.poly) continue
-    if (collapseTarget && rd.leftSite.Owner === collapseTarget.poly && rd.rightSite.Owner === collapseTarget.poly) continue
-
-    diagonals.push({left: leftPt, right: rightPt})
   }
   return diagonals
 }
