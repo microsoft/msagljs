@@ -385,6 +385,13 @@ function sleeveToDiagonals(
     // Skip degenerate diagonals
     if (lowerPt.sub(upperPt).length < 1e-8) continue
 
+    // Skip diagonals where both endpoints belong to the same collapse obstacle —
+    // these are internal edges within the source/target obstacle
+    const lowerOwner = e.lowerSite.Owner
+    const upperOwner = e.upperSite.Owner
+    if (collapseSource && lowerOwner === collapseSource.poly && upperOwner === collapseSource.poly) continue
+    if (collapseTarget && lowerOwner === collapseTarget.poly && upperOwner === collapseTarget.poly) continue
+
     // Use original geometry for the orientation check
     const oppSite = fe.source.OppositeSite(e)
     if (

@@ -538,6 +538,10 @@ function dumpCombinedFigure(
       const moved1 = movedPos.get(s1)
       const changed = moved0 !== undefined || moved1 !== undefined
 
+      // Skip edges where both vertices belong to the same obstacle —
+      // these are internal to source/target and shouldn't be drawn
+      if (s0.Owner === s1.Owner && (s0.Owner === sourcePoly || s0.Owner === targetPoly)) continue
+
       if (changed) {
         // Original boundary edge (orange dashed)
         curves.push(DebugCurve.mkDebugCurveTWCILD(200, 1.2, 'Orange', LineSegment.mkPP(s0.point, s1.point), null, [6, 3]))
