@@ -10,6 +10,7 @@ import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomNode} from '../layout/core/geomNode'
 import {GeomGraph} from '../layout/core/geomGraph'
 import {Arrowhead} from '../layout/core/arrowhead'
 import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
@@ -70,6 +71,115 @@ function canCrossEdge(e: CdtEdge, _allowedPolys: Set<Polyline>): boolean {
   // crossings here is too restrictive — it prevents routing through free-space
   // channels between touching obstacles.
   return true
+}
+
+/** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
+ *  Explores until all target triangles are found (or the whole reachable
+ *  graph is explored). Returns the parent-edge map for sleeve recovery. */
+function dijkstraTree(
+  sourceTriangle: CdtTriangle,
+  targetTriangles: Set<CdtTriangle>,
+  allowedPolys: Set<Polyline>,
+): Map<CdtTriangle, CdtEdge | undefined> {
+  const gScore = new Map<CdtTriangle, number>()
+  const cameFromEdge = new Map<CdtTriangle, CdtEdge | undefined>()
+
+  const open: {g: number; t: CdtTriangle; seq: number}[] = []
+  let seqCounter = 0
+  let remaining = targetTriangles.size
+
+  function heapPush(item: {g: number; t: CdtTriangle; seq: number}) {
+    open.push(item)
+    let i = open.length - 1
+    while (i > 0) {
+      const parent = (i - 1) >> 1
+      if (open[parent].g < item.g || (open[parent].g === item.g && open[parent].seq < item.seq)) break
+      open[i] = open[parent]
+      open[parent] = item
+      i = parent
+    }
+  }
+
+  function heapPop(): {g: number; t: CdtTriangle; seq: number} {
+    const top = open[0]
+    const last = open.pop()
+    if (open.length > 0) {
+      open[0] = last
+      let i = 0
+      while (true) {
+        let smallest = i
+        const l = 2 * i + 1
+        const r = 2 * i + 2
+        if (l < open.length && (open[l].g < open[smallest].g || (open[l].g === open[smallest].g && open[l].seq < open[smallest].seq)))
+          smallest = l
+        if (r < open.length && (open[r].g < open[smallest].g || (open[r].g === open[smallest].g && open[r].seq < open[smallest].seq)))
+          smallest = r
+        if (smallest === i) break
+        const tmp = open[i]
+        open[i] = open[smallest]
+        open[smallest] = tmp
+        i = smallest
+      }
+    }
+    return top
+  }
+
+  gScore.set(sourceTriangle, 0)
+  cameFromEdge.set(sourceTriangle, undefined)
+  heapPush({g: 0, t: sourceTriangle, seq: seqCounter++})
+
+  const foundTargets = new Set<CdtTriangle>()
+
+  while (open.length > 0 && remaining > 0) {
+    const current = heapPop()
+    const t = current.t
+
+    if (current.g > (gScore.get(t) ?? Infinity)) continue
+
+    if (targetTriangles.has(t) && !foundTargets.has(t)) {
+      foundTargets.add(t)
+      remaining--
+      if (remaining === 0) break
+    }
+
+    const tCentroid = triangleCentroid(t)
+    const edgeIntoT = cameFromEdge.get(t)
+
+    for (const e of t.Edges) {
+      if (edgeIntoT !== undefined && e === edgeIntoT) continue
+      const ot = e.GetOtherTriangle_T(t)
+      if (ot == null) continue
+      if (triangleIsInsideObstacle(ot, allowedPolys)) {
+        // Allow reaching target triangles but don't expand through them
+        if (targetTriangles.has(ot) && !foundTargets.has(ot)) {
+          const otCentroid = triangleCentroid(ot)
+          const edgeCost = tCentroid.sub(otCentroid).length
+          const tentativeG = current.g + edgeCost
+          const prevG = gScore.get(ot)
+          if (prevG === undefined || tentativeG < prevG) {
+            gScore.set(ot, tentativeG)
+            cameFromEdge.set(ot, e)
+            // Don't push to open — this is a terminal node
+            foundTargets.add(ot)
+            remaining--
+          }
+        }
+        continue
+      }
+
+      const otCentroid = triangleCentroid(ot)
+      const edgeCost = tCentroid.sub(otCentroid).length
+      const tentativeG = current.g + edgeCost
+
+      const prevG = gScore.get(ot)
+      if (prevG !== undefined && tentativeG >= prevG) continue
+
+      gScore.set(ot, tentativeG)
+      cameFromEdge.set(ot, e)
+      heapPush({g: tentativeG, t: ot, seq: seqCounter++})
+    }
+  }
+  return cameFromEdge
 }
 
 /** A* on the CDT dual graph from sourceTriangle to the triangle containing target.
@@ -460,34 +570,105 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
   cdt.run()
   console.timeEnd('CorridorRouter CDT')
 
-  // route each edge
+  // route edges using Dijkstra tree per source node
   console.time('CorridorRouter routing')
+
+  // Group edges by source node
+  const edgesBySource = new Map<GeomNode, GeomEdge[]>()
   for (const edge of edgesToRoute) {
     if (cancelToken && cancelToken.canceled) return
     if (edge.sourcePort == null || edge.targetPort == null) continue
+    let list = edgesBySource.get(edge.source)
+    if (!list) { list = []; edgesBySource.set(edge.source, list) }
+    list.push(edge)
+  }
 
-    const source = edge.sourcePort.Location
-    const target = edge.targetPort.Location
-    const sourcePoly = nodeToPolyline.get(edge.source)
-    const targetPoly = nodeToPolyline.get(edge.target)
-
-    const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
-    if (poly && poly.count >= 2) {
-      edge.curve = poly.toCurve()
-      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-    } else {
-      // fallback: straight line
-      const fallback = Polyline.mkFromPoints([source, target])
-      edge.curve = fallback.toCurve()
-      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+  for (const [sourceNode, edges] of edgesBySource) {
+    if (cancelToken && cancelToken.canceled) return
+    const source = sourceNode.center
+    const sourcePoly = nodeToPolyline.get(sourceNode)
+    const sourceTriangle = findContainingTriangle(cdt, source)
+    if (!sourceTriangle) {
+      // fallback: straight lines for all edges from this node
+      for (const edge of edges) {
+        const target = edge.target.center
+        const fallback = Polyline.mkFromPoints([source, target])
+        edge.curve = fallback.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+      }
+      continue
     }
-    Arrowhead.trimSplineAndCalculateArrowheadsII(
-      edge,
-      edge.source.boundaryCurve,
-      edge.target.boundaryCurve,
-      edge.curve,
-      false,
-    )
+
+    // Find all target triangles for this source
+    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetTriangle: CdtTriangle}[] = []
+    const targetTriangles = new Set<CdtTriangle>()
+    for (const edge of edges) {
+      const target = edge.target.center
+      const targetPoly = nodeToPolyline.get(edge.target)
+      const targetTriangle = findContainingTriangle(cdt, target)
+      if (!targetTriangle) {
+        // fallback for this edge
+        const fallback = Polyline.mkFromPoints([source, target])
+        edge.curve = fallback.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        continue
+      }
+      targetInfos.push({edge, target, targetPoly, targetTriangle})
+      targetTriangles.add(targetTriangle)
+    }
+
+    if (targetInfos.length === 0) continue
+
+    // Dijkstra with only source poly allowed — target obstacle entry is
+    // handled by the fact that canCrossEdge always returns true
+    const allowed = new Set<Polyline>()
+    if (sourcePoly) allowed.add(sourcePoly)
+
+    // Single Dijkstra from sourceTriangle to all target triangles
+    const parentMap = dijkstraTree(sourceTriangle, targetTriangles, allowed)
+
+    // Extract sleeve and route each edge
+    for (const {edge, target, targetPoly, targetTriangle} of targetInfos) {
+      // Check if Dijkstra reached this target
+      if (!parentMap.has(targetTriangle)) {
+        // fallback to individual A* (target may be inside obstacle requiring allowed polys)
+        const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
+        if (poly && poly.count >= 2) {
+          edge.curve = poly.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+        } else {
+          const fallback = Polyline.mkFromPoints([source, target])
+          edge.curve = fallback.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        }
+      } else {
+        const sleeve = recoverSleeve(sourceTriangle, parentMap, targetTriangle)
+        if (sleeve.length === 0) {
+          const pts = Polyline.mkFromPoints([source, target])
+          edge.curve = pts.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        } else {
+          const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+          const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+          const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+          if (diagonals.length === 0) {
+            const pts = Polyline.mkFromPoints([source, target])
+            edge.curve = pts.toCurve()
+            edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+          } else {
+            const points = funnelFromDiagonals(source, target, diagonals)
+            const poly = Polyline.mkFromPoints(points)
+            edge.curve = poly.toCurve()
+            edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          }
+        }
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+    }
   }
   console.timeEnd('CorridorRouter routing')
 }
