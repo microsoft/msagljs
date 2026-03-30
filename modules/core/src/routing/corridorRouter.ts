@@ -346,17 +346,31 @@ function sleeveToDiagonals(
   // Collect all sleeve triangles and compute per-site legal collapse
   const allTriangles = collectSleeveTriangles(sleeve)
 
-  // Build map: CdtSite → list of triangles using it (as other-two-vertices pairs)
+  // Build map: CdtSite → list of constraining triangles
+  // Only use triangles where NEITHER other vertex belongs to the same
+  // collapsing obstacle — those are the free-space boundary triangles.
+  // Triangles with another same-obstacle vertex move together and don't constrain.
   const siteTriangles = new Map<CdtSite, {a: Point; b: Point}[]>()
   for (const t of allTriangles) {
     const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
+
     for (let i = 0; i < 3; i++) {
       const s = sites[i]
-      const a = sites[(i + 1) % 3].point
-      const b = sites[(i + 2) % 3].point
+      const sOther1 = sites[(i + 1) % 3]
+      const sOther2 = sites[(i + 2) % 3]
+
+      const isSourceSite = collapseSource && s.Owner === collapseSource.poly
+      const isTargetSite = collapseTarget && s.Owner === collapseTarget.poly
+      if (!isSourceSite && !isTargetSite) continue
+
+      const collapsePoly = isSourceSite ? collapseSource.poly : collapseTarget.poly
+
+      // Only constrain from triangles where BOTH other vertices are NOT on this obstacle
+      if (sOther1.Owner === collapsePoly || sOther2.Owner === collapsePoly) continue
+
       let list = siteTriangles.get(s)
       if (!list) { list = []; siteTriangles.set(s, list) }
-      list.push({a, b})
+      list.push({a: sOther1.point, b: sOther2.point})
     }
   }
 

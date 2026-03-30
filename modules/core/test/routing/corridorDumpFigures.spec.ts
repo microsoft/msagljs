@@ -500,9 +500,16 @@ function dumpCombinedFigure(
       const sites = [t.Sites.item0, t.Sites.item1, t.Sites.item2]
       for (let i = 0; i < 3; i++) {
         const s = sites[i]
+        const sOther1 = sites[(i + 1) % 3]
+        const sOther2 = sites[(i + 2) % 3]
+        const isSource = s.Owner === sourcePoly
+        const isTarget = s.Owner === targetPoly
+        if (!isSource && !isTarget) continue
+        const collapsePoly = isSource ? sourcePoly : targetPoly
+        if (sOther1.Owner === collapsePoly || sOther2.Owner === collapsePoly) continue
         let list = siteAdj.get(s)
         if (!list) { list = []; siteAdj.set(s, list) }
-        list.push({a: sites[(i+1)%3].point, b: sites[(i+2)%3].point})
+        list.push({a: sOther1.point, b: sOther2.point})
       }
     }
     const movedPos = new Map<CdtSite, Point>()
