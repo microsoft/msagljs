@@ -362,18 +362,18 @@ export function sleeveToDiagonals(
     }
   }
 
-  // Target: find minimal k where (target_center, rk, r_{k+1}) is LEFT rotation (cross > 0)
+  // Target: find minimal k where (target_center, rk, r_{k+1}) is RIGHT rotation (cross < 0)
   let collapseRightFromTarget = raw.length
   if (collapseTarget) {
     for (let k = 0; k < R.length - 1; k++) {
-      if (cross2d(collapseTarget.center, R[k].pt, R[k + 1].pt) > 1e-10) {
+      if (cross2d(collapseTarget.center, R[k].pt, R[k + 1].pt) < -1e-10) {
         collapseRightFromTarget = R[k].idx
         break
       }
     }
   }
 
-  // Step 4: Left chain — source LEFT rotation (cross > 0), target RIGHT rotation (cross < 0)
+  // Step 4: Left chain — source LEFT rotation (cross > 0), target LEFT rotation (cross > 0)
   let collapseLeftFromSource = -1
   if (collapseSource) {
     for (let k = 0; k < L.length - 1; k++) {
@@ -387,7 +387,7 @@ export function sleeveToDiagonals(
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let k = 0; k < L.length - 1; k++) {
-      if (cross2d(collapseTarget.center, L[k].pt, L[k + 1].pt) < -1e-10) {
+      if (cross2d(collapseTarget.center, L[k].pt, L[k + 1].pt) > 1e-10) {
         collapseLeftFromTarget = L[k].idx
         break
       }
