@@ -334,18 +334,24 @@ export function sleeveToDiagonals(
   // Left chain at target:  (prev, this, center) left turn  → cross > 0
   // Left chain at source:  (center, this, next) left turn  → cross > 0
 
+  // Collapse check: vertex sticks out if going through it is a detour
+  // compared to going directly from prev to center
+  function isDetour(prev: Point, cur: Point, center: Point): boolean {
+    const direct = prev.sub(center).length
+    const via = prev.sub(cur).length + cur.sub(center).length
+    return via > direct * 1.05
+  }
+
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
-      // Find the previous different left-chain vertex (not on this obstacle)
       let prev: Point | null = null
       for (let j = i - 1; j >= 0; j--) {
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
       }
-      if (!prev) continue // no previous free-space vertex to compare against
-      const cur = raw[i].left
-      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
+      if (!prev) { collapseLeftFromTarget = i; break }
+      if (isDetour(prev, raw[i].left, collapseTarget.center)) {
         collapseLeftFromTarget = i
         break
       }
@@ -360,9 +366,8 @@ export function sleeveToDiagonals(
       for (let j = i + 1; j < raw.length; j++) {
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
       }
-      if (!next) continue
-      const cur = raw[i].left
-      if (cross2d(collapseSource.center, cur, next) < -1e-10) {
+      if (!next) { collapseLeftFromSource = i; break }
+      if (isDetour(collapseSource.center, raw[i].left, next)) {
         collapseLeftFromSource = i
         break
       }
@@ -377,9 +382,8 @@ export function sleeveToDiagonals(
       for (let j = i - 1; j >= 0; j--) {
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
       }
-      if (!prev) continue
-      const cur = raw[i].right
-      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
+      if (!prev) { collapseRightFromTarget = i; break }
+      if (isDetour(prev, raw[i].right, collapseTarget.center)) {
         collapseRightFromTarget = i
         break
       }
@@ -394,9 +398,8 @@ export function sleeveToDiagonals(
       for (let j = i + 1; j < raw.length; j++) {
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
       }
-      if (!next) continue
-      const cur = raw[i].right
-      if (cross2d(collapseSource.center, cur, next) < -1e-10) {
+      if (!next) { collapseRightFromSource = i; break }
+      if (isDetour(collapseSource.center, raw[i].right, next)) {
         collapseRightFromSource = i
         break
       }
