@@ -338,10 +338,12 @@ export function sleeveToDiagonals(
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
-      let prev = collapseSource ? collapseSource.center : raw[0].left
+      // Find the previous different left-chain vertex (not on this obstacle)
+      let prev: Point | null = null
       for (let j = i - 1; j >= 0; j--) {
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
       }
+      if (!prev) continue // no previous free-space vertex to compare against
       const cur = raw[i].left
       if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
@@ -354,10 +356,11 @@ export function sleeveToDiagonals(
   if (collapseSource) {
     for (let i = raw.length - 1; i >= 0; i--) {
       if (raw[i].leftSite.Owner !== collapseSource.poly) continue
-      let next = collapseTarget ? collapseTarget.center : raw[raw.length - 1].left
+      let next: Point | null = null
       for (let j = i + 1; j < raw.length; j++) {
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
       }
+      if (!next) continue
       const cur = raw[i].left
       if (cross2d(collapseSource.center, cur, next) > 1e-10) {
         collapseLeftFromSource = i
@@ -370,10 +373,11 @@ export function sleeveToDiagonals(
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].rightSite.Owner !== collapseTarget.poly) continue
-      let prev = collapseSource ? collapseSource.center : raw[0].right
+      let prev: Point | null = null
       for (let j = i - 1; j >= 0; j--) {
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
       }
+      if (!prev) continue
       const cur = raw[i].right
       if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseRightFromTarget = i
@@ -386,10 +390,11 @@ export function sleeveToDiagonals(
   if (collapseSource) {
     for (let i = raw.length - 1; i >= 0; i--) {
       if (raw[i].rightSite.Owner !== collapseSource.poly) continue
-      let next = collapseTarget ? collapseTarget.center : raw[raw.length - 1].right
+      let next: Point | null = null
       for (let j = i + 1; j < raw.length; j++) {
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
       }
+      if (!next) continue
       const cur = raw[i].right
       if (cross2d(collapseSource.center, cur, next) < -1e-10) {
         collapseRightFromSource = i
