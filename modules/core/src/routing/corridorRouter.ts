@@ -339,7 +339,7 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
       }
       const cur = raw[i].left
-      if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
+      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseLeftFromTarget = i
         break // found it
       }
@@ -356,7 +356,7 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
       }
       const cur = raw[i].left
-      if (cross2d(next, cur, collapseSource.center) < -1e-10) {
+      if (cross2d(next, cur, collapseSource.center) > 1e-10) {
         collapseLeftFromSource = i
         break
       }
@@ -372,7 +372,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
       }
       const cur = raw[i].right
-      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
+      if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseRightFromTarget = i
         break
       }
@@ -388,7 +388,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
       }
       const cur = raw[i].right
-      if (cross2d(next, cur, collapseSource.center) > 1e-10) {
+      if (cross2d(next, cur, collapseSource.center) < -1e-10) {
         collapseRightFromSource = i
         break
       }
