@@ -328,8 +328,12 @@ export function sleeveToDiagonals(
   }
   if (raw.length === 0) return []
 
-  // Step 2: Walk left chain looking for wrong turns at source/target obstacle vertices
-  // Scan ALL obstacle vertices; collapse from the first one with a wrong turn
+  // Step 2: Wrong-turn detection
+  // Right chain at target: (prev, this, center) right turn → cross < 0
+  // Right chain at source: (center, this, next) right turn → cross < 0
+  // Left chain at target:  (prev, this, center) left turn  → cross > 0
+  // Left chain at source:  (center, this, next) left turn  → cross > 0
+
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
@@ -339,11 +343,10 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
       }
       const cur = raw[i].left
-      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
+      if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
-        break // found it
+        break
       }
-      // no wrong turn at this vertex — check the next obstacle vertex
     }
   }
 
@@ -356,7 +359,7 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
       }
       const cur = raw[i].left
-      if (cross2d(next, cur, collapseSource.center) > 1e-10) {
+      if (cross2d(collapseSource.center, cur, next) > 1e-10) {
         collapseLeftFromSource = i
         break
       }
@@ -372,7 +375,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
       }
       const cur = raw[i].right
-      if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
+      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseRightFromTarget = i
         break
       }
@@ -388,7 +391,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
       }
       const cur = raw[i].right
-      if (cross2d(next, cur, collapseSource.center) < -1e-10) {
+      if (cross2d(collapseSource.center, cur, next) < -1e-10) {
         collapseRightFromSource = i
         break
       }
