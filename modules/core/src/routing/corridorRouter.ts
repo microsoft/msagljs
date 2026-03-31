@@ -334,92 +334,81 @@ export function sleeveToDiagonals(
   // Left chain at target:  (prev, this, center) left turn  → cross > 0
   // Left chain at source:  (center, this, next) left turn  → cross > 0
 
-  // Left chain: collapse if left turn (cross > 0) — vertex sticks out LEFT, narrows channel
-  // Right chain: collapse if right turn (cross < 0) — vertex sticks out RIGHT, narrows channel
+  // Step 2: Build unique subsequences (no repetitions) for left and right chains
+  function uniqueChain(chain: {pt: Point; site: CdtSite; idx: number}[]): {pt: Point; site: CdtSite; idx: number}[] {
+    const result: {pt: Point; site: CdtSite; idx: number}[] = []
+    for (const c of chain) {
+      if (result.length === 0 || result[result.length - 1].pt.sub(c.pt).length > 1e-8) {
+        result.push(c)
+      }
+    }
+    return result
+  }
+
+  const leftChainRaw = raw.map((d, i) => ({pt: d.left, site: d.leftSite, idx: i}))
+  const rightChainRaw = raw.map((d, i) => ({pt: d.right, site: d.rightSite, idx: i}))
+  const L = uniqueChain(leftChainRaw)
+  const R = uniqueChain(rightChainRaw)
+
+  // Step 3: Right chain collapse
+  // Source: find maximal k where rk belongs to source and (source_center, rk, r_{k+1}) is LEFT rotation (cross > 0)
+  let collapseRightFromSource = -1
+  if (collapseSource) {
+    for (let k = 0; k < R.length - 1; k++) {
+      if (R[k].site.Owner !== collapseSource.poly) continue
+      if (cross2d(collapseSource.center, R[k].pt, R[k + 1].pt) > 1e-10) {
+        collapseRightFromSource = R[k].idx // store the raw index
+      }
+    }
+  }
+
+  // Target: find minimal k where (target_center, rk, r_{k+1}) is LEFT rotation (cross > 0)
+  let collapseRightFromTarget = raw.length
+  if (collapseTarget) {
+    for (let k = 0; k < R.length - 1; k++) {
+      if (cross2d(collapseTarget.center, R[k].pt, R[k + 1].pt) > 1e-10) {
+        collapseRightFromTarget = R[k].idx
+        break
+      }
+    }
+  }
+
+  // Step 4: Left chain collapse — same but RIGHT rotation (cross < 0)
+  let collapseLeftFromSource = -1
+  if (collapseSource) {
+    for (let k = 0; k < L.length - 1; k++) {
+      if (L[k].site.Owner !== collapseSource.poly) continue
+      if (cross2d(collapseSource.center, L[k].pt, L[k + 1].pt) < -1e-10) {
+        collapseLeftFromSource = L[k].idx
+      }
+    }
+  }
 
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
-    for (let i = 0; i < raw.length; i++) {
-      if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
-      let prev: Point | null = null
-      for (let j = i - 1; j >= 0; j--) {
-        if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
-      }
-      if (!prev) { collapseLeftFromTarget = i; break }
-      // Left chain at target: (prev, this, center) left turn → cross > 0 → collapse
-      if (cross2d(prev, raw[i].left, collapseTarget.center) > 1e-10) {
-        collapseLeftFromTarget = i
+    for (let k = 0; k < L.length - 1; k++) {
+      if (cross2d(collapseTarget.center, L[k].pt, L[k + 1].pt) < -1e-10) {
+        collapseLeftFromTarget = L[k].idx
         break
       }
     }
   }
 
-  let collapseLeftFromSource = -1
-  if (collapseSource) {
-    for (let i = raw.length - 1; i >= 0; i--) {
-      if (raw[i].leftSite.Owner !== collapseSource.poly) continue
-      let next: Point | null = null
-      for (let j = i + 1; j < raw.length; j++) {
-        if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
-      }
-      if (!next) { collapseLeftFromSource = i; break }
-      // Left chain at source: (center, this, next) left turn → cross > 0 → collapse
-      if (cross2d(collapseSource.center, raw[i].left, next) > 1e-10) {
-        collapseLeftFromSource = i
-        break
-      }
-    }
-  }
-
-  let collapseRightFromTarget = raw.length
-  if (collapseTarget) {
-    for (let i = 0; i < raw.length; i++) {
-      if (raw[i].rightSite.Owner !== collapseTarget.poly) continue
-      let prev: Point | null = null
-      for (let j = i - 1; j >= 0; j--) {
-        if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
-      }
-      if (!prev) { collapseRightFromTarget = i; break }
-      // Right chain at target: (prev, this, center) right turn → cross < 0 → collapse
-      if (cross2d(prev, raw[i].right, collapseTarget.center) < -1e-10) {
-        collapseRightFromTarget = i
-        break
-      }
-    }
-  }
-
-  let collapseRightFromSource = -1
-  if (collapseSource) {
-    for (let i = raw.length - 1; i >= 0; i--) {
-      if (raw[i].rightSite.Owner !== collapseSource.poly) continue
-      let next: Point | null = null
-      for (let j = i + 1; j < raw.length; j++) {
-        if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
-      }
-      if (!next) { collapseRightFromSource = i; break }
-      // Right chain at source: (center, this, next) right turn → cross < 0 → collapse
-      if (cross2d(collapseSource.center, raw[i].right, next) < -1e-10) {
-        collapseRightFromSource = i
-        break
-      }
-    }
-  }
-
-  // Step 3: Build final diagonals with targeted collapse on both chains
+  // Step 5: Build final diagonals
   const diagonals: Diagonal[] = []
   for (let i = 0; i < raw.length; i++) {
     let leftPt = raw[i].left
     let rightPt = raw[i].right
 
-    // Left chain
+    // Source collapse
     if (collapseSource && raw[i].leftSite.Owner === collapseSource.poly && i <= collapseLeftFromSource)
       leftPt = collapseSource.center
-    if (collapseTarget && raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
-      leftPt = collapseTarget.center
-
-    // Right chain
     if (collapseSource && raw[i].rightSite.Owner === collapseSource.poly && i <= collapseRightFromSource)
       rightPt = collapseSource.center
+
+    // Target collapse
+    if (collapseTarget && raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
+      leftPt = collapseTarget.center
     if (collapseTarget && raw[i].rightSite.Owner === collapseTarget.poly && i >= collapseRightFromTarget)
       rightPt = collapseTarget.center
 
