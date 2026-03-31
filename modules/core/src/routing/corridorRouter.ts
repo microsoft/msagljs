@@ -329,45 +329,52 @@ export function sleeveToDiagonals(
   if (raw.length === 0) return []
 
   // Step 2: Walk left chain looking for wrong turns at source/target obstacle vertices
-  // For target: scan forward, find first target-obstacle vertex with wrong turn
-  let collapseLeftFromTarget = raw.length // default: no collapse
+  let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
-      const prev = i > 0 ? raw[i - 1].left : (collapseSource ? collapseSource.center : raw[0].left)
+      // Find previous different left-chain point
+      let prev = collapseSource ? collapseSource.center : raw[0].left
+      for (let j = i - 1; j >= 0; j--) {
+        if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
+      }
       const cur = raw[i].left
       if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
-        break
       }
+      break
     }
   }
 
-  // For source: scan backward, find first source-obstacle vertex with wrong turn
-  let collapseLeftFromSource = -1 // default: no collapse
+  let collapseLeftFromSource = -1
   if (collapseSource) {
     for (let i = raw.length - 1; i >= 0; i--) {
       if (raw[i].leftSite.Owner !== collapseSource.poly) continue
-      const next = i < raw.length - 1 ? raw[i + 1].left : (collapseTarget ? collapseTarget.center : raw[raw.length - 1].left)
+      let next = collapseTarget ? collapseTarget.center : raw[raw.length - 1].left
+      for (let j = i + 1; j < raw.length; j++) {
+        if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
+      }
       const cur = raw[i].left
       if (cross2d(next, cur, collapseSource.center) < -1e-10) {
         collapseLeftFromSource = i
-        break
       }
+      break
     }
   }
 
-  // Same for right chain
   let collapseRightFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].rightSite.Owner !== collapseTarget.poly) continue
-      const prev = i > 0 ? raw[i - 1].right : (collapseSource ? collapseSource.center : raw[0].right)
+      let prev = collapseSource ? collapseSource.center : raw[0].right
+      for (let j = i - 1; j >= 0; j--) {
+        if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
+      }
       const cur = raw[i].right
       if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseRightFromTarget = i
-        break
       }
+      break
     }
   }
 
@@ -375,12 +382,15 @@ export function sleeveToDiagonals(
   if (collapseSource) {
     for (let i = raw.length - 1; i >= 0; i--) {
       if (raw[i].rightSite.Owner !== collapseSource.poly) continue
-      const next = i < raw.length - 1 ? raw[i + 1].right : (collapseTarget ? collapseTarget.center : raw[raw.length - 1].right)
+      let next = collapseTarget ? collapseTarget.center : raw[raw.length - 1].right
+      for (let j = i + 1; j < raw.length; j++) {
+        if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
+      }
       const cur = raw[i].right
       if (cross2d(next, cur, collapseSource.center) > 1e-10) {
         collapseRightFromSource = i
-        break
       }
+      break
     }
   }
 
