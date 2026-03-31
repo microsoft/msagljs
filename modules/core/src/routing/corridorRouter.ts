@@ -351,13 +351,13 @@ export function sleeveToDiagonals(
   const R = uniqueChain(rightChainRaw)
 
   // Step 3: Right chain collapse
-  // Source: find maximal k where rk belongs to source and (source_center, rk, r_{k+1}) is LEFT rotation (cross > 0)
+  // Source: find maximal k where rk belongs to source and (source_center, rk, r_{k+1}) is RIGHT rotation (cross < 0)
   let collapseRightFromSource = -1
   if (collapseSource) {
     for (let k = 0; k < R.length - 1; k++) {
       if (R[k].site.Owner !== collapseSource.poly) continue
-      if (cross2d(collapseSource.center, R[k].pt, R[k + 1].pt) > 1e-10) {
-        collapseRightFromSource = R[k].idx // store the raw index
+      if (cross2d(collapseSource.center, R[k].pt, R[k + 1].pt) < -1e-10) {
+        collapseRightFromSource = R[k].idx
       }
     }
   }
@@ -373,12 +373,12 @@ export function sleeveToDiagonals(
     }
   }
 
-  // Step 4: Left chain collapse — same but RIGHT rotation (cross < 0)
+  // Step 4: Left chain — source LEFT rotation (cross > 0), target RIGHT rotation (cross < 0)
   let collapseLeftFromSource = -1
   if (collapseSource) {
     for (let k = 0; k < L.length - 1; k++) {
       if (L[k].site.Owner !== collapseSource.poly) continue
-      if (cross2d(collapseSource.center, L[k].pt, L[k + 1].pt) < -1e-10) {
+      if (cross2d(collapseSource.center, L[k].pt, L[k + 1].pt) > 1e-10) {
         collapseLeftFromSource = L[k].idx
       }
     }
