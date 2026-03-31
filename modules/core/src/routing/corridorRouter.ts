@@ -329,11 +329,11 @@ export function sleeveToDiagonals(
   if (raw.length === 0) return []
 
   // Step 2: Walk left chain looking for wrong turns at source/target obstacle vertices
+  // Scan ALL obstacle vertices; collapse from the first one with a wrong turn
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
     for (let i = 0; i < raw.length; i++) {
       if (raw[i].leftSite.Owner !== collapseTarget.poly) continue
-      // Find previous different left-chain point
       let prev = collapseSource ? collapseSource.center : raw[0].left
       for (let j = i - 1; j >= 0; j--) {
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
@@ -341,8 +341,9 @@ export function sleeveToDiagonals(
       const cur = raw[i].left
       if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
+        break // found it
       }
-      break
+      // no wrong turn at this vertex — check the next obstacle vertex
     }
   }
 
@@ -357,8 +358,8 @@ export function sleeveToDiagonals(
       const cur = raw[i].left
       if (cross2d(next, cur, collapseSource.center) < -1e-10) {
         collapseLeftFromSource = i
+        break
       }
-      break
     }
   }
 
@@ -373,8 +374,8 @@ export function sleeveToDiagonals(
       const cur = raw[i].right
       if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseRightFromTarget = i
+        break
       }
-      break
     }
   }
 
@@ -389,8 +390,8 @@ export function sleeveToDiagonals(
       const cur = raw[i].right
       if (cross2d(next, cur, collapseSource.center) > 1e-10) {
         collapseRightFromSource = i
+        break
       }
-      break
     }
   }
 
