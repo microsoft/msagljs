@@ -334,8 +334,8 @@ export function sleeveToDiagonals(
   // Left chain at target:  (prev, this, center) left turn  → cross > 0
   // Left chain at source:  (center, this, next) left turn  → cross > 0
 
-  // Collapse check: (a, b, c) right turn on right chain → collapse
-  // (a, b, c) right turn on left chain → collapse (symmetry: left chain = also right turn)
+  // Left chain: collapse if left turn (cross > 0) — vertex sticks out LEFT, narrows channel
+  // Right chain: collapse if right turn (cross < 0) — vertex sticks out RIGHT, narrows channel
 
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
@@ -346,8 +346,8 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { prev = raw[j].left; break }
       }
       if (!prev) { collapseLeftFromTarget = i; break }
-      // (prev, this, center) right turn → cross < 0 → collapse
-      if (cross2d(prev, raw[i].left, collapseTarget.center) < -1e-10) {
+      // Left chain at target: (prev, this, center) left turn → cross > 0 → collapse
+      if (cross2d(prev, raw[i].left, collapseTarget.center) > 1e-10) {
         collapseLeftFromTarget = i
         break
       }
@@ -363,8 +363,8 @@ export function sleeveToDiagonals(
         if (raw[j].left.sub(raw[i].left).length > 1e-8) { next = raw[j].left; break }
       }
       if (!next) { collapseLeftFromSource = i; break }
-      // (center, this, next) right turn → cross < 0 → collapse
-      if (cross2d(collapseSource.center, raw[i].left, next) < -1e-10) {
+      // Left chain at source: (center, this, next) left turn → cross > 0 → collapse
+      if (cross2d(collapseSource.center, raw[i].left, next) > 1e-10) {
         collapseLeftFromSource = i
         break
       }
@@ -380,7 +380,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { prev = raw[j].right; break }
       }
       if (!prev) { collapseRightFromTarget = i; break }
-      // (prev, this, center) right turn → cross < 0 → collapse
+      // Right chain at target: (prev, this, center) right turn → cross < 0 → collapse
       if (cross2d(prev, raw[i].right, collapseTarget.center) < -1e-10) {
         collapseRightFromTarget = i
         break
@@ -397,7 +397,7 @@ export function sleeveToDiagonals(
         if (raw[j].right.sub(raw[i].right).length > 1e-8) { next = raw[j].right; break }
       }
       if (!next) { collapseRightFromSource = i; break }
-      // (center, this, next) right turn → cross < 0 → collapse
+      // Right chain at source: (center, this, next) right turn → cross < 0 → collapse
       if (cross2d(collapseSource.center, raw[i].right, next) < -1e-10) {
         collapseRightFromSource = i
         break
