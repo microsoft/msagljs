@@ -345,7 +345,7 @@ export function sleeveToDiagonals(
       }
       if (!prev) continue // no previous free-space vertex to compare against
       const cur = raw[i].left
-      if (cross2d(prev, cur, collapseTarget.center) > 1e-10) {
+      if (cross2d(prev, cur, collapseTarget.center) < -1e-10) {
         collapseLeftFromTarget = i
         break
       }
@@ -362,7 +362,7 @@ export function sleeveToDiagonals(
       }
       if (!next) continue
       const cur = raw[i].left
-      if (cross2d(collapseSource.center, cur, next) > 1e-10) {
+      if (cross2d(collapseSource.center, cur, next) < -1e-10) {
         collapseLeftFromSource = i
         break
       }
