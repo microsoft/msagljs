@@ -334,12 +334,16 @@ export function sleeveToDiagonals(
   // Left chain at target:  (prev, this, center) left turn  → cross > 0
   // Left chain at source:  (center, this, next) left turn  → cross > 0
 
-  // Step 2: Build unique subsequences (no repetitions) for left and right chains
-  function uniqueChain(chain: {pt: Point; site: CdtSite; idx: number}[]): {pt: Point; site: CdtSite; idx: number}[] {
-    const result: {pt: Point; site: CdtSite; idx: number}[] = []
+  // Step 2: Build unique subsequences (no repetitions) for left and right chains.
+  // Track both firstIdx and lastIdx of consecutive duplicates so that
+  // source collapse (i <= lastIdx) and target collapse (i >= firstIdx) cover all occurrences.
+  function uniqueChain(chain: {pt: Point; site: CdtSite; idx: number}[]): {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] {
+    const result: {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] = []
     for (const c of chain) {
       if (result.length === 0 || result[result.length - 1].pt.sub(c.pt).length > 1e-8) {
-        result.push(c)
+        result.push({pt: c.pt, site: c.site, firstIdx: c.idx, lastIdx: c.idx})
+      } else {
+        result[result.length - 1].lastIdx = c.idx
       }
     }
     return result
@@ -357,18 +361,18 @@ export function sleeveToDiagonals(
     for (let k = 0; k < R.length - 1; k++) {
       if (R[k].site.Owner !== collapseSource.poly) continue
       if (cross2d(collapseSource.center, R[k].pt, R[k + 1].pt) < -1e-10) {
-        collapseRightFromSource = R[k].idx
+        collapseRightFromSource = R[k].lastIdx
       }
     }
   }
 
-  // Target: find minimal k where (target_center, rk, r_{k+1}) is RIGHT rotation (cross < 0)
+  // Target: scan backward, find minimal k where rk belongs to target and (r_{k-1}, rk, target_center) is RIGHT rotation (cross < 0)
   let collapseRightFromTarget = raw.length
   if (collapseTarget) {
-    for (let k = 0; k < R.length - 1; k++) {
-      if (cross2d(collapseTarget.center, R[k].pt, R[k + 1].pt) < -1e-10) {
-        collapseRightFromTarget = R[k].idx
-        break
+    for (let k = R.length - 1; k >= 1; k--) {
+      if (R[k].site.Owner !== collapseTarget.poly) continue
+      if (cross2d(R[k - 1].pt, R[k].pt, collapseTarget.center) < -1e-10) {
+        collapseRightFromTarget = R[k].firstIdx
       }
     }
   }
@@ -379,17 +383,17 @@ export function sleeveToDiagonals(
     for (let k = 0; k < L.length - 1; k++) {
       if (L[k].site.Owner !== collapseSource.poly) continue
       if (cross2d(collapseSource.center, L[k].pt, L[k + 1].pt) > 1e-10) {
-        collapseLeftFromSource = L[k].idx
+        collapseLeftFromSource = L[k].lastIdx
       }
     }
   }
 
   let collapseLeftFromTarget = raw.length
   if (collapseTarget) {
-    for (let k = 0; k < L.length - 1; k++) {
-      if (cross2d(collapseTarget.center, L[k].pt, L[k + 1].pt) > 1e-10) {
-        collapseLeftFromTarget = L[k].idx
-        break
+    for (let k = L.length - 1; k >= 1; k--) {
+      if (L[k].site.Owner !== collapseTarget.poly) continue
+      if (cross2d(L[k - 1].pt, L[k].pt, collapseTarget.center) > 1e-10) {
+        collapseLeftFromTarget = L[k].firstIdx
       }
     }
   }
