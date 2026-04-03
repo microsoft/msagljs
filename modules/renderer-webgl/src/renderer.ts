@@ -211,7 +211,7 @@ export default class Renderer extends EventSource {
     }
   }
 
-  private _handleEdgeHover(edge: Edge, x: number, y: number) {
+  private _pickNearbyEdges(x: number, y: number): Set<Edge> {
     const radius = 10
     const nearbyObjects = this._deck.pickObjects({
       x: x - radius,
@@ -226,9 +226,17 @@ export default class Renderer extends EventSource {
         nearbyEdges.add(info.object)
       }
     }
+    return nearbyEdges
+  }
+
+  private _handleEdgeAreaHover(x: number, y: number) {
+    const nearbyEdges = this._pickNearbyEdges(x, y)
 
     if (nearbyEdges.size === 1) {
+      const edge = nearbyEdges.values().next().value
       this._highlightEdge(edge)
+    } else if (this._highlightedEdge && nearbyEdges.has(this._highlightedEdge)) {
+      // Keep current highlight stable while cursor is still near the same edge
     } else {
       this._highlightedEdge = null
       this._highlight(null)
@@ -322,12 +330,11 @@ export default class Renderer extends EventSource {
         if (object instanceof GeomNode) {
           this._highlightedEdge = null
           this._highlight(object.id)
-        } else if (object instanceof Edge) {
-          this._handleEdgeHover(object, x, y)
-        } else {
-          this._highlightedEdge = null
-          this._highlight(null)
+          return
         }
+
+        // For edges: use area pick since edges are thin
+        this._handleEdgeAreaHover(x, y)
       },
       graphStyle: this._style,
 
