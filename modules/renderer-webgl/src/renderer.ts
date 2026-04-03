@@ -8,7 +8,7 @@ import {DrawingGraph} from '@msagl/drawing'
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, TileMap, TileData, geometryIsCreated} from '@msagl/core'
+import {Graph, GeomGraph, Rectangle, GeomNode, Edge, TileMap, TileData, geometryIsCreated} from '@msagl/core'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -40,6 +40,7 @@ export default class Renderer extends EventSource {
   private _textMeasurer: TextMeasurer
   private _graphHighlighter: GraphHighlighter
   private _highlightedNodeId: string | null
+  private _highlightedEdge: Edge | null = null
   private _layoutWorkerUrl?: string
   private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
   private _graphOffset: {x: number; y: number} = {x: 0, y: 0}
@@ -81,8 +82,9 @@ export default class Renderer extends EventSource {
       },
       onClick: ({object}) => {
         if (!object && this._highlightedNodeId) {
-          // deseclect
+          // deselect
           this.highlight(null)
+          this._highlightedEdge = null
         }
       },
     })
@@ -209,6 +211,40 @@ export default class Renderer extends EventSource {
     }
   }
 
+  private _handleEdgeHover(edge: Edge, x: number, y: number) {
+    const radius = 10
+    const nearbyObjects = this._deck.pickObjects({
+      x: x - radius,
+      y: y - radius,
+      width: 2 * radius,
+      height: 2 * radius,
+    })
+
+    const nearbyEdges = new Set<Edge>()
+    for (const info of nearbyObjects) {
+      if (info.object instanceof Edge) {
+        nearbyEdges.add(info.object)
+      }
+    }
+
+    if (nearbyEdges.size === 1) {
+      this._highlightEdge(edge)
+    } else {
+      this._highlightedEdge = null
+      this._highlight(null)
+    }
+  }
+
+  private _highlightEdge(edge: Edge) {
+    if (this._highlightedEdge === edge) return
+    this._highlightedEdge = edge
+
+    if (this._graph && this._deck.layerManager) {
+      this._graphHighlighter.highlightNodes([edge.source.id, edge.target.id])
+      this._deck.layerManager.setNeedsRedraw('edge highlight changed')
+    }
+  }
+
   private async _layoutGraph(forceUpdate: boolean) {
     if (this._layoutWorkerUrl) {
       console.log('layout on worker')
@@ -280,13 +316,17 @@ export default class Renderer extends EventSource {
       //   console.log(sourceLayer.props.tile.id, sourceLayer.props.tile.data)
       // },
       autoHighlight: true,
-      onHover: ({object, sourceLayer}) => {
-        if (!this._highlightedNodeId) {
-          if (object instanceof GeomNode) {
-            this._highlight(object.id)
-          } else {
-            this._highlight(null)
-          }
+      onHover: ({object, x, y}) => {
+        if (this._highlightedNodeId) return
+
+        if (object instanceof GeomNode) {
+          this._highlightedEdge = null
+          this._highlight(object.id)
+        } else if (object instanceof Edge) {
+          this._handleEdgeHover(object, x, y)
+        } else {
+          this._highlightedEdge = null
+          this._highlight(null)
         }
       },
       graphStyle: this._style,

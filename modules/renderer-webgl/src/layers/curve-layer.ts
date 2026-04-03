@@ -38,6 +38,7 @@ export type CurveLayerProps<DataT> = {
   getRange?: Accessor<DataT, [number, number]>
   getWidth?: Accessor<DataT, number>
   getColor?: Accessor<DataT, Color>
+  getPickingColor?: Accessor<DataT, Color>
 } & LayerProps
 
 const defaultProps: DefaultProps<CurveLayerProps<any>> = {
@@ -57,6 +58,7 @@ const defaultProps: DefaultProps<CurveLayerProps<any>> = {
   getRange: {type: 'accessor', value: [0, 1]},
   getWidth: {type: 'accessor', value: 1},
   getColor: {type: 'accessor', value: [0, 0, 0, 255]},
+  getPickingColor: {type: 'accessor', value: [0, 0, 0]},
 }
 
 const vs = `\
@@ -72,6 +74,7 @@ attribute vec4 instancePositions2;
 attribute float instanceTypes;
 attribute float instanceWidths;
 attribute vec4 instanceColors;
+attribute vec3 instancePickingColors;
 
 uniform float opacity;
 uniform float widthScale;
@@ -152,6 +155,7 @@ void main(void) {
   // Apply opacity to instance color, or return instance picking color
   vColor = vec4(instanceColors.rgb, instanceColors.a * opacity);
   DECKGL_FILTER_COLOR(vColor, geometry);
+  picking_setPickingColor(instancePickingColors);
 }
 `
 
@@ -162,6 +166,7 @@ varying vec4 vColor;
 void main(void) {
   gl_FragColor = vColor;
   DECKGL_FILTER_COLOR(gl_FragColor, geometry);
+  gl_FragColor = picking_filterPickingColor(gl_FragColor);
 }
 `
 
@@ -220,6 +225,11 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
         type: GL.UNSIGNED_BYTE,
         accessor: 'getColor',
         defaultValue: [0, 0, 0, 255],
+      },
+      instancePickingColors: {
+        size: 3,
+        type: GL.UNSIGNED_BYTE,
+        accessor: 'getPickingColor',
       },
     })
   }

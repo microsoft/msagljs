@@ -1,4 +1,4 @@
-import {Layer} from '@deck.gl/core/typed'
+import {Layer, Accessor, Color} from '@deck.gl/core/typed'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
 import {DrawingEdge, DrawingObject} from '@msagl/drawing'
@@ -11,6 +11,8 @@ import GraphStyleExtension from './graph-style-extension'
 
 type EdgeLayerProps = CurveLayerProps<CurveClip> & {
   resolution?: number
+  pickable?: boolean
+  getPickingColor?: Accessor<CurveClip, Color>
 }
 
 export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerStyle): Layer {
@@ -30,6 +32,8 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
     },
     // @ts-ignore
     clipByInstance: false,
+    pickable: props.pickable,
+    getPickingColor: props.getPickingColor,
 
     extensions: [
       new GraphStyleExtension({

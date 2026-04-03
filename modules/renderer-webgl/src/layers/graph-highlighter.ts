@@ -2,7 +2,7 @@ import GL from '@luma.gl/constants'
 import {Buffer, Framebuffer, Texture2D} from '@luma.gl/webgl'
 import {withParameters} from '@luma.gl/gltools'
 import {Model, Transform} from '@luma.gl/engine'
-import {Graph, GeomGraph, GeomNode} from '@msagl/core'
+import {Graph, GeomGraph, GeomNode, GeomEdge, Edge, CurveClip} from '@msagl/core'
 import {DrawingEdge, DrawingObject} from '@msagl/drawing'
 
 export const nodeDepthModuleVs = `
@@ -37,6 +37,8 @@ export default class GraphHighlighter {
   private _hasBidirectionalEdge: boolean
   private _nodeMap: Map<string, number>
   private _nodeList: GeomNode[]
+  private _edgeMap: Map<Edge, number>
+  private _edgeList: Edge[]
   private _lastSourceId?: string | null
   private _model: Model
   private _transform: Transform
@@ -93,6 +95,14 @@ export default class GraphHighlighter {
     return this._nodeList[index]
   }
 
+  encodeEdgeIndex(cc: CurveClip, out: number[]): number[] {
+    const idx = cc.edge ? this._edgeMap.get(cc.edge) : undefined
+    return encodePickingColor(idx, out)
+  }
+  getEdge(index: number): Edge | undefined {
+    return this._edgeList[index]
+  }
+
   setGraph(graph: GeomGraph) {
     if (this._graph === graph.graph) {
       return
@@ -102,6 +112,8 @@ export default class GraphHighlighter {
     const edgeCount = this._graph.deepEdgesCount
     this._nodeMap = new Map<string, number>()
     this._nodeList = []
+    this._edgeMap = new Map<Edge, number>()
+    this._edgeList = []
     this._hasBidirectionalEdge = false
     this._lastSourceId = undefined
 
@@ -134,6 +146,9 @@ export default class GraphHighlighter {
       const de = <DrawingEdge>DrawingObject.getDrawingObj(edge.edge)
       this._hasBidirectionalEdge = this._hasBidirectionalEdge || !de.directed
       edgeDirection[edgeIndex] = de.directed ? 1 : 0
+
+      this._edgeMap.set(edge.edge, edgeIndex)
+      this._edgeList[edgeIndex] = edge.edge
 
       edgeIndex++
     }
@@ -244,6 +259,37 @@ export default class GraphHighlighter {
     //   }
     // }
     /* End of debug */
+  }
+
+  /** Directly highlight specific nodes by ID at depth 0 */
+  highlightNodes(nodeIds: string[]) {
+    this._lastSourceId = undefined
+
+    const targetTexture: Texture2D = this._nodeDepthTextures[0]
+
+    // Clear all nodes
+    this._resetNodeDepth(targetTexture)
+
+    // Set depth=0 for each specified node
+    for (const nodeId of nodeIds) {
+      const idx = this._nodeMap.get(nodeId)
+      if (idx !== undefined) {
+        const x = (idx + 1) % targetTexture.width
+        const y = Math.floor((idx + 1) / targetTexture.width)
+        targetTexture.setSubImageData({
+          data: originData,
+          x,
+          y,
+          width: 1,
+          height: 1,
+        })
+      }
+    }
+
+    this._nodeDepthFB.attach({
+      [GL.COLOR_ATTACHMENT0]: targetTexture,
+    })
+    this._nodeDepth = targetTexture
   }
 
   private _resetNodeDepth(texture: Texture2D, originPixelIdx?: number) {

@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, TileData, TileMap} from '@msagl/core'
+import {GeomNode, TileData, TileMap, Edge} from '@msagl/core'
 import {Matrix4} from '@math.gl/core'
 
 import {getNodeLayers} from './get-node-layers'
@@ -60,6 +60,8 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
   getPickingInfo({sourceLayer, info}: GetPickingInfoParams) {
     if (sourceLayer.id.endsWith('node-boundary') && info.picked) {
       info.object = this.props.highlighter.getNode(info.index)
+    } else if (sourceLayer.id.endsWith('-edge') && info.picked) {
+      info.object = this.props.highlighter.getEdge(info.index)
     }
     return info
   }
@@ -114,6 +116,8 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               ...subLayerProps,
               data: data.curveClips,
               getDepth: highlighter.edgeDepth,
+              getPickingColor: (cc, {target}) => highlighter.encodeEdgeIndex(cc, target),
+              pickable: true,
               resolution,
             },
             layer as ParsedGraphEdgeLayerStyle,
