@@ -11,7 +11,6 @@
  * Key ideas:
  *   - For each vertex v, run a forward CH search (upArcs only)
  *   - Apply stall-on-demand pruning (Section 5.1)
- *   - Bootstrap with already-computed labels (Section 5.2)
  *   - Store labels sorted by hub index for O(|L|) merge-sweep queries
  *   - Store parent pointers for path (sleeve) recovery
  */
@@ -19,41 +18,64 @@ import {ContractionHierarchy} from './contractionHierarchy'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 
-// ── tiny min-heap (inlined for performance) ─────────────────────────
-type QEntry = {g: number; node: number; seq: number}
+// ── Flat min-heap on pre-allocated typed arrays (zero GC) ───────────
 
-function heapPush(heap: QEntry[], item: QEntry) {
-  heap.push(item)
-  let i = heap.length - 1
-  while (i > 0) {
-    const p = (i - 1) >> 1
-    if (heap[p].g < item.g || (heap[p].g === item.g && heap[p].seq < item.seq)) break
-    heap[i] = heap[p]
-    heap[p] = item
-    i = p
+class FlatHeap {
+  private g: Float64Array
+  private node: Int32Array
+  size = 0
+
+  constructor(capacity: number) {
+    this.g = new Float64Array(capacity)
+    this.node = new Int32Array(capacity)
   }
-}
 
-function heapPop(heap: QEntry[]): QEntry {
-  const top = heap[0]
-  const last = heap.pop()!
-  if (heap.length > 0) {
-    heap[0] = last
-    let i = 0
-    for (;;) {
-      let s = i
-      const l = 2 * i + 1,
-        r = 2 * i + 2
-      if (l < heap.length && (heap[l].g < heap[s].g || (heap[l].g === heap[s].g && heap[l].seq < heap[s].seq))) s = l
-      if (r < heap.length && (heap[r].g < heap[s].g || (heap[r].g === heap[s].g && heap[r].seq < heap[s].seq))) s = r
-      if (s === i) break
-      const tmp = heap[i]
-      heap[i] = heap[s]
-      heap[s] = tmp
-      i = s
+  clear() {
+    this.size = 0
+  }
+
+  push(g: number, node: number) {
+    const hg = this.g, hn = this.node
+    let i = this.size++
+    hg[i] = g
+    hn[i] = node
+    while (i > 0) {
+      const p = (i - 1) >> 1
+      if (hg[p] < g || (hg[p] === g && hn[p] < node)) break
+      // swap
+      const tg = hg[i]; hg[i] = hg[p]; hg[p] = tg
+      const tn = hn[i]; hn[i] = hn[p]; hn[p] = tn
+      i = p
     }
   }
-  return top
+
+  popG(): number {
+    return this.g[0]
+  }
+  popNode(): number {
+    return this.node[0]
+  }
+
+  /** Remove the top element and re-heapify. Call popG/popNode first. */
+  pop() {
+    const hg = this.g, hn = this.node
+    const last = --this.size
+    if (last > 0) {
+      hg[0] = hg[last]
+      hn[0] = hn[last]
+      let i = 0
+      for (;;) {
+        let s = i
+        const l = 2 * i + 1, r = 2 * i + 2
+        if (l < this.size && (hg[l] < hg[s] || (hg[l] === hg[s] && hn[l] < hn[s]))) s = l
+        if (r < this.size && (hg[r] < hg[s] || (hg[r] === hg[s] && hn[r] < hn[s]))) s = r
+        if (s === i) break
+        const tg = hg[i]; hg[i] = hg[s]; hg[s] = tg
+        const tn = hn[i]; hn[i] = hn[s]; hn[s] = tn
+        i = s
+      }
+    }
+  }
 }
 
 // ── HubLabels class ─────────────────────────────────────────────────
@@ -76,108 +98,106 @@ export class HubLabels {
 
   private buildAllLabels() {
     const n = this.ch.nodes.length
+    const ch = this.ch
+
     // Process in descending rank order so that when we build L(v),
     // all higher-ranked vertices already have their strict labels.
     const order: number[] = new Array(n)
     for (let i = 0; i < n; i++) order[i] = i
-    order.sort((a, b) => this.ch.nodes[b].rank - this.ch.nodes[a].rank)
+    order.sort((a, b) => ch.nodes[b].rank - ch.nodes[a].rank)
+
+    // Pre-allocate arrays reused across all label builds (avoids Map/GC overhead)
+    const distArr = new Float64Array(n).fill(Infinity)
+    const parentArr = new Int32Array(n).fill(-1)
+    const inVisited = new Uint8Array(n)
+    const visited: number[] = []
+
+    // Temporary storage for entries before sorting
+    const entryHub = new Int32Array(n)
+    const entryDist = new Float64Array(n)
+    const entryParent = new Int32Array(n)
+
+    // Flat heap — pre-allocated, zero GC
+    const heap = new FlatHeap(n * 4)
 
     for (const v of order) {
-      this.buildLabel(v)
+      // ── CH forward search from v (upArcs only) with stall-on-demand ──
+      distArr[v] = 0
+      parentArr[v] = -1
+      inVisited[v] = 1
+      visited.push(v)
+
+      heap.clear()
+      heap.push(0, v)
+
+      let entryCount = 0
+
+      while (heap.size > 0) {
+        const dw = heap.popG()
+        const w = heap.popNode()
+        heap.pop()
+        if (dw > distArr[w]) continue
+
+        // Stall-on-demand (Section 5.1)
+        let stalled = false
+        const upArcs = ch.nodes[w].upArcs
+        for (let i = 0; i < upArcs.length; i++) {
+          const arc = upArcs[i]
+          if (distArr[arc.target] + arc.weight < dw - 1e-10) {
+            stalled = true
+            break
+          }
+        }
+        if (stalled) continue
+
+        // Settle this node into the label
+        entryHub[entryCount] = w
+        entryDist[entryCount] = dw
+        entryParent[entryCount] = parentArr[w]
+        entryCount++
+
+        // Relax upArcs
+        for (let i = 0; i < upArcs.length; i++) {
+          const arc = upArcs[i]
+          const newG = dw + arc.weight
+          if (newG < distArr[arc.target]) {
+            if (!inVisited[arc.target]) {
+              inVisited[arc.target] = 1
+              visited.push(arc.target)
+            }
+            distArr[arc.target] = newG
+            parentArr[arc.target] = w
+            heap.push(newG, arc.target)
+          }
+        }
+      }
+
+      // ── Sort entries by hub index and store ──
+      const indices = new Int32Array(entryCount)
+      for (let i = 0; i < entryCount; i++) indices[i] = i
+      indices.sort((a, b) => entryHub[a] - entryHub[b])
+
+      const hubs = new Int32Array(entryCount)
+      const dists = new Float64Array(entryCount)
+      const parents = new Int32Array(entryCount)
+      for (let i = 0; i < entryCount; i++) {
+        const j = indices[i]
+        hubs[i] = entryHub[j]
+        dists[i] = entryDist[j]
+        parents[i] = entryParent[j]
+      }
+      this.hubIds[v] = hubs
+      this.hubDists[v] = dists
+      this.hubParents[v] = parents
+
+      // Reset reusable arrays
+      for (const idx of visited) {
+        distArr[idx] = Infinity
+        parentArr[idx] = -1
+        inVisited[idx] = 0
+      }
+      visited.length = 0
     }
-  }
-
-  /** Build the hub label for a single vertex via pruned CH search */
-  private buildLabel(v: number) {
-    const ch = this.ch
-    const dist = new Map<number, number>()
-    const parent = new Map<number, number>()
-
-    dist.set(v, 0)
-    parent.set(v, -1)
-
-    const heap: QEntry[] = []
-    let seq = 0
-    heapPush(heap, {g: 0, node: v, seq: seq++})
-
-    // Collect settled (non-pruned) entries in visitation order
-    const entries: {hub: number; dist: number; parent: number}[] = []
-
-    while (heap.length > 0) {
-      const cur = heapPop(heap)
-      if (cur.g > (dist.get(cur.node) ?? Infinity)) continue
-
-      const w = cur.node
-      const dw = cur.g
-
-      // Stall-on-demand (Section 5.1): check if any higher-ranked
-      // neighbor u already has a shorter path v→u→w.
-      let stalled = false
-      for (const arc of ch.nodes[w].upArcs) {
-        const du = dist.get(arc.target)
-        if (du !== undefined && du + arc.weight < dw - 1e-10) {
-          stalled = true
-          break
-        }
-      }
-      if (stalled) continue
-
-      // Bootstrapping (Section 5.2): w has higher rank than v (since
-      // we follow only upArcs), so L(w) is already a strict label.
-      // Check if the CH search distance matches the HL distance.
-      if (w !== v && this.hubIds[w]) {
-        const hlDist = this.bootstrapQuery(entries, w)
-        if (hlDist < dw - 1e-10) {
-          continue // CH distance is not exact → prune
-        }
-      }
-
-      entries.push({hub: w, dist: dw, parent: parent.get(w) ?? -1})
-
-      // Relax upArcs
-      for (const arc of ch.nodes[w].upArcs) {
-        const newG = dw + arc.weight
-        if (newG < (dist.get(arc.target) ?? Infinity)) {
-          dist.set(arc.target, newG)
-          parent.set(arc.target, w)
-          heapPush(heap, {g: newG, node: arc.target, seq: seq++})
-        }
-      }
-    }
-
-    // Sort entries by hub index for merge-sweep queries
-    entries.sort((a, b) => a.hub - b.hub)
-
-    this.hubIds[v] = new Int32Array(entries.map((e) => e.hub))
-    this.hubDists[v] = new Float64Array(entries.map((e) => e.dist))
-    this.hubParents[v] = new Int32Array(entries.map((e) => e.parent))
-  }
-
-  /** Compute dist(v, w) using v's partially-built label and w's strict label.
-   *  Uses binary search on w's sorted hubs for each entry in the partial label. */
-  private bootstrapQuery(partialEntries: {hub: number; dist: number}[], w: number): number {
-    const wHubs = this.hubIds[w]
-    const wDists = this.hubDists[w]
-    let best = Infinity
-
-    for (const entry of partialEntries) {
-      // Binary search for entry.hub in wHubs (sorted)
-      let lo = 0,
-        hi = wHubs.length - 1
-      while (lo <= hi) {
-        const mid = (lo + hi) >> 1
-        if (wHubs[mid] === entry.hub) {
-          const d = entry.dist + wDists[mid]
-          if (d < best) best = d
-          break
-        } else if (wHubs[mid] < entry.hub) {
-          lo = mid + 1
-        } else {
-          hi = mid - 1
-        }
-      }
-    }
-    return best
   }
 
   // ── queries ─────────────────────────────────────────────────────

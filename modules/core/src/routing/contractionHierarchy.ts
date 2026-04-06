@@ -99,12 +99,12 @@ export class ContractionHierarchy {
   }
 
   /** Contract all nodes in order of importance.
-   *  Uses edge-difference heuristic with witness searches to minimize shortcuts. */
+   *  Uses edge-difference heuristic with lazy priority updates. */
   private contract() {
     const n = this.nodes.length
     if (n === 0) return
 
-    const contracted = new Array<boolean>(n).fill(false)
+    const contracted = new Uint8Array(n) // 0 = active, 1 = contracted
     // Build adjacency with weights for fast lookup
     const adj = new Array<Map<number, number>>(n)
     for (let i = 0; i < n; i++) {
@@ -118,17 +118,21 @@ export class ContractionHierarchy {
     }
 
     // Edge difference priority: shortcuts_added - edges_removed
+    // Reusable buffer to avoid allocations in the hot loop
+    const tempNb: number[] = []
     function edgeDiff(node: number): number {
-      const neighbors = Array.from(adj[node].keys()).filter(j => !contracted[j])
-      const d = neighbors.length
-      // Count needed shortcuts (pairs without shorter witness path)
+      tempNb.length = 0
+      for (const j of adj[node].keys()) {
+        if (!contracted[j]) tempNb.push(j)
+      }
+      const d = tempNb.length
       let shortcuts = 0
-      for (let a = 0; a < neighbors.length; a++) {
-        for (let b = a + 1; b < neighbors.length; b++) {
-          const wA = adj[node].get(neighbors[a])!
-          const wB = adj[node].get(neighbors[b])!
+      for (let a = 0; a < d; a++) {
+        for (let b = a + 1; b < d; b++) {
+          const wA = adj[node].get(tempNb[a])!
+          const wB = adj[node].get(tempNb[b])!
           const shortcutW = wA + wB
-          const direct = adj[neighbors[a]].get(neighbors[b])
+          const direct = adj[tempNb[a]].get(tempNb[b])
           if (direct !== undefined && direct <= shortcutW) continue
           shortcuts++
         }
@@ -136,13 +140,13 @@ export class ContractionHierarchy {
       return shortcuts - d
     }
 
-    // Simple priority: process in order of edge difference (recompute lazily)
-    const priority = new Array<number>(n)
+    // O(n) scan with lazy recomputation — cache-friendly on typed arrays
+    const priority = new Float64Array(n)
     for (let i = 0; i < n; i++) priority[i] = edgeDiff(i)
 
     let rank = 0
     for (let iter = 0; iter < n; iter++) {
-      // Find node with lowest priority among uncontracted
+      // Linear scan for minimum priority among uncontracted nodes
       let bestIdx = -1
       let bestPri = Infinity
       for (let i = 0; i < n; i++) {
@@ -164,13 +168,16 @@ export class ContractionHierarchy {
 
       // Contract this node
       this.nodes[bestIdx].rank = rank++
-      contracted[bestIdx] = true
+      contracted[bestIdx] = 1
 
-      const neighbors = Array.from(adj[bestIdx].keys()).filter(j => !contracted[j])
-      for (let a = 0; a < neighbors.length; a++) {
-        for (let b = a + 1; b < neighbors.length; b++) {
-          const na = neighbors[a]
-          const nb = neighbors[b]
+      tempNb.length = 0
+      for (const j of adj[bestIdx].keys()) {
+        if (!contracted[j]) tempNb.push(j)
+      }
+      for (let a = 0; a < tempNb.length; a++) {
+        for (let b = a + 1; b < tempNb.length; b++) {
+          const na = tempNb[a]
+          const nb = tempNb[b]
           const wA = adj[bestIdx].get(na)!
           const wB = adj[bestIdx].get(nb)!
           const shortcutW = wA + wB

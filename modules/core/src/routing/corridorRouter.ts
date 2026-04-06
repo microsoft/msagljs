@@ -2,11 +2,12 @@
  * Corridor Router: routes edges directly on the CDT dual graph,
  * bypassing the cone spanner / visibility graph.
  *
- * Pipeline: CDT → Hub Labels on CH → sleeve → funnel → polyline
+ * Pipeline: CDT → Dijkstra tree on dual graph → sleeve → funnel → polyline
  *
- * Uses Contraction Hierarchies + Hub-Based Labeling (Abraham et al.,
- * MSR-TR-2010-165) for O(|L|) shortest-path queries on the CDT dual
- * graph, with A* fallback for paths that cross forbidden obstacles.
+ * Contraction Hierarchies + Hub-Based Labeling (Abraham et al.,
+ * MSR-TR-2010-165) are available via ContractionHierarchy and HubLabels
+ * classes for individual corridor queries; the batch router uses
+ * per-source Dijkstra trees for best amortized performance.
  */
 import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
@@ -24,12 +25,139 @@ import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
-import {ContractionHierarchy} from './contractionHierarchy'
-import {HubLabels} from './hubLabels'
 
 export type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
+
+/** Pre-computed triangle index for fast typed-array Dijkstra/A*.
+ *  Assigns integer IDs to all CDT triangles, pre-computes edge midpoints
+ *  and neighbor relationships for cache-friendly access. */
+class TriangleIndex {
+  readonly triToId: Map<CdtTriangle, number>
+  readonly triangles: CdtTriangle[]
+  readonly n: number
+  // For each triangle, up to 3 neighbor IDs (−1 if none) and the CdtEdge
+  readonly nbId: Int32Array // [i*3+0..i*3+2] — neighbor triangle IDs
+  readonly nbEdge: (CdtEdge | null)[] // [i*3+0..i*3+2] — corresponding CDT edges
+  // Edge midpoints: [i*6+j*2+0] = x, [i*6+j*2+1] = y for neighbor j of triangle i
+  readonly midX: Float64Array
+  readonly midY: Float64Array
+  // Centroids
+  readonly centX: Float64Array
+  readonly centY: Float64Array
+  // Obstacle owner (null if free-space)
+  readonly obstacleOwner: (Polyline | null)[]
+
+  constructor(cdt: Cdt) {
+    const triToId = new Map<CdtTriangle, number>()
+    const triangles: CdtTriangle[] = []
+    for (const t of cdt.GetTriangles()) {
+      triToId.set(t, triangles.length)
+      triangles.push(t)
+    }
+    this.triToId = triToId
+    this.triangles = triangles
+    this.n = triangles.length
+
+    const n = this.n
+    this.nbId = new Int32Array(n * 3).fill(-1)
+    this.nbEdge = new Array(n * 3).fill(null)
+    this.midX = new Float64Array(n * 3)
+    this.midY = new Float64Array(n * 3)
+    this.centX = new Float64Array(n)
+    this.centY = new Float64Array(n)
+    this.obstacleOwner = new Array(n)
+
+    for (let i = 0; i < n; i++) {
+      const t = triangles[i]
+      const a = t.Sites.item0.point
+      const b = t.Sites.item1.point
+      const c = t.Sites.item2.point
+      this.centX[i] = (a.x + b.x + c.x) / 3
+      this.centY[i] = (a.y + b.y + c.y) / 3
+
+      const o0 = t.Sites.item0.Owner as Polyline
+      const o1 = t.Sites.item1.Owner as Polyline
+      const o2 = t.Sites.item2.Owner as Polyline
+      this.obstacleOwner[i] = (o0 != null && o1 != null && o2 != null && o0 === o1 && o0 === o2) ? o0 : null
+
+      let j = 0
+      for (const e of t.Edges) {
+        if (j >= 3) break
+        const ot = e.GetOtherTriangle_T(t)
+        if (ot == null) { j++; continue }
+        const otId = triToId.get(ot)
+        if (otId === undefined) { j++; continue }
+        this.nbId[i * 3 + j] = otId
+        this.nbEdge[i * 3 + j] = e
+        const mx = (e.lowerSite.point.x + e.upperSite.point.x) * 0.5
+        const my = (e.lowerSite.point.y + e.upperSite.point.y) * 0.5
+        this.midX[i * 3 + j] = mx
+        this.midY[i * 3 + j] = my
+        j++
+      }
+    }
+  }
+
+  getId(t: CdtTriangle): number {
+    return this.triToId.get(t) ?? -1
+  }
+
+  isInsideObstacle(id: number, allowedPolys: Set<Polyline>): boolean {
+    const owner = this.obstacleOwner[id]
+    return owner != null && !allowedPolys.has(owner)
+  }
+}
+
+/** Flat min-heap on pre-allocated typed arrays (zero GC pressure). */
+class FlatMinHeap {
+  private keys: Float64Array
+  private vals: Int32Array
+  size = 0
+
+  constructor(capacity: number) {
+    this.keys = new Float64Array(capacity)
+    this.vals = new Int32Array(capacity)
+  }
+
+  clear() { this.size = 0 }
+
+  push(key: number, val: number) {
+    const k = this.keys, v = this.vals
+    let i = this.size++
+    k[i] = key; v[i] = val
+    while (i > 0) {
+      const p = (i - 1) >> 1
+      if (k[p] <= k[i]) break
+      // swap
+      const tk = k[i]; k[i] = k[p]; k[p] = tk
+      const tv = v[i]; v[i] = v[p]; v[p] = tv
+      i = p
+    }
+  }
+
+  topKey(): number { return this.keys[0] }
+  topVal(): number { return this.vals[0] }
+
+  pop() {
+    const k = this.keys, v = this.vals
+    const last = --this.size
+    if (last > 0) {
+      k[0] = k[last]; v[0] = v[last]
+      let i = 0
+      for (;;) {
+        let s = i; const l = 2 * i + 1, r = 2 * i + 2
+        if (l < this.size && k[l] < k[s]) s = l
+        if (r < this.size && k[r] < k[s]) s = r
+        if (s === i) break
+        const tk = k[i]; k[i] = k[s]; k[s] = tk
+        const tv = v[i]; v[i] = v[s]; v[s] = tv
+        i = s
+      }
+    }
+  }
+}
 
 /** Check if a triangle is entirely inside a single obstacle */
 function triangleIsInsideObstacle(t: CdtTriangle, allowedPolys: Set<Polyline>): boolean {
@@ -85,7 +213,199 @@ function edgeMidpoint(e: CdtEdge): Point {
 }
 
 /** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
- *  Uses midpoint-to-midpoint distances for edge weights (not centroids). */
+ *  Uses pre-indexed triangle data and typed arrays for minimal GC. */
+function dijkstraTreeIndexed(
+  sourceId: number,
+  targetIds: Set<number>,
+  allowedPolys: Set<Polyline>,
+  idx: TriangleIndex,
+  gScore: Float64Array,
+  parentEdgeIdx: Int32Array, // stores i*3+j index into nbEdge, or -1
+  visited: number[],
+  heap: FlatMinHeap,
+): void {
+  gScore[sourceId] = 0
+  parentEdgeIdx[sourceId] = -1
+  visited.push(sourceId)
+  heap.clear()
+  heap.push(0, sourceId)
+
+  let remaining = targetIds.size
+  const foundTargets = new Set<number>()
+
+  while (heap.size > 0 && remaining > 0) {
+    const g = heap.topKey()
+    const tid = heap.topVal()
+    heap.pop()
+
+    if (g > gScore[tid]) continue
+
+    if (targetIds.has(tid) && !foundTargets.has(tid)) {
+      foundTargets.add(tid)
+      remaining--
+      if (remaining === 0) break
+    }
+
+    // Entry point for distance calc
+    const peIdx = parentEdgeIdx[tid]
+    let entryX: number, entryY: number
+    if (peIdx >= 0) {
+      // midpoint of the entering edge
+      entryX = idx.midX[peIdx]
+      entryY = idx.midY[peIdx]
+    } else {
+      entryX = idx.centX[tid]
+      entryY = idx.centY[tid]
+    }
+
+    const base = tid * 3
+    for (let j = 0; j < 3; j++) {
+      const otId = idx.nbId[base + j]
+      if (otId < 0) continue
+      // Don't go back through the same edge we entered from
+      if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
+
+      if (idx.isInsideObstacle(otId, allowedPolys)) {
+        // Allow reaching a target inside an obstacle
+        if (targetIds.has(otId) && !foundTargets.has(otId)) {
+          const mx = idx.midX[base + j]
+          const my = idx.midY[base + j]
+          const dx = entryX - mx, dy = entryY - my
+          const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
+          if (tentativeG < gScore[otId]) {
+            gScore[otId] = tentativeG
+            // Find the reverse edge index: which of otId's neighbors is tid?
+            const otBase = otId * 3
+            for (let k = 0; k < 3; k++) {
+              if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+                parentEdgeIdx[otId] = otBase + k
+                break
+              }
+            }
+            visited.push(otId)
+            foundTargets.add(otId)
+            remaining--
+          }
+        }
+        continue
+      }
+
+      const mx = idx.midX[base + j]
+      const my = idx.midY[base + j]
+      const dx = entryX - mx, dy = entryY - my
+      const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
+
+      if (tentativeG >= gScore[otId]) continue
+
+      gScore[otId] = tentativeG
+      // Store the reverse edge index on the neighbor
+      const otBase = otId * 3
+      for (let k = 0; k < 3; k++) {
+        if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+          parentEdgeIdx[otId] = otBase + k
+          break
+        }
+      }
+      visited.push(otId)
+      heap.push(tentativeG, otId)
+    }
+  }
+}
+
+/** Recover sleeve from indexed parent data */
+function recoverSleeveIndexed(
+  sourceId: number,
+  targetId: number,
+  parentEdgeIdx: Int32Array,
+  idx: TriangleIndex,
+): FrontEdge[] {
+  const ret: FrontEdge[] = []
+  let cur = targetId
+  while (cur !== sourceId) {
+    const peIdx = parentEdgeIdx[cur]
+    if (peIdx < 0) break
+    const e = idx.nbEdge[peIdx]!
+    const parentId = idx.nbId[peIdx]
+    ret.push({source: idx.triangles[parentId], edge: e})
+    cur = parentId
+  }
+  return ret.reverse()
+}
+
+/** A* on indexed CDT dual graph from sourceId to the triangle containing target point. */
+function findSleeveAStarIndexed(
+  sourceId: number,
+  target: Point,
+  allowedPolys: Set<Polyline>,
+  idx: TriangleIndex,
+  gScore: Float64Array,
+  parentEdgeIdx: Int32Array,
+  visited: number[],
+  heap: FlatMinHeap,
+): FrontEdge[] | null {
+  gScore[sourceId] = 0
+  parentEdgeIdx[sourceId] = -1
+  visited.push(sourceId)
+  heap.clear()
+
+  const tx = target.x, ty = target.y
+  const dx0 = idx.centX[sourceId] - tx, dy0 = idx.centY[sourceId] - ty
+  heap.push(Math.sqrt(dx0 * dx0 + dy0 * dy0), sourceId)
+
+  while (heap.size > 0) {
+    const f = heap.topKey()
+    const tid = heap.topVal()
+    heap.pop()
+
+    const g = gScore[tid]
+    if (f - g > gScore[tid] + 1e-10) continue // stale (f > g + h but we only check g changed)
+    if (g > gScore[tid] + 1e-10) continue
+
+    if (idx.triangles[tid].containsPoint(target)) {
+      return recoverSleeveIndexed(sourceId, tid, parentEdgeIdx, idx)
+    }
+
+    const peIdx = parentEdgeIdx[tid]
+    let entryX: number, entryY: number
+    if (peIdx >= 0) {
+      entryX = idx.midX[peIdx]
+      entryY = idx.midY[peIdx]
+    } else {
+      entryX = idx.centX[tid]
+      entryY = idx.centY[tid]
+    }
+
+    const base = tid * 3
+    for (let j = 0; j < 3; j++) {
+      const otId = idx.nbId[base + j]
+      if (otId < 0) continue
+      if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
+      if (idx.isInsideObstacle(otId, allowedPolys) && !idx.triangles[otId].containsPoint(target)) continue
+
+      const mx = idx.midX[base + j]
+      const my = idx.midY[base + j]
+      const dx = entryX - mx, dy = entryY - my
+      const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
+
+      if (tentativeG >= gScore[otId]) continue
+
+      gScore[otId] = tentativeG
+      const otBase = otId * 3
+      for (let k = 0; k < 3; k++) {
+        if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+          parentEdgeIdx[otId] = otBase + k
+          break
+        }
+      }
+      visited.push(otId)
+      const hx = mx - tx, hy = my - ty
+      heap.push(tentativeG + Math.sqrt(hx * hx + hy * hy), otId)
+    }
+  }
+  return null
+}
+
+// ── Legacy wrappers (used by corridorRoute for single-edge routing) ──
 function dijkstraTree(
   sourceTriangle: CdtTriangle,
   targetTriangles: Set<CdtTriangle>,
@@ -615,59 +935,9 @@ export function corridorRoute(
   return Polyline.mkFromPoints(points)
 }
 
-/** Check whether a hub-label sleeve stays in free space (or allowed obstacle interiors).
- *  Returns false if any intermediate triangle is inside a forbidden obstacle. */
-function isSleeveObstacleClean(sleeve: FrontEdge[], sourcePoly?: Polyline, targetPoly?: Polyline): boolean {
-  if (sleeve.length === 0) return true
-  const allowed = new Set<Polyline>()
-  if (sourcePoly) allowed.add(sourcePoly)
-  if (targetPoly) allowed.add(targetPoly)
-
-  for (const entry of sleeve) {
-    if (triangleIsInsideObstacle(entry.source, allowed)) return false
-  }
-  // Check the final triangle (the one we enter after the last edge)
-  const last = sleeve[sleeve.length - 1]
-  const finalTri = last.edge.GetOtherTriangle_T(last.source)
-  if (finalTri && triangleIsInsideObstacle(finalTri, allowed)) return false
-  return true
-}
-
-/** Convert a sleeve into a routed polyline for an edge */
-function routeEdgeFromSleeve(
-  edge: GeomEdge,
-  source: Point,
-  target: Point,
-  sourcePoly: Polyline | undefined,
-  targetPoly: Polyline | undefined,
-  sleeve: FrontEdge[],
-) {
-  if (sleeve.length === 0) {
-    const pts = Polyline.mkFromPoints([source, target])
-    edge.curve = pts.toCurve()
-    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-  } else {
-    const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-    const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-    const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
-    if (diagonals.length === 0) {
-      const pts = Polyline.mkFromPoints([source, target])
-      edge.curve = pts.toCurve()
-      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-    } else {
-      const points = funnelFromDiagonals(source, target, diagonals)
-      const poly = Polyline.mkFromPoints(points)
-      edge.curve = poly.toCurve()
-      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-    }
-  }
-}
-
 /** Route all edges using the corridor approach.
- *  Builds a CDT on padded obstacle polylines, then uses Hub-Based
- *  Labeling on the CDT dual graph for O(|L|) shortest-path queries
- *  with funnel optimization. Falls back to A* for paths that cross
- *  forbidden obstacles. */
+ *  Builds a CDT on padded obstacle polylines and routes each edge
+ *  through the CDT dual graph with funnel optimization. */
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -714,16 +984,19 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
   cdt.run()
   console.timeEnd('CorridorRouter CDT')
 
-  // Build Contraction Hierarchy + Hub Labels for O(|L|) queries
-  console.time('CorridorRouter HL preprocessing')
-  const ch = new ContractionHierarchy(cdt)
-  const hl = new HubLabels(ch)
-  console.timeEnd('CorridorRouter HL preprocessing')
+  // Build triangle index for fast typed-array Dijkstra/A*
+  const idx = new TriangleIndex(cdt)
 
-  // Route edges using hub label queries with A* fallback
+  // Pre-allocate reusable arrays for Dijkstra/A* (avoids per-call Map/GC overhead)
+  const gScore = new Float64Array(idx.n).fill(Infinity)
+  const parentEdgeIdx = new Int32Array(idx.n).fill(-1)
+  const visited: number[] = []
+  const heap = new FlatMinHeap(idx.n * 4)
+
+  // route edges using indexed Dijkstra tree per source node
   console.time('CorridorRouter routing')
 
-  // Group edges by source node (to share sourceTriangle lookup)
+  // Group edges by source node
   const edgesBySource = new Map<GeomNode, GeomEdge[]>()
   for (const edge of edgesToRoute) {
     if (cancelToken && cancelToken.canceled) return
@@ -750,13 +1023,16 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
       continue
     }
 
-    const srcIdx = ch.getIndex(sourceTriangle)
+    const sourceId = idx.getId(sourceTriangle)
+    if (sourceId < 0) continue
 
+    // Find all target triangles for this source
+    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetId: number}[] = []
+    const targetIds = new Set<number>()
     for (const edge of edges) {
       const target = edge.target.center
       const targetPoly = nodeToPolyline.get(edge.target)
       const targetTriangle = findContainingTriangle(cdt, target)
-
       if (!targetTriangle) {
         const fallback = Polyline.mkFromPoints([source, target])
         edge.curve = fallback.toCurve()
@@ -764,36 +1040,94 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
         continue
       }
+      const targetId = idx.getId(targetTriangle)
+      if (targetId < 0) continue
+      targetInfos.push({edge, target, targetPoly, targetId})
+      targetIds.add(targetId)
+    }
 
-      let routed = false
-      const tgtIdx = ch.getIndex(targetTriangle)
+    if (targetInfos.length === 0) continue
 
-      // Try hub-label query first
-      if (srcIdx !== undefined && tgtIdx !== undefined) {
-        const sleeve = hl.recoverSleeve(srcIdx, tgtIdx)
-        if (sleeve && isSleeveObstacleClean(sleeve, sourcePoly, targetPoly)) {
-          routeEdgeFromSleeve(edge, source, target, sourcePoly, targetPoly, sleeve)
-          routed = true
-        }
+    const allowed = new Set<Polyline>()
+    if (sourcePoly) allowed.add(sourcePoly)
+
+    // Single indexed Dijkstra from source to all target triangles
+    dijkstraTreeIndexed(sourceId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+
+    // Process Dijkstra-reachable edges; collect unreachable for A* fallback
+    const fallbackEdges: {edge: GeomEdge; target: Point; targetPoly?: Polyline}[] = []
+    for (const {edge, target, targetPoly, targetId} of targetInfos) {
+      if (gScore[targetId] === Infinity) {
+        fallbackEdges.push({edge, target, targetPoly})
+        continue
       }
-
-      // Fall back to A* if HL path is unavailable or crosses a forbidden obstacle
-      if (!routed) {
-        const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
-        if (poly && poly.count >= 2) {
+      const sleeve = recoverSleeveIndexed(sourceId, targetId, parentEdgeIdx, idx)
+      if (sleeve.length === 0) {
+        const pts = Polyline.mkFromPoints([source, target])
+        edge.curve = pts.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+      } else {
+        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length === 0) {
+          const pts = Polyline.mkFromPoints([source, target])
+          edge.curve = pts.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        } else {
+          const points = funnelFromDiagonals(source, target, diagonals)
+          const poly = Polyline.mkFromPoints(points)
           edge.curve = poly.toCurve()
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-        } else {
-          const fallback = Polyline.mkFromPoints([source, target])
-          edge.curve = fallback.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
         }
       }
-
       Arrowhead.trimSplineAndCalculateArrowheadsII(
         edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
       )
     }
+
+    // Reset Dijkstra state before A* fallbacks
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+
+    // A* fallback for edges Dijkstra couldn't reach (target inside obstacle)
+    for (const {edge, target, targetPoly} of fallbackEdges) {
+      const allowedBoth = new Set<Polyline>()
+      if (sourcePoly) allowedBoth.add(sourcePoly)
+      if (targetPoly) allowedBoth.add(targetPoly)
+
+      const sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      if (sleeve && sleeve.length > 0) {
+        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length > 0) {
+          const points = funnelFromDiagonals(source, target, diagonals)
+          const poly = Polyline.mkFromPoints(points)
+          edge.curve = poly.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+        } else {
+          const pts = Polyline.mkFromPoints([source, target])
+          edge.curve = pts.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        }
+      } else if (!sleeve || sleeve.length === 0) {
+        // A* found source == target triangle
+        const pts = Polyline.mkFromPoints([source, target])
+        edge.curve = pts.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+      // Reset for next A* call
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+    }
+
+    // Reset reusable arrays for next source node
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
   }
   console.timeEnd('CorridorRouter routing')
 }
