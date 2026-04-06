@@ -785,7 +785,13 @@ test('dump collapse benefit: find edges where collapse shortens path', () => {
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'IndianRed', sourcePoly))
     curves.push(DebugCurve.mkDebugCurveTWCI(220, 1.5, 'SteelBlue', targetPoly))
 
-    // 3) Collapsed funnel path (red solid)
+    // 3) Raw funnel path before collapse (transparent dashed orange)
+    if (rawPts.length >= 2) {
+      const rawPoly = Polyline.mkFromPoints(rawPts)
+      curves.push(DebugCurve.mkDebugCurveTWCILD(120, 1.5, 'Orange', rawPoly.toCurve(), null, [6, 4]))
+    }
+
+    // 4) Collapsed funnel path (red solid)
     if (collPts.length >= 2) {
       const collPoly = Polyline.mkFromPoints(collPts)
       curves.push(DebugCurve.mkDebugCurveTWCI(255, 2, 'Red', collPoly.toCurve()))

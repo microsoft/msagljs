@@ -35,6 +35,56 @@ function layoutGot() {
   return gg
 }
 
+function dumpSleeveAsSvg(sleeve: NonNullable<ReturnType<typeof findSleeveAStar>>, svgPath: string) {
+  const triangles: {a: Point; b: Point; c: Point}[] = []
+  for (const fe of sleeve) {
+    const s = fe.source.Sites
+    triangles.push({a: s.item0.point, b: s.item1.point, c: s.item2.point})
+  }
+  // Add the last triangle (across the last front edge)
+  const lastFe = sleeve[sleeve.length - 1]
+  const lastTri = lastFe.edge.GetOtherTriangle_T(lastFe.source)
+  if (lastTri) {
+    const s = lastTri.Sites
+    triangles.push({a: s.item0.point, b: s.item1.point, c: s.item2.point})
+  }
+  // Compute bounding box
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const t of triangles) {
+    for (const p of [t.a, t.b, t.c]) {
+      if (p.x < minX) minX = p.x
+      if (p.y < minY) minY = p.y
+      if (p.x > maxX) maxX = p.x
+      if (p.y > maxY) maxY = p.y
+    }
+  }
+  const pad = 10
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad
+  const w = maxX - minX
+  const h = maxY - minY
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">\n`
+  svg += `  <g transform="translate(${-minX},${-minY})">\n`
+  for (let i = 0; i < triangles.length; i++) {
+    const t = triangles[i]
+    let fill: string
+    if (i === 0) {
+      fill = 'red'
+    } else if (i === triangles.length - 1) {
+      fill = 'blue'
+    } else {
+      fill = 'CornflowerBlue'
+    }
+    const opacity = 0.15 + 0.45 * (i / Math.max(triangles.length - 1, 1))
+    svg += `    <polygon points="${t.a.x},${t.a.y} ${t.b.x},${t.b.y} ${t.c.x},${t.c.y}" `
+    svg += `fill="${fill}" fill-opacity="${opacity.toFixed(3)}" `
+    svg += `stroke="${fill}" stroke-opacity="0.5" stroke-width="0.5"/>\n`
+  }
+  svg += `  </g>\n</svg>\n`
+  fs.mkdirSync(join(svgPath, '..'), {recursive: true})
+  fs.writeFileSync(svgPath, svg)
+  console.log(`Wrote sleeve SVG to ${svgPath}`)
+}
+
 function buildCdt(gg: GeomGraph, padding: number) {
   const nodeToPolyline = new Map<GeomNode, Polyline>()
   const obstacles: Polyline[] = []
@@ -87,6 +137,9 @@ test('MELISANDRE-STANNIS sleeve collapse from paper figure', () => {
   const sleeve = findSleeveAStar(srcTri!, target, allowed)
   expect(sleeve).not.toBeNull()
   expect(sleeve!.length).toBeGreaterThan(0)
+
+  // Dump sleeve as SVG with shaded triangles
+  dumpSleeveAsSvg(sleeve!, join(__dirname, '../../tmp/corridor_figs/sleeve_MELISANDRE_STANNIS.svg'))
 
   console.log(`Sleeve length: ${sleeve!.length} front edges`)
 
