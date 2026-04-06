@@ -117,6 +117,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               data: data.curveClips,
               getDepth: highlighter.edgeDepth,
               getPickingColor: (cc, {target}) => highlighter.encodeEdgeIndex(cc, target),
+              highlighter,
               pickable: true,
               resolution,
             },

@@ -49,6 +49,7 @@ export default class GraphHighlighter {
   private _edgeTargetBuffer: Buffer
   private _edgeDirectionBuffer: Buffer
   private _edgeDepthBuffer: Buffer
+  private _highlightedEdgePickingColor: [number, number, number] = [-1, 0, 0]
 
   constructor(gl: WebGLRenderingContext) {
     this._gl = gl
@@ -88,6 +89,19 @@ export default class GraphHighlighter {
     return this._edgeDepthBuffer
   }
 
+  get highlightedEdgePickingColor(): [number, number, number] {
+    return this._highlightedEdgePickingColor
+  }
+
+  setHighlightedEdge(edge: Edge | null) {
+    if (edge) {
+      const color = this.getEdgePickingColor(edge)
+      this._highlightedEdgePickingColor = color || [-1, 0, 0]
+    } else {
+      this._highlightedEdgePickingColor = [-1, 0, 0]
+    }
+  }
+
   encodeNodeIndex(node: GeomNode, out: number[]): number[] {
     return encodePickingColor(this._nodeMap.get(node.id), out)
   }
@@ -101,6 +115,13 @@ export default class GraphHighlighter {
   }
   getEdge(index: number): Edge | undefined {
     return this._edgeList[index]
+  }
+  getEdgePickingColor(edge: Edge): [number, number, number] | undefined {
+    const idx = this._edgeMap.get(edge)
+    if (idx === undefined) return undefined
+    const out = [0, 0, 0] as [number, number, number]
+    encodePickingColor(idx, out)
+    return out
   }
 
   setGraph(graph: GeomGraph) {

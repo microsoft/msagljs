@@ -15,6 +15,7 @@ import GL from '@luma.gl/constants'
 import {Model, Geometry} from '@luma.gl/engine'
 import {Buffer} from '@luma.gl/webgl'
 import {picking} from '@luma.gl/shadertools'
+import type GraphHighlighter from './graph-highlighter'
 
 const MAX_DRAW_COUNT = 16
 
@@ -26,6 +27,7 @@ export enum CURVE {
 
 export type CurveLayerProps<DataT> = {
   getDepth?: Buffer
+  highlighter?: GraphHighlighter
 
   widthUnits?: Unit
   widthScale?: number
@@ -81,8 +83,10 @@ uniform float widthScale;
 uniform float widthMinPixels;
 uniform float widthMaxPixels;
 uniform int widthUnits;
+uniform vec3 highlightedPickingColor;
 
 varying vec4 vColor;
+varying vec3 vPickingColorRaw;
 
 void interpolateLine(float t, vec2 start, vec2 end, out vec2 point) {
   point = mix(start, end, t);
@@ -118,6 +122,15 @@ void main(void) {
     widthMinPixels, widthMaxPixels
   );
   float widthCommon = project_pixel_size(widthPixels);
+
+  // Thicken highlighted edge
+  bool isHighlighted = highlightedPickingColor.x >= 0.0 &&
+      abs(instancePickingColors.r - highlightedPickingColor.r) < 0.5 &&
+      abs(instancePickingColors.g - highlightedPickingColor.g) < 0.5 &&
+      abs(instancePickingColors.b - highlightedPickingColor.b) < 0.5;
+  if (isHighlighted) {
+    widthCommon *= 2.5;
+  }
 
   geometry.uv = positions.xy;
 
@@ -155,16 +168,31 @@ void main(void) {
   // Apply opacity to instance color, or return instance picking color
   vColor = vec4(instanceColors.rgb, instanceColors.a * opacity);
   DECKGL_FILTER_COLOR(vColor, geometry);
+  vPickingColorRaw = instancePickingColors;
   picking_setPickingColor(instancePickingColors);
 }
 `
 
 const fs = `\
 #define SHADER_NAME curve-layer-fragment-shader
+uniform vec3 highlightedPickingColor;
+uniform vec4 edgeHighlightColor;
 varying vec4 vColor;
+varying vec3 vPickingColorRaw;
 
 void main(void) {
   gl_FragColor = vColor;
+
+  // Highlight the hovered edge
+  if (highlightedPickingColor.x >= 0.0 &&
+      abs(vPickingColorRaw.r - highlightedPickingColor.r) < 0.5 &&
+      abs(vPickingColorRaw.g - highlightedPickingColor.g) < 0.5 &&
+      abs(vPickingColorRaw.b - highlightedPickingColor.b) < 0.5) {
+    gl_FragColor = vec4(
+      mix(gl_FragColor.rgb, edgeHighlightColor.rgb, edgeHighlightColor.a),
+      gl_FragColor.a);
+  }
+
   DECKGL_FILTER_COLOR(gl_FragColor, geometry);
   gl_FragColor = picking_filterPickingColor(gl_FragColor);
 }
@@ -276,8 +304,9 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
   }
 
   draw({uniforms}: any) {
-    const {widthUnits, widthScale, widthMinPixels, widthMaxPixels} = this.props
+    const {widthUnits, widthScale, widthMinPixels, widthMaxPixels, highlighter} = this.props
 
+    const hpc = highlighter?.highlightedEdgePickingColor || [-1, 0, 0]
     this.state.model
       .setUniforms(uniforms)
       .setUniforms({
@@ -285,6 +314,8 @@ export default class CurveLayer<DataT> extends Layer<Required<CurveLayerProps<Da
         widthScale,
         widthMinPixels,
         widthMaxPixels,
+        highlightedPickingColor: hpc,
+        edgeHighlightColor: [0, 0.53, 1, 0.8],
       })
       .draw()
   }
