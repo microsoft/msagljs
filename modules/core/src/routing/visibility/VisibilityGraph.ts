@@ -3,10 +3,18 @@ import {Point, TriangleOrientation} from '../../math/geometry/point'
 import {PolylinePoint} from '../../math/geometry/polylinePoint'
 
 import {PointMap} from '../../utils/PointMap'
+import {HubLabeling} from '../HubLabeling'
 import {VisibilityEdge} from './VisibilityEdge'
 import {VisibilityVertex} from './VisibilityVertex'
 
 export class VisibilityGraph {
+  /** Precomputed hub labels for fast shortest-path queries (null until built). */
+  hubLabeling: HubLabeling | null = null
+
+  /** Build hub labels for all vertices. Call after the graph is fully constructed. */
+  buildHubLabels() {
+    this.hubLabeling = HubLabeling.build(this)
+  }
   activeVertices: Set<VisibilityVertex> = new Set<VisibilityVertex>()
   private *edges_(): IterableIterator<VisibilityEdge> {
     for (const u of this.pointToVertexMap.values()) {

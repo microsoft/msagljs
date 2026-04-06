@@ -268,6 +268,7 @@ export class SplineRouter extends Algorithm {
     this.BindLooseShapes()
     this.SetLoosePolylinesForAnywherePorts()
     this.CalculateVisibilityGraph()
+    this.visGraph.buildHubLabels()
     this.RouteOnVisGraph()
   }
 

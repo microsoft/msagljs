@@ -1,5 +1,6 @@
 import {GenericBinaryHeapPriorityQueue} from '../structs/genericBinaryHeapPriorityQueue'
 import {compareNumbers} from '../utils/compare'
+import {HubLabeling} from './HubLabeling'
 import {TollFreeVisibilityEdge} from './visibility/TollFreeVisibilityEdge'
 import {VisibilityEdge} from './visibility/VisibilityEdge'
 import {VisibilityGraph} from './visibility/VisibilityGraph'
@@ -11,6 +12,8 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   _target: VisibilityVertex
 
   _visGraph: VisibilityGraph
+
+  _hubLabeling: HubLabeling | null
 
   _lengthMultiplier = 1
 
@@ -30,11 +33,12 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
     this._lengthMultiplierForAStar = value
   }
 
-  constructor(visGraph: VisibilityGraph, sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex) {
+  constructor(visGraph: VisibilityGraph, sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex, hubLabeling?: HubLabeling) {
     this._visGraph = visGraph
     this._source = sourceVisVertex
     this._target = targetVisVertex
     this._source.Distance = 0
+    this._hubLabeling = hubLabeling ?? visGraph.hubLabeling ?? null
   }
 
   // Returns  a  path
@@ -143,6 +147,17 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   }
 
   private H(visibilityVertex: VisibilityVertex): number {
+    if (this._hubLabeling && this._lengthMultiplierForAStar >= 1) {
+      // Hub label distance is the exact shortest path distance in the full graph.
+      // Since the restricted graph has fewer passable edges, hubDist ≤ restricted distance.
+      // This is a tighter admissible heuristic than Euclidean distance.
+      // Fall back to Euclidean if source or target is not in the hub labels
+      // (e.g., temporary vertices added for port connections).
+      const hubDist = this._hubLabeling.queryDistance(visibilityVertex, this._target)
+      if (hubDist < Number.POSITIVE_INFINITY) {
+        return visibilityVertex.Distance + hubDist
+      }
+    }
     return visibilityVertex.Distance + visibilityVertex.point.sub(this._target.point).length * this.LengthMultiplierForAStar
   }
 
