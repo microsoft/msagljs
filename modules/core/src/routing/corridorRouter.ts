@@ -2,7 +2,11 @@
  * Corridor Router: routes edges directly on the CDT dual graph,
  * bypassing the cone spanner / visibility graph.
  *
- * Pipeline: CDT → BFS on dual graph → sleeve → funnel → polyline
+ * Pipeline: CDT → Hub Labels on CH → sleeve → funnel → polyline
+ *
+ * Uses Contraction Hierarchies + Hub-Based Labeling (Abraham et al.,
+ * MSR-TR-2010-165) for O(|L|) shortest-path queries on the CDT dual
+ * graph, with A* fallback for paths that cross forbidden obstacles.
  */
 import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
@@ -20,6 +24,8 @@ import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
+import {ContractionHierarchy} from './contractionHierarchy'
+import {HubLabels} from './hubLabels'
 
 export type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
@@ -609,9 +615,59 @@ export function corridorRoute(
   return Polyline.mkFromPoints(points)
 }
 
+/** Check whether a hub-label sleeve stays in free space (or allowed obstacle interiors).
+ *  Returns false if any intermediate triangle is inside a forbidden obstacle. */
+function isSleeveObstacleClean(sleeve: FrontEdge[], sourcePoly?: Polyline, targetPoly?: Polyline): boolean {
+  if (sleeve.length === 0) return true
+  const allowed = new Set<Polyline>()
+  if (sourcePoly) allowed.add(sourcePoly)
+  if (targetPoly) allowed.add(targetPoly)
+
+  for (const entry of sleeve) {
+    if (triangleIsInsideObstacle(entry.source, allowed)) return false
+  }
+  // Check the final triangle (the one we enter after the last edge)
+  const last = sleeve[sleeve.length - 1]
+  const finalTri = last.edge.GetOtherTriangle_T(last.source)
+  if (finalTri && triangleIsInsideObstacle(finalTri, allowed)) return false
+  return true
+}
+
+/** Convert a sleeve into a routed polyline for an edge */
+function routeEdgeFromSleeve(
+  edge: GeomEdge,
+  source: Point,
+  target: Point,
+  sourcePoly: Polyline | undefined,
+  targetPoly: Polyline | undefined,
+  sleeve: FrontEdge[],
+) {
+  if (sleeve.length === 0) {
+    const pts = Polyline.mkFromPoints([source, target])
+    edge.curve = pts.toCurve()
+    edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+  } else {
+    const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+    const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+    const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+    if (diagonals.length === 0) {
+      const pts = Polyline.mkFromPoints([source, target])
+      edge.curve = pts.toCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+    } else {
+      const points = funnelFromDiagonals(source, target, diagonals)
+      const poly = Polyline.mkFromPoints(points)
+      edge.curve = poly.toCurve()
+      edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+    }
+  }
+}
+
 /** Route all edges using the corridor approach.
- *  Builds a CDT on padded obstacle polylines and routes each edge
- *  through the CDT dual graph with funnel optimization. */
+ *  Builds a CDT on padded obstacle polylines, then uses Hub-Based
+ *  Labeling on the CDT dual graph for O(|L|) shortest-path queries
+ *  with funnel optimization. Falls back to A* for paths that cross
+ *  forbidden obstacles. */
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -658,10 +714,16 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
   cdt.run()
   console.timeEnd('CorridorRouter CDT')
 
-  // route edges using Dijkstra tree per source node
+  // Build Contraction Hierarchy + Hub Labels for O(|L|) queries
+  console.time('CorridorRouter HL preprocessing')
+  const ch = new ContractionHierarchy(cdt)
+  const hl = new HubLabels(ch)
+  console.timeEnd('CorridorRouter HL preprocessing')
+
+  // Route edges using hub label queries with A* fallback
   console.time('CorridorRouter routing')
 
-  // Group edges by source node
+  // Group edges by source node (to share sourceTriangle lookup)
   const edgesBySource = new Map<GeomNode, GeomEdge[]>()
   for (const edge of edgesToRoute) {
     if (cancelToken && cancelToken.canceled) return
@@ -688,40 +750,35 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
       continue
     }
 
-    // Find all target triangles for this source
-    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetTriangle: CdtTriangle}[] = []
-    const targetTriangles = new Set<CdtTriangle>()
+    const srcIdx = ch.getIndex(sourceTriangle)
+
     for (const edge of edges) {
       const target = edge.target.center
       const targetPoly = nodeToPolyline.get(edge.target)
       const targetTriangle = findContainingTriangle(cdt, target)
+
       if (!targetTriangle) {
-        // fallback for this edge
         const fallback = Polyline.mkFromPoints([source, target])
         edge.curve = fallback.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
         continue
       }
-      targetInfos.push({edge, target, targetPoly, targetTriangle})
-      targetTriangles.add(targetTriangle)
-    }
 
-    if (targetInfos.length === 0) continue
+      let routed = false
+      const tgtIdx = ch.getIndex(targetTriangle)
 
-    // Dijkstra with only source poly allowed — target obstacle entry is
-    // handled by the fact that canCrossEdge always returns true
-    const allowed = new Set<Polyline>()
-    if (sourcePoly) allowed.add(sourcePoly)
+      // Try hub-label query first
+      if (srcIdx !== undefined && tgtIdx !== undefined) {
+        const sleeve = hl.recoverSleeve(srcIdx, tgtIdx)
+        if (sleeve && isSleeveObstacleClean(sleeve, sourcePoly, targetPoly)) {
+          routeEdgeFromSleeve(edge, source, target, sourcePoly, targetPoly, sleeve)
+          routed = true
+        }
+      }
 
-    // Single Dijkstra from sourceTriangle to all target triangles
-    const parentMap = dijkstraTree(sourceTriangle, targetTriangles, allowed)
-
-    // Extract sleeve and route each edge
-    for (const {edge, target, targetPoly, targetTriangle} of targetInfos) {
-      // Check if Dijkstra reached this target
-      if (!parentMap.has(targetTriangle)) {
-        // fallback to individual A* (target may be inside obstacle requiring allowed polys)
+      // Fall back to A* if HL path is unavailable or crosses a forbidden obstacle
+      if (!routed) {
         const poly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
         if (poly && poly.count >= 2) {
           edge.curve = poly.toCurve()
@@ -731,28 +788,8 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
           edge.curve = fallback.toCurve()
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
         }
-      } else {
-        const sleeve = recoverSleeve(sourceTriangle, parentMap, targetTriangle)
-        if (sleeve.length === 0) {
-          const pts = Polyline.mkFromPoints([source, target])
-          edge.curve = pts.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        } else {
-          const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-          const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-          const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
-          if (diagonals.length === 0) {
-            const pts = Polyline.mkFromPoints([source, target])
-            edge.curve = pts.toCurve()
-            edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-          } else {
-            const points = funnelFromDiagonals(source, target, diagonals)
-            const poly = Polyline.mkFromPoints(points)
-            edge.curve = poly.toCurve()
-            edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          }
-        }
       }
+
       Arrowhead.trimSplineAndCalculateArrowheadsII(
         edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
       )

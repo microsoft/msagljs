@@ -15,7 +15,7 @@ import {Point} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 
 /** An arc in the CH graph — either an original CDT edge or a shortcut */
-type CHArc = {
+export type CHArc = {
   target: number // index of target node in the CH
   weight: number // Euclidean distance between centroids
   // For shortcuts: the sequence of CdtEdges that this arc represents
@@ -25,7 +25,7 @@ type CHArc = {
 }
 
 /** A node in the CH graph, corresponding to a CDT triangle */
-type CHNode = {
+export type CHNode = {
   triangle: CdtTriangle
   centroid: Point
   rank: number // contraction order (higher = more important)
@@ -43,21 +43,27 @@ function triangleIsInsideObstacle(t: CdtTriangle): boolean {
   return o0 === o1 && o0 === o2
 }
 
+/** Default filter: include only free-space triangles (not inside any obstacle) */
+export function freeSpaceFilter(t: CdtTriangle): boolean {
+  return !triangleIsInsideObstacle(t)
+}
+
 export class ContractionHierarchy {
   nodes: CHNode[] = []
   private triToIndex = new Map<CdtTriangle, number>()
 
-  /** Build the CH from a CDT */
-  constructor(cdt: Cdt) {
-    this.buildGraph(cdt)
+  /** Build the CH from a CDT.
+   *  @param includeTriangle Optional filter — only triangles passing the filter are included.
+   *    Defaults to including ALL triangles. Use `freeSpaceFilter` to exclude obstacle interiors. */
+  constructor(cdt: Cdt, includeTriangle?: (t: CdtTriangle) => boolean) {
+    this.buildGraph(cdt, includeTriangle)
     this.contract()
   }
 
   /** Build the initial dual graph from the CDT */
-  private buildGraph(cdt: Cdt) {
-    // Enumerate ALL triangles (including obstacle-interior ones,
-    // since source/target nodes are inside their own obstacles)
+  private buildGraph(cdt: Cdt, includeTriangle?: (t: CdtTriangle) => boolean) {
     for (const t of cdt.GetTriangles()) {
+      if (includeTriangle && !includeTriangle(t)) continue
       const idx = this.nodes.length
       const a = t.Sites.item0.point
       const b = t.Sites.item1.point
@@ -72,7 +78,7 @@ export class ContractionHierarchy {
       this.triToIndex.set(t, idx)
     }
 
-    // Add edges between adjacent free-space triangles
+    // Add edges between adjacent triangles (filtered by includeTriangle)
     const addedPairs = new Set<string>()
     for (let i = 0; i < this.nodes.length; i++) {
       const node = this.nodes[i]
@@ -365,7 +371,7 @@ export class ContractionHierarchy {
   }
 
   /** Recursively unpack an arc between two CH nodes into original CDT edges */
-  private unpackArc(from: number, to: number, result: {source: CdtTriangle; edge: CdtEdge}[]) {
+  unpackArc(from: number, to: number, result: {source: CdtTriangle; edge: CdtEdge}[]) {
     // Find the arc
     const arc = this.findArc(from, to)
     if (!arc) return
@@ -381,7 +387,7 @@ export class ContractionHierarchy {
   }
 
   /** Find arc from node a to node b in either upArcs or downArcs */
-  private findArc(a: number, b: number): CHArc | undefined {
+  findArc(a: number, b: number): CHArc | undefined {
     for (const arc of this.nodes[a].upArcs) {
       if (arc.target === b) return arc
     }
