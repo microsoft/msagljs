@@ -213,6 +213,7 @@ export default class Renderer extends EventSource {
   }
 
   private async _layoutGraph(forceUpdate: boolean) {
+    const t0 = performance.now()
     if (this._layoutWorkerUrl) {
       console.log('layout on worker')
       this._graph = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate)
@@ -224,6 +225,7 @@ export default class Renderer extends EventSource {
       // deck is ready
       this._update()
     }
+    console.log(`total processing: ${(performance.now() - t0).toFixed(1)}ms`)
   }
 
   private _update() {

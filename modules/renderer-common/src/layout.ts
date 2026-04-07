@@ -61,6 +61,7 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
 
 /** lay out the given graph */
 export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = false): Graph {
+  const t0 = performance.now()
   let needsReroute = false
   let needsLayout = forceUpdate
   const drawingGraph: DrawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
@@ -95,6 +96,7 @@ export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = 
     routeEdges(geomGraph, Array.from(geomGraph.deepEdges), null)
     // console.timeEnd('routeEdges')
   }
+  console.log(`layout: ${(performance.now() - t0).toFixed(1)}ms`)
   return graph
 }
 
