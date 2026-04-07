@@ -99,7 +99,7 @@ export class ContractionHierarchy {
   }
 
   /** Contract all nodes in order of importance.
-   *  Uses edge-difference heuristic with lazy priority updates. */
+   *  Uses edge-difference heuristic with an indexed binary heap for O(n log n). */
   private contract() {
     const n = this.nodes.length
     if (n === 0) return
@@ -118,7 +118,6 @@ export class ContractionHierarchy {
     }
 
     // Edge difference priority: shortcuts_added - edges_removed
-    // Reusable buffer to avoid allocations in the hot loop
     const tempNb: number[] = []
     function edgeDiff(node: number): number {
       tempNb.length = 0
@@ -140,29 +139,77 @@ export class ContractionHierarchy {
       return shortcuts - d
     }
 
-    // O(n) scan with lazy recomputation — cache-friendly on typed arrays
-    const priority = new Float64Array(n)
-    for (let i = 0; i < n; i++) priority[i] = edgeDiff(i)
+    // Indexed min-heap with update-key support.
+    // Maps node indices 0..n-1 to heap positions for O(log n) update.
+    const hPri = new Float64Array(n)  // priority of each node
+    const hPos = new Int32Array(n)    // heap position of each node (-1 if not in heap)
+    const heap = new Int32Array(n)    // heap[position] = node index
+    let hSize = 0
+
+    function hSwap(i: number, j: number) {
+      const ni = heap[i], nj = heap[j]
+      heap[i] = nj; heap[j] = ni
+      hPos[ni] = j; hPos[nj] = i
+    }
+    function hUp(i: number) {
+      while (i > 0) {
+        const p = (i - 1) >> 1
+        if (hPri[heap[p]] <= hPri[heap[i]]) break
+        hSwap(i, p)
+        i = p
+      }
+    }
+    function hDown(i: number) {
+      while (true) {
+        let s = i; const l = 2 * i + 1, r = 2 * i + 2
+        if (l < hSize && hPri[heap[l]] < hPri[heap[s]]) s = l
+        if (r < hSize && hPri[heap[r]] < hPri[heap[s]]) s = r
+        if (s === i) break
+        hSwap(i, s)
+        i = s
+      }
+    }
+    function hInsert(node: number, pri: number) {
+      hPri[node] = pri
+      heap[hSize] = node
+      hPos[node] = hSize
+      hUp(hSize++)
+    }
+    function hPopMin(): number {
+      const node = heap[0]
+      hSize--
+      if (hSize > 0) {
+        heap[0] = heap[hSize]
+        hPos[heap[0]] = 0
+        hDown(0)
+      }
+      hPos[node] = -1
+      return node
+    }
+    function hUpdate(node: number, pri: number) {
+      const old = hPri[node]
+      hPri[node] = pri
+      const pos = hPos[node]
+      if (pos < 0) return
+      if (pri < old) hUp(pos)
+      else if (pri > old) hDown(pos)
+    }
+
+    // Initialize
+    hPos.fill(-1)
+    for (let i = 0; i < n; i++) {
+      hInsert(i, edgeDiff(i))
+    }
 
     let rank = 0
-    for (let iter = 0; iter < n; iter++) {
-      // Linear scan for minimum priority among uncontracted nodes
-      let bestIdx = -1
-      let bestPri = Infinity
-      for (let i = 0; i < n; i++) {
-        if (contracted[i]) continue
-        if (priority[i] < bestPri) {
-          bestPri = priority[i]
-          bestIdx = i
-        }
-      }
-      if (bestIdx < 0) break
+    while (hSize > 0) {
+      const bestIdx = hPopMin()
+      if (contracted[bestIdx]) continue
 
-      // Lazy update: recompute and check if still best
+      // Lazy recompute: verify priority
       const recomputed = edgeDiff(bestIdx)
-      priority[bestIdx] = recomputed
-      if (recomputed > bestPri) {
-        iter-- // retry
+      if (recomputed > hPri[bestIdx] && hSize > 0 && recomputed > hPri[heap[0]]) {
+        hInsert(bestIdx, recomputed)
         continue
       }
 
