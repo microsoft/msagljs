@@ -13,6 +13,9 @@ import {Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
+import {Curve} from '../math/geometry/curve'
+import {BezierSeg} from '../math/geometry/bezierSeg'
+import {CornerSite} from '../math/geometry/cornerSite'
 import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
 import {GeomEdge} from '../layout/core/geomEdge'
 import {GeomNode} from '../layout/core/geomNode'
@@ -1159,8 +1162,9 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
         } else {
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
-          edge.curve = poly.toCurve()
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          smoothenCorners(edge.smoothedPolyline, padding)
+          edge.curve = edge.smoothedPolyline.createCurve()
         }
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
@@ -1186,8 +1190,9 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
         if (diagonals.length > 0) {
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
-          edge.curve = poly.toCurve()
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          smoothenCorners(edge.smoothedPolyline, padding)
+          edge.curve = edge.smoothedPolyline.createCurve()
         } else {
           const pts = Polyline.mkFromPoints([source, target])
           edge.curve = pts.toCurve()
@@ -1212,6 +1217,57 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
     visited.length = 0
   }
   console.timeEnd('CorridorRouter routing')
+}
+
+/** Adjust bezier coefficients at each corner so curves stay within padding
+ *  of the original polyline path — same approach as SplineRouter. */
+function smoothenCorners(sp: SmoothedPolyline, loosePadding: number): void {
+  let a: CornerSite = sp.headSite
+  let corner: {b: CornerSite; c: CornerSite} | undefined
+  while ((corner = Curve.findCorner(a))) {
+    a = smoothOneCorner(a, corner.c, corner.b, loosePadding)
+  }
+}
+
+function smoothOneCorner(a: CornerSite, c: CornerSite, b: CornerSite, loosePadding: number): CornerSite {
+  const mult = 1.5
+  const kMin = 0.01
+  let k = 0.5
+  let seg: BezierSeg
+  let v: number
+  let u: number
+  if (a.prev == null) {
+    u = 2
+    v = 1
+  } else if (c.next == null) {
+    u = 1
+    v = 2
+  } else {
+    u = v = 1
+  }
+
+  do {
+    seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
+    b.previouisBezierCoefficient = k * u
+    b.nextBezierCoefficient = k * v
+    k /= mult
+  } while (distFromCornerToSeg() > loosePadding && k > kMin)
+  k *= mult
+  if (k < 0.5 && k > kMin) {
+    k = 0.5 * (k + k * mult)
+    seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
+    if (distFromCornerToSeg() > loosePadding) {
+      b.previouisBezierCoefficient = k * u
+      b.nextBezierCoefficient = k * v
+    }
+  }
+
+  return b
+
+  function distFromCornerToSeg(): number {
+    const t = seg.closestParameter(b.point)
+    return b.point.sub(seg.value(t)).length
+  }
 }
 
 // ── Hub-Labels–based corridor routing ───────────────────────────────
@@ -1396,8 +1452,9 @@ export function routeCorridorEdgesHL(
       } else {
         const points = funnelFromDiagonals(source, target, diagonals)
         const poly = Polyline.mkFromPoints(points)
-        edge.curve = poly.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+        smoothenCorners(edge.smoothedPolyline, padding)
+        edge.curve = edge.smoothedPolyline.createCurve()
       }
     }
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
