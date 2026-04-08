@@ -128,15 +128,16 @@ export class Point {
   }
 
   static close(a: Point, b: Point, tol: number): boolean {
-    return a.sub(b).length <= tol
+    return distPP(a, b) <= tol
   }
 
   static closeSquare(a: Point, b: Point, tol: number): boolean {
-    const d = b.sub(a)
-    return d.dot(d) <= tol
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    return dx * dx + dy * dy <= tol
   }
   static closeDistEps(a: Point, b: Point, eps = GeomConstants.distanceEpsilon): boolean {
-    return a.sub(b).length <= eps
+    return distPP(a, b) <= eps
   }
 
   normalize() {
@@ -158,7 +159,7 @@ export class Point {
   }
 
   static middle(a: Point, b: Point) {
-    return a.add(b).div(2)
+    return new Point((a.x + b.x) / 2, (a.y + b.y) / 2)
   }
 
   scale(sx: number, sy: number): Point {

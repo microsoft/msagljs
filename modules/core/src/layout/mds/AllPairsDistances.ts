@@ -71,14 +71,13 @@ export class AllPairsDistances extends Algorithm {
       const uy = u.center.y
       let j = 0
       for (const v of graph.shallowNodes) {
-        if (i !== j) {
-          const dx = ux - v.center.x
-          const dy = uy - v.center.y
-          const duv = Math.sqrt(dx * dx + dy * dy)
-          const Duv: number = l * D[i][j]
-          const d: number = Duv - duv
-          stress += (d * d) / (Duv * Duv)
-        }
+        if (j >= i) break // only iterate j < i; contributions are symmetric
+        const dx = ux - v.center.x
+        const dy = uy - v.center.y
+        const duv = Math.sqrt(dx * dx + dy * dy)
+        const Duv: number = l * D[i][j]
+        const d: number = Duv - duv
+        stress += (d * d) / (Duv * Duv)
 
         j++
       }
@@ -86,6 +85,6 @@ export class AllPairsDistances extends Algorithm {
       i++
     }
 
-    return stress
+    return stress * 2 // each (i,j) pair counted once, multiply by 2 for symmetry
   }
 }
