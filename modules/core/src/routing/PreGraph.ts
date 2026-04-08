@@ -21,7 +21,7 @@ export class PreGraph {
   }
 
   AddGraph(a: PreGraph) {
-    this.edges = this.edges.concat(a.edges)
+    for (const e of a.edges) this.edges.push(e)
     this.nodeBoundaries = uniteSets(this.nodeBoundaries, a.nodeBoundaries)
     this.boundingBox.addRec(a.boundingBox)
   }
