@@ -1026,11 +1026,9 @@ export function corridorRoute(
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
-  // Use CH+HL for large edge sets where preprocessing cost is amortized
-  if (edgesToRoute.length > 200) {
-    routeCorridorEdgesHL(geomGraph, edgesToRoute, cancelToken, padding)
-    return
-  }
+  // CH+HL preprocessing has O(n^2) memory for hub labels where n = number of CDT triangles.
+  // Only use it for small graphs where the preprocessing cost is amortized and memory is manageable.
+  // For large graphs, per-source Dijkstra with early termination is more memory-efficient.
 
   // ensure ports exist — assign them directly to edges
   for (const edge of edgesToRoute) {
@@ -1073,7 +1071,7 @@ export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[
   console.time('CorridorRouter CDT')
   const cdt = new Cdt([], obstacles, [])
   cdt.run()
-  console.timeEnd('CorridorRouter CDT')
+  console.timeEnd("CorridorRouter CDT")
 
   // Build triangle index for fast typed-array Dijkstra/A*
   const idx = new TriangleIndex(cdt)
