@@ -21,6 +21,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       getPosition: getNodeCenter,
       getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
       getShape: (e: GeomNode) => getShapeFromNode(e.node),
+      getIsCluster: (e: GeomNode) => (e instanceof GeomGraph ? 1 : 0),
       cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
       getLineColor: getNodeColor,
       getFillColor: getNodeFillColor,
