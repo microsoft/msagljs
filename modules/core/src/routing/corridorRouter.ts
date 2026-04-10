@@ -1026,6 +1026,12 @@ export function corridorRoute(
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
+  // Use CH+HL for large edge sets where preprocessing cost is amortized
+  if (edgesToRoute.length > 200) {
+    routeCorridorEdgesHL(geomGraph, edgesToRoute, cancelToken, padding)
+    return
+  }
+
   // ensure ports exist — assign them directly to edges
   for (const edge of edgesToRoute) {
     if (edge.sourcePort == null) {
