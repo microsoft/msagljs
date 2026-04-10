@@ -113,3 +113,48 @@ describe('corridorRouter', () => {
     expect(poly.count).toBeGreaterThan(2)
   })
 })
+
+import {Graph, Node, Edge, GeomNode, GeomEdge, GeomGraph, CurveFactory, GeomObject} from '../../src'
+import {routeCorridorEdges} from '../../src/routing/corridorRouter'
+
+describe('corridorRouter with subgraphs', () => {
+  test('edges crossing cluster boundary get routed', () => {
+    // Create graph: cluster C contains nodes A and B; node D is outside.
+    // Edge A→D crosses C's boundary.
+    const g = new Graph('graph')
+    const clusterGraph = new Graph('cluster')
+    g.addNode(clusterGraph)
+    const nodeA = clusterGraph.addNode(new Node('A'))
+    const nodeB = clusterGraph.addNode(new Node('B'))
+    const nodeD = g.addNode(new Node('D'))
+
+    // Edge from inside cluster to outside
+    const edgeAD = new Edge(nodeA, nodeD)
+    // Edge inside cluster
+    const edgeAB = new Edge(nodeA, nodeB)
+
+    // Create geometry
+    const gg = new GeomGraph(g)
+    const clusterGeom = new GeomGraph(clusterGraph)
+    clusterGeom.boundingBox = new Rectangle({left: -100, right: 100, bottom: -100, top: 100})
+
+    const geomA = new GeomNode(nodeA)
+    geomA.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(-50, 0))
+
+    const geomB = new GeomNode(nodeB)
+    geomB.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(50, 0))
+
+    const geomD = new GeomNode(nodeD)
+    geomD.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(300, 0))
+
+    const geomEdgeAD = new GeomEdge(edgeAD)
+    const geomEdgeAB = new GeomEdge(edgeAB)
+
+    const edges = Array.from(gg.deepEdges)
+    routeCorridorEdges(gg, edges, null, 2)
+
+    // Both edges should have curves (not null)
+    expect(geomEdgeAD.curve).not.toBeNull()
+    expect(geomEdgeAB.curve).not.toBeNull()
+  })
+})

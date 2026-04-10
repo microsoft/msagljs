@@ -30,6 +30,15 @@ import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
 import {ContractionHierarchy, freeSpaceFilter} from './contractionHierarchy'
 import {HubLabels} from './hubLabels'
+import {ShapeCreator} from './ShapeCreator'
+import {Shape} from './shape'
+import {RelativeShape} from './RelativeShape'
+import {
+  getAncestorSetsMap,
+  groupEdgesByPassport,
+  getObstaclesFromPassport,
+  calculatePortsToShapes,
+} from './passportRouting'
 
 export type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
@@ -1020,33 +1029,31 @@ export function corridorRoute(
   return Polyline.mkFromPoints(points)
 }
 
+/** Check whether the graph contains cluster/subgraph nodes. */
+function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
+  for (const n of geomGraph.shallowNodes) {
+    if (n instanceof GeomGraph) return true
+  }
+  return false
+}
+
 /** Route all edges using the corridor approach.
  *  Builds a CDT on padded obstacle polylines and routes each edge
  *  through the CDT dual graph with funnel optimization. */
 export function routeCorridorEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cancelToken: CancelToken, padding = 2): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
+  // ensure ports exist — assign them directly to edges
+  ensurePorts(edgesToRoute)
+
+  if (graphHasSubgraphs(geomGraph)) {
+    routeCorridorEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding)
+    return
+  }
+
   // CH+HL preprocessing has O(n^2) memory for hub labels where n = number of CDT triangles.
   // Only use it for small graphs where the preprocessing cost is amortized and memory is manageable.
   // For large graphs, per-source Dijkstra with early termination is more memory-efficient.
-
-  // ensure ports exist — assign them directly to edges
-  for (const edge of edgesToRoute) {
-    if (edge.sourcePort == null) {
-      const ed = edge
-      ed.sourcePort = RelativeFloatingPort.mk(
-        () => ed.source.boundaryCurve,
-        () => ed.source.center,
-      )
-    }
-    if (edge.targetPort == null) {
-      const ed = edge
-      ed.targetPort = RelativeFloatingPort.mk(
-        () => ed.target.boundaryCurve,
-        () => ed.target.center,
-      )
-    }
-  }
 
   // build padded obstacle polylines from graph nodes
   const nodeToPolyline = new Map<unknown, Polyline>()
@@ -1305,22 +1312,7 @@ export function routeCorridorEdgesHL(
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
   // Ensure ports exist
-  for (const edge of edgesToRoute) {
-    if (edge.sourcePort == null) {
-      const ed = edge
-      ed.sourcePort = RelativeFloatingPort.mk(
-        () => ed.source.boundaryCurve,
-        () => ed.source.center,
-      )
-    }
-    if (edge.targetPort == null) {
-      const ed = edge
-      ed.targetPort = RelativeFloatingPort.mk(
-        () => ed.target.boundaryCurve,
-        () => ed.target.center,
-      )
-    }
-  }
+  ensurePorts(edgesToRoute)
 
   // Build padded obstacle polylines
   const nodeToPolyline = new Map<unknown, Polyline>()
@@ -1464,4 +1456,234 @@ export function routeCorridorEdgesHL(
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
   }
   console.timeEnd('CorridorRouterHL routing')
+}
+
+/** Ensure all edges have ports. */
+function ensurePorts(edges: GeomEdge[]): void {
+  for (const edge of edges) {
+    if (edge.sourcePort == null) {
+      const ed = edge
+      ed.sourcePort = RelativeFloatingPort.mk(
+        () => ed.source.boundaryCurve,
+        () => ed.source.center,
+      )
+    }
+    if (edge.targetPort == null) {
+      const ed = edge
+      ed.targetPort = RelativeFloatingPort.mk(
+        () => ed.target.boundaryCurve,
+        () => ed.target.center,
+      )
+    }
+  }
+}
+
+/** Route edges using corridor approach with passport support for subgraphs.
+ *  Edges are grouped by passport, and each group gets its own obstacle set and CDT. */
+function routeCorridorEdgesWithPassports(
+  geomGraph: GeomGraph,
+  edgesToRoute: GeomEdge[],
+  cancelToken: CancelToken,
+  padding: number,
+): void {
+  // Build shape hierarchy
+  const shapes = ShapeCreator.GetShapes(geomGraph, edgesToRoute)
+  const rootShapes = shapes.filter((s) => s.Parents == null || s.Parents.length === 0)
+  let root: Shape
+  let rootWasCreated = false
+  if (rootShapes.length === 1 && rootShapes[0].BoundaryCurve == null) {
+    root = rootShapes[0]
+  } else {
+    rootWasCreated = true
+    root = new Shape(null)
+    for (const rs of rootShapes) root.AddChild(rs)
+  }
+
+  const ancestorSets = getAncestorSetsMap(Array.from(root.Descendants()))
+  const portsToShapes = calculatePortsToShapes(root, edgesToRoute)
+
+  // Group edges by passport
+  const edgeGroups = groupEdgesByPassport(edgesToRoute, portsToShapes, ancestorSets, root)
+
+  // Route each passport group with its own obstacle set + CDT
+  for (const group of edgeGroups) {
+    if (cancelToken && cancelToken.canceled) break
+    const obstacleShapes = getObstaclesFromPassport(group.passport, ancestorSets, root)
+    routeCorridorEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding)
+  }
+
+  // Clean up root
+  if (rootWasCreated) {
+    for (const rs of rootShapes) rs.RemoveParent(root)
+  }
+}
+
+/** Route a group of edges that share the same passport (obstacle set). */
+function routeCorridorEdgeGroup(
+  geomGraph: GeomGraph,
+  edges: GeomEdge[],
+  obstacleShapes: Set<Shape>,
+  cancelToken: CancelToken,
+  padding: number,
+): void {
+  // Build padded obstacle polylines only from obstacle shapes
+  const nodeToPolyline = new Map<GeomNode, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+
+  // Map obstacle shapes to their polylines
+  for (const shape of obstacleShapes) {
+    if (shape.BoundaryCurve == null) continue
+    const node = shape instanceof RelativeShape ? shape.node : null
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, padding)
+    if (node) nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+
+  // Also ensure source/target nodes have polylines (they may not be obstacles)
+  for (const edge of edges) {
+    for (const node of [edge.source, edge.target]) {
+      if (!nodeToPolyline.has(node) && node.boundaryCurve != null) {
+        const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
+        nodeToPolyline.set(node, poly)
+      }
+    }
+  }
+
+  if (obstacles.length === 0 && edges.length > 0) {
+    // No obstacles — compute bounding box from edge endpoints
+    for (const edge of edges) {
+      if (edge.source.boundaryCurve) bb.addRecSelf(edge.source.boundingBox)
+      if (edge.target.boundaryCurve) bb.addRecSelf(edge.target.boundingBox)
+    }
+  }
+
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+
+  // Build CDT
+  const cdt = new Cdt([], obstacles, [])
+  cdt.run()
+
+  const idx = new TriangleIndex(cdt)
+  const gScore = new Float64Array(idx.n).fill(Infinity)
+  const parentEdgeIdx = new Int32Array(idx.n).fill(-1)
+  const visited: number[] = []
+  const heap = new FlatMinHeap(idx.n * 4)
+
+  // Group edges by source node
+  const edgesBySource = new Map<GeomNode, GeomEdge[]>()
+  for (const edge of edges) {
+    if (cancelToken && cancelToken.canceled) return
+    if (edge.sourcePort == null || edge.targetPort == null) continue
+    let list = edgesBySource.get(edge.source)
+    if (!list) { list = []; edgesBySource.set(edge.source, list) }
+    list.push(edge)
+  }
+
+  for (const [sourceNode, srcEdges] of edgesBySource) {
+    if (cancelToken && cancelToken.canceled) return
+    const source = sourceNode.center
+    const sourcePoly = nodeToPolyline.get(sourceNode)
+    const sourceTriangle = findContainingTriangle(cdt, source)
+    if (!sourceTriangle) {
+      for (const edge of srcEdges) {
+        const target = edge.target.center
+        setStraightLine(edge, source, target)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+      }
+      continue
+    }
+
+    const sourceId = idx.getId(sourceTriangle)
+    if (sourceId < 0) continue
+
+    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetId: number}[] = []
+    const targetIds = new Set<number>()
+    for (const edge of srcEdges) {
+      const target = edge.target.center
+      const targetPoly = nodeToPolyline.get(edge.target)
+      const targetTriangle = findContainingTriangle(cdt, target)
+      if (!targetTriangle) {
+        setStraightLine(edge, source, target)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        continue
+      }
+      const targetId = idx.getId(targetTriangle)
+      if (targetId < 0) continue
+      targetInfos.push({edge, target, targetPoly, targetId})
+      targetIds.add(targetId)
+    }
+
+    if (targetInfos.length === 0) continue
+
+    const allowed = new Set<Polyline>()
+    if (sourcePoly) allowed.add(sourcePoly)
+
+    dijkstraTreeIndexed(sourceId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+
+    const fallbackEdges: {edge: GeomEdge; target: Point; targetPoly?: Polyline}[] = []
+    for (const {edge, target, targetPoly, targetId} of targetInfos) {
+      if (gScore[targetId] === Infinity) {
+        fallbackEdges.push({edge, target, targetPoly})
+        continue
+      }
+      const sleeve = recoverSleeveIndexed(sourceId, targetId, parentEdgeIdx, idx)
+      if (sleeve.length === 0) {
+        setStraightLine(edge, source, target)
+      } else {
+        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length === 0) {
+          setStraightLine(edge, source, target)
+        } else {
+          const points = funnelFromDiagonals(source, target, diagonals)
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          smoothenCorners(edge.smoothedPolyline, padding)
+          edge.curve = edge.smoothedPolyline.createCurve()
+        }
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+    }
+
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+
+    for (const {edge, target, targetPoly} of fallbackEdges) {
+      const allowedBoth = new Set<Polyline>()
+      if (sourcePoly) allowedBoth.add(sourcePoly)
+      if (targetPoly) allowedBoth.add(targetPoly)
+
+      const sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      if (sleeve && sleeve.length > 0) {
+        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length > 0) {
+          const points = funnelFromDiagonals(source, target, diagonals)
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          smoothenCorners(edge.smoothedPolyline, padding)
+          edge.curve = edge.smoothedPolyline.createCurve()
+        } else {
+          setStraightLine(edge, source, target)
+        }
+      } else {
+        setStraightLine(edge, source, target)
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+    }
+
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+  }
 }
