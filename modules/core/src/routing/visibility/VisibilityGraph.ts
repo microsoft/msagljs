@@ -22,10 +22,6 @@ export class VisibilityGraph {
     this.activeVertices.clear()
   }
 
-  ShrinkLengthOfPrevEdge(v: VisibilityVertex, lengthMultiplier: number) {
-    v.prevEdge.LengthMultiplier = lengthMultiplier
-  }
-
   // needed for shortest path calculations
   PreviosVertex(v: VisibilityVertex): VisibilityVertex {
     const prev: VisibilityEdge = v.prevEdge

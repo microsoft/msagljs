@@ -5,8 +5,6 @@ import {VisibilityVertex} from './VisibilityVertex'
 // import {Assert} from '../../utils/assert'
 // an edge connecting two VisibilityVertices
 export class VisibilityEdge {
-  LengthMultiplier = 1
-
   static u = new Point(545.833, 840.458)
   static v = new Point(606.1667261889578, 786.2917261889578)
 
@@ -41,7 +39,7 @@ export class VisibilityEdge {
   Target: VisibilityVertex
 
   get Length(): number {
-    return this.SourcePoint.sub(this.TargetPoint).length * this.LengthMultiplier
+    return this.SourcePoint.sub(this.TargetPoint).length
   }
 
   toString(): string {

@@ -109,8 +109,6 @@ export class SplineRouter extends Algorithm {
 
   private routeMultiEdgesAsBundles = true
 
-  UseEdgeLengthMultiplier: boolean
-
   // if set to true the algorithm will try to shortcut a shortest polyline inner points
   UsePolylineEndShortcutting = true
 
@@ -664,7 +662,6 @@ export class SplineRouter extends Algorithm {
     router.LookForRoundedVertices = true
     router.TightPadding = this.tightPadding
     router.LoosePadding = this.LoosePadding
-    router.UseEdgeLengthMultiplier = this.UseEdgeLengthMultiplier
 
     router.UsePolylineEndShortcutting = this.UsePolylineEndShortcutting
     router.UseInnerPolylingShortcutting = this.UseInnerPolylingShortcutting
