@@ -16,6 +16,7 @@ type GraphLayerProps = TextLayerProps<GeomNode> & {
   graphStyle: ParsedGraphStyle
   tileMap?: TileMap
   tile: _Tile2DHeader
+  levelIndex?: number
 }
 
 export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
@@ -74,7 +75,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
 
   override renderLayers(): LayersList {
     const {layerMap} = this.state
-    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix} = this.props
+    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix, tileMap, levelIndex} = this.props
     const layerCount = graphStyle.layers.length
     const tileSize = (tile.bbox as NonGeoBoundingBox).right - (tile.bbox as NonGeoBoundingBox).left
 
@@ -103,6 +104,8 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               fontFamily,
               fontWeight,
               lineHeight,
+              tileMap,
+              levelIndex,
             },
             layer as ParsedGraphNodeLayerStyle,
           ),

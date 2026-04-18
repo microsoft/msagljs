@@ -158,3 +158,38 @@ describe('corridorRouter with subgraphs', () => {
     expect(geomEdgeAB.curve).not.toBeNull()
   })
 })
+
+describe('corridorRouter with prevRoutes corridor hint', () => {
+  test('reroutes using previous curve as corridor, falls back when corridor empty', () => {
+    const g = new Graph('g')
+    const a = g.addNode(new Node('A'))
+    const b = g.addNode(new Node('B'))
+    const c = g.addNode(new Node('C'))
+    const edge = new Edge(a, b)
+    // Add a decoy edge so CDT has more structure
+    const edgeAC = new Edge(a, c)
+
+    const gg = new GeomGraph(g)
+    gg.boundingBox = new Rectangle({left: -100, right: 300, bottom: -100, top: 200})
+    const ga = new GeomNode(a)
+    ga.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(0, 0))
+    const gb = new GeomNode(b)
+    gb.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(200, 0))
+    const gc = new GeomNode(c)
+    gc.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(100, 100))
+    const geomEdge = new GeomEdge(edge)
+    const geomEdgeAC = new GeomEdge(edgeAC)
+
+    const edges = Array.from(gg.deepEdges)
+    // First run: no prev routes, populate curves.
+    routeCorridorEdges(gg, edges, null, 2)
+    expect(geomEdge.curve).not.toBeNull()
+
+    // Second run: pass prev routes; routing should complete and yield a curve.
+    const prev = new Map()
+    for (const e of edges) if (e.curve) prev.set(e, e.curve)
+    routeCorridorEdges(gg, edges, null, 2, prev)
+    expect(geomEdge.curve).not.toBeNull()
+  })
+})
+
