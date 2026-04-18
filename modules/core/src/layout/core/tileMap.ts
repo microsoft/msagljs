@@ -184,7 +184,15 @@ export class TileMap {
       for (const n of activeByLevel[lastIdx]) this.nodeScales[lastIdx].set(n, 1)
 
       // Compute active sets finest -> coarsest with k-first + adaptive scaling.
-      const filterMargin = 2 * ers.Padding + 1
+      // The filter margin must be ≥ (padding + extraObstaclePadding) + desiredGap/2 so
+      // that, after both the filter's margin and the CDT's obstacle inflation are
+      // applied, a real gap remains between obstacles for bezier bulge / arrowheads /
+      // edge labels. extraObstaclePadding below mirrors what we pass to
+      // routeCorridorEdges (= ers.Padding). desiredGap of ers.Padding gives ~one Padding
+      // of visible breathing room between inflated obstacles on coarse levels.
+      const extraObstaclePadding = ers.Padding
+      const desiredGap = 3 * ers.Padding
+      const filterMargin = 2 * ers.Padding + extraObstaclePadding + desiredGap
       for (let k = lastIdx - 1; k >= 0; k--) {
         const desiredMax = Math.pow(2, lastIdx - k)
         const finerScale = desiredMax / 2
@@ -212,7 +220,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes)
+          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`)
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }

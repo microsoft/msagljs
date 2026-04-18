@@ -441,6 +441,7 @@ function findSleeveAStarIndexed(
   visited: number[],
   heap: FlatMinHeap,
   triMask: Uint8Array | null = null,
+  targetId = -1,
 ): FrontEdge[] | null {
   gScore[sourceId] = 0
   parentEdgeIdx[sourceId] = -1
@@ -462,7 +463,7 @@ function findSleeveAStarIndexed(
     const h = Math.sqrt(dxh * dxh + dyh * dyh)
     if (f > g + h + 1e-10) continue
 
-    if (idx.triangles[tid].containsPoint(target)) {
+    if (tid === targetId || idx.triangles[tid].containsPoint(target)) {
       return recoverSleeveIndexed(sourceId, tid, parentEdgeIdx, idx)
     }
 
@@ -501,7 +502,8 @@ function findSleeveAStarIndexed(
         }
       }
       visited.push(otId)
-      const hx = mx - tx, hy = my - ty
+      // Use centroid-based heuristic consistently with the stale check in the main loop.
+      const hx = idx.centX[otId] - tx, hy = idx.centY[otId] - ty
       heap.push(tentativeG + Math.sqrt(hx * hx + hy * hy), otId)
     }
   }
@@ -1121,6 +1123,12 @@ export function buildCorridorMaskFromCurve(
  *  corridor derived from its previous route (with 1-hop neighbor expansion
  *  and source/target obstacle triangles always allowed). On mask failure
  *  the edge falls back to unconstrained A*.
+ *
+ *  `extraObstaclePadding` (>= 0) is added to `padding` ONLY when building the
+ *  CDT obstacles. This buys headroom for bezier smoothing bulge, arrowheads
+ *  and edge labels so they don't visually overlap neighboring nodes at coarse
+ *  tile levels. Trimming still uses the unscaled rendering boundary, so edges
+ *  end exactly at the visible node border.
  */
 export function routeCorridorEdges(
   geomGraph: GeomGraph,
@@ -1130,6 +1138,8 @@ export function routeCorridorEdges(
   prevRoutes?: Map<GeomEdge, ICurve>,
   nodeScale?: (n: GeomNode) => number,
   activeNodes?: Set<GeomNode> | null,
+  extraObstaclePadding = 0,
+  debugLabel?: string,
 ): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -1163,7 +1173,7 @@ export function routeCorridorEdges(
         bc = bc.transform(t)
       }
     }
-    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(bc, padding)
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(bc, padding + extraObstaclePadding)
     nodeToPolyline.set(node, poly)
     obstacles.push(poly)
     bb.addRecSelf(poly.boundingBox)
@@ -1217,6 +1227,9 @@ export function routeCorridorEdges(
     let maskedFailures = 0
     let unconstrainedFailures = 0
     let missingContainingTri = 0
+    let allowAllRescues = 0
+    let emptySleeve = 0
+    let sameTriangle = 0
     for (const edge of edgesToRoute) {
       if (cancelToken && cancelToken.canceled) return
       if (edge.sourcePort == null || edge.targetPort == null) continue
@@ -1237,44 +1250,59 @@ export function routeCorridorEdges(
       const sourceId = idx.getId(sourceTri)
       if (sourceId < 0) continue
       const tId = idx.getId(targetTri)
+      if (tId === sourceId) sameTriangle++
 
       const prev = prevRoutes.get(edge)
-      const mask =
-        prev != null
-          ? buildCorridorMaskFromCurve(cdt, idx, prev, sourcePoly, targetPoly)
-          : null
-      if (mask) mask[sourceId] = 1
-      if (mask && tId >= 0) mask[tId] = 1
+      // TEMP: disable the prev-curve mask hint and run unconstrained A*
+      // directly, to test whether mask was steering paths through bad regions.
+      const mask: Uint8Array | null = null
+      void prev
+      if (mask) (mask as Uint8Array)[sourceId] = 1
+      if (mask && tId >= 0) (mask as Uint8Array)[tId] = 1
 
       const allowedBoth = new Set<Polyline>()
       if (sourcePoly) allowedBoth.add(sourcePoly)
       if (targetPoly) allowedBoth.add(targetPoly)
 
-      let sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, mask)
+      let sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, mask, tId)
       for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
       visited.length = 0
 
       if ((!sleeve || sleeve.length === 0) && mask) {
         maskedFailures++
-        sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, null)
+        sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, null, tId)
         for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
         visited.length = 0
         if (!sleeve || sleeve.length === 0) unconstrainedFailures++
       }
 
+      // Third-tier fallback: A* with every obstacle allowed (ignores
+      // the obstacle-interior guard completely). If this finds a path
+      // while the previous call did not, it means the target center
+      // actually lies inside some OTHER node's inflated obstacle and
+      // the straight fallback was being used — which produces the
+      // long cross-node segments seen on coarser levels.
       if (!sleeve || sleeve.length === 0) {
+        const allowAll = new Set<Polyline>()
+        for (const p of nodeToPolyline.values()) allowAll.add(p)
+        sleeve = findSleeveAStarIndexed(sourceId, target, allowAll, idx, gScore, parentEdgeIdx, visited, heap, null, tId)
+        for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+        visited.length = 0
+        if (sleeve && sleeve.length > 0) allowAllRescues++
+      }
+
+      if (!sleeve || sleeve.length === 0) {
+        if (sleeve && sleeve.length === 0) emptySleeve++
         straightFallbacks++
-        // Best fallback: reuse the finer-level curve as-is (it was a valid route).
-        // Only trim against the new scaled boundaries.
-        const prev = prevRoutes.get(edge)
-        if (prev) {
-          edge.curve = prev
-          edge.smoothedPolyline = null as any
-        } else {
-          const pts = Polyline.mkFromPoints([source, target])
-          edge.curve = pts.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        }
+        // Sleeve search failed in both masked and unconstrained modes. Use a
+        // straight segment between the (current-scale) node centers: it reaches
+        // both vertices and the arrowhead/boundary trim below cuts it cleanly.
+        // Reusing `prev` here would leave a visible gap because it was trimmed
+        // at the *finer* level's smaller boundary, which sits inside this
+        // level's larger scaled boundary.
+        const pts = Polyline.mkFromPoints([source, target])
+        edge.curve = pts.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
       } else {
         const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
         const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
@@ -1295,8 +1323,9 @@ export function routeCorridorEdges(
         edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
       )
     }
-    console.log(`[corridor] total=${edgesToRoute.length} missingTri=${missingContainingTri} maskedFail=${maskedFailures} unconstrainedFail=${unconstrainedFailures} straightFallback=${straightFallbacks}`)
+    console.log(`[corridor] total=${edgesToRoute.length} missingTri=${missingContainingTri} sameTri=${sameTriangle} emptySleeve=${emptySleeve} maskedFail=${maskedFailures} unconstrainedFail=${unconstrainedFailures} allowAllRescues=${allowAllRescues} straightFallback=${straightFallbacks}`)
     console.timeEnd('CorridorRouter routing (corridor-guided)')
+
     return
   }
 

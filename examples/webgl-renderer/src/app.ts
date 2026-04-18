@@ -4,8 +4,12 @@ import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 
 import {EdgeRoutingMode, geometryIsCreated, Graph, GeomGraph, GeomEdge, GeomNode, Point, Rectangle, Polyline,
   findContainingTriangle, findSleeveAStar, sleeveToDiagonals, funnelFromDiagonals,
-  Cdt, InteractiveObstacleCalculator} from '@msagl/core'
+  Cdt, InteractiveObstacleCalculator, installBrowserDebugCurvesDownloader} from '@msagl/core'
 import type {Diagonal} from '@msagl/core'
+
+// Install the browser-side SVG dumper hook so routing code that calls
+// DebugObject.dumpDebugCurves(fileName, curves) triggers an SVG download.
+installBrowserDebugCurvesDownloader()
 
 import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
