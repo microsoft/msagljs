@@ -28,7 +28,6 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       lineWidthMinPixels: 1,
       lineWidthMaxPixels: 1,
       getLineWidth: 1,
-      filled: false,
       getPosition: getNodeCenter,
       getSize: (e: GeomNode) => {
         const s = getScale(e)
@@ -38,9 +37,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       getIsCluster: (e: GeomNode) => (e instanceof GeomGraph ? 1 : 0),
       cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
       getLineColor: getNodeBorderColor,
-      // Transparent fill so the edge mesh (and the label with its halo) shows through.
-      // Only a thin 1px border remains.
-      getFillColor: getTransparentFill,
+      getFillColor: getNodeFillColor,
 
       extensions: [
         new GraphStyleExtension({
