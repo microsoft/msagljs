@@ -309,12 +309,19 @@ export class TileMap {
       const w0 = gn.boundingBox.width
       const h0 = gn.boundingBox.height
       let chosen = -1
-      for (let s = desiredMax; s >= MIN_SCALE - 1e-9; s *= STEP) {
+      const scaleSequence: number[] = []
+      for (let s = desiredMax; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
+      scaleSequence.push(MIN_SCALE)
+      for (const s of scaleSequence) {
         const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
         let overlaps = false
         for (const a of accepted) if (a.intersects(box)) { overlaps = true; break }
-        if (!overlaps) {
-          // Also ensure this (possibly enlarged) box does not swallow a lower-ranked neighbor's unit box.
+        if (!overlaps && s > MIN_SCALE + 1e-9) {
+          // Only enforce the "don't swallow a lower-ranked neighbor" guard when we are
+          // actually *enlarging* beyond unit scale. At s == MIN_SCALE the higher-ranked
+          // node must win: if its unit box overlaps a lower-ranked candidate's unit box,
+          // we still keep the higher-ranked one and let the lower-ranked candidate be
+          // dropped when its own turn comes.
           for (let jj = ii + 1; jj < topK.length; jj++) {
             const other = unitBox.get(topK[jj])
             if (!other) continue
@@ -322,7 +329,6 @@ export class TileMap {
           }
         }
         if (!overlaps) { chosen = s; break }
-        if (s <= MIN_SCALE) break
       }
       if (chosen < 0) continue
       const finalBox = Rectangle.mkSizeCenter(new Size(w0 * chosen + 2 * margin, h0 * chosen + 2 * margin), center)
