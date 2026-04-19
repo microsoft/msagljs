@@ -37,6 +37,7 @@ export type GeometryLayerProps<DataT = any> = {
   getLineColor?: Accessor<DataT, Color>
   getLineWidth?: Accessor<DataT, number>
   getShape?: Accessor<DataT, SHAPE>
+  getIsCluster?: Accessor<DataT, number>
 } & LayerProps
 
 const defaultProps: DefaultProps<GeometryLayerProps> = {
@@ -68,6 +69,7 @@ const defaultProps: DefaultProps<GeometryLayerProps> = {
   getLineColor: {type: 'accessor', value: [0, 0, 0, 255]},
   getLineWidth: {type: 'accessor', value: 1},
   getShape: {type: 'accessor', value: SHAPE.Rectangle},
+  getIsCluster: {type: 'accessor', value: 0},
 }
 
 const vs = `\
@@ -81,6 +83,7 @@ attribute float instanceLineWidths;
 attribute vec4 instanceFillColors;
 attribute vec4 instanceLineColors;
 attribute vec3 instancePickingColors;
+attribute float instanceIsCluster;
 
 uniform mat4 depthHighlightColors;
 uniform float opacity;
@@ -101,7 +104,12 @@ ${nodeDepthModuleVs}
 
 void applyHighlight(int i) {
   if (i >= 3) return;
-  vFillColor.rgb = mix(vFillColor.rgb, depthHighlightColors[i].rgb, depthHighlightColors[i].a);
+  float alpha = depthHighlightColors[i].a;
+  // Use a gentle highlight for clusters to avoid large-area blinking
+  if (instanceIsCluster > 0.5) {
+    alpha *= 0.15;
+  }
+  vFillColor.rgb = mix(vFillColor.rgb, depthHighlightColors[i].rgb, alpha);
 }
 
 void main(void) {
@@ -305,6 +313,11 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         size: 3,
         type: GL.UNSIGNED_BYTE,
         accessor: 'getPickingColor',
+      },
+      instanceIsCluster: {
+        size: 1,
+        type: GL.UNSIGNED_BYTE,
+        accessor: 'getIsCluster',
       },
     })
   }

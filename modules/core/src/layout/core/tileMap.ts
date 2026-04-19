@@ -33,13 +33,14 @@ type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel
 export class TileMap {
   sortedNodes: Node[]
   numberOfNodesOnLevel: number[] = []
-  private nodeScales: Map<Node, number>[] = []
+  /** Per-level map from Node to display scale factor (finest level = 1). */
+  nodeScales: Map<Node, number>[] = []
   /** stop generating new tiles when the tiles on the level has size that is less than minTileSize :
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
-  private tileCapacity = 5000 // in the number of elements
+  private tileCapacity = 500 // in the number of elements
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
@@ -55,6 +56,15 @@ export class TileMap {
     const mapOnLevel = this.levels[z]
     if (!mapOnLevel) return null
     return mapOnLevel.get(x, y)
+  }
+
+  /** Returns the display scale for the given node at the given level index.
+   *  1 if not tracked (e.g. spline-routed graphs). */
+  getNodeScale(node: Node, levelIndex: number): number {
+    const m = this.nodeScales[levelIndex]
+    if (!m) return 1
+    const s = m.get(node)
+    return s == null ? 1 : s
   }
   /** retrieves all the tiles of z-th level */
   *getTilesOfLevel(z: number): IterableIterator<{x: number; y: number; data: Tile}> {
@@ -154,29 +164,75 @@ export class TileMap {
       this.nodeIndexInSortedNodes.set(this.sortedNodes[i], i)
     }
 
-    // filter out entities that are not visible on lower layers.
-    // do not filter the uppermost layer: it should show everything
-    for (let i = 0; i < this.levels.length - 1; i++) {
-      this.numberOfNodesOnLevel.push(this.filterOutEntities(this.levels[i], i))
-    }
-    this.numberOfNodesOnLevel.push(this.sortedNodes.length)
-    // for (let i = 0; i < this.levels.length; i++) {
-    //   this.checkLevel(i)
-    // }
     const ers = getEdgeRoutingSettingsFromAncestorsOrDefault(this.geomGraph)
     const useCorridor = ers.EdgeRoutingMode === EdgeRoutingMode.Corridor
 
     if (useCorridor) {
-      // Corridor routing: reroute the subset edges directly
-      for (let i = this.levels.length - 2; i >= 0; i--) {
-        const activeNodes = this.setOfNodesOnTheLevel(i)
-        const edgesToRoute = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
-        if (edgesToRoute.length > 0) {
-          routeCorridorEdges(this.geomGraph, edgesToRoute, null, ers.Padding)
+      // New scheme: finest level unchanged. For each coarser level, double each node's
+      // effective box; greedily accept nodes by rank, dropping those whose scaled box
+      // overlaps an already-accepted higher-ranked node's scaled box. Edges are rerouted
+      // using the finer level's curves as a corridor hint for the CDT dual-graph A*.
+      const lastIdx = this.levels.length - 1
+      const activeByLevel: Set<Node>[] = new Array(this.levels.length)
+      activeByLevel[lastIdx] = this.setOfNodesOnTheLevel(lastIdx)
+      this.numberOfNodesOnLevel = new Array(this.levels.length)
+      this.numberOfNodesOnLevel[lastIdx] = activeByLevel[lastIdx].size
+      // Per-level display scales (so the sparse surviving set at coarse levels
+      // is rendered large enough to be readable at that zoom).
+      this.nodeScales = new Array(this.levels.length)
+      this.nodeScales[lastIdx] = new Map<Node, number>()
+      for (const n of activeByLevel[lastIdx]) this.nodeScales[lastIdx].set(n, 1)
+
+      // Compute active sets finest -> coarsest with k-first + adaptive scaling.
+      // The filter margin must be ≥ (padding + extraObstaclePadding) + desiredGap/2 so
+      // that, after both the filter's margin and the CDT's obstacle inflation are
+      // applied, a real gap remains between obstacles for bezier bulge / arrowheads /
+      // edge labels. extraObstaclePadding below mirrors what we pass to
+      // routeCorridorEdges (= ers.Padding). desiredGap of ers.Padding gives ~one Padding
+      // of visible breathing room between inflated obstacles on coarse levels.
+      const extraObstaclePadding = ers.Padding
+      const desiredGap = 3 * ers.Padding
+      const filterMargin = 2 * ers.Padding + extraObstaclePadding + desiredGap
+      for (let k = lastIdx - 1; k >= 0; k--) {
+        const desiredMax = Math.pow(2, lastIdx - k)
+        const finerScale = desiredMax / 2
+        const result = this.selectTopKWithAdaptiveScale(activeByLevel[k + 1], desiredMax, finerScale, filterMargin)
+        activeByLevel[k] = result.nodes
+        this.nodeScales[k] = result.scales
+        this.numberOfNodesOnLevel[k] = activeByLevel[k].size
+      }
+
+      // Apply filtered sets to tiles and reroute per level, using previous-level curves.
+      for (let k = lastIdx - 1; k >= 0; k--) {
+        this.applyActiveSetToLevel(k, activeByLevel[k])
+        const activeNodes = activeByLevel[k]
+        const activeEdges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
+        if (activeEdges.length > 0) {
+          // Snapshot current (finer-level) curves *before* rerouting mutates them.
+          const prevRoutes = new Map<GeomEdge, ICurve>()
+          for (const e of activeEdges) {
+            if (e.curve) prevRoutes.set(e, e.curve)
+          }
+          const scaleMap = this.nodeScales[k]
+          const nodeScale = (n: GeomNode) => scaleMap.get(n.node) ?? 1
+          const activeGeomNodes = new Set<GeomNode>()
+          for (const n of activeNodes) {
+            const gn = GeomNode.getGeom(n)
+            if (gn) activeGeomNodes.add(gn)
+          }
+          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`)
         }
-        this.regenerateCurveClipsUpToLevel(i, activeNodes)
+        this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }
     } else {
+      // filter out entities that are not visible on lower layers.
+      // do not filter the uppermost layer: it should show everything
+      this.numberOfNodesOnLevel = []
+      for (let i = 0; i < this.levels.length - 1; i++) {
+        this.numberOfNodesOnLevel.push(this.filterOutEntities(this.levels[i], i))
+      }
+      this.numberOfNodesOnLevel.push(this.sortedNodes.length)
+
       const sr = new SplineRouter(this.geomGraph, [])
       for (let i = this.levels.length - 2; i >= 0; i--) {
         const activeNodes = this.setOfNodesOnTheLevel(i)
@@ -184,14 +240,116 @@ export class TileMap {
         this.regenerateCurveClipsUpToLevel(i, activeNodes)
       }
     }
-    // for (let i = 0; i < this.levels.length; i++) {
-    //   this.checkLevel(i)
-    // }
     this.calculateNodeRank()
-    //this.makeSomeNodesVizible()
-    //Assert.assert(this.lastLayerHasAllNodes())
     return this.levels.length
   }
+
+  /** Greedy scaled-overlap filter. Input: candidate node set (typically the next-finer
+   *  level's active set). Output: accepted nodes (subset) such that no two accepted
+   *  nodes' bounding boxes—scaled around their centers by `scale`—intersect, with
+   *  higher-pagerank nodes winning ties. O(n^2) in the candidate set; fine for the
+   *  small active sets at coarse levels. */
+  private filterByScaledOverlap(candidates: Set<Node>, scale: number, margin = 0): Set<Node> {
+    const sorted: Node[] = Array.from(candidates).sort(this.compareByPagerank.bind(this))
+    const accepted: Rectangle[] = []
+    const acceptedSet = new Set<Node>()
+    for (const n of sorted) {
+      const gn = GeomNode.getGeom(n)
+      if (!gn) continue
+      const center = gn.boundingBox.center
+      const w = gn.boundingBox.width * scale + 2 * margin
+      const h = gn.boundingBox.height * scale + 2 * margin
+      const box = Rectangle.mkSizeCenter(new Size(w, h), center)
+      let overlaps = false
+      for (const a of accepted) {
+        if (a.intersects(box)) { overlaps = true; break }
+      }
+      if (!overlaps) {
+        accepted.push(box)
+        acceptedSet.add(n)
+      }
+    }
+    return acceptedSet
+  }
+
+  /** k-first selection with adaptive per-node scaling.
+   *  - Sort candidates by rank DESC.
+   *  - Take the top half (k = ceil(|candidates|/2)).
+   *  - For each (rank-DESC), pick the largest scale in `[1 .. desiredMax]` (decreasing in
+   *    0.85× steps) such that the inflated-by-margin box doesn't intersect any
+   *    already-accepted box.
+   *  - If even at scale 1 it overlaps an accepted box, the node is dropped. */
+  private selectTopKWithAdaptiveScale(
+    candidates: Set<Node>,
+    desiredMax: number,
+    _finerScale: number,
+    margin: number,
+  ): {nodes: Set<Node>; scales: Map<Node, number>} {
+    const sorted: Node[] = Array.from(candidates).sort(this.compareByPagerank.bind(this))
+    const k = Math.max(1, Math.ceil(sorted.length / 2))
+    const topK = sorted.slice(0, k)
+    const accepted: Rectangle[] = []
+    const nodes = new Set<Node>()
+    const scales = new Map<Node, number>()
+    const STEP = 0.85
+    const MIN_SCALE = 1
+    // Monotonic-scale invariant: a lower-ranked node must never receive a larger
+    // scale than any higher-ranked node already accepted. We iterate topK in
+    // rank-DESC order, so capping `maxScale` by the smallest accepted scale so
+    // far enforces monotonicity across accepted nodes.
+    // We deliberately do NOT forbid a higher-ranked node from "swallowing" a
+    // lower-ranked neighbor's unit box: at coarse levels the user wants fewer,
+    // bigger, more-important nodes visible, so dropping nearby lower-ranked
+    // neighbors in favor of a big top-ranked node is desired behavior.
+    let maxScale = desiredMax
+    for (let ii = 0; ii < topK.length; ii++) {
+      const n = topK[ii]
+      const gn = GeomNode.getGeom(n)
+      if (!gn) continue
+      const center = gn.boundingBox.center
+      const w0 = gn.boundingBox.width
+      const h0 = gn.boundingBox.height
+      let chosen = -1
+      const scaleSequence: number[] = []
+      for (let s = maxScale; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
+      scaleSequence.push(MIN_SCALE)
+      for (const s of scaleSequence) {
+        const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
+        let overlaps = false
+        for (const a of accepted) if (a.intersects(box)) { overlaps = true; break }
+        if (!overlaps) { chosen = s; break }
+      }
+      if (chosen < 0) continue
+      const finalBox = Rectangle.mkSizeCenter(new Size(w0 * chosen + 2 * margin, h0 * chosen + 2 * margin), center)
+      accepted.push(finalBox)
+      nodes.add(n)
+      scales.set(n, chosen)
+      if (chosen < maxScale) maxScale = chosen
+    }
+    return {nodes, scales}
+  }
+
+  /** Restrict a level's tile contents to the given active node set. Edges/labels
+   *  whose source or target is outside the active set are removed; curve clips
+   *  are cleared (they'll be rebuilt by regenerateCurveClipsUpToLevel). */
+  private applyActiveSetToLevel(levelIdx: number, activeNodes: Set<Node>) {
+    for (const tile of this.levels[levelIdx].values()) {
+      tile.nodes = tile.nodes.filter((gn) => activeNodes.has(gn.node))
+      tile.labels = tile.labels.filter((lab) => {
+        const parent = lab.parent
+        if (parent instanceof GeomEdge) {
+          return activeNodes.has(parent.edge.source) && activeNodes.has(parent.edge.target)
+        }
+        return true
+      })
+      tile.arrowheads = tile.arrowheads.filter(
+        (a) => activeNodes.has(a.edge.source) && activeNodes.has(a.edge.target),
+      )
+      tile.initCurveClips()
+    }
+    this.removeEmptyTiles(levelIdx)
+  }
+
   // private makeSomeNodesVizible() {
   //   for (let levelIndex = 0; levelIndex < this.levels.length - 1; levelIndex++) {
   //     this.calculateNodeAdditionalScales(levelIndex)
@@ -774,6 +932,25 @@ export class TileMap {
 
     if (!regenerate) {
       this.generateSubtilesWithoutTileClips(left, w, bottom, h, keys, lowerTile, z)
+    } else {
+      // regenerate mode: re-propagate arrowheads from the (updated) upper tile into
+      // existing subtiles so they stay consistent with the rerouted curves.
+      for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 2; j++) {
+          const k = i * 2 + j
+          const sub = levelTiles.getI(keys[k])
+          if (sub == null) continue
+          sub.arrowheads = []
+          const subRect = sub.rect
+          for (const arrowhead of lowerTile.arrowheads) {
+            const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
+            const d = arrowhead.tip.sub(arrowhead.base).div(3)
+            const dRotated = d.rotate90Cw()
+            arrowheadBox.add(arrowhead.base.add(dRotated))
+            arrowheadBox.add(arrowhead.base.sub(dRotated))
+            if (arrowheadBox.intersects(subRect)) sub.arrowheads.push(arrowhead)
+          }
+        }
     }
     const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
     const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)

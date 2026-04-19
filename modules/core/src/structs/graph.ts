@@ -397,6 +397,13 @@ export function pagerank(graph: Graph, omega: number): Map<Node, number> {
   for (const v of graph.nodesBreadthFirst) {
     p.set(v, initialVal)
   }
+  // Cache each node's undirected degree (in + out + self).
+  // We view the graph as undirected here: "importance" for semantic-zoom ranking
+  // should not depend on which endpoint of an edge was declared as the source.
+  const udeg = new Map<Node, number>()
+  for (const v of graph.nodesBreadthFirst) {
+    udeg.set(v, v.inDegree + v.outDegree + v.selfDegree)
+  }
   // repeat 50 times
   for (let c = 0; c < 50; c++) {
     initialVal = (1 - omega) / n
@@ -405,12 +412,18 @@ export function pagerank(graph: Graph, omega: number): Map<Node, number> {
       q.set(v, initialVal)
     }
 
-    //  forward propagation
+    //  forward propagation (undirected: pull mass from both in- and out-neighbors)
     for (const v of graph.nodesBreadthFirst) {
       let qv = q.get(v)
       for (const edge of v.inEdges) {
         const u = edge.source
-        qv += omega * (p.get(u) / u.outDegree)
+        const d = udeg.get(u)
+        if (d > 0) qv += omega * (p.get(u) / d)
+      }
+      for (const edge of v.outEdges) {
+        const u = edge.target
+        const d = udeg.get(u)
+        if (d > 0) qv += omega * (p.get(u) / d)
       }
       q.set(v, qv)
     }

@@ -12,7 +12,8 @@
  *   - For each vertex v, run a forward CH search (upArcs only)
  *   - Apply stall-on-demand pruning (Section 5.1)
  *   - Store labels sorted by hub index for O(|L|) merge-sweep queries
- *   - Store parent pointers for path (sleeve) recovery
+ *   - Bootstrapping pruning: skip hubs already covered by existing labels
+ *   - Path recovery delegates to CH bidirectional search
  */
 import {ContractionHierarchy} from './contractionHierarchy'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
@@ -81,16 +82,14 @@ class FlatHeap {
 // ── HubLabels class ─────────────────────────────────────────────────
 
 export class HubLabels {
-  /** For each CH node: sorted arrays of hub indices, distances, and parents */
+  /** For each CH node: sorted arrays of hub indices and distances */
   private hubIds: Int32Array[]
   private hubDists: Float64Array[]
-  private hubParents: Int32Array[] // parent in CH search tree (for path recovery)
 
   constructor(private ch: ContractionHierarchy) {
     const n = ch.nodes.length
     this.hubIds = new Array(n)
     this.hubDists = new Array(n)
-    this.hubParents = new Array(n)
     this.buildAllLabels()
   }
 
@@ -108,14 +107,16 @@ export class HubLabels {
 
     // Pre-allocate arrays reused across all label builds (avoids Map/GC overhead)
     const distArr = new Float64Array(n).fill(Infinity)
-    const parentArr = new Int32Array(n).fill(-1)
     const inVisited = new Uint8Array(n)
     const visited: number[] = []
+
+    // labelDistArr tracks distances for nodes committed to v's label (for pruning)
+    const labelDistArr = new Float64Array(n).fill(Infinity)
+    const labelNodes: number[] = []
 
     // Temporary storage for entries before sorting
     const entryHub = new Int32Array(n)
     const entryDist = new Float64Array(n)
-    const entryParent = new Int32Array(n)
 
     // Flat heap — pre-allocated, zero GC
     const heap = new FlatHeap(n * 4)
@@ -123,9 +124,12 @@ export class HubLabels {
     for (const v of order) {
       // ── CH forward search from v (upArcs only) with stall-on-demand ──
       distArr[v] = 0
-      parentArr[v] = -1
       inVisited[v] = 1
       visited.push(v)
+
+      // v is always in its own label at distance 0
+      labelDistArr[v] = 0
+      labelNodes.push(v)
 
       heap.clear()
       heap.push(0, v)
@@ -150,11 +154,29 @@ export class HubLabels {
         }
         if (stalled) continue
 
+        // Bootstrapping pruning: check if d(v,w) is already covered
+        // by existing hub labels. Since we process in descending rank,
+        // L(w) is complete. Check if any hub h in L(w) satisfies
+        // labelDistArr[h] + L(w)[h] <= dw (i.e., path v->h->w covers w).
+        let covered = false
+        const wHubs = this.hubIds[w]
+        const wDists = this.hubDists[w]
+        if (wHubs) {
+          for (let k = 0; k < wHubs.length; k++) {
+            if (labelDistArr[wHubs[k]] + wDists[k] <= dw + 1e-10) {
+              covered = true
+              break
+            }
+          }
+        }
+        if (covered) continue
+
         // Settle this node into the label
         entryHub[entryCount] = w
         entryDist[entryCount] = dw
-        entryParent[entryCount] = parentArr[w]
         entryCount++
+        labelDistArr[w] = dw
+        labelNodes.push(w)
 
         // Relax upArcs
         for (let i = 0; i < upArcs.length; i++) {
@@ -166,7 +188,6 @@ export class HubLabels {
               visited.push(arc.target)
             }
             distArr[arc.target] = newG
-            parentArr[arc.target] = w
             heap.push(newG, arc.target)
           }
         }
@@ -179,24 +200,24 @@ export class HubLabels {
 
       const hubs = new Int32Array(entryCount)
       const dists = new Float64Array(entryCount)
-      const parents = new Int32Array(entryCount)
       for (let i = 0; i < entryCount; i++) {
         const j = indices[i]
         hubs[i] = entryHub[j]
         dists[i] = entryDist[j]
-        parents[i] = entryParent[j]
       }
       this.hubIds[v] = hubs
       this.hubDists[v] = dists
-      this.hubParents[v] = parents
 
       // Reset reusable arrays
       for (const idx of visited) {
         distArr[idx] = Infinity
-        parentArr[idx] = -1
         inVisited[idx] = 0
       }
       visited.length = 0
+      for (const idx of labelNodes) {
+        labelDistArr[idx] = Infinity
+      }
+      labelNodes.length = 0
     }
   }
 
@@ -266,65 +287,11 @@ export class HubLabels {
 
   // ── path recovery ───────────────────────────────────────────────
 
-  /** Trace the CH search-tree path from node v up to hub h. */
-  private traceToHub(v: number, hub: number): number[] | null {
-    const hubs = this.hubIds[v]
-    const parents = this.hubParents[v]
-
-    // Build parent map: hub → parent
-    const parentMap = new Map<number, number>()
-    for (let i = 0; i < hubs.length; i++) {
-      parentMap.set(hubs[i], parents[i])
-    }
-
-    const path: number[] = [hub]
-    let cur = hub
-    const limit = hubs.length + 1
-    for (let safety = 0; cur !== v && safety < limit; safety++) {
-      const p = parentMap.get(cur)
-      if (p === undefined || p < 0) {
-        return cur === v ? path : null
-      }
-      path.push(p)
-      cur = p
-    }
-    path.reverse()
-    return path
-  }
-
-  /** Recover the CH-level path as a sequence of node indices: s → … → hub → … → t */
-  findPath(s: number, t: number): number[] | null {
-    if (s === t) return [s]
-    const result = this.queryWithHub(s, t)
-    if (!result || result.dist === Infinity) return null
-
-    const hub = result.hub
-
-    // Forward: s → … → hub (upward in CH)
-    const fwdPath = this.traceToHub(s, hub)
-    if (!fwdPath) return null
-
-    // Backward: t → … → hub (upward in CH), then reversed to hub → … → t
-    const bwdPath = this.traceToHub(t, hub)
-    if (!bwdPath) return null
-    bwdPath.reverse() // now hub → … → t
-
-    // Merge (hub appears in both, deduplicate)
-    return [...fwdPath, ...bwdPath.slice(1)]
-  }
-
   /** Recover the sleeve (sequence of CdtTriangle + CdtEdge pairs) from s to t.
-   *  Unpacks CH shortcuts recursively to get the original CDT edge sequence. */
+   *  Delegates to CH bidirectional search for path recovery, since pruned
+   *  labels don't store parent pointers. */
   recoverSleeve(s: number, t: number): {source: CdtTriangle; edge: CdtEdge}[] | null {
-    const path = this.findPath(s, t)
-    if (!path) return null
-    if (path.length < 2) return []
-
-    const sleeve: {source: CdtTriangle; edge: CdtEdge}[] = []
-    for (let i = 0; i < path.length - 1; i++) {
-      this.ch.unpackArc(path[i], path[i + 1], sleeve)
-    }
-    return sleeve
+    return this.ch.recoverSleeve(s, t)
   }
 
   // ── utilities ───────────────────────────────────────────────────

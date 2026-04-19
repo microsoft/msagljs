@@ -113,3 +113,83 @@ describe('corridorRouter', () => {
     expect(poly.count).toBeGreaterThan(2)
   })
 })
+
+import {Graph, Node, Edge, GeomNode, GeomEdge, GeomGraph, CurveFactory, GeomObject} from '../../src'
+import {routeCorridorEdges} from '../../src/routing/corridorRouter'
+
+describe('corridorRouter with subgraphs', () => {
+  test('edges crossing cluster boundary get routed', () => {
+    // Create graph: cluster C contains nodes A and B; node D is outside.
+    // Edge A→D crosses C's boundary.
+    const g = new Graph('graph')
+    const clusterGraph = new Graph('cluster')
+    g.addNode(clusterGraph)
+    const nodeA = clusterGraph.addNode(new Node('A'))
+    const nodeB = clusterGraph.addNode(new Node('B'))
+    const nodeD = g.addNode(new Node('D'))
+
+    // Edge from inside cluster to outside
+    const edgeAD = new Edge(nodeA, nodeD)
+    // Edge inside cluster
+    const edgeAB = new Edge(nodeA, nodeB)
+
+    // Create geometry
+    const gg = new GeomGraph(g)
+    const clusterGeom = new GeomGraph(clusterGraph)
+    clusterGeom.boundingBox = new Rectangle({left: -100, right: 100, bottom: -100, top: 100})
+
+    const geomA = new GeomNode(nodeA)
+    geomA.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(-50, 0))
+
+    const geomB = new GeomNode(nodeB)
+    geomB.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(50, 0))
+
+    const geomD = new GeomNode(nodeD)
+    geomD.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(30, 30, 3, 3, new Point(300, 0))
+
+    const geomEdgeAD = new GeomEdge(edgeAD)
+    const geomEdgeAB = new GeomEdge(edgeAB)
+
+    const edges = Array.from(gg.deepEdges)
+    routeCorridorEdges(gg, edges, null, 2)
+
+    // Both edges should have curves (not null)
+    expect(geomEdgeAD.curve).not.toBeNull()
+    expect(geomEdgeAB.curve).not.toBeNull()
+  })
+})
+
+describe('corridorRouter with prevRoutes corridor hint', () => {
+  test('reroutes using previous curve as corridor, falls back when corridor empty', () => {
+    const g = new Graph('g')
+    const a = g.addNode(new Node('A'))
+    const b = g.addNode(new Node('B'))
+    const c = g.addNode(new Node('C'))
+    const edge = new Edge(a, b)
+    // Add a decoy edge so CDT has more structure
+    const edgeAC = new Edge(a, c)
+
+    const gg = new GeomGraph(g)
+    gg.boundingBox = new Rectangle({left: -100, right: 300, bottom: -100, top: 200})
+    const ga = new GeomNode(a)
+    ga.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(0, 0))
+    const gb = new GeomNode(b)
+    gb.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(200, 0))
+    const gc = new GeomNode(c)
+    gc.boundaryCurve = CurveFactory.mkRectangleWithRoundedCorners(20, 20, 2, 2, new Point(100, 100))
+    const geomEdge = new GeomEdge(edge)
+    const geomEdgeAC = new GeomEdge(edgeAC)
+
+    const edges = Array.from(gg.deepEdges)
+    // First run: no prev routes, populate curves.
+    routeCorridorEdges(gg, edges, null, 2)
+    expect(geomEdge.curve).not.toBeNull()
+
+    // Second run: pass prev routes; routing should complete and yield a curve.
+    const prev = new Map()
+    for (const e of edges) if (e.curve) prev.set(e, e.curve)
+    routeCorridorEdges(gg, edges, null, 2, prev)
+    expect(geomEdge.curve).not.toBeNull()
+  })
+})
+

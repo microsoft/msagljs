@@ -356,6 +356,7 @@ export default class Renderer extends EventSource {
             pickable: true,
             graphStyle,
             tileMap,
+            levelIndex: tile.index.z - startZoom,
             // @ts-ignore
             clipBounds: [bbox.left, bbox.bottom, bbox.right, bbox.top],
             clipByInstance: false,

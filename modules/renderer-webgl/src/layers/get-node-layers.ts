@@ -1,6 +1,6 @@
 import {LayersList, Color, Position} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, GeomGraph, Node, Entity} from '@msagl/core'
+import {GeomNode, GeomGraph, Node, Entity, TileMap} from '@msagl/core'
 import {DrawingNode, DrawingObject, ShapeEnum} from '@msagl/drawing'
 
 import GeometryLayer, {GeometryLayerProps, SHAPE} from './geometry-layer'
@@ -11,18 +11,29 @@ type NodeLayerProps = GeometryLayerProps<GeomNode> &
   TextLayerProps<GeomNode> & {
     textColor: Color
     textSizeScale: number
+    tileMap?: TileMap
+    levelIndex?: number
   }
 
 export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayerStyle): LayersList {
+  const {tileMap, levelIndex} = props
+  const getScale = (n: GeomNode): number => {
+    if (tileMap && levelIndex != null) return tileMap.getNodeScale(n.node, levelIndex)
+    return 1
+  }
   return [
     new GeometryLayer<GeomNode>(props, {
       id: `${props.id}-node-boundary`,
       lineWidthUnits: 'pixels',
       getPosition: getNodeCenter,
-      getSize: (e: GeomNode) => [e.boundingBox.width, e.boundingBox.height],
+      getSize: (e: GeomNode) => {
+        const s = getScale(e)
+        return [e.boundingBox.width * s, e.boundingBox.height * s]
+      },
       getShape: (e: GeomNode) => getShapeFromNode(e.node),
+      getIsCluster: (e: GeomNode) => (e instanceof GeomGraph ? 1 : 0),
       cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
-      getLineColor: getNodeColor,
+      getLineColor: getNodeBorderColor,
       getFillColor: getNodeFillColor,
 
       extensions: [
@@ -42,7 +53,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       id: `${props.id}-node-label`,
       getPosition: getLabelPosition,
       getText: getLabelText,
-      getSize: getLabelSize,
+      getSize: (n: GeomNode) => getLabelSize(n) * getScale(n),
       getColor: getNodeColor,
       billboard: false,
       sizeUnits: 'common',
@@ -97,6 +108,11 @@ function getNodeColor(e: GeomNode): [number, number, number, number] {
   }
   return [0, 0, 0, 255]
 }
+function getNodeBorderColor(e: GeomNode): [number, number, number, number] {
+  const [r, g, b] = getNodeColor(e)
+  // Faint border so labels stand out; edges show through clearly.
+  return [r, g, b, 60]
+}
 function getNodeFillColor(e: GeomNode): [number, number, number, number] {
   const drawingNode = getDrawingObj<DrawingNode>(e.node)
   if (drawingNode) {
@@ -104,6 +120,9 @@ function getNodeFillColor(e: GeomNode): [number, number, number, number] {
     if (color) return [color.R, color.G, color.B, color.A]
   }
   return [255, 255, 255, 255]
+}
+function getTransparentFill(): [number, number, number, number] {
+  return [0, 0, 0, 0]
 }
 /** 
 the explanations of the shapes can be seen at

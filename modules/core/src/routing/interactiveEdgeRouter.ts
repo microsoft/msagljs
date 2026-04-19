@@ -190,8 +190,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   sourceIsInsideOfTargetTightPolyline: boolean
 
-  UseEdgeLengthMultiplier = false
-
   // if set to true the algorithm will try to shortcut a shortest polyline inner points
 
   UseInnerPolylingShortcutting = true
@@ -678,7 +676,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   GetShortestPolyline(sourceVisVertex: VisibilityVertex, _targetVisVertex: VisibilityVertex): Polyline {
     this.CleanTheGraphForShortestPath()
     const pathCalc = new SingleSourceSingleTargetShortestPathOnVisibilityGraph(this.visibilityGraph, sourceVisVertex, _targetVisVertex)
-    const path = pathCalc.GetPath(this.UseEdgeLengthMultiplier)
+    const path = pathCalc.GetPath()
     if (path == null) {
       // ShowIsPassable(_sourceVisibilityVertex, _targetVisVertex);
       return null
