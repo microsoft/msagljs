@@ -25,9 +25,6 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
     new GeometryLayer<GeomNode>(props, {
       id: `${props.id}-node-boundary`,
       lineWidthUnits: 'pixels',
-      lineWidthMinPixels: 1,
-      lineWidthMaxPixels: 1,
-      getLineWidth: 1,
       getPosition: getNodeCenter,
       getSize: (e: GeomNode) => {
         const s = getScale(e)
@@ -44,6 +41,8 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
           overrideProps: {
             opacity: style.opacity,
             sizeScale: style.size,
+            getFillColor: style.fillColor,
+            getLineWidth: style.strokeWidth,
             getLineColor: style.strokeColor,
           },
         }),
