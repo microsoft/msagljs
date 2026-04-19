@@ -28,6 +28,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       lineWidthMinPixels: 1,
       lineWidthMaxPixels: 1,
       getLineWidth: 1,
+      filled: false,
       getPosition: getNodeCenter,
       getSize: (e: GeomNode) => {
         const s = getScale(e)
