@@ -21,34 +21,45 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
     if (tileMap && levelIndex != null) return tileMap.getNodeScale(n.node, levelIndex)
     return 1
   }
-  return [
-    new GeometryLayer<GeomNode>(props, {
-      id: `${props.id}-node-boundary`,
-      lineWidthUnits: 'pixels',
-      getPosition: getNodeCenter,
-      getSize: (e: GeomNode) => {
-        const s = getScale(e)
-        return [e.boundingBox.width * s, e.boundingBox.height * s]
-      },
-      getShape: (e: GeomNode) => getShapeFromNode(e.node),
-      getIsCluster: (e: GeomNode) => (e instanceof GeomGraph ? 1 : 0),
-      cornerRadius: getCornerRadius((props.data as GeomNode[])[0]),
-      getLineColor: getNodeColor,
-      getFillColor: getNodeFillColor,
+  // Only draw the node boundary for clusters (GeomGraph). Ordinary nodes are
+  // rendered as labels only — no rectangle / rounded-rectangle border — which
+  // produces a cleaner "text-only" look for datasets like gameofthrones.json
+  // where box borders add noise.
+  const data = (props.data as GeomNode[]) ?? []
+  const clusterData = data.filter((n) => n instanceof GeomGraph)
+  const layers: LayersList = []
+  if (clusterData.length > 0) {
+    layers.push(
+      new GeometryLayer<GeomNode>(props, {
+        id: `${props.id}-node-boundary`,
+        data: clusterData,
+        lineWidthUnits: 'pixels',
+        getPosition: getNodeCenter,
+        getSize: (e: GeomNode) => {
+          const s = getScale(e)
+          return [e.boundingBox.width * s, e.boundingBox.height * s]
+        },
+        getShape: (e: GeomNode) => getShapeFromNode(e.node),
+        getIsCluster: (e: GeomNode) => (e instanceof GeomGraph ? 1 : 0),
+        cornerRadius: getCornerRadius(clusterData[0]),
+        getLineColor: getNodeColor,
+        getFillColor: getNodeFillColor,
 
-      extensions: [
-        new GraphStyleExtension({
-          overrideProps: {
-            opacity: style.opacity,
-            sizeScale: style.size,
-            getFillColor: style.fillColor,
-            getLineWidth: style.strokeWidth,
-            getLineColor: style.strokeColor,
-          },
-        }),
-      ],
-    }),
-
+        extensions: [
+          new GraphStyleExtension({
+            overrideProps: {
+              opacity: style.opacity,
+              sizeScale: style.size,
+              getFillColor: style.fillColor,
+              getLineWidth: style.strokeWidth,
+              getLineColor: style.strokeColor,
+            },
+          }),
+        ],
+      }),
+    )
+  }
+  layers.push(
     new TextLayer<GeomNode>(props, {
       id: `${props.id}-node-label`,
       getPosition: getLabelPosition,
@@ -69,7 +80,8 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
         }),
       ],
     }),
-  ]
+  )
+  return layers
 }
 
 function getNodeCenter(n: GeomNode, {index, data}: any): Position {

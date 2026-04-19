@@ -288,14 +288,6 @@ export class TileMap {
     const sorted: Node[] = Array.from(candidates).sort(this.compareByPagerank.bind(this))
     const k = Math.max(1, Math.ceil(sorted.length / 2))
     const topK = sorted.slice(0, k)
-    // Pre-compute each candidate's unit (scale=1) inflated box so we can prevent a bigger
-    // higher-ranked node from swallowing its neighbors.
-    const unitBox = new Map<Node, Rectangle>()
-    for (const n of topK) {
-      const gn = GeomNode.getGeom(n)
-      if (!gn) continue
-      unitBox.set(n, Rectangle.mkSizeCenter(new Size(gn.boundingBox.width + 2 * margin, gn.boundingBox.height + 2 * margin), gn.boundingBox.center))
-    }
     const accepted: Rectangle[] = []
     const nodes = new Set<Node>()
     const scales = new Map<Node, number>()
@@ -305,6 +297,10 @@ export class TileMap {
     // scale than any higher-ranked node already accepted. We iterate topK in
     // rank-DESC order, so capping `maxScale` by the smallest accepted scale so
     // far enforces monotonicity across accepted nodes.
+    // We deliberately do NOT forbid a higher-ranked node from "swallowing" a
+    // lower-ranked neighbor's unit box: at coarse levels the user wants fewer,
+    // bigger, more-important nodes visible, so dropping nearby lower-ranked
+    // neighbors in favor of a big top-ranked node is desired behavior.
     let maxScale = desiredMax
     for (let ii = 0; ii < topK.length; ii++) {
       const n = topK[ii]
@@ -321,18 +317,6 @@ export class TileMap {
         const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
         let overlaps = false
         for (const a of accepted) if (a.intersects(box)) { overlaps = true; break }
-        if (!overlaps && s > MIN_SCALE + 1e-9) {
-          // Only enforce the "don't swallow a lower-ranked neighbor" guard when we are
-          // actually *enlarging* beyond unit scale. At s == MIN_SCALE the higher-ranked
-          // node must win: if its unit box overlaps a lower-ranked candidate's unit box,
-          // we still keep the higher-ranked one and let the lower-ranked candidate be
-          // dropped when its own turn comes.
-          for (let jj = ii + 1; jj < topK.length; jj++) {
-            const other = unitBox.get(topK[jj])
-            if (!other) continue
-            if (box.intersects(other)) { overlaps = true; break }
-          }
-        }
         if (!overlaps) { chosen = s; break }
       }
       if (chosen < 0) continue
