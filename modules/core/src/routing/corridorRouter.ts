@@ -1253,12 +1253,11 @@ export function routeCorridorEdges(
       if (tId === sourceId) sameTriangle++
 
       const prev = prevRoutes.get(edge)
-      // TEMP: disable the prev-curve mask hint and run unconstrained A*
-      // directly, to test whether mask was steering paths through bad regions.
-      const mask: Uint8Array | null = null
-      void prev
-      if (mask) (mask as Uint8Array)[sourceId] = 1
-      if (mask && tId >= 0) (mask as Uint8Array)[tId] = 1
+      const mask: Uint8Array | null = prev
+        ? buildCorridorMaskFromCurve(cdt, idx, prev, sourcePoly, targetPoly)
+        : null
+      if (mask) mask[sourceId] = 1
+      if (mask && tId >= 0) mask[tId] = 1
 
       const allowedBoth = new Set<Polyline>()
       if (sourcePoly) allowedBoth.add(sourcePoly)
