@@ -301,6 +301,11 @@ export class TileMap {
     const scales = new Map<Node, number>()
     const STEP = 0.85
     const MIN_SCALE = 1
+    // Monotonic-scale invariant: a lower-ranked node must never receive a larger
+    // scale than any higher-ranked node already accepted. We iterate topK in
+    // rank-DESC order, so capping `maxScale` by the smallest accepted scale so
+    // far enforces monotonicity across accepted nodes.
+    let maxScale = desiredMax
     for (let ii = 0; ii < topK.length; ii++) {
       const n = topK[ii]
       const gn = GeomNode.getGeom(n)
@@ -310,7 +315,7 @@ export class TileMap {
       const h0 = gn.boundingBox.height
       let chosen = -1
       const scaleSequence: number[] = []
-      for (let s = desiredMax; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
+      for (let s = maxScale; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
       scaleSequence.push(MIN_SCALE)
       for (const s of scaleSequence) {
         const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
@@ -335,6 +340,7 @@ export class TileMap {
       accepted.push(finalBox)
       nodes.add(n)
       scales.set(n, chosen)
+      if (chosen < maxScale) maxScale = chosen
     }
     return {nodes, scales}
   }
