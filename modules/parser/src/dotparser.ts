@@ -1208,22 +1208,50 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
   return graph
 }
 
-export async function loadGraphFromUrl(url: string): Promise<Graph> {
-  const fileName = url.slice(url.lastIndexOf('/') + 1)
-  const resp = await fetch(url)
-  let graph: Graph
+async function fetchWithCorsFallback(url: string): Promise<Response> {
+  try {
+    const r = await fetch(url)
+    if (r.ok) return r
+    throw new Error('HTTP ' + r.status)
+  } catch (_e) {
+    // Likely CORS or network. Try a public CORS proxy.
+    const proxied = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
+    const r = await fetch(proxied)
+    if (!r.ok) throw new Error('Failed to fetch ' + url + ' (status ' + r.status + ')')
+    return r
+  }
+}
 
-  if (fileName.endsWith('.json')) {
-    const json = await resp.json()
-    graph = parseJSON(json)
-  } else if (fileName.endsWith('.txt')) {
-    const content = await resp.text()
+export async function loadGraphFromUrl(url: string): Promise<Graph> {
+  let fileName = url.slice(url.lastIndexOf('/') + 1)
+  const qIdx = fileName.search(/[?#]/)
+  if (qIdx >= 0) fileName = fileName.slice(0, qIdx)
+
+  const resp = await fetchWithCorsFallback(url)
+
+  const lower = fileName.toLowerCase()
+  const isGz = lower.endsWith('.gz')
+  const nameNoGz = isGz ? fileName.slice(0, -3) : fileName
+  const nameLower = nameNoGz.toLowerCase()
+
+  let stream: ReadableStream<Uint8Array> = resp.body
+  if (isGz) {
+    if (typeof (globalThis as any).DecompressionStream === 'undefined') {
+      throw new Error('gzip not supported in this environment (no DecompressionStream)')
+    }
+    stream = stream.pipeThrough(new (globalThis as any).DecompressionStream('gzip'))
+  }
+  const content = await new Response(stream).text()
+
+  let graph: Graph
+  if (nameLower.endsWith('.json')) {
+    graph = parseJSON(JSON.parse(content))
+  } else if (nameLower.endsWith('.txt') || nameLower.endsWith('.tsv') || nameLower.endsWith('.csv')) {
     graph = parseTXT(content)
   } else {
-    const content = await resp.text()
     graph = parseDot(content)
   }
-  if (graph) graph.id = fileName
+  if (graph) graph.id = nameNoGz
   return graph
 }
 
