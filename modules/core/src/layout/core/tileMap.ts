@@ -378,44 +378,52 @@ export class TileMap {
   ): {nodes: Set<Node>; scales: Map<Node, number>} {
     const sorted: Node[] = Array.from(candidates).sort(this.compareByPagerank.bind(this))
     const k = Math.max(1, Math.ceil(sorted.length / 2))
-    const topK = sorted.slice(0, k)
-    const accepted: Rectangle[] = []
+    // Parallel number arrays instead of Rectangle[] — cuts heap pressure on dense
+    // graphs where topK is O(10^5) and the per-scale retry allocates a Rectangle
+    // + Size each iteration.
+    const acceptedL: number[] = []
+    const acceptedR: number[] = []
+    const acceptedB: number[] = []
+    const acceptedT: number[] = []
     const nodes = new Set<Node>()
     const scales = new Map<Node, number>()
     const STEP = 0.85
     const MIN_SCALE = 1
-    // Monotonic-scale invariant: a lower-ranked node must never receive a larger
-    // scale than any higher-ranked node already accepted. We iterate topK in
-    // rank-DESC order, so capping `maxScale` by the smallest accepted scale so
-    // far enforces monotonicity across accepted nodes.
-    // We deliberately do NOT forbid a higher-ranked node from "swallowing" a
-    // lower-ranked neighbor's unit box: at coarse levels the user wants fewer,
-    // bigger, more-important nodes visible, so dropping nearby lower-ranked
-    // neighbors in favor of a big top-ranked node is desired behavior.
     let maxScale = desiredMax
-    // Reusable scratch buffer for the per-candidate scale sequence; avoids
-    // allocating a fresh array for each of the topK nodes.
     const scaleSequence: number[] = []
-    for (let ii = 0; ii < topK.length; ii++) {
-      const n = topK[ii]
+    for (let ii = 0; ii < k && ii < sorted.length; ii++) {
+      const n = sorted[ii]
       const gn = GeomNode.getGeom(n)
       if (!gn) continue
-      const center = gn.boundingBox.center
-      const w0 = gn.boundingBox.width
-      const h0 = gn.boundingBox.height
+      const bb = gn.boundingBox
+      const cx = (bb.left + bb.right) / 2
+      const cy = (bb.bottom + bb.top) / 2
+      const w0 = bb.width
+      const h0 = bb.height
       let chosen = -1
       scaleSequence.length = 0
       for (let s = maxScale; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
       scaleSequence.push(MIN_SCALE)
       for (const s of scaleSequence) {
-        const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
+        const hw = (w0 * s) / 2 + margin
+        const hh = (h0 * s) / 2 + margin
+        const bl = cx - hw, br = cx + hw, bb_ = cy - hh, bt = cy + hh
         let overlaps = false
-        for (const a of accepted) if (a.intersects(box)) { overlaps = true; break }
+        for (let ai = 0; ai < acceptedL.length; ai++) {
+          if (acceptedR[ai] < bl || acceptedL[ai] > br) continue
+          if (acceptedT[ai] < bb_ || acceptedB[ai] > bt) continue
+          overlaps = true
+          break
+        }
         if (!overlaps) { chosen = s; break }
       }
       if (chosen < 0) continue
-      const finalBox = Rectangle.mkSizeCenter(new Size(w0 * chosen + 2 * margin, h0 * chosen + 2 * margin), center)
-      accepted.push(finalBox)
+      const hw = (w0 * chosen) / 2 + margin
+      const hh = (h0 * chosen) / 2 + margin
+      acceptedL.push(cx - hw)
+      acceptedR.push(cx + hw)
+      acceptedB.push(cy - hh)
+      acceptedT.push(cy + hh)
       nodes.add(n)
       scales.set(n, chosen)
       if (chosen < maxScale) maxScale = chosen
@@ -1041,19 +1049,54 @@ export class TileMap {
     } else {
       // regenerate mode: re-propagate arrowheads from the (updated) upper tile into
       // existing subtiles so they stay consistent with the rerouted curves.
+      // Precompute arrowhead bboxes once per arrowhead (not per subtile).
+      // The box is the base-tip segment inflated by ±d⊥/3, so it covers the
+      // short triangular head. We keep it as 4 numbers to skip Point/Rectangle
+      // allocations in the hot inner loop.
+      const nA = lowerTile.arrowheads.length
+      let aMinX: Float64Array | null = null
+      let aMinY: Float64Array | null = null
+      let aMaxX: Float64Array | null = null
+      let aMaxY: Float64Array | null = null
+      if (nA > 0) {
+        aMinX = new Float64Array(nA)
+        aMinY = new Float64Array(nA)
+        aMaxX = new Float64Array(nA)
+        aMaxY = new Float64Array(nA)
+        for (let ai = 0; ai < nA; ai++) {
+          const arrowhead = lowerTile.arrowheads[ai]
+          const bx = arrowhead.base.x, by = arrowhead.base.y
+          const tx = arrowhead.tip.x, ty = arrowhead.tip.y
+          // d = (tip - base) / 3; d⊥ (rotate90Cw) = (d.y, -d.x)
+          const dxp = (ty - by) / 3
+          const dyp = -(tx - bx) / 3
+          // 4 corners: base ± d⊥, plus tip for the far end of the box
+          const p1x = bx + dxp, p1y = by + dyp
+          const p2x = bx - dxp, p2y = by - dyp
+          let lo_x = bx < tx ? bx : tx
+          let hi_x = bx < tx ? tx : bx
+          let lo_y = by < ty ? by : ty
+          let hi_y = by < ty ? ty : by
+          if (p1x < lo_x) lo_x = p1x; else if (p1x > hi_x) hi_x = p1x
+          if (p1y < lo_y) lo_y = p1y; else if (p1y > hi_y) hi_y = p1y
+          if (p2x < lo_x) lo_x = p2x; else if (p2x > hi_x) hi_x = p2x
+          if (p2y < lo_y) lo_y = p2y; else if (p2y > hi_y) hi_y = p2y
+          aMinX[ai] = lo_x; aMaxX[ai] = hi_x
+          aMinY[ai] = lo_y; aMaxY[ai] = hi_y
+        }
+      }
       for (let i = 0; i < 2; i++)
         for (let j = 0; j < 2; j++) {
           const sub = levelTiles.get(childX0 + i, childY0 + j)
           if (sub == null) continue
           sub.arrowheads = []
           const subRect = sub.rect
-          for (const arrowhead of lowerTile.arrowheads) {
-            const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
-            const d = arrowhead.tip.sub(arrowhead.base).div(3)
-            const dRotated = d.rotate90Cw()
-            arrowheadBox.add(arrowhead.base.add(dRotated))
-            arrowheadBox.add(arrowhead.base.sub(dRotated))
-            if (arrowheadBox.intersects(subRect)) sub.arrowheads.push(arrowhead)
+          const sL = subRect.left, sR = subRect.right, sB = subRect.bottom, sT = subRect.top
+          for (let ai = 0; ai < nA; ai++) {
+            // bbox-bbox intersect: overlap in x AND y
+            if (aMaxX[ai] < sL || aMinX[ai] > sR) continue
+            if (aMaxY[ai] < sB || aMinY[ai] > sT) continue
+            sub.arrowheads.push(lowerTile.arrowheads[ai])
           }
         }
     }
