@@ -9,6 +9,67 @@ import {GeomLabel} from './geomLabel'
 import {Point} from '../../math/geometry/point'
 import {GeomGraph} from './geomGraph'
 import {GeomConstants, ICurve, LineSegment} from '../../math/geometry'
+
+/** Computes the bounding box of curve's value over parameter range [start, end]
+ *  WITHOUT allocating a trimmed curve. For composite Curves consisting of
+ *  LineSegments (typical for corridor-routed edges) this is fully allocation-free
+ *  for fully-contained inner segments (reuses cached seg.boundingBox) and costs
+ *  only a couple of Point/Rectangle allocs for the two partial end segments.
+ *  Falls back to seg.trim(...).boundingBox for Bezier/Ellipse partial sub-ranges,
+ *  where an analytic cheap bbox isn't easy — but avoids wrapping in a new Curve. */
+function paramRangeBBox(cs: ICurve, start: number, end: number): Rectangle {
+  // Accumulate bbox as 4 numbers to avoid intermediate Rectangle.clone()/addRecSelf
+  // allocations, then build one Rectangle at the end.
+  let minX = Number.POSITIVE_INFINITY, minY = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY, maxY = Number.NEGATIVE_INFINITY
+  const eps = GeomConstants.distanceEpsilon
+
+  function foldRange(seg: ICurve, s: number, e: number) {
+    if (seg instanceof LineSegment) {
+      // LineSegment.value(t) = start + (end - start)*t; inlined to avoid 2 Point allocs.
+      const sx = seg.start.x, sy = seg.start.y
+      const dx = seg.end.x - sx, dy = seg.end.y - sy
+      const ax = sx + dx * s, ay = sy + dy * s
+      const bx = sx + dx * e, by = sy + dy * e
+      if (ax < minX) minX = ax; if (ax > maxX) maxX = ax
+      if (bx < minX) minX = bx; if (bx > maxX) maxX = bx
+      if (ay < minY) minY = ay; if (ay > maxY) maxY = ay
+      if (by < minY) minY = by; if (by > maxY) maxY = by
+      return
+    }
+    if (seg instanceof Curve) {
+      if (s <= seg.parStart + eps && e >= seg.parEnd - eps) {
+        foldRect(seg.boundingBox); return
+      }
+      const si = seg.getSegIndexParam(s)
+      const ei = seg.getSegIndexParam(e)
+      if (si.segIndex === ei.segIndex) {
+        foldRange(seg.segs[si.segIndex], si.par, ei.par); return
+      }
+      const sSeg = seg.segs[si.segIndex]
+      const eSeg = seg.segs[ei.segIndex]
+      foldRange(sSeg, si.par, sSeg.parEnd)
+      for (let i = si.segIndex + 1; i < ei.segIndex; i++) foldRect(seg.segs[i].boundingBox)
+      foldRange(eSeg, eSeg.parStart, ei.par)
+      return
+    }
+    // Bezier/Ellipse/Polyline: full range → cached bbox; sub-range → trim fallback
+    if (s <= seg.parStart + eps && e >= seg.parEnd - eps) {
+      foldRect(seg.boundingBox); return
+    }
+    foldRect(seg.trim(s, e).boundingBox)
+  }
+
+  function foldRect(r: Rectangle) {
+    if (r.left < minX) minX = r.left
+    if (r.right > maxX) maxX = r.right
+    if (r.bottom < minY) minY = r.bottom
+    if (r.top > maxY) maxY = r.top
+  }
+
+  foldRange(cs, start, end)
+  return new Rectangle({left: minX, right: maxX, bottom: minY, top: maxY})
+}
 import {Entity} from '../../structs/entity'
 import {Tile} from './tile'
 import {Node} from '../../structs/node'
@@ -24,7 +85,7 @@ import {Assert} from '../../utils/assert'
  * The tile part of the curve is defined by the startPar and endPar.
  * One tile can have several parts of clips corresponding to the same curve.
  */
-export type CurveClip = {curve: ICurve; edge?: Edge; startPar: number; endPar: number}
+export type CurveClip = {curve: ICurve; edge?: Edge; startPar: number; endPar: number; bbox?: Rectangle}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
 
@@ -39,12 +100,13 @@ export class TileMap {
    * t.width <= this.minTileSize.width && t.height <= this.minTileSize.height
    */
   private minTileSize: Size
-  /** the maximal number visual elements vizible in a tile */
+  /** the maximal number visual elements vizible in a tile.
+   * Auto-scaled by buildUpToLevel() for large graphs to bound memory. */
   private tileCapacity = 500 // in the number of elements
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
-  private pageRank: Map<Node, number>
+  private pageRank: Map<Node, number> | null
 
   /** the more rank is the more important the entity is */
   nodeRank: Map<Node, number>
@@ -121,14 +183,11 @@ export class TileMap {
 
     function addEdgeToTiles(e: Edge) {
       const geomEdge = GeomEdge.getGeom(e)
-      const c = GeomEdge.getGeom(e).curve
-      if (c instanceof Curve) {
-        for (const seg of c.segs) {
-          topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
-        }
-      } else {
-        topLevelTile.addElement({edge: e, curve: c, startPar: c.parStart, endPar: c.parEnd})
-      }
+      const c = geomEdge.curve
+      // Store one CurveClip per edge regardless of whether the curve is a
+      // composite Curve. Composite curves are expanded to per-segment draws
+      // lazily in the renderer (only for visible tiles).
+      topLevelTile.addElement({edge: e, curve: c, startPar: c.parStart, endPar: c.parEnd})
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -148,6 +207,22 @@ export class TileMap {
    * Returns the number of created levels.
    */
   buildUpToLevel(z: number): number {
+    // Memory guard for very large graphs. CurveClip count roughly doubles per
+    // level, and an in-browser tab has a ~4GB V8 heap cap, so for dense graphs
+    // we cap the number of tile levels and raise tileCapacity so subdivision
+    // terminates earlier. Without this ca-HepPh (~237K edges) OOMs a 4GB tab
+    // while building level 7/8 worth of curve clips.
+    const edgeCount = this.geomGraph.graph.deepEdgesCount
+    if (edgeCount > 200000) {
+      this.tileCapacity = 2000
+      if (z > 6) z = 6
+    } else if (edgeCount > 50000) {
+      this.tileCapacity = 1500
+      if (z > 7) z = 7
+    } else if (edgeCount > 10000) {
+      this.tileCapacity = 1000
+    }
+
     this.fillTheLowestLayer()
     this.minTileSize = this.getMinTileSize()
     this.pageRank = pagerank(this.geomGraph.graph, 0.85)
@@ -206,21 +281,34 @@ export class TileMap {
       for (let k = lastIdx - 1; k >= 0; k--) {
         this.applyActiveSetToLevel(k, activeByLevel[k])
         const activeNodes = activeByLevel[k]
-        const activeEdges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
+        // Single-pass collection: avoids materializing Array.from(deepEdges)
+        // (which is O(|E|) per level, up to 200K+ entries on ca-HepPh) just to
+        // then filter it. Builds only the surviving-edges list directly.
+        const activeEdges: GeomEdge[] = []
+        for (const e of this.geomGraph.deepEdges) {
+          if (edgeNodesBelongToSet(e.edge, activeNodes)) activeEdges.push(e)
+        }
         if (activeEdges.length > 0) {
           // Snapshot current (finer-level) curves *before* rerouting mutates them.
-          const prevRoutes = new Map<GeomEdge, ICurve>()
+          let prevRoutes: Map<GeomEdge, ICurve> | null = new Map<GeomEdge, ICurve>()
           for (const e of activeEdges) {
             if (e.curve) prevRoutes.set(e, e.curve)
           }
           const scaleMap = this.nodeScales[k]
           const nodeScale = (n: GeomNode) => scaleMap.get(n.node) ?? 1
-          const activeGeomNodes = new Set<GeomNode>()
+          let activeGeomNodes: Set<GeomNode> | null = new Set<GeomNode>()
           for (const n of activeNodes) {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
           routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`)
+          // Release intermediate per-iteration structures before regenerate to
+          // reduce peak heap during the subsequent tile subdivision phase.
+          prevRoutes.clear()
+          prevRoutes = null
+          activeGeomNodes.clear()
+          activeGeomNodes = null
+          activeEdges.length = 0
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }
@@ -241,6 +329,9 @@ export class TileMap {
       }
     }
     this.calculateNodeRank()
+    // pagerank map is no longer needed after ranks are computed; on 200K+ node
+    // graphs freeing it shaves tens of MB before tile subdivision's peak.
+    this.pageRank = null
     return this.levels.length
   }
 
@@ -302,6 +393,9 @@ export class TileMap {
     // bigger, more-important nodes visible, so dropping nearby lower-ranked
     // neighbors in favor of a big top-ranked node is desired behavior.
     let maxScale = desiredMax
+    // Reusable scratch buffer for the per-candidate scale sequence; avoids
+    // allocating a fresh array for each of the topK nodes.
+    const scaleSequence: number[] = []
     for (let ii = 0; ii < topK.length; ii++) {
       const n = topK[ii]
       const gn = GeomNode.getGeom(n)
@@ -310,7 +404,7 @@ export class TileMap {
       const w0 = gn.boundingBox.width
       const h0 = gn.boundingBox.height
       let chosen = -1
-      const scaleSequence: number[] = []
+      scaleSequence.length = 0
       for (let s = maxScale; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
       scaleSequence.push(MIN_SCALE)
       for (const s of scaleSequence) {
@@ -331,20 +425,43 @@ export class TileMap {
 
   /** Restrict a level's tile contents to the given active node set. Edges/labels
    *  whose source or target is outside the active set are removed; curve clips
-   *  are cleared (they'll be rebuilt by regenerateCurveClipsUpToLevel). */
+   *  are cleared (they'll be rebuilt by regenerateCurveClipsUpToLevel).
+   *  In-place filtering (not `.filter()`) keeps us from allocating 3 throwaway
+   *  arrays per tile per level, which matters on dense graphs. */
   private applyActiveSetToLevel(levelIdx: number, activeNodes: Set<Node>) {
     for (const tile of this.levels[levelIdx].values()) {
-      tile.nodes = tile.nodes.filter((gn) => activeNodes.has(gn.node))
-      tile.labels = tile.labels.filter((lab) => {
+      // nodes
+      let w = 0
+      const nodes = tile.nodes
+      for (let r = 0; r < nodes.length; r++) {
+        const gn = nodes[r]
+        if (activeNodes.has(gn.node)) nodes[w++] = gn
+      }
+      nodes.length = w
+
+      // labels
+      w = 0
+      const labels = tile.labels
+      for (let r = 0; r < labels.length; r++) {
+        const lab = labels[r]
         const parent = lab.parent
+        let keep = true
         if (parent instanceof GeomEdge) {
-          return activeNodes.has(parent.edge.source) && activeNodes.has(parent.edge.target)
+          keep = activeNodes.has(parent.edge.source) && activeNodes.has(parent.edge.target)
         }
-        return true
-      })
-      tile.arrowheads = tile.arrowheads.filter(
-        (a) => activeNodes.has(a.edge.source) && activeNodes.has(a.edge.target),
-      )
+        if (keep) labels[w++] = lab
+      }
+      labels.length = w
+
+      // arrowheads
+      w = 0
+      const arrows = tile.arrowheads
+      for (let r = 0; r < arrows.length; r++) {
+        const a = arrows[r]
+        if (activeNodes.has(a.edge.source) && activeNodes.has(a.edge.target)) arrows[w++] = a
+      }
+      arrows.length = w
+
       tile.initCurveClips()
     }
     this.removeEmptyTiles(levelIdx)
@@ -563,13 +680,8 @@ export class TileMap {
     t.initCurveClips()
     for (const geomEdge of this.geomGraph.deepEdges) {
       if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
-      if (geomEdge.curve instanceof Curve) {
-        for (const seg of geomEdge.curve.segs) {
-          t.addElement({edge: geomEdge.edge, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
-        }
-      } else {
-        t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar: geomEdge.curve.parStart, endPar: geomEdge.curve.parEnd})
-      }
+      // Store whole curve as one clip; segment expansion is lazy at render time.
+      t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar: geomEdge.curve.parStart, endPar: geomEdge.curve.parEnd})
       if (geomEdge.sourceArrowhead) {
         t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
       }
@@ -972,17 +1084,44 @@ export class TileMap {
       //create temparary PointPairMap to store the result of the intersection
       // each entry in the map is an array of curves corresponding to the intersections with one subtile
 
+      const midX = left + w
+      const midY = bottom + h
       for (const clip of lowerTile.curveClips) {
-        // Assert.assert(upperTile.rect.containsRect(cs.curve.boundingBox))
         const cs = clip.curve
-        const xs = intersectWithMiddleLines(cs, clip.startPar, clip.endPar)
+        const cb = getClipBBox(clip)
+        // Fast path: if the clip's bounding box is entirely inside one of the four
+        // child quadrants, it cannot cross the middle lines - put the parent clip
+        // into that child as-is and skip the expensive parallelogram-based
+        // intersection entirely. On dense graphs this is the dominant case and it
+        // is what was causing the OOM: the old code called Curve.getAllIntersections
+        // twice per clip per level regardless.
+        if (cb.right <= midX || cb.left >= midX) {
+          if (cb.top <= midY || cb.bottom >= midY) {
+            const i = cb.right <= midX ? 0 : 1
+            const j = cb.top <= midY ? 0 : 1
+            const k = 2 * i + j
+            const key = keys[k]
+            let tile = levelTiles.getI(key)
+            if (!tile) {
+              const l = left + i * w
+              const b = bottom + j * h
+              tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
+              levelTiles.setPair(key, tile)
+            }
+            tile.addCurveClip(clip)
+            continue
+          }
+        }
+        // Slow path: the clip's bbox straddles at least one middle line.
+        // Only ask for intersections with the lines it actually straddles.
+        const xs = intersectWithMiddleLinesBBox(cs, clip.startPar, clip.endPar, cb, midX, midY)
 
         Assert.assert(xs.length >= 2)
         if (xs.length == 2) {
           const t = (xs[0] + xs[1]) / 2
           const p = cs.value(t)
-          const i = p.x <= left + w ? 0 : 1
-          const j = p.y <= bottom + h ? 0 : 1
+          const i = p.x <= midX ? 0 : 1
+          const j = p.y <= midY ? 0 : 1
           const k = 2 * i + j
           const key = keys[k]
           let tile = levelTiles.getI(key)
@@ -992,15 +1131,17 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[0], endPar: xs[1]})
+          // The child clip is identical to the parent clip (whole curve range lies in one
+          // quadrant), so reuse the parent CurveClip instead of allocating a new one.
+          // This removes a large per-level memory multiplier on dense graphs.
+          tile.addCurveClip(clip)
         } else
           for (let u = 0; u < xs.length - 1; u++) {
             const t = (xs[u] + xs[u + 1]) / 2
             const p = cs.value(t)
-            const i = p.x <= left + w ? 0 : 1
-            const j = p.y <= bottom + h ? 0 : 1
+            const i = p.x <= midX ? 0 : 1
+            const j = p.y <= midY ? 0 : 1
             const k = 2 * i + j
-            //const tr = cs.trim(xs[u][1], xs[u + 1][1])
             const key = keys[k]
             let tile = levelTiles.getI(key)
             if (!tile) {
@@ -1012,6 +1153,42 @@ export class TileMap {
             tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[u], endPar: xs[u + 1]})
           }
       }
+    }
+
+    function getClipBBox(clip: CurveClip): Rectangle {
+      if (clip.bbox) return clip.bbox
+      const cs = clip.curve
+      if (clip.startPar <= cs.parStart + GeomConstants.distanceEpsilon && clip.endPar >= cs.parEnd - GeomConstants.distanceEpsilon) {
+        return (clip.bbox = cs.boundingBox)
+      }
+      // Allocation-light bbox over a param sub-range. For LineSegment-based
+      // polylines (corridor routing) this is Curve-allocation-free; for bezier
+      // sub-ranges still falls back to trim, but that's the uncommon case.
+      return (clip.bbox = paramRangeBBox(cs, clip.startPar, clip.endPar))
+    }
+
+    function intersectWithMiddleLinesBBox(
+      seg: ICurve,
+      start: number,
+      end: number,
+      cb: Rectangle,
+      midX: number,
+      midY: number,
+    ): Array<number> {
+      const crossesH = cb.top > midY && cb.bottom < midY
+      const crossesV = cb.right > midX && cb.left < midX
+      let xs: number[] = []
+      if (crossesH) {
+        for (const ix of Curve.getAllIntersections(seg, horizontalMiddleLine, true)) xs.push(ix.par0)
+      }
+      if (crossesV) {
+        for (const ix of Curve.getAllIntersections(seg, verticalMiddleLine, true)) xs.push(ix.par0)
+      }
+      xs.sort((a, b) => a - b)
+      const out: number[] = [start]
+      for (const x of xs) if (x > start && x < end) out.push(x)
+      out.push(end)
+      return out
     }
 
     function intersectWithMiddleLines(seg: ICurve, start: number, end: number): Array<number> {

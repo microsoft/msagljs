@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, TileData, TileMap, Edge} from '@msagl/core'
+import {GeomNode, TileData, TileMap, Edge, Curve, CurveClip} from '@msagl/core'
 import {Matrix4} from '@math.gl/core'
 
 import {getNodeLayers} from './get-node-layers'
@@ -49,7 +49,8 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
           layerData.nodes = layer.filter ? data.nodes.filter((n) => layer.filter(n.node, filterContext)) : data.nodes
         }
         if (layer.type === 'edge') {
-          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => layer.filter(c.edge, filterContext)) : data.curveClips
+          const rawClips = layer.filter ? data.curveClips.filter((c) => layer.filter(c.edge, filterContext)) : data.curveClips
+          layerData.curveClips = expandCompositeClips(rawClips)
           layerData.arrowheads = layer.filter ? data.arrowheads.filter((a) => layer.filter(a.edge, filterContext)) : data.arrowheads
           layerData.labels = layer.filter ? data.labels.filter((l) => layer.filter(l.parent.entity, filterContext)) : data.labels
         }
@@ -159,4 +160,55 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
       return subLayers
     })
   }
+}
+
+/**
+ * Expand composite-Curve clips to per-segment clips for rendering.
+ * The tile map stores one CurveClip per edge (even for curves made of many
+ * segments) to bound memory. The renderer needs one primitive per segment
+ * (Bezier/Line/Arc), so we expand lazily here — only for tiles that are
+ * actually being rendered.
+ *
+ * The clip's [startPar, endPar] is in global curve-parameter space (as used
+ * by Curve.getSegIndexParam / Curve.value). We slice that range across the
+ * segments it covers and emit per-segment clips with segment-local params.
+ */
+function expandCompositeClips(clips: CurveClip[]): CurveClip[] {
+  let needsExpansion = false
+  for (const c of clips) {
+    if (c.curve instanceof Curve) {
+      needsExpansion = true
+      break
+    }
+  }
+  if (!needsExpansion) return clips
+  const out: CurveClip[] = []
+  for (const c of clips) {
+    if (!(c.curve instanceof Curve)) {
+      out.push(c)
+      continue
+    }
+    const curve = c.curve as Curve
+    const segs = curve.segs
+    // Walk segments with cumulative global parameter u; emit per-segment clips
+    // that overlap [c.startPar, c.endPar].
+    let u = curve.parStart
+    const endGlobal = c.endPar
+    const startGlobal = c.startPar
+    for (let i = 0; i < segs.length; i++) {
+      const sg = segs[i]
+      const width = sg.parEnd - sg.parStart
+      const nextu = u + width
+      if (nextu <= startGlobal) { u = nextu; continue }
+      if (u >= endGlobal) break
+      const lo = Math.max(u, startGlobal)
+      const hi = Math.min(nextu, endGlobal)
+      // Convert to segment-local params
+      const segStartPar = (lo - u) + sg.parStart
+      const segEndPar = (hi - u) + sg.parStart
+      out.push({curve: sg, edge: c.edge, startPar: segStartPar, endPar: segEndPar})
+      u = nextu
+    }
+  }
+  return out
 }

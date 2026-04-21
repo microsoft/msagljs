@@ -46,6 +46,10 @@ export type Diagonal = {left: Point; right: Point}
 type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
 type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
 
+// If false, `smoothenCorners` is a no-op; corridor edges stay as pure polylines.
+// Toggled via the `smooth` parameter of `routeCorridorEdges`.
+let _corridorSmooth = true
+
 /** Pre-computed triangle index for fast typed-array Dijkstra/A*.
  *  Assigns integer IDs to all CDT triangles, pre-computes edge midpoints
  *  and neighbor relationships for cache-friendly access. */
@@ -1140,7 +1144,9 @@ export function routeCorridorEdges(
   activeNodes?: Set<GeomNode> | null,
   extraObstaclePadding = 0,
   debugLabel?: string,
+  smooth = true,
 ): void {
+  _corridorSmooth = smooth
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
   // ensure ports exist — assign them directly to edges
@@ -1472,6 +1478,7 @@ export function routeCorridorEdges(
 /** Adjust bezier coefficients at each corner so curves stay within padding
  *  of the original polyline path — same approach as SplineRouter. */
 function smoothenCorners(sp: SmoothedPolyline, loosePadding: number): void {
+  if (!_corridorSmooth) return
   let a: CornerSite = sp.headSite
   let corner: {b: CornerSite; c: CornerSite} | undefined
   while ((corner = Curve.findCorner(a))) {

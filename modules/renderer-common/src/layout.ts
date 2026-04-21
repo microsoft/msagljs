@@ -169,6 +169,9 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
   } else {
     layoutSettings.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode
   }
+  if (overrides.corridorSmooth != null) {
+    layoutSettings.edgeRoutingSettings.CorridorSmooth = overrides.corridorSmooth
+  }
 
   return layoutSettings
 }

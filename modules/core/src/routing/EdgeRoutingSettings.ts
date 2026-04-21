@@ -113,6 +113,17 @@ export class EdgeRoutingSettings {
     this.polylinePadding = value
   }
 
+  // If true, corners in corridor-routed edges are smoothed with Bezier segments.
+  // Turning this off keeps edges as pure polylines, which is cheaper to render
+  // and to route for very large graphs.
+  corridorSmooth = true
+  public get CorridorSmooth(): boolean {
+    return this.corridorSmooth
+  }
+  public set CorridorSmooth(value: boolean) {
+    this.corridorSmooth = value
+  }
+
   // the settings for general edge bundling
   bundlingSettings: BundlingSettings
 

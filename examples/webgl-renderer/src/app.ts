@@ -80,6 +80,12 @@ layoutSelect.onchange = () => {
   updateRender(getSettings())
 }
 
+// Settings: corridor smoothing
+const corridorSmoothCheckbox = <HTMLInputElement>document.getElementById('corridor-smooth')
+corridorSmoothCheckbox.onchange = () => {
+  updateRender(getSettings())
+}
+
 // File selector
 dropZone('drop-target', async (f: File) => {
   const graph = await loadGraphFromFile(f)
@@ -139,6 +145,7 @@ function getSettings(): LayoutOptions {
     }
     case 'corridor': {
       opts.edgeRoutingMode = EdgeRoutingMode.Corridor
+      opts.corridorSmooth = corridorSmoothCheckbox.checked
       break
     }
     case 'default': {

@@ -10,4 +10,6 @@ export type LayoutOptions = {
   layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPsepCola' | 'MDS'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
+  /** When edgeRoutingMode === Corridor, whether to smooth polyline corners with Bezier curves. Defaults to true. */
+  corridorSmooth?: boolean
 }

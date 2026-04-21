@@ -28,7 +28,8 @@ export class Tile {
   }
   
   addCurveClip(cc: CurveClip) {
-    Assert.assert(!(cc.curve instanceof Curve), 'CurveClip.curve should not be a Curve!')
+    // Composite Curves are now allowed; the renderer expands them to per-segment
+    // draws lazily for visible tiles.
     this._curveClips.push(cc)
   }
 
@@ -65,13 +66,11 @@ export class Tile {
     } else if (data instanceof GeomLabel) {
       this.labels.push(data)
     } else if ('curve' in data) {
-      if (data.curve instanceof Curve) {
-        for (const seg of data.curve.segs) {
-          this.addCurveClip({edge: data.edge, curve: seg, startPar:seg.parStart, endPar:seg.parEnd})
-        }
-      } else {
-        this.addCurveClip(data)
-      }
+      // Keep composite Curve objects as a single clip. The renderer expands
+      // them into per-segment draws lazily, only for tiles that are actually
+      // visible. This avoids multiplying CurveClip count by the number of
+      // segments per edge (5-10x for corridor-routed polylines).
+      this.addCurveClip(data)
     } else {
       this.arrowheads.push(data)
     }
