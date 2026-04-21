@@ -79,19 +79,20 @@ function getNodeCenter(n: GeomNode, {index, data}: any): Position {
 function getLabelPosition(n: GeomNode, context: any): Position {
   if (n instanceof GeomGraph) {
     const box = n.boundingBox
-    return [box.center.x, box.bottom + (<GeomGraph>n).labelSize.height / 2 + 2]
+    const labelH = (<GeomGraph>n).labelSize ? (<GeomGraph>n).labelSize.height : 0
+    return [box.center.x, box.bottom + labelH / 2 + 2]
   }
   return getNodeCenter(n, context)
 }
 
 function getLabelText(n: GeomNode): string {
   const drawingNode = getDrawingObj<DrawingNode>(n.node)
-  return drawingNode.labelText
+  return (drawingNode && drawingNode.labelText) || ''
 }
 
 function getLabelSize(n: GeomNode): number {
   const drawingNode = getDrawingObj<DrawingNode>(n.node)
-  return drawingNode.fontsize
+  return drawingNode ? drawingNode.fontsize : 0
 }
 
 function getCornerRadius(n: GeomNode): number {
