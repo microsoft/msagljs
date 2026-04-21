@@ -55,7 +55,9 @@ function createGeometry(g: Graph): GeomGraph {
   return gg
 }
 
-describe('ca-HepPh tile build repro', () => {
+// Skipped: this spec OOMs the default jest worker (requires >16GB heap).
+// Enable manually for memory profiling.
+describe.skip('ca-HepPh tile build repro', () => {
   test('build up to level 8 with StraightLine', () => {
     console.time('parse')
     const g = parseEdgeList(caHepPh)
