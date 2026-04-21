@@ -290,4 +290,4 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
 }
 
 ;(window as any).dumpEdgeSleeve = dumpEdgeSleeve
-console.log('Debug: call dumpEdgeSleeve("JOFFREY", "MYCAH") in console to download SVG')
+//console.log('Debug: call dumpEdgeSleeve("JOFFREY", "MYCAH") in console to download SVG')

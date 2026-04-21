@@ -19,9 +19,16 @@ let layoutWorker: Worker = null
 let layoutInProgress = false
 
 export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, options: LayoutOptions, forceUpdate = false): Promise<Graph> {
-  if (layoutInProgress) {
+  if (layoutInProgress && layoutWorker) {
+    // Supersede the in-flight request. Clear handlers first so terminate()
+    // does not fire our onerror and reject the (now abandoned) promise — that
+    // would surface as "Uncaught (in promise)" in the example code which does
+    // not catch rejections from setOptions/setGraph.
+    layoutWorker.onmessage = null
+    layoutWorker.onerror = null
     layoutWorker.terminate()
     layoutWorker = null
+    layoutInProgress = false
   }
   if (!layoutWorker) {
     // Resolve relative URL
@@ -35,17 +42,29 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
   return new Promise((resolve, reject) => {
     layoutWorker.onmessage = ({data}) => {
       if (data.type === 'error') {
+        layoutInProgress = false
         reject(data.message)
       } else if (data.type === 'layout-done') {
+        layoutInProgress = false
         try {
           graph = parseJSON(data.graph)
           console.debug('graph transfer to main thread', Date.now() - data.timestamp + ' ms')
+
+          // graphToJSON/parseJSON does not preserve geomGraph.layoutSettings.
+          // Re-apply them here so downstream consumers (e.g. TileMap's
+          // getEdgeRoutingSettingsFromAncestorsOrDefault) observe the same
+          // EdgeRoutingMode (Corridor, etc.) as the main-thread-only path.
+          applyLayoutSettings(graph, options)
 
           resolve(graph)
         } catch (err) {
           reject(err.message)
         }
       }
+    }
+    layoutWorker.onerror = (e) => {
+      layoutInProgress = false
+      reject(e.message || 'layout worker error')
     }
 
     layoutWorker.postMessage({
@@ -59,28 +78,42 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
   })
 }
 
-/** lay out the given graph */
-export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = false): Graph {
-  const t0 = performance.now()
-  let needsReroute = false
-  let needsLayout = forceUpdate
+/** Walk the GeomGraph tree and set layoutSettings without triggering layout.
+ * Returns aggregated diff flags vs. the previous settings (useful for layoutGraph).
+ */
+export function applyLayoutSettings(
+  graph: Graph,
+  options: LayoutOptions,
+): {layoutChanged: boolean; routingChanged: boolean} {
   const drawingGraph: DrawingGraph = <DrawingGraph>DrawingGraph.getDrawingObj(graph)
-  const geomGraph: GeomGraph = GeomGraph.getGeom(graph) // grab the GeomGraph from the underlying Graph
+  const geomGraph: GeomGraph = GeomGraph.getGeom(graph)
+  let layoutChanged = false
+  let routingChanged = false
 
-  function updateLayoutSettings(gg: GeomGraph) {
+  function recurse(gg: GeomGraph) {
     if (!gg) return
     for (const subgraph of gg.subgraphs()) {
-      updateLayoutSettings(subgraph)
+      recurse(subgraph)
     }
-
     const settings = resolveLayoutSettings(drawingGraph, gg, options)
     const diff = diffLayoutSettings(gg.layoutSettings, settings)
-    needsLayout = needsLayout || diff.layoutChanged
-    needsReroute = needsReroute || diff.routingChanged
+    layoutChanged = layoutChanged || diff.layoutChanged
+    routingChanged = routingChanged || diff.routingChanged
     gg.layoutSettings = settings
   }
 
-  updateLayoutSettings(geomGraph)
+  recurse(geomGraph)
+  return {layoutChanged, routingChanged}
+}
+
+/** lay out the given graph */
+export function layoutGraph(graph: Graph, options: LayoutOptions, forceUpdate = false): Graph {
+  const t0 = performance.now()
+  const geomGraph: GeomGraph = GeomGraph.getGeom(graph) // grab the GeomGraph from the underlying Graph
+
+  const diff = applyLayoutSettings(graph, options)
+  const needsLayout = forceUpdate || diff.layoutChanged
+  const needsReroute = diff.routingChanged
 
   // Clear cached curves
   if (needsLayout || needsReroute) {
