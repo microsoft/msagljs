@@ -1280,6 +1280,39 @@ export class TileMap {
     upperTile: Tile,
     z: number,
   ) {
+    // Precompute arrowhead bboxes as parallel number arrays once per upperTile
+    // (was: recomputed 4× — once per subtile — per arrowhead, with ~7 Point +
+    // 1 Rectangle allocations per call).
+    const nA = upperTile.arrowheads.length
+    let aMinX: Float64Array | null = null
+    let aMinY: Float64Array | null = null
+    let aMaxX: Float64Array | null = null
+    let aMaxY: Float64Array | null = null
+    if (nA > 0) {
+      aMinX = new Float64Array(nA)
+      aMinY = new Float64Array(nA)
+      aMaxX = new Float64Array(nA)
+      aMaxY = new Float64Array(nA)
+      for (let ai = 0; ai < nA; ai++) {
+        const arrowhead = upperTile.arrowheads[ai]
+        const bx = arrowhead.base.x, by = arrowhead.base.y
+        const tx = arrowhead.tip.x, ty = arrowhead.tip.y
+        const dxp = (ty - by) / 3
+        const dyp = -(tx - bx) / 3
+        const p1x = bx + dxp, p1y = by + dyp
+        const p2x = bx - dxp, p2y = by - dyp
+        let lo_x = bx < tx ? bx : tx
+        let hi_x = bx < tx ? tx : bx
+        let lo_y = by < ty ? by : ty
+        let hi_y = by < ty ? ty : by
+        if (p1x < lo_x) lo_x = p1x; else if (p1x > hi_x) hi_x = p1x
+        if (p1y < lo_y) lo_y = p1y; else if (p1y > hi_y) hi_y = p1y
+        if (p2x < lo_x) lo_x = p2x; else if (p2x > hi_x) hi_x = p2x
+        if (p2y < lo_y) lo_y = p2y; else if (p2y > hi_y) hi_y = p2y
+        aMinX[ai] = lo_x; aMaxX[ai] = hi_x
+        aMinY[ai] = lo_y; aMaxY[ai] = hi_y
+      }
+    }
     for (let i = 0; i < 2; i++)
       for (let j = 0; j < 2; j++) {
         const tileRect = new Rectangle({
@@ -1288,7 +1321,7 @@ export class TileMap {
           bottom: bottom + h * j,
           top: bottom + h * (j + 1),
         })
-        const tile = this.generateOneSubtileExceptEdgeClips(upperTile, tileRect)
+        const tile = this.generateOneSubtileExceptEdgeClips(upperTile, tileRect, nA, aMinX, aMinY, aMaxX, aMaxY)
         if (tile) {
           this.levels[z].set(childX0 + i, childY0 + j, tile)
         }
@@ -1341,7 +1374,15 @@ export class TileMap {
     return ret
   }
 
-  private generateOneSubtileExceptEdgeClips(upperTile: Tile, tileRect: Rectangle): Tile {
+  private generateOneSubtileExceptEdgeClips(
+    upperTile: Tile,
+    tileRect: Rectangle,
+    nA: number,
+    aMinX: Float64Array | null,
+    aMinY: Float64Array | null,
+    aMaxX: Float64Array | null,
+    aMaxY: Float64Array | null,
+  ): Tile {
     const tile = new Tile(tileRect)
 
     for (const n of upperTile.nodes) {
@@ -1356,13 +1397,11 @@ export class TileMap {
       }
     }
 
-    for (const arrowhead of upperTile.arrowheads) {
-      const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
-      const d = arrowhead.tip.sub(arrowhead.base).div(3)
-      const dRotated = d.rotate90Cw()
-      arrowheadBox.add(arrowhead.base.add(dRotated))
-      arrowheadBox.add(arrowhead.base.sub(dRotated))
-      if (arrowheadBox.intersects(tileRect)) tile.arrowheads.push(arrowhead)
+    const sL = tileRect.left, sR = tileRect.right, sB = tileRect.bottom, sT = tileRect.top
+    for (let ai = 0; ai < nA; ai++) {
+      if (aMaxX[ai] < sL || aMinX[ai] > sR) continue
+      if (aMaxY[ai] < sB || aMinY[ai] > sT) continue
+      tile.arrowheads.push(upperTile.arrowheads[ai])
     }
     if (tile.isEmpty()) return null
     return tile
