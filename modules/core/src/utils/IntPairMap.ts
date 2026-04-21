@@ -82,6 +82,18 @@ export class IntPairMap<T> {
       }
     }
   }
+
+  /** Allocation-free iteration: invokes `cb(x, y, value)` for every entry without
+   * allocating IntPair wrappers. Prefer over `keys()`/`keyValues()` in hot paths. */
+  forEach(cb: (x: number, y: number, value: T) => void): void {
+    for (let i = 0; i < this.arrayOfMaps.length; i++) {
+      const map = this.arrayOfMaps[i]
+      if (map === undefined) continue
+      for (const p of map) {
+        cb(i, p[0], p[1])
+      }
+    }
+  }
   get size() {
     let r = 0
     for (let i = 0; i < this.arrayOfMaps.length; i++) {
