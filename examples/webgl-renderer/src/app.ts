@@ -92,6 +92,28 @@ dropZone('drop-target', async (f: File) => {
   updateRender(graph)
   document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
 })
+
+// URL input: load a graph from an arbitrary URL on Enter
+const urlInput = <HTMLInputElement>document.getElementById('url-input')
+if (urlInput) {
+  // Prevent clicks on the input from triggering the drop-target's file dialog
+  urlInput.addEventListener('click', (evt) => evt.stopPropagation())
+  urlInput.addEventListener('mousedown', (evt) => evt.stopPropagation())
+  urlInput.addEventListener('keydown', async (evt) => {
+    if (evt.key !== 'Enter') return
+    const url = urlInput.value.trim()
+    if (!url) return
+    try {
+      const graph = await loadGraphFromUrl(url)
+      updateRender(graph)
+      document.getElementById('graph-name').innerText =
+        graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+    } catch (e) {
+      console.error('Failed to load graph from URL:', url, e)
+      alert('Failed to load graph from URL: ' + (e as Error).message)
+    }
+  })
+}
 ;(async () => {
   const graph = await loadGraphFromUrl(defaultGraph)
   const hasGeom = geometryIsCreated(graph)

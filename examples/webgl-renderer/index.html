@@ -23,6 +23,16 @@
         background: #fff;
         box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
       }
+      #url-input {
+        flex: 1;
+        margin: 0 12px;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        min-width: 200px;
+        cursor: text;
+      }
       #viewer {
         position: fixed;
         top: 50px;
@@ -90,6 +100,7 @@
         <path d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
       </svg>
       <span id="graph-name"></span>
+      <input id="url-input" type="url" placeholder="Paste graph URL (.gv / .json) and press Enter" spellcheck="false" />
     </div>
     <div id="viewer"></div>
     <div id="dot_files">
