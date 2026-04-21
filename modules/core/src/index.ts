@@ -11,6 +11,7 @@ export {
 } from './layout/core/geomGraph'
 export {createRectangleNodeOnData} from './math/geometry/RTree/rectangleNode'
 export {CurveClip, TileMap} from './layout/core/tileMap'
+export {serializeTileMap, deserializeTileMap, TileMapDTO} from './layout/core/tileMapSerializer'
 export {Bundle, Tile as TileData} from './layout/core/tile'
 export {GeomLabel} from './layout/core/geomLabel'
 export {GeomNode} from './layout/core/geomNode'

@@ -106,6 +106,11 @@ export class TileMap {
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
+  /** Number of built levels (== levels.length). */
+  get numberOfLevels(): number {
+    return this.levels.length
+  }
+
   private pageRank: Map<Node, number> | null
 
   /** the more rank is the more important the entity is */

@@ -212,13 +212,21 @@ export default class Renderer extends EventSource {
     }
   }
 
+  private _prebuiltTileMap: TileMap | null = null
+
   private async _layoutGraph(forceUpdate: boolean) {
     const t0 = performance.now()
     if (this._layoutWorkerUrl) {
       console.log('layout on worker')
-      this._graph = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate)
+      const res = await layoutGraphOnWorker(this._layoutWorkerUrl, this._graph, this._layoutOptions, forceUpdate, {
+        buildTiles: true,
+        maxLevels: 8,
+      })
+      this._graph = res.graph
+      this._prebuiltTileMap = res.tileMap
     } else {
       layoutGraph(this._graph, this._layoutOptions, forceUpdate)
+      this._prebuiltTileMap = null
     }
 
     if (this._deck.layerManager) {
@@ -254,8 +262,17 @@ export default class Renderer extends EventSource {
       right: boundingBox.right + (rootTileSize - boundingBox.width) / 2,
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
-    const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(8) // MaxZoom - startZoom)
+    let tileMap: TileMap
+    let numberOfLevels: number
+    if (this._prebuiltTileMap) {
+      tileMap = this._prebuiltTileMap
+      numberOfLevels = tileMap.numberOfLevels
+      this._prebuiltTileMap = null
+      console.log('using pre-built tileMap from worker')
+    } else {
+      tileMap = new TileMap(geomGraph, rootTile)
+      numberOfLevels = tileMap.buildUpToLevel(8) // MaxZoom - startZoom)
+    }
     console.timeEnd('Generate tiles')
 
     console.time('initial render')

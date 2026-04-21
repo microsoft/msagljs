@@ -9,6 +9,9 @@ import {
   LayerDirectionEnum,
   FastIncrementalLayoutSettings,
   ILayoutSettings,
+  TileMap,
+  TileMapDTO,
+  deserializeTileMap,
 } from '@msagl/core'
 
 import {parseJSON, graphToJSON} from '@msagl/parser'
@@ -18,7 +21,15 @@ import {DrawingGraph} from '@msagl/drawing'
 let layoutWorker: Worker = null
 let layoutInProgress = false
 
-export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, options: LayoutOptions, forceUpdate = false): Promise<Graph> {
+export type LayoutWorkerResult = {graph: Graph; tileMap: TileMap | null}
+
+export async function layoutGraphOnWorker(
+  workerUrl: string,
+  graph: Graph,
+  options: LayoutOptions,
+  forceUpdate = false,
+  opts: {buildTiles?: boolean; maxLevels?: number} = {},
+): Promise<LayoutWorkerResult> {
   if (layoutInProgress && layoutWorker) {
     // Supersede the in-flight request. Clear handlers first so terminate()
     // does not fire our onerror and reject the (now abandoned) promise — that
@@ -56,7 +67,18 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
           // EdgeRoutingMode (Corridor, etc.) as the main-thread-only path.
           applyLayoutSettings(graph, options)
 
-          resolve(graph)
+          let tileMap: TileMap | null = null
+          if (data.tileMap) {
+            try {
+              tileMap = deserializeTileMap(graph, data.tileMap as TileMapDTO)
+              console.debug('tileMap hydrated', Date.now() - data.timestamp + ' ms')
+            } catch (err) {
+              console.error('tileMap hydrate failed; renderer will build on main thread', err)
+              tileMap = null
+            }
+          }
+
+          resolve({graph, tileMap})
         } catch (err) {
           reject(err.message)
         }
@@ -73,6 +95,8 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
       graph: graphToJSON(graph),
       options,
       forceUpdate,
+      buildTiles: opts.buildTiles === true,
+      maxLevels: opts.maxLevels ?? 8,
     })
     layoutInProgress = true
   })
