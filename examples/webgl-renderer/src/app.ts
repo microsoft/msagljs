@@ -18,9 +18,9 @@ import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/gameofthrones.json'
 //const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/badvoro.gv'
 /// Debug on main thread
-const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
+// const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 /// Test worker with local build
-// const renderer = new WebGLRenderer(document.getElementById('viewer'), './worker.js')
+const renderer = new WebGLRenderer(document.getElementById('viewer'), './worker.js')
 /// Test published version
 //const renderer = new WebGLRenderer(document.getElementById('viewer'), 'https://unpkg.com/@msagl/renderer-webgl@latest/dist/worker.min.js')
 renderer.addControl(new SearchControl())
