@@ -121,7 +121,9 @@ export class TileMap {
 
     function addEdgeToTiles(e: Edge) {
       const geomEdge = GeomEdge.getGeom(e)
-      const c = GeomEdge.getGeom(e).curve
+      if (geomEdge == null) return
+      const c = geomEdge.curve
+      if (c == null) return
       if (c instanceof Curve) {
         for (const seg of c.segs) {
           topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
