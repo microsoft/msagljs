@@ -46,7 +46,7 @@ export {debugCurvesToSvg, installBrowserDebugCurvesDownloader} from './math/geom
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {CancelToken} from './utils/cancelToken'
-export {CurveFactory, interpolateICurve, Point, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
+export {CurveFactory, interpolateICurve, Point, PointArray, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
 export {LayerDirectionEnum} from './layout/layered/layerDirectionEnum'
 export {
   layoutGeomGraph,
