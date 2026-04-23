@@ -9,7 +9,7 @@
  * classes for individual corridor queries; the batch router uses
  * per-source Dijkstra trees for best amortized performance.
  */
-import {Point, TriangleOrientation} from '../math/geometry/point'
+import {distPP, Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
 import {Rectangle} from '../math/geometry/rectangle'
 import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
@@ -283,31 +283,6 @@ export function findContainingTriangle(cdt: Cdt, point: Point): CdtTriangle | nu
   return null
 }
 
-/** Centroid of a CDT triangle */
-function triangleCentroid(t: CdtTriangle): Point {
-  const a = t.Sites.item0.point
-  const b = t.Sites.item1.point
-  const c = t.Sites.item2.point
-  return new Point((a.x + b.x + c.x) / 3, (a.y + b.y + c.y) / 3)
-}
-
-/** Check if we can cross this edge.
- *  Non-constrained edges are always crossable.
- *  Constrained edges are crossable as long as we don't enter an
- *  obstacle interior — that check happens via triangleIsInsideObstacle. */
-function canCrossEdge(e: CdtEdge, _allowedPolys: Set<Polyline>): boolean {
-  // The obstacle-interior check on the neighbor triangle (triangleIsInsideObstacle)
-  // is sufficient to prevent entering obstacles. Blocking constrained edge
-  // crossings here is too restrictive — it prevents routing through free-space
-  // channels between touching obstacles.
-  return true
-}
-
-/** Midpoint of a CDT edge */
-function edgeMidpoint(e: CdtEdge): Point {
-  return e.lowerSite.point.add(e.upperSite.point).mul(0.5)
-}
-
 /** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
  *  Uses pre-indexed triangle data and typed arrays for minimal GC. */
 function dijkstraTreeIndexed(
@@ -510,113 +485,6 @@ function findSleeveAStarIndexed(
   return null
 }
 
-// ── Legacy wrappers (used by corridorRoute for single-edge routing) ──
-function dijkstraTree(
-  sourceTriangle: CdtTriangle,
-  targetTriangles: Set<CdtTriangle>,
-  allowedPolys: Set<Polyline>,
-): Map<CdtTriangle, CdtEdge | undefined> {
-  const gScore = new Map<CdtTriangle, number>()
-  const cameFromEdge = new Map<CdtTriangle, CdtEdge | undefined>()
-
-  const open: {g: number; t: CdtTriangle; seq: number}[] = []
-  let seqCounter = 0
-  let remaining = targetTriangles.size
-
-  function heapPush(item: {g: number; t: CdtTriangle; seq: number}) {
-    open.push(item)
-    let i = open.length - 1
-    while (i > 0) {
-      const parent = (i - 1) >> 1
-      if (open[parent].g < item.g || (open[parent].g === item.g && open[parent].seq < item.seq)) break
-      open[i] = open[parent]
-      open[parent] = item
-      i = parent
-    }
-  }
-
-  function heapPop(): {g: number; t: CdtTriangle; seq: number} {
-    const top = open[0]
-    const last = open.pop()
-    if (open.length > 0) {
-      open[0] = last
-      let i = 0
-      while (true) {
-        let smallest = i
-        const l = 2 * i + 1
-        const r = 2 * i + 2
-        if (l < open.length && (open[l].g < open[smallest].g || (open[l].g === open[smallest].g && open[l].seq < open[smallest].seq)))
-          smallest = l
-        if (r < open.length && (open[r].g < open[smallest].g || (open[r].g === open[smallest].g && open[r].seq < open[smallest].seq)))
-          smallest = r
-        if (smallest === i) break
-        const tmp = open[i]
-        open[i] = open[smallest]
-        open[smallest] = tmp
-        i = smallest
-      }
-    }
-    return top
-  }
-
-  gScore.set(sourceTriangle, 0)
-  cameFromEdge.set(sourceTriangle, undefined)
-  heapPush({g: 0, t: sourceTriangle, seq: seqCounter++})
-
-  const foundTargets = new Set<CdtTriangle>()
-
-  while (open.length > 0 && remaining > 0) {
-    const current = heapPop()
-    const t = current.t
-
-    if (current.g > (gScore.get(t) ?? Infinity)) continue
-
-    if (targetTriangles.has(t) && !foundTargets.has(t)) {
-      foundTargets.add(t)
-      remaining--
-      if (remaining === 0) break
-    }
-
-    const edgeIntoT = cameFromEdge.get(t)
-    // Entry point: midpoint of entering edge, or source centroid for the first triangle
-    const entryPt = edgeIntoT ? edgeMidpoint(edgeIntoT) : triangleCentroid(t)
-
-    for (const e of t.Edges) {
-      if (edgeIntoT !== undefined && e === edgeIntoT) continue
-      const ot = e.GetOtherTriangle_T(t)
-      if (ot == null) continue
-      if (triangleIsInsideObstacle(ot, allowedPolys)) {
-        if (targetTriangles.has(ot) && !foundTargets.has(ot)) {
-          const exitPt = edgeMidpoint(e)
-          const edgeCost = entryPt.sub(exitPt).length
-          const tentativeG = current.g + edgeCost
-          const prevG = gScore.get(ot)
-          if (prevG === undefined || tentativeG < prevG) {
-            gScore.set(ot, tentativeG)
-            cameFromEdge.set(ot, e)
-            // Don't push to open — this is a terminal node
-            foundTargets.add(ot)
-            remaining--
-          }
-        }
-        continue
-      }
-
-      const exitPt = edgeMidpoint(e)
-      const edgeCost = entryPt.sub(exitPt).length
-      const tentativeG = current.g + edgeCost
-
-      const prevG = gScore.get(ot)
-      if (prevG !== undefined && tentativeG >= prevG) continue
-
-      gScore.set(ot, tentativeG)
-      cameFromEdge.set(ot, e)
-      heapPush({g: tentativeG, t: ot, seq: seqCounter++})
-    }
-  }
-  return cameFromEdge
-}
-
 /** A* on the CDT dual graph from sourceTriangle to the triangle containing target.
  *  Uses Euclidean distance between triangle centroids for edge weights
  *  and straight-line distance to target as heuristic.
@@ -626,7 +494,6 @@ export function findSleeveAStar(
   target: Point,
   allowedPolys: Set<Polyline>,
 ): FrontEdge[] | null {
-  // priority queue entry: [f-score, triangle, insertion-order (tiebreak)]
   const gScore = new Map<CdtTriangle, number>()
   const cameFromEdge = new Map<CdtTriangle, CdtEdge | undefined>()
 
@@ -670,8 +537,11 @@ export function findSleeveAStar(
     return top
   }
 
-  const sourceCentroid = triangleCentroid(sourceTriangle)
-  const h0 = sourceCentroid.sub(target).length
+  const tx = target.x, ty = target.y
+  const sa = sourceTriangle.Sites.item0.point, sb = sourceTriangle.Sites.item1.point, sc = sourceTriangle.Sites.item2.point
+  const scx = (sa.x + sb.x + sc.x) / 3, scy = (sa.y + sb.y + sc.y) / 3
+  const dx0 = scx - tx, dy0 = scy - ty
+  const h0 = Math.sqrt(dx0 * dx0 + dy0 * dy0)
   gScore.set(sourceTriangle, 0)
   cameFromEdge.set(sourceTriangle, undefined)
   heapPush({f: h0, g: 0, t: sourceTriangle, seq: seqCounter++})
@@ -688,27 +558,36 @@ export function findSleeveAStar(
     }
 
     const edgeIntoT = cameFromEdge.get(t)
-    const entryPt = edgeIntoT ? edgeMidpoint(edgeIntoT) : triangleCentroid(t)
+    // Compute entry point coordinates inline (no Point allocation)
+    let entryX: number, entryY: number
+    if (edgeIntoT) {
+      entryX = (edgeIntoT.lowerSite.point.x + edgeIntoT.upperSite.point.x) * 0.5
+      entryY = (edgeIntoT.lowerSite.point.y + edgeIntoT.upperSite.point.y) * 0.5
+    } else {
+      const a = t.Sites.item0.point, b = t.Sites.item1.point, c = t.Sites.item2.point
+      entryX = (a.x + b.x + c.x) / 3
+      entryY = (a.y + b.y + c.y) / 3
+    }
 
     for (const e of t.Edges) {
-      if (!canCrossEdge(e, allowedPolys)) continue
       if (edgeIntoT !== undefined && e === edgeIntoT) continue
       const ot = e.GetOtherTriangle_T(t)
       if (ot == null) continue
-      // Allow entering an obstacle triangle if it contains the target
       if (triangleIsInsideObstacle(ot, allowedPolys) && !ot.containsPoint(target)) continue
 
-      const exitPt = edgeMidpoint(e)
-      const edgeCost = entryPt.sub(exitPt).length
-      const tentativeG = current.g + edgeCost
+      // Edge midpoint inline
+      const mx = (e.lowerSite.point.x + e.upperSite.point.x) * 0.5
+      const my = (e.lowerSite.point.y + e.upperSite.point.y) * 0.5
+      const dx = entryX - mx, dy = entryY - my
+      const tentativeG = current.g + Math.sqrt(dx * dx + dy * dy)
 
       const prevG = gScore.get(ot)
       if (prevG !== undefined && tentativeG >= prevG) continue
 
       gScore.set(ot, tentativeG)
       cameFromEdge.set(ot, e)
-      const h = exitPt.sub(target).length
-      heapPush({f: tentativeG + h, g: tentativeG, t: ot, seq: seqCounter++})
+      const hx = mx - tx, hy = my - ty
+      heapPush({f: tentativeG + Math.sqrt(hx * hx + hy * hy), g: tentativeG, t: ot, seq: seqCounter++})
     }
   }
   return null
@@ -771,7 +650,7 @@ export function sleeveToDiagonals(
   function uniqueChain(chain: {pt: Point; site: CdtSite; idx: number}[]): {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] {
     const result: {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] = []
     for (const c of chain) {
-      if (result.length === 0 || result[result.length - 1].pt.sub(c.pt).length > 1e-8) {
+      if (result.length === 0 || distPP(result[result.length - 1].pt, c.pt) > 1e-8) {
         result.push({pt: c.pt, site: c.site, firstIdx: c.idx, lastIdx: c.idx})
       } else {
         result[result.length - 1].lastIdx = c.idx
@@ -848,7 +727,7 @@ export function sleeveToDiagonals(
       rightPt = collapseTarget.center
 
     // Skip degenerate
-    if (leftPt.sub(rightPt).length < 1e-8) continue
+    if (distPP(leftPt, rightPt) < 1e-8) continue
 
     diagonals.push({left: leftPt, right: rightPt})
   }
@@ -1516,7 +1395,7 @@ function smoothOneCorner(a: CornerSite, c: CornerSite, b: CornerSite, loosePaddi
 
   function distFromCornerToSeg(): number {
     const t = seg.closestParameter(b.point)
-    return b.point.sub(seg.value(t)).length
+    return distPP(b.point, seg.value(t))
   }
 }
 
