@@ -102,20 +102,13 @@ export class Point {
     return Point.close(a, b, GeomConstants.intersectionEpsilon)
   }
   get l1() {
-    return Math.abs(this.x_) + Math.abs(this.y_)
+    return Math.abs(this.x) + Math.abs(this.y)
   }
   dot(a: Point): number {
     return this.x * a.x + this.y * a.y
   }
-  private x_: number
-  private y_: number
-
-  get x() {
-    return this.x_
-  }
-  get y() {
-    return this.y_
-  }
+  x: number
+  y: number
 
   compareTo(other: Point): number {
     const r = compareNumbers(this.x, other.x)
@@ -154,8 +147,8 @@ export class Point {
 
   constructor(x: number, y: number) {
     // Assert.assert(!(isNaN(x) || isNaN(y)))
-    this.x_ = x
-    this.y_ = y
+    this.x = x
+    this.y = y
   }
 
   static middle(a: Point, b: Point) {
