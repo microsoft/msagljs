@@ -177,6 +177,65 @@ export class Point {
     return new Point(-this.x, -this.y)
   }
 
+  // --- In-place mutation methods (avoid allocations in hot loops) ---
+
+  /** this += a; returns this */
+  addInPlace(a: Point): Point {
+    this.x += a.x
+    this.y += a.y
+    return this
+  }
+
+  /** this -= a; returns this */
+  subInPlace(a: Point): Point {
+    this.x -= a.x
+    this.y -= a.y
+    return this
+  }
+
+  /** this *= c; returns this */
+  mulInPlace(c: number): Point {
+    this.x *= c
+    this.y *= c
+    return this
+  }
+
+  /** this /= c; returns this */
+  divInPlace(c: number): Point {
+    this.x /= c
+    this.y /= c
+    return this
+  }
+
+  /** this = -this; returns this */
+  negInPlace(): Point {
+    this.x = -this.x
+    this.y = -this.y
+    return this
+  }
+
+  /** this = this / |this|; returns this */
+  normalizeInPlace(): Point {
+    const l = this.length
+    this.x /= l
+    this.y /= l
+    return this
+  }
+
+  /** Copy coordinates from another point; returns this */
+  copyFrom(a: Point): Point {
+    this.x = a.x
+    this.y = a.y
+    return this
+  }
+
+  /** Set coordinates; returns this */
+  set(x: number, y: number): Point {
+    this.x = x
+    this.y = y
+    return this
+  }
+
   static lineLineIntersection(a: Point, b: Point, c: Point, d: Point): Point | undefined {
     //look for the solution of the form a+u*(b-a)=c+v*(d-c)
     const ba = b.sub(a)
