@@ -1195,21 +1195,74 @@ function addOrGetNodeWithDrawingAttr(graph: Graph, id: string): Node {
   return node
 }
 
-export async function loadGraphFromFile(file: File): Promise<Graph> {
-  const content: string = await file.text()
-  let graph: Graph
-
-  if (file.name.toLowerCase().endsWith('.json')) {
-    graph = parseJSON(JSON.parse(content))
-  } else if (
-    file.name.toLowerCase().endsWith('.txt') ||
-    file.name.toLowerCase().endsWith('.tsv') ||
-    file.name.toLowerCase().endsWith('.csv')
-  ) {
-    graph = parseTXT(content)
-  } else {
-    graph = parseDot(content)
+/**
+ * Parse a graph from its textual content based on the (uncompressed) file name.
+ * Dispatches to JSON, TXT/TSV/CSV/MTX, or DOT parsers by extension.
+ */
+function parseGraphByName(name: string, content: string): Graph {
+  const lower = name.toLowerCase()
+  if (lower.endsWith('.json')) {
+    return parseJSON(JSON.parse(content))
   }
+  if (lower.endsWith('.txt') || lower.endsWith('.tsv') || lower.endsWith('.csv') || lower.endsWith('.mtx')) {
+    return parseTXT(content)
+  }
+  return parseDot(content)
+}
+
+/**
+ * Gunzip the given bytes using the browser / Node 18+ DecompressionStream API,
+ * returning the decoded UTF-8 string.
+ */
+async function gunzipToString(bytes: ArrayBuffer | Uint8Array): Promise<string> {
+  const DecompressionStreamCtor: any = (globalThis as any).DecompressionStream
+  if (typeof DecompressionStreamCtor !== 'function') {
+    throw new Error('Gzip decompression is not supported in this environment (DecompressionStream is unavailable).')
+  }
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
+  // Build a single-chunk ReadableStream from the bytes and pipe through gunzip.
+  const inputStream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(u8)
+      controller.close()
+    },
+  })
+  const decompressed = inputStream.pipeThrough(new DecompressionStreamCtor('gzip'))
+  const text = await new Response(decompressed).text()
+  return text
+}
+
+/** Gzip magic number is 0x1f 0x8b. */
+function isGzipped(bytes: Uint8Array): boolean {
+  return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b
+}
+
+/**
+ * Given raw bytes whose source was tagged as gzip (by filename or content-type),
+ * decode to text. Falls back to UTF-8 decoding if the bytes are not actually
+ * gzip-compressed — this happens when an HTTP server (or the browser) has
+ * already decoded a `Content-Encoding: gzip` response transparently.
+ */
+async function bytesToTextMaybeGunzip(buf: ArrayBuffer): Promise<string> {
+  const u8 = new Uint8Array(buf)
+  if (isGzipped(u8)) {
+    return gunzipToString(u8)
+  }
+  return new TextDecoder('utf-8').decode(u8)
+}
+
+/** Strip a trailing ".gz" (case-insensitive) from a file name if present. */
+function stripGz(name: string): {name: string; gzipped: boolean} {
+  if (name.toLowerCase().endsWith('.gz')) {
+    return {name: name.slice(0, -3), gzipped: true}
+  }
+  return {name, gzipped: false}
+}
+
+export async function loadGraphFromFile(file: File): Promise<Graph> {
+  const {name, gzipped} = stripGz(file.name)
+  const content: string = gzipped ? await bytesToTextMaybeGunzip(await file.arrayBuffer()) : await file.text()
+  const graph = parseGraphByName(name, content)
   if (graph) {
     graph.id = file.name
   }
@@ -1217,21 +1270,15 @@ export async function loadGraphFromFile(file: File): Promise<Graph> {
 }
 
 export async function loadGraphFromUrl(url: string): Promise<Graph> {
-  const fileName = url.slice(url.lastIndexOf('/') + 1)
+  const rawName = url.slice(url.lastIndexOf('/') + 1).split('?')[0].split('#')[0]
+  const {name, gzipped} = stripGz(rawName)
   const resp = await fetch(url)
-  let graph: Graph
-
-  if (fileName.endsWith('.json')) {
-    const json = await resp.json()
-    graph = parseJSON(json)
-  } else if (fileName.endsWith('.txt') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.mtx')) {
-    const content = await resp.text()
-    graph = parseTXT(content)
-  } else {
-    const content = await resp.text()
-    graph = parseDot(content)
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch ${url}: ${resp.status} ${resp.statusText}`)
   }
-  if (graph) graph.id = fileName
+  const content: string = gzipped ? await bytesToTextMaybeGunzip(await resp.arrayBuffer()) : await resp.text()
+  const graph = parseGraphByName(name, content)
+  if (graph) graph.id = rawName
   return graph
 }
 
@@ -1270,10 +1317,79 @@ type SimpleJSONGraph = {
 }
 
 export function parseJSON(json: JSONGraph | SimpleJSONGraph): Graph {
-  if ('nodes' in json) {
-    return parseSimpleJSON(json)
+  if (json == null || typeof json !== 'object') {
+    throw new Error('parseJSON: expected a JSON object')
   }
-  return parseJSONGraph(json)
+  // JSON Graph Format (JGF): https://github.com/jsongraph/json-graph-specification
+  // Shape: {"graph": {...}} (single) or {"graphs": [{...}, ...]} (multi).
+  if ('graph' in (json as any) && typeof (json as any).graph === 'object') {
+    return parseJGF((json as any).graph)
+  }
+  if ('graphs' in (json as any) && Array.isArray((json as any).graphs)) {
+    const gs = (json as any).graphs
+    if (gs.length === 0) throw new Error('JGF document has empty "graphs" array')
+    return parseJGF(gs[0])
+  }
+  if ('nodes' in json && Array.isArray((json as SimpleJSONGraph).nodes)) {
+    return parseSimpleJSON(json as SimpleJSONGraph)
+  }
+  return parseJSONGraph(json as JSONGraph)
+}
+
+/**
+ * Parse a single JGF graph object (the value of the top-level "graph" key).
+ * Supports both v1 (nodes as an object keyed by id) and v2 (nodes as an array
+ * of `{id, label?, metadata?}`). Edges are always an array of `{source, target,
+ * label?, relation?, directed?, metadata?}`. A graph-level `directed` flag
+ * provides the default edge direction.
+ */
+export function parseJGF(graphObj: any): Graph {
+  if (graphObj == null || typeof graphObj !== 'object') {
+    throw new Error('JGF: expected a graph object')
+  }
+  const simple: SimpleJSONGraph = {nodes: [], edges: []}
+
+  const rawNodes = graphObj.nodes
+  if (Array.isArray(rawNodes)) {
+    // JGF v2
+    for (const n of rawNodes) {
+      if (n == null || n.id == null) continue
+      simple.nodes.push({
+        id: String(n.id),
+        label: typeof n.label === 'string' ? n.label : undefined,
+      })
+    }
+  } else if (rawNodes && typeof rawNodes === 'object') {
+    // JGF v1: object keyed by node id
+    for (const id of Object.keys(rawNodes)) {
+      const n = rawNodes[id] || {}
+      simple.nodes.push({
+        id,
+        label: typeof n.label === 'string' ? n.label : undefined,
+      })
+    }
+  } else {
+    throw new Error('JGF: graph.nodes must be an object or array')
+  }
+
+  const graphDirected: boolean = graphObj.directed !== false // default true
+  const rawEdges = Array.isArray(graphObj.edges) ? graphObj.edges : []
+  for (const e of rawEdges) {
+    if (e == null || e.source == null || e.target == null) continue
+    simple.edges.push({
+      source: String(e.source),
+      target: String(e.target),
+      directed: typeof e.directed === 'boolean' ? e.directed : graphDirected,
+    })
+  }
+
+  const g = parseSimpleJSON(simple)
+  if (typeof graphObj.id === 'string' && graphObj.id) {
+    g.id = graphObj.id
+  } else if (typeof graphObj.label === 'string' && graphObj.label) {
+    g.id = graphObj.label
+  }
+  return g
 }
 
 export function parseSimpleJSON(json: SimpleJSONGraph): Graph {

@@ -91,6 +91,11 @@
       </svg>
       <span id="graph-name"></span>
     </div>
+    <div id="url-loader" style="position:fixed;top:0;left:50%;transform:translateX(-50%);line-height:50px;z-index:2;display:flex;align-items:center;gap:6px;">
+      <label for="graph-url" style="font-weight:bold;">URL:</label>
+      <input id="graph-url" type="url" placeholder="https://.../graph.json  (or .json.gz, .gv.gz, .txt.gz)" style="width:420px;padding:4px 6px;" />
+      <button id="load-url" type="button" style="padding:4px 10px;cursor:pointer;">Load</button>
+    </div>
     <div id="viewer"></div>
     <div id="dot_files">
       <label>Sample graphs ▼</label>

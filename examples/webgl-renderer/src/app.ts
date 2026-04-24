@@ -118,9 +118,46 @@ dropZone('drop-target', async (f: File) => {
     showError(`Failed to load file: ${msg}`)
   }
 })
+
+// URL loader: load graph from any http(s) URL, including .gz-compressed files
+async function loadFromUrlInput(url: string) {
+  if (!url) return
+  try {
+    const graph = await loadGraphFromUrl(url)
+    if (!graph) {
+      showError('Failed to parse graph from URL: ' + url)
+      return
+    }
+    updateRender(graph)
+    document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    showError(`Failed to load URL: ${msg}`)
+  }
+}
+const urlInput = <HTMLInputElement>document.getElementById('graph-url')
+const urlButton = <HTMLButtonElement>document.getElementById('load-url')
+urlButton.onclick = () => loadFromUrlInput(urlInput.value.trim())
+urlInput.onkeydown = (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    loadFromUrlInput(urlInput.value.trim())
+  }
+}
+// Support ?url=... query param for deep-linking to a graph
+{
+  const params = new URLSearchParams(window.location.search)
+  const linked = params.get('url')
+  if (linked) {
+    urlInput.value = linked
+  }
+}
 ;(async () => {
   try {
-    const graph = await loadGraphFromUrl(defaultGraph)
+    const params = new URLSearchParams(window.location.search)
+    const linked = params.get('url')
+    const src = linked || defaultGraph
+    const graph = await loadGraphFromUrl(src)
     const hasGeom = geometryIsCreated(graph)
     updateRender(graph, hasGeom ? null : getSettings())
     document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
