@@ -55,6 +55,9 @@ const tooltipStyle = {
   fontFamily: 'sans-serif',
   fontSize: '12px',
   pointerEvents: 'none',
+  // Offset the tooltip above and to the right of the cursor so the
+  // hand/pointer icon doesn't cover it.
+  transform: 'translate(12px, -110%)',
 } as const
 
 /**
