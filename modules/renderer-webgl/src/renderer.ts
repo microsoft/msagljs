@@ -56,8 +56,10 @@ const tooltipStyle = {
   fontSize: '12px',
   pointerEvents: 'none',
   // Offset the tooltip above and to the right of the cursor so the
-  // hand/pointer icon doesn't cover it.
-  transform: 'translate(12px, -110%)',
+  // hand/pointer icon doesn't cover it. deck.gl sets left/top to the
+  // hover pixel; margins shift the box from that origin.
+  marginLeft: '14px',
+  marginTop: '-32px',
 } as const
 
 /**
