@@ -8,7 +8,7 @@ import {DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, Edge, Node, TileMap, TileData, geometryIsCreated} from '@msagl/core'
+import {Graph, GeomGraph, Rectangle, GeomNode, GeomObject, Edge, Node, TileMap, TileData, geometryIsCreated} from '@msagl/core'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -121,14 +121,16 @@ export default class Renderer extends EventSource {
       },
       getTooltip: ({object}) => {
         if (object instanceof Edge) {
-          const s = nodeLabel(object.source)
-          const t = nodeLabel(object.target)
-          // Show label(s) of the one or two adjacent nodes. For a self-loop
-          // (source === target) we show only one label.
-          const html = s === t
-            ? `<div>${escapeHtml(s)}</div>`
-            : `<div><b>${escapeHtml(s)}</b> → <b>${escapeHtml(t)}</b></div>`
-          return {html, style: tooltipStyle}
+          const sVisible = this._isNodeVisible(object.source)
+          const tVisible = this._isNodeVisible(object.target)
+          // Only show labels for endpoints that are NOT visible on screen —
+          // if the user can already see a node, there's no need to name it.
+          if (sVisible && tVisible) return null
+          const parts: string[] = []
+          if (!sVisible) parts.push(`<b>${escapeHtml(nodeLabel(object.source))}</b>`)
+          if (!tVisible && object.target !== object.source) parts.push(`<b>${escapeHtml(nodeLabel(object.target))}</b>`)
+          if (parts.length === 0) return null
+          return {html: `<div>${parts.join(' → ')}</div>`, style: tooltipStyle}
         }
         if (object instanceof GeomNode) {
           return {html: `<div>${escapeHtml(nodeLabel(object.node))}</div>`, style: tooltipStyle}
@@ -257,6 +259,26 @@ export default class Renderer extends EventSource {
       })
       this._deck.layerManager.setNeedsRedraw('hightlight changed')
     }
+  }
+
+  private _isNodeVisible(node: Node): boolean {
+    const g = GeomObject.getGeom(node) as GeomNode | undefined
+    if (!g) return true // can't tell — assume visible, suppress tooltip
+    const viewports = this._deck?.getViewports?.()
+    if (!viewports || viewports.length === 0) return true
+    const [minX, minY, maxX, maxY] = viewports[0].getBounds()
+    const bb = g.boundingBox
+    if (!bb) {
+      const cx = g.center.x + this._graphOffset.x
+      const cy = g.center.y + this._graphOffset.y
+      return cx >= minX && cx <= maxX && cy >= minY && cy <= maxY
+    }
+    const nxMin = bb.left + this._graphOffset.x
+    const nxMax = bb.right + this._graphOffset.x
+    const nyMin = bb.bottom + this._graphOffset.y
+    const nyMax = bb.top + this._graphOffset.y
+    // Node is "visible" iff its bounding box intersects the viewport bounds.
+    return nxMax >= minX && nxMin <= maxX && nyMax >= minY && nyMin <= maxY
   }
 
   private async _layoutGraph(forceUpdate: boolean) {
