@@ -80,6 +80,7 @@ export default class Renderer extends EventSource {
   private _layoutWorkerUrl?: string
   private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
   private _graphOffset: {x: number; y: number} = {x: 0, y: 0}
+  private _tooltipEl: HTMLDivElement
 
   constructor(container: HTMLElement = document.body, layoutWorkerUrl?: string) {
     super()
@@ -103,6 +104,19 @@ export default class Renderer extends EventSource {
       return container.appendChild(c)
     })
 
+    // Custom tooltip overlay. `getTooltip` on `Deck` only fires on hover, which
+    // doesn't happen on touch devices (iOS etc.), so we manage our own element
+    // and update it from both onHover and onClick.
+    this._tooltipEl = document.createElement('div')
+    Object.assign(this._tooltipEl.style, {
+      position: 'absolute',
+      display: 'none',
+      pointerEvents: 'none',
+      zIndex: '3',
+      ...tooltipStyle,
+    })
+    divs[1].appendChild(this._tooltipEl)
+
     this._deck = new Deck({
       parent: divs[0],
       views: [new OrthographicView({flipY: false})],
@@ -117,30 +131,19 @@ export default class Renderer extends EventSource {
         this.emit('load')
         this._update()
       },
-      onClick: ({object}) => {
-        if (!object && this._highlightedNodeId) {
-          // deselect
-          this.highlight(null)
-          this._highlightedEdge = null
+      onClick: ({object, x, y}) => {
+        if (!object) {
+          if (this._highlightedNodeId) {
+            this.highlight(null)
+            this._highlightedEdge = null
+          }
+          this._hideTooltip()
+          return
         }
+        this._updateTooltip(object, x, y)
       },
-      getTooltip: ({object}) => {
-        if (object instanceof Edge) {
-          const sVisible = this._isNodeVisible(object.source)
-          const tVisible = this._isNodeVisible(object.target)
-          // Only show labels for endpoints that are NOT visible on screen —
-          // if the user can already see a node, there's no need to name it.
-          if (sVisible && tVisible) return null
-          const parts: string[] = []
-          if (!sVisible) parts.push(`<b>${escapeHtml(nodeLabel(object.source))}</b>`)
-          if (!tVisible && object.target !== object.source) parts.push(`<b>${escapeHtml(nodeLabel(object.target))}</b>`)
-          if (parts.length === 0) return null
-          return {html: `<div>${parts.join(' → ')}</div>`, style: tooltipStyle}
-        }
-        if (object instanceof GeomNode) {
-          return {html: `<div>${escapeHtml(nodeLabel(object.node))}</div>`, style: tooltipStyle}
-        }
-        return null
+      onHover: ({object, x, y}) => {
+        this._updateTooltip(object, x, y)
       },
     })
 
@@ -264,6 +267,44 @@ export default class Renderer extends EventSource {
       })
       this._deck.layerManager.setNeedsRedraw('hightlight changed')
     }
+  }
+
+  private _hideTooltip() {
+    this._tooltipEl.style.display = 'none'
+  }
+
+  private _tooltipHtmlForObject(object: unknown): string | null {
+    if (object instanceof Edge) {
+      const sVisible = this._isNodeVisible(object.source)
+      const tVisible = this._isNodeVisible(object.target)
+      // Only show labels for endpoints that are NOT visible on screen — if the
+      // user can already see a node, there's no need to name it.
+      if (sVisible && tVisible) return null
+      const parts: string[] = []
+      if (!sVisible) parts.push(`<b>${escapeHtml(nodeLabel(object.source))}</b>`)
+      if (!tVisible && object.target !== object.source) parts.push(`<b>${escapeHtml(nodeLabel(object.target))}</b>`)
+      if (parts.length === 0) return null
+      return parts.join(' → ')
+    }
+    if (object instanceof GeomNode) {
+      return escapeHtml(nodeLabel(object.node))
+    }
+    return null
+  }
+
+  private _updateTooltip(object: unknown, x: number, y: number) {
+    const html = this._tooltipHtmlForObject(object)
+    if (html == null) {
+      this._hideTooltip()
+      return
+    }
+    this._tooltipEl.innerHTML = html
+    this._tooltipEl.style.display = 'block'
+    // Position above-and-right of the pointer so the cursor/finger doesn't
+    // cover the text. The tooltip is attached to divs[1] which spans the full
+    // container, so (x,y) in container coords can be used directly.
+    this._tooltipEl.style.left = x + 'px'
+    this._tooltipEl.style.top = y + 'px'
   }
 
   private _isNodeVisible(node: Node): boolean {
