@@ -6,6 +6,19 @@ import {sortedList} from '../../core/test/layout/sortedBySizeListOfgvFiles'
 
 import {AttributeRegistry} from '../../core/src/structs/attributeRegistry'
 import {DrawingGraph, DrawingNode, Color, DrawingEdge} from '../../drawing/src'
+
+// File-like stub compatible with loadGraphFromFile (uses .name, .arrayBuffer(), .text()).
+// Node 18 does not expose `File` as a global, so we construct one locally.
+function makeFile(parts: Array<string | Uint8Array>, name: string): File {
+  const chunks = parts.map((p) => (typeof p === 'string' ? Buffer.from(p, 'utf-8') : Buffer.from(p)))
+  const buf = Buffer.concat(chunks)
+  return {
+    name,
+    arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+    text: async () => buf.toString('utf-8'),
+  } as unknown as File
+}
+
 function parseDotGraph(fileName: string, absolutePath = false): DrawingGraph {
   try {
     const fpath = absolutePath ? fileName : path.resolve(__dirname, '../../core/test/data', fileName)
@@ -74,7 +87,7 @@ test('loadGraphFromFile reads gzipped json', async () => {
     edges: [{source: 'a', target: 'b'}, {source: 'b', target: 'c'}],
   }
   const gz = zlib.gzipSync(Buffer.from(JSON.stringify(sample), 'utf-8'))
-  const file = new File([gz], 'sample.json.gz')
+  const file = makeFile([gz], 'sample.json.gz')
   const graph = await loadGraphFromFile(file)
   expect(graph).not.toBeNull()
   expect(graph.nodeCountDeep).toBe(3)
@@ -84,7 +97,7 @@ test('loadGraphFromFile reads gzipped json', async () => {
 
 test('loadGraphFromFile reads plain json', async () => {
   const sample = {nodes: [{id: 'x'}, {id: 'y'}], edges: [{source: 'x', target: 'y'}]}
-  const file = new File([JSON.stringify(sample)], 'plain.json')
+  const file = makeFile([JSON.stringify(sample)], 'plain.json')
   const graph = await loadGraphFromFile(file)
   expect(graph.nodeCountDeep).toBe(2)
   expect(graph.deepEdgesCount).toBe(1)
@@ -139,7 +152,7 @@ test('parseJSON handles JGF v1 (nodes as object, single "graph")', async () => {
       ],
     },
   }
-  const file = new File([JSON.stringify(jgf)], 'jgf.json')
+  const file = makeFile([JSON.stringify(jgf)], 'jgf.json')
   const graph = await loadGraphFromFile(file)
   expect(graph.nodeCountDeep).toBe(3)
   expect(graph.deepEdgesCount).toBe(2)
@@ -154,7 +167,7 @@ test('parseJSON handles JGF v2 (nodes as array)', async () => {
       edges: [{source: 'a', target: 'b'}, {source: 'b', target: 'c'}],
     },
   }
-  const file = new File([JSON.stringify(jgf)], 'jgf_v2.json')
+  const file = makeFile([JSON.stringify(jgf)], 'jgf_v2.json')
   const graph = await loadGraphFromFile(file)
   expect(graph.nodeCountDeep).toBe(3)
   expect(graph.deepEdgesCount).toBe(2)
@@ -167,7 +180,7 @@ test('parseJSON handles JGF multi-graph document (first graph wins)', async () =
       {id: 'g2', nodes: [{id: 'z'}], edges: []},
     ],
   }
-  const file = new File([JSON.stringify(jgf)], 'multi.json')
+  const file = makeFile([JSON.stringify(jgf)], 'multi.json')
   const graph = await loadGraphFromFile(file)
   expect(graph.nodeCountDeep).toBe(2)
   expect(graph.deepEdgesCount).toBe(1)
