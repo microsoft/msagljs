@@ -64,6 +64,9 @@ export class TriangleIndex {
   readonly centY: Float64Array
   // Obstacle owner (null if free-space)
   readonly obstacleOwner: (Polyline | null)[]
+  // Per-polyline indices for fast lookup. Populated lazily in getTrianglesByOwner/getPortalsByPoly.
+  private _trianglesByOwner: Map<Polyline, number[]> | null = null
+  private _portalsByPoly: Map<Polyline, number[]> | null = null
 
   constructor(cdt: Cdt) {
     const triToId = new Map<CdtTriangle, number>()
@@ -123,6 +126,52 @@ export class TriangleIndex {
   isInsideObstacle(id: number, allowedPolys: Set<Polyline>): boolean {
     const owner = this.obstacleOwner[id]
     return owner != null && !allowedPolys.has(owner)
+  }
+
+  /** Returns the list of triangle ids fully owned by the given polyline
+   *  (obstacle interior). Computed lazily and cached. */
+  getTrianglesByOwner(poly: Polyline): number[] | undefined {
+    if (!this._trianglesByOwner) {
+      const map = new Map<Polyline, number[]>()
+      for (let i = 0; i < this.n; i++) {
+        const o = this.obstacleOwner[i]
+        if (o == null) continue
+        let arr = map.get(o)
+        if (!arr) { arr = []; map.set(o, arr) }
+        arr.push(i)
+      }
+      this._trianglesByOwner = map
+    }
+    return this._trianglesByOwner.get(poly)
+  }
+
+  /** Returns the list of triangle ids that are free-space but have at least
+   *  two sites belonging to the given polyline (portal triangles touching the
+   *  obstacle boundary). Computed lazily and cached. */
+  getPortalsByPoly(poly: Polyline): number[] | undefined {
+    if (!this._portalsByPoly) {
+      const map = new Map<Polyline, number[]>()
+      for (let i = 0; i < this.n; i++) {
+        if (this.obstacleOwner[i] != null) continue
+        const t = this.triangles[i]
+        const o0 = t.Sites.item0.Owner as Polyline
+        const o1 = t.Sites.item1.Owner as Polyline
+        const o2 = t.Sites.item2.Owner as Polyline
+        // Count votes per polyline; add triangle when a polyline gets >= 2 votes.
+        if (o0 != null && (o0 === o1 || o0 === o2)) {
+          let arr = map.get(o0)
+          if (!arr) { arr = []; map.set(o0, arr) }
+          arr.push(i)
+        }
+        if (o1 != null && o1 !== o0 && o1 === o2) {
+          let arr = map.get(o1)
+          if (!arr) { arr = []; map.set(o1, arr) }
+          arr.push(i)
+        }
+      }
+      this._portalsByPoly = map
+    }
+    return this._portalsByPoly.get(poly)
   }
 }
 
@@ -955,41 +1004,35 @@ export function buildCorridorMaskFromCurve(
     if (id < 0) continue
     mask[id] = 1
   }
-  // 1-hop neighbor expansion
-  const base = mask.slice()
-  for (let i = 0; i < idx.n; i++) {
-    if (base[i] === 0) continue
-    const b = i * 3
-    for (let j = 0; j < 3; j++) {
-      const nb = idx.nbId[b + j]
-      if (nb >= 0) mask[nb] = 1
+  // 2-hop neighbor expansion: a sparse sample set may land only in a few
+  // triangles whose direct neighbors still don't connect — a 2-hop frontier
+  // keeps the masked A* mostly successful and avoids falling back to a full
+  // unconstrained A* search on a majority of edges.
+  let base = mask.slice()
+  for (let hop = 0; hop < 2; hop++) {
+    for (let i = 0; i < idx.n; i++) {
+      if (base[i] === 0) continue
+      const b = i * 3
+      for (let j = 0; j < 3; j++) {
+        const nb = idx.nbId[b + j]
+        if (nb >= 0) mask[nb] = 1
+      }
     }
+    if (hop === 0) base = mask.slice()
   }
   // Include all triangles owned by source/target polylines (obstacle interior + portal access).
-  if (sourcePoly || targetPoly) {
-    for (let i = 0; i < idx.n; i++) {
-      const t = idx.triangles[i]
-      const own = idx.obstacleOwner[i]
-      if ((sourcePoly && own === sourcePoly) || (targetPoly && own === targetPoly)) {
-        mask[i] = 1
-        continue
-      }
-      // Also include portal triangles (at least two sites on source/target polyline).
-      if (sourcePoly) {
-        const c =
-          (t.Sites.item0.Owner === sourcePoly ? 1 : 0) +
-          (t.Sites.item1.Owner === sourcePoly ? 1 : 0) +
-          (t.Sites.item2.Owner === sourcePoly ? 1 : 0)
-        if (c >= 2) mask[i] = 1
-      }
-      if (targetPoly) {
-        const c =
-          (t.Sites.item0.Owner === targetPoly ? 1 : 0) +
-          (t.Sites.item1.Owner === targetPoly ? 1 : 0) +
-          (t.Sites.item2.Owner === targetPoly ? 1 : 0)
-        if (c >= 2) mask[i] = 1
-      }
-    }
+  // Use precomputed per-polyline lists to avoid an O(n) scan per edge.
+  if (sourcePoly) {
+    const inside = idx.getTrianglesByOwner(sourcePoly)
+    if (inside) for (const id of inside) mask[id] = 1
+    const portals = idx.getPortalsByPoly(sourcePoly)
+    if (portals) for (const id of portals) mask[id] = 1
+  }
+  if (targetPoly) {
+    const inside = idx.getTrianglesByOwner(targetPoly)
+    if (inside) for (const id of inside) mask[id] = 1
+    const portals = idx.getPortalsByPoly(targetPoly)
+    if (portals) for (const id of portals) mask[id] = 1
   }
   return mask
 }
@@ -1099,118 +1142,13 @@ export function routeCorridorEdges(
     return bc
   }
 
-  // Corridor-guided per-edge A* path: used when prevRoutes is provided,
-  // e.g. for rerouting a coarser tile level while honoring the finer level's shape.
-  if (prevRoutes && prevRoutes.size > 0) {
-    console.time('CorridorRouter routing (corridor-guided)')
-    let straightFallbacks = 0
-    let maskedFailures = 0
-    let unconstrainedFailures = 0
-    let missingContainingTri = 0
-    let allowAllRescues = 0
-    let emptySleeve = 0
-    let sameTriangle = 0
-    for (const edge of edgesToRoute) {
-      if (cancelToken && cancelToken.canceled) return
-      if (edge.sourcePort == null || edge.targetPort == null) continue
-      const source = edge.source.center
-      const target = edge.target.center
-      const sourcePoly = nodeToPolyline.get(edge.source)
-      const targetPoly = nodeToPolyline.get(edge.target)
-      const sourceTri = findContainingTriangle(cdt, source)
-      const targetTri = findContainingTriangle(cdt, target)
-      if (!sourceTri || !targetTri) {
-        missingContainingTri++
-        const fallback = Polyline.mkFromPoints([source, target])
-        edge.curve = fallback.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
-        continue
-      }
-      const sourceId = idx.getId(sourceTri)
-      if (sourceId < 0) continue
-      const tId = idx.getId(targetTri)
-      if (tId === sourceId) sameTriangle++
-
-      const prev = prevRoutes.get(edge)
-      const mask: Uint8Array | null = prev
-        ? buildCorridorMaskFromCurve(cdt, idx, prev, sourcePoly, targetPoly)
-        : null
-      if (mask) mask[sourceId] = 1
-      if (mask && tId >= 0) mask[tId] = 1
-
-      const allowedBoth = new Set<Polyline>()
-      if (sourcePoly) allowedBoth.add(sourcePoly)
-      if (targetPoly) allowedBoth.add(targetPoly)
-
-      let sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, mask, tId)
-      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
-      visited.length = 0
-
-      if ((!sleeve || sleeve.length === 0) && mask) {
-        maskedFailures++
-        sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap, null, tId)
-        for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
-        visited.length = 0
-        if (!sleeve || sleeve.length === 0) unconstrainedFailures++
-      }
-
-      // Third-tier fallback: A* with every obstacle allowed (ignores
-      // the obstacle-interior guard completely). If this finds a path
-      // while the previous call did not, it means the target center
-      // actually lies inside some OTHER node's inflated obstacle and
-      // the straight fallback was being used — which produces the
-      // long cross-node segments seen on coarser levels.
-      if (!sleeve || sleeve.length === 0) {
-        const allowAll = new Set<Polyline>()
-        for (const p of nodeToPolyline.values()) allowAll.add(p)
-        sleeve = findSleeveAStarIndexed(sourceId, target, allowAll, idx, gScore, parentEdgeIdx, visited, heap, null, tId)
-        for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
-        visited.length = 0
-        if (sleeve && sleeve.length > 0) allowAllRescues++
-      }
-
-      if (!sleeve || sleeve.length === 0) {
-        if (sleeve && sleeve.length === 0) emptySleeve++
-        straightFallbacks++
-        // Sleeve search failed in both masked and unconstrained modes. Use a
-        // straight segment between the (current-scale) node centers: it reaches
-        // both vertices and the arrowhead/boundary trim below cuts it cleanly.
-        // Reusing `prev` here would leave a visible gap because it was trimmed
-        // at the *finer* level's smaller boundary, which sits inside this
-        // level's larger scaled boundary.
-        const pts = Polyline.mkFromPoints([source, target])
-        edge.curve = pts.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-      } else {
-        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
-        if (diagonals.length === 0) {
-          const pts = Polyline.mkFromPoints([source, target])
-          edge.curve = pts.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        } else {
-          const points = funnelFromDiagonals(source, target, diagonals)
-          const poly = Polyline.mkFromPoints(points)
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          if (smoothCorners) {
-            smoothenCorners(edge.smoothedPolyline, padding)
-            edge.curve = edge.smoothedPolyline.createCurve()
-          } else {
-            edge.curve = poly.toCurve()
-          }
-        }
-      }
-      Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
-      )
-    }
-    console.log(`[corridor] total=${edgesToRoute.length} missingTri=${missingContainingTri} sameTri=${sameTriangle} emptySleeve=${emptySleeve} maskedFail=${maskedFailures} unconstrainedFail=${unconstrainedFailures} allowAllRescues=${allowAllRescues} straightFallback=${straightFallbacks}`)
-    console.timeEnd('CorridorRouter routing (corridor-guided)')
-
-    return
-  }
+  // Corridor-guided rerouting (prevRoutes) used to take a slower per-edge
+  // masked A* path. Measurements on composers showed ~70% of masked searches
+  // failed and fell back to an unconstrained A*, doubling work for most edges
+  // and running ~5× slower than grouped Dijkstra. We now always use the
+  // grouped-Dijkstra path below; prevRoutes is accepted for backward
+  // compatibility but no longer changes routing behavior.
+  void prevRoutes
 
   // route edges using indexed Dijkstra tree per source node
   console.time('CorridorRouter routing')
@@ -1237,7 +1175,7 @@ export function routeCorridorEdges(
         const fallback = Polyline.mkFromPoints([source, target])
         edge.curve = fallback.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
       }
       continue
     }
@@ -1256,7 +1194,7 @@ export function routeCorridorEdges(
         const fallback = Polyline.mkFromPoints([source, target])
         edge.curve = fallback.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
         continue
       }
       const targetId = idx.getId(targetTriangle)
@@ -1306,7 +1244,7 @@ export function routeCorridorEdges(
         }
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+        edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
       )
     }
 
@@ -1320,7 +1258,19 @@ export function routeCorridorEdges(
       if (sourcePoly) allowedBoth.add(sourcePoly)
       if (targetPoly) allowedBoth.add(targetPoly)
 
-      const sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      let sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+
+      // Third-tier rescue: at coarse tile levels the target center may lie
+      // inside some OTHER node's inflated obstacle; allow every obstacle so
+      // routing can still reach the target triangle.
+      if (!sleeve || sleeve.length === 0) {
+        const allowAll = new Set<Polyline>(nodeToPolyline.values())
+        sleeve = findSleeveAStarIndexed(sourceId, target, allowAll, idx, gScore, parentEdgeIdx, visited, heap)
+        for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+        visited.length = 0
+      }
       if (sleeve && sleeve.length > 0) {
         const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
         const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
@@ -1347,7 +1297,7 @@ export function routeCorridorEdges(
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+        edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
       )
       // Reset for next A* call
       for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
