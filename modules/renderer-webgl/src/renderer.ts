@@ -3,12 +3,12 @@ import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
 // import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
-import {DrawingGraph} from '@msagl/drawing'
+import {DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
 
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, Edge, TileMap, TileData, geometryIsCreated} from '@msagl/core'
+import {Graph, GeomGraph, Rectangle, GeomNode, Edge, Node, TileMap, TileData, geometryIsCreated} from '@msagl/core'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -25,6 +25,37 @@ export interface IRendererControl {
 }
 
 const MaxZoom = 2
+
+/** Resolve a user-visible label for a node: its drawing `labelText` if any,
+ *  otherwise its `id`. */
+function nodeLabel(node: Node): string {
+  const d = DrawingObject.getDrawingObj(node) as DrawingNode | undefined
+  const t = d?.labelText
+  if (t && t.length > 0) return t
+  return node.id ?? ''
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => {
+    switch (c) {
+      case '&': return '&amp;'
+      case '<': return '&lt;'
+      case '>': return '&gt;'
+      case '"': return '&quot;'
+      default:  return '&#39;'
+    }
+  })
+}
+
+const tooltipStyle = {
+  background: 'rgba(30,30,30,0.9)',
+  color: '#fff',
+  padding: '4px 8px',
+  borderRadius: '4px',
+  fontFamily: 'sans-serif',
+  fontSize: '12px',
+  pointerEvents: 'none',
+} as const
 
 /**
  * Renders an MSAGL graph with WebGL
@@ -87,6 +118,22 @@ export default class Renderer extends EventSource {
           this.highlight(null)
           this._highlightedEdge = null
         }
+      },
+      getTooltip: ({object}) => {
+        if (object instanceof Edge) {
+          const s = nodeLabel(object.source)
+          const t = nodeLabel(object.target)
+          // Show label(s) of the one or two adjacent nodes. For a self-loop
+          // (source === target) we show only one label.
+          const html = s === t
+            ? `<div>${escapeHtml(s)}</div>`
+            : `<div><b>${escapeHtml(s)}</b> → <b>${escapeHtml(t)}</b></div>`
+          return {html, style: tooltipStyle}
+        }
+        if (object instanceof GeomNode) {
+          return {html: `<div>${escapeHtml(nodeLabel(object.node))}</div>`, style: tooltipStyle}
+        }
+        return null
       },
     })
 
