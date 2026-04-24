@@ -11,7 +11,7 @@ import type {Diagonal} from '@msagl/core'
 // DebugObject.dumpDebugCurves(fileName, curves) triggers an SVG download.
 installBrowserDebugCurvesDownloader()
 
-import {SAMPLE_DOT, ROUTING, LAYOUT, FONT, LARGE_GRAPHS} from './settings'
+import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
@@ -71,47 +71,6 @@ dotFileSelect.onchange = () => {
     updateRender(graph)
     document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
   })
-}
-
-// Large graph selector
-const largeGraphSelect = <HTMLSelectElement>document.getElementById('lg')
-{
-  const placeholder = document.createElement('option')
-  placeholder.value = ''
-  placeholder.innerText = '— select —'
-  placeholder.disabled = true
-  placeholder.selected = true
-  largeGraphSelect.appendChild(placeholder)
-}
-for (const g of LARGE_GRAPHS) {
-  const option = document.createElement('option')
-  option.value = g.url
-  option.innerText = g.name
-  largeGraphSelect.appendChild(option)
-}
-largeGraphSelect.onchange = async () => {
-  const url = largeGraphSelect.value
-  if (!url) return
-  hideError()
-  document.getElementById('graph-name').innerText = 'Loading…'
-  const settingsContainer = <HTMLDivElement>document.getElementById('settings')
-  settingsContainer.classList.add('disabled')
-  try {
-    const graph = await loadGraphFromUrl(url)
-    if (!graph) {
-      showError('Failed to parse graph file.')
-      settingsContainer.classList.remove('disabled')
-      return
-    }
-    document.getElementById('graph-name').innerText =
-      graph.id + ' (' + graph.nodeCountDeep + ' nodes, ' + graph.deepEdgesCount + ' edges)'
-    await updateRender(graph)
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    console.error('Large graph load failed:', e)
-    showError(`Failed to load graph: ${msg}`)
-    settingsContainer.classList.remove('disabled')
-  }
 }
 
 // Settings: edge routing

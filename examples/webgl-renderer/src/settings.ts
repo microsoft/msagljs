@@ -3,17 +3,6 @@ export const SAMPLE_DOT =
     ' ',
   )
 
-/** Large research graphs served from the local graphs/ directory. */
-export const LARGE_GRAPHS: {name: string; url: string}[] = [
-  {name: 'ca-GrQc (5K nodes, 14K edges)', url: 'graphs/ca-GrQc.json'},
-  {name: 'ca-HepTh (10K nodes, 26K edges)', url: 'graphs/ca-HepTh.json'},
-  {name: 'facebook (4K nodes, 88K edges)', url: 'graphs/facebook_combined.txt'},
-  {name: 'delaunay_n15 (33K nodes, 98K edges)', url: 'graphs/delaunay_n15/delaunay_n15.mtx'},
-  {name: 'deezer_europe (29K nodes, 93K edges)', url: 'graphs/deezer_europe/deezer_europe_edges.csv'},
-  {name: 'ca-CondMat (23K nodes, 187K edges)', url: 'graphs/ca-CondMat.txt'},
-  {name: 'ca-HepPh (12K nodes, 237K edges)', url: 'graphs/ca-HepPh.txt'},
-]
-
 export const ROUTING: {[value: string]: string} = {
   default: 'Default',
   splines: 'Splines',
