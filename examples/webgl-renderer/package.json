@@ -5,7 +5,7 @@
   "description": "Public demo for @msagl/core",
   "scripts": {
     "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
-    "build": "rm -rf ../../website/static/renderer-webgl/* && esbuild ./src/app.js --outfile=../../website/static/renderer-webgl/app.js --bundle --minify && cp index.html  spinner.gif ../../website/static/renderer-webgl"
+    "build": "rm -rf ../../website/static/renderer-webgl/* && esbuild ./src/app.js --outfile=../../website/static/renderer-webgl/app.js --bundle --minify && esbuild ./src/worker.ts --outfile=../../website/static/renderer-webgl/worker.js --bundle --minify && cp index.html  spinner.gif ../../website/static/renderer-webgl"
   },
   "author": "xiac@microsoft.com",
   "license": "MIT",
