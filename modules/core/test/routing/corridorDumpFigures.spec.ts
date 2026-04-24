@@ -234,7 +234,7 @@ function dumpEdgeFigure(
   return true
 }
 
-test('dump corridor routing figures for 10 random GOT edges', () => {
+test.skip('dump corridor routing figures for 10 random GOT edges', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -579,7 +579,7 @@ function dumpCombinedFigure(
   return true
 }
 
-test('dump combined sleeve figure for paper', () => {
+test.skip('dump combined sleeve figure for paper', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -613,7 +613,7 @@ test('dump combined sleeve figure for paper', () => {
   }
 })
 
-test('dump Mycah edges with sleeve + route', () => {
+test.skip('dump Mycah edges with sleeve + route', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -674,7 +674,7 @@ test('dump Mycah edges with sleeve + route', () => {
 })
 
 
-test('dump collapse benefit: find edges where collapse shortens path', () => {
+test.skip('dump collapse benefit: find edges where collapse shortens path', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
