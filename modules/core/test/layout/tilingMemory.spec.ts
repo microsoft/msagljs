@@ -14,7 +14,6 @@ import {
   TileMap,
   TileData,
   Rectangle,
-  routeCorridorEdgesHL,
 } from '@msagl/core'
 import {EdgeRoutingMode} from '../../src/routing/EdgeRoutingMode'
 
@@ -191,19 +190,20 @@ describe.skip('Tiling memory analysis for ca-CondMat', () => {
     log(`Total est. memory for tile data: ${formatBytes(cumElems1 * BYTES_PER_ELEMENT)}`)
     log('')
 
-    // --- Re-route with CH + HubLabels ---
-    log('--- 4. Re-routing with CH + HubLabels ---')
+    // --- Re-route with Dijkstra (HL routing removed) ---
+    log('--- 4. Re-routing with Dijkstra (CH+HL removed) ---')
     const edgesToRoute = Array.from(gg.deepEdges)
     const rss3 = getRSSMB()
     const t3 = performance.now()
-    routeCorridorEdgesHL(gg, edgesToRoute, null, 2, false)
+    // No-op placeholder: keep the existing curves as produced by layoutGraphWithMds above.
+    void edgesToRoute
     const hlTime = performance.now() - t3
-    log(`CH+HL routing: ${hlTime.toFixed(0)}ms for ${edgesToRoute.length} edges`)
-    log(`RSS after HL routing: ${getRSSMB().toFixed(0)} MB (delta +${(getRSSMB() - rss3).toFixed(0)} MB)`)
+    log(`(skipped) routing time: ${hlTime.toFixed(0)}ms for ${edgesToRoute.length} edges`)
+    log(`RSS after re-routing: ${getRSSMB().toFixed(0)} MB (delta +${(getRSSMB() - rss3).toFixed(0)} MB)`)
     log('')
 
-    // --- Tiling with HL-routed curves ---
-    log('--- 5. Tiling (after HL routing, tileCapacity=1, up to 7 levels) ---')
+    // --- Tiling after re-routing ---
+    log('--- 5. Tiling (after re-routing, tileCapacity=1, up to 7 levels) ---')
     const rootTile2 = makeRootTile(bb)
     const rss4 = getRSSMB()
     const tileMap2 = new TileMap(gg, rootTile2, 1)
@@ -222,9 +222,9 @@ describe.skip('Tiling memory analysis for ca-CondMat', () => {
     log('  Summary')
     log('================================================================')
     log(`  Dijkstra routing:  ${layoutTime.toFixed(0)}ms, tiling: ${tileTime1.toFixed(0)}ms`)
-    log(`  CH+HL routing:     ${hlTime.toFixed(0)}ms, tiling: ${tileTime2.toFixed(0)}ms`)
-    log(`  Tile elements (Dijkstra): ${cumElems1}, est. ${formatBytes(cumElems1 * BYTES_PER_ELEMENT)}`)
-    log(`  Tile elements (CH+HL):    ${cumElems2}, est. ${formatBytes(cumElems2 * BYTES_PER_ELEMENT)}`)
+    log(`  Re-route (skipped): ${hlTime.toFixed(0)}ms, tiling: ${tileTime2.toFixed(0)}ms`)
+    log(`  Tile elements (initial):  ${cumElems1}, est. ${formatBytes(cumElems1 * BYTES_PER_ELEMENT)}`)
+    log(`  Tile elements (re-route): ${cumElems2}, est. ${formatBytes(cumElems2 * BYTES_PER_ELEMENT)}`)
     log(`  Final RSS: ${getRSSMB().toFixed(0)} MB`)
     log('')
 

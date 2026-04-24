@@ -3,11 +3,6 @@
  * bypassing the cone spanner / visibility graph.
  *
  * Pipeline: CDT → Dijkstra tree on dual graph → sleeve → funnel → polyline
- *
- * Contraction Hierarchies + Hub-Based Labeling (Abraham et al.,
- * MSR-TR-2010-165) are available via ContractionHierarchy and HubLabels
- * classes for individual corridor queries; the batch router uses
- * per-source Dijkstra trees for best amortized performance.
  */
 import {distPP, Point, TriangleOrientation} from '../math/geometry/point'
 import {Polyline} from '../math/geometry/polyline'
@@ -30,8 +25,6 @@ import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
 import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
-import {ContractionHierarchy, freeSpaceFilter} from './contractionHierarchy'
-import {HubLabels} from './hubLabels'
 import {ShapeCreator} from './ShapeCreator'
 import {Shape} from './shape'
 import {RelativeShape} from './RelativeShape'
@@ -175,85 +168,7 @@ export class TriangleIndex {
   }
 }
 
-// ── Portal triangle helpers ─────────────────────────────────────────
-
-/** Find portal triangles for an obstacle: free-space CDT triangles
- *  that share an edge with the obstacle boundary (at least two vertices
- *  belong to the obstacle polyline). */
-export function findPortalTriangles(idx: TriangleIndex, obstaclePoly: Polyline): number[] {
-  const portals: number[] = []
-  for (let i = 0; i < idx.n; i++) {
-    if (idx.obstacleOwner[i] != null) continue
-    const t = idx.triangles[i]
-    const count =
-      (t.Sites.item0.Owner === obstaclePoly ? 1 : 0) +
-      (t.Sites.item1.Owner === obstaclePoly ? 1 : 0) +
-      (t.Sites.item2.Owner === obstaclePoly ? 1 : 0)
-    if (count >= 2) {
-      portals.push(i)
-    }
-  }
-  return portals
-}
-
-/** BFS from one triangle to another, restricted to obstacle interior
- *  triangles of the given polyline (plus the endpoints themselves).
- *  Returns the sleeve (FrontEdge[]) for the short interior path. */
-function findInteriorPath(
-  idx: TriangleIndex,
-  fromId: number,
-  toId: number,
-  obstaclePoly: Polyline,
-): FrontEdge[] {
-  if (fromId === toId) return []
-
-  // Direct neighbor check (common case)
-  const fromBase = fromId * 3
-  for (let j = 0; j < 3; j++) {
-    if (idx.nbId[fromBase + j] === toId) {
-      return [{source: idx.triangles[fromId], edge: idx.nbEdge[fromBase + j]!}]
-    }
-  }
-
-  // BFS restricted to interior triangles of obstaclePoly + the target
-  const parentOf = new Map<number, number>()
-  const parentEdge = new Map<number, CdtEdge>()
-  const vis = new Set<number>()
-  vis.add(fromId)
-  const queue: number[] = [fromId]
-
-  let found = false
-  while (queue.length > 0 && !found) {
-    const cur = queue.shift()!
-    const curBase = cur * 3
-    for (let j = 0; j < 3; j++) {
-      const nb = idx.nbId[curBase + j]
-      if (nb < 0 || vis.has(nb)) continue
-      if (nb !== toId && idx.obstacleOwner[nb] !== obstaclePoly) continue
-      vis.add(nb)
-      parentOf.set(nb, cur)
-      parentEdge.set(nb, idx.nbEdge[curBase + j]!)
-      if (nb === toId) {
-        found = true
-        break
-      }
-      queue.push(nb)
-    }
-  }
-
-  if (!found) return []
-
-  const sleeve: FrontEdge[] = []
-  let cur = toId
-  while (cur !== fromId) {
-    const p = parentOf.get(cur)
-    const e = parentEdge.get(cur)
-    if (p === undefined || !e) break
-    sleeve.push({source: idx.triangles[p], edge: e})
-    cur = p
-  }
-  return sleeve.reverse()
-}
+// ── Flat min-heap ───────────────────────────────────────────────────
 
 /** Flat min-heap on pre-allocated typed arrays (zero GC pressure). */
 class FlatMinHeap {
@@ -1362,7 +1277,7 @@ function smoothOneCorner(a: CornerSite, c: CornerSite, b: CornerSite, loosePaddi
   }
 }
 
-// ── Hub-Labels–based corridor routing ───────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────
 
 /** Set a straight-line fallback on an edge. */
 function setStraightLine(edge: GeomEdge, source: Point, target: Point): void {
@@ -1371,178 +1286,6 @@ function setStraightLine(edge: GeomEdge, source: Point, target: Point): void {
   edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
 }
 
-type PortalInfo = {triIdx: number; chIdx: number}
-
-/** Route all edges using the corridor approach with Hub Labels.
- *
- *  Instead of per-source Dijkstra on the full CDT, this approach:
- *  1. Builds CH + hub labels on the **free-space** CDT (no obstacle interiors).
- *  2. For each graph node, identifies its **portal triangles** — free-space
- *     CDT triangles adjacent to the obstacle boundary.
- *  3. For each edge w→u, queries HL for all (w_i, u_j) portal pairs,
- *     picks the shortest, recovers the corridor, and extends to centers.
- *
- *  This avoids the allowedPolys per-query issue: free-space CH/HL is
- *  valid for all queries since obstacle interiors are excluded. */
-export function routeCorridorEdgesHL(
-  geomGraph: GeomGraph,
-  edgesToRoute: GeomEdge[],
-  cancelToken: CancelToken,
-  padding = 2,
-  smoothCorners = false,
-): void {
-  if (!edgesToRoute || edgesToRoute.length === 0) return
-
-  // Ensure ports exist
-  ensurePorts(edgesToRoute)
-
-  // Build padded obstacle polylines
-  const nodeToPolyline = new Map<unknown, Polyline>()
-  const obstacles: Polyline[] = []
-  const bb = Rectangle.mkEmpty()
-  for (const node of geomGraph.nodesBreadthFirst) {
-    if (cancelToken && cancelToken.canceled) return
-    if (node.boundaryCurve == null) continue
-    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
-    nodeToPolyline.set(node, poly)
-    obstacles.push(poly)
-    bb.addRecSelf(poly.boundingBox)
-  }
-  bb.pad(Math.max(bb.diagonal / 4, 100))
-  obstacles.push(bb.perimeter())
-
-  // Build CDT
-  console.time('CorridorRouterHL CDT')
-  const cdt = new Cdt([], obstacles, [])
-  cdt.run()
-  console.timeEnd('CorridorRouterHL CDT')
-
-  // Build triangle index
-  const idx = new TriangleIndex(cdt)
-
-  // Build free-space CH + HL
-  console.time('CorridorRouterHL CH+HL')
-  const ch = new ContractionHierarchy(cdt, freeSpaceFilter)
-  const hl = new HubLabels(ch)
-  console.timeEnd('CorridorRouterHL CH+HL')
-
-  // Precompute portal triangles for each node
-  const nodePortals = new Map<GeomNode, PortalInfo[]>()
-  for (const node of geomGraph.nodesBreadthFirst) {
-    if (node.boundaryCurve == null) continue
-    const poly = nodeToPolyline.get(node) as Polyline | undefined
-    if (!poly) continue
-    const portalTriIds = findPortalTriangles(idx, poly)
-    const portals: PortalInfo[] = []
-    for (const triId of portalTriIds) {
-      const chIdx = ch.getIndex(idx.triangles[triId])
-      if (chIdx !== undefined) portals.push({triIdx: triId, chIdx})
-    }
-    nodePortals.set(node, portals)
-  }
-
-  // Route each edge
-  console.time('CorridorRouterHL routing')
-  for (const edge of edgesToRoute) {
-    if (cancelToken && cancelToken.canceled) return
-    if (edge.sourcePort == null || edge.targetPort == null) continue
-
-    const source = edge.source.center
-    const target = edge.target.center
-    const sourcePoly = nodeToPolyline.get(edge.source) as Polyline | undefined
-    const targetPoly = nodeToPolyline.get(edge.target) as Polyline | undefined
-
-    const srcPortals = nodePortals.get(edge.source) ?? []
-    const tgtPortals = nodePortals.get(edge.target) ?? []
-
-    const sourceTriangle = findContainingTriangle(cdt, source)
-    const targetTriangle = findContainingTriangle(cdt, target)
-    if (!sourceTriangle || !targetTriangle) {
-      setStraightLine(edge, source, target)
-      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
-      continue
-    }
-
-    const sourceTriId = idx.getId(sourceTriangle)
-    const targetTriId = idx.getId(targetTriangle)
-    if (sourceTriId < 0 || targetTriId < 0) {
-      setStraightLine(edge, source, target)
-      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
-      continue
-    }
-
-    if (srcPortals.length === 0 || tgtPortals.length === 0) {
-      setStraightLine(edge, source, target)
-      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
-      continue
-    }
-
-    // Query HL for all portal pairs, pick shortest total distance
-    let bestDist = Infinity
-    let bestSrc: PortalInfo | null = null
-    let bestTgt: PortalInfo | null = null
-
-    for (const sp of srcPortals) {
-      const extSrc = Math.sqrt(
-        (source.x - idx.centX[sp.triIdx]) * (source.x - idx.centX[sp.triIdx]) +
-        (source.y - idx.centY[sp.triIdx]) * (source.y - idx.centY[sp.triIdx]),
-      )
-      for (const tp of tgtPortals) {
-        const hlDist = hl.query(sp.chIdx, tp.chIdx)
-        if (hlDist === Infinity) continue
-        const extTgt = Math.sqrt(
-          (target.x - idx.centX[tp.triIdx]) * (target.x - idx.centX[tp.triIdx]) +
-          (target.y - idx.centY[tp.triIdx]) * (target.y - idx.centY[tp.triIdx]),
-        )
-        const totalDist = extSrc + hlDist + extTgt
-        if (totalDist < bestDist) {
-          bestDist = totalDist
-          bestSrc = sp
-          bestTgt = tp
-        }
-      }
-    }
-
-    if (!bestSrc || !bestTgt) {
-      setStraightLine(edge, source, target)
-      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
-      continue
-    }
-
-    // Recover free-space sleeve from HL
-    const hlSleeve = hl.recoverSleeve(bestSrc.chIdx, bestTgt.chIdx)
-
-    // Find interior paths: center → portal (source) and portal → center (target)
-    const srcInterior = sourcePoly ? findInteriorPath(idx, sourceTriId, bestSrc.triIdx, sourcePoly) : []
-    const tgtInterior = targetPoly ? findInteriorPath(idx, bestTgt.triIdx, targetTriId, targetPoly) : []
-
-    // Stitch sleeves: interior_src + free-space HL + interior_tgt
-    const fullSleeve: FrontEdge[] = [...srcInterior, ...(hlSleeve ?? []), ...tgtInterior]
-
-    if (fullSleeve.length === 0) {
-      setStraightLine(edge, source, target)
-    } else {
-      const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-      const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
-      const diagonals = sleeveToDiagonals(fullSleeve, collapseSource, collapseTarget)
-      if (diagonals.length === 0) {
-        setStraightLine(edge, source, target)
-      } else {
-        const points = funnelFromDiagonals(source, target, diagonals)
-        const poly = Polyline.mkFromPoints(points)
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-        if (smoothCorners) {
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
-        } else {
-          edge.curve = poly.toCurve()
-        }
-      }
-    }
-    Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
-  }
-  console.timeEnd('CorridorRouterHL routing')
-}
 
 /** Ensure all edges have ports. */
 function ensurePorts(edges: GeomEdge[]): void {
