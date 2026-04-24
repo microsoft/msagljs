@@ -14,8 +14,19 @@ import {GeomEdge} from '../../src/layout/core/geomEdge'
 import {GeomGraph} from '../../src/layout/core/geomGraph'
 import {Node} from '../../src/structs/node'
 import {AttributeRegistry} from '../../src/structs/attributeRegistry'
+
+/**
+ * `SvgDebugWriter` is a developer visualization aid — tests never assert
+ * against the SVG files it produces. By default we therefore skip actual
+ * file I/O so CI doesn't create untracked files or fail on flaky fs writes.
+ * Set `MSAGL_DEBUG_SVG=1` when debugging locally to re-enable the writes.
+ */
+const DEBUG_SVG_ENABLED =
+  typeof process !== 'undefined' && process.env && process.env.MSAGL_DEBUG_SVG && process.env.MSAGL_DEBUG_SVG !== '0'
+
 // this function would be called by jest whenever it uses SvgDebugWriter
 beforeAll(() => {
+  if (!DEBUG_SVG_ENABLED) return
   const dir = 'tmp'
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, {recursive: true})
@@ -34,6 +45,19 @@ export class SvgDebugWriter {
   arrowAngle = 25
 
   constructor(svgFileName: string) {
+    if (!DEBUG_SVG_ENABLED) {
+      this.ws = -1
+      // Minimal stand-in that absorbs every xml-writer call without touching
+      // the filesystem. The target is a function so property accesses *and*
+      // calls both work (e.g. `xw.startElement('svg')`).
+      const noopFn: any = () => noopFn
+      const noop: any = new Proxy(noopFn, {
+        get: () => noop,
+        apply: () => noop,
+      })
+      this.xw = noop
+      return
+    }
     this.ws = fs.openSync(svgFileName, 'w', 0o666)
     this.xw = new xmlw(true, (string: string) => {
       fs.writeSync(this.ws, string)
@@ -240,6 +264,7 @@ export class SvgDebugWriter {
   }
 
   private close(transform = true) {
+    if (!DEBUG_SVG_ENABLED) return
     if (transform) this.xw.endElement('g')
     this.xw.endDocument()
     this.xw.flush()
