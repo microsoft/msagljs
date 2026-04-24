@@ -150,6 +150,9 @@ export class EdgeRoutingSettings {
     this.incrementalRoutingThreshold = value
   }
 
+  // when true, bezier segments are inserted at polyline corners (corridor routing)
+  smoothCorners = false
+
   // if set to true the original spline is kept under the corresponding GeomEdge
   KeepOriginalSpline = false
 

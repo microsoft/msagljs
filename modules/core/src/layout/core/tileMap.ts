@@ -80,9 +80,10 @@ export class TileMap {
   /** geomGraph  - the graph to work with.
    * The topLevelTileRect serves as the only tile of the top level.
    */
-  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, tileCapacity?: number) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
+    if (tileCapacity != null) this.tileCapacity = tileCapacity
     this.tileSizes = []
     this.tileSizes.push(topLevelTileRect.size)
   }
@@ -121,7 +122,9 @@ export class TileMap {
 
     function addEdgeToTiles(e: Edge) {
       const geomEdge = GeomEdge.getGeom(e)
-      const c = GeomEdge.getGeom(e).curve
+      if (geomEdge == null) return
+      const c = geomEdge.curve
+      if (c == null) return
       if (c instanceof Curve) {
         for (const seg of c.segs) {
           topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
@@ -208,11 +211,6 @@ export class TileMap {
         const activeNodes = activeByLevel[k]
         const activeEdges = Array.from(this.geomGraph.deepEdges).filter((e) => edgeNodesBelongToSet(e.edge, activeNodes))
         if (activeEdges.length > 0) {
-          // Snapshot current (finer-level) curves *before* rerouting mutates them.
-          const prevRoutes = new Map<GeomEdge, ICurve>()
-          for (const e of activeEdges) {
-            if (e.curve) prevRoutes.set(e, e.curve)
-          }
           const scaleMap = this.nodeScales[k]
           const nodeScale = (n: GeomNode) => scaleMap.get(n.node) ?? 1
           const activeGeomNodes = new Set<GeomNode>()
@@ -220,7 +218,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`)
+          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, undefined, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }

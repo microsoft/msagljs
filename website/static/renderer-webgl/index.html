@@ -96,6 +96,10 @@
       <label>Sample graphs ▼</label>
       <select id="gv"></select>
     </div>
+    <div id="large_graph_files" style="cursor:pointer;position:fixed;top:0;right:200px;padding:0 12px;line-height:50px;z-index:2;">
+      <label>Large graphs ▼</label>
+      <select id="lg" style="position:absolute;right:0;opacity:0;width:100%;height:100%;"></select>
+    </div>
     <div id="settings">
       <div>
         <label>Layout:</label>
@@ -105,7 +109,12 @@
         <label>Edge routing</label>
         <select id="routings"></select>
       </div>
+      <div>
+        <label>Smooth corners</label>
+        <input type="checkbox" id="smoothCorners" />
       </div>
+      </div>
+    <div id="error-banner" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:10;background:#d32f2f;color:#fff;padding:12px 24px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;max-width:80vw;cursor:pointer;" onclick="this.style.display='none'"></div>
     <script src="./app.js"></script>
   </body>
 </html>

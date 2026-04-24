@@ -1149,23 +1149,31 @@ function* getGeomGraphAttrList(geomGraph: GeomGraph): IterableIterator<Attr> {
     yield {type: 'attr', id: 'radY', eq: geomGraph.radY.toString()}
   }
 }
-/** Each line of the file is a string in Format sourceId\ttargetId. That is two words separated by a tabulation symbol.
- * The edges are considered directed.
+/** Parses edge-list text formats: tab/space/comma separated pairs per line.
+ * Supports SNAP (#-comments), MatrixMarket (%-comments with size header),
+ * and CSV files with a header row.
  */
 export function parseTXT(content: string): Graph {
   const graph = new Graph()
   try {
     const lines = content.split(/\r\n|\r|\n/)
+    let skippedHeader = false
     for (const l of lines) {
       if (l.length == 0) continue
-      if (l.charAt(0) == '#') continue
+      if (l.charAt(0) == '#' || l.charAt(0) == '%') continue
       const st = l.split(/\t| |,/)
       if (st.length < 2) {
         console.log('cannot parse', l)
         return null
       }
-      const s = st[0]
-      const t = st[1]
+      const s = st[0].trim()
+      const t = st[1].trim()
+      // Skip header rows (e.g. CSV "node_1,node_2") and MatrixMarket size lines (3 integers)
+      if (!skippedHeader) {
+        skippedHeader = true
+        if (!/^\d+$/.test(s) || !/^\d+$/.test(t)) continue // non-numeric header
+        if (st.length >= 3 && /^\d+$/.test(st[2].trim())) continue // MatrixMarket "rows cols nnz"
+      }
       const sn = addOrGetNodeWithDrawingAttr(graph, s)
 
       const tn = addOrGetNodeWithDrawingAttr(graph, t)
@@ -1216,7 +1224,7 @@ export async function loadGraphFromUrl(url: string): Promise<Graph> {
   if (fileName.endsWith('.json')) {
     const json = await resp.json()
     graph = parseJSON(json)
-  } else if (fileName.endsWith('.txt')) {
+  } else if (fileName.endsWith('.txt') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.mtx')) {
     const content = await resp.text()
     graph = parseTXT(content)
   } else {

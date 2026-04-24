@@ -46,7 +46,7 @@ export {debugCurvesToSvg, installBrowserDebugCurvesDownloader} from './math/geom
 export {SugiyamaLayoutSettings} from './layout/layered/sugiyamaLayoutSettings'
 export {LayeredLayout} from './layout/layered/layeredLayout'
 export {CancelToken} from './utils/cancelToken'
-export {CurveFactory, interpolateICurve, Point, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
+export {CurveFactory, interpolateICurve, Point, PointArray, ICurve, Rectangle, Size, parameterSpan, RectJSON} from './math/geometry'
 export {LayerDirectionEnum} from './layout/layered/layerDirectionEnum'
 export {
   layoutGeomGraph,
@@ -64,7 +64,7 @@ export {layoutGraphWithMds} from './layout/mds/pivotMDS'
 export {layoutGraphWithSugiayma} from './layout/layered/layeredLayout'
 export {EdgeRoutingMode} from './routing/EdgeRoutingMode'
 export {SplineRouter} from './routing/splineRouter'
-export {routeCorridorEdges, findContainingTriangle, findSleeveAStar, sleeveToDiagonals, funnelFromDiagonals, corridorRoute} from './routing/corridorRouter'
+export {routeCorridorEdges, routeCorridorEdgesHL, findContainingTriangle, findSleeveAStar, sleeveToDiagonals, funnelFromDiagonals, corridorRoute} from './routing/corridorRouter'
 export type {Diagonal} from './routing/corridorRouter'
 export {Cdt} from './routing/ConstrainedDelaunayTriangulation/Cdt'
 export {ContractionHierarchy, freeSpaceFilter} from './routing/contractionHierarchy'

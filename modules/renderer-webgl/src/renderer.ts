@@ -3,12 +3,12 @@ import {NonGeoBoundingBox, TileLayer} from '@deck.gl/geo-layers/typed'
 // import {PolygonLayer} from '@deck.gl/layers/typed'
 import {ClipExtension} from '@deck.gl/extensions/typed'
 
-import {DrawingGraph} from '@msagl/drawing'
+import {DrawingGraph, DrawingNode, DrawingObject} from '@msagl/drawing'
 
 import GraphLayer from './layers/graph-layer'
 
 import {layoutGraph, layoutGraphOnWorker, LayoutOptions, deepEqual, TextMeasurer} from '@msagl/renderer-common'
-import {Graph, GeomGraph, Rectangle, GeomNode, Edge, TileMap, TileData, geometryIsCreated} from '@msagl/core'
+import {Graph, GeomGraph, Rectangle, GeomNode, GeomObject, Edge, Node, TileMap, TileData, geometryIsCreated} from '@msagl/core'
 
 import {Matrix4} from '@math.gl/core'
 
@@ -25,6 +25,42 @@ export interface IRendererControl {
 }
 
 const MaxZoom = 2
+
+/** Resolve a user-visible label for a node: its drawing `labelText` if any,
+ *  otherwise its `id`. */
+function nodeLabel(node: Node): string {
+  const d = DrawingObject.getDrawingObj(node) as DrawingNode | undefined
+  const t = d?.labelText
+  if (t && t.length > 0) return t
+  return node.id ?? ''
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => {
+    switch (c) {
+      case '&': return '&amp;'
+      case '<': return '&lt;'
+      case '>': return '&gt;'
+      case '"': return '&quot;'
+      default:  return '&#39;'
+    }
+  })
+}
+
+const tooltipStyle = {
+  background: 'rgba(30,30,30,0.9)',
+  color: '#fff',
+  padding: '4px 8px',
+  borderRadius: '4px',
+  fontFamily: 'sans-serif',
+  fontSize: '12px',
+  pointerEvents: 'none',
+  // Offset the tooltip above and to the right of the cursor so the
+  // hand/pointer icon doesn't cover it. deck.gl sets left/top to the
+  // hover pixel; margins shift the box from that origin.
+  marginLeft: '14px',
+  marginTop: '-32px',
+} as const
 
 /**
  * Renders an MSAGL graph with WebGL
@@ -87,6 +123,24 @@ export default class Renderer extends EventSource {
           this.highlight(null)
           this._highlightedEdge = null
         }
+      },
+      getTooltip: ({object}) => {
+        if (object instanceof Edge) {
+          const sVisible = this._isNodeVisible(object.source)
+          const tVisible = this._isNodeVisible(object.target)
+          // Only show labels for endpoints that are NOT visible on screen —
+          // if the user can already see a node, there's no need to name it.
+          if (sVisible && tVisible) return null
+          const parts: string[] = []
+          if (!sVisible) parts.push(`<b>${escapeHtml(nodeLabel(object.source))}</b>`)
+          if (!tVisible && object.target !== object.source) parts.push(`<b>${escapeHtml(nodeLabel(object.target))}</b>`)
+          if (parts.length === 0) return null
+          return {html: `<div>${parts.join(' → ')}</div>`, style: tooltipStyle}
+        }
+        if (object instanceof GeomNode) {
+          return {html: `<div>${escapeHtml(nodeLabel(object.node))}</div>`, style: tooltipStyle}
+        }
+        return null
       },
     })
 
@@ -212,6 +266,26 @@ export default class Renderer extends EventSource {
     }
   }
 
+  private _isNodeVisible(node: Node): boolean {
+    const g = GeomObject.getGeom(node) as GeomNode | undefined
+    if (!g) return true // can't tell — assume visible, suppress tooltip
+    const viewports = this._deck?.getViewports?.()
+    if (!viewports || viewports.length === 0) return true
+    const [minX, minY, maxX, maxY] = viewports[0].getBounds()
+    const bb = g.boundingBox
+    if (!bb) {
+      const cx = g.center.x + this._graphOffset.x
+      const cy = g.center.y + this._graphOffset.y
+      return cx >= minX && cx <= maxX && cy >= minY && cy <= maxY
+    }
+    const nxMin = bb.left + this._graphOffset.x
+    const nxMax = bb.right + this._graphOffset.x
+    const nyMin = bb.bottom + this._graphOffset.y
+    const nyMax = bb.top + this._graphOffset.y
+    // Node is "visible" iff its bounding box intersects the viewport bounds.
+    return nxMax >= minX && nxMin <= maxX && nyMax >= minY && nyMin <= maxY
+  }
+
   private async _layoutGraph(forceUpdate: boolean) {
     const t0 = performance.now()
     if (this._layoutWorkerUrl) {
@@ -254,8 +328,18 @@ export default class Renderer extends EventSource {
       right: boundingBox.right + (rootTileSize - boundingBox.width) / 2,
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
+    // Memory budget: each tile element ≈ 200 bytes.  At the bottom layer with
+    // k×k tiles an average edge crosses k/4 tiles, giving ≈ (k/4)*M + N
+    // elements.  Doubling for all layers: total ≈ 2*((k/4)*M + N).
+    // Stay under 4 GB → total*200 ≤ 4e9 → (k/4)*M + N ≤ 1e7.
+    const N = geomGraph.graph.nodeCountDeep
+    const M = geomGraph.graph.deepEdgesCount
+    const maxElements = 1e7 // 4GB / 200 bytes / 2 (all-layers factor)
+    const maxK = M > 0 ? Math.floor(((maxElements - N) * 4) / M) : 1e6
+    const safeLevels = Math.max(1, Math.min(8, Math.floor(Math.log2(Math.max(1, maxK)))))
+    console.log(`Tile budget: N=${N}, M=${M}, maxK=${maxK}, safeLevels=${safeLevels}`)
     const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(8) // MaxZoom - startZoom)
+    const numberOfLevels = tileMap.buildUpToLevel(safeLevels)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')
