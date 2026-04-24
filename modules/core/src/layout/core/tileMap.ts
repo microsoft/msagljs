@@ -80,9 +80,10 @@ export class TileMap {
   /** geomGraph  - the graph to work with.
    * The topLevelTileRect serves as the only tile of the top level.
    */
-  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle) {
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, tileCapacity?: number) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
+    if (tileCapacity != null) this.tileCapacity = tileCapacity
     this.tileSizes = []
     this.tileSizes.push(topLevelTileRect.size)
   }
@@ -222,7 +223,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`)
+          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, prevRoutes, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }

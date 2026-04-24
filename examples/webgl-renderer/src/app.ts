@@ -11,7 +11,7 @@ import type {Diagonal} from '@msagl/core'
 // DebugObject.dumpDebugCurves(fileName, curves) triggers an SVG download.
 installBrowserDebugCurvesDownloader()
 
-import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
+import {SAMPLE_DOT, ROUTING, LAYOUT, FONT, LARGE_GRAPHS} from './settings'
 import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
@@ -25,16 +25,33 @@ const renderer = new WebGLRenderer(document.getElementById('viewer'), './worker.
 //const renderer = new WebGLRenderer(document.getElementById('viewer'), 'https://unpkg.com/@msagl/renderer-webgl@latest/dist/worker.min.js')
 renderer.addControl(new SearchControl())
 
+function showError(msg: string) {
+  const banner = document.getElementById('error-banner')
+  banner.textContent = msg + ' (click to dismiss)'
+  banner.style.display = 'block'
+}
+
+function hideError() {
+  document.getElementById('error-banner').style.display = 'none'
+}
+
 function updateRender(graph: Graph, settings?: LayoutOptions | null): Promise<void>
 function updateRender(settings: LayoutOptions): Promise<void>
 
 async function updateRender(graphOrSettings: Graph | LayoutOptions, settings?: LayoutOptions | null) {
   const settingsContainer = <HTMLDivElement>document.getElementById('settings')
   settingsContainer.classList.add('disabled')
-  if (graphOrSettings instanceof Graph) {
-    await renderer.setGraph(graphOrSettings, settings)
-  } else {
-    await renderer.setOptions(graphOrSettings)
+  hideError()
+  try {
+    if (graphOrSettings instanceof Graph) {
+      await renderer.setGraph(graphOrSettings, settings)
+    } else {
+      await renderer.setOptions(graphOrSettings)
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('Render failed:', e)
+    showError(`Failed to render graph: ${msg}`)
   }
   settingsContainer.classList.remove('disabled')
 }
@@ -56,6 +73,47 @@ dotFileSelect.onchange = () => {
   })
 }
 
+// Large graph selector
+const largeGraphSelect = <HTMLSelectElement>document.getElementById('lg')
+{
+  const placeholder = document.createElement('option')
+  placeholder.value = ''
+  placeholder.innerText = '— select —'
+  placeholder.disabled = true
+  placeholder.selected = true
+  largeGraphSelect.appendChild(placeholder)
+}
+for (const g of LARGE_GRAPHS) {
+  const option = document.createElement('option')
+  option.value = g.url
+  option.innerText = g.name
+  largeGraphSelect.appendChild(option)
+}
+largeGraphSelect.onchange = async () => {
+  const url = largeGraphSelect.value
+  if (!url) return
+  hideError()
+  document.getElementById('graph-name').innerText = 'Loading…'
+  const settingsContainer = <HTMLDivElement>document.getElementById('settings')
+  settingsContainer.classList.add('disabled')
+  try {
+    const graph = await loadGraphFromUrl(url)
+    if (!graph) {
+      showError('Failed to parse graph file.')
+      settingsContainer.classList.remove('disabled')
+      return
+    }
+    document.getElementById('graph-name').innerText =
+      graph.id + ' (' + graph.nodeCountDeep + ' nodes, ' + graph.deepEdgesCount + ' edges)'
+    await updateRender(graph)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('Large graph load failed:', e)
+    showError(`Failed to load graph: ${msg}`)
+    settingsContainer.classList.remove('disabled')
+  }
+}
+
 // Settings: edge routing
 const edgeRoutingSelect = <HTMLSelectElement>document.getElementById('routings')
 for (const r in ROUTING) {
@@ -65,6 +123,12 @@ for (const r in ROUTING) {
   edgeRoutingSelect.appendChild(option)
 }
 edgeRoutingSelect.onchange = () => {
+  updateRender(getSettings())
+}
+
+// Settings: smooth corners toggle
+const smoothCornersCheckbox = <HTMLInputElement>document.getElementById('smoothCorners')
+smoothCornersCheckbox.onchange = () => {
   updateRender(getSettings())
 }
 
@@ -82,16 +146,29 @@ layoutSelect.onchange = () => {
 
 // File selector
 dropZone('drop-target', async (f: File) => {
-  const graph = await loadGraphFromFile(f)
-  updateRender(graph)
-  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+  try {
+    const graph = await loadGraphFromFile(f)
+    if (!graph) {
+      showError('Failed to parse file: ' + f.name)
+      return
+    }
+    updateRender(graph)
+    document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    showError(`Failed to load file: ${msg}`)
+  }
 })
 ;(async () => {
-  const graph = await loadGraphFromUrl(defaultGraph)
-  const hasGeom = geometryIsCreated(graph)
-  updateRender(graph, hasGeom ? null : getSettings())
-
-  document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+  try {
+    const graph = await loadGraphFromUrl(defaultGraph)
+    const hasGeom = geometryIsCreated(graph)
+    updateRender(graph, hasGeom ? null : getSettings())
+    document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+  } catch (e) {
+    console.error('Default graph load failed:', e)
+    showError('Failed to load default graph.')
+  }
 })()
 
 function getSettings(): LayoutOptions {
@@ -146,6 +223,7 @@ function getSettings(): LayoutOptions {
       break
     }
   }
+  opts.smoothCorners = smoothCornersCheckbox.checked
   return opts
 }
 

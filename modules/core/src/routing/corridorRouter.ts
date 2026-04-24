@@ -1019,6 +1019,7 @@ export function routeCorridorEdges(
   activeNodes?: Set<GeomNode> | null,
   extraObstaclePadding = 0,
   debugLabel?: string,
+  smoothCorners = false,
 ): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -1026,7 +1027,7 @@ export function routeCorridorEdges(
   ensurePorts(edgesToRoute)
 
   if (graphHasSubgraphs(geomGraph)) {
-    routeCorridorEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding)
+    routeCorridorEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding, smoothCorners)
     return
   }
 
@@ -1193,8 +1194,12 @@ export function routeCorridorEdges(
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
         }
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
@@ -1292,8 +1297,12 @@ export function routeCorridorEdges(
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
         }
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
@@ -1320,8 +1329,12 @@ export function routeCorridorEdges(
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
         } else {
           const pts = Polyline.mkFromPoints([source, target])
           edge.curve = pts.toCurve()
@@ -1426,6 +1439,7 @@ export function routeCorridorEdgesHL(
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
   padding = 2,
+  smoothCorners = false,
 ): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -1567,8 +1581,12 @@ export function routeCorridorEdgesHL(
         const points = funnelFromDiagonals(source, target, diagonals)
         const poly = Polyline.mkFromPoints(points)
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-        smoothenCorners(edge.smoothedPolyline, padding)
-        edge.curve = edge.smoothedPolyline.createCurve()
+        if (smoothCorners) {
+          smoothenCorners(edge.smoothedPolyline, padding)
+          edge.curve = edge.smoothedPolyline.createCurve()
+        } else {
+          edge.curve = poly.toCurve()
+        }
       }
     }
     Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
@@ -1603,6 +1621,7 @@ function routeCorridorEdgesWithPassports(
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
   padding: number,
+  smoothCorners: boolean,
 ): void {
   // Build shape hierarchy
   const shapes = ShapeCreator.GetShapes(geomGraph, edgesToRoute)
@@ -1627,7 +1646,7 @@ function routeCorridorEdgesWithPassports(
   for (const group of edgeGroups) {
     if (cancelToken && cancelToken.canceled) break
     const obstacleShapes = getObstaclesFromPassport(group.passport, ancestorSets, root)
-    routeCorridorEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding)
+    routeCorridorEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding, smoothCorners)
   }
 
   // Clean up root
@@ -1643,6 +1662,7 @@ function routeCorridorEdgeGroup(
   obstacleShapes: Set<Shape>,
   cancelToken: CancelToken,
   padding: number,
+  smoothCorners: boolean,
 ): void {
   // Build padded obstacle polylines only from obstacle shapes
   const nodeToPolyline = new Map<GeomNode, Polyline>()
@@ -1760,8 +1780,12 @@ function routeCorridorEdgeGroup(
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
         }
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
@@ -1786,8 +1810,12 @@ function routeCorridorEdgeGroup(
           const points = funnelFromDiagonals(source, target, diagonals)
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
-          smoothenCorners(edge.smoothedPolyline, padding)
-          edge.curve = edge.smoothedPolyline.createCurve()
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
         } else {
           setStraightLine(edge, source, target)
         }

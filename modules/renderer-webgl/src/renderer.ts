@@ -254,8 +254,18 @@ export default class Renderer extends EventSource {
       right: boundingBox.right + (rootTileSize - boundingBox.width) / 2,
       top: boundingBox.top + (rootTileSize - boundingBox.height) / 2,
     })
+    // Memory budget: each tile element ≈ 200 bytes.  At the bottom layer with
+    // k×k tiles an average edge crosses k/4 tiles, giving ≈ (k/4)*M + N
+    // elements.  Doubling for all layers: total ≈ 2*((k/4)*M + N).
+    // Stay under 4 GB → total*200 ≤ 4e9 → (k/4)*M + N ≤ 1e7.
+    const N = geomGraph.graph.nodeCountDeep
+    const M = geomGraph.graph.deepEdgesCount
+    const maxElements = 1e7 // 4GB / 200 bytes / 2 (all-layers factor)
+    const maxK = M > 0 ? Math.floor(((maxElements - N) * 4) / M) : 1e6
+    const safeLevels = Math.max(1, Math.min(8, Math.floor(Math.log2(Math.max(1, maxK)))))
+    console.log(`Tile budget: N=${N}, M=${M}, maxK=${maxK}, safeLevels=${safeLevels}`)
     const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(8) // MaxZoom - startZoom)
+    const numberOfLevels = tileMap.buildUpToLevel(safeLevels)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')

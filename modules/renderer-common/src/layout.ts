@@ -203,6 +203,10 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     layoutSettings.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode
   }
 
+  if (overrides.smoothCorners != null) {
+    layoutSettings.edgeRoutingSettings.smoothCorners = overrides.smoothCorners
+  }
+
   return layoutSettings
 }
 
@@ -216,7 +220,8 @@ function diffLayoutSettings(
   if (!oldSettings) return {layoutChanged: true, routingChanged: true}
 
   const routingChanged =
-    oldSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode
+    oldSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode !== newSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode ||
+    oldSettings.commonSettings.edgeRoutingSettings.smoothCorners !== newSettings.commonSettings.edgeRoutingSettings.smoothCorners
   const specialCaseSugiamaRelayout =
     routingChanged && newSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode === EdgeRoutingMode.SugiyamaSplines
 
