@@ -174,7 +174,9 @@ export class TileMap {
       // New scheme: finest level unchanged. For each coarser level, double each node's
       // effective box; greedily accept nodes by rank, dropping those whose scaled box
       // overlaps an already-accepted higher-ranked node's scaled box. Edges are rerouted
-      // using the finer level's curves as a corridor hint for the CDT dual-graph A*.
+      // per level on the active node subset using a grouped Dijkstra tree per source on
+      // the CDT dual graph (A* is only used as a fallback for targets whose center lies
+      // inside another inflated obstacle at coarse tile levels).
       const lastIdx = this.levels.length - 1
       const activeByLevel: Set<Node>[] = new Array(this.levels.length)
       activeByLevel[lastIdx] = this.setOfNodesOnTheLevel(lastIdx)
@@ -218,7 +220,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, undefined, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
+          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }

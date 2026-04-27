@@ -154,7 +154,7 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
   } else if (ers.EdgeRoutingMode === EdgeRoutingMode.StraightLine) {
     straightLineEdgePatcher(geomGraph, edgesToRoute, cancelToken)
   } else if (ers.EdgeRoutingMode === EdgeRoutingMode.Corridor) {
-    routeCorridorEdges(geomGraph, edgesToRoute, cancelToken, ers.Padding, undefined, undefined, undefined, 0, undefined, ers.smoothCorners)
+    routeCorridorEdges(geomGraph, edgesToRoute, cancelToken, ers.Padding, undefined, undefined, 0, undefined, ers.smoothCorners)
   } else if (ers.EdgeRoutingMode !== EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }

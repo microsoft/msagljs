@@ -57,10 +57,6 @@ export class TriangleIndex {
   readonly centY: Float64Array
   // Obstacle owner (null if free-space)
   readonly obstacleOwner: (Polyline | null)[]
-  // Per-polyline indices for fast lookup. Populated lazily in getTrianglesByOwner/getPortalsByPoly.
-  private _trianglesByOwner: Map<Polyline, number[]> | null = null
-  private _portalsByPoly: Map<Polyline, number[]> | null = null
-
   constructor(cdt: Cdt) {
     const triToId = new Map<CdtTriangle, number>()
     const triangles: CdtTriangle[] = []
@@ -121,51 +117,6 @@ export class TriangleIndex {
     return owner != null && !allowedPolys.has(owner)
   }
 
-  /** Returns the list of triangle ids fully owned by the given polyline
-   *  (obstacle interior). Computed lazily and cached. */
-  getTrianglesByOwner(poly: Polyline): number[] | undefined {
-    if (!this._trianglesByOwner) {
-      const map = new Map<Polyline, number[]>()
-      for (let i = 0; i < this.n; i++) {
-        const o = this.obstacleOwner[i]
-        if (o == null) continue
-        let arr = map.get(o)
-        if (!arr) { arr = []; map.set(o, arr) }
-        arr.push(i)
-      }
-      this._trianglesByOwner = map
-    }
-    return this._trianglesByOwner.get(poly)
-  }
-
-  /** Returns the list of triangle ids that are free-space but have at least
-   *  two sites belonging to the given polyline (portal triangles touching the
-   *  obstacle boundary). Computed lazily and cached. */
-  getPortalsByPoly(poly: Polyline): number[] | undefined {
-    if (!this._portalsByPoly) {
-      const map = new Map<Polyline, number[]>()
-      for (let i = 0; i < this.n; i++) {
-        if (this.obstacleOwner[i] != null) continue
-        const t = this.triangles[i]
-        const o0 = t.Sites.item0.Owner as Polyline
-        const o1 = t.Sites.item1.Owner as Polyline
-        const o2 = t.Sites.item2.Owner as Polyline
-        // Count votes per polyline; add triangle when a polyline gets >= 2 votes.
-        if (o0 != null && (o0 === o1 || o0 === o2)) {
-          let arr = map.get(o0)
-          if (!arr) { arr = []; map.set(o0, arr) }
-          arr.push(i)
-        }
-        if (o1 != null && o1 !== o0 && o1 === o2) {
-          let arr = map.get(o1)
-          if (!arr) { arr = []; map.set(o1, arr) }
-          arr.push(i)
-        }
-      }
-      this._portalsByPoly = map
-    }
-    return this._portalsByPoly.get(poly)
-  }
 }
 
 // ── Flat min-heap ───────────────────────────────────────────────────
@@ -281,17 +232,9 @@ function dijkstraTreeIndexed(
       if (remaining === 0) break
     }
 
-    // Entry point for distance calc
     const peIdx = parentEdgeIdx[tid]
-    let entryX: number, entryY: number
-    if (peIdx >= 0) {
-      // midpoint of the entering edge
-      entryX = idx.midX[peIdx]
-      entryY = idx.midY[peIdx]
-    } else {
-      entryX = idx.centX[tid]
-      entryY = idx.centY[tid]
-    }
+    const cx = idx.centX[tid]
+    const cy = idx.centY[tid]
 
     const base = tid * 3
     for (let j = 0; j < 3; j++) {
@@ -300,13 +243,14 @@ function dijkstraTreeIndexed(
       // Don't go back through the same edge we entered from
       if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
 
+      // Edge weight = Euclidean distance between triangle centroids.
+      const odx = idx.centX[otId] - cx, ody = idx.centY[otId] - cy
+      const w = Math.sqrt(odx * odx + ody * ody)
+
       if (idx.isInsideObstacle(otId, allowedPolys)) {
         // Allow reaching a target inside an obstacle
         if (targetIds.has(otId) && !foundTargets.has(otId)) {
-          const mx = idx.midX[base + j]
-          const my = idx.midY[base + j]
-          const dx = entryX - mx, dy = entryY - my
-          const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
+          const tentativeG = g + w
           if (tentativeG < gScore[otId]) {
             gScore[otId] = tentativeG
             // Find the reverse edge index: which of otId's neighbors is tid?
@@ -325,15 +269,10 @@ function dijkstraTreeIndexed(
         continue
       }
 
-      const mx = idx.midX[base + j]
-      const my = idx.midY[base + j]
-      const dx = entryX - mx, dy = entryY - my
-      const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
-
+      const tentativeG = g + w
       if (tentativeG >= gScore[otId]) continue
 
       gScore[otId] = tentativeG
-      // Store the reverse edge index on the neighbor
       const otBase = otId * 3
       for (let k = 0; k < 3; k++) {
         if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
@@ -407,14 +346,8 @@ function findSleeveAStarIndexed(
     }
 
     const peIdx = parentEdgeIdx[tid]
-    let entryX: number, entryY: number
-    if (peIdx >= 0) {
-      entryX = idx.midX[peIdx]
-      entryY = idx.midY[peIdx]
-    } else {
-      entryX = idx.centX[tid]
-      entryY = idx.centY[tid]
-    }
+    const cx = idx.centX[tid]
+    const cy = idx.centY[tid]
 
     const base = tid * 3
     for (let j = 0; j < 3; j++) {
@@ -425,10 +358,9 @@ function findSleeveAStarIndexed(
       // Mask-restricted corridor: only expand through masked-in triangles (target-triangle always OK).
       if (triMask !== null && triMask[otId] === 0 && !idx.triangles[otId].containsPoint(target)) continue
 
-      const mx = idx.midX[base + j]
-      const my = idx.midY[base + j]
-      const dx = entryX - mx, dy = entryY - my
-      const tentativeG = g + Math.sqrt(dx * dx + dy * dy)
+      // Edge weight = Euclidean distance between triangle centroids.
+      const odx = idx.centX[otId] - cx, ody = idx.centY[otId] - cy
+      const tentativeG = g + Math.sqrt(odx * odx + ody * ody)
 
       if (tentativeG >= gScore[otId]) continue
 
@@ -522,16 +454,8 @@ export function findSleeveAStar(
     }
 
     const edgeIntoT = cameFromEdge.get(t)
-    // Compute entry point coordinates inline (no Point allocation)
-    let entryX: number, entryY: number
-    if (edgeIntoT) {
-      entryX = (edgeIntoT.lowerSite.point.x + edgeIntoT.upperSite.point.x) * 0.5
-      entryY = (edgeIntoT.lowerSite.point.y + edgeIntoT.upperSite.point.y) * 0.5
-    } else {
-      const a = t.Sites.item0.point, b = t.Sites.item1.point, c = t.Sites.item2.point
-      entryX = (a.x + b.x + c.x) / 3
-      entryY = (a.y + b.y + c.y) / 3
-    }
+    const cx = (t.Sites.item0.point.x + t.Sites.item1.point.x + t.Sites.item2.point.x) / 3
+    const cy = (t.Sites.item0.point.y + t.Sites.item1.point.y + t.Sites.item2.point.y) / 3
 
     for (const e of t.Edges) {
       if (edgeIntoT !== undefined && e === edgeIntoT) continue
@@ -539,10 +463,10 @@ export function findSleeveAStar(
       if (ot == null) continue
       if (triangleIsInsideObstacle(ot, allowedPolys) && !ot.containsPoint(target)) continue
 
-      // Edge midpoint inline
-      const mx = (e.lowerSite.point.x + e.upperSite.point.x) * 0.5
-      const my = (e.lowerSite.point.y + e.upperSite.point.y) * 0.5
-      const dx = entryX - mx, dy = entryY - my
+      // Edge weight = Euclidean distance between triangle centroids.
+      const oa = ot.Sites.item0.point, ob = ot.Sites.item1.point, oc = ot.Sites.item2.point
+      const ocx = (oa.x + ob.x + oc.x) / 3, ocy = (oa.y + ob.y + oc.y) / 3
+      const dx = cx - ocx, dy = cy - ocy
       const tentativeG = current.g + Math.sqrt(dx * dx + dy * dy)
 
       const prevG = gScore.get(ot)
@@ -550,7 +474,7 @@ export function findSleeveAStar(
 
       gScore.set(ot, tentativeG)
       cameFromEdge.set(ot, e)
-      const hx = mx - tx, hy = my - ty
+      const hx = ocx - tx, hy = ocy - ty
       heapPush({f: tentativeG + Math.sqrt(hx * hx + hy * hy), g: tentativeG, t: ot, seq: seqCounter++})
     }
   }
@@ -891,75 +815,12 @@ function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
   return false
 }
 
-/** Build a corridor triangle mask from a previous-level route curve.
- *  Samples the curve densely, point-locates each sample's triangle,
- *  then expands by 1-hop neighbors. Triangles owned by source/target
- *  polylines are always included so routing can leave/enter obstacles. */
-export function buildCorridorMaskFromCurve(
-  cdt: Cdt,
-  idx: TriangleIndex,
-  prevCurve: ICurve,
-  sourcePoly: Polyline | undefined,
-  targetPoly: Polyline | undefined,
-  sampleStep = 5,
-  maxSamples = 400,
-): Uint8Array {
-  const mask = new Uint8Array(idx.n)
-  // Estimate sample count by curve parameter range; use bounding box diagonal as a hint.
-  const pStart = prevCurve.parStart
-  const pEnd = prevCurve.parEnd
-  const bbDiag = prevCurve.boundingBox.diagonal
-  const steps = Math.min(maxSamples, Math.max(16, Math.ceil(bbDiag / Math.max(0.5, sampleStep))))
-  for (let s = 0; s <= steps; s++) {
-    const t = pStart + ((pEnd - pStart) * s) / steps
-    const p = prevCurve.value(t)
-    const tri = findContainingTriangle(cdt, p)
-    if (!tri) continue
-    const id = idx.getId(tri)
-    if (id < 0) continue
-    mask[id] = 1
-  }
-  // 2-hop neighbor expansion: a sparse sample set may land only in a few
-  // triangles whose direct neighbors still don't connect — a 2-hop frontier
-  // keeps the masked A* mostly successful and avoids falling back to a full
-  // unconstrained A* search on a majority of edges.
-  let base = mask.slice()
-  for (let hop = 0; hop < 2; hop++) {
-    for (let i = 0; i < idx.n; i++) {
-      if (base[i] === 0) continue
-      const b = i * 3
-      for (let j = 0; j < 3; j++) {
-        const nb = idx.nbId[b + j]
-        if (nb >= 0) mask[nb] = 1
-      }
-    }
-    if (hop === 0) base = mask.slice()
-  }
-  // Include all triangles owned by source/target polylines (obstacle interior + portal access).
-  // Use precomputed per-polyline lists to avoid an O(n) scan per edge.
-  if (sourcePoly) {
-    const inside = idx.getTrianglesByOwner(sourcePoly)
-    if (inside) for (const id of inside) mask[id] = 1
-    const portals = idx.getPortalsByPoly(sourcePoly)
-    if (portals) for (const id of portals) mask[id] = 1
-  }
-  if (targetPoly) {
-    const inside = idx.getTrianglesByOwner(targetPoly)
-    if (inside) for (const id of inside) mask[id] = 1
-    const portals = idx.getPortalsByPoly(targetPoly)
-    if (portals) for (const id of portals) mask[id] = 1
-  }
-  return mask
-}
-
 /** Route all edges using the corridor approach.
  *  Builds a CDT on padded obstacle polylines and routes each edge
- *  through the CDT dual graph with funnel optimization.
- *
- *  If `prevRoutes` is provided, each edge is routed with A* constrained to a
- *  corridor derived from its previous route (with 1-hop neighbor expansion
- *  and source/target obstacle triangles always allowed). On mask failure
- *  the edge falls back to unconstrained A*.
+ *  through the CDT dual graph using a single grouped Dijkstra tree per
+ *  source node (multi-target single-source shortest paths). Edges whose
+ *  target Dijkstra cannot reach (e.g. target center inside another inflated
+ *  obstacle at coarse tile levels) fall back to A*.
  *
  *  `extraObstaclePadding` (>= 0) is added to `padding` ONLY when building the
  *  CDT obstacles. This buys headroom for bezier smoothing bulge, arrowheads
@@ -972,7 +833,6 @@ export function routeCorridorEdges(
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
   padding = 2,
-  prevRoutes?: Map<GeomEdge, ICurve>,
   nodeScale?: (n: GeomNode) => number,
   activeNodes?: Set<GeomNode> | null,
   extraObstaclePadding = 0,
@@ -1056,14 +916,6 @@ export function routeCorridorEdges(
     scaledBoundary.set(n, bc)
     return bc
   }
-
-  // Corridor-guided rerouting (prevRoutes) used to take a slower per-edge
-  // masked A* path. Measurements on composers showed ~70% of masked searches
-  // failed and fell back to an unconstrained A*, doubling work for most edges
-  // and running ~5× slower than grouped Dijkstra. We now always use the
-  // grouped-Dijkstra path below; prevRoutes is accepted for backward
-  // compatibility but no longer changes routing behavior.
-  void prevRoutes
 
   // route edges using indexed Dijkstra tree per source node
   console.time('CorridorRouter routing')
