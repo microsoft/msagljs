@@ -198,10 +198,22 @@ export class TileMap {
       const extraObstaclePadding = ers.Padding
       const desiredGap = 3 * ers.Padding
       const filterMargin = 2 * ers.Padding + extraObstaclePadding + desiredGap
+      // BUG FIX: candidates at every coarser level are taken from a prefix of the
+      // GLOBAL rank-sorted node list, not from the previous coarser level's accepted
+      // set. Otherwise a high-rank node rejected once due to overlap (against an
+      // even-higher-rank neighbor at a finer level) would be permanently dropped from
+      // every coarser level, even where its inflated box would fit. Working on a
+      // global prefix guarantees that V_z ⊆ V_{z+1} (acceptance is monotone in z
+      // because at coarser levels boxes are larger, so overlap can only get worse;
+      // a node accepted at coarse z must also be accepted at every finer z' > z).
+      // The prefix size halves per level so the candidate set still shrinks
+      // exponentially, matching the original "top half" intent.
+      const N = this.sortedNodes.length
       for (let k = lastIdx - 1; k >= 0; k--) {
         const desiredMax = Math.pow(2, lastIdx - k)
-        const finerScale = desiredMax / 2
-        const result = this.selectTopKWithAdaptiveScale(activeByLevel[k + 1], desiredMax, finerScale, filterMargin)
+        const prefixSize = Math.max(1, Math.ceil(N / Math.pow(2, lastIdx - k)))
+        const prefix = this.sortedNodes.slice(0, prefixSize)
+        const result = this.selectTopKWithAdaptiveScale(prefix, desiredMax, filterMargin)
         activeByLevel[k] = result.nodes
         this.nodeScales[k] = result.scales
         this.numberOfNodesOnLevel[k] = activeByLevel[k].size
@@ -272,27 +284,58 @@ export class TileMap {
     return acceptedSet
   }
 
-  /** k-first selection with adaptive per-node scaling.
-   *  - Sort candidates by rank DESC.
-   *  - Take the top half (k = ceil(|candidates|/2)).
-   *  - For each (rank-DESC), pick the largest scale in `[1 .. desiredMax]` (decreasing in
-   *    0.85× steps) such that the inflated-by-margin box doesn't intersect any
-   *    already-accepted box.
-   *  - If even at scale 1 it overlaps an accepted box, the node is dropped. */
+  /** Adaptive per-node scaling on a globally-rank-sorted prefix.
+   *  - Input `topK` is already sorted by rank DESC and pre-truncated by the caller
+   *    to the level's prefix size; this function does NOT re-sort or further halve it.
+   *  - For each node (in the given order), compute the largest scale in
+   *    `[1, desiredMax]` such that the inflated-by-margin box does not intersect
+   *    any already-accepted box. The largest admissible scale is obtained in
+   *    closed form per accepted box: for axis-aligned rectangles, non-intersection
+   *    (modulo distanceEpsilon) means that on at least one axis the centers are
+   *    separated by more than the sum of the inflated half-extents; each axis
+   *    yields a linear upper bound on s, and we take the more permissive axis per
+   *    accepted box and the strictest over all accepted boxes. If the bound drops
+   *    below MIN_SCALE the candidate is dropped; otherwise the chosen scale is
+   *    min(maxScale, bound).
+   *  - The cap `maxScale` is then tightened to enforce monotonicity in rank. */
   private selectTopKWithAdaptiveScale(
-    candidates: Set<Node>,
+    topK: Node[],
     desiredMax: number,
-    _finerScale: number,
     margin: number,
   ): {nodes: Set<Node>; scales: Map<Node, number>} {
-    const sorted: Node[] = Array.from(candidates).sort(this.compareByPagerank.bind(this))
-    const k = Math.max(1, Math.ceil(sorted.length / 2))
-    const topK = sorted.slice(0, k)
-    const accepted: Rectangle[] = []
+    type AcceptedInfo = {cx: number; cy: number; halfWInflated: number; halfHInflated: number}
+    const acceptedInfo: AcceptedInfo[] = []
     const nodes = new Set<Node>()
     const scales = new Map<Node, number>()
-    const STEP = 0.85
     const MIN_SCALE = 1
+    const eps = GeomConstants.distanceEpsilon
+    // Largest half-extent any candidate could occupy. Used to size the spatial
+    // grid: two inflated boxes at scale ≤ desiredMax both have full extent ≤
+    // 2*(desiredMax*halfMax + margin) on each axis, so any pair that intersects
+    // must lie in the same or an adjacent cell.
+    let halfMax = 0
+    for (const n of topK) {
+      const gn = GeomNode.getGeom(n)
+      if (!gn) continue
+      const h = Math.max(gn.boundingBox.width, gn.boundingBox.height) / 2
+      if (h > halfMax) halfMax = h
+    }
+    // Spatial hash for O(1)-amortized overlap checking. Cell size is chosen so
+    // that any inflated accepted box and any candidate's inflated box at scale
+    // ≤ desiredMax both have full extent ≤ cellSize on each axis. Two such boxes
+    // can only intersect if their center cells differ by at most 1 on each axis,
+    // i.e. lie in the candidate's 3×3 cell neighborhood. Falls back to direct
+    // loop only when halfMax==0 (degenerate empty topK).
+    const cellSize = 2 * (desiredMax * halfMax + margin)
+    const useGrid = cellSize > eps
+    const grid = new Map<number, AcceptedInfo[]>()
+    // Pack signed (cx,cy) cell coords into one number key. Cell coords are
+    // bounded by graph extent / cellSize and fit comfortably in 16 bits each
+    // for any realistic layout, so multiplying x by 0x10000 and adding y
+    // (after biasing) avoids collisions for our use case.
+    const KEY_BIAS = 1 << 15
+    const KEY_STRIDE = 1 << 16
+    const cellKey = (cx: number, cy: number) => (cx + KEY_BIAS) * KEY_STRIDE + (cy + KEY_BIAS)
     // Monotonic-scale invariant: a lower-ranked node must never receive a larger
     // scale than any higher-ranked node already accepted. We iterate topK in
     // rank-DESC order, so capping `maxScale` by the smallest accepted scale so
@@ -309,19 +352,69 @@ export class TileMap {
       const center = gn.boundingBox.center
       const w0 = gn.boundingBox.width
       const h0 = gn.boundingBox.height
-      let chosen = -1
-      const scaleSequence: number[] = []
-      for (let s = maxScale; s > MIN_SCALE; s *= STEP) scaleSequence.push(s)
-      scaleSequence.push(MIN_SCALE)
-      for (const s of scaleSequence) {
-        const box = Rectangle.mkSizeCenter(new Size(w0 * s + 2 * margin, h0 * s + 2 * margin), center)
-        let overlaps = false
-        for (const a of accepted) if (a.intersects(box)) { overlaps = true; break }
-        if (!overlaps) { chosen = s; break }
+      const halfW = w0 / 2
+      const halfH = h0 / 2
+      // Closed-form upper bound on s such that B_m(v, s) does not intersect any
+      // accepted B_m(u, s_u). For each accepted box centered at (cu_x, cu_y)
+      // with inflated half-extents (HWu, HHu), separation along x requires
+      //   s*halfW + margin + HWu + eps < |dx|   =>   s < (|dx| - margin - HWu - eps)/halfW,
+      // and similarly along y. The candidate is admissible at scale s iff at
+      // least one axis is satisfied for every u, i.e.
+      //   s_max(v) = min_u max(s_x(u), s_y(u)).
+      let sUpper = Number.POSITIVE_INFINITY
+      if (useGrid) {
+        const gx = Math.floor(center.x / cellSize)
+        const gy = Math.floor(center.y / cellSize)
+        outer: for (let dgx = -1; dgx <= 1; dgx++) {
+          for (let dgy = -1; dgy <= 1; dgy++) {
+            const bucket = grid.get(cellKey(gx + dgx, gy + dgy))
+            if (!bucket) continue
+            for (const u of bucket) {
+              const dx = Math.abs(center.x - u.cx)
+              const dy = Math.abs(center.y - u.cy)
+              const slackX = dx - margin - u.halfWInflated - eps
+              const slackY = dy - margin - u.halfHInflated - eps
+              const sx = halfW > eps ? slackX / halfW : (slackX > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+              const sy = halfH > eps ? slackY / halfH : (slackY > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+              const sBound = Math.max(sx, sy)
+              if (sBound < sUpper) sUpper = sBound
+              if (sUpper < MIN_SCALE) break outer
+            }
+          }
+        }
+      } else {
+        for (const u of acceptedInfo) {
+          const dx = Math.abs(center.x - u.cx)
+          const dy = Math.abs(center.y - u.cy)
+          const slackX = dx - margin - u.halfWInflated - eps
+          const slackY = dy - margin - u.halfHInflated - eps
+          const sx = halfW > eps ? slackX / halfW : (slackX > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+          const sy = halfH > eps ? slackY / halfH : (slackY > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+          const sBound = Math.max(sx, sy)
+          if (sBound < sUpper) sUpper = sBound
+          if (sUpper < MIN_SCALE) break
+        }
       }
-      if (chosen < 0) continue
-      const finalBox = Rectangle.mkSizeCenter(new Size(w0 * chosen + 2 * margin, h0 * chosen + 2 * margin), center)
-      accepted.push(finalBox)
+      if (sUpper < MIN_SCALE) continue
+      const chosen = Math.min(maxScale, sUpper)
+      const info: AcceptedInfo = {
+        cx: center.x,
+        cy: center.y,
+        halfWInflated: w0 * chosen / 2 + margin,
+        halfHInflated: h0 * chosen / 2 + margin,
+      }
+      acceptedInfo.push(info)
+      if (useGrid) {
+        const gx = Math.floor(center.x / cellSize)
+        const gy = Math.floor(center.y / cellSize)
+        const key = cellKey(gx, gy)
+        let bucket = grid.get(key)
+        if (!bucket) {
+          bucket = []
+          grid.set(key, bucket)
+        }
+        bucket.push(info)
+      }
       nodes.add(n)
       scales.set(n, chosen)
       if (chosen < maxScale) maxScale = chosen
