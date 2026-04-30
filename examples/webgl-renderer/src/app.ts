@@ -286,6 +286,36 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
     collapsedPath = funnelFromDiagonals(source, target, collapsedDiags)
   }
 
+  // Identify which obstacle vertices got collapsed: vertices that appear as
+  // diagonal endpoints in the raw set but not in the collapsed set.
+  const collapsedVertices: Point[] = []
+  {
+    const ptKey = (p: Point) => `${p.x.toFixed(6)},${p.y.toFixed(6)}`
+    const colKeys = new Set<string>()
+    for (const d of collapsedDiags) { colKeys.add(ptKey(d.left)); colKeys.add(ptKey(d.right)) }
+    const seen = new Set<string>()
+    const tryAdd = (p: Point) => {
+      const k = ptKey(p)
+      if (seen.has(k)) return; seen.add(k)
+      if (!colKeys.has(k)) collapsedVertices.push(p)
+    }
+    for (const d of rawDiags) {
+      if (sourcePoly) {
+        for (const v of sourcePoly) {
+          if (Math.abs(v.x - d.left.x) < 1e-6 && Math.abs(v.y - d.left.y) < 1e-6) tryAdd(d.left)
+          if (Math.abs(v.x - d.right.x) < 1e-6 && Math.abs(v.y - d.right.y) < 1e-6) tryAdd(d.right)
+        }
+      }
+      if (targetPoly) {
+        for (const v of targetPoly) {
+          if (Math.abs(v.x - d.left.x) < 1e-6 && Math.abs(v.y - d.left.y) < 1e-6) tryAdd(d.left)
+          if (Math.abs(v.x - d.right.x) < 1e-6 && Math.abs(v.y - d.right.y) < 1e-6) tryAdd(d.right)
+        }
+      }
+    }
+  }
+  console.log(`Collapsed vertices: ${collapsedVertices.length}`)
+
   // Build viewbox from sleeve
   const viewBB = Rectangle.mkPP(source, target)
   if (sleeve) {
@@ -364,6 +394,13 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
     // Endpoint markers.
     s += `<circle cx="${source.x}" cy="${source.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
     s += `<circle cx="${target.x}" cy="${target.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
+
+    // In the uncollapsed panel, highlight the obstacle vertices that get collapsed.
+    if (mode === 'uncollapsed') {
+      for (const p of collapsedVertices) {
+        s += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#FFC107" stroke="#6A1B9A" stroke-width="1.5"/>\n`
+      }
+    }
 
     s += `</g>\n</svg>`
     return s
