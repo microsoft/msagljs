@@ -4,7 +4,7 @@
  * A "passport" is the set of shapes whose interior an edge is allowed to cross.
  * Edges sharing the same passport can be routed on the same obstacle set.
  * These functions are extracted from SplineRouter so that both spline and
- * corridor routers can use them.
+ * sleeve routers can use them.
  */
 import {GeomEdge} from '../layout/core/geomEdge'
 import {Port} from '../layout/core/port'

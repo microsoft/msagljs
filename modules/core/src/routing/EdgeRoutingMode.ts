@@ -14,5 +14,5 @@ export enum EdgeRoutingMode {
 
   None,
 
-  Corridor,
+  Sleeve,
 }

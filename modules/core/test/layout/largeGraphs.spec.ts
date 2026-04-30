@@ -140,7 +140,7 @@ describe.skip('Load graphs from ./graphs', () => {
   const routingModes = [
     {name: 'StraightLine', mode: EdgeRoutingMode.StraightLine},
     {name: 'Spline', mode: EdgeRoutingMode.Spline},
-    {name: 'Corridor', mode: EdgeRoutingMode.Corridor},
+    {name: 'Sleeve', mode: EdgeRoutingMode.Sleeve},
   ]
 
   const graphs = [

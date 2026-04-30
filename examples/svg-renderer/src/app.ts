@@ -229,8 +229,8 @@ function getLayoutOptions(): LayoutOptions {
       opts.edgeRoutingMode = EdgeRoutingMode.StraightLine
       break
     }
-    case 'corridor': {
-      opts.edgeRoutingMode = EdgeRoutingMode.Corridor
+    case 'sleeve': {
+      opts.edgeRoutingMode = EdgeRoutingMode.Sleeve
       break
     }
     case 'default': {

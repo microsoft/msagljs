@@ -62,7 +62,7 @@ core ← drawing ← parser ← renderer-common ← renderer-svg
 
 ### Edge Routing
 
-- Spline routing, rectilinear routing, bundle routing, corridor routing, and straight-line edges
+- Spline routing, rectilinear routing, bundle routing, sleeve routing, and straight-line edges
 - Configured via `EdgeRoutingSettings` and `EdgeRoutingMode`
 
 ## Key Conventions

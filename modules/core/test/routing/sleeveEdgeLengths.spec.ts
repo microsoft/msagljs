@@ -28,7 +28,7 @@ function edgesToRoute(gg: GeomGraph): GeomEdge[] {
   return Array.from(gg.deepEdges)
 }
 
-test('GOT: corridor vs spline edge length ratio', () => {
+test('GOT: sleeve vs spline edge length ratio', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -39,22 +39,22 @@ test('GOT: corridor vs spline edge length ratio', () => {
   gg.layoutSettings = new MdsLayoutSettings()
 
   // Layout once (node placement)
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
-  const corridorLen = sumEdgeLengths(gg)
+  const sleeveLen = sumEdgeLengths(gg)
 
   // Re-route with Spline (same node positions)
   gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
   routeEdges(gg, edgesToRoute(gg), null)
   const splineLen = sumEdgeLengths(gg)
 
-  const ratio = corridorLen / splineLen
-  console.log(`GOT Corridor: ${corridorLen.toFixed(1)}`)
+  const ratio = sleeveLen / splineLen
+  console.log(`GOT Sleeve: ${sleeveLen.toFixed(1)}`)
   console.log(`GOT Spline:   ${splineLen.toFixed(1)}`)
-  console.log(`GOT Ratio (corridor/spline) = ${ratio.toFixed(4)}`)
+  console.log(`GOT Ratio (sleeve/spline) = ${ratio.toFixed(4)}`)
 })
 
-test('root.gv IPsepCola: corridor vs spline edge length ratio', () => {
+test('root.gv IPsepCola: sleeve vs spline edge length ratio', () => {
   const fpath = join(__dirname, '../data/graphvis/root.gv')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseDot(graphStr)
@@ -63,20 +63,20 @@ test('root.gv IPsepCola: corridor vs spline edge length ratio', () => {
   const gg = <GeomGraph>GeomGraph.getGeom(graph)
   const settings = new IPsepColaSetting()
   settings.AvoidOverlaps = true
-  settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   gg.layoutSettings = settings
 
-  // Layout once (node placement + corridor routing)
+  // Layout once (node placement + sleeve routing)
   layoutGeomGraph(gg, null)
-  const corridorLen = sumEdgeLengths(gg)
+  const sleeveLen = sumEdgeLengths(gg)
 
   // Re-route with Spline (same node positions)
   settings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Spline
   routeEdges(gg, edgesToRoute(gg), null)
   const splineLen = sumEdgeLengths(gg)
 
-  const ratio = corridorLen / splineLen
-  console.log(`root.gv Corridor: ${corridorLen.toFixed(1)}`)
+  const ratio = sleeveLen / splineLen
+  console.log(`root.gv Sleeve: ${sleeveLen.toFixed(1)}`)
   console.log(`root.gv Spline:   ${splineLen.toFixed(1)}`)
-  console.log(`root.gv Ratio (corridor/spline) = ${ratio.toFixed(4)}`)
+  console.log(`root.gv Ratio (sleeve/spline) = ${ratio.toFixed(4)}`)
 })

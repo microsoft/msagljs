@@ -18,7 +18,7 @@ import {SvgDebugWriter} from '../utils/svgDebugWriter'
 import {Cdt} from '../../../core/src/routing/ConstrainedDelaunayTriangulation/Cdt'
 import {CdtTriangle} from '../../../core/src/routing/ConstrainedDelaunayTriangulation/CdtTriangle'
 import {InteractiveObstacleCalculator} from '../../../core/src/routing/interactiveObstacleCalculator'
-import {findContainingTriangle} from '../../../core/src/routing/corridorRouter'
+import {findContainingTriangle} from '../../../core/src/routing/sleeveRouter'
 import {CdtSite} from '../../../core/src/routing/ConstrainedDelaunayTriangulation/CdtSite'
 import {CdtEdge} from '../../../core/src/routing/ConstrainedDelaunayTriangulation/CdtEdge'
 import {LineSegment} from '../../../core/src/math/geometry/lineSegment'
@@ -234,7 +234,7 @@ function dumpEdgeFigure(
   return true
 }
 
-test.skip('dump corridor routing figures for 10 random GOT edges', () => {
+test.skip('dump sleeve routing figures for 10 random GOT edges', () => {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -242,7 +242,7 @@ test.skip('dump corridor routing figures for 10 random GOT edges', () => {
   dg.createGeometry()
   const gg = <GeomGraph>GeomGraph.getGeom(graph)
   gg.layoutSettings = new MdsLayoutSettings()
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
 
   const padding = 2
@@ -259,7 +259,7 @@ test.skip('dump corridor routing figures for 10 random GOT edges', () => {
   const mid = Math.floor(edges.length * 0.4)
   const selected = edges.slice(mid, mid + 10)
 
-  const outDir = join(__dirname, '../../../../tmp/corridor_figs')
+  const outDir = join(__dirname, '../../../../tmp/sleeve_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
 
   for (let i = 0; i < selected.length; i++) {
@@ -321,7 +321,7 @@ function sleeveToDiagonalsCollapsed(
   return diagonals
 }
 
-// Simple funnel (same as in corridorRouter.ts)
+// Simple funnel (same as in sleeveRouter.ts)
 function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]): Point[] {
   if (diagonals.length === 0) return [source, target]
   // Use a simple approach: collect left/right chain vertices and return the path
@@ -426,9 +426,9 @@ function dumpCombinedFigure(
   // Get the original (raw) diagonals
   const rawDiags = sleeveToDiagonalsRaw(sleeve)
 
-  // Get the legally-collapsed route from corridorRoute
-  const {corridorRoute} = require('../../../core/src/routing/corridorRouter')
-  const untrimmedPoly = corridorRoute(cdt, source, target, sourcePoly, targetPoly)
+  // Get the legally-collapsed route from sleeveRoute
+  const {sleeveRoute} = require('../../../core/src/routing/sleeveRouter')
+  const untrimmedPoly = sleeveRoute(cdt, source, target, sourcePoly, targetPoly)
 
   // Compute bounding box from sleeve triangles
   const bb = Rectangle.mkPP(source, target)
@@ -587,7 +587,7 @@ test.skip('dump combined sleeve figure for paper', () => {
   dg.createGeometry()
   const gg = <GeomGraph>GeomGraph.getGeom(graph)
   gg.layoutSettings = new MdsLayoutSettings()
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
 
   const padding = 2
@@ -596,7 +596,7 @@ test.skip('dump combined sleeve figure for paper', () => {
   const edges = Array.from(gg.deepEdges).filter(e => e.curve != null)
   edges.sort((a, b) => a.source.center.sub(a.target.center).length - b.source.center.sub(b.target.center).length)
 
-  const outDir = join(__dirname, '../../../../tmp/corridor_figs')
+  const outDir = join(__dirname, '../../../../tmp/sleeve_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
 
   // Generate 10 candidates from the middle range and pick the best
@@ -621,12 +621,12 @@ test.skip('dump Mycah edges with sleeve + route', () => {
   dg.createGeometry()
   const gg = GeomGraph.getGeom(graph) as any
   gg.layoutSettings = new (require('../../../core/src').MdsLayoutSettings)()
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
 
   const padding = 2
   const {cdt, nodeToPolyline} = buildCdtAndObstacles(gg, padding)
-  const outDir = join(__dirname, '../../../../tmp/corridor_figs')
+  const outDir = join(__dirname, '../../../../tmp/sleeve_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
 
   let i = 0
@@ -682,15 +682,15 @@ test.skip('dump collapse benefit: find edges where collapse shortens path', () =
   dg.createGeometry()
   const gg = GeomGraph.getGeom(graph) as any
   gg.layoutSettings = new (require('../../../core/src').MdsLayoutSettings)()
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
 
   const padding = 2
   const {cdt, nodeToPolyline} = buildCdtAndObstacles(gg, padding)
-  const outDir = join(__dirname, '../../../../tmp/corridor_figs')
+  const outDir = join(__dirname, '../../../../tmp/sleeve_figs')
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive: true})
 
-  const {funnelFromDiagonals, corridorRoute} = require('../../../core/src/routing/corridorRouter')
+  const {funnelFromDiagonals, sleeveRoute} = require('../../../core/src/routing/sleeveRouter')
 
   const candidates: {edge: any; rawPts: any[]; collPts: any[]; rawLen: number; collLen: number; ratio: number; sleeve: any}[] = []
   for (const edge of gg.deepEdges) {
@@ -729,8 +729,8 @@ test.skip('dump collapse benefit: find edges where collapse shortens path', () =
     const target = edge.target.center
     const sourcePoly = nodeToPolyline.get(edge.source)
     const targetPoly = nodeToPolyline.get(edge.target)
-    // Use the actual sleeveToDiagonals from corridorRouter (with targeted collapse)
-    const {sleeveToDiagonals: actualSleeveToDiags} = require('../../../core/src/routing/corridorRouter')
+    // Use the actual sleeveToDiagonals from sleeveRouter (with targeted collapse)
+    const {sleeveToDiagonals: actualSleeveToDiags} = require('../../../core/src/routing/sleeveRouter')
     const cs = sourcePoly ? {poly: sourcePoly, center: source} : undefined
     const ct = targetPoly ? {poly: targetPoly, center: target} : undefined
     const collapsedDiags: Diagonal[] = actualSleeveToDiags(sleeve, cs, ct)

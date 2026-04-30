@@ -159,17 +159,17 @@ describe.skip('Tiling memory analysis for ca-CondMat', () => {
     log(`RSS after parse: ${getRSSMB().toFixed(0)} MB (delta +${(getRSSMB() - rss0).toFixed(0)} MB)`)
     log('')
 
-    // --- Layout + corridor (Dijkstra) routing ---
-    log('--- 2. MDS layout + corridor (Dijkstra) routing ---')
+    // --- Layout + sleeve (Dijkstra) routing ---
+    log('--- 2. MDS layout + sleeve (Dijkstra) routing ---')
     const rss1 = getRSSMB()
     const t1 = performance.now()
     const gg = createGeometry(g)
     const settings = new MdsLayoutSettings()
-    settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+    settings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
     gg.layoutSettings = settings
     layoutGraphWithMds(gg, null)
     const layoutTime = performance.now() - t1
-    log(`Layout + Dijkstra corridor routing: ${layoutTime.toFixed(0)}ms`)
+    log(`Layout + Dijkstra sleeve routing: ${layoutTime.toFixed(0)}ms`)
     log(`Bounding box: ${gg.boundingBox.width.toFixed(0)} x ${gg.boundingBox.height.toFixed(0)}`)
     log(`RSS after layout: ${getRSSMB().toFixed(0)} MB (delta +${(getRSSMB() - rss1).toFixed(0)} MB)`)
     log('')

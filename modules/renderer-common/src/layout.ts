@@ -53,7 +53,7 @@ export async function layoutGraphOnWorker(workerUrl: string, graph: Graph, optio
           // graphToJSON/parseJSON does not preserve geomGraph.layoutSettings.
           // Re-apply them here so downstream consumers (e.g. TileMap's
           // getEdgeRoutingSettingsFromAncestorsOrDefault) observe the same
-          // EdgeRoutingMode (Corridor, etc.) as the main-thread-only path.
+          // EdgeRoutingMode (Sleeve, etc.) as the main-thread-only path.
           applyLayoutSettings(graph, options)
 
           resolve(graph)
@@ -197,7 +197,7 @@ function resolveLayoutSettings(root: DrawingGraph, subgraph: GeomGraph, override
     if (layoutSettings instanceof SugiyamaLayoutSettings) {
       layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.SugiyamaSplines
     } else {
-      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+      layoutSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
     }
   } else {
     layoutSettings.edgeRoutingSettings.EdgeRoutingMode = overrides.edgeRoutingMode

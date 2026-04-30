@@ -9,7 +9,7 @@ export const ROUTING: {[value: string]: string} = {
   rectilinear: 'Rectilinear',
   bundles: 'Bundles',
   straight: 'Straight',
-  corridor: 'Corridor',
+  sleeve: 'Sleeve',
 } as const
 
 export const LAYOUT: {[value: string]: string} = {

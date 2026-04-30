@@ -14,7 +14,7 @@ import {Tile} from './tile'
 import {Node} from '../../structs/node'
 import {IntPair} from '../../utils/IntPair'
 import {SplineRouter} from '../../routing/splineRouter'
-import {routeCorridorEdges} from '../../routing/corridorRouter'
+import {routeSleeveEdges} from '../../routing/sleeveRouter'
 import {EdgeRoutingMode} from '../../routing/EdgeRoutingMode'
 import {getEdgeRoutingSettingsFromAncestorsOrDefault} from '../driver'
 import {Assert} from '../../utils/assert'
@@ -168,9 +168,9 @@ export class TileMap {
     }
 
     const ers = getEdgeRoutingSettingsFromAncestorsOrDefault(this.geomGraph)
-    const useCorridor = ers.EdgeRoutingMode === EdgeRoutingMode.Corridor
+    const useSleeve = ers.EdgeRoutingMode === EdgeRoutingMode.Sleeve
 
-    if (useCorridor) {
+    if (useSleeve) {
       // New scheme: finest level unchanged. For each coarser level, double each node's
       // effective box; greedily accept nodes by rank, dropping those whose scaled box
       // overlaps an already-accepted higher-ranked node's scaled box. Edges are rerouted
@@ -193,7 +193,7 @@ export class TileMap {
       // that, after both the filter's margin and the CDT's obstacle inflation are
       // applied, a real gap remains between obstacles for bezier bulge / arrowheads /
       // edge labels. extraObstaclePadding below mirrors what we pass to
-      // routeCorridorEdges (= ers.Padding). desiredGap of ers.Padding gives ~one Padding
+      // routeSleeveEdges (= ers.Padding). desiredGap of ers.Padding gives ~one Padding
       // of visible breathing room between inflated obstacles on coarse levels.
       const extraObstaclePadding = ers.Padding
       const desiredGap = 3 * ers.Padding
@@ -232,7 +232,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeCorridorEdges(this.geomGraph, activeEdges, null, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
+          routeSleeveEdges(this.geomGraph, activeEdges, null, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
         this.regenerateCurveClipsUpToLevel(k, activeNodes)
       }

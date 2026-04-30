@@ -1,5 +1,5 @@
 /**
- * Corridor Router: routes edges directly on the CDT dual graph,
+ * Sleeve Router: routes edges directly on the CDT dual graph,
  * bypassing the cone spanner / visibility graph.
  *
  * Pipeline: CDT → Dijkstra tree on dual graph → sleeve → funnel → polyline
@@ -355,7 +355,7 @@ function findSleeveAStarIndexed(
       if (otId < 0) continue
       if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
       if (idx.isInsideObstacle(otId, allowedPolys) && !idx.triangles[otId].containsPoint(target)) continue
-      // Mask-restricted corridor: only expand through masked-in triangles (target-triangle always OK).
+      // Mask-restricted sleeve: only expand through masked-in triangles (target-triangle always OK).
       if (triMask !== null && triMask[otId] === 0 && !idx.triangles[otId].containsPoint(target)) continue
 
       // Edge weight = Euclidean distance between triangle centroids.
@@ -770,11 +770,11 @@ export function funnelFromDiagonals(source: Point, target: Point, diagonals: Dia
   }
 }
 
-/** Route a single edge through the CDT using the corridor approach.
+/** Route a single edge through the CDT using the sleeve approach.
  *  Virtually collapses source/target obstacle boundaries to their centers
  *  in the funnel diagonals, so the funnel routes directly from/to
  *  node centers without sharp turns at obstacle corners. */
-export function corridorRoute(
+export function sleeveRoute(
   cdt: Cdt,
   source: Point,
   target: Point,
@@ -815,7 +815,7 @@ function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
   return false
 }
 
-/** Route all edges using the corridor approach.
+/** Route all edges using the sleeve approach.
  *  Builds a CDT on padded obstacle polylines and routes each edge
  *  through the CDT dual graph using a single grouped Dijkstra tree per
  *  source node (multi-target single-source shortest paths). Edges whose
@@ -828,7 +828,7 @@ function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
  *  tile levels. Trimming still uses the unscaled rendering boundary, so edges
  *  end exactly at the visible node border.
  */
-export function routeCorridorEdges(
+export function routeSleeveEdges(
   geomGraph: GeomGraph,
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
@@ -845,7 +845,7 @@ export function routeCorridorEdges(
   ensurePorts(edgesToRoute)
 
   if (graphHasSubgraphs(geomGraph)) {
-    routeCorridorEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding, smoothCorners)
+    routeSleeveEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding, smoothCorners)
     return
   }
 
@@ -886,10 +886,10 @@ export function routeCorridorEdges(
   // build CDT — do NOT add port locations as isolated sites,
   // because ports inside other nodes' obstacles would break
   // the obstacle-interior check (null-owner sites create holes).
-  console.time('CorridorRouter CDT')
+  console.time('SleeveRouter CDT')
   const cdt = new Cdt([], obstacles, [])
   cdt.run()
-  console.timeEnd("CorridorRouter CDT")
+  console.timeEnd("SleeveRouter CDT")
 
   // Build triangle index for fast typed-array Dijkstra/A*
   const idx = new TriangleIndex(cdt)
@@ -918,7 +918,7 @@ export function routeCorridorEdges(
   }
 
   // route edges using indexed Dijkstra tree per source node
-  console.time('CorridorRouter routing')
+  console.time('SleeveRouter routing')
 
   // Group edges by source node
   const edgesBySource = new Map<GeomNode, GeomEdge[]>()
@@ -1075,7 +1075,7 @@ export function routeCorridorEdges(
     for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
     visited.length = 0
   }
-  console.timeEnd('CorridorRouter routing')
+  console.timeEnd('SleeveRouter routing')
 }
 
 /** Adjust bezier coefficients at each corner so curves stay within padding
@@ -1159,9 +1159,9 @@ function ensurePorts(edges: GeomEdge[]): void {
   }
 }
 
-/** Route edges using corridor approach with passport support for subgraphs.
+/** Route edges using sleeve approach with passport support for subgraphs.
  *  Edges are grouped by passport, and each group gets its own obstacle set and CDT. */
-function routeCorridorEdgesWithPassports(
+function routeSleeveEdgesWithPassports(
   geomGraph: GeomGraph,
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
@@ -1191,7 +1191,7 @@ function routeCorridorEdgesWithPassports(
   for (const group of edgeGroups) {
     if (cancelToken && cancelToken.canceled) break
     const obstacleShapes = getObstaclesFromPassport(group.passport, ancestorSets, root)
-    routeCorridorEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding, smoothCorners)
+    routeSleeveEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding, smoothCorners)
   }
 
   // Clean up root
@@ -1201,7 +1201,7 @@ function routeCorridorEdgesWithPassports(
 }
 
 /** Route a group of edges that share the same passport (obstacle set). */
-function routeCorridorEdgeGroup(
+function routeSleeveEdgeGroup(
   geomGraph: GeomGraph,
   edges: GeomEdge[],
   obstacleShapes: Set<Shape>,

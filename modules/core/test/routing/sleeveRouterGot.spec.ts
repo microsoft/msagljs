@@ -13,7 +13,7 @@ import {
 import {DrawingGraph} from '../../../drawing/src'
 import {Curve, PointLocation} from '../../../core/src/math/geometry/curve'
 
-function layoutGotWithCorridor(): GeomGraph {
+function layoutGotWithSleeve(): GeomGraph {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
   const graphStr = fs.readFileSync(fpath, 'utf-8')
   const graph = parseJSON(JSON.parse(graphStr))
@@ -24,13 +24,13 @@ function layoutGotWithCorridor(): GeomGraph {
     const {MdsLayoutSettings} = require('../../../core/src')
     geomGraph.layoutSettings = new MdsLayoutSettings()
   }
-  geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  geomGraph.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(geomGraph, null)
   return geomGraph
 }
 
-test('corridor routing on gameofthrones has no null curves', () => {
-  const geomGraph = layoutGotWithCorridor()
+test('sleeve routing on gameofthrones has no null curves', () => {
+  const geomGraph = layoutGotWithSleeve()
 
   let nullCurves = 0
   let totalEdges = 0
@@ -46,8 +46,8 @@ test('corridor routing on gameofthrones has no null curves', () => {
   expect(nullCurves).toBe(0)
 })
 
-test('corridor routing: edges do not cross through non-endpoint nodes', () => {
-  const geomGraph = layoutGotWithCorridor()
+test('sleeve routing: edges do not cross through non-endpoint nodes', () => {
+  const geomGraph = layoutGotWithSleeve()
 
   // Collect all nodes and their boundary curves
   const nodes: GeomNode[] = []

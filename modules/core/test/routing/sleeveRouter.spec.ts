@@ -2,7 +2,7 @@ import {Point} from '../../src/math/geometry/point'
 import {Polyline} from '../../src/math/geometry/polyline'
 import {Rectangle} from '../../src/math/geometry/rectangle'
 import {Cdt} from '../../src/routing/ConstrainedDelaunayTriangulation/Cdt'
-import {corridorRoute, findContainingTriangle} from '../../src/routing/corridorRouter'
+import {sleeveRoute, findContainingTriangle} from '../../src/routing/sleeveRouter'
 
 /** Create a rectangular obstacle polyline */
 function rect(x: number, y: number, w: number, h: number): Polyline {
@@ -31,7 +31,7 @@ function buildCdt(obstacles: Polyline[], ports: Point[] = []): Cdt {
   return cdt
 }
 
-describe('corridorRouter', () => {
+describe('sleeveRouter', () => {
   test('findContainingTriangle finds correct triangle', () => {
     const obstacles = [rect(3, 3, 2, 2)]
     const cdt = buildCdt(obstacles)
@@ -48,7 +48,7 @@ describe('corridorRouter', () => {
 
     const source = new Point(1, 5)
     const target = new Point(9, 5)
-    const poly = corridorRoute(cdt, source, target)
+    const poly = sleeveRoute(cdt, source, target)
 
     expect(poly).not.toBeNull()
     expect(poly.start.equal(source)).toBe(true)
@@ -62,7 +62,7 @@ describe('corridorRouter', () => {
 
     const source = new Point(1, 5)
     const target = new Point(9, 5)
-    const poly = corridorRoute(cdt, source, target)
+    const poly = sleeveRoute(cdt, source, target)
 
     expect(poly).not.toBeNull()
     expect(poly.count).toBeGreaterThanOrEqual(2)
@@ -75,7 +75,7 @@ describe('corridorRouter', () => {
 
     const source = new Point(0, 5)
     const target = new Point(8, 5)
-    const poly = corridorRoute(cdt, source, target)
+    const poly = sleeveRoute(cdt, source, target)
 
     expect(poly).not.toBeNull()
   })
@@ -88,7 +88,7 @@ describe('corridorRouter', () => {
 
     const source = new Point(2, 2) // inside obs1
     const target = new Point(10, 2) // inside obs2
-    const poly = corridorRoute(cdt, source, target, obs1, obs2)
+    const poly = sleeveRoute(cdt, source, target, obs1, obs2)
 
     expect(poly).not.toBeNull()
     expect(poly.start.equal(source)).toBe(true)
@@ -105,7 +105,7 @@ describe('corridorRouter', () => {
 
     const source = new Point(0, 5)
     const target = new Point(12, 5)
-    const poly = corridorRoute(cdt, source, target)
+    const poly = sleeveRoute(cdt, source, target)
 
     expect(poly).not.toBeNull()
     expect(poly.start.equal(source)).toBe(true)
@@ -115,9 +115,9 @@ describe('corridorRouter', () => {
 })
 
 import {Graph, Node, Edge, GeomNode, GeomEdge, GeomGraph, CurveFactory, GeomObject} from '../../src'
-import {routeCorridorEdges} from '../../src/routing/corridorRouter'
+import {routeSleeveEdges} from '../../src/routing/sleeveRouter'
 
-describe('corridorRouter with subgraphs', () => {
+describe('sleeveRouter with subgraphs', () => {
   test('edges crossing cluster boundary get routed', () => {
     // Create graph: cluster C contains nodes A and B; node D is outside.
     // Edge A→D crosses C's boundary.
@@ -151,7 +151,7 @@ describe('corridorRouter with subgraphs', () => {
     const geomEdgeAB = new GeomEdge(edgeAB)
 
     const edges = Array.from(gg.deepEdges)
-    routeCorridorEdges(gg, edges, null, 2)
+    routeSleeveEdges(gg, edges, null, 2)
 
     // Both edges should have curves (not null)
     expect(geomEdgeAD.curve).not.toBeNull()

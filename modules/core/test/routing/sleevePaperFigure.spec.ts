@@ -19,7 +19,7 @@ import {
   sleeveToDiagonals,
   funnelFromDiagonals,
   Diagonal,
-} from '../../../core/src/routing/corridorRouter'
+} from '../../../core/src/routing/sleeveRouter'
 
 function layoutGot() {
   const fpath = join(__dirname, '../data/JSONfiles/gameofthrones.json')
@@ -30,7 +30,7 @@ function layoutGot() {
   const gg = <GeomGraph>GeomGraph.getGeom(graph)
   const {MdsLayoutSettings} = require('../../../core/src')
   gg.layoutSettings = new MdsLayoutSettings()
-  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Corridor
+  gg.layoutSettings.commonSettings.edgeRoutingSettings.EdgeRoutingMode = EdgeRoutingMode.Sleeve
   layoutGeomGraph(gg, null)
   return gg
 }
@@ -139,7 +139,7 @@ test('MELISANDRE-STANNIS sleeve collapse from paper figure', () => {
   expect(sleeve!.length).toBeGreaterThan(0)
 
   // Dump sleeve as SVG with shaded triangles
-  dumpSleeveAsSvg(sleeve!, join(__dirname, '../../tmp/corridor_figs/sleeve_MELISANDRE_STANNIS.svg'))
+  dumpSleeveAsSvg(sleeve!, join(__dirname, '../../tmp/sleeve_figs/sleeve_MELISANDRE_STANNIS.svg'))
 
   console.log(`Sleeve length: ${sleeve!.length} front edges`)
 
