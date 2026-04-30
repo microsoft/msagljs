@@ -45,7 +45,9 @@ jobs:
           yarn build:docs
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/dev' }}
+        # Only deploy from one matrix entry to avoid concurrent force-pushes
+        # to gh-pages racing each other (one wins, the other fails).
+        if: ${{ github.ref == 'refs/heads/dev' && matrix.node-version == '22.x' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: website/build
