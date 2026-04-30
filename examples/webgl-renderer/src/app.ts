@@ -359,6 +359,21 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
         const ot = fe.edge.GetOtherTriangle_T(fe.source)
         if (ot) drawTri(ot)
       }
+      // Uncollapsed L+R chain polygon outline (so it can be directly compared
+      // with the collapsed polygon in the other panel).
+      if (rawDiags.length > 0) {
+        const ring: Point[] = []
+        const push = (p: Point) => {
+          const last = ring[ring.length - 1]
+          if (!last || last.sub(p).length > 1e-6) ring.push(p)
+        }
+        push(source)
+        for (const d of rawDiags) push(d.left)
+        push(target)
+        for (let i = rawDiags.length - 1; i >= 0; i--) push(rawDiags[i].right)
+        const pts = ring.map(p => `${p.x},${p.y}`).join(' ')
+        s += `<polygon points="${pts}" fill="none" stroke="#1565C0" stroke-width="1.5"/>\n`
+      }
     } else if (mode === 'collapsed' && collapsedDiags.length > 0) {
       // Collapsed sleeve polygon (purple tint + outline).
       const ring: Point[] = []
@@ -426,4 +441,89 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
 }
 
 ;(window as any).dumpEdgeSleeve = dumpEdgeSleeve
-//console.log('Debug: call dumpEdgeSleeve("JOFFREY", "MYCAH") in console to download SVG')
+
+// Debug: probe an edge for collapse without downloading anything.
+function probeEdgeSleeve(srcId: string, tgtId: string): {collapsed: number; bends: number; pathLen: number} | null {
+  const graph = (renderer as any)._graph as Graph
+  if (!graph) return null
+  const gg = GeomGraph.getGeom(graph)
+  if (!gg) return null
+  let foundEdge: GeomEdge | null = null
+  for (const e of gg.deepEdges) {
+    if ((e.edge.source.id === srcId && e.edge.target.id === tgtId) ||
+        (e.edge.source.id === tgtId && e.edge.target.id === srcId)) {
+      foundEdge = e; break
+    }
+  }
+  if (!foundEdge) return null
+  const padding = 2
+  const nodeToPolyline = new Map<GeomNode, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+  for (const node of gg.nodesBreadthFirst) {
+    if (node.boundaryCurve == null) continue
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
+    nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+  const cdt = new Cdt([], obstacles, [])
+  cdt.run()
+  const source = foundEdge.source.center
+  const target = foundEdge.target.center
+  const sourcePoly = nodeToPolyline.get(foundEdge.source)
+  const targetPoly = nodeToPolyline.get(foundEdge.target)
+  const allowed = new Set<Polyline>()
+  if (sourcePoly) allowed.add(sourcePoly)
+  if (targetPoly) allowed.add(targetPoly)
+  const srcTri = findContainingTriangle(cdt, source)
+  const sleeve = srcTri ? findSleeveAStar(srcTri, target, allowed) : null
+  if (!sleeve || sleeve.length === 0) return null
+  const rawDiags = sleeveToDiagonals(sleeve)
+  const cs = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+  const ct = targetPoly ? {poly: targetPoly, center: target} : undefined
+  const collapsedDiags = sleeveToDiagonals(sleeve, cs, ct)
+  const ptKey = (p: Point) => `${p.x.toFixed(6)},${p.y.toFixed(6)}`
+  const colKeys = new Set<string>()
+  for (const d of collapsedDiags) { colKeys.add(ptKey(d.left)); colKeys.add(ptKey(d.right)) }
+  const seen = new Set<string>()
+  let collapsed = 0
+  const tryAdd = (p: Point) => {
+    const k = ptKey(p)
+    if (seen.has(k)) return; seen.add(k)
+    if (!colKeys.has(k)) collapsed++
+  }
+  for (const d of rawDiags) {
+    if (sourcePoly) {
+      for (const v of sourcePoly) {
+        if (Math.abs(v.x - d.left.x) < 1e-6 && Math.abs(v.y - d.left.y) < 1e-6) tryAdd(d.left)
+        if (Math.abs(v.x - d.right.x) < 1e-6 && Math.abs(v.y - d.right.y) < 1e-6) tryAdd(d.right)
+      }
+    }
+    if (targetPoly) {
+      for (const v of targetPoly) {
+        if (Math.abs(v.x - d.left.x) < 1e-6 && Math.abs(v.y - d.left.y) < 1e-6) tryAdd(d.left)
+        if (Math.abs(v.x - d.right.x) < 1e-6 && Math.abs(v.y - d.right.y) < 1e-6) tryAdd(d.right)
+      }
+    }
+  }
+  const collapsedPath = funnelFromDiagonals(source, target, collapsedDiags)
+  let pathLen = 0
+  for (let i = 1; i < collapsedPath.length; i++) pathLen += collapsedPath[i].sub(collapsedPath[i-1]).length
+  return {collapsed, bends: Math.max(0, collapsedPath.length - 2), pathLen}
+}
+
+function listAllEdges(): {s: string; t: string}[] {
+  const graph = (renderer as any)._graph as Graph
+  if (!graph) return []
+  const gg = GeomGraph.getGeom(graph)
+  if (!gg) return []
+  const out: {s: string; t: string}[] = []
+  for (const e of gg.deepEdges) out.push({s: e.edge.source.id, t: e.edge.target.id})
+  return out
+}
+
+;(window as any).probeEdgeSleeve = probeEdgeSleeve
+;(window as any).listAllEdges = listAllEdges
