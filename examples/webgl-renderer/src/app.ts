@@ -336,6 +336,22 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
     }
   }
 
+  // Collapsed sleeve perimeter (purple): the polygon the funnel sees after
+  // collapsing source/target obstacle vertices to the node centers.
+  if (collapsedDiags.length > 0) {
+    const ring: Point[] = []
+    const push = (p: Point) => {
+      const last = ring[ring.length - 1]
+      if (!last || last.sub(p).length > 1e-6) ring.push(p)
+    }
+    push(source)
+    for (const d of collapsedDiags) push(d.left)
+    push(target)
+    for (let i = collapsedDiags.length - 1; i >= 0; i--) push(collapsedDiags[i].right)
+    const pts = ring.map(p => `${p.x},${p.y}`).join(' ')
+    svg += `<polygon points="${pts}" fill="none" stroke="#6A1B9A" stroke-width="2" stroke-dasharray="6,3"/>\n`
+  }
+
   // Source/target padded
   if (sourcePoly) {
     const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
