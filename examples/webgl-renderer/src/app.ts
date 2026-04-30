@@ -304,14 +304,21 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewBB.width}" height="${viewBB.height}" viewBox="${viewBB.left} ${viewBB.bottom} ${viewBB.width} ${viewBB.height}">\n`
   svg += `<g transform="scale(1,-1) translate(0,${-(viewBB.bottom + viewBB.top)})">\n`
 
-  // Nearby padded obstacles
+  // Nearby padded obstacles (with labels)
+  const labelDraws: string[] = []
   for (const node of gg.nodesBreadthFirst) {
     if (!node.boundaryCurve) continue
     const poly = nodeToPolyline.get(node)
     if (!poly || !viewBB.intersects(poly.boundingBox)) continue
     if (node === foundEdge.source || node === foundEdge.target) continue
     const pts = Array.from(poly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="gray" stroke-width="1"/>\n`
+    svg += `<polygon points="${pts}" fill="#EEEEEE" fill-opacity="0.7" stroke="#BDBDBD" stroke-width="0.5"/>\n`
+    const id = (node.node as any).id ?? ''
+    if (id) {
+      const c = node.center
+      // Labels live OUTSIDE the flipped group so text reads upright.
+      labelDraws.push(`<text x="${c.x}" y="${(viewBB.bottom + viewBB.top) - c.y}" text-anchor="middle" dominant-baseline="central" font-size="6" fill="#9E9E9E">${id}</text>\n`)
+    }
   }
 
   // Sleeve triangles (dashed blue)
@@ -332,26 +339,38 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   // Source/target padded
   if (sourcePoly) {
     const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="indianred" stroke-width="2"/>\n`
+    svg += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
   }
   if (targetPoly) {
     const pts = Array.from(targetPoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="steelblue" stroke-width="2"/>\n`
+    svg += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
   }
 
-  // Collapsed path (green solid, underneath)
+  // Collapsed path (red solid, underneath)
   if (collapsedPath.length >= 2) {
     const pts = collapsedPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="green" stroke-width="3"/>\n`
+    svg += `<polyline points="${pts}" fill="none" stroke="#D32F2F" stroke-width="2.5"/>\n`
   }
 
   // Uncollapsed path (orange dashed, on top)
   if (rawPath.length >= 2) {
     const pts = rawPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="orange" stroke-width="2" stroke-dasharray="5,3"/>\n`
+    svg += `<polyline points="${pts}" fill="none" stroke="#FB8C00" stroke-width="1.6" stroke-dasharray="4,2"/>\n`
   }
 
-  svg += `</g></svg>`
+  // Source / target endpoint markers and names
+  const srcName = foundEdge.source.node.id
+  const tgtName = foundEdge.target.node.id
+  svg += `<circle cx="${source.x}" cy="${source.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
+  svg += `<circle cx="${target.x}" cy="${target.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
+
+  svg += `</g>\n`
+  // Endpoint labels (outside flipped group, upright text)
+  const yFlip = (y: number) => (viewBB.bottom + viewBB.top) - y
+  for (const lbl of labelDraws) svg += lbl
+  svg += `<text x="${source.x}" y="${yFlip(source.y) - 6}" text-anchor="middle" font-size="9" font-weight="bold" fill="#0D47A1">${srcName}</text>\n`
+  svg += `<text x="${target.x}" y="${yFlip(target.y) - 6}" text-anchor="middle" font-size="9" font-weight="bold" fill="#0D47A1">${tgtName}</text>\n`
+  svg += `</svg>`
 
   const blob = new Blob([svg], {type: 'image/svg+xml'})
   const url = URL.createObjectURL(blob)
