@@ -301,101 +301,91 @@ function dumpEdgeSleeve(srcId: string, tgtId: string) {
   }
   viewBB.pad(viewBB.diagonal * 0.15)
 
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewBB.width}" height="${viewBB.height}" viewBox="${viewBB.left} ${viewBB.bottom} ${viewBB.width} ${viewBB.height}">\n`
-  svg += `<g transform="scale(1,-1) translate(0,${-(viewBB.bottom + viewBB.top)})">\n`
+  let svg = ''
+  const emitPanel = (mode: 'uncollapsed' | 'collapsed'): string => {
+    let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewBB.width}" height="${viewBB.height}" viewBox="${viewBB.left} ${viewBB.bottom} ${viewBB.width} ${viewBB.height}">\n`
+    s += `<g transform="scale(1,-1) translate(0,${-(viewBB.bottom + viewBB.top)})">\n`
 
-  // Nearby padded obstacles (with labels)
-  const labelDraws: string[] = []
-  for (const node of gg.nodesBreadthFirst) {
-    if (!node.boundaryCurve) continue
-    const poly = nodeToPolyline.get(node)
-    if (!poly || !viewBB.intersects(poly.boundingBox)) continue
-    if (node === foundEdge.source || node === foundEdge.target) continue
-    const pts = Array.from(poly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="#EEEEEE" fill-opacity="0.7" stroke="#BDBDBD" stroke-width="0.5"/>\n`
-    const id = (node.node as any).id ?? ''
-    if (id) {
-      const c = node.center
-      // Labels live OUTSIDE the flipped group so text reads upright.
-      labelDraws.push(`<text x="${c.x}" y="${(viewBB.bottom + viewBB.top) - c.y}" text-anchor="middle" dominant-baseline="central" font-size="6" fill="#9E9E9E">${id}</text>\n`)
+    // Nearby padded obstacles (no labels).
+    for (const node of gg.nodesBreadthFirst) {
+      if (!node.boundaryCurve) continue
+      const poly = nodeToPolyline.get(node)
+      if (!poly || !viewBB.intersects(poly.boundingBox)) continue
+      if (node === foundEdge!.source || node === foundEdge!.target) continue
+      const pts = Array.from(poly).map(p => `${p.x},${p.y}`).join(' ')
+      s += `<polygon points="${pts}" fill="#EEEEEE" fill-opacity="0.7" stroke="#BDBDBD" stroke-width="0.5"/>\n`
     }
-  }
 
-  // Sleeve triangles (dashed blue)
-  if (sleeve) {
-    const seen = new Set()
-    for (const fe of sleeve) {
-      const drawTri = (t: any) => {
-        if (seen.has(t)) return; seen.add(t)
-        const p0 = t.Sites.item0.point, p1 = t.Sites.item1.point, p2 = t.Sites.item2.point
-        svg += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y}" fill="rgba(100,149,237,0.08)" stroke="cornflowerblue" stroke-width="1.5"/>\n`
+    if (mode === 'uncollapsed' && sleeve) {
+      // Sleeve triangles (light blue).
+      const seen = new Set()
+      for (const fe of sleeve) {
+        const drawTri = (t: any) => {
+          if (seen.has(t)) return; seen.add(t)
+          const p0 = t.Sites.item0.point, p1 = t.Sites.item1.point, p2 = t.Sites.item2.point
+          s += `<polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y}" fill="rgba(100,149,237,0.10)" stroke="cornflowerblue" stroke-width="1.5"/>\n`
+        }
+        drawTri(fe.source)
+        const ot = fe.edge.GetOtherTriangle_T(fe.source)
+        if (ot) drawTri(ot)
       }
-      drawTri(fe.source)
-      const ot = fe.edge.GetOtherTriangle_T(fe.source)
-      if (ot) drawTri(ot)
+    } else if (mode === 'collapsed' && collapsedDiags.length > 0) {
+      // Collapsed sleeve polygon (purple tint + outline).
+      const ring: Point[] = []
+      const push = (p: Point) => {
+        const last = ring[ring.length - 1]
+        if (!last || last.sub(p).length > 1e-6) ring.push(p)
+      }
+      push(source)
+      for (const d of collapsedDiags) push(d.left)
+      push(target)
+      for (let i = collapsedDiags.length - 1; i >= 0; i--) push(collapsedDiags[i].right)
+      const pts = ring.map(p => `${p.x},${p.y}`).join(' ')
+      s += `<polygon points="${pts}" fill="rgba(106,27,154,0.10)" stroke="#6A1B9A" stroke-width="1.5"/>\n`
     }
-  }
 
-  // Collapsed sleeve perimeter (purple): the polygon the funnel sees after
-  // collapsing source/target obstacle vertices to the node centers.
-  if (collapsedDiags.length > 0) {
-    const ring: Point[] = []
-    const push = (p: Point) => {
-      const last = ring[ring.length - 1]
-      if (!last || last.sub(p).length > 1e-6) ring.push(p)
+    // Source/target padded obstacles.
+    if (sourcePoly) {
+      const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
+      s += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
     }
-    push(source)
-    for (const d of collapsedDiags) push(d.left)
-    push(target)
-    for (let i = collapsedDiags.length - 1; i >= 0; i--) push(collapsedDiags[i].right)
-    const pts = ring.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="none" stroke="#6A1B9A" stroke-width="2" stroke-dasharray="6,3"/>\n`
+    if (targetPoly) {
+      const pts = Array.from(targetPoly).map(p => `${p.x},${p.y}`).join(' ')
+      s += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
+    }
+
+    // Funnel path for this panel (red solid).
+    const path = mode === 'uncollapsed' ? rawPath : collapsedPath
+    if (path.length >= 2) {
+      const pts = path.map(p => `${p.x},${p.y}`).join(' ')
+      s += `<polyline points="${pts}" fill="none" stroke="#D32F2F" stroke-width="2.5"/>\n`
+    }
+
+    // Endpoint markers.
+    s += `<circle cx="${source.x}" cy="${source.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
+    s += `<circle cx="${target.x}" cy="${target.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
+
+    s += `</g>\n</svg>`
+    return s
   }
 
-  // Source/target padded
-  if (sourcePoly) {
-    const pts = Array.from(sourcePoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
-  }
-  if (targetPoly) {
-    const pts = Array.from(targetPoly).map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polygon points="${pts}" fill="#E3F2FD" fill-opacity="0.6" stroke="#1565C0" stroke-width="1.5"/>\n`
-  }
-
-  // Collapsed path (red solid, underneath)
-  if (collapsedPath.length >= 2) {
-    const pts = collapsedPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="#D32F2F" stroke-width="2.5"/>\n`
+  const download = (data: string, name: string) => {
+    const blob = new Blob([data], {type: 'image/svg+xml'})
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    console.log(`Downloaded ${name}`)
   }
 
-  // Uncollapsed path (orange dashed, on top)
-  if (rawPath.length >= 2) {
-    const pts = rawPath.map(p => `${p.x},${p.y}`).join(' ')
-    svg += `<polyline points="${pts}" fill="none" stroke="#FB8C00" stroke-width="1.6" stroke-dasharray="4,2"/>\n`
-  }
-
-  // Source / target endpoint markers and names
-  const srcName = foundEdge.source.node.id
-  const tgtName = foundEdge.target.node.id
-  svg += `<circle cx="${source.x}" cy="${source.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
-  svg += `<circle cx="${target.x}" cy="${target.y}" r="3" fill="#0D47A1" stroke="white" stroke-width="0.8"/>\n`
-
-  svg += `</g>\n`
-  // Endpoint labels (outside flipped group, upright text)
-  const yFlip = (y: number) => (viewBB.bottom + viewBB.top) - y
-  for (const lbl of labelDraws) svg += lbl
-  svg += `<text x="${source.x}" y="${yFlip(source.y) - 6}" text-anchor="middle" font-size="9" font-weight="bold" fill="#0D47A1">${srcName}</text>\n`
-  svg += `<text x="${target.x}" y="${yFlip(target.y) - 6}" text-anchor="middle" font-size="9" font-weight="bold" fill="#0D47A1">${tgtName}</text>\n`
-  svg += `</svg>`
-
-  const blob = new Blob([svg], {type: 'image/svg+xml'})
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `sleeve_${srcId}_${tgtId}.svg`
-  a.click()
-  URL.revokeObjectURL(url)
-  console.log(`Downloaded sleeve_${srcId}_${tgtId}.svg`)
+  download(emitPanel('uncollapsed'), `sleeve_${srcId}_${tgtId}_uncollapsed.svg`)
+  setTimeout(() => download(emitPanel('collapsed'), `sleeve_${srcId}_${tgtId}_collapsed.svg`), 500)
+  // Avoid unused-variable warning when only one panel mode is rendered.
+  void svg
 }
 
 ;(window as any).dumpEdgeSleeve = dumpEdgeSleeve
