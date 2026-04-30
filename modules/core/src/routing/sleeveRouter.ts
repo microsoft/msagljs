@@ -198,6 +198,53 @@ export function findContainingTriangle(cdt: Cdt, point: Point): CdtTriangle | nu
   return null
 }
 
+/** Strict (proper) crossing test for two open segments AB and CD. */
+function segmentsProperlyCross(a: Point, b: Point, c: Point, d: Point): boolean {
+  const o1 = Point.getTriangleOrientation(a, b, c)
+  const o2 = Point.getTriangleOrientation(a, b, d)
+  if (o1 === TriangleOrientation.Collinear || o2 === TriangleOrientation.Collinear || o1 === o2) return false
+  const o3 = Point.getTriangleOrientation(c, d, a)
+  const o4 = Point.getTriangleOrientation(c, d, b)
+  if (o3 === TriangleOrientation.Collinear || o4 === TriangleOrientation.Collinear || o3 === o4) return false
+  return true
+}
+
+/** Optimistic line-of-sight test: walk segment(source, target) through the
+ *  CDT starting at sourceTriangle. Returns true iff every triangle visited
+ *  is either free space or the interior of an allowed (source/target)
+ *  obstacle, i.e. the straight segment does not pierce any obstacle.
+ *  Degenerate cases (segment grazing a CDT vertex) return false, which
+ *  conservatively forces the caller to fall back to the full sleeve search. */
+export function segmentClearOfObstacles(
+  sourceTriangle: CdtTriangle,
+  source: Point,
+  target: Point,
+  allowedPolys: Set<Polyline>,
+): boolean {
+  let t = sourceTriangle
+  let prevEdge: CdtEdge | null = null
+  // Bounded by the number of CDT triangles in the worst case; the constant
+  // is generous to absorb any pathological zig-zag without spinning forever.
+  for (let step = 0; step < 100000; step++) {
+    if (t.containsPoint(target)) return true
+    let exitEdge: CdtEdge | null = null
+    for (const e of t.Edges) {
+      if (e === prevEdge) continue
+      if (segmentsProperlyCross(source, target, e.upperSite.point, e.lowerSite.point)) {
+        exitEdge = e
+        break
+      }
+    }
+    if (!exitEdge) return false
+    const nt = exitEdge.GetOtherTriangle_T(t)
+    if (!nt) return false
+    if (triangleIsInsideObstacle(nt, allowedPolys)) return false
+    t = nt
+    prevEdge = exitEdge
+  }
+  return false
+}
+
 /** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
  *  Uses pre-indexed triangle data and typed arrays for minimal GC. */
 function dijkstraTreeIndexed(
@@ -788,6 +835,12 @@ export function sleeveRoute(
   if (sourcePoly) allowed.add(sourcePoly)
   if (targetPoly) allowed.add(targetPoly)
 
+  // Optimistic shortcut: if the straight segment source→target does not
+  // pierce any obstacle, return it immediately and skip the sleeve search.
+  if (segmentClearOfObstacles(sourceTriangle, source, target, allowed)) {
+    return Polyline.mkFromPoints([source, target])
+  }
+
   const sleeve = findSleeveAStar(sourceTriangle, target, allowed)
   if (sleeve == null) return null
 
@@ -960,6 +1013,18 @@ export function routeSleeveEdges(
       if (!targetTriangle) {
         const fallback = Polyline.mkFromPoints([source, target])
         edge.curve = fallback.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+        continue
+      }
+      // Optimistic shortcut: if the straight segment is obstacle-free,
+      // skip the sleeve search for this edge.
+      const allowedThis = new Set<Polyline>()
+      if (sourcePoly) allowedThis.add(sourcePoly)
+      if (targetPoly) allowedThis.add(targetPoly)
+      if (segmentClearOfObstacles(sourceTriangle, source, target, allowedThis)) {
+        const straight = Polyline.mkFromPoints([source, target])
+        edge.curve = straight.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
         continue
@@ -1289,6 +1354,16 @@ function routeSleeveEdgeGroup(
       const targetPoly = nodeToPolyline.get(edge.target)
       const targetTriangle = findContainingTriangle(cdt, target)
       if (!targetTriangle) {
+        setStraightLine(edge, source, target)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        continue
+      }
+      // Optimistic shortcut: if the straight segment is obstacle-free,
+      // skip the sleeve search for this edge.
+      const allowedThis = new Set<Polyline>()
+      if (sourcePoly) allowedThis.add(sourcePoly)
+      if (targetPoly) allowedThis.add(targetPoly)
+      if (segmentClearOfObstacles(sourceTriangle, source, target, allowedThis)) {
         setStraightLine(edge, source, target)
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
         continue
