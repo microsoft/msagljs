@@ -970,101 +970,105 @@ export function routeSleeveEdges(
     return bc
   }
 
-  // route edges using indexed Dijkstra tree per source node
+  // route edges using indexed Dijkstra tree per root node
   console.time('SleeveRouter routing')
 
-  // Group edges by source node
-  const edgesBySource = new Map<GeomNode, GeomEdge[]>()
-  for (const edge of edgesToRoute) {
-    if (cancelToken && cancelToken.canceled) return
-    if (edge.sourcePort == null || edge.targetPort == null) continue
-    let list = edgesBySource.get(edge.source)
-    if (!list) { list = []; edgesBySource.set(edge.source, list) }
-    list.push(edge)
-  }
+  // Each query edge can be served from either endpoint, so we choose
+  // Dijkstra roots that minimize the number of distinct trees we run —
+  // a minimum vertex cover on the demand graph, approximated by the
+  // greedy maximum-degree heuristic.
+  const edgesByRoot = chooseDijkstraRoots(edgesToRoute)
 
-  for (const [sourceNode, edges] of edgesBySource) {
+  for (const [rootNode, edges] of edgesByRoot) {
     if (cancelToken && cancelToken.canceled) return
-    const source = sourceNode.center
-    const sourcePoly = nodeToPolyline.get(sourceNode)
-    const sourceTriangle = findContainingTriangle(cdt, source)
-    if (!sourceTriangle) {
-      // fallback: straight lines for all edges from this node
+    const root = rootNode.center
+    const rootPoly = nodeToPolyline.get(rootNode)
+    const rootTriangle = findContainingTriangle(cdt, root)
+    if (!rootTriangle) {
+      // fallback: straight lines for all edges incident to this root
       for (const edge of edges) {
-        const target = edge.target.center
-        const fallback = Polyline.mkFromPoints([source, target])
+        const srcCenter = edge.source.center
+        const tgtCenter = edge.target.center
+        const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = fallback.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
       }
       continue
     }
 
-    const sourceId = idx.getId(sourceTriangle)
-    if (sourceId < 0) continue
+    const rootId = idx.getId(rootTriangle)
+    if (rootId < 0) continue
 
-    // Find all target triangles for this source
-    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetId: number}[] = []
+    // Find all "other-end" triangles for edges rooted at this node
+    const targetInfos: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline; targetId: number}[] = []
     const targetIds = new Set<number>()
     for (const edge of edges) {
-      const target = edge.target.center
-      const targetPoly = nodeToPolyline.get(edge.target)
-      const targetTriangle = findContainingTriangle(cdt, target)
-      if (!targetTriangle) {
-        const fallback = Polyline.mkFromPoints([source, target])
+      const reversed = edge.source !== rootNode
+      const otherNode = reversed ? edge.source : edge.target
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const otherCenter = reversed ? srcCenter : tgtCenter
+      const otherPoly = nodeToPolyline.get(otherNode)
+      const otherTriangle = findContainingTriangle(cdt, otherCenter)
+      if (!otherTriangle) {
+        const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = fallback.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
         continue
       }
       // Optimistic shortcut: if the straight segment is obstacle-free,
       // skip the sleeve search for this edge.
       const allowedThis = new Set<Polyline>()
-      if (sourcePoly) allowedThis.add(sourcePoly)
-      if (targetPoly) allowedThis.add(targetPoly)
-      if (segmentClearOfObstacles(sourceTriangle, source, target, allowedThis)) {
-        const straight = Polyline.mkFromPoints([source, target])
+      if (rootPoly) allowedThis.add(rootPoly)
+      if (otherPoly) allowedThis.add(otherPoly)
+      if (segmentClearOfObstacles(rootTriangle, root, otherCenter, allowedThis)) {
+        const straight = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = straight.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
         continue
       }
-      const targetId = idx.getId(targetTriangle)
+      const targetId = idx.getId(otherTriangle)
       if (targetId < 0) continue
-      targetInfos.push({edge, target, targetPoly, targetId})
+      targetInfos.push({edge, reversed, otherCenter, otherPoly, targetId})
       targetIds.add(targetId)
     }
 
     if (targetInfos.length === 0) continue
 
     const allowed = new Set<Polyline>()
-    if (sourcePoly) allowed.add(sourcePoly)
+    if (rootPoly) allowed.add(rootPoly)
 
-    // Single indexed Dijkstra from source to all target triangles
-    dijkstraTreeIndexed(sourceId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+    // Single indexed Dijkstra from root to all "other-end" triangles
+    dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
 
     // Process Dijkstra-reachable edges; collect unreachable for A* fallback
-    const fallbackEdges: {edge: GeomEdge; target: Point; targetPoly?: Polyline}[] = []
-    for (const {edge, target, targetPoly, targetId} of targetInfos) {
+    const fallbackEdges: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline}[] = []
+    for (const {edge, reversed, otherCenter, otherPoly, targetId} of targetInfos) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
       if (gScore[targetId] === Infinity) {
-        fallbackEdges.push({edge, target, targetPoly})
+        fallbackEdges.push({edge, reversed, otherCenter, otherPoly})
         continue
       }
-      const sleeve = recoverSleeveIndexed(sourceId, targetId, parentEdgeIdx, idx)
+      const sleeve = recoverSleeveIndexed(rootId, targetId, parentEdgeIdx, idx)
       if (sleeve.length === 0) {
-        const pts = Polyline.mkFromPoints([source, target])
+        const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = pts.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
       } else {
-        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
         const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
         if (diagonals.length === 0) {
-          const pts = Polyline.mkFromPoints([source, target])
+          const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
           edge.curve = pts.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
         } else {
-          const points = funnelFromDiagonals(source, target, diagonals)
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
           if (smoothCorners) {
@@ -1084,31 +1088,34 @@ export function routeSleeveEdges(
     for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
     visited.length = 0
 
-    // A* fallback for edges Dijkstra couldn't reach (target inside obstacle)
-    for (const {edge, target, targetPoly} of fallbackEdges) {
+    // A* fallback for edges Dijkstra couldn't reach (other end inside obstacle)
+    for (const {edge, reversed, otherCenter, otherPoly} of fallbackEdges) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
       const allowedBoth = new Set<Polyline>()
-      if (sourcePoly) allowedBoth.add(sourcePoly)
-      if (targetPoly) allowedBoth.add(targetPoly)
+      if (rootPoly) allowedBoth.add(rootPoly)
+      if (otherPoly) allowedBoth.add(otherPoly)
 
-      let sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      let sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
       for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
       visited.length = 0
 
-      // Third-tier rescue: at coarse tile levels the target center may lie
+      // Third-tier rescue: at coarse tile levels the other-end center may lie
       // inside some OTHER node's inflated obstacle; allow every obstacle so
-      // routing can still reach the target triangle.
+      // routing can still reach the other-end triangle.
       if (!sleeve || sleeve.length === 0) {
         const allowAll = new Set<Polyline>(nodeToPolyline.values())
-        sleeve = findSleeveAStarIndexed(sourceId, target, allowAll, idx, gScore, parentEdgeIdx, visited, heap)
+        sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowAll, idx, gScore, parentEdgeIdx, visited, heap)
         for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
         visited.length = 0
       }
       if (sleeve && sleeve.length > 0) {
-        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
         const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
         if (diagonals.length > 0) {
-          const points = funnelFromDiagonals(source, target, diagonals)
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
           if (smoothCorners) {
@@ -1118,15 +1125,15 @@ export function routeSleeveEdges(
             edge.curve = poly.toCurve()
           }
         } else {
-          const pts = Polyline.mkFromPoints([source, target])
+          const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
           edge.curve = pts.toCurve()
-          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
         }
       } else if (!sleeve || sleeve.length === 0) {
-        // A* found source == target triangle
-        const pts = Polyline.mkFromPoints([source, target])
+        // A* found root == other-end triangle
+        const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = pts.toCurve()
-        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
         edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
@@ -1136,7 +1143,7 @@ export function routeSleeveEdges(
       visited.length = 0
     }
 
-    // Reset reusable arrays for next source node
+    // Reset reusable arrays for next root node
     for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
     visited.length = 0
   }
@@ -1201,6 +1208,89 @@ function setStraightLine(edge: GeomEdge, source: Point, target: Point): void {
   const pts = Polyline.mkFromPoints([source, target])
   edge.curve = pts.toCurve()
   edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+}
+
+
+/** Choose, for each routable edge, a Dijkstra root (one of its two
+ *  endpoints) so as to minimize the number of distinct roots. Each query
+ *  edge is undirected on the CDT dual, so it can be served from either
+ *  endpoint; minimizing the number of distinct roots is minimum vertex
+ *  cover on the demand graph (V = nodes, E = routable edges). We use the
+ *  standard greedy maximum-degree heuristic with bucketed degrees, which
+ *  runs in O(|V|+|E|) and gives near-optimal covers in practice. */
+function chooseDijkstraRoots(edges: Iterable<GeomEdge>): Map<GeomNode, GeomEdge[]> {
+  const incident = new Map<GeomNode, GeomEdge[]>()
+  const selfLoops: GeomEdge[] = []
+  const allRoutable: GeomEdge[] = []
+  for (const e of edges) {
+    if (e.sourcePort == null || e.targetPort == null) continue
+    allRoutable.push(e)
+    if (e.source === e.target) {
+      selfLoops.push(e)
+      continue
+    }
+    let s = incident.get(e.source)
+    if (!s) {
+      s = []
+      incident.set(e.source, s)
+    }
+    s.push(e)
+    let t = incident.get(e.target)
+    if (!t) {
+      t = []
+      incident.set(e.target, t)
+    }
+    t.push(e)
+  }
+
+  const remDeg = new Map<GeomNode, number>()
+  let maxDeg = 0
+  for (const [n, list] of incident) {
+    remDeg.set(n, list.length)
+    if (list.length > maxDeg) maxDeg = list.length
+  }
+  const buckets: Set<GeomNode>[] = []
+  for (let d = 0; d <= maxDeg; d++) buckets.push(new Set<GeomNode>())
+  for (const [n, d] of remDeg) buckets[d].add(n)
+
+  const edgeRoot = new Map<GeomEdge, GeomNode>()
+  let top = maxDeg
+  while (top > 0) {
+    const b = buckets[top]
+    if (b.size === 0) {
+      top--
+      continue
+    }
+    const node = b.values().next().value as GeomNode
+    b.delete(node)
+    remDeg.set(node, 0)
+    for (const e of incident.get(node)!) {
+      if (edgeRoot.has(e)) continue
+      edgeRoot.set(e, node)
+      const other = e.source === node ? e.target : e.source
+      const od = remDeg.get(other) ?? 0
+      if (od > 0) {
+        buckets[od].delete(other)
+        buckets[od - 1].add(other)
+        remDeg.set(other, od - 1)
+      }
+    }
+  }
+
+  // Self-loops cover trivially from either endpoint; pick the source.
+  for (const e of selfLoops) edgeRoot.set(e, e.source)
+
+  const grouped = new Map<GeomNode, GeomEdge[]>()
+  for (const e of allRoutable) {
+    const root = edgeRoot.get(e) ?? e.source
+    let list = grouped.get(root)
+    if (!list) {
+      list = []
+      grouped.set(root, list)
+    }
+    list.push(e)
+  }
+  return grouped
 }
 
 
@@ -1320,84 +1410,86 @@ function routeSleeveEdgeGroup(
   const visited: number[] = []
   const heap = new FlatMinHeap(idx.n * 4)
 
-  // Group edges by source node
-  const edgesBySource = new Map<GeomNode, GeomEdge[]>()
-  for (const edge of edges) {
-    if (cancelToken && cancelToken.canceled) return
-    if (edge.sourcePort == null || edge.targetPort == null) continue
-    let list = edgesBySource.get(edge.source)
-    if (!list) { list = []; edgesBySource.set(edge.source, list) }
-    list.push(edge)
-  }
+  // Choose Dijkstra roots via vertex-cover heuristic on the demand graph
+  // induced by `edges` (same optimization as the non-subgraph path).
+  const edgesByRoot = chooseDijkstraRoots(edges)
 
-  for (const [sourceNode, srcEdges] of edgesBySource) {
+  for (const [rootNode, rootEdges] of edgesByRoot) {
     if (cancelToken && cancelToken.canceled) return
-    const source = sourceNode.center
-    const sourcePoly = nodeToPolyline.get(sourceNode)
-    const sourceTriangle = findContainingTriangle(cdt, source)
-    if (!sourceTriangle) {
-      for (const edge of srcEdges) {
-        const target = edge.target.center
-        setStraightLine(edge, source, target)
+    const root = rootNode.center
+    const rootPoly = nodeToPolyline.get(rootNode)
+    const rootTriangle = findContainingTriangle(cdt, root)
+    if (!rootTriangle) {
+      for (const edge of rootEdges) {
+        const srcCenter = edge.source.center
+        const tgtCenter = edge.target.center
+        setStraightLine(edge, srcCenter, tgtCenter)
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
       }
       continue
     }
 
-    const sourceId = idx.getId(sourceTriangle)
-    if (sourceId < 0) continue
+    const rootId = idx.getId(rootTriangle)
+    if (rootId < 0) continue
 
-    const targetInfos: {edge: GeomEdge; target: Point; targetPoly?: Polyline; targetId: number}[] = []
+    const targetInfos: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline; targetId: number}[] = []
     const targetIds = new Set<number>()
-    for (const edge of srcEdges) {
-      const target = edge.target.center
-      const targetPoly = nodeToPolyline.get(edge.target)
-      const targetTriangle = findContainingTriangle(cdt, target)
-      if (!targetTriangle) {
-        setStraightLine(edge, source, target)
+    for (const edge of rootEdges) {
+      const reversed = edge.source !== rootNode
+      const otherNode = reversed ? edge.source : edge.target
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const otherCenter = reversed ? srcCenter : tgtCenter
+      const otherPoly = nodeToPolyline.get(otherNode)
+      const otherTriangle = findContainingTriangle(cdt, otherCenter)
+      if (!otherTriangle) {
+        setStraightLine(edge, srcCenter, tgtCenter)
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
         continue
       }
       // Optimistic shortcut: if the straight segment is obstacle-free,
       // skip the sleeve search for this edge.
       const allowedThis = new Set<Polyline>()
-      if (sourcePoly) allowedThis.add(sourcePoly)
-      if (targetPoly) allowedThis.add(targetPoly)
-      if (segmentClearOfObstacles(sourceTriangle, source, target, allowedThis)) {
-        setStraightLine(edge, source, target)
+      if (rootPoly) allowedThis.add(rootPoly)
+      if (otherPoly) allowedThis.add(otherPoly)
+      if (segmentClearOfObstacles(rootTriangle, root, otherCenter, allowedThis)) {
+        setStraightLine(edge, srcCenter, tgtCenter)
         Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
         continue
       }
-      const targetId = idx.getId(targetTriangle)
+      const targetId = idx.getId(otherTriangle)
       if (targetId < 0) continue
-      targetInfos.push({edge, target, targetPoly, targetId})
+      targetInfos.push({edge, reversed, otherCenter, otherPoly, targetId})
       targetIds.add(targetId)
     }
 
     if (targetInfos.length === 0) continue
 
     const allowed = new Set<Polyline>()
-    if (sourcePoly) allowed.add(sourcePoly)
+    if (rootPoly) allowed.add(rootPoly)
 
-    dijkstraTreeIndexed(sourceId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+    dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
 
-    const fallbackEdges: {edge: GeomEdge; target: Point; targetPoly?: Polyline}[] = []
-    for (const {edge, target, targetPoly, targetId} of targetInfos) {
+    const fallbackEdges: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline}[] = []
+    for (const {edge, reversed, otherCenter, otherPoly, targetId} of targetInfos) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
       if (gScore[targetId] === Infinity) {
-        fallbackEdges.push({edge, target, targetPoly})
+        fallbackEdges.push({edge, reversed, otherCenter, otherPoly})
         continue
       }
-      const sleeve = recoverSleeveIndexed(sourceId, targetId, parentEdgeIdx, idx)
+      const sleeve = recoverSleeveIndexed(rootId, targetId, parentEdgeIdx, idx)
       if (sleeve.length === 0) {
-        setStraightLine(edge, source, target)
+        setStraightLine(edge, srcCenter, tgtCenter)
       } else {
-        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
         const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
         if (diagonals.length === 0) {
-          setStraightLine(edge, source, target)
+          setStraightLine(edge, srcCenter, tgtCenter)
         } else {
-          const points = funnelFromDiagonals(source, target, diagonals)
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
           if (smoothCorners) {
@@ -1416,18 +1508,21 @@ function routeSleeveEdgeGroup(
     for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
     visited.length = 0
 
-    for (const {edge, target, targetPoly} of fallbackEdges) {
+    for (const {edge, reversed, otherCenter, otherPoly} of fallbackEdges) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
       const allowedBoth = new Set<Polyline>()
-      if (sourcePoly) allowedBoth.add(sourcePoly)
-      if (targetPoly) allowedBoth.add(targetPoly)
+      if (rootPoly) allowedBoth.add(rootPoly)
+      if (otherPoly) allowedBoth.add(otherPoly)
 
-      const sleeve = findSleeveAStarIndexed(sourceId, target, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      const sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
       if (sleeve && sleeve.length > 0) {
-        const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
-        const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
         const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
         if (diagonals.length > 0) {
-          const points = funnelFromDiagonals(source, target, diagonals)
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
           const poly = Polyline.mkFromPoints(points)
           edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
           if (smoothCorners) {
@@ -1437,10 +1532,10 @@ function routeSleeveEdgeGroup(
             edge.curve = poly.toCurve()
           }
         } else {
-          setStraightLine(edge, source, target)
+          setStraightLine(edge, srcCenter, tgtCenter)
         }
       } else {
-        setStraightLine(edge, source, target)
+        setStraightLine(edge, srcCenter, tgtCenter)
       }
       Arrowhead.trimSplineAndCalculateArrowheadsII(
         edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
