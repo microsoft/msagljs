@@ -4,22 +4,26 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
+      html, body {
+        height: 100%;
+      }
       body {
         margin: 0;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
         font-size: 13px;
       }
       #top-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 50px;
+        flex: 0 0 auto;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 12px;
-        padding: 0 12px;
+        row-gap: 6px;
+        column-gap: 12px;
+        min-height: 50px;
+        padding: 6px 12px;
         background: #fff;
         box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
         z-index: 1;
@@ -29,8 +33,9 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        flex: 0 0 auto;
-        max-width: 260px;
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 100%;
       }
       #graph-name {
         white-space: nowrap;
@@ -41,7 +46,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        flex: 1 1 auto;
+        flex: 1 1 320px;
         min-width: 0;
       }
       #graph-url {
@@ -54,18 +59,16 @@
         cursor: pointer;
       }
       #viewer {
-        position: fixed;
-        top: 50px;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
       }
       #dot_files {
         cursor: pointer;
         position: relative;
         flex: 0 0 auto;
         padding: 0 12px;
-        line-height: 50px;
+        line-height: 36px;
       }
       #dot_files select {
         position: absolute;
@@ -74,6 +77,18 @@
         width: 100%;
         height: 100%;
         top: 0;
+      }
+      /* Phone / narrow viewports: push the URL loader onto its own row so the
+         graph name (with node/edge counts) and the Sample-graphs menu stay
+         visible on the first row instead of overlapping. */
+      @media (max-width: 700px) {
+        #url-loader {
+          flex: 1 0 100%;
+          order: 2;
+        }
+        #drop-target {
+          flex: 1 1 auto;
+        }
       }
       #settings {
         position: fixed;
@@ -131,7 +146,9 @@
         <select id="gv"></select>
       </div>
     </div>
-    <div id="viewer"></div>
+    <div id="viewer">
+      <div id="error-banner" style="display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:10;background:#d32f2f;color:#fff;padding:12px 24px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;max-width:80vw;cursor:pointer;" onclick="this.style.display='none'"></div>
+    </div>
     <div id="settings">
       <div>
         <label>Layout:</label>
@@ -146,7 +163,6 @@
         <input type="checkbox" id="smoothCorners" />
       </div>
       </div>
-    <div id="error-banner" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:10;background:#d32f2f;color:#fff;padding:12px 24px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:14px;max-width:80vw;cursor:pointer;" onclick="this.style.display='none'"></div>
     <script src="./app.js"></script>
   </body>
 </html>
