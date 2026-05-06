@@ -153,17 +153,25 @@ urlInput.onkeydown = (e) => {
   }
 }
 ;(async () => {
+  const t0 = performance.now()
+  ;(window as any).__msagl_loaded = false
   try {
     const params = new URLSearchParams(window.location.search)
     const linked = params.get('url')
     const src = linked || defaultGraph
     const graph = await loadGraphFromUrl(src)
     const hasGeom = geometryIsCreated(graph)
-    updateRender(graph, hasGeom ? null : getSettings())
+    await updateRender(graph, hasGeom ? null : getSettings())
     document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'
+    ;(window as any).__msagl_loadTime = performance.now() - t0
+    ;(window as any).__msagl_nodes = graph.nodeCountDeep
+    ;(window as any).__msagl_edges = graph.deepEdgesCount
+    ;(window as any).__msagl_loaded = true
   } catch (e) {
     console.error('Default graph load failed:', e)
     showError('Failed to load default graph.')
+    ;(window as any).__msagl_error = e instanceof Error ? e.message : String(e)
+    ;(window as any).__msagl_loaded = true
   }
 })()
 
