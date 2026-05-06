@@ -49,7 +49,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
           layerData.nodes = layer.filter ? data.nodes.filter((n) => layer.filter(n.node, filterContext)) : data.nodes
         }
         if (layer.type === 'edge') {
-          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => layer.filter(c.edge, filterContext)) : data.curveClips
+          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => c.edges.some((e) => layer.filter(e, filterContext))) : data.curveClips
           layerData.arrowheads = layer.filter ? data.arrowheads.filter((a) => layer.filter(a.edge, filterContext)) : data.arrowheads
           layerData.labels = layer.filter ? data.labels.filter((l) => layer.filter(l.parent.entity, filterContext)) : data.labels
         }

@@ -110,7 +110,8 @@ export default class GraphHighlighter {
   }
 
   encodeEdgeIndex(cc: CurveClip, out: number[]): number[] {
-    const idx = cc.edge ? this._edgeMap.get(cc.edge) : undefined
+    const e = cc.edges && cc.edges.length > 0 ? cc.edges[0] : undefined
+    const idx = e ? this._edgeMap.get(e) : undefined
     return encodePickingColor(idx, out)
   }
   getEdge(index: number): Edge | undefined {

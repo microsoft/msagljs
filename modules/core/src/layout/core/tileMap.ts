@@ -23,10 +23,18 @@ import {Assert} from '../../utils/assert'
 /** Represents a part of the curve containing in a tile.
  * The tile part of the curve is defined by the startPar and endPar.
  * One tile can have several parts of clips corresponding to the same curve.
- */
-export type CurveClip = {curve: ICurve; edge?: Edge; startPar: number; endPar: number}
+ *
+ * Within a tile, clips that share the same lex-ordered (start, end) endpoint
+ * pair are bundled into a single CurveClip whose `edges` list accumulates
+ * every contributing edge; the bundled geometry is taken from the first
+ * occurrence. The bundle is rendered as one entity. */
+export type CurveClip = {curve: ICurve; edges: Edge[]; startPar: number; endPar: number}
 export type ArrowHeadData = {tip: Point; edge: Edge; base: Point}
 type EntityDataInTile = {tile: Tile; data: CurveClip | ArrowHeadData | GeomLabel | GeomNode}
+
+/** Approximate footprint of a single stored tile element (curve clip, node copy,
+ *  arrowhead, or label). Used by the memory-budget stop in buildUpToLevel. */
+const BYTES_PER_ELEMENT = 200
 
 //const debCount = 0
 /** keeps the data needed to render the tile hierarchy */
@@ -41,6 +49,11 @@ export class TileMap {
   private minTileSize: Size
   /** the maximal number visual elements vizible in a tile */
   private tileCapacity = 500 // in the number of elements
+  /** Memory budget in bytes; if the running total of stored tile elements
+   *  times BYTES_PER_ELEMENT exceeds this value after building a candidate
+   *  finest level, that level is discarded and Z is set to the previous one.
+   *  Default 4 GB. */
+  private maxMemoryBytes: number = 4 * 1024 * 1024 * 1024
   /** the tiles of level z is represented by levels[z] */
   private levels: IntPairMap<Tile>[] = []
 
@@ -79,11 +92,17 @@ export class TileMap {
   private topLevelTileRect: Rectangle
   /** geomGraph  - the graph to work with.
    * The topLevelTileRect serves as the only tile of the top level.
+   * tileCapacity - per-tile element cap (default 500).
+   * maxMemoryBytes - memory budget for the tile pyramid (default 4 GB).
+   *   After each candidate finest level, the running total of stored tile
+   *   elements times BYTES_PER_ELEMENT is compared against this budget; if
+   *   exceeded the level is discarded and growth stops.
    */
-  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, tileCapacity?: number) {
+  constructor(geomGraph: GeomGraph, topLevelTileRect: Rectangle, tileCapacity?: number, maxMemoryBytes?: number) {
     this.geomGraph = geomGraph
     this.topLevelTileRect = topLevelTileRect
     if (tileCapacity != null) this.tileCapacity = tileCapacity
+    if (maxMemoryBytes != null) this.maxMemoryBytes = maxMemoryBytes
     this.tileSizes = []
     this.tileSizes.push(topLevelTileRect.size)
   }
@@ -127,10 +146,10 @@ export class TileMap {
       if (c == null) return
       if (c instanceof Curve) {
         for (const seg of c.segs) {
-          topLevelTile.addElement({edge: e, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
+          topLevelTile.addElement({edges: [e], curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
         }
       } else {
-        topLevelTile.addElement({edge: e, curve: c, startPar: c.parStart, endPar: c.parEnd})
+        topLevelTile.addElement({edges: [e], curve: c, startPar: c.parStart, endPar: c.parEnd})
       }
       if (geomEdge.sourceArrowhead) {
         arrows.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
@@ -148,6 +167,10 @@ export class TileMap {
    * Creates tilings for levels from 0 to z, including the level z.
    * The method does not necesserely creates all levels until z, but can exit earlier
    *  if all tiles either has size smaller or equal than this.minTileSize or have at most this.tileCapacityMin elements.
+   *  It also stops mid-build, while generating the tiles of the current finest
+   *  level, as soon as the running total of stored tile elements times
+   *  BYTES_PER_ELEMENT exceeds this.maxMemoryBytes; the partial level is then
+   *  discarded and Z is set to the previous finest level.
    * Returns the number of created levels.
    */
   buildUpToLevel(z: number): number {
@@ -157,10 +180,19 @@ export class TileMap {
 
     if (!this.needToSubdivide()) return 1 // we have only one layer
 
+    const maxElements = Math.floor(this.maxMemoryBytes / BYTES_PER_ELEMENT)
+    let baseElements = this.totalStoredElements() // elements stored on level 0
     for (let i = 1; i <= z; i++) {
-      if (this.subdivideLevel(i)) {
+      const res = this.subdivideLevel(i, baseElements, maxElements)
+      if (res.aborted) {
+        // The partial level i pushed us past the memory budget; drop it
+        // entirely and use level i-1 as the finest.
+        this.levels.pop()
+        if (this.tileSizes.length > this.levels.length) this.tileSizes.pop()
         break
       }
+      if (res.stop) break
+      baseElements = this.totalStoredElements()
     }
     this.sortedNodes = Array.from(this.pageRank.keys()).sort(this.compareByPagerank.bind(this))
     for (let i = 0; i < this.sortedNodes.length; i++) {
@@ -234,7 +266,7 @@ export class TileMap {
           }
           routeSleeveEdges(this.geomGraph, activeEdges, null, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
-        this.regenerateCurveClipsUpToLevel(k, activeNodes)
+        this.clipEdgesIntoLevel(k, activeNodes)
       }
     } else {
       // filter out entities that are not visible on lower layers.
@@ -249,7 +281,7 @@ export class TileMap {
       for (let i = this.levels.length - 2; i >= 0; i--) {
         const activeNodes = this.setOfNodesOnTheLevel(i)
         sr.rerouteOnSubsetOfNodes(activeNodes)
-        this.regenerateCurveClipsUpToLevel(i, activeNodes)
+        this.clipEdgesIntoLevel(i, activeNodes)
       }
     }
     this.calculateNodeRank()
@@ -424,7 +456,7 @@ export class TileMap {
 
   /** Restrict a level's tile contents to the given active node set. Edges/labels
    *  whose source or target is outside the active set are removed; curve clips
-   *  are cleared (they'll be rebuilt by regenerateCurveClipsUpToLevel). */
+   *  are cleared (they'll be rebuilt by clipEdgesIntoLevel). */
   private applyActiveSetToLevel(levelIdx: number, activeNodes: Set<Node>) {
     for (const tile of this.levels[levelIdx].values()) {
       tile.nodes = tile.nodes.filter((gn) => activeNodes.has(gn.node))
@@ -596,6 +628,15 @@ export class TileMap {
     return needSubdivide
   }
 
+  /** Sum of entityCount across every tile on every level built so far. */
+  private totalStoredElements(): number {
+    let total = 0
+    for (const level of this.levels) {
+      for (const tile of level.values()) total += tile.entityCount
+    }
+    return total
+  }
+
   setOfNodesOnTheLevel(i: number): Set<Node> {
     const ret = new Set<Node>()
     for (const t of this.levels[i].values()) {
@@ -637,46 +678,190 @@ export class TileMap {
   //   }
   // }
 
-  regenerateCurveClipsUpToLevel(levelIndex: number, activeNodes: Set<Node>) {
-    this.clearCurveClipsInLevelsUpTo(levelIndex)
-    for (const t of this.levels[0].values()) {
-      this.regenerateCurveClipsUnderTileUpToLevel(t, levelIndex, activeNodes)
-    }
-  }
-  private clearCurveClipsInLevelsUpTo(levelIndex: number) {
-    for (let i = 0; i <= levelIndex; i++) {
+  /** Clip-from-scratch path used after each per-level rerouting (sleeve and
+   *  spline). Levels 0..z are rebuilt: each active edge's rerouted curve is
+   *  first clipped against `topLevelTileRect` (the synthetic parent), seeded
+   *  into the level-0 root tile, and then split top-down by the existing
+   *  2-midline subdivision into all descendant tiles down to level z. The
+   *  initial clip against `topLevelTileRect` restores the build-phase
+   *  invariant `clip ⊆ parentRect`, which sleeve-routed curves around pumped
+   *  landmarks may legitimately violate. */
+  private clipEdgesIntoLevel(z: number, activeNodes: Set<Node>) {
+    // Reset curve clips and arrowheads on every existing tile at levels 0..z;
+    // we will repopulate them top-down below. Nodes and labels were already
+    // filtered to the active set (sleeve path via applyActiveSetToLevel;
+    // spline path via filterOutEntities) and do not depend on the rerouted
+    // curves.
+    for (let i = 0; i <= z; i++) {
       for (const t of this.levels[i].values()) {
         t.initCurveClips()
+        t.arrowheads = []
+      }
+    }
+    // Seed level-0 root tile(s) with the rerouted edges, clipped to the root
+    // rect so out-of-world fragments never reach the children.
+    for (const t of this.levels[0].values()) {
+      this.seedRootTileWithRerouted(t, activeNodes)
+    }
+    // Top-down split: at each level, distribute every parent tile's clips and
+    // arrowheads into its 4 children using the existing 2-midline machinery.
+    for (let i = 1; i <= z; i++) {
+      for (const [key, tile] of this.levels[i - 1].keyValues()) {
+        this.splitTileClipsIntoChildren(key, i, tile)
+      }
+      this.removeEmptyTiles(i)
+    }
+  }
+
+  /** Adds the active edges' rerouted curves and arrowheads to `rootTile`,
+   *  clipping each segment to `rootTile.rect` so pieces extending past the
+   *  world rect (sleeve routing around pumped landmarks) are dropped. */
+  private seedRootTileWithRerouted(rootTile: Tile, activeNodes: Set<Node>) {
+    for (const geomEdge of this.geomGraph.deepEdges) {
+      if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
+      const c = geomEdge.curve
+      if (c == null) continue
+      if (c instanceof Curve) {
+        for (const seg of c.segs) this.addClippedSegmentToRootTile(seg, geomEdge.edge, rootTile)
+      } else {
+        this.addClippedSegmentToRootTile(c, geomEdge.edge, rootTile)
+      }
+      if (geomEdge.sourceArrowhead) {
+        this.maybeAddArrowheadToTile(
+          {edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: c.start},
+          rootTile,
+        )
+      }
+      if (geomEdge.targetArrowhead) {
+        this.maybeAddArrowheadToTile(
+          {edge: geomEdge.edge, tip: geomEdge.targetArrowhead.tipPosition, base: c.end},
+          rootTile,
+        )
       }
     }
   }
 
-  regenerateCurveClipsUnderTileUpToLevel(t: Tile, levelIndex: number, activeNodes: Set<Node>) {
-    t.arrowheads = []
-    t.initCurveClips()
-    for (const geomEdge of this.geomGraph.deepEdges) {
-      if (!edgeNodesBelongToSet(geomEdge.edge, activeNodes)) continue
-      if (geomEdge.curve instanceof Curve) {
-        for (const seg of geomEdge.curve.segs) {
-          t.addElement({edge: geomEdge.edge, curve: seg, startPar: seg.parStart, endPar: seg.parEnd})
-        }
-      } else {
-        t.addElement({edge: geomEdge.edge, curve: geomEdge.curve, startPar: geomEdge.curve.parStart, endPar: geomEdge.curve.parEnd})
-      }
-      if (geomEdge.sourceArrowhead) {
-        t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.sourceArrowhead.tipPosition, base: geomEdge.curve.start})
-      }
-      if (geomEdge.targetArrowhead) {
-        t.arrowheads.push({edge: geomEdge.edge, tip: geomEdge.targetArrowhead.tipPosition, base: geomEdge.curve.end})
-      }
+  /** Pushes (curve, startPar, endPar) sub-intervals of `seg` that lie inside
+   *  `tile.rect` as `CurveClip`s on `tile`. If `seg` is fully inside, a single
+   *  clip is added; if it crosses the rect perimeter, only the inside pieces
+   *  are kept. */
+  private addClippedSegmentToRootTile(seg: ICurve, edge: Edge, tile: Tile) {
+    const rect = tile.rect
+    if (rect.containsRectWithPadding(seg.boundingBox, 1)) {
+      tile.addCurveClip({curve: seg, edges: [edge], startPar: seg.parStart, endPar: seg.parEnd})
+      return
     }
-    // do not change the labels
-    // Now the root tile(s) is ready
-    for (let i = 1; i <= levelIndex; i++) {
-      this.regenerateCurveClipsWhenPreviosLayerIsDone(i)
-      this.removeEmptyTiles(i)
+    const xs = Curve.getAllIntersections(seg, rect.perimeter(), true)
+    if (xs.length === 0) {
+      if (rect.contains(seg.start)) {
+        tile.addCurveClip({curve: seg, edges: [edge], startPar: seg.parStart, endPar: seg.parEnd})
+      }
+      return
+    }
+    const eps = GeomConstants.distanceEpsilon
+    const params: number[] = [seg.parStart]
+    xs.sort((a, b) => a.par0 - b.par0)
+    for (const x of xs) {
+      const last = params[params.length - 1]
+      if (x.par0 > last + eps && x.par0 < seg.parEnd - eps) params.push(x.par0)
+    }
+    params.push(seg.parEnd)
+    for (let i = 0; i < params.length - 1; i++) {
+      const a = params[i]
+      const b = params[i + 1]
+      if (b - a < eps) continue
+      const p = seg.value(0.5 * (a + b))
+      if (rect.contains(p)) tile.addCurveClip({curve: seg, edges: [edge], startPar: a, endPar: b})
     }
   }
+
+  /** Adds `arrow` to `tile.arrowheads` if its bounding box (widened by the
+   *  standard rotation-derived offset) intersects `tile.rect`. */
+  private maybeAddArrowheadToTile(arrow: ArrowHeadData, tile: Tile) {
+    const arrowheadBox = Rectangle.mkPP(arrow.base, arrow.tip)
+    const d = arrow.tip.sub(arrow.base).div(3)
+    const dRotated = d.rotate90Cw()
+    arrowheadBox.add(arrow.base.add(dRotated))
+    arrowheadBox.add(arrow.base.sub(dRotated))
+    if (arrowheadBox.intersects(tile.rect)) tile.arrowheads.push(arrow)
+  }
+
+  /** Distributes `parentTile`'s curveClips and arrowheads into its 4 children
+   *  at `childLevel`. CurveClips are split along the parent's two midlines and
+   *  routed by midpoint side test (the same algorithm used by the build path's
+   *  `subdivideWithCachedClipsAboveTile`). Arrowheads go to every child whose
+   *  rect intersects the arrowhead's bounding box. Children are created on
+   *  demand. Existing children's nodes/labels (already populated by the build
+   *  phase) are left untouched; only their curveClips/arrowheads were cleared
+   *  by the caller. */
+  private splitTileClipsIntoChildren(parentKey: IntPair, childLevel: number, parentTile: Tile) {
+    const {w, h} = this.getWHOnLevel(childLevel)
+    const levelTiles = this.levels[childLevel]
+    const xp = parentKey.x
+    const yp = parentKey.y
+    const left = this.topLevelTileRect.left + xp * w * 2
+    const bottom = this.topLevelTileRect.bottom + yp * h * 2
+    const keys = new Array<IntPair>(4)
+    for (let i = 0; i < 2; i++)
+      for (let j = 0; j < 2; j++) keys[i * 2 + j] = new IntPair(xp * 2 + i, yp * 2 + j)
+
+    const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
+    const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
+
+    const ensureChild = (k: number): Tile => {
+      let tile = levelTiles.getI(keys[k])
+      if (!tile) {
+        const i = k >> 1
+        const j = k & 1
+        const l = left + i * w
+        const b = bottom + j * h
+        tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
+        levelTiles.setPair(keys[k], tile)
+      }
+      return tile
+    }
+
+    for (const clip of parentTile.curveClips) {
+      const cs = clip.curve
+      const xs = midlineSplit(cs, clip.startPar, clip.endPar, horizontalMiddleLine, verticalMiddleLine)
+      for (let u = 0; u < xs.length - 1; u++) {
+        const a = xs[u]
+        const b = xs[u + 1]
+        const p = cs.value(0.5 * (a + b))
+        const i = p.x <= left + w ? 0 : 1
+        const j = p.y <= bottom + h ? 0 : 1
+        ensureChild(2 * i + j).addCurveClip({curve: cs, edges: clip.edges, startPar: a, endPar: b})
+      }
+    }
+
+    for (const arrow of parentTile.arrowheads) {
+      const arrowheadBox = Rectangle.mkPP(arrow.base, arrow.tip)
+      const d = arrow.tip.sub(arrow.base).div(3)
+      const dRotated = d.rotate90Cw()
+      arrowheadBox.add(arrow.base.add(dRotated))
+      arrowheadBox.add(arrow.base.sub(dRotated))
+      for (let k = 0; k < 4; k++) {
+        const i = k >> 1
+        const j = k & 1
+        const childRect = new Rectangle({
+          left: left + i * w,
+          bottom: bottom + j * h,
+          right: left + (i + 1) * w,
+          top: bottom + (j + 1) * h,
+        })
+        if (arrowheadBox.intersects(childRect)) ensureChild(k).arrowheads.push(arrow)
+      }
+    }
+
+    function midlineSplit(seg: ICurve, start: number, end: number, hMid: LineSegment, vMid: LineSegment): number[] {
+      const xs = Array.from(Curve.getAllIntersections(seg, hMid, true))
+        .concat(Array.from(Curve.getAllIntersections(seg, vMid, true)))
+        .map((x) => x.par0)
+      xs.sort((a, b) => a - b)
+      return [start].concat(xs.filter((x) => x >= start && x <= end)).concat(end)
+    }
+  }
+
   private removeEmptyTiles(i: number) {
     const level = this.levels[i]
     const keysToDelete = []
@@ -690,107 +875,7 @@ export class TileMap {
     }
   }
 
-  regenerateCurveClipsWhenPreviosLayerIsDone(z: number) {
-    for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      this.subdivideTile(key, z, tile, /** for regenerate */ true)
-    }
-  }
-  // regenerateUnderOneTile(key: IntPair, upperTile: Tile, z: number) {
-  //   const subTilesRects = createSubTileRects()
-  //   const clipsPerRect = this.regenerateCurveClipsUnderTile(upperTile, subTilesRects)
-  //   pushRegeneratedClips(this.levels[z])
 
-  //   cleanArrowheadsInSubtiles(this.levels[z])
-
-  //   pushArrowheadsToSubtiles(this.levels[z])
-
-  //   cleanUpSubtilesAboveTile(this.levels[z])
-  //   function cleanUpSubtilesAboveTile(level: IntPairMap<Tile>) {
-  //     for (let i = 0; i < 2; i++)
-  //       for (let j = 0; j < 2; j++) {
-  //         const ti = 2 * key.x + i
-  //         const tj = 2 * key.y + j
-  //         const tile = level.get(ti, tj)
-  //         if (tile == null) continue
-  //         if (tile.isEmpty()) {
-  //           level.delete(ti, tj)
-  //         }
-  //       }
-  //   }
-
-  //   function pushArrowheadsToSubtiles(level: IntPairMap<Tile>) {
-  //     for (const arrowhead of upperTile.arrowheads) {
-  //       const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
-  //       const d = arrowhead.tip.sub(arrowhead.base).div(3)
-  //       const dRotated = d.rotate90Cw()
-  //       arrowheadBox.add(arrowhead.base.add(dRotated))
-  //       arrowheadBox.add(arrowhead.base.sub(dRotated))
-  //       for (let i = 0; i < 2; i++)
-  //         for (let j = 0; j < 2; j++) {
-  //           const k = 2 * i + j
-  //           if (arrowheadBox.intersects(subTilesRects[k])) {
-  //             const ti = 2 * key.x + i
-  //             const tj = 2 * key.y + j
-
-  //             level.get(ti, tj).arrowheads.push(arrowhead)
-  //           }
-  //         }
-  //     }
-  //   }
-
-  //   function cleanArrowheadsInSubtiles(levelMap: IntPairMap<Tile>) {
-  //     for (let i = 0; i < 2; i++)
-  //       for (let j = 0; j < 2; j++) {
-  //         const ti = 2 * key.x + i
-  //         const tj = 2 * key.y + j
-  //         const tile = levelMap.get(ti, tj)
-  //         if (tile == null) {
-  //           continue
-  //         }
-  //         tile.arrowheads = []
-  //       }
-  //   }
-
-  //   function pushRegeneratedClips(levelMap: IntPairMap<Tile>) {
-  //     for (let i = 0; i < 2; i++)
-  //       for (let j = 0; j < 2; j++) {
-  //         const k = 2 * i + j
-  //         const clips = clipsPerRect[k]
-
-  //         const ti = 2 * key.x + i
-  //         const tj = 2 * key.y + j
-  //         let tile = levelMap.get(ti, tj)
-  //         if (tile == null) {
-  //           if (clips.length) {
-  //             levelMap.set(ti, tj, (tile = new Tile(subTilesRects[k])))
-  //           } else {
-  //             continue
-  //           }
-  //         }
-  //         tile.initCurveClips()
-  //         for (const clip of clips) {
-  //           tile.addElement({edge: clip.edge, curve: clip.curve})
-  //         }
-  //       }
-  //   }
-
-  //   function createSubTileRects() {
-  //     const subTilesRects = new Array<Rectangle>()
-  //     const w = upperTile.rect.width / 2
-  //     const h = upperTile.rect.height / 2
-  //     for (let i = 0; i < 2; i++)
-  //       for (let j = 0; j < 2; j++) {
-  //         const tileRect = new Rectangle({
-  //           left: upperTile.rect.left + w * i,
-  //           right: upperTile.rect.left + w * (i + 1),
-  //           bottom: upperTile.rect.bottom + h * j,
-  //           top: upperTile.rect.bottom + h * (j + 1),
-  //         })
-  //         subTilesRects.push(tileRect)
-  //       }
-  //     return subTilesRects
-  //   }
-  // }
 
   // lastLayerHasAllNodes(): boolean {
   //   const lastLayerNodes = new Set<Node>()
@@ -914,9 +999,10 @@ export class TileMap {
     const entityToData = new Map<Entity, EntityDataInTile[]>()
     for (const tile of levelToReduce.values()) {
       for (const clip of tile.curveClips) {
-        const edge = clip.edge
-        const arr = getCreateEntityDataArray(edge)
-        arr.push({tile: tile, data: clip})
+        for (const edge of clip.edges) {
+          const arr = getCreateEntityDataArray(edge)
+          arr.push({tile: tile, data: clip})
+        }
       }
 
       for (const label of tile.labels) {
@@ -951,23 +1037,26 @@ export class TileMap {
    * Returns true if every edge is appears in some tile as the first edge
    */
 
-  private subdivideLevel(z: number): boolean {
+  private subdivideLevel(z: number, baseElements: number, maxElements: number): {stop: boolean; aborted: boolean} {
     console.log('subdivideLevel', z)
     const tilesInRow = Math.pow(2, z)
     this.levels[z] = new IntPairMap<Tile>()
     /** the width and the height of z-th level tile */
-    const allTilesAreSmall = this.subdivideTilesOnLevel(z)
-    if (allTilesAreSmall) {
+    const subRes = this.subdivideTilesOnLevel(z, baseElements, maxElements)
+    if (subRes.aborted) {
+      return {stop: true, aborted: true}
+    }
+    if (subRes.allTilesAreSmall) {
       console.log('done subdividing at level', z, 'because each tile contains less than', this.tileCapacity)
-      return true
+      return {stop: true, aborted: false}
     }
     const {w, h} = this.getWHOnLevel(z)
 
     if (w <= this.minTileSize.width && h <= this.minTileSize.height) {
       console.log('done subdividing at level', z, ' because of tile size = ', w, h, 'is less than ', this.minTileSize)
-      return true
+      return {stop: true, aborted: false}
     }
-    return false
+    return {stop: false, aborted: false}
   }
   countClips(z: number): number {
     let count = 0
@@ -985,17 +1074,29 @@ export class TileMap {
     return {w: this.tileSizes[z].width, h: this.tileSizes[z].height}
   }
 
-  private subdivideTilesOnLevel(z: number) {
-    const tileCount = 0
+  private subdivideTilesOnLevel(z: number, baseElements: number, maxElements: number): {allTilesAreSmall: boolean; aborted: boolean} {
     let allTilesAreSmall = true
+    let levelElements = 0
 
     for (const [key, tile] of this.levels[z - 1].keyValues()) {
-      const res = this.subdivideTile(key, z, tile, false)
+      const res = this.subdivideTile(key, z, tile)
       allTilesAreSmall &&= res.allSmall
+      levelElements += res.addedElements
+      if (baseElements + levelElements > maxElements) {
+        console.log(
+          'aborting level',
+          z,
+          'mid-build: total elements would exceed budget at',
+          baseElements + levelElements,
+          '>',
+          maxElements,
+        )
+        return {allTilesAreSmall, aborted: true}
+      }
     }
     this.removeEmptyTiles(z)
     console.log('generated', this.levels[z].size, 'tiles')
-    return allTilesAreSmall
+    return {allTilesAreSmall, aborted: false}
   }
 
   private subdivideTile(
@@ -1004,8 +1105,7 @@ export class TileMap {
     z: number, // the level above the lowerTile level
     /** this is the tile we are subdividing */
     lowerTile: Tile,
-    regenerate: boolean,
-  ): {count: number; allSmall: boolean} {
+  ): {count: number; allSmall: boolean; addedElements: number} {
     const {w, h} = this.getWHOnLevel(z)
     /** this is the map we collect new tiles to */
     const levelTiles = this.levels[z]
@@ -1023,42 +1123,23 @@ export class TileMap {
       }
     }
 
-    if (!regenerate) {
-      this.generateSubtilesWithoutTileClips(left, w, bottom, h, keys, lowerTile, z)
-    } else {
-      // regenerate mode: re-propagate arrowheads from the (updated) upper tile into
-      // existing subtiles so they stay consistent with the rerouted curves.
-      for (let i = 0; i < 2; i++)
-        for (let j = 0; j < 2; j++) {
-          const k = i * 2 + j
-          const sub = levelTiles.getI(keys[k])
-          if (sub == null) continue
-          sub.arrowheads = []
-          const subRect = sub.rect
-          for (const arrowhead of lowerTile.arrowheads) {
-            const arrowheadBox = Rectangle.mkPP(arrowhead.base, arrowhead.tip)
-            const d = arrowhead.tip.sub(arrowhead.base).div(3)
-            const dRotated = d.rotate90Cw()
-            arrowheadBox.add(arrowhead.base.add(dRotated))
-            arrowheadBox.add(arrowhead.base.sub(dRotated))
-            if (arrowheadBox.intersects(subRect)) sub.arrowheads.push(arrowhead)
-          }
-        }
-    }
+    this.generateSubtilesWithoutTileClips(left, w, bottom, h, keys, lowerTile, z)
     const horizontalMiddleLine = new LineSegment(left, bottom + h, left + 2 * w, bottom + h)
     const verticalMiddleLine = new LineSegment(left + w, bottom, left + w, bottom + 2 * h)
     subdivideWithCachedClipsAboveTile()
     let r = 0
     let allSmall = true
+    let addedElements = 0
     for (const key of keys) {
       const tile = levelTiles.get(key.x, key.y)
       if (tile == null) continue
       r++
+      addedElements += tile.entityCount
       if (tile.entityCount > this.tileCapacity) {
         allSmall = false
       }
     }
-    return {count: r, allSmall: allSmall}
+    return {count: r, allSmall: allSmall, addedElements}
 
     // local functions
     function subdivideWithCachedClipsAboveTile() {
@@ -1085,7 +1166,7 @@ export class TileMap {
             tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
             levelTiles.setPair(key, tile)
           }
-          tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[0], endPar: xs[1]})
+          tile.addCurveClip({curve: cs, edges: clip.edges, startPar: xs[0], endPar: xs[1]})
         } else
           for (let u = 0; u < xs.length - 1; u++) {
             const t = (xs[u] + xs[u + 1]) / 2
@@ -1102,7 +1183,7 @@ export class TileMap {
               tile = new Tile(new Rectangle({left: l, bottom: b, top: b + h, right: l + w}))
               levelTiles.setPair(key, tile)
             }
-            tile.addCurveClip({curve: cs, edge: clip.edge, startPar: xs[u], endPar: xs[u + 1]})
+            tile.addCurveClip({curve: cs, edges: clip.edges, startPar: xs[u], endPar: xs[u + 1]})
           }
       }
     }

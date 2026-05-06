@@ -279,8 +279,8 @@ const runBench = process.env.MSAGL_BENCH === '1'
     },
     {
       name: 'ca-GrQc',
-      file: path.join(graphsDir, 'ca-GrQc.json'),
-      parse: () => parseJsonNodesEdges(path.join(graphsDir, 'ca-GrQc.json')),
+      file: path.join(graphsDir, 'ca-GrQc.txt'),
+      parse: () => parseEdgeList(path.join(graphsDir, 'ca-GrQc.txt')),
     },
     {
       name: 'facebook_combined',
@@ -289,8 +289,8 @@ const runBench = process.env.MSAGL_BENCH === '1'
     },
     {
       name: 'ca-HepTh',
-      file: path.join(graphsDir, 'ca-HepTh.json'),
-      parse: () => parseJsonNodesEdges(path.join(graphsDir, 'ca-HepTh.json')),
+      file: path.join(graphsDir, 'ca-HepTh.txt'),
+      parse: () => parseEdgeList(path.join(graphsDir, 'ca-HepTh.txt')),
     },
     {
       name: 'ca-HepPh',
