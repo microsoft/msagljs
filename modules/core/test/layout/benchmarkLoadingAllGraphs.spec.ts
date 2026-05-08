@@ -170,7 +170,10 @@ type Row = {
   totalMs: number // parse + layout + tiling
 }
 
-const MAX_TILE_LEVELS = 8 // matches Z_max in the paper
+// No explicit Z cap: pick a value large enough that the natural stops in
+// buildUpToLevel (capacity met / minTileSize / memory budget) always fire
+// first. With C=500 and the 4 GB memory guard, depth never approaches 30.
+const MAX_TILE_LEVELS = 30
 const TILE_CAPACITY = 500 // matches default C in the paper
 
 function benchmark(name: string, parse: () => Graph): Row {
@@ -342,7 +345,7 @@ const runBench = process.env.MSAGL_BENCH === '1'
     if (rows.length === 0) return
     out('')
     out('================================================================')
-    out(`  Loading benchmark — sleeve routing + tiling (capacity=${TILE_CAPACITY}, levels=${MAX_TILE_LEVELS})`)
+    out(`  Loading benchmark — sleeve routing + tiling (capacity=${TILE_CAPACITY}, no explicit Z cap; natural stops only)`)
     out('  Date: ' + new Date().toISOString())
     out('================================================================')
     for (const line of renderTable(rows)) out(line)
