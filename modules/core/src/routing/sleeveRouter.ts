@@ -868,6 +868,14 @@ function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
   return false
 }
 
+/** Routing strategy used by {@link routeSleeveEdges}. Exposed for
+ *  benchmarking the speedups described in the GD 2026 paper.
+ *  - `'astar'`: per-edge A* on the CDT dual (no batched search).
+ *  - `'dijkstra'`: one Dijkstra tree per source endpoint (no vertex-cover swap).
+ *  - `'dijkstra-vc'`: greedy vertex-cover on the demand graph picks the
+ *    Dijkstra root for each edge; default. */
+export type SleeveRouteMode = 'astar' | 'dijkstra' | 'dijkstra-vc'
+
 /** Route all edges using the sleeve approach.
  *  Builds a CDT on padded obstacle polylines and routes each edge
  *  through the CDT dual graph using a single grouped Dijkstra tree per
@@ -891,6 +899,7 @@ export function routeSleeveEdges(
   extraObstaclePadding = 0,
   debugLabel?: string,
   smoothCorners = false,
+  routeMode: SleeveRouteMode = 'dijkstra-vc',
 ): void {
   if (!edgesToRoute || edgesToRoute.length === 0) return
 
@@ -973,11 +982,14 @@ export function routeSleeveEdges(
   // route edges using indexed Dijkstra tree per root node
   console.time('SleeveRouter routing')
 
-  // Each query edge can be served from either endpoint, so we choose
-  // Dijkstra roots that minimize the number of distinct trees we run —
-  // a minimum vertex cover on the demand graph, approximated by the
-  // greedy maximum-degree heuristic.
-  const edgesByRoot = chooseDijkstraRoots(edgesToRoute)
+  // Mode selection (see SleeveRouteMode):
+  //   'astar'       — one A* per edge; no batched Dijkstra.
+  //   'dijkstra'    — one Dijkstra tree per source endpoint; no VC swap.
+  //   'dijkstra-vc' — minimum-vertex-cover on the demand graph picks each
+  //                   edge's Dijkstra root, minimizing the number of trees.
+  const edgesByRoot = routeMode === 'dijkstra-vc'
+    ? chooseDijkstraRoots(edgesToRoute)
+    : groupEdgesBySource(edgesToRoute)
 
   for (const [rootNode, edges] of edgesByRoot) {
     if (cancelToken && cancelToken.canceled) return
@@ -1041,8 +1053,12 @@ export function routeSleeveEdges(
     const allowed = new Set<Polyline>()
     if (rootPoly) allowed.add(rootPoly)
 
-    // Single indexed Dijkstra from root to all "other-end" triangles
-    dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+    // Single indexed Dijkstra from root to all "other-end" triangles.
+    // In 'astar' mode we skip the Dijkstra entirely and route every edge
+    // via the per-edge A* fallback below.
+    if (routeMode !== 'astar') {
+      dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+    }
 
     // Process Dijkstra-reachable edges; collect unreachable for A* fallback
     const fallbackEdges: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline}[] = []
@@ -1283,6 +1299,25 @@ function chooseDijkstraRoots(edges: Iterable<GeomEdge>): Map<GeomNode, GeomEdge[
   const grouped = new Map<GeomNode, GeomEdge[]>()
   for (const e of allRoutable) {
     const root = edgeRoot.get(e) ?? e.source
+    let list = grouped.get(root)
+    if (!list) {
+      list = []
+      grouped.set(root, list)
+    }
+    list.push(e)
+  }
+  return grouped
+}
+
+
+/** Group routable edges by their source endpoint, with no minimum-vertex-cover
+ *  swap. Used by the 'dijkstra' and 'astar' benchmark modes of
+ *  {@link routeSleeveEdges}. */
+function groupEdgesBySource(edges: Iterable<GeomEdge>): Map<GeomNode, GeomEdge[]> {
+  const grouped = new Map<GeomNode, GeomEdge[]>()
+  for (const e of edges) {
+    if (e.sourcePort == null || e.targetPort == null) continue
+    const root = e.source
     let list = grouped.get(root)
     if (!list) {
       list = []
