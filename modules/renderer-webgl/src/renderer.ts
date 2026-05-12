@@ -81,6 +81,13 @@ export default class Renderer extends EventSource {
   private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
   private _graphOffset: {x: number; y: number} = {x: 0, y: 0}
   private _tooltipEl: HTMLDivElement
+  /**
+   * Hard cap on tile-pyramid depth, passed to TileMap.buildUpToLevel.
+   * Defaults to 8 (= up to 9 levels). Set to 0 to disable the pyramid
+   * entirely and always render the single root tile (used by the
+   * browsing-smoothness ablation experiment).
+   */
+  private _maxTileLevels: number = 8
 
   constructor(container: HTMLElement = document.body, layoutWorkerUrl?: string) {
     super()
@@ -189,6 +196,21 @@ export default class Renderer extends EventSource {
         layers: [newLayer],
       })
     }
+  }
+
+  /**
+   * Hard cap on tile-pyramid depth (Z) used by the next graph load. Default
+   * is 8. Set to 0 to bypass the tile pyramid and always draw the whole
+   * graph from the single root tile; used by the browsing-smoothness
+   * ablation in the paper.
+   */
+  setMaxTileLevels(n: number) {
+    if (!Number.isFinite(n) || n < 0) return
+    this._maxTileLevels = Math.floor(n)
+  }
+
+  get maxTileLevels(): number {
+    return this._maxTileLevels
   }
 
   /** when the graph is set : the geometry for it is created and the layout is done
@@ -374,7 +396,7 @@ export default class Renderer extends EventSource {
     // past its memory budget (default 4 GB at ~200 bytes per element).
     // The hard ceiling of 9 levels (Z = 8) bounds the pyramid depth.
     const tileMap = new TileMap(geomGraph, rootTile)
-    const numberOfLevels = tileMap.buildUpToLevel(8)
+    const numberOfLevels = tileMap.buildUpToLevel(this._maxTileLevels)
     console.timeEnd('Generate tiles')
 
     console.time('initial render')

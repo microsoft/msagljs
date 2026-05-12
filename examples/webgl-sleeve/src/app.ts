@@ -11,6 +11,22 @@ const defaultGraphUrl = SAMPLE_GRAPHS[0].url
 const renderer = new WebGLRenderer(document.getElementById('viewer'), './worker.js')
 renderer.addControl(new SearchControl())
 
+// Browsing-smoothness ablation: ?maxLevels=0 disables the tile pyramid
+// and forces the renderer to always draw the whole graph from the root
+// tile. Default 8 keeps normal behavior.
+{
+  const params = new URLSearchParams(window.location.search)
+  const ml = params.get('maxLevels')
+  if (ml !== null) {
+    const n = parseInt(ml, 10)
+    if (Number.isFinite(n) && n >= 0) renderer.setMaxTileLevels(n)
+  }
+  // Expose the renderer for benchmark harnesses that need to reach into
+  // deck.gl for viewport scripting and frame stats. No-op for end users.
+  ;(window as any).__msaglRenderer = renderer
+  ;(window as any).__msaglMaxTileLevels = renderer.maxTileLevels
+}
+
 // Currently rendered graph; needed to validate layout choices when the user
 // changes the layout dropdown without re-loading the graph.
 let currentGraph: Graph | null = null
@@ -113,6 +129,7 @@ async function acceptGraph(graph: Graph) {
   const warning = ensureLayoutFitsGraph(graph)
   await updateRender(graph, getSettings())
   if (warning) showError(warning)
+  ;(window as any).__msaglReady = true
 }
 
 // Sample-graphs dropdown
@@ -214,10 +231,23 @@ urlInput.onkeydown = (e) => {
   }
 }
 
-// Support ?url=... query param for deep-linking to a specific graph.
+// Support ?url=... and ?graph=<label> query params for deep-linking.
+function resolveLinkedUrl(params: URLSearchParams): string | null {
+  const linked = params.get('url')
+  if (linked) return linked
+  const labelOrId = params.get('graph')
+  if (labelOrId) {
+    const match = SAMPLE_GRAPHS.find(
+      (s) => s.label === labelOrId || s.url.endsWith('/' + labelOrId) || s.url === labelOrId,
+    )
+    if (match) return match.url
+  }
+  return null
+}
+
 {
   const params = new URLSearchParams(window.location.search)
-  const linked = params.get('url')
+  const linked = resolveLinkedUrl(params)
   if (linked) urlInput.value = linked
 }
 
@@ -225,8 +255,7 @@ urlInput.onkeydown = (e) => {
 ;(async () => {
   try {
     const params = new URLSearchParams(window.location.search)
-    const linked = params.get('url')
-    const src = linked || defaultGraphUrl
+    const src = resolveLinkedUrl(params) || defaultGraphUrl
     const graph = await loadGraphFromUrl(src)
     if (!graph) {
       showError('Failed to load default graph.')
