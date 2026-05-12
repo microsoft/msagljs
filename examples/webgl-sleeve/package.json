@@ -5,7 +5,7 @@
   "description": "Stripped-down WebGL demo of @msagl that always uses sleeve routing.",
   "scripts": {
     "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
-    "build": "rm -rf ../../website/static/webgl-sleeve/* && esbuild ./src/app.ts --outfile=../../website/static/webgl-sleeve/app.js --bundle --minify && esbuild ./src/worker.ts --outfile=../../website/static/webgl-sleeve/worker.js --bundle --minify && cp index.html spinner.gif ../../website/static/webgl-sleeve"
+    "build": "rm -rf ../../website/static/webgl-sleeve/* && esbuild ./src/app.ts --outfile=../../website/static/webgl-sleeve/app.js --bundle --minify && esbuild ./src/worker.ts --outfile=../../website/static/webgl-sleeve/worker.js --bundle --minify && cp index.html spinner.gif ../../website/static/webgl-sleeve && mkdir -p ../../website/static/webgl-sleeve/graphs && cp graphs/* ../../website/static/webgl-sleeve/graphs/"
   },
   "author": "",
   "license": "MIT",

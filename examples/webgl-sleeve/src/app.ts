@@ -4,7 +4,7 @@ import {Renderer as WebGLRenderer, SearchControl} from '@msagl/renderer-webgl'
 import {EdgeRoutingMode, Graph} from '@msagl/core'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
-import {SAMPLE_GRAPHS, LAYOUT, isSugiyamaLayout, LARGE_GRAPH_NODE_THRESHOLD} from './settings'
+import {SAMPLE_GRAPHS, LAYOUT, isSugiyamaLayout, LARGE_GRAPH_NODE_THRESHOLD, SLOW_GRAPH_ETA_SEC} from './settings'
 
 const defaultGraphUrl = SAMPLE_GRAPHS[0].url
 
@@ -126,6 +126,16 @@ for (const s of SAMPLE_GRAPHS) {
 sampleSelect.selectedIndex = -1
 sampleSelect.onchange = async () => {
   try {
+    const picked = SAMPLE_GRAPHS.find((s) => s.url === sampleSelect.value)
+    if (picked && picked.etaSec >= SLOW_GRAPH_ETA_SEC) {
+      const ok = window.confirm(
+        `"${picked.label}" is a large graph; loading might take a long time. Continue?`,
+      )
+      if (!ok) {
+        sampleSelect.selectedIndex = -1
+        return
+      }
+    }
     const graph = await loadGraphFromUrl(sampleSelect.value)
     if (!graph) {
       showError('Failed to parse sample graph.')

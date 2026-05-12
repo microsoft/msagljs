@@ -1,5 +1,5 @@
 tmp
-graphs
+/graphs
 node_modules
 dist*
 *~
