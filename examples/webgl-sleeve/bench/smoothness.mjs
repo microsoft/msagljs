@@ -1,12 +1,23 @@
-// Browsing-smoothness ablation harness for the GD 2026 paper.
+// Browsing-smoothness harness for the GD 2026 paper.
 //
-// For each (graph, maxLevels) configuration, drive a deterministic
-// programmatic zoom-in tour through deck.gl, record per-frame time
-// (via requestAnimationFrame timestamps) and main-thread long tasks
-// (via PerformanceObserver), and write a JSON line per trial.
+// Output JSONL feeds the post-processor that emits the per-graph LaTeX
+// rows for tab:smoothness in gd2026.tex. Both the post-processor and
+// the canonical results files live with the paper sources, not here:
+//   ~/dev/paper_msagljs/format_smoothness.py
+//   ~/dev/paper_msagljs/smoothness-results-mcp.jsonl
+//
+
+// For each graph, after the in-browser tile-pyramid build finishes,
+// drive a deterministic programmatic tour through deck.gl: pick three
+// random points on the root tile, and for each one dive from the
+// coarsest zoom to the finest zoom and back over two seconds of wall
+// clock. Record per-frame time via requestAnimationFrame timestamps,
+// main-thread long tasks via PerformanceObserver, and the deck.gl
+// Tileset2D visible-element count at peak zoom. Write one JSON line
+// per trial.
 //
 // Usage:
-//   node bench/smoothness.mjs [--trials=3] [--frames=600] [--out=results.jsonl]
+//   node bench/smoothness.mjs [--trials=2] [--out=results.jsonl] [--only=g1,g2]
 //
 // Assumes:
 //   - The webgl-sleeve example has been built into website/static/webgl-sleeve.
@@ -29,20 +40,22 @@ const args = Object.fromEntries(
     return [k, v ?? true]
   }),
 )
-const TRIALS = parseInt(args.trials ?? 3, 10)
-const FRAMES_PER_TRIAL = parseInt(args.frames ?? 600, 10)
+const TRIALS = parseInt(args.trials ?? 2, 10)
+const DIVES_PER_TRIAL = parseInt(args.dives ?? 3, 10)
+const DIVE_MS = parseInt(args.diveMs ?? 2000, 10)
 const OUT = resolve(args.out ?? join(__dirname, 'smoothness-results.jsonl'))
 const ONLY = args.only ? String(args.only).split(',') : null
 
 const GRAPHS = [
-  {label: 'gameofthrones', url: './graphs/gameofthrones.json', loadTimeoutMs: 60_000},
-  {label: 'composers', url: './graphs/composers.json', loadTimeoutMs: 60_000},
-  {label: 'ca-GrQc', url: './graphs/ca-GrQc.txt.gz', loadTimeoutMs: 90_000},
-  {label: 'ca-HepPh', url: './graphs/ca-HepPh.txt.gz', loadTimeoutMs: 900_000},
-]
-const CONFIGS = [
-  {name: 'pyramid', maxLevels: 8},
-  {name: 'singleLayer', maxLevels: 0},
+  {label: 'gameofthrones',      url: './graphs/gameofthrones.json',          loadTimeoutMs:    60_000},
+  {label: 'composers',          url: './graphs/composers.json',              loadTimeoutMs:    60_000},
+  {label: 'ca-GrQc',            url: './graphs/ca-GrQc.txt.gz',              loadTimeoutMs:    90_000},
+  {label: 'ca-HepTh',           url: './graphs/ca-HepTh.txt.gz',             loadTimeoutMs:   300_000},
+  {label: 'facebook_combined',  url: './graphs/facebook_combined.txt.gz',    loadTimeoutMs:   300_000},
+  {label: 'ca-HepPh',           url: './graphs/ca-HepPh.txt.gz',             loadTimeoutMs: 1_500_000},
+  {label: 'ca-CondMat',         url: './graphs/ca-CondMat.txt.gz',           loadTimeoutMs: 1_500_000},
+  {label: 'deezer_europe',      url: './graphs/deezer_europe_edges.csv.gz',  loadTimeoutMs: 1_500_000},
+  {label: 'delaunay_n15',       url: './graphs/delaunay_n15.mtx.gz',         loadTimeoutMs:   600_000},
 ]
 
 const MIME = {
@@ -103,7 +116,7 @@ function summarize(arr) {
   }
 }
 
-async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTimeoutMs, framesPerTrial) {
+async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, trialIndex) {
   const page = await browser.newPage()
   await page.setViewport({width: 1200, height: 900, deviceScaleFactor: 1})
   page.on('dialog', (d) => d.accept())
@@ -116,7 +129,7 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
     process.stderr.write(`  [pageerror] ${err.message}\n`)
   })
 
-  const url = `http://127.0.0.1:${port}/?url=${encodeURIComponent(graphUrl)}&maxLevels=${maxLevels}`
+  const url = `http://127.0.0.1:${port}/?url=${encodeURIComponent(graphUrl)}&maxLevels=30`
   const t0 = Date.now()
   await page.goto(url, {waitUntil: 'domcontentloaded'})
   await page.waitForFunction(() => (window).__msaglReady === true, {timeout: loadTimeoutMs})
@@ -126,18 +139,36 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
   // the layout/route worker drains before we start measuring.
   await new Promise((r) => setTimeout(r, 1000))
 
-  const result = await page.evaluate(async (frames) => {
+  const result = await page.evaluate(async (params) => {
+    const {dives, diveMs, seed} = params
     const renderer = (window).__msaglRenderer
     const deck = renderer && renderer._deck
     if (!deck) return {error: 'deck not ready'}
 
-    // Read current view state and the layer's zoom range so the tour
-    // covers the full pyramid.
-    const vs = deck.viewManager.getViewState()
     const layer = (deck.props.layers || [])[0]
-    const minZoom = layer && layer.props ? layer.props.minZoom : (vs.zoom ?? 0)
-    const maxZoom = layer && layer.props ? layer.props.maxZoom : (vs.zoom ?? 0)
-    const target = vs.target || [0, 0, 0]
+    if (!layer || !layer.props) return {error: 'tile layer not ready'}
+    const minZoom = layer.props.minZoom
+    const maxZoom = layer.props.maxZoom
+    const extent = layer.props.extent || [0, 0, 1, 1]
+    // Pick targets inside the actual graph footprint when the example
+    // exposes it; otherwise fall back to the padded extent square so
+    // the harness still runs.
+    const box = (window).__msaglGraphBox
+    const x0 = box ? box.left : extent[0]
+    const y0 = box ? box.bottom : extent[1]
+    const x1 = box ? box.right : extent[2]
+    const y1 = box ? box.top : extent[3]
+
+    // Deterministic PRNG (mulberry32) so a fixed seed gives the same
+    // random points across runs.
+    let s = (seed | 0) || 1
+    const rand = () => {
+      s = (s + 0x6D2B79F5) | 0
+      let t = s
+      t = Math.imul(t ^ (t >>> 15), t | 1)
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
 
     // Frame timestamps + long-task durations.
     const frameTs = []
@@ -149,7 +180,6 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
       if (!stop) raf = requestAnimationFrame(tick)
     }
 
-    // PerformanceObserver for long tasks (> 50 ms).
     let po = null
     try {
       po = new PerformanceObserver((entries) => {
@@ -161,30 +191,82 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
     raf = requestAnimationFrame(tick)
     const tStart = performance.now()
 
-    // Scripted zoom-in then pan-out tour. Interpolate linearly so frame
-    // count corresponds to wall-clock at ~60 Hz.
-    const zoomFrames = Math.floor(frames * 0.5)
-    const panFrames = frames - zoomFrames
-    const zSpan = Math.max(0, (maxZoom ?? 0) - (minZoom ?? 0))
-
-    for (let i = 0; i < zoomFrames; i++) {
-      const z = minZoom + (zSpan * i) / Math.max(1, zoomFrames - 1)
-      deck.setProps({
-        viewState: {target, zoom: z},
-      })
-      await new Promise((r) => requestAnimationFrame(() => r(undefined)))
+    // Inspect the deck.gl Tileset2D and sum node/edge/label/arrowhead
+    // counts across visible (selected) tiles. Run at peak zoom of each
+    // dive to estimate per-frame GPU load.
+    const tileSize = (t) => {
+      const c = t && t.content
+      if (!c) return 0
+      let n = 0
+      for (const k of ['nodes', 'edges', 'labels', 'arrowheads', 'curveClips', 'rectClips']) {
+        const arr = c[k]
+        if (Array.isArray(arr)) n += arr.length
+      }
+      return n
     }
-    // Pan: oscillate target along x at the finest zoom to force
-    // tile-cache misses on tile boundaries (in pyramid mode) or
-    // re-render of the root tile every frame (in single-layer mode).
-    const panAmplitude = 200
-    for (let i = 0; i < panFrames; i++) {
-      const phase = (i / panFrames) * 2 * Math.PI
-      const dx = Math.sin(phase) * panAmplitude
-      deck.setProps({
-        viewState: {target: [target[0] + dx, target[1], target[2] || 0], zoom: maxZoom},
-      })
+    const probeVisible = () => {
+      try {
+        const l = (deck.props.layers || [])[0]
+        const tileset = l && l.state && l.state.tileset
+        const selected = (tileset && (tileset.selectedTiles || tileset.tiles)) || []
+        let elementSum = 0
+        let tilesCounted = 0
+        for (const tile of selected) {
+          const sz = tileSize(tile)
+          if (sz > 0) {
+            elementSum += sz
+            tilesCounted += 1
+          }
+        }
+        return {elements: elementSum, tiles: tilesCounted}
+      } catch (_e) {
+        return {elements: null, tiles: null}
+      }
+    }
+
+    const targets = []
+    const peakSamples = []
+
+    // Drive each dive by wall-clock so jank does not stretch its duration:
+    // for half the dive, interpolate zoom minZoom -> maxZoom; for the
+    // second half, maxZoom -> minZoom. Probe visible tiles at peak.
+    const halfMs = diveMs / 2
+    for (let d = 0; d < dives; d++) {
+      const tx = x0 + rand() * (x1 - x0)
+      const ty = y0 + rand() * (y1 - y0)
+      const target = [tx, ty, 0]
+      targets.push({x: tx, y: ty})
+
+      // Anchor at minZoom with this target; one rAF to commit.
+      deck.setProps({viewState: {target, zoom: minZoom}})
       await new Promise((r) => requestAnimationFrame(() => r(undefined)))
+
+      const diveStart = performance.now()
+      let probed = false
+      let lastT = diveStart
+      while (true) {
+        const now = performance.now()
+        const elapsed = now - diveStart
+        if (elapsed >= diveMs) break
+        let z
+        if (elapsed < halfMs) {
+          z = minZoom + ((maxZoom - minZoom) * elapsed) / halfMs
+        } else {
+          z = maxZoom - ((maxZoom - minZoom) * (elapsed - halfMs)) / halfMs
+        }
+        deck.setProps({viewState: {target, zoom: z}})
+        await new Promise((r) => requestAnimationFrame(() => r(undefined)))
+        // Probe once when we cross peak zoom (midpoint of the dive).
+        if (!probed && lastT - diveStart < halfMs && performance.now() - diveStart >= halfMs) {
+          peakSamples.push(probeVisible())
+          probed = true
+        }
+        lastT = performance.now()
+      }
+      // End the dive at minZoom exactly.
+      deck.setProps({viewState: {target, zoom: minZoom}})
+      await new Promise((r) => requestAnimationFrame(() => r(undefined)))
+      if (!probed) peakSamples.push(probeVisible())
     }
 
     const tEnd = performance.now()
@@ -192,53 +274,35 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
     cancelAnimationFrame(raf)
     if (po) po.disconnect()
 
-    // Compute frame intervals (ms between consecutive rAF callbacks).
     const frameTimes = []
     for (let i = 1; i < frameTs.length; i++) frameTimes.push(frameTs[i] - frameTs[i - 1])
 
-    // Probe the deck.gl TileLayer's active tile set at peak zoom and sum
-    // node/edge/label/arrowhead counts across visible tiles. This is the
-    // GPU-load proxy: pyramid mode caps per-tile elements at TileCapacity
-    // and only draws a bounded number of tiles, while single-layer mode
-    // draws the single root tile (≈ |G| elements) on every frame.
-    let visibleTileElements = null
-    let visibleTileCount = null
-    try {
-      const tileLayer = (deck.props.layers || [])[0]
-      const tileset = tileLayer && tileLayer.state && tileLayer.state.tileset
-      const selected = tileset && (tileset.selectedTiles || tileset.tiles) || []
-      let elementSum = 0
-      let tilesCounted = 0
-      const tileSize = (t) => {
-        const c = t && t.content
-        if (!c) return 0
-        let n = 0
-        for (const k of ['nodes', 'edges', 'labels', 'arrowheads', 'curveClips', 'rectClips']) {
-          const arr = c[k]
-          if (Array.isArray(arr)) n += arr.length
-        }
-        return n
-      }
-      for (const tile of selected) {
-        const sz = tileSize(tile)
-        if (sz > 0) {
-          elementSum += sz
-          tilesCounted += 1
-        }
-      }
-      visibleTileElements = elementSum
-      visibleTileCount = tilesCounted
-    } catch (_e) { /* probe is best-effort */ }
+    const peakElements = peakSamples.map((s) => s.elements ?? 0)
+    const peakTiles = peakSamples.map((s) => s.tiles ?? 0)
+    const peakMax = peakElements.reduce((a, b) => Math.max(a, b), 0)
+    const peakMean = peakElements.length ? peakElements.reduce((a, b) => a + b, 0) / peakElements.length : 0
+    const peakTileMax = peakTiles.reduce((a, b) => Math.max(a, b), 0)
+    const peakTileMean = peakTiles.length ? peakTiles.reduce((a, b) => a + b, 0) / peakTiles.length : 0
 
     return {
       durMs: tEnd - tStart,
       frameTimes,
       longTasks: longTasks.map((l) => l.dur),
-      tilePyramidLevels: (renderer && renderer.maxTileLevels !== undefined) ? renderer.maxTileLevels + 1 : null,
-      visibleTileElements,
-      visibleTileCount,
+      // Actual pyramid depth = the layer's zoom range; this is the
+      // numberOfLevels TileMap built, which may be less than the
+      // requested maxTileLevels cap.
+      tilePyramidLevels: maxZoom - minZoom + 1,
+      tileLayer: {minZoom, maxZoom, extent},
+      graphBox: box || null,
+      dives: targets,
+      peakElementsPerDive: peakElements,
+      peakTilesPerDive: peakTiles,
+      peakElementsMax: peakMax,
+      peakElementsMean: peakMean,
+      peakTilesMax: peakTileMax,
+      peakTilesMean: peakTileMean,
     }
-  }, framesPerTrial)
+  }, {dives: DIVES_PER_TRIAL, diveMs: DIVE_MS, seed: (trialIndex + 1) * 1013904223})
 
   await page.close()
   return {loadMs, ...result}
@@ -247,11 +311,13 @@ async function runTrial(browser, port, graphLabel, graphUrl, maxLevels, loadTime
 async function main() {
   const {server, port} = await startServer(ROOT, 0)
   console.error(`[serve] http://127.0.0.1:${port}`)
-  if (existsSync(OUT)) writeFileSync(OUT, '') // truncate
-  else writeFileSync(OUT, '')
-  const browser = await puppeteer.launch({
+  if (!args.append) {
+    if (existsSync(OUT)) writeFileSync(OUT, '') // truncate
+    else writeFileSync(OUT, '')
+  }
+  const launchOpts = {
     headless: 'new',
-    protocolTimeout: 900_000,
+    protocolTimeout: 1_800_000,
     args: [
       '--use-gl=angle',
       '--enable-gpu',
@@ -259,55 +325,65 @@ async function main() {
       '--no-sandbox',
       '--ignore-gpu-blocklist',
     ],
-  })
+  }
+  // One persistent browser warms Chrome's JIT and keeps it warm across
+  // graphs. Each trial uses a fresh page so released graph state can be
+  // garbage-collected between trials.
+  const browser = await puppeteer.launch(launchOpts)
   try {
     for (const g of GRAPHS) {
       if (ONLY && !ONLY.includes(g.label)) continue
-      for (const c of CONFIGS) {
-        for (let trial = 0; trial < TRIALS; trial++) {
-          process.stderr.write(`[run] ${g.label} ${c.name} trial ${trial + 1}/${TRIALS} ... `)
-          const t0 = Date.now()
-          let res
-          try {
-            res = await runTrial(browser, port, g.label, g.url, c.maxLevels, g.loadTimeoutMs, FRAMES_PER_TRIAL)
-          } catch (e) {
-            res = {error: e.message || String(e)}
-          }
-          const wall = Date.now() - t0
-          const summary = res.frameTimes
-            ? {
-                frame: summarize(res.frameTimes),
-                longTasks: {
-                  count: res.longTasks.length,
-                  totalMs: res.longTasks.reduce((a, b) => a + b, 0),
-                  maxMs: res.longTasks.reduce((a, b) => Math.max(a, b), 0),
-                },
-                visibleTileElements: res.visibleTileElements ?? null,
-                visibleTileCount: res.visibleTileCount ?? null,
-              }
-            : null
-          const line = JSON.stringify({
-            graph: g.label,
-            config: c.name,
-            maxLevels: c.maxLevels,
-            trial: trial + 1,
-            wallMs: wall,
-            loadMs: res.loadMs ?? null,
-            durMs: res.durMs ?? null,
-            tilePyramidLevels: res.tilePyramidLevels ?? null,
-            summary,
-            error: res.error ?? null,
-          })
-          appendFileSync(OUT, line + '\n')
-          if (res.error) {
-            process.stderr.write(`ERROR ${res.error}\n`)
-          } else {
-            const fr = summary.frame
-            process.stderr.write(
-              `done in ${(wall / 1000).toFixed(1)}s, mean ${fr.mean.toFixed(1)}ms, p95 ${fr.p95.toFixed(1)}ms, ` +
-                `${summary.longTasks.count} long tasks\n`,
-            )
-          }
+      for (let trial = 0; trial < TRIALS; trial++) {
+        process.stderr.write(`[run] ${g.label} trial ${trial + 1}/${TRIALS} ... `)
+        const t0 = Date.now()
+        let res
+        try {
+          res = await runTrial(browser, port, g.label, g.url, g.loadTimeoutMs, trial)
+        } catch (e) {
+          res = {error: e.message || String(e)}
+        }
+        const wall = Date.now() - t0
+        const summary = res.frameTimes
+          ? {
+              frame: summarize(res.frameTimes),
+              longTasks: {
+                count: res.longTasks.length,
+                totalMs: res.longTasks.reduce((a, b) => a + b, 0),
+                maxMs: res.longTasks.reduce((a, b) => Math.max(a, b), 0),
+              },
+              peakElements: {
+                max: res.peakElementsMax ?? null,
+                mean: res.peakElementsMean ?? null,
+                perDive: res.peakElementsPerDive ?? null,
+              },
+              peakTiles: {
+                max: res.peakTilesMax ?? null,
+                mean: res.peakTilesMean ?? null,
+                perDive: res.peakTilesPerDive ?? null,
+              },
+            }
+          : null
+        const line = JSON.stringify({
+          graph: g.label,
+          trial: trial + 1,
+          wallMs: wall,
+          loadMs: res.loadMs ?? null,
+          durMs: res.durMs ?? null,
+          tilePyramidLevels: res.tilePyramidLevels ?? null,
+          tileLayer: res.tileLayer ?? null,
+          dives: res.dives ?? null,
+          summary,
+          error: res.error ?? null,
+        })
+        appendFileSync(OUT, line + '\n')
+        if (res.error) {
+          process.stderr.write(`ERROR ${res.error}\n`)
+        } else {
+          const fr = summary.frame
+          process.stderr.write(
+            `done in ${(wall / 1000).toFixed(1)}s, mean ${fr.mean.toFixed(1)}ms, p95 ${fr.p95.toFixed(1)}ms, ` +
+              `${summary.longTasks.count} long tasks, peak elts max ${summary.peakElements.max}\n`,
+          )
         }
       }
     }
