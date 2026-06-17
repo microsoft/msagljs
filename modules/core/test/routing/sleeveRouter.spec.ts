@@ -151,7 +151,7 @@ describe('sleeveRouter with subgraphs', () => {
     const geomEdgeAB = new GeomEdge(edgeAB)
 
     const edges = Array.from(gg.deepEdges)
-    routeSleeveEdges(gg, edges, null, 2)
+    routeSleeveEdges(gg, edges, null, true, 2)
 
     // Both edges should have curves (not null)
     expect(geomEdgeAD.curve).not.toBeNull()

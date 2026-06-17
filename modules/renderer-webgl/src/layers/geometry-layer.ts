@@ -21,6 +21,13 @@ export type GeometryLayerProps<DataT = any> = {
 
   sizeScale?: number
 
+  /** Viewport zoom at which the owning tile level is 1:1. When set, node size is
+   *  interpolated each frame between getSize (current level, at nativeZoom-1) and
+   *  getSizeFiner (next finer level, at nativeZoom) so it stays continuous across
+   *  tile-level switches. The finer level is used because it always contains the
+   *  node (finer levels are supersets), unlike the coarser one. */
+  nativeZoom?: number | null
+
   stroked?: boolean
   filled?: boolean
 
@@ -33,6 +40,8 @@ export type GeometryLayerProps<DataT = any> = {
   getPickingColor?: Accessor<DataT, Color>
   getPosition?: Accessor<DataT, Position>
   getSize?: Accessor<DataT, [number, number]>
+  /** Node size at the next finer tile level; mixed with getSize via nativeZoom. */
+  getSizeFiner?: Accessor<DataT, [number, number]>
   getFillColor?: Accessor<DataT, Color>
   getLineColor?: Accessor<DataT, Color>
   getLineWidth?: Accessor<DataT, number>
@@ -47,6 +56,8 @@ const defaultProps: DefaultProps<GeometryLayerProps> = {
   lineWidthMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
 
   sizeScale: {type: 'number', min: 0, value: 1},
+
+  nativeZoom: {type: 'number', value: null},
 
   stroked: true,
   filled: true,
@@ -65,6 +76,7 @@ const defaultProps: DefaultProps<GeometryLayerProps> = {
   getPickingColor: {type: 'accessor', value: [0, 0, 0]},
   getPosition: {type: 'accessor', value: (x: any) => x.position},
   getSize: {type: 'accessor', value: (x: any) => x.size},
+  getSizeFiner: {type: 'accessor', value: (x: any) => x.size},
   getFillColor: {type: 'accessor', value: [255, 255, 255, 255]},
   getLineColor: {type: 'accessor', value: [0, 0, 0, 255]},
   getLineWidth: {type: 'accessor', value: 1},
@@ -78,6 +90,7 @@ attribute vec2 positions;
 attribute vec3 instancePositions;
 attribute vec3 instancePositions64Low;
 attribute vec2 instanceSizes;
+attribute vec2 instanceSizesFiner;
 attribute float instanceShapes;
 attribute float instanceLineWidths;
 attribute vec4 instanceFillColors;
@@ -88,6 +101,7 @@ attribute float instanceIsCluster;
 uniform mat4 depthHighlightColors;
 uniform float opacity;
 uniform float sizeScale;
+uniform float sizeLerp;
 uniform float lineWidthScale;
 uniform float lineWidthMinPixels;
 uniform float lineWidthMaxPixels;
@@ -124,11 +138,17 @@ void main(void) {
 
   geometry.uv = positions.xy;
 
-  vec3 offset = vec3((instanceSizes * sizeScale + 1.0) / 2.0 * positions.xy, 0.0);
+  // Continuous cross-level size: at the level's lower zoom boundary sizeLerp == 0
+  // so the node is shown at instanceSizes (this level); toward the native zoom it
+  // blends to instanceSizesFiner, matching the next finer level's size so there is
+  // no jump when the tile switches to that finer level.
+  vec2 sizeEff = mix(instanceSizes, instanceSizesFiner, sizeLerp);
+
+  vec3 offset = vec3((sizeEff * sizeScale + 1.0) / 2.0 * positions.xy, 0.0);
   DECKGL_FILTER_SIZE(offset, geometry);
   
   vPosition = offset.xy;
-  shape = vec4(instanceSizes * sizeScale, lineWidthCommon, instanceShapes);
+  shape = vec4(sizeEff * sizeScale, lineWidthCommon, instanceShapes);
 
   gl_Position = project_position_to_clipspace(instancePositions, instancePositions64Low, offset, geometry.position);
 
@@ -282,6 +302,11 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         transition: true,
         accessor: 'getSize',
       },
+      instanceSizesFiner: {
+        size: 2,
+        transition: true,
+        accessor: 'getSizeFiner',
+      },
       instanceFillColors: {
         size: 4,
         transition: true,
@@ -352,8 +377,23 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
   }
 
   draw({uniforms}: any) {
-    const {stroked, filled, cornerRadius, sizeScale, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth} =
+    const {stroked, filled, cornerRadius, sizeScale, lineWidthUnits, lineWidthScale, lineWidthMinPixels, lineWidthMaxPixels, nodeDepth, nativeZoom} =
       this.props
+
+    // Per-frame cross-level size interpolation. deck.gl's non-geo TileLayer shows
+    // the tile of index z for viewport zoom in (z-1, z], native at zoom == z. So
+    // sizeLerp goes 0 -> 1 as zoom rises from z-1 to z: at the lower boundary the
+    // node is shown at this level's size, and at the native zoom (where the tile
+    // is about to be replaced by the finer level z+1) it has blended to the finer
+    // level's size, so the swap is seamless. Clamping keeps it well-defined past
+    // the coarsest/finest clamped levels (e.g. when fully zoomed out the coarsest
+    // level shows its authored size).
+    let sizeLerp = 1
+    if (nativeZoom != null) {
+      const vp: any = this.context.viewport
+      const z = Array.isArray(vp.zoom) ? vp.zoom[0] : vp.zoom
+      sizeLerp = Math.min(1, Math.max(0, z - nativeZoom + 1))
+    }
 
     this.state.model
       .setUniforms(uniforms)
@@ -362,6 +402,7 @@ export default class GeometryLayer<DataT> extends Layer<Required<GeometryLayerPr
         filled,
         cornerRadius,
         sizeScale,
+        sizeLerp,
         lineWidthUnits: UNIT[lineWidthUnits],
         lineWidthScale,
         lineWidthMinPixels,

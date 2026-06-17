@@ -264,7 +264,7 @@ export class TileMap {
             const gn = GeomNode.getGeom(n)
             if (gn) activeGeomNodes.add(gn)
           }
-          routeSleeveEdges(this.geomGraph, activeEdges, null, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
+          routeSleeveEdges(this.geomGraph, activeEdges, null, false, ers.Padding, nodeScale, activeGeomNodes, extraObstaclePadding, `level-${k}`, ers.smoothCorners)
         }
         this.clipEdgesIntoLevel(k, activeNodes)
       }

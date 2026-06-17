@@ -87,7 +87,11 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
         layerStyle: layer,
         modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize / 16]),
         parameters: {
-          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount],
+          // Earlier-listed style layers get the nearer depth slice so they draw
+          // on top. The default style lists nodes before edges, so the opaque
+          // node boxes render over the edges and hide the edge ends that (in the
+          // tile-pyramid / no-trim rendering) run all the way to node centers.
+          depthRange: [layerIndex / layerCount, (layerIndex + 1) / layerCount],
         },
       })
 
@@ -106,6 +110,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               lineHeight,
               tileMap,
               levelIndex,
+              nativeZoom: tile.index.z,
             },
             layer as ParsedGraphNodeLayerStyle,
           ),

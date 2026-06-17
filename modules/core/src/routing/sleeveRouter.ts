@@ -886,13 +886,22 @@ export type SleeveRouteMode = 'astar' | 'dijkstra' | 'dijkstra-vc'
  *  `extraObstaclePadding` (>= 0) is added to `padding` ONLY when building the
  *  CDT obstacles. This buys headroom for bezier smoothing bulge, arrowheads
  *  and edge labels so they don't visually overlap neighboring nodes at coarse
- *  tile levels. Trimming still uses the unscaled rendering boundary, so edges
- *  end exactly at the visible node border.
+ *  tile levels.
+ *
+ *  `trimEdges` controls whether each routed curve is trimmed to the node
+ *  boundary (and arrowheads computed). Pass `true` for the standard full-graph
+ *  layout so edges end exactly at the visible node border. Pass `false` for the
+ *  tile-pyramid (LOD) rendering: there each level scales nodes by a per-node
+ *  factor and the renderer further interpolates node size per frame between
+ *  levels, so a curve trimmed to any single level's boundary would detach from
+ *  the node at other zooms. Leaving curves running to the node centers keeps
+ *  edges visually connected at every zoom; the opaque node boxes cover the ends.
  */
 export function routeSleeveEdges(
   geomGraph: GeomGraph,
   edgesToRoute: GeomEdge[],
   cancelToken: CancelToken,
+  trimEdges: boolean,
   padding = 2,
   nodeScale?: (n: GeomNode) => number,
   activeNodes?: Set<GeomNode> | null,
@@ -978,6 +987,20 @@ export function routeSleeveEdges(
     scaledBoundary.set(n, bc)
     return bc
   }
+  // Trim the routed curve to the node boundary and compute arrowheads, unless
+  // the caller opted out (tile-pyramid rendering keeps curves running to node
+  // centers so they stay connected across per-level/per-frame node scaling).
+  // When not trimming, also clear any arrowheads left on the edge by a prior
+  // (trimmed) routing pass: an arrowhead only makes sense at a trimmed endpoint,
+  // and a stale one would sit detached, buried under the node box.
+  const trimEdge = (edge: GeomEdge): void => {
+    if (trimEdges) {
+      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+    } else {
+      edge.sourceArrowhead = null
+      edge.targetArrowhead = null
+    }
+  }
 
   // route edges using indexed Dijkstra tree per root node
   console.time('SleeveRouter routing')
@@ -1004,7 +1027,7 @@ export function routeSleeveEdges(
         const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = fallback.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+        trimEdge(edge)
       }
       continue
     }
@@ -1027,7 +1050,7 @@ export function routeSleeveEdges(
         const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = fallback.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+        trimEdge(edge)
         continue
       }
       // Optimistic shortcut: if the straight segment is obstacle-free,
@@ -1039,7 +1062,7 @@ export function routeSleeveEdges(
         const straight = Polyline.mkFromPoints([srcCenter, tgtCenter])
         edge.curve = straight.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
-        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+        trimEdge(edge)
         continue
       }
       const targetId = idx.getId(otherTriangle)
@@ -1095,9 +1118,7 @@ export function routeSleeveEdges(
           }
         }
       }
-      Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
-      )
+      trimEdge(edge)
     }
 
     // Reset Dijkstra state before A* fallbacks
@@ -1151,9 +1172,7 @@ export function routeSleeveEdges(
         edge.curve = pts.toCurve()
         edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
       }
-      Arrowhead.trimSplineAndCalculateArrowheadsII(
-        edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false,
-      )
+      trimEdge(edge)
       // Reset for next A* call
       for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
       visited.length = 0

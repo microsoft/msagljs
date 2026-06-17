@@ -26,6 +26,12 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
       return [d.startPar, d.endPar]
     },
     widthUnits: 'pixels',
+    // Half the previous 1px default ("twice thinner") and a slightly
+    // transparent black so overlapping edges in dense graphs read more clearly.
+    // A style's strokeWidth/strokeColor (if any) still override these via the
+    // GraphStyleExtension below.
+    getWidth: 0.5,
+    getColor: [0, 0, 0, 160],
     // one vertex per 4 pixels
     getResolution: (d: CurveClip) => {
       return d.curve.length * props.resolution

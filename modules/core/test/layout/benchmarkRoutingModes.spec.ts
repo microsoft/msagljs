@@ -189,7 +189,7 @@ function timeOneRouting(
   const captured: PhaseTimings = {}
   const edges = collectGeomEdges(gg)
   withPhaseCapture(captured, () => {
-    routeSleeveEdges(gg, edges, null, padding, undefined, undefined, 0, undefined, false, mode)
+    routeSleeveEdges(gg, edges, null, true, padding, undefined, undefined, 0, undefined, false, mode)
   })
   return {
     cdtMs: captured['SleeveRouter CDT'] ?? 0,
