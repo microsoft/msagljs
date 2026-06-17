@@ -40,6 +40,15 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
   const scaleFiner = (n: GeomNode): number =>
     tileMap && levelIndex != null ? scaleAt(n, levelIndex + 1) : scaleCurr(n)
   const tiled = tileMap != null && levelIndex != null && nativeZoom != null
+  // The FINEST level has no finer level (scaleCurr == scaleFiner == 1), so its node
+  // box is NOT constant on screen: it grows as boundingBox * 2^zoom across the band.
+  // A fixed-pixel label would stay put while the box grows. To make the label grow
+  // at the SAME speed as the node there, render the finest-level label in 'common'
+  // units (which scale with 2^zoom just like the box). This is also continuous with
+  // the coarser levels' fixed-pixel labels: at the band's low end (zoom -> nativeZoom-1)
+  // a 'common' label of getLabelSize*scaleCurr equals getLabelSize*scaleCurr*2^(nativeZoom-1)
+  // pixels, the same value labelPixelSize produces, so there is no jump at the switch.
+  const isFinest = tiled && (levelIndex as number) >= (tileMap as TileMap).numberOfLevels - 1
   // Labels pulsate because in 'common' units they grow ~2x across a tile-level
   // zoom band (and drop at the switch). TextLayer bakes sizeScale into its glyph
   // sublayer at render time, so a per-frame sizeScale override (as used for
@@ -51,14 +60,12 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
   // On coarse levels scaleCurr ≈ 2*scaleFiner, so the mix cancels the 2^zoom growth
   // and the box stays ~constant; but at the FINEST level scaleCurr == scaleFiner == 1
   // (no finer level), so the box grows with zoom and is SMALLEST at the band's low
-  // end (zoom -> nativeZoom-1, factor 2^(nativeZoom-1)). A fixed label sized to the
-  // native-zoom box therefore overflows the (smaller) box when zoomed out within the
-  // finest band. To guarantee the label fits at EVERY zoom in the band, size it to
-  // the box's minimum on-screen size over the band. That minimum factor is
-  // min(scaleCurr, 2*scaleFiner) (the box-scale curve's minimum is at a band
-  // endpoint) times 2^(nativeZoom-1). For coarse halving levels this equals the
-  // previous scaleFiner*2^nativeZoom (unchanged); at the finest level it halves the
-  // label so it fits the shrunk box. It is also continuous across level switches.
+  // end (zoom -> nativeZoom-1, factor 2^(nativeZoom-1)). On coarse levels we keep the
+  // fixed-pixel label sized to the box's minimum on-screen size over the band, so it
+  // fits at EVERY zoom in the band. That minimum factor is min(scaleCurr, 2*scaleFiner)
+  // (the box-scale curve's minimum is at a band endpoint) times 2^(nativeZoom-1). It is
+  // continuous across level switches. (The finest level uses 'common' units instead;
+  // see isFinest above.)
   const labelPixelSize = (n: GeomNode): number =>
     getLabelSize(n) * Math.min(scaleCurr(n), 2 * scaleFiner(n)) * Math.pow(2, (nativeZoom as number) - 1)
   return [
@@ -98,13 +105,14 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       id: `${props.id}-node-label`,
       getPosition: getLabelPosition,
       getText: getLabelText,
-      // Tiled: fixed-pixel size (constant on screen -> no pulsation), scaled per
-      // node and per level so it tracks the box and is continuous across levels.
-      // Non-tiled: original 'common' behavior.
-      getSize: (n: GeomNode) => (tiled ? labelPixelSize(n) : getLabelSize(n) * scaleCurr(n)),
+      // Tiled coarse levels: fixed-pixel size (constant on screen -> no pulsation),
+      // scaled per node and per level so it tracks the ~constant box and is continuous
+      // across levels. Tiled FINEST level: 'common' units so the label grows with the
+      // (growing) node box at the same speed. Non-tiled: original 'common' behavior.
+      getSize: (n: GeomNode) => (tiled && !isFinest ? labelPixelSize(n) : getLabelSize(n) * scaleCurr(n)),
       getColor: getNodeColor,
       billboard: false,
-      sizeUnits: tiled ? 'pixels' : 'common',
+      sizeUnits: tiled && !isFinest ? 'pixels' : 'common',
       characterSet: 'auto',
 
       extensions: [

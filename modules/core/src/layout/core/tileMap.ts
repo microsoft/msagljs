@@ -64,6 +64,11 @@ export class TileMap {
   nodeIndexInSortedNodes: Map<Node, number> = new Map<Node, number>()
   tileSizes: Size[]
 
+  /** Number of levels currently in the pyramid (finest level index = this - 1). */
+  get numberOfLevels(): number {
+    return this.levels.length
+  }
+
   /** retrieves the data for a single tile(x-y-z) */
   getTileData(x: number, y: number, z: number): Tile {
     const mapOnLevel = this.levels[z]
