@@ -1,0 +1,21 @@
+{
+  "name": "citation-graph-example",
+  "version": "1.1.19",
+  "private": true,
+  "description": "Citation-graph presentation viewer for @msagl/renderer-webgl (short node labels + rich hover tooltips)",
+  "scripts": {
+    "start": "esbuild ./src/app.ts ./src/worker.ts --sourcemap --servedir=. --outdir=. --bundle",
+    "build": "rm -rf ../../website/static/citation-graph/* && esbuild ./src/app.ts --outfile=../../website/static/citation-graph/app.js --bundle --minify && esbuild ./src/worker.ts --outfile=../../website/static/citation-graph/worker.js --bundle --minify && cp index.html rise_3k.json ../../website/static/citation-graph"
+  },
+  "author": "levnach@microsoft.com",
+  "license": "MIT",
+  "dependencies": {
+    "@msagl/core": "^1.1.17",
+    "@msagl/parser": "^1.1.17",
+    "@msagl/renderer-webgl": "^1.1.19"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^4.5.5"
+  }
+}

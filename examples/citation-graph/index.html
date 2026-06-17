@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RiSE citation graph — MSAGL-JS WebGL</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Segoe UI', 'Lucida Grande', Geneva, Verdana, sans-serif;
+        font-size: 13px;
+      }
+      #topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px;
+        background: #fff;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+        z-index: 3;
+      }
+      #title {
+        font-weight: 700;
+      }
+      #graph-name {
+        color: #555;
+      }
+      .legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #555;
+      }
+      #viewer {
+        position: fixed;
+        top: 44px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      #search-box {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #search-mode {
+        font-family: inherit;
+        font-size: 13px;
+        padding: 5px 4px;
+      }
+      #search-input {
+        font-family: inherit;
+        font-size: 13px;
+        padding: 6px 8px;
+        width: 300px;
+        box-sizing: border-box;
+      }
+      #search-suggestions {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: min(300px, 40vh);
+        overflow-y: auto;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        z-index: 5;
+      }
+      #search-suggestions .opt {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      #search-suggestions .opt .lbl {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #search-suggestions .opt:hover,
+      #search-suggestions .opt.focus {
+        background: #eaf2fb;
+        color: #08f;
+      }
+      #search-suggestions .opt .count {
+        color: #999;
+        flex: none;
+      }
+      #paper-indicator {
+        display: none;
+        align-items: baseline;
+        gap: 8px;
+        max-width: 360px;
+        padding: 5px 10px;
+        font-size: 12px;
+        background: #eaf2fb;
+        border: 1px solid #cfe0f5;
+        border-radius: 14px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      #paper-indicator .pi-pos {
+        color: #2b6cb0;
+        font-weight: 600;
+        flex: none;
+      }
+      #paper-indicator .pi-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #paper-indicator .pi-count {
+        color: #999;
+        flex: none;
+      }
+      #error-banner {
+        display: none;
+        position: fixed;
+        top: 44px;
+        left: 0;
+        right: 0;
+        padding: 8px 16px;
+        background: #c0392b;
+        color: #fff;
+        z-index: 4;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="topbar">
+      <span id="title">RiSE citation graph</span>
+      <span id="graph-name">loading…</span>
+      <span id="search-box">
+        <select id="search-mode" title="Search field">
+          <option value="author" selected>Author</option>
+          <option value="title">Title</option>
+        </select>
+        <input id="search-input" type="text" placeholder="Search by author…" autocomplete="off" />
+        <div id="search-suggestions"></div>
+        <span id="paper-indicator" title="Click for the next paper (Enter / ↑ ↓ also cycle)"></span>
+      </span>
+      <span class="legend" style="margin-left:auto">Enter / ↑ ↓ cycle matches · hover a node for the full title &amp; authors</span>
+    </div>
+    <div id="error-banner"></div>
+    <div id="viewer"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

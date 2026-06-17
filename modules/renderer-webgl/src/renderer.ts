@@ -24,6 +24,14 @@ export interface IRendererControl {
   getElement(): HTMLElement | null
 }
 
+/**
+ * Supplies custom HTML for the hover/click tooltip. Receives the picked entity
+ * (a {@link Node} or {@link Edge}, or `null` when it could not be resolved) and
+ * the raw picked object. Return an HTML string to display, or `null`/`undefined`
+ * to fall back to the renderer's default label-based tooltip.
+ */
+export type TooltipProvider = (entity: Node | Edge | null, object: unknown) => string | null | undefined
+
 const MaxZoom = 2
 
 /** Resolve a user-visible label for a node: its drawing `labelText` if any,
@@ -80,7 +88,13 @@ export default class Renderer extends EventSource {
   private _layoutWorkerUrl?: string
   private _style: ParsedGraphStyle = parseGraphStyle(DefaultGraphStyle)
   private _graphOffset: {x: number; y: number} = {x: 0, y: 0}
+  // Tile pyramid state captured during _update, used by zoomToNode to descend
+  // to the LOD level that actually contains a given node.
+  private _tileMap?: TileMap
+  private _startZoom = MaxZoom
+  private _maxTileZoom = MaxZoom
   private _tooltipEl: HTMLDivElement
+  private _tooltipProvider: TooltipProvider | null = null
   /**
    * Hard cap on tile-pyramid depth, passed to TileMap.buildUpToLevel.
    * Defaults to 8 (= up to 9 levels). Set to 0 to disable the pyramid
@@ -156,6 +170,16 @@ export default class Renderer extends EventSource {
 
     divs[1].style.pointerEvents = 'none'
     this._controlsContainer = divs[1]
+  }
+
+  /**
+   * Supplies custom HTML for the hover/click tooltip. The provider receives the
+   * picked {@link Node} or {@link Edge} and may return an HTML string to show,
+   * or `null` to fall back to the default label-based tooltip. Pass `null` to
+   * remove a previously set provider.
+   */
+  setTooltipProvider(provider: TooltipProvider | null) {
+    this._tooltipProvider = provider
   }
 
   addControl(control: IRendererControl) {
@@ -275,9 +299,72 @@ export default class Renderer extends EventSource {
     })
   }
 
+  /**
+   * Center the camera on a node and zoom in far enough that the node is actually
+   * drawn. Importance-based LOD only renders low-ranked nodes in the finest
+   * tiles, so a plain geometric "fit" (see {@link zoomTo}) — capped at `MaxZoom`
+   * — can stop short of the level that contains the node, leaving it (and any
+   * highlight) invisible. This descends at least to the node's shallowest LOD
+   * level while preserving the readable fit zoom for nodes that appear earlier.
+   */
+  zoomToNode(nodeId: string): void {
+    const node = this._graph?.findNodeRecursive(nodeId)
+    if (!node) return
+    const g = GeomObject.getGeom(node) as GeomNode | undefined
+    if (!g || !g.boundingBox) return
+
+    // Geometric fit zoom, with padding so the node keeps some surrounding context.
+    const rect = g.boundingBox.clone()
+    rect.pad(Math.max(rect.diagonal * 6, 400))
+    const fitScale = Math.min(this._deck.width / rect.width, this._deck.height / rect.height)
+    const fitZoom = Math.log2(fitScale)
+
+    // Shallowest LOD level whose tiles include this node; zooming there (or
+    // deeper) guarantees the node is rendered. Levels are cumulative, so a node
+    // present at level i is also present at every finer level.
+    let nodeLevel = 0
+    const scales = this._tileMap?.nodeScales
+    if (scales && scales.length) {
+      nodeLevel = scales.length - 1
+      for (let i = 0; i < scales.length; i++) {
+        if (scales[i]?.has(node)) {
+          nodeLevel = i
+          break
+        }
+      }
+    }
+    const levelZoom = this._startZoom + nodeLevel
+    const targetZoom = Math.min(Math.max(fitZoom, levelZoom), this._maxTileZoom)
+
+    this._deck.setProps({
+      initialViewState: {
+        target: [g.center.x + this._graphOffset.x, g.center.y + this._graphOffset.y, 0],
+        zoom: targetZoom,
+        minZoom: this._startZoom - 2,
+        // Allow the camera to reach the finest tiles where rare nodes live.
+        maxZoom: Math.max(MaxZoom, this._maxTileZoom),
+        transitionInterpolator: new LinearInterpolator(['target', 'zoom']),
+        transitionDuration: 1000,
+      },
+    })
+  }
+
   highlight(nodeId: string | null) {
     this._highlightedNodeId = nodeId
     this._highlight(nodeId)
+  }
+
+  /**
+   * Highlights a set of nodes by id (e.g. every paper by one author). Pass an
+   * empty array to clear. Unlike {@link highlight}, this emphasises exactly the
+   * given nodes without expanding to their neighbourhood.
+   */
+  highlightNodes(nodeIds: string[]) {
+    this._highlightedNodeId = null
+    if (this._graph && this._deck.layerManager && this._graphHighlighter) {
+      this._graphHighlighter.highlightNodes(nodeIds)
+      this._deck.layerManager.setNeedsRedraw('highlight nodes changed')
+    }
   }
 
   private _highlight(nodeId: string | null, depth = 2) {
@@ -296,6 +383,13 @@ export default class Renderer extends EventSource {
   }
 
   private _tooltipHtmlForObject(object: unknown): string | null {
+    if (this._tooltipProvider) {
+      let entity: Node | Edge | null = null
+      if (object instanceof GeomNode) entity = object.node
+      else if (object instanceof Edge) entity = object
+      const custom = this._tooltipProvider(entity, object)
+      if (custom != null) return custom
+    }
     if (object instanceof Edge) {
       const sVisible = this._isNodeVisible(object.source)
       const tVisible = this._isNodeVisible(object.target)
@@ -398,6 +492,11 @@ export default class Renderer extends EventSource {
     const tileMap = new TileMap(geomGraph, rootTile)
     const numberOfLevels = tileMap.buildUpToLevel(this._maxTileLevels)
     console.timeEnd('Generate tiles')
+
+    // Remember the pyramid so zoomToNode can find the level a node lives in.
+    this._tileMap = tileMap
+    this._startZoom = startZoom
+    this._maxTileZoom = numberOfLevels - 1 + startZoom
 
     console.time('initial render')
 
