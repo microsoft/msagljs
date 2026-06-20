@@ -260,7 +260,11 @@ export enum EdgeRoutingMode {
 
   Rectilinear,
 
+  RectilinearToCenter,
+
   None,
+
+  Sleeve,
 }
 ```
 
@@ -293,9 +297,27 @@ The method routes edges with segments parallel to the coordinate axes, with an o
 ![Alt text](/images/rectRouting.svg#gh-light-mode-only)
 ![Alt text](/images/rectRouting.dark.svg#gh-dark-mode-only)
 
+### "RectilinearToCenter" routing mode
+
+A variant of "Rectilinear" that connects each edge to the *center* of its source and target nodes instead of to a point on the node boundary (internally it sets `RouteToCenterOfObstacles`). The visible part of the edge is still clipped at the node boundary, but anchoring the path at the center keeps the incoming and outgoing segments aligned with the node, which is convenient for diagrams such as entity-relationship drawings where ports are expected to line up with node centers. It shares the cost and performance characteristics of "Rectilinear".
+
 ### "StraightLine" routing mode
 
 It is the fastest mode that routes each edge as a straight line clipped at the source and the target. This mode is a good fallback for a very large graph.
+
+### "SugiyamaSplines" routing mode
+
+This is the routing mode used by the layered (Sugiyama) layout, and it is the default mode that layout selects. It is meaningful only together with the Sugiyama scheme: the layered layout introduces virtual nodes on the intermediate layers an edge crosses, and "SugiyamaSplines" threads a smooth spline through those points so the edge follows the layering. Selecting it with a non-layered layout has no effect.
+
+### "None" routing mode
+
+Edges are not routed at all. Use it when you only need node positions, or when the edges will be routed later by your own code, to skip the cost of the routing stage entirely.
+
+### "Sleeve" routing mode
+
+This is a new routing method designed for browsing large graphs in the browser. For each edge it searches the dual graph of a [Constrained Delaunay Triangulation](https://en.wikipedia.org/wiki/Constrained_Delaunay_triangulation) of the layout to select a *sleeve*: a sequence of triangles in the free space connecting the source to the target. It then runs [the funnel algorithm](https://www.sciencedirect.com/science/article/pii/002200008990041X/pdf?md5=aa398f6c4c6e17f6aa1688b7e5545cb9&pid=1-s2.0-002200008990041X-main.pdf) inside the sleeve to obtain the shortest obstacle-avoiding path. Several heuristics speed up the search so that the whole pipeline — parsing, layout, routing, and tile-pyramid construction — runs entirely client-side, even for graphs with tens of thousands of nodes and edges.
+
+Sleeve routing, together with the tile pyramid used for semantic zoom, is described in [Browsing Large Graphs with Tile Pyramids and Sleeve Routing in the Browser](https://arxiv.org/abs/2605.17498) by Lev Nachmanson and Xiaoji Chen (arXiv:2605.17498). You can try it in the [WebGL sleeve-routing demo](https://microsoft.github.io/msagljs/webgl-sleeve/index.html), and see a hover-tooltip use case in the [citation-graph demo](https://microsoft.github.io/msagljs/citation-graph/index.html). See the [Demos and paper](./demos.md) page for all the links.
 
 ## Renderer with Deck.gl
 
