@@ -934,7 +934,7 @@ export class TileMap {
     dataByEntity: Map<Entity, EntityDataInTile[]>,
     addedNodes: Set<Node>,
   ) {
-    const entityToData = dataByEntity.get(node)
+    const entityToData = dataByEntity.get(node) ?? []
     for (const edt of entityToData) {
       const tile = edt.tile
       if (tile.entityCount >= this.tileCapacity) {
@@ -949,14 +949,13 @@ export class TileMap {
     }
 
     for (const e of node.selfEdges) {
-      const ed = dataByEntity.get(e)
-      for (const edt of ed) {
+      for (const edt of dataByEntity.get(e) ?? []) {
         const tile = edt.tile
         const data = edt.data
         tile.addElement(data)
       }
       if (e.label) {
-        for (const edt of dataByEntity.get(e.label)) {
+        for (const edt of dataByEntity.get(e.label) ?? []) {
           const tile = edt.tile
           const data = edt.data
           tile.addElement(data)
@@ -966,13 +965,13 @@ export class TileMap {
     for (const e of node.inEdges) {
       const source = e.source
       if (!addedNodes.has(source)) continue
-      for (const edt of dataByEntity.get(e)) {
+      for (const edt of dataByEntity.get(e) ?? []) {
         const tile = edt.tile
         const data = edt.data
         tile.addElement(data)
       }
       if (e.label) {
-        for (const edt of dataByEntity.get(e.label)) {
+        for (const edt of dataByEntity.get(e.label) ?? []) {
           const tile = edt.tile
           const data = edt.data
           tile.addElement(data)
@@ -982,14 +981,13 @@ export class TileMap {
     for (const e of node.outEdges) {
       const target = e.target
       if (!addedNodes.has(target)) continue
-      for (const edt of dataByEntity.get(e)) {
+      for (const edt of dataByEntity.get(e) ?? []) {
         const tile = edt.tile
         const data = edt.data
         tile.addElement(data)
       }
       if (e.label) {
-        if (dataByEntity.get(e.label))
-        for (const edt of dataByEntity.get(e.label)) {
+        for (const edt of dataByEntity.get(e.label) ?? []) {
           const tile = edt.tile
           const data = edt.data
           tile.addElement(data)
