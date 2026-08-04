@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"id": "browser", "label": "Browser"},
+    {"id": "api", "label": "API"},
+    {"id": "worker", "label": "Worker"},
+    {"id": "database", "label": "Database"}
+  ],
+  "edges": [
+    {"source": "browser", "target": "api", "directed": true},
+    {"source": "api", "target": "worker", "directed": true},
+    {"source": "api", "target": "database", "directed": true},
+    {"source": "worker", "target": "database", "directed": true}
+  ]
+}

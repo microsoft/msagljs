@@ -52,5 +52,109 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: website/build
           force_orphan: true
-    
-    
+
+  agent-skill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: yarn
+      - run: yarn --frozen-lockfile
+      - name: Typecheck skill examples
+        run: yarn tsc -p tsconfig.skill-examples.json
+      - name: Install skill helper dependencies
+        run: npm ci --prefix skills/msagljs/scripts --no-audit --no-fund
+      - name: Smoke-test live SVG embedding
+        env:
+          PUPPETEER_NO_SANDBOX: "1"
+        run: |
+          yarn esbuild skills/msagljs/examples/live-svg-page.ts \
+            --bundle \
+            --outfile=skills/msagljs/examples/live-svg-page.js
+          node skills/msagljs/scripts/smoke-live-page.mjs skills/msagljs/examples
+      - name: Install Ghostscript
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ghostscript
+      - name: Smoke-test static exports
+        env:
+          PUPPETEER_NO_SANDBOX: "1"
+        run: |
+          mkdir -p tmp/skill-output
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.dot tmp/skill-output/network.svg \
+            --layout sugiyama-lr --routing spline \
+            --font-family "Courier New" --font-size 20
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.dot tmp/skill-output/network.pdf \
+            --layout sugiyama-lr --routing spline
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.dot tmp/skill-output/network.png \
+            --layout sugiyama-lr --routing spline
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.jgf tmp/skill-output/network-jgf.svg
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.txt tmp/skill-output/network-txt.svg
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.dot tmp/skill-output/network.eps
+          node skills/msagljs/scripts/render-network.mjs \
+            skills/msagljs/examples/network.dot tmp/skill-output/network.ps
+          test -s tmp/skill-output/network.svg
+          test -s tmp/skill-output/network.pdf
+          test -s tmp/skill-output/network.png
+          test -s tmp/skill-output/network-jgf.svg
+          test -s tmp/skill-output/network-txt.svg
+          test -s tmp/skill-output/network.eps
+          test -s tmp/skill-output/network.ps
+          grep -q '<svg' tmp/skill-output/network.svg
+          grep -q 'font-family="Courier New"' tmp/skill-output/network.svg
+          grep -q 'font-size="20px"' tmp/skill-output/network.svg
+          grep -q '>Browser<' tmp/skill-output/network-jgf.svg
+          grep -q '>browser<' tmp/skill-output/network-txt.svg
+          test "$(head -c 4 tmp/skill-output/network.pdf)" = "%PDF"
+          python3 - <<'PY'
+          from pathlib import Path
+          assert Path("tmp/skill-output/network.png").read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+          PY
+          grep -a -q '^%!PS-Adobe' tmp/skill-output/network.eps
+          grep -a -q '^%!PS-Adobe' tmp/skill-output/network.ps
+          gs -q -dNOPAUSE -dBATCH -sDEVICE=nullpage \
+            tmp/skill-output/network.pdf \
+            tmp/skill-output/network.eps \
+            tmp/skill-output/network.ps
+          for artifact in \
+            tmp/skill-output/network.pdf \
+            tmp/skill-output/network.eps \
+            tmp/skill-output/network.ps
+          do
+            bounds="$(gs -q -dNOPAUSE -dBATCH -sDEVICE=bbox "$artifact" 2>&1)"
+            echo "$bounds"
+            if echo "$bounds" | grep -q '%%BoundingBox: 0 0 0 0'; then
+              echo "$artifact contains no visible vector content" >&2
+              exit 1
+            fi
+          done
+      - name: Ensure GitHub CLI supports skills
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh skill publish --help >/dev/null 2>&1; then
+            tag="$(gh api repos/cli/cli/releases/latest --jq .tag_name)"
+            version="${tag#v}"
+            curl -fsSL \
+              "https://github.com/cli/cli/releases/download/${tag}/gh_${version}_linux_amd64.tar.gz" \
+              -o /tmp/gh.tar.gz
+            tar -xzf /tmp/gh.tar.gz -C /tmp
+            sudo install "/tmp/gh_${version}_linux_amd64/bin/gh" /usr/local/bin/gh
+          fi
+      - name: Validate Agent Skill
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh skill publish --dry-run .
