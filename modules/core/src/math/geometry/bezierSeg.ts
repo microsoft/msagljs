@@ -180,20 +180,58 @@ export class BezierSeg implements ICurve {
 
   //
   static lengthOnControlPolygon(b0: Point, b1: Point, b2: Point, b3: Point): number {
-    const innerCordLength = b3.sub(b0).length
-    const controlPointPolygonLength = b1.sub(b0).length + b2.sub(b1).length + b3.sub(b2).length
-    if (controlPointPolygonLength - innerCordLength > GeomConstants.lineSegmentThreshold) {
-      const mb0 = Point.middle(b0, b1)
-      const mb1 = Point.middle(b1, b2)
-      const mb2 = Point.middle(b2, b3)
-      const mmb0 = Point.middle(mb0, mb1)
-      const mmb1 = Point.middle(mb2, mb1)
-      const mmmb0 = Point.middle(mmb0, mmb1)
-      //               LayoutAlgorithmSettings.ShowDebugCurves(new DebugCurve(100, 2, "blue", new BezierSeg(b0, b1, b2, b3)), new DebugCurve(100, 1, "red", new BezierSeg(b0, mb0, mmb0, mmmb0)), new DebugCurve(100, 1, "green", new BezierSeg(mmmb0, mmb1, mb2, b3)));
-      return BezierSeg.lengthOnControlPolygon(b0, mb0, mmb0, mmmb0) + BezierSeg.lengthOnControlPolygon(mmmb0, mmb1, mb2, b3)
+    // Iterative de Casteljau subdivision using raw x,y to avoid Point allocations
+    // Use an explicit stack of [x0,y0, x1,y1, x2,y2, x3,y3] segments
+    const stack: number[] = [b0.x, b0.y, b1.x, b1.y, b2.x, b2.y, b3.x, b3.y]
+    let totalLength = 0
+
+    while (stack.length > 0) {
+      const y3 = stack.pop()!
+      const x3 = stack.pop()!
+      const y2 = stack.pop()!
+      const x2 = stack.pop()!
+      const y1 = stack.pop()!
+      const x1 = stack.pop()!
+      const y0 = stack.pop()!
+      const x0 = stack.pop()!
+
+      const dx30 = x3 - x0
+      const dy30 = y3 - y0
+      const innerCordLength = Math.sqrt(dx30 * dx30 + dy30 * dy30)
+
+      const dx10 = x1 - x0
+      const dy10 = y1 - y0
+      const dx21 = x2 - x1
+      const dy21 = y2 - y1
+      const dx32 = x3 - x2
+      const dy32 = y3 - y2
+      const controlPointPolygonLength =
+        Math.sqrt(dx10 * dx10 + dy10 * dy10) + Math.sqrt(dx21 * dx21 + dy21 * dy21) + Math.sqrt(dx32 * dx32 + dy32 * dy32)
+
+      if (controlPointPolygonLength - innerCordLength > GeomConstants.lineSegmentThreshold) {
+        // de Casteljau midpoints
+        const mb0x = (x0 + x1) / 2
+        const mb0y = (y0 + y1) / 2
+        const mb1x = (x1 + x2) / 2
+        const mb1y = (y1 + y2) / 2
+        const mb2x = (x2 + x3) / 2
+        const mb2y = (y2 + y3) / 2
+        const mmb0x = (mb0x + mb1x) / 2
+        const mmb0y = (mb0y + mb1y) / 2
+        const mmb1x = (mb2x + mb1x) / 2
+        const mmb1y = (mb2y + mb1y) / 2
+        const mmmb0x = (mmb0x + mmb1x) / 2
+        const mmmb0y = (mmb0y + mmb1y) / 2
+
+        // Push right half first (processed second), then left half (processed first)
+        stack.push(mmmb0x, mmmb0y, mmb1x, mmb1y, mb2x, mb2y, x3, y3)
+        stack.push(x0, y0, mb0x, mb0y, mmb0x, mmb0y, mmmb0x, mmmb0y)
+      } else {
+        totalLength += (controlPointPolygonLength + innerCordLength) / 2
+      }
     }
 
-    return (controlPointPolygonLength + innerCordLength) / 2
+    return totalLength
   }
 
   // the segment bounding box

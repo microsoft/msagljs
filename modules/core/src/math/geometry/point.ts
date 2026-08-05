@@ -15,7 +15,9 @@ export type PointJSON = {
 }
 
 export function distPP(a: Point, b: Point) {
-  return a.sub(b).length
+  const dx = a.x - b.x
+  const dy = a.y - b.y
+  return Math.sqrt(dx * dx + dy * dy)
 }
 /** represents a point with two coordinates on the plane */
 export class Point {
@@ -100,20 +102,13 @@ export class Point {
     return Point.close(a, b, GeomConstants.intersectionEpsilon)
   }
   get l1() {
-    return Math.abs(this.x_) + Math.abs(this.y_)
+    return Math.abs(this.x) + Math.abs(this.y)
   }
   dot(a: Point): number {
     return this.x * a.x + this.y * a.y
   }
-  private x_: number
-  private y_: number
-
-  get x() {
-    return this.x_
-  }
-  get y() {
-    return this.y_
-  }
+  x: number
+  y: number
 
   compareTo(other: Point): number {
     const r = compareNumbers(this.x, other.x)
@@ -126,15 +121,16 @@ export class Point {
   }
 
   static close(a: Point, b: Point, tol: number): boolean {
-    return a.sub(b).length <= tol
+    return distPP(a, b) <= tol
   }
 
   static closeSquare(a: Point, b: Point, tol: number): boolean {
-    const d = b.sub(a)
-    return d.dot(d) <= tol
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    return dx * dx + dy * dy <= tol
   }
   static closeDistEps(a: Point, b: Point, eps = GeomConstants.distanceEpsilon): boolean {
-    return a.sub(b).length <= eps
+    return distPP(a, b) <= eps
   }
 
   normalize() {
@@ -151,12 +147,12 @@ export class Point {
 
   constructor(x: number, y: number) {
     // Assert.assert(!(isNaN(x) || isNaN(y)))
-    this.x_ = x
-    this.y_ = y
+    this.x = x
+    this.y = y
   }
 
   static middle(a: Point, b: Point) {
-    return a.add(b).div(2)
+    return new Point((a.x + b.x) / 2, (a.y + b.y) / 2)
   }
 
   scale(sx: number, sy: number): Point {
@@ -179,6 +175,65 @@ export class Point {
   }
   neg() {
     return new Point(-this.x, -this.y)
+  }
+
+  // --- In-place mutation methods (avoid allocations in hot loops) ---
+
+  /** this += a; returns this */
+  addInPlace(a: Point): Point {
+    this.x += a.x
+    this.y += a.y
+    return this
+  }
+
+  /** this -= a; returns this */
+  subInPlace(a: Point): Point {
+    this.x -= a.x
+    this.y -= a.y
+    return this
+  }
+
+  /** this *= c; returns this */
+  mulInPlace(c: number): Point {
+    this.x *= c
+    this.y *= c
+    return this
+  }
+
+  /** this /= c; returns this */
+  divInPlace(c: number): Point {
+    this.x /= c
+    this.y /= c
+    return this
+  }
+
+  /** this = -this; returns this */
+  negInPlace(): Point {
+    this.x = -this.x
+    this.y = -this.y
+    return this
+  }
+
+  /** this = this / |this|; returns this */
+  normalizeInPlace(): Point {
+    const l = this.length
+    this.x /= l
+    this.y /= l
+    return this
+  }
+
+  /** Copy coordinates from another point; returns this */
+  copyFrom(a: Point): Point {
+    this.x = a.x
+    this.y = a.y
+    return this
+  }
+
+  /** Set coordinates; returns this */
+  set(x: number, y: number): Point {
+    this.x = x
+    this.y = y
+    return this
   }
 
   static lineLineIntersection(a: Point, b: Point, c: Point, d: Point): Point | undefined {

@@ -7,11 +7,36 @@ import {Assert} from '../../../utils/assert'
 import {randomInt} from '../../../utils/random'
 import {Disc} from './disc'
 
-function wetzls(points: Point[]) {
-  // clone and then shuffle the points
-  const clonedPoints = points.slice()
-  shuffle(clonedPoints)
-  return mec(clonedPoints, points.length, [], 0)
+// Iterative version of Welzl's algorithm to avoid stack overflow on large inputs.
+function wetzls(points: Point[]): {x: number; y: number; r: number} {
+  const pts = points.slice()
+  shuffle(pts)
+  const n = pts.length
+
+  if (n === 0) return {x: 0, y: 0, r: 0}
+  if (n === 1) return {x: pts[0].x, y: pts[0].y, r: 0}
+
+  let circle = calcCircle2(pts[0], pts[1])
+
+  for (let i = 2; i < n; i++) {
+    if (!isInCircle(pts[i], circle)) {
+      // pts[i] must be on the boundary
+      circle = calcCircle2(pts[0], pts[i])
+      for (let j = 1; j < i; j++) {
+        if (!isInCircle(pts[j], circle)) {
+          // pts[j] must also be on the boundary
+          circle = calcCircle2(pts[i], pts[j])
+          for (let k = 0; k < j; k++) {
+            if (!isInCircle(pts[k], circle)) {
+              circle = calcCircle3(pts[i], pts[j], pts[k])
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return circle
 }
 
 function shuffle(a: Point[]): Point[] {
@@ -23,24 +48,6 @@ function shuffle(a: Point[]): Point[] {
     a[j] = x
   }
   return a
-}
-
-function mec(points: Point[], n: number, boundary: Point[], b: number): {x: number; y: number; r: number} {
-  let localCircle = null
-
-  if (b === 3) localCircle = calcCircle3(boundary[0], boundary[1], boundary[2])
-  else if (n === 1 && b === 0) localCircle = {x: points[0].x, y: points[0].y, r: 0}
-  else if (n === 0 && b === 2) localCircle = calcCircle2(boundary[0], boundary[1])
-  else if (n === 1 && b === 1) localCircle = calcCircle2(boundary[0], points[0])
-  else {
-    localCircle = mec(points, n - 1, boundary, b)
-    if (!isInCircle(points[n - 1], localCircle)) {
-      boundary[b++] = points[n - 1]
-      localCircle = mec(points, n - 1, boundary, b)
-    }
-  }
-
-  return localCircle
 }
 
 function calcCircle3(p1: Point, p2: Point, p3: Point) {

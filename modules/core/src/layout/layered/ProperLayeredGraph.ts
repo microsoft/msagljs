@@ -117,7 +117,12 @@ export class ProperLayeredGraph {
   }
 
   RealInEdgesCount(node: number) {
-    return node < this.BaseGraph.nodeCount ? this.BaseGraph.inEdges[node].filter((e) => e.LayerEdges != null).length : 1
+    if (node >= this.BaseGraph.nodeCount) return 1
+    let count = 0
+    for (const e of this.BaseGraph.inEdges[node]) {
+      if (e.LayerEdges != null) count++
+    }
+    return count
   }
 
   // returns the number of outcoming edges for an edge
@@ -126,7 +131,12 @@ export class ProperLayeredGraph {
   }
 
   RealOutEdgesCount(node: number) {
-    return node < this.BaseGraph.nodeCount ? this.BaseGraph.outEdges[node].filter((l) => l.LayerEdges != null).length : 1
+    if (node >= this.BaseGraph.nodeCount) return 1
+    let count = 0
+    for (const e of this.BaseGraph.outEdges[node]) {
+      if (e.LayerEdges != null) count++
+    }
+    return count
   }
 
   // returns the node count

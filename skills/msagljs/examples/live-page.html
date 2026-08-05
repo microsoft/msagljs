@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MSAGL-JS live graph</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+      }
+
+      header {
+        align-items: center;
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+      }
+
+      #viewer {
+        flex: 1 1 auto;
+        min-height: 24rem;
+        position: relative;
+      }
+
+      #viewer svg {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+
+      #graph-error {
+        color: #b00020;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Network</strong>
+      <span id="graph-status" role="status">Loading graph...</span>
+      <span id="graph-error" role="alert" hidden></span>
+      <button id="download-svg" type="button" disabled>Download SVG</button>
+    </header>
+    <main
+      id="viewer"
+      role="img"
+      aria-label="Interactive network visualization"
+      aria-busy="true"
+    ></main>
+    <noscript>This visualization requires JavaScript.</noscript>
+    <script src="./live-svg-page.js" defer></script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 export {interpolateICurve, Curve, PointLocation} from './curve'
 export {CurveFactory} from './curveFactory'
 export {Point} from './point'
+export {PointArray} from './pointArray'
 export {ICurve, parameterSpan} from './icurve'
 export {Rectangle, Size, RectJSON} from './rectangle'
 export {Polyline} from './polyline'

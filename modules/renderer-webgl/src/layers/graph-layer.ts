@@ -1,6 +1,6 @@
 import {CompositeLayer, LayersList, GetPickingInfoParams, UpdateParameters} from '@deck.gl/core/typed'
 import {TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
-import {GeomNode, TileData, TileMap} from '@msagl/core'
+import {GeomNode, TileData, TileMap, Edge} from '@msagl/core'
 import {Matrix4} from '@math.gl/core'
 
 import {getNodeLayers} from './get-node-layers'
@@ -16,6 +16,7 @@ type GraphLayerProps = TextLayerProps<GeomNode> & {
   graphStyle: ParsedGraphStyle
   tileMap?: TileMap
   tile: _Tile2DHeader
+  levelIndex?: number
 }
 
 export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
@@ -48,7 +49,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
           layerData.nodes = layer.filter ? data.nodes.filter((n) => layer.filter(n.node, filterContext)) : data.nodes
         }
         if (layer.type === 'edge') {
-          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => layer.filter(c.edge, filterContext)) : data.curveClips
+          layerData.curveClips = layer.filter ? data.curveClips.filter((c) => c.edges.some((e) => layer.filter(e, filterContext))) : data.curveClips
           layerData.arrowheads = layer.filter ? data.arrowheads.filter((a) => layer.filter(a.edge, filterContext)) : data.arrowheads
           layerData.labels = layer.filter ? data.labels.filter((l) => layer.filter(l.parent.entity, filterContext)) : data.labels
         }
@@ -60,6 +61,8 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
   getPickingInfo({sourceLayer, info}: GetPickingInfoParams) {
     if (sourceLayer.id.endsWith('node-boundary') && info.picked) {
       info.object = this.props.highlighter.getNode(info.index)
+    } else if (sourceLayer.id.endsWith('-edge') && info.picked) {
+      info.object = this.props.highlighter.getEdge(info.index)
     }
     return info
   }
@@ -72,7 +75,7 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
 
   override renderLayers(): LayersList {
     const {layerMap} = this.state
-    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix} = this.props
+    const {graphStyle, highlighter, resolution, fontFamily, fontWeight, lineHeight, tile, modelMatrix, tileMap, levelIndex} = this.props
     const layerCount = graphStyle.layers.length
     const tileSize = (tile.bbox as NonGeoBoundingBox).right - (tile.bbox as NonGeoBoundingBox).left
 
@@ -84,7 +87,11 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
         layerStyle: layer,
         modelMatrix: new Matrix4(modelMatrix).scale([1, 1, -tileSize / 16]),
         parameters: {
-          depthRange: [1 - (layerIndex + 1) / layerCount, 1 - layerIndex / layerCount],
+          // Earlier-listed style layers get the nearer depth slice so they draw
+          // on top. The default style lists nodes before edges, so the opaque
+          // node boxes render over the edges and hide the edge ends that (in the
+          // tile-pyramid / no-trim rendering) run all the way to node centers.
+          depthRange: [layerIndex / layerCount, (layerIndex + 1) / layerCount],
         },
       })
 
@@ -101,6 +108,9 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               fontFamily,
               fontWeight,
               lineHeight,
+              tileMap,
+              levelIndex,
+              nativeZoom: tile.index.z,
             },
             layer as ParsedGraphNodeLayerStyle,
           ),
@@ -114,6 +124,9 @@ export default class GraphLayer extends CompositeLayer<GraphLayerProps> {
               ...subLayerProps,
               data: data.curveClips,
               getDepth: highlighter.edgeDepth,
+              getPickingColor: (cc, {target}) => highlighter.encodeEdgeIndex(cc, target),
+              highlighter,
+              pickable: true,
               resolution,
             },
             layer as ParsedGraphEdgeLayerStyle,

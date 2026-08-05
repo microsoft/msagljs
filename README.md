@@ -6,6 +6,46 @@
 
 - [Read the documentation](https://microsoft.github.io/msagljs/)
 
+## Agent Skill
+
+The repository includes an open-standard `msagljs` Agent Skill for AI coding
+agents that need to:
+
+- compute graph layouts and routed edge geometry
+- embed live SVG or WebGL network visualizations in web pages
+- load DOT, JSON, JGF, and delimited edge-list data
+- export network figures as SVG, PDF, PNG, EPS, or PostScript
+- add generated vector figures to LaTeX documents
+
+With GitHub CLI 2.90 or later, inspect and install the current development
+version:
+
+```bash
+gh skill preview microsoft/msagljs msagljs@dev
+gh skill install microsoft/msagljs msagljs@dev --agent github-copilot --scope project
+```
+
+Use `--scope user` to make the skill available across projects, or select
+another supported host with `--agent`. In an active Copilot CLI session, run
+`/skills reload` after installation and `/skills info msagljs` to inspect it.
+You can force activation with a prompt such as:
+
+```text
+Use the /msagljs skill to embed this network in the page.
+```
+
+Installed agents match prompts against the skill's name and description, then
+load its detailed references and scripts only when needed. After this skill is
+merged to the default branch, it can also be found through:
+
+```bash
+gh skill search msagljs --owner microsoft
+gh skill search "graph layout" --owner microsoft
+```
+
+GitHub Code Search indexes only the default branch, so direct `@dev`
+preview/install commands are required before the skill reaches `main`.
+
 ## [Contributing](./CONTRIBUTING.md)
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a

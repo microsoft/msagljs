@@ -190,8 +190,6 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   sourceIsInsideOfTargetTightPolyline: boolean
 
-  UseEdgeLengthMultiplier = false
-
   // if set to true the algorithm will try to shortcut a shortest polyline inner points
 
   UseInnerPolylingShortcutting = true
@@ -261,7 +259,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   CalculateEdgeTargetVisibilityGraph(location: Point) {
     this.targetVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-      Array.from(this.GetActivePolylines()),
+      this.GetActivePolylines(),
       this.VisibilityGraph,
       location,
       VisibilityKind.Tangent,
@@ -270,7 +268,7 @@ export class InteractiveEdgeRouter extends Algorithm {
 
   CalculateSourcePortVisibilityGraph() {
     this.sourceVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-      Array.from(this.GetActivePolylines()),
+      this.GetActivePolylines(),
       this.VisibilityGraph,
       this.StartPointOfEdgeRouting,
       VisibilityKind.Tangent,
@@ -678,7 +676,7 @@ export class InteractiveEdgeRouter extends Algorithm {
   GetShortestPolyline(sourceVisVertex: VisibilityVertex, _targetVisVertex: VisibilityVertex): Polyline {
     this.CleanTheGraphForShortestPath()
     const pathCalc = new SingleSourceSingleTargetShortestPathOnVisibilityGraph(this.visibilityGraph, sourceVisVertex, _targetVisVertex)
-    const path = pathCalc.GetPath(this.UseEdgeLengthMultiplier)
+    const path = pathCalc.GetPath()
     if (path == null) {
       // ShowIsPassable(_sourceVisibilityVertex, _targetVisVertex);
       return null
@@ -1609,7 +1607,7 @@ return from polygon in activePolygons where polygon.Polyline !== targetLoosePoly
       this.sourceVV = this.AddTransientVisibilityEdgesForPort(this.sourcePort.Location, this.SourceLoosePolyline)
     } else {
       this.sourceVV = PointVisibilityCalculator.CalculatePointVisibilityGraph(
-        Array.from(this.GetActivePolylines()).filter((p) => p !== this.SourceLoosePolyline),
+        this.GetActivePolylinesWithException(this.SourceLoosePolyline),
         this.VisibilityGraph,
         this.StartPointOfEdgeRouting,
         VisibilityKind.Tangent,

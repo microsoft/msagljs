@@ -1,5 +1,5 @@
 import {Queue} from 'queue-typescript'
-import {ICurve, LineSegment, Point, Polyline} from '../../math/geometry'
+import {ICurve, LineSegment, Point, Polyline, Rectangle} from '../../math/geometry'
 import {TriangleOrientation} from '../../math/geometry/point'
 import {Cdt} from '../ConstrainedDelaunayTriangulation/Cdt'
 import {CdtEdge, CdtEdge as Ed} from '../ConstrainedDelaunayTriangulation/CdtEdge'
@@ -76,7 +76,15 @@ export class PathOptimizer {
     //   this.debugDraw(Array.from(localCdt.GetTriangles()), null, null, poly)
     // }
 
-    const sleeve: FrontEdge[] = this.getSleeve(this.findSourceTriangle(localCdt))
+    const sourceTriangle = this.findSourceTriangle(localCdt)
+    if (sourceTriangle == null) {
+      // The local CDT contains the polyline endpoints only up to numerical
+      // tolerance; on degenerate input no triangle strictly contains
+      // poly.start. Leave this.poly unchanged and bail out.
+      console.log('failed to create sleeve (no source triangle)')
+      return
+    }
+    const sleeve: FrontEdge[] = this.getSleeve(sourceTriangle)
     if (sleeve == null) {
       // this.poly remains unchanged in this case
       // in one case the original polyline was crossing a wrong obstacle and it caused the peremiter polyline
@@ -101,6 +109,9 @@ export class PathOptimizer {
     // Initialize a queue to store the triangles to visit
     const queue: Tr[] = []
     let containsEnd: Tr | null = null
+    if (t == null) {
+      return {triangles: crossed, containsEnd: containsEnd!}
+    }
     // Add the initial triangle to the queue
     queue.push(t)
     // Loop until the queue is empty
@@ -131,16 +142,37 @@ export class PathOptimizer {
 
   findChannelTriangles() {
     const site = this.cdt.FindSite(this.poly.start)
-    let t = site.Triangles().next().value
+    let t: Tr = site != null ? (site.Triangles().next().value as Tr) : this.findTriangleByPoint(this.poly.start)
 
     this.triangles.clear()
     for (let p = this.poly.startPoint; p.next != null; p = p.next) {
+      if (t == null) {
+        t = this.findTriangleByPoint(p.point)
+        if (t == null) return
+      }
       const res = this.getAllCrossedTriangles(t, p.point, p.next.point)
-      t = res.containsEnd
       for (const tr of res.triangles) {
         if (this.outsideOfObstacles(tr)) this.triangles.add(tr)
       }
+      // getAllCrossedTriangles is a best-effort BFS; on degenerate input
+      // (collinear points, points exactly on triangle boundaries) it can
+      // return containsEnd == null. Recover by locating the next start
+      // triangle via the rectangle tree.
+      t = res.containsEnd ?? this.findTriangleByPoint(p.next.point)
     }
+  }
+  /** Locate any triangle of the underlying CDT whose interior contains p,
+   * using the bounding-box R-tree the CDT lazily builds on first access.
+   * Returns null if no such triangle exists (point lies outside the CDT). */
+  private findTriangleByPoint(p: Point): Tr | null {
+    if (this.cdt == null) return null
+    const tree = this.cdt.getRectangleNodeOnTriangles()
+    if (tree == null) return null
+    const r = Rectangle.rectangleOnPoint(p)
+    for (const tri of tree.GetNodeItemsIntersectingRectangle(r)) {
+      if (Cdt.PointIsInsideOfTriangle(p, tri)) return tri
+    }
+    return null
   }
   findPoly(p: Point): Polyline {
     const site = this.cdt.FindSite(p)

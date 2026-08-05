@@ -1,4 +1,4 @@
-import {Layer} from '@deck.gl/core/typed'
+import {Layer, Accessor, Color} from '@deck.gl/core/typed'
 import {IconLayer, IconLayerProps, TextLayer, TextLayerProps} from '@deck.gl/layers/typed'
 import {Point, BezierSeg, Ellipse, Entity, Edge, GeomEdge, GeomLabel, CurveClip} from '@msagl/core'
 import {DrawingEdge, DrawingObject} from '@msagl/drawing'
@@ -11,6 +11,8 @@ import GraphStyleExtension from './graph-style-extension'
 
 type EdgeLayerProps = CurveLayerProps<CurveClip> & {
   resolution?: number
+  pickable?: boolean
+  getPickingColor?: Accessor<CurveClip, Color>
 }
 
 export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerStyle): Layer {
@@ -24,12 +26,20 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
       return [d.startPar, d.endPar]
     },
     widthUnits: 'pixels',
+    // Half the previous 1px default ("twice thinner") and a slightly
+    // transparent black so overlapping edges in dense graphs read more clearly.
+    // A style's strokeWidth/strokeColor (if any) still override these via the
+    // GraphStyleExtension below.
+    getWidth: 0.5,
+    getColor: [0, 0, 0, 160],
     // one vertex per 4 pixels
     getResolution: (d: CurveClip) => {
       return d.curve.length * props.resolution
     },
     // @ts-ignore
     clipByInstance: false,
+    pickable: props.pickable,
+    getPickingColor: props.getPickingColor,
 
     extensions: [
       new GraphStyleExtension({

@@ -1,0 +1,15 @@
+{
+  "graph": {
+    "id": "architecture",
+    "directed": true,
+    "nodes": [
+      {"id": "browser", "label": "Browser"},
+      {"id": "api", "label": "API"},
+      {"id": "database", "label": "Database"}
+    ],
+    "edges": [
+      {"source": "browser", "target": "api"},
+      {"source": "api", "target": "database"}
+    ]
+  }
+}

@@ -105,13 +105,15 @@ export class Rectangle implements IRectangle<Point> {
 
   // the center of the bounding box
   get center(): Point {
-    return this.leftTop.add(this.rightBottom).mul(0.5)
+    return new Point((this.left_ + this.right_) / 2, (this.top_ + this.bottom_) / 2)
   }
   set center(value: Point) {
-    const cen = this.leftTop.add(this.rightBottom).mul(0.5)
-    const shift = value.sub(cen)
-    this.leftTop = this.leftTop.add(shift)
-    this.rightBottom = this.rightBottom.add(shift)
+    const dx = value.x - (this.left_ + this.right_) / 2
+    const dy = value.y - (this.top_ + this.bottom_) / 2
+    this.left_ += dx
+    this.right_ += dx
+    this.top_ += dy
+    this.bottom += dy // setter triggers onUpdated
   }
 
   intersectsOnY(r: Rectangle): boolean {
@@ -312,39 +314,47 @@ export class Rectangle implements IRectangle<Point> {
 
   // adding a point to the rectangle
   add(point: Point) {
+    this.addCoords(point.x, point.y)
+  }
+
+  // adding raw coordinates to the rectangle (avoids Point allocation)
+  addCoords(x: number, y: number) {
     if (!this.isEmpty()) {
-      if (this.left_ > point.x) this.left_ = point.x
+      if (this.left_ > x) this.left_ = x
 
-      if (this.top_ < point.y) this.top_ = point.y
+      if (this.top_ < y) this.top_ = y
 
-      if (this.right_ < point.x) this.right_ = point.x
+      if (this.right_ < x) this.right_ = x
 
-      if (this.bottom_ > point.y) this.bottom = point.y
+      if (this.bottom_ > y) this.bottom = y
     } else {
-      this.left_ = this.right_ = point.x
-      this.top_ = this.bottom = point.y
+      this.left_ = this.right_ = x
+      this.top_ = this.bottom = y
     }
   }
 
   // adding rectangle
   addRecSelf(rectangle: Rectangle) {
-    this.add(rectangle.leftTop)
-    this.add(rectangle.rightBottom)
+    this.addCoords(rectangle.left_, rectangle.top_)
+    this.addCoords(rectangle.right_, rectangle.bottom_)
   }
 
   // adding rectangle
   addRec(rectangle: Rectangle): Rectangle {
     const ret = this.clone()
-    ret.add(rectangle.leftTop)
-    ret.add(rectangle.rightBottom)
+    ret.addCoords(rectangle.left_, rectangle.top_)
+    ret.addCoords(rectangle.right_, rectangle.bottom_)
     return ret
   }
 
   /**  Returns the translated clone of the specified rectangle */
   static translate(rectangle: Rectangle, delta: Point): Rectangle {
-    const r = rectangle.clone()
-    r.center = rectangle.center.add(delta)
-    return r
+    return new Rectangle({
+      left: rectangle.left_ + delta.x,
+      right: rectangle.right_ + delta.x,
+      bottom: rectangle.bottom_ + delta.y,
+      top: rectangle.top_ + delta.y,
+    })
   }
 
   /**  Returns a new Rectangle which is the transform the input rectangle */
@@ -357,14 +367,24 @@ export class Rectangle implements IRectangle<Point> {
     return this.containsWithPadding(point, 0)
   }
 
-  // returns true if this rectangle compconstely contains the specified rectangle
+  // returns true if this rectangle completely contains the specified rectangle
   containsRect(rect: Rectangle): boolean {
-    return this.contains(rect.leftTop) && this.contains(rect.rightBottom)
+    return this.containsWithPadding_LRTB(rect.left_, rect.right_, rect.top_, rect.bottom_, 0)
   }
 
-  // returns true if this rectangle compconstely contains the specified rectangle
+  // returns true if this rectangle completely contains the specified rectangle
   containsRectWithPadding(rect: Rectangle, padding: number): boolean {
-    return this.containsWithPadding(rect.leftTop, padding) && this.containsWithPadding(rect.rightBottom, padding)
+    return this.containsWithPadding_LRTB(rect.left_, rect.right_, rect.top_, rect.bottom_, padding)
+  }
+
+  private containsWithPadding_LRTB(l: number, r: number, t: number, b: number, padding: number): boolean {
+    const eps = GeomConstants.distanceEpsilon
+    return (
+      this.left_ - padding - eps <= l &&
+      r <= this.right_ + padding + eps &&
+      this.bottom_ - padding - eps <= b &&
+      t <= this.top_ + padding + eps
+    )
   }
 
   // return the length of the diagonal
@@ -455,9 +475,9 @@ export class Rectangle implements IRectangle<Point> {
     const w = size.width / 2
     const h = size.height / 2
 
-    this.add(new Point(point.x - w, point.y - h))
-    this.add(new Point(point.x + w, point.y - h))
-    this.add(new Point(point.x - w, point.y + h))
-    this.add(new Point(point.x + w, point.y + h))
+    this.addCoords(point.x - w, point.y - h)
+    this.addCoords(point.x + w, point.y - h)
+    this.addCoords(point.x - w, point.y + h)
+    this.addCoords(point.x + w, point.y + h)
   }
 }

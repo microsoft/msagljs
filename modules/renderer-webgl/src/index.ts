@@ -1,6 +1,6 @@
 import {initLayoutWorker} from '@msagl/renderer-common'
 
-export {default as Renderer, IRendererControl} from './renderer'
+export {default as Renderer, IRendererControl, TooltipProvider} from './renderer'
 
 export {default as SearchControl} from './controls/search-control'
 export {initLayoutWorker}
