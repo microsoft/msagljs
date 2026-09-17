@@ -108,7 +108,10 @@ const graphs: GraphSpec[] = [
   {name: 'ca-GrQc', parse: () => parseEdgeList(path.join(graphsDir, 'ca-GrQc.txt'))},
 ]
 
-describe('Accepted level sets are nested', () => {
+// The graph corpus is not part of the repository; skip when it is absent.
+const haveCorpus = fs.existsSync(path.join(graphsDir, 'gameofthrones.json'))
+
+;(haveCorpus ? describe : describe.skip)('Accepted level sets are nested', () => {
   for (const spec of graphs) {
     test(spec.name, () => {
       const g = spec.parse()
