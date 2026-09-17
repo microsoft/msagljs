@@ -235,21 +235,21 @@ export class TileMap {
       const extraObstaclePadding = ers.Padding
       const desiredGap = 3 * ers.Padding
       const filterMargin = 2 * ers.Padding + extraObstaclePadding + desiredGap
-      // BUG FIX: candidates at every coarser level are taken from a prefix of the
-      // GLOBAL rank-sorted node list, not from the previous coarser level's accepted
-      // set. Otherwise a high-rank node rejected once due to overlap (against an
-      // even-higher-rank neighbor at a finer level) would be permanently dropped from
-      // every coarser level, even where its inflated box would fit. Working on a
-      // global prefix guarantees that V_z ⊆ V_{z+1} (acceptance is monotone in z
-      // because at coarser levels boxes are larger, so overlap can only get worse;
-      // a node accepted at coarse z must also be accepted at every finer z' > z).
-      // The prefix size halves per level so the candidate set still shrinks
-      // exponentially, matching the original "top half" intent.
+      // Nesting invariant: V_k ⊆ V_{k+1}. Levels are built fine-to-coarse, so
+      // candidates for level k are the nodes of the global rank-sorted prefix
+      // that were ACCEPTED at the finer level k+1. Restricting candidates this
+      // way guarantees the invariant by construction (a greedy over the raw
+      // prefix does not: a node squeezed by a big neighbor at a coarse level
+      // can come back at a larger scale on a finer level and evict lower-ranked
+      // nodes accepted at the coarse level). It also shrinks the candidate list,
+      // since nodes already rejected at finer levels are skipped early.
+      // The prefix size still halves per level, matching the "top half" intent.
       const N = this.sortedNodes.length
       for (let k = lastIdx - 1; k >= 0; k--) {
         const desiredMax = Math.pow(2, lastIdx - k)
         const prefixSize = Math.max(1, Math.ceil(N / Math.pow(2, lastIdx - k)))
-        const prefix = this.sortedNodes.slice(0, prefixSize)
+        const finerAccepted = activeByLevel[k + 1]
+        const prefix = this.sortedNodes.slice(0, prefixSize).filter((n) => finerAccepted.has(n))
         const result = this.selectTopKWithAdaptiveScale(prefix, desiredMax, filterMargin)
         activeByLevel[k] = result.nodes
         this.nodeScales[k] = result.scales
