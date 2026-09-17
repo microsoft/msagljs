@@ -3,7 +3,6 @@ import {Point} from './../../math/geometry/point'
 import {LineSegment} from './../../math/geometry/lineSegment'
 import {Curve} from './../../math/geometry/curve'
 import {BezierSeg} from './../../math/geometry/bezierSeg'
-let dddd = 0
 export class SmoothedPolyline {
   // creates the polyline from corner points
   static mkFromPoints(points: Iterable<Point>) {
@@ -64,7 +63,6 @@ export class SmoothedPolyline {
   createCurve(): Curve {
     const curve = new Curve()
     let a = this.headSite //the corner start
-    let b: CornerSite //the corner origin
 
     do {
       const corner = Curve.findCorner(a)
@@ -84,7 +82,7 @@ export class SmoothedPolyline {
         Curve.addLineSegment(curve, a.point, a.next.point)
       } else {
         const w = 5
-        curve.segs.push(new BezierSeg(a.point, a.point.add(new Point(w, w)), a.point.add(new Point(-w, w)), b.point))
+        curve.segs.push(new BezierSeg(a.point, a.point.add(new Point(w, w)), a.point.add(new Point(-w, w)), a.next.point))
       }
     } else if (!Point.closeDistEps(curve.end, a.next.point)) Curve.continueWithLineSegmentP(curve, a.next.point)
     return curve

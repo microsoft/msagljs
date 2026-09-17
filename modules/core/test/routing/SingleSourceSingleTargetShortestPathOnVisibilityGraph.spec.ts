@@ -22,7 +22,7 @@ test('ssstsp', () => {
   VisibilityGraph.AddEdge(new VisibilityEdge(middleVertex, upperVVs[upperVVs.length - 2]))
 
   const sp = new SingleSourceSingleTargetShortestPathOnVisibilityGraph(vg, origin, upperVVs[upperVVs.length - 1])
-  const path = sp.GetPath(false)
+  const path = sp.GetPath()
   expect(path.length).toBe(3)
   expect(path[0]).toBe(origin)
   expect(path[1]).toBe(upperVVs[upperVVs.length - 2])
@@ -48,7 +48,7 @@ test('ssstsp0', () => {
   }
 
   const sp = new SingleSourceSingleTargetShortestPathOnVisibilityGraph(vg, origin, upperVVs[upperVVs.length - 2])
-  const path = sp.GetPath(false)
+  const path = sp.GetPath()
   expect(path.length).toBe(2)
   expect(path[0]).toBe(origin)
   expect(path[1]).toBe(upperVVs[upperVVs.length - 2])

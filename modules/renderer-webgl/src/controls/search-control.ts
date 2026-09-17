@@ -1,4 +1,4 @@
-import {GeomNode, Graph, Node} from '@msagl/core'
+import {Graph, Node} from '@msagl/core'
 import {DrawingNode} from '@msagl/drawing'
 
 import type Renderer from '../renderer'
@@ -24,8 +24,7 @@ export default class SearchControl implements IRendererControl {
       getLabel: (node: Node) => (<DrawingNode>DrawingNode.getDrawingObj(node)).labelText,
       onSelect: (node: Node) => {
         renderer.highlight(node.id)
-        const geomNode = GeomNode.getGeom(node)
-        renderer.zoomTo(geomNode.boundingBox)
+        renderer.zoomToNode(node.id)
       },
     })
     this._updateNodeList(renderer.graph)

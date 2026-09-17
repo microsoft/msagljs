@@ -125,3 +125,56 @@ test('distToLineSegment', () => {
   expect(closeDistEps(i.dist, a.sub(c).length)).toBe(true)
   expect(i.par === 1).toBe(true)
 })
+
+test('in-place mutation methods', () => {
+  const a = new Point(3, 4)
+  const b = new Point(1, 2)
+
+  // addInPlace
+  const r1 = a.addInPlace(b)
+  expect(r1).toBe(a)
+  expect(a.x).toBe(4)
+  expect(a.y).toBe(6)
+
+  // subInPlace
+  a.set(3, 4)
+  a.subInPlace(b)
+  expect(a.x).toBe(2)
+  expect(a.y).toBe(2)
+
+  // mulInPlace
+  a.set(3, 4)
+  a.mulInPlace(2)
+  expect(a.x).toBe(6)
+  expect(a.y).toBe(8)
+
+  // divInPlace
+  a.set(6, 8)
+  a.divInPlace(2)
+  expect(a.x).toBe(3)
+  expect(a.y).toBe(4)
+
+  // negInPlace
+  a.set(3, 4)
+  a.negInPlace()
+  expect(a.x).toBe(-3)
+  expect(a.y).toBe(-4)
+
+  // normalizeInPlace
+  a.set(3, 4)
+  a.normalizeInPlace()
+  expect(Math.abs(a.length - 1)).toBeLessThan(1e-10)
+  expect(Math.abs(a.x - 0.6)).toBeLessThan(1e-10)
+  expect(Math.abs(a.y - 0.8)).toBeLessThan(1e-10)
+
+  // copyFrom
+  a.set(0, 0)
+  a.copyFrom(new Point(5, 6))
+  expect(a.x).toBe(5)
+  expect(a.y).toBe(6)
+
+  // chaining
+  a.set(1, 0).mulInPlace(3).addInPlace(new Point(0, 4))
+  expect(a.x).toBe(3)
+  expect(a.y).toBe(4)
+})

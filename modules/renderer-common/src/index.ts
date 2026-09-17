@@ -10,4 +10,5 @@ export type LayoutOptions = {
   layoutType?: 'Sugiyama LR' | 'Sugiyama TB' | 'Sugiyama BT' | 'Sugiyama RL' | 'IPsepCola' | 'MDS'
   label?: Partial<TextMeasurerOptions>
   edgeRoutingMode?: EdgeRoutingMode
+  smoothCorners?: boolean
 }

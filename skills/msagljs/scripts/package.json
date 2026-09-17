@@ -1,0 +1,11 @@
+{
+  "name": "msagljs-skill-tools",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@msagl/core": "1.1.24",
+    "@msagl/parser": "1.1.24",
+    "@msagl/renderer-svg": "1.1.26",
+    "puppeteer": "24.31.0"
+  }
+}

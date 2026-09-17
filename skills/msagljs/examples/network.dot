@@ -1,0 +1,12 @@
+digraph architecture {
+  rankdir=LR
+  browser [label="Browser"]
+  api [label="API"]
+  worker [label="Worker"]
+  database [label="Database"]
+
+  browser -> api
+  api -> worker
+  api -> database
+  worker -> database
+}

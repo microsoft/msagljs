@@ -1,4 +1,4 @@
-import {Point} from '../../..'
+import {distPP, Point} from '../../../math/geometry/point'
 import {Polyline} from '../../../math/geometry'
 import {BundlingSettings} from '../../BundlingSettings'
 import {HubRadiiCalculator} from './HubRadiiCalculator'
@@ -84,8 +84,8 @@ export class CostCalculator {
     let newInk: number = this.metroGraphData.Ink
     for (const adj of node.Neighbors) {
       const adjPosition: Point = adj.Position
-      newInk -= adjPosition.sub(node.Position).length
-      newInk += adjPosition.sub(newPosition).length
+      newInk -= distPP(adjPosition, node.Position)
+      newInk += distPP(adjPosition, newPosition)
     }
     return CostCalculator.InkError(oldInk, newInk, this.bundlingSettings)
   }
@@ -101,11 +101,7 @@ export class CostCalculator {
       const next = e.PolyPoint.next.point
 
       const newLength =
-        e.Metroline.Length +
-        next.sub(newPosition).length +
-        prev.sub(newPosition).length -
-        next.sub(node.Position).length -
-        prev.sub(node.Position).length
+        e.Metroline.Length + distPP(next, newPosition) + distPP(prev, newPosition) - distPP(next, node.Position) - distPP(prev, node.Position)
 
       gain += CostCalculator.PathLengthsError(oldLength, newLength, e.Metroline.IdealLength, this.bundlingSettings)
     }
@@ -136,7 +132,7 @@ export class CostCalculator {
 
     let cost = 0
     for (const d of t.touchedObstacles) {
-      const dist = d[1].sub(newPosition).length
+      const dist = distPP(d[1], newPosition)
       cost += CostCalculator.RError(idealR, dist, this.bundlingSettings)
     }
 
@@ -167,7 +163,7 @@ export class CostCalculator {
     let cost = 0
 
     for (const pair of t.closestDist) {
-      const dist = pair[0].sub(pair[1]).length
+      const dist = distPP(pair[0], pair[1])
       cost += CostCalculator.BundleError(idealWidth / 2, dist, this.bundlingSettings)
     }
 

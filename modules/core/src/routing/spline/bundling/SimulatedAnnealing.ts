@@ -1,6 +1,7 @@
 // Adjust current bundle-routing
 
 import {Point} from '../../..'
+import {distPP} from '../../../math/geometry/point'
 import {Curve, CurveFactory, LineSegment, PointLocation, Polyline, Rectangle} from '../../../math/geometry'
 import {DebugCurve} from '../../../math/geometry/debugCurve'
 
@@ -146,8 +147,10 @@ export class SimulatedAnnealing {
     let den = 0
     let num = 0
     for (let i = 0; i < oldx.length; i++) {
-      num += oldx[i].sub(newx[i]).lengthSquared
-      den += oldx[i].lengthSquared
+      const dx = oldx[i].x - newx[i].x
+      const dy = oldx[i].y - newx[i].y
+      num += dx * dx + dy * dy
+      den += oldx[i].x * oldx[i].x + oldx[i].y * oldx[i].y
     }
 
     const res: number = Math.sqrt(num / den)
@@ -213,8 +216,7 @@ export class SimulatedAnnealing {
       }
     }
 
-    const step: Point = direction.mul(stepLength)
-    const newPosition: Point = s.Position.add(step)
+    const newPosition: Point = direction.mul(stepLength).addInPlace(s.Position)
     // can this happen?
     if (this.metroGraphData.PointToStations.has(newPosition)) {
       return false
@@ -249,27 +251,29 @@ export class SimulatedAnnealing {
   // Calculate the direction to improve the ink function
 
   BuildDirection(node: Station): Point {
-    const forceInk = this.BuildForceForInk(node)
-    const forcePL = this.BuildForceForPathLengths(node)
-    const forceR = this.BuildForceForRadius(node)
-    const forceBundle = this.BuildForceForBundle(node)
-    const force = forceInk.add(forcePL.add(forceR.add(forceBundle)))
+    const force = this.BuildForceForInk(node)
+    force.addInPlace(this.BuildForceForPathLengths(node))
+    force.addInPlace(this.BuildForceForRadius(node))
+    force.addInPlace(this.BuildForceForBundle(node))
     if (force.length < 0.1) {
       return new Point(0, 0)
     }
 
-    return force.normalize()
+    return force.normalizeInPlace()
   }
 
   BuildStepLength(node: Station, direction: Point): number {
+    const tmp = new Point(0, 0)
     let stepLength: number = SimulatedAnnealing.MinStep
-    let costGain: number = this.CostGain(node, node.Position.add(direction.mul(stepLength)))
+    tmp.copyFrom(direction).mulInPlace(stepLength).addInPlace(node.Position)
+    let costGain: number = this.CostGain(node, tmp)
     if (costGain < 0.01) {
       return 0
     }
 
     while (2 * stepLength <= SimulatedAnnealing.MaxStep) {
-      const newCostGain: number = this.CostGain(node, node.Position.add(direction.mul(stepLength * 2)))
+      tmp.copyFrom(direction).mulInPlace(stepLength * 2).addInPlace(node.Position)
+      const newCostGain: number = this.CostGain(node, tmp)
       if (newCostGain <= costGain) {
         break
       }
@@ -305,40 +309,41 @@ export class SimulatedAnnealing {
 
   BuildForceForInk(node: Station): Point {
     //return new Point(0,0);
-    let direction = new Point(0, 0)
+    const direction = new Point(0, 0)
+    const tmp = new Point(0, 0)
     for (const adj of node.Neighbors) {
-      const p = adj.Position.sub(node.Position)
-      direction = direction.add(p.normalize())
+      tmp.copyFrom(adj.Position).subInPlace(node.Position).normalizeInPlace()
+      direction.addInPlace(tmp)
     }
 
     //derivative
-    const force = direction.mul(this.bundlingSettings.InkImportance)
-    return force
+    return direction.mulInPlace(this.bundlingSettings.InkImportance)
   }
 
   // direction to decrease path lengths
 
   BuildForceForPathLengths(node: Station): Point {
     // return new Point(0,0);
-    let direction = new Point(0, 0)
+    const direction = new Point(0, 0)
+    const tmp = new Point(0, 0)
     for (const mni of this.metroGraphData.MetroNodeInfosOfNode(node)) {
       const metroline = mni.Metroline
       const u: Point = mni.PolyPoint.next.point
       const v: Point = mni.PolyPoint.prev.point
-      const p1 = u.sub(node.Position)
-      const p2 = v.sub(node.Position)
-      direction = direction.add(p1.div(p1.length * metroline.IdealLength))
-      direction = direction.add(p2.div(p2.length * metroline.IdealLength))
+      tmp.copyFrom(u).subInPlace(node.Position)
+      direction.addInPlace(tmp.divInPlace(tmp.length * metroline.IdealLength))
+      tmp.copyFrom(v).subInPlace(node.Position)
+      direction.addInPlace(tmp.divInPlace(tmp.length * metroline.IdealLength))
     }
     // derivative
-    const force: Point = direction.mul(this.bundlingSettings.PathLengthImportance)
-    return force
+    return direction.mulInPlace(this.bundlingSettings.PathLengthImportance)
   }
 
   // direction to increase radii
 
   BuildForceForRadius(node: Station): Point {
-    let direction: Point = new Point(0, 0)
+    const direction: Point = new Point(0, 0)
+    const tmp = new Point(0, 0)
     const idealR: number = node.cachedIdealRadius
     const t: {touchedObstacles: Array<[Polyline, Point]>} = {touchedObstacles: []}
     const res: boolean = this.metroGraphData.looseIntersections.HubAvoidsObstaclesSPNBA(node, node.Position, idealR, t)
@@ -349,22 +354,19 @@ export class SimulatedAnnealing {
       ])
       throw new Error()
     }
-    // throw new Error()
-    //Assert.assert(res) // problem here
     for (const d of t.touchedObstacles) {
-      const dist: number = d[1].sub(node.Position).length
-      //Assert.assert(dist <= idealR)
+      const dist: number = distPP(d[1], node.Position)
       const lforce: number = 2 * (1 - dist / idealR)
-      const dir: Point = node.Position.sub(d[1]).normalize()
-      direction = direction.add(dir.mul(lforce))
+      tmp.copyFrom(node.Position).subInPlace(d[1]).normalizeInPlace().mulInPlace(lforce)
+      direction.addInPlace(tmp)
     }
     // derivative
-    const force: Point = direction.mul(this.bundlingSettings.HubRepulsionImportance)
-    return force
+    return direction.mulInPlace(this.bundlingSettings.HubRepulsionImportance)
   }
   /** calculates the direction to push a bundle away from obstacle*/
   BuildForceForBundle(station: Station): Point {
-    let direction = new Point(0, 0)
+    const direction = new Point(0, 0)
+    const tmp = new Point(0, 0)
     for (const adjStation of station.Neighbors) {
       const idealWidth = this.metroGraphData.GetWidthSSN(station, adjStation, this.bundlingSettings.EdgeSeparation)
       const t: {closestDist: Array<[Point, Point]>} = {closestDist: []}
@@ -383,21 +385,17 @@ export class SimulatedAnnealing {
           DebugCurve.mkDebugCurveTWCI(100, 0.2, 'Red', CurveFactory.mkCircle(3, adjStation.Position)),
         ])
       }
-      //Assert.assert(res) //todo : still unsolved
 
       for (const d of t.closestDist) {
-        const dist = d[0].sub(d[1]).length
-        // Debug.//Assert(LessOrEqual(dist, idealWidth / 2));
+        const dist = distPP(d[0], d[1])
         const lforce = 2.0 * (1.0 - dist / (idealWidth / 2))
-        const dir = d[0].sub(d[1]).normalize().neg()
-        direction = direction.add(dir.mul(lforce))
+        tmp.copyFrom(d[0]).subInPlace(d[1]).normalizeInPlace().negInPlace().mulInPlace(lforce)
+        direction.addInPlace(tmp)
       }
     }
 
     //derivative
-    const force = direction.mul(this.bundlingSettings.BundleRepulsionImportance)
-
-    return force
+    return direction.mulInPlace(this.bundlingSettings.BundleRepulsionImportance)
   }
 }
 function RandomPoint(): Point {

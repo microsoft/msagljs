@@ -10,6 +10,7 @@ import {PivotMDS} from './mds/pivotMDS'
 import {EdgeRoutingMode} from '../routing/EdgeRoutingMode'
 import {straightLineEdgePatcher} from '../routing/StraightLineEdges'
 import {routeSplines, SplineRouter} from '../routing/splineRouter'
+import {routeSleeveEdges} from '../routing/sleeveRouter'
 import {EdgeRoutingSettings} from '../routing/EdgeRoutingSettings'
 import {GeomObject} from './core/geomObject'
 import {initRandom} from '../utils/random'
@@ -152,6 +153,8 @@ export function routeEdges(geomGraph: GeomGraph, edgesToRoute: GeomEdge[], cance
     routeSplines(geomGraph, edgesToRoute, cancelToken)
   } else if (ers.EdgeRoutingMode === EdgeRoutingMode.StraightLine) {
     straightLineEdgePatcher(geomGraph, edgesToRoute, cancelToken)
+  } else if (ers.EdgeRoutingMode === EdgeRoutingMode.Sleeve) {
+    routeSleeveEdges(geomGraph, edgesToRoute, cancelToken, true, ers.Padding, undefined, undefined, 0, undefined, ers.smoothCorners)
   } else if (ers.EdgeRoutingMode !== EdgeRoutingMode.None) {
     new SplineRouter(geomGraph, edgesToRoute).run()
   }

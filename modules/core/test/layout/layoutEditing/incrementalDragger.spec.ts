@@ -1,7 +1,5 @@
 import {GeomGraph, GeomNode, GeomObject, Point, SugiyamaLayoutSettings} from '@msagl/core'
 import {parseJSONFile} from '../../utils/testUtils'
-import * as fs from 'fs'
-import {graphToJSON} from '@msagl/parser'
 import {IncrementalDragger} from '@msagl/drawing'
 test('incremental drag', () => {
   const g = parseJSONFile('JSONfiles/ldbxtried.gv.JSON')
@@ -19,15 +17,10 @@ test('incremental drag', () => {
   const delta = new Point(20, 20)
   for (let i = 0; i < 5; i++) {
     dragger.Drag(delta)
-    const jsonfOfG = graphToJSON(g)
-    const ws = fs.openSync('./tmp/drag' + i + '.JSON', 'w', 0o666)
-    fs.writeFileSync(ws, JSON.stringify(jsonfOfG, null, 2))
     const shouldBeDelta = gNode.center.sub(gNodeCenter)
     gNodeCenter = gNode.center
     expect(Point.closeDistEps(shouldBeDelta, delta)).toBe(true)
     expect(edgesAreAttachedToNode(gNode)).toBe(true)
-    //console.log(gNode.center)
-    fs.close(ws)
   }
 })
 function edgesAreAttachedToNode(gNode: GeomNode): boolean {

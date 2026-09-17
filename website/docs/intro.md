@@ -14,3 +14,5 @@ sidebar_position: 1
 
 To browse a large graph please use [Web-GL renderer example](https://microsoft.github.io/msagljs/renderer-webgl/index.html),
 and to browse and to edit a smaller graph use [SVG-renderer example](https://microsoft.github.io/msagljs/renderer-svg/index.html)
+
+For browsing large graphs with the new **sleeve routing** and tile-pyramid semantic zoom, see the [Demos and paper](./demos.md) page, which links the paper and the two new WebGL demos.

@@ -12,24 +12,6 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
 
   _visGraph: VisibilityGraph
 
-  _lengthMultiplier = 1
-
-  public get LengthMultiplier(): number {
-    return this._lengthMultiplier
-  }
-  public set LengthMultiplier(value: number) {
-    this._lengthMultiplier = value
-  }
-
-  _lengthMultiplierForAStar = 1
-
-  public get LengthMultiplierForAStar(): number {
-    return this._lengthMultiplierForAStar
-  }
-  public set LengthMultiplierForAStar(value: number) {
-    this._lengthMultiplierForAStar = value
-  }
-
   constructor(visGraph: VisibilityGraph, sourceVisVertex: VisibilityVertex, targetVisVertex: VisibilityVertex) {
     this._visGraph = visGraph
     this._source = sourceVisVertex
@@ -38,7 +20,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   }
 
   // Returns  a  path
-  GetPath(shrinkEdgeLength: boolean): Array<VisibilityVertex> {
+  GetPath(): Array<VisibilityVertex> {
     const pq = new GenericBinaryHeapPriorityQueue<VisibilityVertex>(compareNumbers)
     this._source.Distance = 0
     this._target.Distance = Number.POSITIVE_INFINITY
@@ -64,7 +46,7 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
       }
     }
 
-    return this._visGraph.PreviosVertex(this._target) == null ? null : this.CalculatePath(shrinkEdgeLength)
+    return this._visGraph.PreviosVertex(this._target) == null ? null : this.CalculatePath()
   }
 
   // private AssertEdgesPassable(path: Array<VisibilityEdge>) {
@@ -143,18 +125,14 @@ export class SingleSourceSingleTargetShortestPathOnVisibilityGraph {
   }
 
   private H(visibilityVertex: VisibilityVertex): number {
-    return visibilityVertex.Distance + visibilityVertex.point.sub(this._target.point).length * this.LengthMultiplierForAStar
+    return visibilityVertex.Distance + visibilityVertex.point.sub(this._target.point).length
   }
 
-  private CalculatePath(shrinkEdgeLength: boolean): Array<VisibilityVertex> {
+  private CalculatePath(): Array<VisibilityVertex> {
     const ret = new Array<VisibilityVertex>()
     let v = this._target
     do {
       ret.push(v)
-      if (shrinkEdgeLength) {
-        this._visGraph.ShrinkLengthOfPrevEdge(v, this.LengthMultiplier)
-      }
-
       v = this._visGraph.PreviosVertex(v)
     } while (v !== this._source)
 

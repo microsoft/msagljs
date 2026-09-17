@@ -1,0 +1,1604 @@
+/**
+ * Sleeve Router: routes edges directly on the CDT dual graph,
+ * bypassing the cone spanner / visibility graph.
+ *
+ * Pipeline: CDT → Dijkstra tree on dual graph → sleeve → funnel → polyline
+ */
+import {distPP, Point, TriangleOrientation} from '../math/geometry/point'
+import {Polyline} from '../math/geometry/polyline'
+import {Rectangle} from '../math/geometry/rectangle'
+import {SmoothedPolyline} from '../math/geometry/smoothedPolyline'
+import {Curve} from '../math/geometry/curve'
+import {ICurve} from '../math/geometry/icurve'
+import {BezierSeg} from '../math/geometry/bezierSeg'
+import {CornerSite} from '../math/geometry/cornerSite'
+import {HitTestBehavior} from '../math/geometry/RTree/hitTestBehavior'
+import {PlaneTransformation} from '../math/geometry/planeTransformation'
+import {GeomEdge} from '../layout/core/geomEdge'
+import {GeomNode} from '../layout/core/geomNode'
+import {GeomGraph} from '../layout/core/geomGraph'
+import {Arrowhead} from '../layout/core/arrowhead'
+import {RelativeFloatingPort} from '../layout/core/relativeFloatingPort'
+import {CancelToken} from '../utils/cancelToken'
+import {Cdt} from './ConstrainedDelaunayTriangulation/Cdt'
+import {CdtEdge} from './ConstrainedDelaunayTriangulation/CdtEdge'
+import {CdtSite} from './ConstrainedDelaunayTriangulation/CdtSite'
+import {CdtTriangle} from './ConstrainedDelaunayTriangulation/CdtTriangle'
+import {InteractiveObstacleCalculator} from './interactiveObstacleCalculator'
+import {ShapeCreator} from './ShapeCreator'
+import {Shape} from './shape'
+import {RelativeShape} from './RelativeShape'
+import {
+  getAncestorSetsMap,
+  groupEdgesByPassport,
+  getObstaclesFromPassport,
+  calculatePortsToShapes,
+} from './passportRouting'
+
+export type Diagonal = {left: Point; right: Point}
+type FrontEdge = {source: CdtTriangle; edge: CdtEdge}
+type PathPoint = {point: Point; prev?: PathPoint; next?: PathPoint}
+
+/** Pre-computed triangle index for fast typed-array Dijkstra/A*.
+ *  Assigns integer IDs to all CDT triangles, pre-computes edge midpoints
+ *  and neighbor relationships for cache-friendly access. */
+export class TriangleIndex {
+  readonly triToId: Map<CdtTriangle, number>
+  readonly triangles: CdtTriangle[]
+  readonly n: number
+  // For each triangle, up to 3 neighbor IDs (−1 if none) and the CdtEdge
+  readonly nbId: Int32Array // [i*3+0..i*3+2] — neighbor triangle IDs
+  readonly nbEdge: (CdtEdge | null)[] // [i*3+0..i*3+2] — corresponding CDT edges
+  // Edge midpoints: [i*6+j*2+0] = x, [i*6+j*2+1] = y for neighbor j of triangle i
+  readonly midX: Float64Array
+  readonly midY: Float64Array
+  // Centroids
+  readonly centX: Float64Array
+  readonly centY: Float64Array
+  // Obstacle owner (null if free-space)
+  readonly obstacleOwner: (Polyline | null)[]
+  constructor(cdt: Cdt) {
+    const triToId = new Map<CdtTriangle, number>()
+    const triangles: CdtTriangle[] = []
+    for (const t of cdt.GetTriangles()) {
+      triToId.set(t, triangles.length)
+      triangles.push(t)
+    }
+    this.triToId = triToId
+    this.triangles = triangles
+    this.n = triangles.length
+
+    const n = this.n
+    this.nbId = new Int32Array(n * 3).fill(-1)
+    this.nbEdge = new Array(n * 3).fill(null)
+    this.midX = new Float64Array(n * 3)
+    this.midY = new Float64Array(n * 3)
+    this.centX = new Float64Array(n)
+    this.centY = new Float64Array(n)
+    this.obstacleOwner = new Array(n)
+
+    for (let i = 0; i < n; i++) {
+      const t = triangles[i]
+      const a = t.Sites.item0.point
+      const b = t.Sites.item1.point
+      const c = t.Sites.item2.point
+      this.centX[i] = (a.x + b.x + c.x) / 3
+      this.centY[i] = (a.y + b.y + c.y) / 3
+
+      const o0 = t.Sites.item0.Owner as Polyline
+      const o1 = t.Sites.item1.Owner as Polyline
+      const o2 = t.Sites.item2.Owner as Polyline
+      this.obstacleOwner[i] = (o0 != null && o1 != null && o2 != null && o0 === o1 && o0 === o2) ? o0 : null
+
+      let j = 0
+      for (const e of t.Edges) {
+        if (j >= 3) break
+        const ot = e.GetOtherTriangle_T(t)
+        if (ot == null) { j++; continue }
+        const otId = triToId.get(ot)
+        if (otId === undefined) { j++; continue }
+        this.nbId[i * 3 + j] = otId
+        this.nbEdge[i * 3 + j] = e
+        const mx = (e.lowerSite.point.x + e.upperSite.point.x) * 0.5
+        const my = (e.lowerSite.point.y + e.upperSite.point.y) * 0.5
+        this.midX[i * 3 + j] = mx
+        this.midY[i * 3 + j] = my
+        j++
+      }
+    }
+  }
+
+  getId(t: CdtTriangle): number {
+    return this.triToId.get(t) ?? -1
+  }
+
+  isInsideObstacle(id: number, allowedPolys: Set<Polyline>): boolean {
+    const owner = this.obstacleOwner[id]
+    return owner != null && !allowedPolys.has(owner)
+  }
+
+}
+
+// ── Flat min-heap ───────────────────────────────────────────────────
+
+/** Flat min-heap on pre-allocated typed arrays (zero GC pressure). */
+class FlatMinHeap {
+  private keys: Float64Array
+  private vals: Int32Array
+  size = 0
+
+  constructor(capacity: number) {
+    this.keys = new Float64Array(capacity)
+    this.vals = new Int32Array(capacity)
+  }
+
+  clear() { this.size = 0 }
+
+  push(key: number, val: number) {
+    const k = this.keys, v = this.vals
+    let i = this.size++
+    k[i] = key; v[i] = val
+    while (i > 0) {
+      const p = (i - 1) >> 1
+      if (k[p] <= k[i]) break
+      // swap
+      const tk = k[i]; k[i] = k[p]; k[p] = tk
+      const tv = v[i]; v[i] = v[p]; v[p] = tv
+      i = p
+    }
+  }
+
+  topKey(): number { return this.keys[0] }
+  topVal(): number { return this.vals[0] }
+
+  pop() {
+    const k = this.keys, v = this.vals
+    const last = --this.size
+    if (last > 0) {
+      k[0] = k[last]; v[0] = v[last]
+      let i = 0
+      for (;;) {
+        let s = i; const l = 2 * i + 1, r = 2 * i + 2
+        if (l < this.size && k[l] < k[s]) s = l
+        if (r < this.size && k[r] < k[s]) s = r
+        if (s === i) break
+        const tk = k[i]; k[i] = k[s]; k[s] = tk
+        const tv = v[i]; v[i] = v[s]; v[s] = tv
+        i = s
+      }
+    }
+  }
+}
+
+/** Check if a triangle is entirely inside a single obstacle */
+function triangleIsInsideObstacle(t: CdtTriangle, allowedPolys: Set<Polyline>): boolean {
+  const o0 = t.Sites.item0.Owner as Polyline
+  const o1 = t.Sites.item1.Owner as Polyline
+  const o2 = t.Sites.item2.Owner as Polyline
+  if (o0 == null || o1 == null || o2 == null) return false
+  if (o0 !== o1 || o0 !== o2) return false
+  // all three sites belong to the same obstacle
+  return !allowedPolys.has(o0)
+}
+
+/** Find the CDT triangle containing a given point.
+ *  Uses the R-tree for efficiency, with a linear scan fallback. */
+export function findContainingTriangle(cdt: Cdt, point: Point): CdtTriangle | null {
+  const rTree = cdt.getRectangleNodeOnTriangles()
+  if (rTree) {
+    const node = rTree.FirstHitNodeWithPredicate(point, (p, tri) => {
+      return tri.containsPoint(p) ? HitTestBehavior.Stop : HitTestBehavior.Continue
+    })
+    if (node) return node.UserData
+  }
+  // Fallback: linear scan
+  for (const t of cdt.GetTriangles()) {
+    if (t.containsPoint(point)) return t
+  }
+  return null
+}
+
+/** Strict (proper) crossing test for two open segments AB and CD. */
+function segmentsProperlyCross(a: Point, b: Point, c: Point, d: Point): boolean {
+  const o1 = Point.getTriangleOrientation(a, b, c)
+  const o2 = Point.getTriangleOrientation(a, b, d)
+  if (o1 === TriangleOrientation.Collinear || o2 === TriangleOrientation.Collinear || o1 === o2) return false
+  const o3 = Point.getTriangleOrientation(c, d, a)
+  const o4 = Point.getTriangleOrientation(c, d, b)
+  if (o3 === TriangleOrientation.Collinear || o4 === TriangleOrientation.Collinear || o3 === o4) return false
+  return true
+}
+
+/** Optimistic line-of-sight test: walk segment(source, target) through the
+ *  CDT starting at sourceTriangle. Returns true iff every triangle visited
+ *  is either free space or the interior of an allowed (source/target)
+ *  obstacle, i.e. the straight segment does not pierce any obstacle.
+ *  Degenerate cases (segment grazing a CDT vertex) return false, which
+ *  conservatively forces the caller to fall back to the full sleeve search. */
+export function segmentClearOfObstacles(
+  sourceTriangle: CdtTriangle,
+  source: Point,
+  target: Point,
+  allowedPolys: Set<Polyline>,
+): boolean {
+  let t = sourceTriangle
+  let prevEdge: CdtEdge | null = null
+  // Bounded by the number of CDT triangles in the worst case; the constant
+  // is generous to absorb any pathological zig-zag without spinning forever.
+  for (let step = 0; step < 100000; step++) {
+    if (t.containsPoint(target)) return true
+    let exitEdge: CdtEdge | null = null
+    for (const e of t.Edges) {
+      if (e === prevEdge) continue
+      if (segmentsProperlyCross(source, target, e.upperSite.point, e.lowerSite.point)) {
+        exitEdge = e
+        break
+      }
+    }
+    if (!exitEdge) return false
+    const nt = exitEdge.GetOtherTriangle_T(t)
+    if (!nt) return false
+    if (triangleIsInsideObstacle(nt, allowedPolys)) return false
+    t = nt
+    prevEdge = exitEdge
+  }
+  return false
+}
+
+/** Dijkstra shortest-path tree on the CDT dual graph from a source triangle.
+ *  Uses pre-indexed triangle data and typed arrays for minimal GC. */
+function dijkstraTreeIndexed(
+  sourceId: number,
+  targetIds: Set<number>,
+  allowedPolys: Set<Polyline>,
+  idx: TriangleIndex,
+  gScore: Float64Array,
+  parentEdgeIdx: Int32Array, // stores i*3+j index into nbEdge, or -1
+  visited: number[],
+  heap: FlatMinHeap,
+): void {
+  gScore[sourceId] = 0
+  parentEdgeIdx[sourceId] = -1
+  visited.push(sourceId)
+  heap.clear()
+  heap.push(0, sourceId)
+
+  let remaining = targetIds.size
+  const foundTargets = new Set<number>()
+
+  while (heap.size > 0 && remaining > 0) {
+    const g = heap.topKey()
+    const tid = heap.topVal()
+    heap.pop()
+
+    if (g > gScore[tid]) continue
+
+    if (targetIds.has(tid) && !foundTargets.has(tid)) {
+      foundTargets.add(tid)
+      remaining--
+      if (remaining === 0) break
+    }
+
+    const peIdx = parentEdgeIdx[tid]
+    const cx = idx.centX[tid]
+    const cy = idx.centY[tid]
+
+    const base = tid * 3
+    for (let j = 0; j < 3; j++) {
+      const otId = idx.nbId[base + j]
+      if (otId < 0) continue
+      // Don't go back through the same edge we entered from
+      if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
+
+      // Edge weight = Euclidean distance between triangle centroids.
+      const odx = idx.centX[otId] - cx, ody = idx.centY[otId] - cy
+      const w = Math.sqrt(odx * odx + ody * ody)
+
+      if (idx.isInsideObstacle(otId, allowedPolys)) {
+        // Allow reaching a target inside an obstacle
+        if (targetIds.has(otId) && !foundTargets.has(otId)) {
+          const tentativeG = g + w
+          if (tentativeG < gScore[otId]) {
+            gScore[otId] = tentativeG
+            // Find the reverse edge index: which of otId's neighbors is tid?
+            const otBase = otId * 3
+            for (let k = 0; k < 3; k++) {
+              if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+                parentEdgeIdx[otId] = otBase + k
+                break
+              }
+            }
+            visited.push(otId)
+            foundTargets.add(otId)
+            remaining--
+          }
+        }
+        continue
+      }
+
+      const tentativeG = g + w
+      if (tentativeG >= gScore[otId]) continue
+
+      gScore[otId] = tentativeG
+      const otBase = otId * 3
+      for (let k = 0; k < 3; k++) {
+        if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+          parentEdgeIdx[otId] = otBase + k
+          break
+        }
+      }
+      visited.push(otId)
+      heap.push(tentativeG, otId)
+    }
+  }
+}
+
+/** Recover sleeve from indexed parent data */
+function recoverSleeveIndexed(
+  sourceId: number,
+  targetId: number,
+  parentEdgeIdx: Int32Array,
+  idx: TriangleIndex,
+): FrontEdge[] {
+  const ret: FrontEdge[] = []
+  let cur = targetId
+  while (cur !== sourceId) {
+    const peIdx = parentEdgeIdx[cur]
+    if (peIdx < 0) break
+    const e = idx.nbEdge[peIdx]!
+    const parentId = idx.nbId[peIdx]
+    ret.push({source: idx.triangles[parentId], edge: e})
+    cur = parentId
+  }
+  return ret.reverse()
+}
+
+/** A* on indexed CDT dual graph from sourceId to the triangle containing target point.
+ *  If triMask is non-null, neighbors with triMask[otId]===0 are skipped (but target-containing
+ *  triangle is always reachable as fallback). */
+function findSleeveAStarIndexed(
+  sourceId: number,
+  target: Point,
+  allowedPolys: Set<Polyline>,
+  idx: TriangleIndex,
+  gScore: Float64Array,
+  parentEdgeIdx: Int32Array,
+  visited: number[],
+  heap: FlatMinHeap,
+  triMask: Uint8Array | null = null,
+  targetId = -1,
+): FrontEdge[] | null {
+  gScore[sourceId] = 0
+  parentEdgeIdx[sourceId] = -1
+  visited.push(sourceId)
+  heap.clear()
+
+  const tx = target.x, ty = target.y
+  const dx0 = idx.centX[sourceId] - tx, dy0 = idx.centY[sourceId] - ty
+  heap.push(Math.sqrt(dx0 * dx0 + dy0 * dy0), sourceId)
+
+  while (heap.size > 0) {
+    const f = heap.topKey()
+    const tid = heap.topVal()
+    heap.pop()
+
+    const g = gScore[tid]
+    // Stale heap entry: popped f = g+h at push time; recompute h and drop if fresh g improved.
+    const dxh = idx.centX[tid] - tx, dyh = idx.centY[tid] - ty
+    const h = Math.sqrt(dxh * dxh + dyh * dyh)
+    if (f > g + h + 1e-10) continue
+
+    if (tid === targetId || idx.triangles[tid].containsPoint(target)) {
+      return recoverSleeveIndexed(sourceId, tid, parentEdgeIdx, idx)
+    }
+
+    const peIdx = parentEdgeIdx[tid]
+    const cx = idx.centX[tid]
+    const cy = idx.centY[tid]
+
+    const base = tid * 3
+    for (let j = 0; j < 3; j++) {
+      const otId = idx.nbId[base + j]
+      if (otId < 0) continue
+      if (peIdx >= 0 && idx.nbEdge[base + j] === idx.nbEdge[peIdx]) continue
+      if (idx.isInsideObstacle(otId, allowedPolys) && !idx.triangles[otId].containsPoint(target)) continue
+      // Mask-restricted sleeve: only expand through masked-in triangles (target-triangle always OK).
+      if (triMask !== null && triMask[otId] === 0 && !idx.triangles[otId].containsPoint(target)) continue
+
+      // Edge weight = Euclidean distance between triangle centroids.
+      const odx = idx.centX[otId] - cx, ody = idx.centY[otId] - cy
+      const tentativeG = g + Math.sqrt(odx * odx + ody * ody)
+
+      if (tentativeG >= gScore[otId]) continue
+
+      gScore[otId] = tentativeG
+      const otBase = otId * 3
+      for (let k = 0; k < 3; k++) {
+        if (idx.nbId[otBase + k] === tid && idx.nbEdge[otBase + k] === idx.nbEdge[base + j]) {
+          parentEdgeIdx[otId] = otBase + k
+          break
+        }
+      }
+      visited.push(otId)
+      // Use centroid-based heuristic consistently with the stale check in the main loop.
+      const hx = idx.centX[otId] - tx, hy = idx.centY[otId] - ty
+      heap.push(tentativeG + Math.sqrt(hx * hx + hy * hy), otId)
+    }
+  }
+  return null
+}
+
+/** A* on the CDT dual graph from sourceTriangle to the triangle containing target.
+ *  Uses Euclidean distance between triangle centroids for edge weights
+ *  and straight-line distance to target as heuristic.
+ *  Returns the sleeve (sequence of FrontEdges) or null if no path is found. */
+export function findSleeveAStar(
+  sourceTriangle: CdtTriangle,
+  target: Point,
+  allowedPolys: Set<Polyline>,
+): FrontEdge[] | null {
+  const gScore = new Map<CdtTriangle, number>()
+  const cameFromEdge = new Map<CdtTriangle, CdtEdge | undefined>()
+
+  // simple binary-heap priority queue
+  const open: {f: number; g: number; t: CdtTriangle; seq: number}[] = []
+  let seqCounter = 0
+
+  function heapPush(item: {f: number; g: number; t: CdtTriangle; seq: number}) {
+    open.push(item)
+    let i = open.length - 1
+    while (i > 0) {
+      const parent = (i - 1) >> 1
+      if (open[parent].f < item.f || (open[parent].f === item.f && open[parent].seq < item.seq)) break
+      open[i] = open[parent]
+      open[parent] = item
+      i = parent
+    }
+  }
+
+  function heapPop(): {f: number; g: number; t: CdtTriangle; seq: number} {
+    const top = open[0]
+    const last = open.pop()
+    if (open.length > 0) {
+      open[0] = last
+      let i = 0
+      while (true) {
+        let smallest = i
+        const l = 2 * i + 1
+        const r = 2 * i + 2
+        if (l < open.length && (open[l].f < open[smallest].f || (open[l].f === open[smallest].f && open[l].seq < open[smallest].seq)))
+          smallest = l
+        if (r < open.length && (open[r].f < open[smallest].f || (open[r].f === open[smallest].f && open[r].seq < open[smallest].seq)))
+          smallest = r
+        if (smallest === i) break
+        const tmp = open[i]
+        open[i] = open[smallest]
+        open[smallest] = tmp
+        i = smallest
+      }
+    }
+    return top
+  }
+
+  const tx = target.x, ty = target.y
+  const sa = sourceTriangle.Sites.item0.point, sb = sourceTriangle.Sites.item1.point, sc = sourceTriangle.Sites.item2.point
+  const scx = (sa.x + sb.x + sc.x) / 3, scy = (sa.y + sb.y + sc.y) / 3
+  const dx0 = scx - tx, dy0 = scy - ty
+  const h0 = Math.sqrt(dx0 * dx0 + dy0 * dy0)
+  gScore.set(sourceTriangle, 0)
+  cameFromEdge.set(sourceTriangle, undefined)
+  heapPush({f: h0, g: 0, t: sourceTriangle, seq: seqCounter++})
+
+  while (open.length > 0) {
+    const current = heapPop()
+    const t = current.t
+
+    // stale entry?
+    if (current.g > (gScore.get(t) ?? Infinity)) continue
+
+    if (t.containsPoint(target)) {
+      return recoverSleeve(sourceTriangle, cameFromEdge, t)
+    }
+
+    const edgeIntoT = cameFromEdge.get(t)
+    const cx = (t.Sites.item0.point.x + t.Sites.item1.point.x + t.Sites.item2.point.x) / 3
+    const cy = (t.Sites.item0.point.y + t.Sites.item1.point.y + t.Sites.item2.point.y) / 3
+
+    for (const e of t.Edges) {
+      if (edgeIntoT !== undefined && e === edgeIntoT) continue
+      const ot = e.GetOtherTriangle_T(t)
+      if (ot == null) continue
+      if (triangleIsInsideObstacle(ot, allowedPolys) && !ot.containsPoint(target)) continue
+
+      // Edge weight = Euclidean distance between triangle centroids.
+      const oa = ot.Sites.item0.point, ob = ot.Sites.item1.point, oc = ot.Sites.item2.point
+      const ocx = (oa.x + ob.x + oc.x) / 3, ocy = (oa.y + ob.y + oc.y) / 3
+      const dx = cx - ocx, dy = cy - ocy
+      const tentativeG = current.g + Math.sqrt(dx * dx + dy * dy)
+
+      const prevG = gScore.get(ot)
+      if (prevG !== undefined && tentativeG >= prevG) continue
+
+      gScore.set(ot, tentativeG)
+      cameFromEdge.set(ot, e)
+      const hx = ocx - tx, hy = ocy - ty
+      heapPush({f: tentativeG + Math.sqrt(hx * hx + hy * hy), g: tentativeG, t: ot, seq: seqCounter++})
+    }
+  }
+  return null
+}
+
+/** Recover the sleeve by tracing back from the target triangle to the source. */
+function recoverSleeve(
+  sourceTriangle: CdtTriangle,
+  edgeMap: Map<CdtTriangle, CdtEdge | undefined>,
+  targetTriangle: CdtTriangle,
+): FrontEdge[] {
+  const ret: FrontEdge[] = []
+  for (let tr = targetTriangle; tr !== sourceTriangle; ) {
+    const e = edgeMap.get(tr)
+    tr = e.GetOtherTriangle_T(tr)
+    ret.push({source: tr, edge: e})
+  }
+  return ret.reverse()
+}
+
+/** Cross product (b-a) × (c-a) */
+function cross2d(a: Point, b: Point, c: Point): number {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+}
+
+/** Convert a sleeve into diagonals for the funnel algorithm.
+ *  Walks the raw diagonals and collapses source/target obstacle vertices
+ *  only when they create a wrong turn toward the node center. */
+export function sleeveToDiagonals(
+  sleeve: FrontEdge[],
+  collapseSource?: {poly: Polyline; center: Point},
+  collapseTarget?: {poly: Polyline; center: Point},
+): Diagonal[] {
+  // Step 1: Build raw diagonals with site info
+  type RawDiag = {left: Point; right: Point; leftSite: CdtSite; rightSite: CdtSite}
+  const raw: RawDiag[] = []
+  for (const fe of sleeve) {
+    const e = fe.edge
+    const oppSite = fe.source.OppositeSite(e)
+    if (
+      Point.getTriangleOrientation(oppSite.point, e.lowerSite.point, e.upperSite.point) ===
+      TriangleOrientation.Counterclockwise
+    ) {
+      raw.push({left: e.upperSite.point, right: e.lowerSite.point, leftSite: e.upperSite, rightSite: e.lowerSite})
+    } else {
+      raw.push({right: e.upperSite.point, left: e.lowerSite.point, leftSite: e.lowerSite, rightSite: e.upperSite})
+    }
+  }
+  if (raw.length === 0) return []
+
+  // Step 2: Wrong-turn detection
+  // Right chain at target: (prev, this, center) right turn → cross < 0
+  // Right chain at source: (center, this, next) right turn → cross < 0
+  // Left chain at target:  (prev, this, center) left turn  → cross > 0
+  // Left chain at source:  (center, this, next) left turn  → cross > 0
+
+  // Step 2: Build unique subsequences (no repetitions) for left and right chains.
+  // Track both firstIdx and lastIdx of consecutive duplicates so that
+  // source collapse (i <= lastIdx) and target collapse (i >= firstIdx) cover all occurrences.
+  function uniqueChain(chain: {pt: Point; site: CdtSite; idx: number}[]): {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] {
+    const result: {pt: Point; site: CdtSite; firstIdx: number; lastIdx: number}[] = []
+    for (const c of chain) {
+      if (result.length === 0 || distPP(result[result.length - 1].pt, c.pt) > 1e-8) {
+        result.push({pt: c.pt, site: c.site, firstIdx: c.idx, lastIdx: c.idx})
+      } else {
+        result[result.length - 1].lastIdx = c.idx
+      }
+    }
+    return result
+  }
+
+  const leftChainRaw = raw.map((d, i) => ({pt: d.left, site: d.leftSite, idx: i}))
+  const rightChainRaw = raw.map((d, i) => ({pt: d.right, site: d.rightSite, idx: i}))
+  const L = uniqueChain(leftChainRaw)
+  const R = uniqueChain(rightChainRaw)
+
+  // Step 3: Right chain collapse
+  // Source: find maximal k where rk belongs to source and (source_center, rk, r_{k+1}) is RIGHT rotation (cross < 0)
+  let collapseRightFromSource = -1
+  if (collapseSource) {
+    for (let k = 0; k < R.length - 1; k++) {
+      if (R[k].site.Owner !== collapseSource.poly) continue
+      if (cross2d(collapseSource.center, R[k].pt, R[k + 1].pt) < -1e-10) {
+        collapseRightFromSource = R[k].lastIdx
+      }
+    }
+  }
+
+  // Target: scan backward, find minimal k where rk belongs to target and (r_{k-1}, rk, target_center) is RIGHT rotation (cross < 0)
+  let collapseRightFromTarget = raw.length
+  if (collapseTarget) {
+    for (let k = R.length - 1; k >= 1; k--) {
+      if (R[k].site.Owner !== collapseTarget.poly) continue
+      if (cross2d(R[k - 1].pt, R[k].pt, collapseTarget.center) < -1e-10) {
+        collapseRightFromTarget = R[k].firstIdx
+      }
+    }
+  }
+
+  // Step 4: Left chain — source LEFT rotation (cross > 0), target LEFT rotation (cross > 0)
+  let collapseLeftFromSource = -1
+  if (collapseSource) {
+    for (let k = 0; k < L.length - 1; k++) {
+      if (L[k].site.Owner !== collapseSource.poly) continue
+      if (cross2d(collapseSource.center, L[k].pt, L[k + 1].pt) > 1e-10) {
+        collapseLeftFromSource = L[k].lastIdx
+      }
+    }
+  }
+
+  let collapseLeftFromTarget = raw.length
+  if (collapseTarget) {
+    for (let k = L.length - 1; k >= 1; k--) {
+      if (L[k].site.Owner !== collapseTarget.poly) continue
+      if (cross2d(L[k - 1].pt, L[k].pt, collapseTarget.center) > 1e-10) {
+        collapseLeftFromTarget = L[k].firstIdx
+      }
+    }
+  }
+
+  // Step 5: Build final diagonals
+  const diagonals: Diagonal[] = []
+  for (let i = 0; i < raw.length; i++) {
+    let leftPt = raw[i].left
+    let rightPt = raw[i].right
+
+    // Source collapse
+    if (collapseSource && raw[i].leftSite.Owner === collapseSource.poly && i <= collapseLeftFromSource)
+      leftPt = collapseSource.center
+    if (collapseSource && raw[i].rightSite.Owner === collapseSource.poly && i <= collapseRightFromSource)
+      rightPt = collapseSource.center
+
+    // Target collapse
+    if (collapseTarget && raw[i].leftSite.Owner === collapseTarget.poly && i >= collapseLeftFromTarget)
+      leftPt = collapseTarget.center
+    if (collapseTarget && raw[i].rightSite.Owner === collapseTarget.poly && i >= collapseRightFromTarget)
+      rightPt = collapseTarget.center
+
+    // Skip degenerate
+    if (distPP(leftPt, rightPt) < 1e-8) continue
+
+    diagonals.push({left: leftPt, right: rightPt})
+  }
+  return diagonals
+}
+
+/** Funnel algorithm: find the shortest path through a sequence of diagonals.
+ *  Following https://page.mi.fu-berlin.de/mulzer/notes/alggeo/polySP.pdf */
+export function funnelFromDiagonals(source: Point, target: Point, diagonals: Diagonal[]): Point[] {
+  if (diagonals.length === 0) {
+    return [source, target]
+  }
+
+  const prefix: Point[] = []
+  let v = source
+  const leftChainStart: PathPoint = {point: v}
+  const rightChainStart: PathPoint = {point: v}
+  let leftChainEnd: PathPoint = {point: diagonals[0].left, prev: leftChainStart}
+  let rightChainEnd: PathPoint = {point: diagonals[0].right, prev: rightChainStart}
+  leftChainStart.next = leftChainEnd
+  rightChainStart.next = rightChainEnd
+
+  let z: Point
+
+  // Process diagonals 1..n-1
+  for (let i = 1; i < diagonals.length; i++) {
+    processDiagonal(i)
+  }
+  // Process the final step to the target
+  const finalDiag: Diagonal[] = [...diagonals, {right: target, left: leftChainEnd.point}]
+  processDiagonal(finalDiag.length - 1)
+
+  // Collect the path
+  const result = [...prefix]
+  for (let p: PathPoint | undefined = rightChainStart; p != null; p = p.next) {
+    result.push(p.point)
+  }
+  return result
+
+  function processDiagonal(i: number) {
+    const d = i < diagonals.length ? diagonals : finalDiag
+    const leftStep = d[i - 1].left !== d[i].left
+
+    if (leftStep) {
+      z = d[i].left
+      let p = leftChainEnd
+      for (; !(isApex(p) || reflexLeft(p)); p = p.prev) {
+        // step back on left chain
+      }
+      if (isApex(p)) {
+        walkForwardOnRight()
+      } else {
+        extendLeftChain(p)
+      }
+    } else {
+      z = d[i].right
+      let p = rightChainEnd
+      for (; !(isApex(p) || reflexRight(p)); p = p.prev) {
+        // step back on right chain
+      }
+      if (isApex(p)) {
+        walkForwardOnLeft()
+      } else {
+        extendRightChain(p)
+      }
+    }
+  }
+
+  function visibleRight(pp: PathPoint) {
+    return pp.next == null || Point.pointToTheLeftOfLineOrOnLine(z, pp.point, pp.next.point)
+  }
+  function visibleLeft(pp: PathPoint) {
+    return pp.next == null || Point.pointToTheRightOfLineOrOnLine(z, pp.point, pp.next.point)
+  }
+  function reflexLeft(pp: PathPoint): boolean {
+    return Point.pointToTheLeftOfLine(z, pp.prev.point, pp.point)
+  }
+  function reflexRight(pp: PathPoint): boolean {
+    return Point.pointToTheRightOfLine(z, pp.prev.point, pp.point)
+  }
+
+  function walkForwardOnRight() {
+    let p = rightChainStart
+    while (!visibleRight(p)) {
+      p = p.next
+    }
+    if (!isApex(p)) {
+      let r = rightChainStart
+      for (; !r.point.equal(p.point); r = r.next) {
+        prefix.push(r.point)
+      }
+      rightChainStart.point = r.point
+      rightChainStart.next = r.next
+      v = r.point
+      if (rightChainEnd.point.equal(rightChainStart.point)) {
+        rightChainEnd.prev = rightChainEnd.next = null
+      }
+    }
+    leftChainStart.point = v
+    leftChainEnd.point = z
+    leftChainEnd.prev = leftChainStart
+    leftChainStart.next = leftChainEnd
+  }
+
+  function walkForwardOnLeft() {
+    let p = leftChainStart
+    while (!visibleLeft(p)) {
+      p = p.next
+    }
+    if (!isApex(p)) {
+      let r = leftChainStart
+      for (; !r.point.equal(p.point); r = r.next) {
+        prefix.push(r.point)
+      }
+      leftChainStart.point = r.point
+      leftChainStart.next = r.next
+      v = r.point
+      if (leftChainEnd.point.equal(leftChainStart.point)) {
+        leftChainEnd.prev = leftChainStart.next = null
+      }
+    }
+    rightChainStart.point = v
+    rightChainEnd.point = z
+    rightChainEnd.prev = rightChainStart
+    rightChainStart.next = rightChainEnd
+  }
+
+  function isApex(pp: PathPoint) {
+    return pp.point === v
+  }
+
+  function extendRightChain(p: PathPoint) {
+    if (p !== rightChainEnd) {
+      rightChainEnd.point = z
+      rightChainEnd.prev = p
+      p.next = rightChainEnd
+    } else {
+      rightChainEnd = {point: z, prev: p}
+      p.next = rightChainEnd
+    }
+  }
+
+  function extendLeftChain(p: PathPoint) {
+    if (p !== leftChainEnd) {
+      leftChainEnd.point = z
+      leftChainEnd.prev = p
+      p.next = leftChainEnd
+    } else {
+      leftChainEnd = {point: z, prev: p}
+      p.next = leftChainEnd
+    }
+  }
+}
+
+/** Route a single edge through the CDT using the sleeve approach.
+ *  Virtually collapses source/target obstacle boundaries to their centers
+ *  in the funnel diagonals, so the funnel routes directly from/to
+ *  node centers without sharp turns at obstacle corners. */
+export function sleeveRoute(
+  cdt: Cdt,
+  source: Point,
+  target: Point,
+  sourcePoly?: Polyline,
+  targetPoly?: Polyline,
+): Polyline | null {
+  const sourceTriangle = findContainingTriangle(cdt, source)
+  if (!sourceTriangle) return null
+
+  const allowed = new Set<Polyline>()
+  if (sourcePoly) allowed.add(sourcePoly)
+  if (targetPoly) allowed.add(targetPoly)
+
+  // Optimistic shortcut: if the straight segment source→target does not
+  // pierce any obstacle, return it immediately and skip the sleeve search.
+  if (segmentClearOfObstacles(sourceTriangle, source, target, allowed)) {
+    return Polyline.mkFromPoints([source, target])
+  }
+
+  const sleeve = findSleeveAStar(sourceTriangle, target, allowed)
+  if (sleeve == null) return null
+
+  if (sleeve.length === 0) {
+    return Polyline.mkFromPoints([source, target])
+  }
+
+  const collapseSource = sourcePoly ? {poly: sourcePoly, center: source} : undefined
+  const collapseTarget = targetPoly ? {poly: targetPoly, center: target} : undefined
+  const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+
+  if (diagonals.length === 0) {
+    return Polyline.mkFromPoints([source, target])
+  }
+
+  const points = funnelFromDiagonals(source, target, diagonals)
+  return Polyline.mkFromPoints(points)
+}
+
+/** Check whether the graph contains cluster/subgraph nodes. */
+function graphHasSubgraphs(geomGraph: GeomGraph): boolean {
+  for (const n of geomGraph.shallowNodes) {
+    if (n instanceof GeomGraph) return true
+  }
+  return false
+}
+
+/** Routing strategy used by {@link routeSleeveEdges}. Exposed for
+ *  benchmarking the speedups described in the GD 2026 paper.
+ *  - `'astar'`: per-edge A* on the CDT dual (no batched search).
+ *  - `'dijkstra'`: one Dijkstra tree per source endpoint (no vertex-cover swap).
+ *  - `'dijkstra-vc'`: greedy vertex-cover on the demand graph picks the
+ *    Dijkstra root for each edge; default. */
+export type SleeveRouteMode = 'astar' | 'dijkstra' | 'dijkstra-vc'
+
+/** Route all edges using the sleeve approach.
+ *  Builds a CDT on padded obstacle polylines and routes each edge
+ *  through the CDT dual graph using a single grouped Dijkstra tree per
+ *  source node (multi-target single-source shortest paths). Edges whose
+ *  target Dijkstra cannot reach (e.g. target center inside another inflated
+ *  obstacle at coarse tile levels) fall back to A*.
+ *
+ *  `extraObstaclePadding` (>= 0) is added to `padding` ONLY when building the
+ *  CDT obstacles. This buys headroom for bezier smoothing bulge, arrowheads
+ *  and edge labels so they don't visually overlap neighboring nodes at coarse
+ *  tile levels.
+ *
+ *  `trimEdges` controls whether each routed curve is trimmed to the node
+ *  boundary (and arrowheads computed). Pass `true` for the standard full-graph
+ *  layout so edges end exactly at the visible node border. Pass `false` for the
+ *  tile-pyramid (LOD) rendering: there each level scales nodes by a per-node
+ *  factor and the renderer further interpolates node size per frame between
+ *  levels, so a curve trimmed to any single level's boundary would detach from
+ *  the node at other zooms. Leaving curves running to the node centers keeps
+ *  edges visually connected at every zoom; the opaque node boxes cover the ends.
+ */
+export function routeSleeveEdges(
+  geomGraph: GeomGraph,
+  edgesToRoute: GeomEdge[],
+  cancelToken: CancelToken,
+  trimEdges: boolean,
+  padding = 2,
+  nodeScale?: (n: GeomNode) => number,
+  activeNodes?: Set<GeomNode> | null,
+  extraObstaclePadding = 0,
+  debugLabel?: string,
+  smoothCorners = false,
+  routeMode: SleeveRouteMode = 'dijkstra-vc',
+): void {
+  if (!edgesToRoute || edgesToRoute.length === 0) return
+
+  // ensure ports exist — assign them directly to edges
+  ensurePorts(edgesToRoute)
+
+  if (graphHasSubgraphs(geomGraph)) {
+    routeSleeveEdgesWithPassports(geomGraph, edgesToRoute, cancelToken, padding, smoothCorners)
+    return
+  }
+
+  // CH+HL preprocessing has O(n^2) memory for hub labels where n = number of CDT triangles.
+  // Only use it for small graphs where the preprocessing cost is amortized and memory is manageable.
+  // For large graphs, per-source Dijkstra with early termination is more memory-efficient.
+
+  // build padded obstacle polylines from graph nodes (restrict to active nodes if given).
+  const nodeToPolyline = new Map<unknown, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+  let scannedActive = 0
+  for (const node of geomGraph.nodesBreadthFirst) {
+    if (cancelToken && cancelToken.canceled) return
+    if (node.boundaryCurve == null) continue
+    if (activeNodes && !activeNodes.has(node)) continue
+    scannedActive++
+    let bc = node.boundaryCurve
+    if (nodeScale) {
+      const s = nodeScale(node)
+      if (s && s !== 1) {
+        const t = PlaneTransformation.scaleAroundCenterTransformation(s, s, node.center)
+        bc = bc.transform(t)
+      }
+    }
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(bc, padding + extraObstaclePadding)
+    nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+  if (activeNodes) void activeNodes // silence unused if no logging
+  void scannedActive
+
+  // add bounding box so CDT covers the whole area
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+
+  // build CDT — do NOT add port locations as isolated sites,
+  // because ports inside other nodes' obstacles would break
+  // the obstacle-interior check (null-owner sites create holes).
+  console.time('SleeveRouter CDT')
+  const cdt = new Cdt([], obstacles, [])
+  cdt.run()
+  console.timeEnd("SleeveRouter CDT")
+
+  // Build triangle index for fast typed-array Dijkstra/A*
+  const idx = new TriangleIndex(cdt)
+
+  // Pre-allocate reusable arrays for Dijkstra/A* (avoids per-call Map/GC overhead)
+  const gScore = new Float64Array(idx.n).fill(Infinity)
+  const parentEdgeIdx = new Int32Array(idx.n).fill(-1)
+  const visited: number[] = []
+  const heap = new FlatMinHeap(idx.n * 4)
+
+  // Cache scaled boundary curves (used for trim so curves end at the visually enlarged node).
+  const scaledBoundary = new Map<unknown, ICurve>()
+  const boundaryOf = (n: GeomNode): ICurve => {
+    if (!nodeScale) return n.boundaryCurve
+    const cached = scaledBoundary.get(n)
+    if (cached) return cached
+    const s = nodeScale(n)
+    if (!s || s === 1) {
+      scaledBoundary.set(n, n.boundaryCurve)
+      return n.boundaryCurve
+    }
+    const t = PlaneTransformation.scaleAroundCenterTransformation(s, s, n.center)
+    const bc = n.boundaryCurve.transform(t)
+    scaledBoundary.set(n, bc)
+    return bc
+  }
+  // Trim the routed curve to the node boundary and compute arrowheads, unless
+  // the caller opted out (tile-pyramid rendering keeps curves running to node
+  // centers so they stay connected across per-level/per-frame node scaling).
+  // When not trimming, also clear any arrowheads left on the edge by a prior
+  // (trimmed) routing pass: an arrowhead only makes sense at a trimmed endpoint,
+  // and a stale one would sit detached, buried under the node box.
+  const trimEdge = (edge: GeomEdge): void => {
+    if (trimEdges) {
+      Arrowhead.trimSplineAndCalculateArrowheadsII(edge, boundaryOf(edge.source), boundaryOf(edge.target), edge.curve, false)
+    } else {
+      edge.sourceArrowhead = null
+      edge.targetArrowhead = null
+    }
+  }
+
+  // route edges using indexed Dijkstra tree per root node
+  console.time('SleeveRouter routing')
+
+  // Mode selection (see SleeveRouteMode):
+  //   'astar'       — one A* per edge; no batched Dijkstra.
+  //   'dijkstra'    — one Dijkstra tree per source endpoint; no VC swap.
+  //   'dijkstra-vc' — minimum-vertex-cover on the demand graph picks each
+  //                   edge's Dijkstra root, minimizing the number of trees.
+  const edgesByRoot = routeMode === 'dijkstra-vc'
+    ? chooseDijkstraRoots(edgesToRoute)
+    : groupEdgesBySource(edgesToRoute)
+
+  for (const [rootNode, edges] of edgesByRoot) {
+    if (cancelToken && cancelToken.canceled) return
+    const root = rootNode.center
+    const rootPoly = nodeToPolyline.get(rootNode)
+    const rootTriangle = findContainingTriangle(cdt, root)
+    if (!rootTriangle) {
+      // fallback: straight lines for all edges incident to this root
+      for (const edge of edges) {
+        const srcCenter = edge.source.center
+        const tgtCenter = edge.target.center
+        const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
+        edge.curve = fallback.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+        trimEdge(edge)
+      }
+      continue
+    }
+
+    const rootId = idx.getId(rootTriangle)
+    if (rootId < 0) continue
+
+    // Find all "other-end" triangles for edges rooted at this node
+    const targetInfos: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline; targetId: number}[] = []
+    const targetIds = new Set<number>()
+    for (const edge of edges) {
+      const reversed = edge.source !== rootNode
+      const otherNode = reversed ? edge.source : edge.target
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const otherCenter = reversed ? srcCenter : tgtCenter
+      const otherPoly = nodeToPolyline.get(otherNode)
+      const otherTriangle = findContainingTriangle(cdt, otherCenter)
+      if (!otherTriangle) {
+        const fallback = Polyline.mkFromPoints([srcCenter, tgtCenter])
+        edge.curve = fallback.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+        trimEdge(edge)
+        continue
+      }
+      // Optimistic shortcut: if the straight segment is obstacle-free,
+      // skip the sleeve search for this edge.
+      const allowedThis = new Set<Polyline>()
+      if (rootPoly) allowedThis.add(rootPoly)
+      if (otherPoly) allowedThis.add(otherPoly)
+      if (segmentClearOfObstacles(rootTriangle, root, otherCenter, allowedThis)) {
+        const straight = Polyline.mkFromPoints([srcCenter, tgtCenter])
+        edge.curve = straight.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+        trimEdge(edge)
+        continue
+      }
+      const targetId = idx.getId(otherTriangle)
+      if (targetId < 0) continue
+      targetInfos.push({edge, reversed, otherCenter, otherPoly, targetId})
+      targetIds.add(targetId)
+    }
+
+    if (targetInfos.length === 0) continue
+
+    const allowed = new Set<Polyline>()
+    if (rootPoly) allowed.add(rootPoly)
+
+    // Single indexed Dijkstra from root to all "other-end" triangles.
+    // In 'astar' mode we skip the Dijkstra entirely and route every edge
+    // via the per-edge A* fallback below.
+    if (routeMode !== 'astar') {
+      dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+    }
+
+    // Process Dijkstra-reachable edges; collect unreachable for A* fallback
+    const fallbackEdges: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline}[] = []
+    for (const {edge, reversed, otherCenter, otherPoly, targetId} of targetInfos) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      if (gScore[targetId] === Infinity) {
+        fallbackEdges.push({edge, reversed, otherCenter, otherPoly})
+        continue
+      }
+      const sleeve = recoverSleeveIndexed(rootId, targetId, parentEdgeIdx, idx)
+      if (sleeve.length === 0) {
+        const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
+        edge.curve = pts.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+      } else {
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length === 0) {
+          const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
+          edge.curve = pts.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+        } else {
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
+        }
+      }
+      trimEdge(edge)
+    }
+
+    // Reset Dijkstra state before A* fallbacks
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+
+    // A* fallback for edges Dijkstra couldn't reach (other end inside obstacle)
+    for (const {edge, reversed, otherCenter, otherPoly} of fallbackEdges) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const allowedBoth = new Set<Polyline>()
+      if (rootPoly) allowedBoth.add(rootPoly)
+      if (otherPoly) allowedBoth.add(otherPoly)
+
+      let sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+
+      // Third-tier rescue: at coarse tile levels the other-end center may lie
+      // inside some OTHER node's inflated obstacle; allow every obstacle so
+      // routing can still reach the other-end triangle.
+      if (!sleeve || sleeve.length === 0) {
+        const allowAll = new Set<Polyline>(nodeToPolyline.values())
+        sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowAll, idx, gScore, parentEdgeIdx, visited, heap)
+        for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+        visited.length = 0
+      }
+      if (sleeve && sleeve.length > 0) {
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length > 0) {
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
+        } else {
+          const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
+          edge.curve = pts.toCurve()
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+        }
+      } else if (!sleeve || sleeve.length === 0) {
+        // A* found root == other-end triangle
+        const pts = Polyline.mkFromPoints([srcCenter, tgtCenter])
+        edge.curve = pts.toCurve()
+        edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([srcCenter, tgtCenter])
+      }
+      trimEdge(edge)
+      // Reset for next A* call
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+    }
+
+    // Reset reusable arrays for next root node
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+  }
+  console.timeEnd('SleeveRouter routing')
+}
+
+/** Adjust bezier coefficients at each corner so curves stay within padding
+ *  of the original polyline path — same approach as SplineRouter. */
+function smoothenCorners(sp: SmoothedPolyline, loosePadding: number): void {
+  let a: CornerSite = sp.headSite
+  let corner: {b: CornerSite; c: CornerSite} | undefined
+  while ((corner = Curve.findCorner(a))) {
+    a = smoothOneCorner(a, corner.c, corner.b, loosePadding)
+  }
+}
+
+function smoothOneCorner(a: CornerSite, c: CornerSite, b: CornerSite, loosePadding: number): CornerSite {
+  const mult = 1.5
+  const kMin = 0.01
+  let k = 0.5
+  let seg: BezierSeg
+  let v: number
+  let u: number
+  if (a.prev == null) {
+    u = 2
+    v = 1
+  } else if (c.next == null) {
+    u = 1
+    v = 2
+  } else {
+    u = v = 1
+  }
+
+  do {
+    seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
+    b.previouisBezierCoefficient = k * u
+    b.nextBezierCoefficient = k * v
+    k /= mult
+  } while (distFromCornerToSeg() > loosePadding && k > kMin)
+  k *= mult
+  if (k < 0.5 && k > kMin) {
+    k = 0.5 * (k + k * mult)
+    seg = Curve.createBezierSeg(k * u, k * v, a, b, c)
+    if (distFromCornerToSeg() > loosePadding) {
+      b.previouisBezierCoefficient = k * u
+      b.nextBezierCoefficient = k * v
+    }
+  }
+
+  return b
+
+  function distFromCornerToSeg(): number {
+    const t = seg.closestParameter(b.point)
+    return distPP(b.point, seg.value(t))
+  }
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
+
+/** Set a straight-line fallback on an edge. */
+function setStraightLine(edge: GeomEdge, source: Point, target: Point): void {
+  const pts = Polyline.mkFromPoints([source, target])
+  edge.curve = pts.toCurve()
+  edge.smoothedPolyline = SmoothedPolyline.mkFromPoints([source, target])
+}
+
+
+/** Choose, for each routable edge, a Dijkstra root (one of its two
+ *  endpoints) so as to minimize the number of distinct roots. Each query
+ *  edge is undirected on the CDT dual, so it can be served from either
+ *  endpoint; minimizing the number of distinct roots is minimum vertex
+ *  cover on the demand graph (V = nodes, E = routable edges). We use the
+ *  standard greedy maximum-degree heuristic with bucketed degrees, which
+ *  runs in O(|V|+|E|) and gives near-optimal covers in practice. */
+function chooseDijkstraRoots(edges: Iterable<GeomEdge>): Map<GeomNode, GeomEdge[]> {
+  const incident = new Map<GeomNode, GeomEdge[]>()
+  const selfLoops: GeomEdge[] = []
+  const allRoutable: GeomEdge[] = []
+  for (const e of edges) {
+    if (e.sourcePort == null || e.targetPort == null) continue
+    allRoutable.push(e)
+    if (e.source === e.target) {
+      selfLoops.push(e)
+      continue
+    }
+    let s = incident.get(e.source)
+    if (!s) {
+      s = []
+      incident.set(e.source, s)
+    }
+    s.push(e)
+    let t = incident.get(e.target)
+    if (!t) {
+      t = []
+      incident.set(e.target, t)
+    }
+    t.push(e)
+  }
+
+  const remDeg = new Map<GeomNode, number>()
+  let maxDeg = 0
+  for (const [n, list] of incident) {
+    remDeg.set(n, list.length)
+    if (list.length > maxDeg) maxDeg = list.length
+  }
+  const buckets: Set<GeomNode>[] = []
+  for (let d = 0; d <= maxDeg; d++) buckets.push(new Set<GeomNode>())
+  for (const [n, d] of remDeg) buckets[d].add(n)
+
+  const edgeRoot = new Map<GeomEdge, GeomNode>()
+  let top = maxDeg
+  while (top > 0) {
+    const b = buckets[top]
+    if (b.size === 0) {
+      top--
+      continue
+    }
+    const node = b.values().next().value as GeomNode
+    b.delete(node)
+    remDeg.set(node, 0)
+    for (const e of incident.get(node)!) {
+      if (edgeRoot.has(e)) continue
+      edgeRoot.set(e, node)
+      const other = e.source === node ? e.target : e.source
+      const od = remDeg.get(other) ?? 0
+      if (od > 0) {
+        buckets[od].delete(other)
+        buckets[od - 1].add(other)
+        remDeg.set(other, od - 1)
+      }
+    }
+  }
+
+  // Self-loops cover trivially from either endpoint; pick the source.
+  for (const e of selfLoops) edgeRoot.set(e, e.source)
+
+  const grouped = new Map<GeomNode, GeomEdge[]>()
+  for (const e of allRoutable) {
+    const root = edgeRoot.get(e) ?? e.source
+    let list = grouped.get(root)
+    if (!list) {
+      list = []
+      grouped.set(root, list)
+    }
+    list.push(e)
+  }
+  return grouped
+}
+
+
+/** Group routable edges by their source endpoint, with no minimum-vertex-cover
+ *  swap. Used by the 'dijkstra' and 'astar' benchmark modes of
+ *  {@link routeSleeveEdges}. */
+function groupEdgesBySource(edges: Iterable<GeomEdge>): Map<GeomNode, GeomEdge[]> {
+  const grouped = new Map<GeomNode, GeomEdge[]>()
+  for (const e of edges) {
+    if (e.sourcePort == null || e.targetPort == null) continue
+    const root = e.source
+    let list = grouped.get(root)
+    if (!list) {
+      list = []
+      grouped.set(root, list)
+    }
+    list.push(e)
+  }
+  return grouped
+}
+
+
+/** Ensure all edges have ports. */
+function ensurePorts(edges: GeomEdge[]): void {
+  for (const edge of edges) {
+    if (edge.sourcePort == null) {
+      const ed = edge
+      ed.sourcePort = RelativeFloatingPort.mk(
+        () => ed.source.boundaryCurve,
+        () => ed.source.center,
+      )
+    }
+    if (edge.targetPort == null) {
+      const ed = edge
+      ed.targetPort = RelativeFloatingPort.mk(
+        () => ed.target.boundaryCurve,
+        () => ed.target.center,
+      )
+    }
+  }
+}
+
+/** Route edges using sleeve approach with passport support for subgraphs.
+ *  Edges are grouped by passport, and each group gets its own obstacle set and CDT. */
+function routeSleeveEdgesWithPassports(
+  geomGraph: GeomGraph,
+  edgesToRoute: GeomEdge[],
+  cancelToken: CancelToken,
+  padding: number,
+  smoothCorners: boolean,
+): void {
+  // Build shape hierarchy
+  const shapes = ShapeCreator.GetShapes(geomGraph, edgesToRoute)
+  const rootShapes = shapes.filter((s) => s.Parents == null || s.Parents.length === 0)
+  let root: Shape
+  let rootWasCreated = false
+  if (rootShapes.length === 1 && rootShapes[0].BoundaryCurve == null) {
+    root = rootShapes[0]
+  } else {
+    rootWasCreated = true
+    root = new Shape(null)
+    for (const rs of rootShapes) root.AddChild(rs)
+  }
+
+  const ancestorSets = getAncestorSetsMap(Array.from(root.Descendants()))
+  const portsToShapes = calculatePortsToShapes(root, edgesToRoute)
+
+  // Group edges by passport
+  const edgeGroups = groupEdgesByPassport(edgesToRoute, portsToShapes, ancestorSets, root)
+
+  // Route each passport group with its own obstacle set + CDT
+  for (const group of edgeGroups) {
+    if (cancelToken && cancelToken.canceled) break
+    const obstacleShapes = getObstaclesFromPassport(group.passport, ancestorSets, root)
+    routeSleeveEdgeGroup(geomGraph, group.edges, obstacleShapes, cancelToken, padding, smoothCorners)
+  }
+
+  // Clean up root
+  if (rootWasCreated) {
+    for (const rs of rootShapes) rs.RemoveParent(root)
+  }
+}
+
+/** Route a group of edges that share the same passport (obstacle set). */
+function routeSleeveEdgeGroup(
+  geomGraph: GeomGraph,
+  edges: GeomEdge[],
+  obstacleShapes: Set<Shape>,
+  cancelToken: CancelToken,
+  padding: number,
+  smoothCorners: boolean,
+): void {
+  // Build padded obstacle polylines only from obstacle shapes
+  const nodeToPolyline = new Map<GeomNode, Polyline>()
+  const obstacles: Polyline[] = []
+  const bb = Rectangle.mkEmpty()
+
+  // Map obstacle shapes to their polylines
+  for (const shape of obstacleShapes) {
+    if (shape.BoundaryCurve == null) continue
+    const node = shape instanceof RelativeShape ? shape.node : null
+    const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(shape.BoundaryCurve, padding)
+    if (node) nodeToPolyline.set(node, poly)
+    obstacles.push(poly)
+    bb.addRecSelf(poly.boundingBox)
+  }
+
+  // Also ensure source/target nodes have polylines (they may not be obstacles)
+  for (const edge of edges) {
+    for (const node of [edge.source, edge.target]) {
+      if (!nodeToPolyline.has(node) && node.boundaryCurve != null) {
+        const poly = InteractiveObstacleCalculator.PaddedPolylineBoundaryOfNode(node.boundaryCurve, padding)
+        nodeToPolyline.set(node, poly)
+      }
+    }
+  }
+
+  if (obstacles.length === 0 && edges.length > 0) {
+    // No obstacles — compute bounding box from edge endpoints
+    for (const edge of edges) {
+      if (edge.source.boundaryCurve) bb.addRecSelf(edge.source.boundingBox)
+      if (edge.target.boundaryCurve) bb.addRecSelf(edge.target.boundingBox)
+    }
+  }
+
+  bb.pad(Math.max(bb.diagonal / 4, 100))
+  obstacles.push(bb.perimeter())
+
+  // Build CDT
+  const cdt = new Cdt([], obstacles, [])
+  cdt.run()
+
+  const idx = new TriangleIndex(cdt)
+  const gScore = new Float64Array(idx.n).fill(Infinity)
+  const parentEdgeIdx = new Int32Array(idx.n).fill(-1)
+  const visited: number[] = []
+  const heap = new FlatMinHeap(idx.n * 4)
+
+  // Choose Dijkstra roots via vertex-cover heuristic on the demand graph
+  // induced by `edges` (same optimization as the non-subgraph path).
+  const edgesByRoot = chooseDijkstraRoots(edges)
+
+  for (const [rootNode, rootEdges] of edgesByRoot) {
+    if (cancelToken && cancelToken.canceled) return
+    const root = rootNode.center
+    const rootPoly = nodeToPolyline.get(rootNode)
+    const rootTriangle = findContainingTriangle(cdt, root)
+    if (!rootTriangle) {
+      for (const edge of rootEdges) {
+        const srcCenter = edge.source.center
+        const tgtCenter = edge.target.center
+        setStraightLine(edge, srcCenter, tgtCenter)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+      }
+      continue
+    }
+
+    const rootId = idx.getId(rootTriangle)
+    if (rootId < 0) continue
+
+    const targetInfos: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline; targetId: number}[] = []
+    const targetIds = new Set<number>()
+    for (const edge of rootEdges) {
+      const reversed = edge.source !== rootNode
+      const otherNode = reversed ? edge.source : edge.target
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const otherCenter = reversed ? srcCenter : tgtCenter
+      const otherPoly = nodeToPolyline.get(otherNode)
+      const otherTriangle = findContainingTriangle(cdt, otherCenter)
+      if (!otherTriangle) {
+        setStraightLine(edge, srcCenter, tgtCenter)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        continue
+      }
+      // Optimistic shortcut: if the straight segment is obstacle-free,
+      // skip the sleeve search for this edge.
+      const allowedThis = new Set<Polyline>()
+      if (rootPoly) allowedThis.add(rootPoly)
+      if (otherPoly) allowedThis.add(otherPoly)
+      if (segmentClearOfObstacles(rootTriangle, root, otherCenter, allowedThis)) {
+        setStraightLine(edge, srcCenter, tgtCenter)
+        Arrowhead.trimSplineAndCalculateArrowheadsII(edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false)
+        continue
+      }
+      const targetId = idx.getId(otherTriangle)
+      if (targetId < 0) continue
+      targetInfos.push({edge, reversed, otherCenter, otherPoly, targetId})
+      targetIds.add(targetId)
+    }
+
+    if (targetInfos.length === 0) continue
+
+    const allowed = new Set<Polyline>()
+    if (rootPoly) allowed.add(rootPoly)
+
+    dijkstraTreeIndexed(rootId, targetIds, allowed, idx, gScore, parentEdgeIdx, visited, heap)
+
+    const fallbackEdges: {edge: GeomEdge; reversed: boolean; otherCenter: Point; otherPoly?: Polyline}[] = []
+    for (const {edge, reversed, otherCenter, otherPoly, targetId} of targetInfos) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      if (gScore[targetId] === Infinity) {
+        fallbackEdges.push({edge, reversed, otherCenter, otherPoly})
+        continue
+      }
+      const sleeve = recoverSleeveIndexed(rootId, targetId, parentEdgeIdx, idx)
+      if (sleeve.length === 0) {
+        setStraightLine(edge, srcCenter, tgtCenter)
+      } else {
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length === 0) {
+          setStraightLine(edge, srcCenter, tgtCenter)
+        } else {
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
+        }
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+    }
+
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+
+    for (const {edge, reversed, otherCenter, otherPoly} of fallbackEdges) {
+      const srcCenter = edge.source.center
+      const tgtCenter = edge.target.center
+      const allowedBoth = new Set<Polyline>()
+      if (rootPoly) allowedBoth.add(rootPoly)
+      if (otherPoly) allowedBoth.add(otherPoly)
+
+      const sleeve = findSleeveAStarIndexed(rootId, otherCenter, allowedBoth, idx, gScore, parentEdgeIdx, visited, heap)
+      if (sleeve && sleeve.length > 0) {
+        const collapseSource = rootPoly ? {poly: rootPoly, center: root} : undefined
+        const collapseTarget = otherPoly ? {poly: otherPoly, center: otherCenter} : undefined
+        const diagonals = sleeveToDiagonals(sleeve, collapseSource, collapseTarget)
+        if (diagonals.length > 0) {
+          let points = funnelFromDiagonals(root, otherCenter, diagonals)
+          if (reversed) points = points.slice().reverse()
+          const poly = Polyline.mkFromPoints(points)
+          edge.smoothedPolyline = SmoothedPolyline.mkFromPoints(poly)
+          if (smoothCorners) {
+            smoothenCorners(edge.smoothedPolyline, padding)
+            edge.curve = edge.smoothedPolyline.createCurve()
+          } else {
+            edge.curve = poly.toCurve()
+          }
+        } else {
+          setStraightLine(edge, srcCenter, tgtCenter)
+        }
+      } else {
+        setStraightLine(edge, srcCenter, tgtCenter)
+      }
+      Arrowhead.trimSplineAndCalculateArrowheadsII(
+        edge, edge.source.boundaryCurve, edge.target.boundaryCurve, edge.curve, false,
+      )
+      for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+      visited.length = 0
+    }
+
+    for (const v of visited) { gScore[v] = Infinity; parentEdgeIdx[v] = -1 }
+    visited.length = 0
+  }
+}
