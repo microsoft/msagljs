@@ -1,0 +1,1361 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   tabindex="0"
+   version="1.1"
+   id="svg3743"
+   sodipodi:docname="rectRouting.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3747" />
+  <sodipodi:namedview
+     id="namedview3745"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="3.6733334"
+     inkscape:cx="153.94737"
+     inkscape:cy="115.29038"
+     inkscape:current-layer="g3396" />
+  <g
+     transform="matrix(0.62218341,0,0,1.2253845,0.33821962,151.93936)"
+     id="g3741">
+    <g
+       id="g3284"
+       transform="scale(1,-1)">
+      <path
+         id="boundaryCurve"
+         fill="none"
+         d="m 228.89794,65.490926 h 3.21924 a 1.6096191,3 0 0 1 1.60962,3 v 8 a 1.6096191,3 0 0 1 -1.60962,3 h -3.21924 a 1.6096191,3 0 0 1 -1.60962,-3 v -8 a 1.6096191,3 0 0 1 1.60962,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="nodeLabel"
+         text-anchor="middle"
+         x="230.50755"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="0"
+           text-anchor="middle"
+           x="230.50755"
+           alignment-baseline="middle"
+           y="-72.490929">z</tspan></text>
+    </g>
+    <g
+       id="g3292"
+       transform="scale(1,-1)">
+      <path
+         id="path3286"
+         fill="none"
+         d="m 176.34738,65.550729 h 4.88916 a 2.4445801,3 0 0 1 2.44458,3 v 8 a 2.4445801,3 0 0 1 -2.44458,3 h -4.88916 a 2.4445801,3 0 0 1 -2.44458,-3 v -8 a 2.4445801,3 0 0 1 2.44458,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3290"
+         text-anchor="middle"
+         x="178.79196"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3288"
+           text-anchor="middle"
+           x="178.79196"
+           alignment-baseline="middle"
+           y="-72.550728">m</tspan></text>
+    </g>
+    <g
+       id="g3300"
+       transform="scale(1,-1)">
+      <path
+         id="path3294"
+         fill="none"
+         d="m 144.29796,92.715428 h 6 a 3,3 0 0 1 3,3 v 8.000002 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8.000002 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3298"
+         text-anchor="middle"
+         x="147.29796"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3296"
+           text-anchor="middle"
+           x="147.29796"
+           alignment-baseline="middle"
+           y="-99.715431">p1</tspan></text>
+    </g>
+    <g
+       id="g3308"
+       transform="scale(1,-1)">
+      <path
+         id="path3302"
+         fill="none"
+         d="m 113.64687,103.36569 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3306"
+         text-anchor="middle"
+         x="115.39687"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3304"
+           text-anchor="middle"
+           x="115.39687"
+           alignment-baseline="middle"
+           y="-110.36569">b</tspan></text>
+    </g>
+    <g
+       id="g3316"
+       transform="scale(1,-1)">
+      <path
+         id="path3310"
+         fill="none"
+         d="m 81.397649,94.350781 h 6 a 3,3 0 0 1 3,3 v 7.999999 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -7.999999 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3314"
+         text-anchor="middle"
+         x="84.397652"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3312"
+           text-anchor="middle"
+           x="84.397652"
+           alignment-baseline="middle"
+           y="-101.35078">x1</tspan></text>
+    </g>
+    <g
+       id="g3324"
+       transform="scale(1,-1)">
+      <path
+         id="path3318"
+         fill="none"
+         d="m 45.91419,44.882326 h 8.22168 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -8.22168 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3322"
+         text-anchor="middle"
+         x="50.025032"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3320"
+           text-anchor="middle"
+           x="50.025032"
+           alignment-baseline="middle"
+           y="-51.882324">[P]</tspan></text>
+    </g>
+    <g
+       id="g3332"
+       transform="scale(1,-1)">
+      <path
+         id="path3326"
+         fill="none"
+         d="m 130.14555,57.808307 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3330"
+         text-anchor="middle"
+         x="131.89555"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3328"
+           text-anchor="middle"
+           x="131.89555"
+           alignment-baseline="middle"
+           y="-64.808304">b</tspan></text>
+    </g>
+    <g
+       id="g3340"
+       transform="scale(1,-1)">
+      <path
+         id="path3334"
+         fill="none"
+         d="m 92.561796,44.874776 h 6 a 3,3 0 0 1 3.000004,3 v 8 a 3,3 0 0 1 -3.000004,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3338"
+         text-anchor="middle"
+         x="95.561798"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3336"
+           text-anchor="middle"
+           x="95.561798"
+           alignment-baseline="middle"
+           y="-51.874775">p2</tspan></text>
+    </g>
+    <g
+       id="g3348"
+       transform="scale(1,-1)">
+      <path
+         id="path3342"
+         fill="none"
+         d="m 52.327509,79.736104 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3346"
+         text-anchor="middle"
+         x="54.077511"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3344"
+           text-anchor="middle"
+           x="54.077511"
+           alignment-baseline="middle"
+           y="-86.736107">b</tspan></text>
+    </g>
+    <g
+       id="g3356"
+       transform="scale(1,-1)">
+      <path
+         id="path3350"
+         fill="none"
+         d="m 13,63.575362 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3354"
+         text-anchor="middle"
+         x="16"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3352"
+           text-anchor="middle"
+           x="16"
+           alignment-baseline="middle"
+           y="-70.575363">x2</tspan></text>
+    </g>
+    <g
+       id="g3364"
+       transform="scale(1,-1)">
+      <path
+         id="path3358"
+         fill="none"
+         d="m 40.605369,10.000924 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3362"
+         text-anchor="middle"
+         x="43.60537"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3360"
+           text-anchor="middle"
+           x="43.60537"
+           alignment-baseline="middle"
+           y="-17.000925">b2</tspan></text>
+    </g>
+    <g
+       id="g3372"
+       transform="scale(1,-1)">
+      <path
+         id="path3366"
+         fill="none"
+         d="m 73.232956,10 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3370"
+         text-anchor="middle"
+         x="76.232956"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3368"
+           text-anchor="middle"
+           x="76.232956"
+           alignment-baseline="middle"
+           y="-17">b2</tspan></text>
+    </g>
+    <g
+       id="g3380"
+       transform="scale(1,-1)">
+      <path
+         id="path3374"
+         fill="none"
+         d="m 266.22542,66.736246 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3378"
+         text-anchor="middle"
+         x="267.9754"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3376"
+           text-anchor="middle"
+           x="267.9754"
+           alignment-baseline="middle"
+           y="-73.736244">n</tspan></text>
+    </g>
+    <g
+       id="g3388"
+       transform="scale(1,-1)">
+      <path
+         id="path3382"
+         fill="none"
+         d="m 262.56454,31.834722 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3386"
+         text-anchor="middle"
+         x="264.31454"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3384"
+           text-anchor="middle"
+           x="264.31454"
+           alignment-baseline="middle"
+           y="-38.834721">b</tspan></text>
+    </g>
+    <g
+       id="g3396"
+       transform="scale(1,-1)">
+      <path
+         id="path3390"
+         fill="none"
+         d="m 291.48288,11.317515 h 5.71924 a 2.8596191,3 0 0 1 2.85962,3 v 8 a 2.8596191,3 0 0 1 -2.85962,3 h -5.71924 a 2.8596191,3 0 0 1 -2.85962,-3 v -8 a 2.8596191,3 0 0 1 2.85962,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3394"
+         text-anchor="middle"
+         x="294.3425"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"
+         style="fill:Black;fill-opacity:1"><tspan
+           id="tspan3392"
+           text-anchor="middle"
+           x="294.3425"
+           alignment-baseline="middle"
+           y="-18.317514"
+           style="fill:Black;fill-opacity:1">c1</tspan></text>
+    </g>
+    <g
+       id="g3404"
+       transform="scale(1,-1)">
+      <path
+         id="path3398"
+         fill="none"
+         d="m 315.26907,46.259387 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3402"
+         text-anchor="middle"
+         x="317.01907"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3400"
+           text-anchor="middle"
+           x="317.01907"
+           alignment-baseline="middle"
+           y="-53.259388">b</tspan></text>
+    </g>
+    <g
+       id="g3412"
+       transform="scale(1,-1)">
+      <path
+         id="path3406"
+         fill="none"
+         d="m 352.03665,52.025748 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3410"
+         text-anchor="middle"
+         x="355.03665"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3408"
+           text-anchor="middle"
+           x="355.03665"
+           alignment-baseline="middle"
+           y="-59.025749">y1</tspan></text>
+    </g>
+    <g
+       id="g3420"
+       transform="scale(1,-1)">
+      <path
+         id="path3414"
+         fill="none"
+         d="m 408.83772,51.977172 h 9.88183 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -9.88183 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3418"
+         text-anchor="middle"
+         x="413.77863"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3416"
+           text-anchor="middle"
+           x="413.77863"
+           alignment-baseline="middle"
+           y="-58.977173">[Q]</tspan></text>
+    </g>
+    <g
+       id="g3428"
+       transform="scale(1,-1)">
+      <path
+         id="path3422"
+         fill="none"
+         d="m 322.77913,81.211422 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3426"
+         text-anchor="middle"
+         x="324.52914"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3424"
+           text-anchor="middle"
+           x="324.52914"
+           alignment-baseline="middle"
+           y="-88.211426">b</tspan></text>
+    </g>
+    <g
+       id="g3436"
+       transform="scale(1,-1)">
+      <path
+         id="path3430"
+         fill="none"
+         d="m 382.89288,86.940478 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3.000002 h -3.5 a 1.75,3 0 0 1 -1.75,-3.000002 v -8 a 1.75,3 0 0 1 1.75,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3434"
+         text-anchor="middle"
+         x="384.64288"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3432"
+           text-anchor="middle"
+           x="384.64288"
+           alignment-baseline="middle"
+           y="-93.940475">b</tspan></text>
+    </g>
+    <g
+       id="g3444"
+       transform="scale(1,-1)">
+      <path
+         id="path3438"
+         fill="none"
+         d="m 351.75642,99.315271 h 5.71923 a 2.8596191,3 0 0 1 2.85962,2.999999 v 8 a 2.8596191,3 0 0 1 -2.85962,3 h -5.71923 a 2.8596191,3 0 0 1 -2.85962,-3 v -8 a 2.8596191,3 0 0 1 2.85962,-2.999999"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3442"
+         text-anchor="middle"
+         x="354.61603"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3440"
+           text-anchor="middle"
+           x="354.61603"
+           alignment-baseline="middle"
+           y="-106.31527">c2</tspan></text>
+    </g>
+    <g
+       id="g3452"
+       transform="scale(1,-1)">
+      <path
+         id="path3446"
+         fill="none"
+         d="m 428.93142,86.832237 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3.000003 h -6 a 3,3 0 0 1 -3,-3.000003 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3450"
+         text-anchor="middle"
+         x="431.93143"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3448"
+           text-anchor="middle"
+           x="431.93143"
+           alignment-baseline="middle"
+           y="-93.832237">y2</tspan></text>
+    </g>
+    <g
+       id="g3460"
+       transform="scale(1,-1)">
+      <path
+         id="path3454"
+         fill="none"
+         d="m 462.28994,63.178668 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3458"
+         text-anchor="middle"
+         x="465.28995"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3456"
+           text-anchor="middle"
+           x="465.28995"
+           alignment-baseline="middle"
+           y="-70.178665">b2</tspan></text>
+    </g>
+    <g
+       id="g3468"
+       transform="scale(1,-1)">
+      <path
+         id="path3462"
+         fill="none"
+         d="m 445.05333,28.517274 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+         stroke="#000000"
+         stroke-width="1" />
+      <text
+         id="text3466"
+         text-anchor="middle"
+         x="448.05334"
+         fill="#000000"
+         font-family="Times-Roman"
+         font-size="10px"
+         transform="scale(1,-1)"><tspan
+           id="tspan3464"
+           text-anchor="middle"
+           x="448.05334"
+           alignment-baseline="middle"
+           y="-35.517273">b2</tspan></text>
+    </g>
+    <g
+       id="g3472"
+       transform="scale(1,-1)">
+      <path
+         id="curve"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 183.68112,72.550729 h 18.8036 a 0.0299015,3 90 0 0 3,-0.0299 v 0 a 3,0.0299015 -180 0 1 3,-0.0299 h 13.8036" />
+      <polygon
+         id="targetArr"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="227.28832,72.490926 222.28832,71.382453 222.28832,73.599399 " />
+    </g>
+    <g
+       id="g3479"
+       transform="scale(1,-1)">
+      <path
+         id="path3474"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 158.29796,99.715428 h 17.49399 a 3,3 90 0 0 3,-3 V 84.550729" />
+      <polygon
+         id="sourceArr"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="153.29796,99.715428 158.29796,100.8239 158.29796,98.606955 " />
+      <polygon
+         id="polygon3477"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="178.79196,79.550729 177.68348,84.550729 179.90043,84.550729 " />
+    </g>
+    <g
+       id="g3485"
+       transform="scale(1,-1)">
+      <path
+         id="path3481"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 118.84578,115.08533 h 27.55218 a 3,3 90 0 0 3,-3 v -0.3699" />
+      <polygon
+         id="polygon3483"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="149.39796,106.71543 148.28948,111.71543 150.50643,111.71543 " />
+    </g>
+    <g
+       id="g3493"
+       transform="scale(1,-1)">
+      <path
+         id="path3487"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 123.89687,109.99579 h 17.5276" />
+      <polygon
+         id="polygon3489"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="118.89687,109.99579 123.89687,111.10426 123.89687,108.88731 " />
+      <polygon
+         id="polygon3491"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="145.19796,106.71543 140.69723,109.15922 142.1517,110.83235 " />
+    </g>
+    <g
+       id="g3499"
+       transform="scale(1,-1)">
+      <path
+         id="path3495"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 90.397649,98.358235 h 21.999221 a 3,3 -90 0 1 1.31071,0.301472" />
+      <polygon
+         id="polygon3497"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="115.39687,103.36569 114.75087,98.285199 112.66429,99.034215 " />
+    </g>
+    <g
+       id="g3505"
+       transform="scale(1,-1)">
+      <path
+         id="path3501"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 56.923886,56.990012 h 23.555837 a 3,3 -90 0 1 3,3 v 29.360769" />
+      <polygon
+         id="polygon3503"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="83.479723,94.350781 84.588196,89.350781 82.37125,89.350781 " />
+    </g>
+    <g
+       id="g3511"
+       transform="scale(1,-1)">
+      <path
+         id="path3507"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="M 42.91419,51.882326 H 19 a 3,3 -90 0 0 -3,3 v 3.693036" />
+      <polygon
+         id="polygon3509"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="16,63.575362 17.108473,58.575362 14.891527,58.575362 " />
+    </g>
+    <g
+       id="g3517"
+       transform="scale(1,-1)">
+      <path
+         id="path3513"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 47.536236,44.882326 v -1.716845 a 3,3 0 0 0 -3,-3 h -0.802662 a 3,3 90 0 1 -3,-3 v -8.164557" />
+      <polygon
+         id="polygon3515"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="40.733574,24.000924 39.625101,29.000924 41.842047,29.000924 " />
+    </g>
+    <g
+       id="g3523"
+       transform="scale(1,-1)">
+      <path
+         id="path3519"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 52.513824,44.882326 v -7.440701 a 3,3 0 0 0 -3,-3 h -2.908455 a 3,3 90 0 1 -3,-3 v -2.440701" />
+      <polygon
+         id="polygon3521"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="43.605369,24.000924 42.496896,29.000924 44.713842,29.000924 " />
+    </g>
+    <g
+       id="g3529"
+       transform="scale(1,-1)">
+      <path
+         id="path3525"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 57.13587,51.16751 h 18.197086 a 3,3 90 0 0 3,-3 V 29" />
+      <polygon
+         id="polygon3527"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="78.332956,24 77.224483,29 79.441429,29 " />
+    </g>
+    <g
+       id="g3535"
+       transform="scale(1,-1)">
+      <path
+         id="path3531"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 57.065711,47.23732 h 14.067245 a 3,3 90 0 0 3,-3 V 29" />
+      <polygon
+         id="polygon3533"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="74.132956,24 73.024483,29 75.241429,29 " />
+    </g>
+    <g
+       id="g3543"
+       transform="scale(1,-1)">
+      <path
+         id="path3537"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 140.39555,67.258307 h 3.90241 a 3,3 -90 0 1 3,3 v 17.457121" />
+      <polygon
+         id="polygon3539"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="135.39555,67.258307 140.39555,68.36678 140.39555,66.149834 " />
+      <polygon
+         id="polygon3541"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="147.29796,92.715428 148.40643,87.715428 146.18948,87.715428 " />
+    </g>
+    <g
+       id="g3549"
+       transform="scale(1,-1)">
+      <path
+         id="path3545"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 135.39555,62.358307 h 16.25362 a 3,3 -90 0 1 3,3 v 4.192422 a 3,3 -180 0 0 3,3 h 11.25363" />
+      <polygon
+         id="polygon3547"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="173.9028,72.550729 168.9028,71.442256 168.9028,73.659202 " />
+    </g>
+    <g
+       id="g3557"
+       transform="scale(1,-1)">
+      <path
+         id="path3551"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 106.5618,50.841542 h 22.33375 a 3,3 -90 0 1 2.81767,1.97009" />
+      <polygon
+         id="polygon3553"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="101.5618,50.841542 106.5618,51.950015 106.5618,49.733069 " />
+      <polygon
+         id="polygon3555"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="131.89555,57.808307 132.82096,52.771211 130.60549,52.852053 " />
+    </g>
+    <g
+       id="g3563"
+       transform="scale(1,-1)">
+      <path
+         id="path3559"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 57.577509,83.102859 h 32.884287 a 3,3 90 0 0 3,-3 V 63.874776" />
+      <polygon
+         id="polygon3561"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="93.461796,58.874776 92.353323,63.874776 94.570269,63.874776 " />
+    </g>
+    <g
+       id="g3571"
+       transform="scale(1,-1)">
+      <path
+         id="path3565"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 62.577509,89.984027 h 32.084287 a 3,3 90 0 0 3,-3 V 63.874776" />
+      <polygon
+         id="polygon3567"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="57.577509,89.984027 62.577509,91.0925 62.577509,88.875554 " />
+      <polygon
+         id="polygon3569"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="97.661796,58.874776 96.553323,63.874776 98.770269,63.874776 " />
+    </g>
+    <g
+       id="g3577"
+       transform="scale(1,-1)">
+      <path
+         id="path3573"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 22,70.575362 h 29.077509 a 3,3 -90 0 1 3,3 v 1.160742" />
+      <polygon
+         id="polygon3575"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="54.077509,79.736104 55.185982,74.736104 52.969036,74.736104 " />
+    </g>
+    <g
+       id="g3585"
+       transform="scale(1,-1)">
+      <path
+         id="path3579"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 48.524576,28.562514 a 3,3 -180 0 0 0.952588,0.155255 h 17.455792 a 3,3 -90 0 1 3,3 v 1 a 3,3 -180 0 0 3,3 h 17.52884 a 3,3 -90 0 1 3,3 v 1.157007" />
+      <polygon
+         id="polygon3581"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="46.477164,24.000924 47.513296,29.016415 49.535856,28.108614 " />
+      <polygon
+         id="polygon3583"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="93.461796,44.874776 94.570269,39.874776 92.353323,39.874776 " />
+    </g>
+    <g
+       id="g3593"
+       transform="scale(1,-1)">
+      <path
+         id="path3587"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 87.232956,17 h 7.42884 a 3,3 -90 0 1 3,3 v 19.874776" />
+      <polygon
+         id="polygon3589"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="82.232956,17 87.232956,18.108473 87.232956,15.891527 " />
+      <polygon
+         id="polygon3591"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="97.661796,44.874776 98.770269,39.874776 96.553323,39.874776 " />
+    </g>
+    <g
+       id="g3601"
+       transform="scale(1,-1)">
+      <path
+         id="path3595"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 259.47542,75.781517 h -7.37431 a 2.667931,3 90 0 1 -3,-2.667931 v 0 a 3,2.667931 0 0 0 -3,-2.667931 h -7.37431" />
+      <polygon
+         id="polygon3597"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="264.47542,75.781517 259.47542,74.673044 259.47542,76.88999 " />
+      <polygon
+         id="polygon3599"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="233.7268,70.445655 238.7268,71.554128 238.7268,69.337182 " />
+    </g>
+    <g
+       id="g3607"
+       transform="scale(1,-1)">
+      <path
+         id="path3603"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 262.62935,45.834722 v 10.758529 a 2.1480329,3 -180 0 0 2.14804,3 v 0 a 3,2.1480329 -90 0 1 2.05869,2.143793" />
+      <polygon
+         id="polygon3605"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="266.92542,66.736246 267.94437,61.717238 265.72778,61.756851 " />
+    </g>
+    <g
+       id="g3615"
+       transform="scale(1,-1)">
+      <path
+         id="path3609"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 264.66247,50.834103 a 1.8914131,3 -180 0 0 1.81271,2.143614 v 0 a 3,1.8914131 -90 0 1 1.89141,3 v 5.758529" />
+      <polygon
+         id="polygon3611"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="264.58377,45.834722 263.55413,50.851551 265.77081,50.816655 " />
+      <polygon
+         id="polygon3613"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="268.36659,66.736246 269.47507,61.736246 267.25812,61.736246 " />
+    </g>
+    <g
+       id="g3621"
+       transform="scale(1,-1)">
+      <path
+         id="path3617"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 288.62326,18.317515 h -21.30872 a 3,3 -90 0 0 -3,3 v 5.517207" />
+      <polygon
+         id="polygon3619"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="264.31454,31.834722 265.42301,26.834722 263.20606,26.834722 " />
+    </g>
+    <g
+       id="g3627"
+       transform="scale(1,-1)">
+      <path
+         id="path3623"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="M 313.51907,50.809387 H 297.3425 a 3,3 90 0 1 -3,-3 V 30.317515" />
+      <polygon
+         id="polygon3625"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="294.3425,25.317515 293.23403,30.317515 295.45098,30.317515 " />
+    </g>
+    <g
+       id="g3635"
+       transform="scale(1,-1)">
+      <path
+         id="path3629"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 308.51907,55.709387 h -35.48483 a 3,3 -90 0 0 -3,3 v 3.073941" />
+      <polygon
+         id="polygon3631"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="313.51907,55.709387 308.51907,54.600914 308.51907,56.81786 " />
+      <polygon
+         id="polygon3633"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="270.03424,66.783328 271.14271,61.783328 268.92577,61.783328 " />
+    </g>
+    <g
+       id="g3643"
+       transform="scale(1,-1)">
+      <path
+         id="path3637"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 344.03665,59.601681 h -6.25879 a 3,3 90 0 1 -3,-3 v -0.918227 a 3,3 0 0 0 -3,-3 h -6.25879" />
+      <polygon
+         id="polygon3639"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="349.03665,59.601681 344.03665,58.493208 344.03665,60.710154 " />
+      <polygon
+         id="polygon3641"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="320.51907,52.683454 325.51907,53.791927 325.51907,51.574981 " />
+    </g>
+    <g
+       id="g3649"
+       transform="scale(1,-1)">
+      <path
+         id="path3645"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 405.83772,58.977172 h -19.40054 a 0.024288,3 -90 0 0 -3,0.02429 v 0 a 3,0.024288 0 0 1 -3,0.02429 h -14.40053" />
+      <polygon
+         id="polygon3647"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="361.03665,59.025748 366.03665,60.134221 366.03665,57.917275 " />
+    </g>
+    <g
+       id="g3655"
+       transform="scale(1,-1)">
+      <path
+         id="path3651"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 421.71955,61.328263 h 3.87854 a 3,3 -90 0 1 3,3 v 17.52255" />
+      <polygon
+         id="polygon3653"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="428.59809,86.850813 429.70656,81.850813 427.48962,81.850813 " />
+    </g>
+    <g
+       id="g3661"
+       transform="scale(1,-1)">
+      <path
+         id="path3657"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="M 421.71955,61.216496 H 458.4058" />
+      <polygon
+         id="polygon3659"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="463.0047,63.178668 458.84081,60.196944 457.9708,62.236048 " />
+    </g>
+    <g
+       id="g3667"
+       transform="scale(1,-1)">
+      <path
+         id="path3663"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 421.71955,57.482684 h 42.67039 a 3,3 -90 0 1 2.02986,0.791004" />
+      <polygon
+         id="polygon3665"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="467.38994,63.178668 467.50721,58.058613 465.33239,58.488762 " />
+    </g>
+    <g
+       id="g3673"
+       transform="scale(1,-1)">
+      <path
+         id="path3669"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 421.71851,54.898316 h 25.43482 a 3,3 90 0 0 3,-3 v -4.381042" />
+      <polygon
+         id="polygon3671"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="450.15333,42.517274 449.04486,47.517274 451.26181,47.517274 " />
+    </g>
+    <g
+       id="g3679"
+       transform="scale(1,-1)">
+      <path
+         id="path3675"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 420.96724,52.990242 h 21.98609 a 3,3 90 0 0 3,-3 v -2.472968" />
+      <polygon
+         id="polygon3677"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="445.95333,42.517274 444.84486,47.517274 447.06181,47.517274 " />
+    </g>
+    <g
+       id="g3687"
+       transform="scale(1,-1)">
+      <path
+         id="path3681"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 333.02913,87.676286 h 16.90752 a 3,3 90 0 0 3,-3 V 71.025748" />
+      <polygon
+         id="polygon3683"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="328.02913,87.676286 333.02913,88.784759 333.02913,86.567813 " />
+      <polygon
+         id="polygon3685"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="352.93665,66.025748 351.82817,71.025748 354.04512,71.025748 " />
+    </g>
+    <g
+       id="g3693"
+       transform="scale(1,-1)">
+      <path
+         id="path3689"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="M 321.02913,88.236246 H 271.48221 A 3,3 90 0 1 268.52414,85.73607" />
+      <polygon
+         id="polygon3691"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="268.48221,80.736246 267.4157,85.745366 269.63257,85.726774 " />
+    </g>
+    <g
+       id="g3701"
+       transform="scale(1,-1)">
+      <path
+         id="path3695"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 376.14288,90.67879 h -16.00623 a 3,3 90 0 1 -3,-3 V 71.025748" />
+      <polygon
+         id="polygon3697"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="381.14288,90.67879 376.14288,89.570317 376.14288,91.787263 " />
+      <polygon
+         id="polygon3699"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="357.13665,66.025748 356.02817,71.025748 358.24512,71.025748 " />
+    </g>
+    <g
+       id="g3707"
+       transform="scale(1,-1)">
+      <path
+         id="path3703"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 381.14288,94.638447 h -23.52684 a 3,3 -90 0 0 -0.90132,0.138596" />
+      <polygon
+         id="polygon3705"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="354.61604,99.315271 357.72082,95.24231 355.70862,94.311775 " />
+    </g>
+    <g
+       id="g3713"
+       transform="scale(1,-1)">
+      <path
+         id="path3709"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 348.8968,106.31527 h -21.36767 a 3,3 90 0 1 -3,-3 v -3.10385" />
+      <polygon
+         id="polygon3711"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="324.52913,95.211422 323.42066,100.21142 325.63761,100.21142 " />
+    </g>
+    <g
+       id="g3721"
+       transform="scale(1,-1)">
+      <path
+         id="path3715"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 420.93142,93.832237 h -10.89427 a 0.0541205,3 -90 0 0 -3,0.05412 v 0 a 3,0.0541205 0 0 1 -3,0.05412 h -10.89427" />
+      <polygon
+         id="polygon3717"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="425.93142,93.832237 420.93142,92.723764 420.93142,94.94071 " />
+      <polygon
+         id="polygon3719"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="388.14288,93.940478 393.14288,95.048951 393.14288,92.832005 " />
+    </g>
+    <g
+       id="g3729"
+       transform="scale(1,-1)">
+      <path
+         id="path3723"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 454.28994,70.178668 h -16.24741 a 3,3 -90 0 0 -3,3 v 8.655627" />
+      <polygon
+         id="polygon3725"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="459.28994,70.178668 454.28994,69.070195 454.28994,71.287141 " />
+      <polygon
+         id="polygon3727"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="435.04253,86.834295 436.15101,81.834295 433.93406,81.834295 " />
+    </g>
+    <g
+       id="g3737"
+       transform="scale(1,-1)">
+      <path
+         id="path3731"
+         fill="none"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         d="m 437.05333,35.517274 h -2.12191 a 3,3 -90 0 0 -3,3 v 43.314963" />
+      <polygon
+         id="polygon3733"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="442.05333,35.517274 437.05333,34.408801 437.05333,36.625747 " />
+      <polygon
+         id="polygon3735"
+         stroke="#000000"
+         stroke-opacity="1"
+         stroke-width="1"
+         points="431.93142,86.832237 433.0399,81.832237 430.82295,81.832237 " />
+    </g>
+  </g>
+</svg>
