@@ -18,6 +18,7 @@
 //
 // Usage:
 //   node bench/smoothness.mjs [--trials=2] [--out=results.jsonl] [--only=g1,g2]
+//                             [--baseline] [--channel=chrome]
 //
 // Assumes:
 //   - The webgl-sleeve example has been built into website/static/webgl-sleeve.
@@ -45,6 +46,33 @@ const DIVES_PER_TRIAL = parseInt(args.dives ?? 3, 10)
 const DIVE_MS = parseInt(args.diveMs ?? 2000, 10)
 const OUT = resolve(args.out ?? join(__dirname, 'smoothness-results.jsonl'))
 const ONLY = args.only ? String(args.only).split(',') : null
+// --baseline: non-tiled ablation. Loads each graph with maxLevels=0 so the
+// renderer draws the whole graph from the single root tile, and sweeps the
+// camera over the SAME zoom range the tiled pyramid would use (root zoom +
+// the level count of the canonical tiled run), so both modes replay the
+// identical visual dive.
+const BASELINE = !!args.baseline
+// --channel=chrome: drive the installed Chrome instead of the bundled
+// Chromium (matches the browser used for the paper's tiled runs).
+const CHANNEL = args.channel ? String(args.channel) : null
+// --dpr=2: device pixel ratio of the viewport (default 1). Higher DPR
+// multiplies the fragment-shading load, approximating a retina display.
+const DPR = parseFloat(args.dpr ?? 1)
+
+// Tile-pyramid level counts of the canonical tiled runs (tab:smoothness);
+// fixes the camera zoom span in --baseline mode where the layer itself
+// has a single level.
+const TILED_LEVELS = {
+  gameofthrones: 5,
+  composers: 9,
+  'ca-GrQc': 9,
+  'ca-HepTh': 9,
+  facebook_combined: 9,
+  'ca-HepPh': 9,
+  'ca-CondMat': 9,
+  deezer_europe: 9,
+  delaunay_n15: 9,
+}
 
 const GRAPHS = [
   {label: 'gameofthrones',      url: './graphs/gameofthrones.json',          loadTimeoutMs:    60_000},
@@ -118,7 +146,7 @@ function summarize(arr) {
 
 async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, trialIndex) {
   const page = await browser.newPage()
-  await page.setViewport({width: 1200, height: 900, deviceScaleFactor: 1})
+  await page.setViewport({width: 1200, height: 900, deviceScaleFactor: DPR})
   page.on('dialog', (d) => d.accept())
   page.on('console', (msg) => {
     if (process.env.MSAGL_BENCH_VERBOSE) {
@@ -129,7 +157,8 @@ async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, tria
     process.stderr.write(`  [pageerror] ${err.message}\n`)
   })
 
-  const url = `http://127.0.0.1:${port}/?url=${encodeURIComponent(graphUrl)}&maxLevels=30`
+  const maxLevels = BASELINE ? 0 : 30
+  const url = `http://127.0.0.1:${port}/?url=${encodeURIComponent(graphUrl)}&maxLevels=${maxLevels}`
   const t0 = Date.now()
   await page.goto(url, {waitUntil: 'domcontentloaded'})
   await page.waitForFunction(() => (window).__msaglReady === true, {timeout: loadTimeoutMs})
@@ -140,7 +169,7 @@ async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, tria
   await new Promise((r) => setTimeout(r, 1000))
 
   const result = await page.evaluate(async (params) => {
-    const {dives, diveMs, seed} = params
+    const {dives, diveMs, seed, zoomSpan} = params
     const renderer = (window).__msaglRenderer
     const deck = renderer && renderer._deck
     if (!deck) return {error: 'deck not ready'}
@@ -148,7 +177,10 @@ async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, tria
     const layer = (deck.props.layers || [])[0]
     if (!layer || !layer.props) return {error: 'tile layer not ready'}
     const minZoom = layer.props.minZoom
-    const maxZoom = layer.props.maxZoom
+    // In baseline mode the layer has a single level (minZoom == maxZoom);
+    // sweep the camera over the zoom span of the canonical tiled run so
+    // the dive is visually identical to the tiled one.
+    const maxZoom = zoomSpan ? minZoom + zoomSpan - 1 : layer.props.maxZoom
     const extent = layer.props.extent || [0, 0, 1, 1]
     // Pick targets inside the actual graph footprint when the example
     // exposes it; otherwise fall back to the padded extent square so
@@ -290,9 +322,11 @@ async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, tria
       longTasks: longTasks.map((l) => l.dur),
       // Actual pyramid depth = the layer's zoom range; this is the
       // numberOfLevels TileMap built, which may be less than the
-      // requested maxTileLevels cap.
-      tilePyramidLevels: maxZoom - minZoom + 1,
-      tileLayer: {minZoom, maxZoom, extent},
+      // requested maxTileLevels cap. (In baseline mode this is 1 while
+      // the camera still sweeps [minZoom, maxZoom].)
+      tilePyramidLevels: layer.props.maxZoom - minZoom + 1,
+      tileLayer: {minZoom, maxZoom: layer.props.maxZoom, extent},
+      camZoom: {min: minZoom, max: maxZoom},
       graphBox: box || null,
       dives: targets,
       peakElementsPerDive: peakElements,
@@ -302,7 +336,12 @@ async function runTrial(browser, port, graphLabel, graphUrl, loadTimeoutMs, tria
       peakTilesMax: peakTileMax,
       peakTilesMean: peakTileMean,
     }
-  }, {dives: DIVES_PER_TRIAL, diveMs: DIVE_MS, seed: (trialIndex + 1) * 1013904223})
+  }, {
+    dives: DIVES_PER_TRIAL,
+    diveMs: DIVE_MS,
+    seed: (trialIndex + 1) * 1013904223,
+    zoomSpan: BASELINE ? (TILED_LEVELS[graphLabel] ?? 9) : 0,
+  })
 
   await page.close()
   return {loadMs, ...result}
@@ -318,6 +357,7 @@ async function main() {
   const launchOpts = {
     headless: 'new',
     protocolTimeout: 1_800_000,
+    ...(CHANNEL ? {channel: CHANNEL} : {}),
     args: [
       '--use-gl=angle',
       '--enable-gpu',
@@ -366,6 +406,8 @@ async function main() {
         const line = JSON.stringify({
           graph: g.label,
           trial: trial + 1,
+          baseline: BASELINE,
+          camZoom: res.camZoom ?? null,
           wallMs: wall,
           loadMs: res.loadMs ?? null,
           durMs: res.durMs ?? null,
