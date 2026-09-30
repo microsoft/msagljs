@@ -1,0 +1,1307 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   tabindex="0"
+   version="1.1"
+   id="svg9238"
+   sodipodi:docname="rectRouting.dark.svg"
+   width="369.79953"
+   height="135.08636"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs9242" />
+  <sodipodi:namedview
+     id="namedview9240"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="1.8366667"
+     inkscape:cx="12.250454"
+     inkscape:cy="77.041742"
+     inkscape:current-layer="svg9238" />
+  <g
+     transform="matrix(0.79992984,0,0,1.2454563,-7.5993335,146.9182)"
+     id="g9236">
+    <g
+       transform="scale(1,-1)"
+       id="g9234">
+      <g
+         id="g8779">
+        <path
+           id="boundaryCurve"
+           fill="none"
+           d="m 228.89794,65.490926 h 3.21924 a 1.6096191,3 0 0 1 1.60962,3 v 8 a 1.6096191,3 0 0 1 -1.60962,3 h -3.21924 a 1.6096191,3 0 0 1 -1.60962,-3 v -8 a 1.6096191,3 0 0 1 1.60962,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="nodeLabel"
+           text-anchor="middle"
+           x="230.50755"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan 
+             fill="White"
+        
+             id="0"
+             text-anchor="middle"
+             x="230.50755"
+             alignment-baseline="middle"
+             y="-72.490929">z</tspan></text>
+      </g>
+      <g
+         id="g8787">
+        <path
+           id="path8781"
+           fill="none"
+           d="m 176.34738,65.550729 h 4.88916 a 2.4445801,3 0 0 1 2.44458,3 v 8 a 2.4445801,3 0 0 1 -2.44458,3 h -4.88916 a 2.4445801,3 0 0 1 -2.44458,-3 v -8 a 2.4445801,3 0 0 1 2.44458,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8785"
+           text-anchor="middle"
+           x="178.79196"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8783"
+             text-anchor="middle"
+             x="178.79196"
+             alignment-baseline="middle"
+             y="-72.550728">m</tspan></text>
+      </g>
+      <g
+         id="g8795">
+        <path
+           id="path8789"
+           fill="none"
+           d="m 144.29796,92.715428 h 6 a 3,3 0 0 1 3,3 v 8.000002 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8.000002 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8793"
+           text-anchor="middle"
+           x="147.29796"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8791"
+             text-anchor="middle"
+             x="147.29796"
+             alignment-baseline="middle"
+             y="-99.715431">p1</tspan></text>
+      </g>
+      <g
+         id="g8803">
+        <path
+           id="path8797"
+           fill="none"
+           d="m 113.64687,103.36569 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8801"
+           text-anchor="middle"
+           x="115.39687"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8799"
+             text-anchor="middle"
+             x="115.39687"
+             alignment-baseline="middle"
+             y="-110.36569">b</tspan></text>
+      </g>
+      <g
+         id="g8811">
+        <path
+           id="path8805"
+           fill="none"
+           d="m 81.397649,94.350781 h 6 a 3,3 0 0 1 3,3 v 7.999999 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -7.999999 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8809"
+           text-anchor="middle"
+           x="84.397652"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8807"
+             text-anchor="middle"
+             x="84.397652"
+             alignment-baseline="middle"
+             y="-101.35078">x1</tspan></text>
+      </g>
+      <g
+         id="g8819">
+        <path
+           id="path8813"
+           fill="none"
+           d="m 45.91419,44.882326 h 8.22168 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -8.22168 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8817"
+           text-anchor="middle"
+           x="50.025032"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8815"
+             text-anchor="middle"
+             x="50.025032"
+             alignment-baseline="middle"
+             y="-51.882324">[P]</tspan></text>
+      </g>
+      <g
+         id="g8827">
+        <path
+           id="path8821"
+           fill="none"
+           d="m 130.14555,57.808307 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8825"
+           text-anchor="middle"
+           x="131.89555"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8823"
+             text-anchor="middle"
+             x="131.89555"
+             alignment-baseline="middle"
+             y="-64.808304">b</tspan></text>
+      </g>
+      <g
+         id="g8835">
+        <path
+           id="path8829"
+           fill="none"
+           d="m 92.561796,44.874776 h 6 a 3,3 0 0 1 3.000004,3 v 8 a 3,3 0 0 1 -3.000004,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8833"
+           text-anchor="middle"
+           x="95.561798"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8831"
+             text-anchor="middle"
+             x="95.561798"
+             alignment-baseline="middle"
+             y="-51.874775">p2</tspan></text>
+      </g>
+      <g
+         id="g8843">
+        <path
+           id="path8837"
+           fill="none"
+           d="m 52.327509,79.736104 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8841"
+           text-anchor="middle"
+           x="54.077511"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8839"
+             text-anchor="middle"
+             x="54.077511"
+             alignment-baseline="middle"
+             y="-86.736107">b</tspan></text>
+      </g>
+      <g
+         id="g8851">
+        <path
+           id="path8845"
+           fill="none"
+           d="m 13,63.575362 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8849"
+           text-anchor="middle"
+           x="16"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8847"
+             text-anchor="middle"
+             x="16"
+             alignment-baseline="middle"
+             y="-70.575363">x2</tspan></text>
+      </g>
+      <g
+         id="g8859">
+        <path
+           id="path8853"
+           fill="none"
+           d="m 40.605369,10.000924 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8857"
+           text-anchor="middle"
+           x="43.60537"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8855"
+             text-anchor="middle"
+             x="43.60537"
+             alignment-baseline="middle"
+             y="-17.000925">b2</tspan></text>
+      </g>
+      <g
+         id="g8867">
+        <path
+           id="path8861"
+           fill="none"
+           d="m 73.232956,10 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8865"
+           text-anchor="middle"
+           x="76.232956"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8863"
+             text-anchor="middle"
+             x="76.232956"
+             alignment-baseline="middle"
+             y="-17">b2</tspan></text>
+      </g>
+      <g
+         id="g8875">
+        <path
+           id="path8869"
+           fill="none"
+           d="m 266.22542,66.736246 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8873"
+           text-anchor="middle"
+           x="267.9754"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8871"
+             text-anchor="middle"
+             x="267.9754"
+             alignment-baseline="middle"
+             y="-73.736244">n</tspan></text>
+      </g>
+      <g
+         id="g8883">
+        <path
+           id="path8877"
+           fill="none"
+           d="m 262.56454,31.834722 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8881"
+           text-anchor="middle"
+           x="264.31454"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8879"
+             text-anchor="middle"
+             x="264.31454"
+             alignment-baseline="middle"
+             y="-38.834721">b</tspan></text>
+      </g>
+      <g
+         id="g8891">
+        <path
+           id="path8885"
+           fill="none"
+           d="m 291.48288,11.317515 h 5.71924 a 2.8596191,3 0 0 1 2.85962,3 v 8 a 2.8596191,3 0 0 1 -2.85962,3 h -5.71924 a 2.8596191,3 0 0 1 -2.85962,-3 v -8 a 2.8596191,3 0 0 1 2.85962,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8889"
+           text-anchor="middle"
+           x="294.3425"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8887"
+             text-anchor="middle"
+             x="294.3425"
+             alignment-baseline="middle"
+             y="-18.317514">c1</tspan></text>
+      </g>
+      <g
+         id="g8899">
+        <path
+           id="path8893"
+           fill="none"
+           d="m 315.26907,46.259387 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8897"
+           text-anchor="middle"
+           x="317.01907"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8895"
+             text-anchor="middle"
+             x="317.01907"
+             alignment-baseline="middle"
+             y="-53.259388">b</tspan></text>
+      </g>
+      <g
+         id="g8907">
+        <path
+           id="path8901"
+           fill="none"
+           d="m 352.03665,52.025748 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8905"
+           text-anchor="middle"
+           x="355.03665"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8903"
+             text-anchor="middle"
+             x="355.03665"
+             alignment-baseline="middle"
+             y="-59.025749">y1</tspan></text>
+      </g>
+      <g
+         id="g8915">
+        <path
+           id="path8909"
+           fill="none"
+           d="m 408.83772,51.977172 h 9.88183 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -9.88183 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8913"
+           text-anchor="middle"
+           x="413.77863"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8911"
+             text-anchor="middle"
+             x="413.77863"
+             alignment-baseline="middle"
+             y="-58.977173">[Q]</tspan></text>
+      </g>
+      <g
+         id="g8923">
+        <path
+           id="path8917"
+           fill="none"
+           d="m 322.77913,81.211422 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3 h -3.5 a 1.75,3 0 0 1 -1.75,-3 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8921"
+           text-anchor="middle"
+           x="324.52914"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8919"
+             text-anchor="middle"
+             x="324.52914"
+             alignment-baseline="middle"
+             y="-88.211426">b</tspan></text>
+      </g>
+      <g
+         id="g8931">
+        <path
+           id="path8925"
+           fill="none"
+           d="m 382.89288,86.940478 h 3.5 a 1.75,3 0 0 1 1.75,3 v 8 a 1.75,3 0 0 1 -1.75,3.000002 h -3.5 a 1.75,3 0 0 1 -1.75,-3.000002 v -8 a 1.75,3 0 0 1 1.75,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8929"
+           text-anchor="middle"
+           x="384.64288"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8927"
+             text-anchor="middle"
+             x="384.64288"
+             alignment-baseline="middle"
+             y="-93.940475">b</tspan></text>
+      </g>
+      <g
+         id="g8939">
+        <path
+           id="path8933"
+           fill="none"
+           d="m 351.75642,99.315271 h 5.71923 a 2.8596191,3 0 0 1 2.85962,2.999999 v 8 a 2.8596191,3 0 0 1 -2.85962,3 h -5.71923 a 2.8596191,3 0 0 1 -2.85962,-3 v -8 a 2.8596191,3 0 0 1 2.85962,-2.999999"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8937"
+           text-anchor="middle"
+           x="354.61603"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8935"
+             text-anchor="middle"
+             x="354.61603"
+             alignment-baseline="middle"
+             y="-106.31527">c2</tspan></text>
+      </g>
+      <g
+         id="g8947">
+        <path
+           id="path8941"
+           fill="none"
+           d="m 428.93142,86.832237 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3.000003 h -6 a 3,3 0 0 1 -3,-3.000003 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8945"
+           text-anchor="middle"
+           x="431.93143"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8943"
+             text-anchor="middle"
+             x="431.93143"
+             alignment-baseline="middle"
+             y="-93.832237">y2</tspan></text>
+      </g>
+      <g
+         id="g8955">
+        <path
+           id="path8949"
+           fill="none"
+           d="m 462.28994,63.178668 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8953"
+           text-anchor="middle"
+           x="465.28995"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8951"
+             text-anchor="middle"
+             x="465.28995"
+             alignment-baseline="middle"
+             y="-70.178665">b2</tspan></text>
+      </g>
+      <g
+         id="g8963">
+        <path
+           id="path8957"
+           fill="none"
+           d="m 445.05333,28.517274 h 6 a 3,3 0 0 1 3,3 v 8 a 3,3 0 0 1 -3,3 h -6 a 3,3 0 0 1 -3,-3 v -8 a 3,3 0 0 1 3,-3"
+           stroke="White"
+           stroke-width="1" />
+        <text
+           id="text8961"
+           text-anchor="middle"
+           x="448.05334"
+           fill="#000000"
+           font-family="Times-Roman"
+           font-size="10px"
+           transform="scale(1,-1)"><tspan fill="White"
+             id="tspan8959"
+             text-anchor="middle"
+             x="448.05334"
+             alignment-baseline="middle"
+             y="-35.517273">b2</tspan></text>
+      </g>
+      <g
+         id="g8967">
+        <path
+           id="curve"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 183.68112,72.550729 h 18.8036 a 0.0299015,3 90 0 0 3,-0.0299 v 0 a 3,0.0299015 -180 0 1 3,-0.0299 h 13.8036" />
+        <polygon
+           id="targetArr"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="222.28832,71.382453 222.28832,73.599399 227.28832,72.490926 " />
+      </g>
+      <g
+         id="g8974">
+        <path
+           id="path8969"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 158.29796,99.715428 h 17.49399 a 3,3 90 0 0 3,-3 V 84.550729" />
+        <polygon
+           id="sourceArr"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="158.29796,100.8239 158.29796,98.606955 153.29796,99.715428 " />
+        <polygon
+           id="polygon8972"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="177.68348,84.550729 179.90043,84.550729 178.79196,79.550729 " />
+      </g>
+      <g
+         id="g8980">
+        <path
+           id="path8976"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 118.84578,115.08533 h 27.55218 a 3,3 90 0 0 3,-3 v -0.3699" />
+        <polygon
+           id="polygon8978"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="148.28948,111.71543 150.50643,111.71543 149.39796,106.71543 " />
+      </g>
+      <g
+         id="g8988">
+        <path
+           id="path8982"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 123.89687,109.99579 h 17.5276" />
+        <polygon
+           id="polygon8984"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="123.89687,111.10426 123.89687,108.88731 118.89687,109.99579 " />
+        <polygon
+           id="polygon8986"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="140.69723,109.15922 142.1517,110.83235 145.19796,106.71543 " />
+      </g>
+      <g
+         id="g8994">
+        <path
+           id="path8990"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 90.397649,98.358235 h 21.999221 a 3,3 -90 0 1 1.31071,0.301472" />
+        <polygon
+           id="polygon8992"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="114.75087,98.285199 112.66429,99.034215 115.39687,103.36569 " />
+      </g>
+      <g
+         id="g9000">
+        <path
+           id="path8996"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 56.923886,56.990012 h 23.555837 a 3,3 -90 0 1 3,3 v 29.360769" />
+        <polygon
+           id="polygon8998"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="84.588196,89.350781 82.37125,89.350781 83.479723,94.350781 " />
+      </g>
+      <g
+         id="g9006">
+        <path
+           id="path9002"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="M 42.91419,51.882326 H 19 a 3,3 -90 0 0 -3,3 v 3.693036" />
+        <polygon
+           id="polygon9004"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="17.108473,58.575362 14.891527,58.575362 16,63.575362 " />
+      </g>
+      <g
+         id="g9012">
+        <path
+           id="path9008"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 47.536236,44.882326 v -1.716845 a 3,3 0 0 0 -3,-3 h -0.802662 a 3,3 90 0 1 -3,-3 v -8.164557" />
+        <polygon
+           id="polygon9010"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="39.625101,29.000924 41.842047,29.000924 40.733574,24.000924 " />
+      </g>
+      <g
+         id="g9018">
+        <path
+           id="path9014"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 52.513824,44.882326 v -7.440701 a 3,3 0 0 0 -3,-3 h -2.908455 a 3,3 90 0 1 -3,-3 v -2.440701" />
+        <polygon
+           id="polygon9016"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="42.496896,29.000924 44.713842,29.000924 43.605369,24.000924 " />
+      </g>
+      <g
+         id="g9024">
+        <path
+           id="path9020"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 57.13587,51.16751 h 18.197086 a 3,3 90 0 0 3,-3 V 29" />
+        <polygon
+           id="polygon9022"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="77.224483,29 79.441429,29 78.332956,24 " />
+      </g>
+      <g
+         id="g9030">
+        <path
+           id="path9026"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 57.065711,47.23732 h 14.067245 a 3,3 90 0 0 3,-3 V 29" />
+        <polygon
+           id="polygon9028"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="73.024483,29 75.241429,29 74.132956,24 " />
+      </g>
+      <g
+         id="g9038">
+        <path
+           id="path9032"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 140.39555,67.258307 h 3.90241 a 3,3 -90 0 1 3,3 v 17.457121" />
+        <polygon
+           id="polygon9034"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="140.39555,68.36678 140.39555,66.149834 135.39555,67.258307 " />
+        <polygon
+           id="polygon9036"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="148.40643,87.715428 146.18948,87.715428 147.29796,92.715428 " />
+      </g>
+      <g
+         id="g9044">
+        <path
+           id="path9040"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 135.39555,62.358307 h 16.25362 a 3,3 -90 0 1 3,3 v 4.192422 a 3,3 -180 0 0 3,3 h 11.25363" />
+        <polygon
+           id="polygon9042"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="168.9028,71.442256 168.9028,73.659202 173.9028,72.550729 " />
+      </g>
+      <g
+         id="g9052">
+        <path
+           id="path9046"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 106.5618,50.841542 h 22.33375 a 3,3 -90 0 1 2.81767,1.97009" />
+        <polygon
+           id="polygon9048"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="106.5618,51.950015 106.5618,49.733069 101.5618,50.841542 " />
+        <polygon
+           id="polygon9050"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="132.82096,52.771211 130.60549,52.852053 131.89555,57.808307 " />
+      </g>
+      <g
+         id="g9058">
+        <path
+           id="path9054"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 57.577509,83.102859 h 32.884287 a 3,3 90 0 0 3,-3 V 63.874776" />
+        <polygon
+           id="polygon9056"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="92.353323,63.874776 94.570269,63.874776 93.461796,58.874776 " />
+      </g>
+      <g
+         id="g9066">
+        <path
+           id="path9060"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 62.577509,89.984027 h 32.084287 a 3,3 90 0 0 3,-3 V 63.874776" />
+        <polygon
+           id="polygon9062"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="62.577509,91.0925 62.577509,88.875554 57.577509,89.984027 " />
+        <polygon
+           id="polygon9064"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="96.553323,63.874776 98.770269,63.874776 97.661796,58.874776 " />
+      </g>
+      <g
+         id="g9072">
+        <path
+           id="path9068"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 22,70.575362 h 29.077509 a 3,3 -90 0 1 3,3 v 1.160742" />
+        <polygon
+           id="polygon9070"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="55.185982,74.736104 52.969036,74.736104 54.077509,79.736104 " />
+      </g>
+      <g
+         id="g9080">
+        <path
+           id="path9074"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 48.524576,28.562514 a 3,3 -180 0 0 0.952588,0.155255 h 17.455792 a 3,3 -90 0 1 3,3 v 1 a 3,3 -180 0 0 3,3 h 17.52884 a 3,3 -90 0 1 3,3 v 1.157007" />
+        <polygon
+           id="polygon9076"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="47.513296,29.016415 49.535856,28.108614 46.477164,24.000924 " />
+        <polygon
+           id="polygon9078"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="94.570269,39.874776 92.353323,39.874776 93.461796,44.874776 " />
+      </g>
+      <g
+         id="g9088">
+        <path
+           id="path9082"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 87.232956,17 h 7.42884 a 3,3 -90 0 1 3,3 v 19.874776" />
+        <polygon
+           id="polygon9084"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="87.232956,18.108473 87.232956,15.891527 82.232956,17 " />
+        <polygon
+           id="polygon9086"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="98.770269,39.874776 96.553323,39.874776 97.661796,44.874776 " />
+      </g>
+      <g
+         id="g9096">
+        <path
+           id="path9090"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 259.47542,75.781517 h -7.37431 a 2.667931,3 90 0 1 -3,-2.667931 v 0 a 3,2.667931 0 0 0 -3,-2.667931 h -7.37431" />
+        <polygon
+           id="polygon9092"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="259.47542,74.673044 259.47542,76.88999 264.47542,75.781517 " />
+        <polygon
+           id="polygon9094"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="238.7268,71.554128 238.7268,69.337182 233.7268,70.445655 " />
+      </g>
+      <g
+         id="g9102">
+        <path
+           id="path9098"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 262.62935,45.834722 v 10.758529 a 2.1480329,3 -180 0 0 2.14804,3 v 0 a 3,2.1480329 -90 0 1 2.05869,2.143793" />
+        <polygon
+           id="polygon9100"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="267.94437,61.717238 265.72778,61.756851 266.92542,66.736246 " />
+      </g>
+      <g
+         id="g9110">
+        <path
+           id="path9104"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 264.66247,50.834103 a 1.8914131,3 -180 0 0 1.81271,2.143614 v 0 a 3,1.8914131 -90 0 1 1.89141,3 v 5.758529" />
+        <polygon
+           id="polygon9106"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="263.55413,50.851551 265.77081,50.816655 264.58377,45.834722 " />
+        <polygon
+           id="polygon9108"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="269.47507,61.736246 267.25812,61.736246 268.36659,66.736246 " />
+      </g>
+      <g
+         id="g9116">
+        <path
+           id="path9112"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 288.62326,18.317515 h -21.30872 a 3,3 -90 0 0 -3,3 v 5.517207" />
+        <polygon
+           id="polygon9114"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="265.42301,26.834722 263.20606,26.834722 264.31454,31.834722 " />
+      </g>
+      <g
+         id="g9122">
+        <path
+           id="path9118"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="M 313.51907,50.809387 H 297.3425 a 3,3 90 0 1 -3,-3 V 30.317515" />
+        <polygon
+           id="polygon9120"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="293.23403,30.317515 295.45098,30.317515 294.3425,25.317515 " />
+      </g>
+      <g
+         id="g9130">
+        <path
+           id="path9124"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 308.51907,55.709387 h -35.48483 a 3,3 -90 0 0 -3,3 v 3.073941" />
+        <polygon
+           id="polygon9126"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="308.51907,54.600914 308.51907,56.81786 313.51907,55.709387 " />
+        <polygon
+           id="polygon9128"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="271.14271,61.783328 268.92577,61.783328 270.03424,66.783328 " />
+      </g>
+      <g
+         id="g9138">
+        <path
+           id="path9132"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 344.03665,59.601681 h -6.25879 a 3,3 90 0 1 -3,-3 v -0.918227 a 3,3 0 0 0 -3,-3 h -6.25879" />
+        <polygon
+           id="polygon9134"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="344.03665,58.493208 344.03665,60.710154 349.03665,59.601681 " />
+        <polygon
+           id="polygon9136"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="325.51907,53.791927 325.51907,51.574981 320.51907,52.683454 " />
+      </g>
+      <g
+         id="g9144">
+        <path
+           id="path9140"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 405.83772,58.977172 h -19.40054 a 0.024288,3 -90 0 0 -3,0.02429 v 0 a 3,0.024288 0 0 1 -3,0.02429 h -14.40053" />
+        <polygon
+           id="polygon9142"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="366.03665,60.134221 366.03665,57.917275 361.03665,59.025748 " />
+      </g>
+      <g
+         id="g9150">
+        <path
+           id="path9146"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 421.71955,61.328263 h 3.87854 a 3,3 -90 0 1 3,3 v 17.52255" />
+        <polygon
+           id="polygon9148"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="429.70656,81.850813 427.48962,81.850813 428.59809,86.850813 " />
+      </g>
+      <g
+         id="g9156">
+        <path
+           id="path9152"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="M 421.71955,61.216496 H 458.4058" />
+        <polygon
+           id="polygon9154"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="458.84081,60.196944 457.9708,62.236048 463.0047,63.178668 " />
+      </g>
+      <g
+         id="g9162">
+        <path
+           id="path9158"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 421.71955,57.482684 h 42.67039 a 3,3 -90 0 1 2.02986,0.791004" />
+        <polygon
+           id="polygon9160"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="467.50721,58.058613 465.33239,58.488762 467.38994,63.178668 " />
+      </g>
+      <g
+         id="g9168">
+        <path
+           id="path9164"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 421.71851,54.898316 h 25.43482 a 3,3 90 0 0 3,-3 v -4.381042" />
+        <polygon
+           id="polygon9166"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="449.04486,47.517274 451.26181,47.517274 450.15333,42.517274 " />
+      </g>
+      <g
+         id="g9174">
+        <path
+           id="path9170"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 420.96724,52.990242 h 21.98609 a 3,3 90 0 0 3,-3 v -2.472968" />
+        <polygon
+           id="polygon9172"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="444.84486,47.517274 447.06181,47.517274 445.95333,42.517274 " />
+      </g>
+      <g
+         id="g9182">
+        <path
+           id="path9176"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 333.02913,87.676286 h 16.90752 a 3,3 90 0 0 3,-3 V 71.025748" />
+        <polygon
+           id="polygon9178"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="333.02913,88.784759 333.02913,86.567813 328.02913,87.676286 " />
+        <polygon
+           id="polygon9180"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="351.82817,71.025748 354.04512,71.025748 352.93665,66.025748 " />
+      </g>
+      <g
+         id="g9188">
+        <path
+           id="path9184"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="M 321.02913,88.236246 H 271.48221 A 3,3 90 0 1 268.52414,85.73607" />
+        <polygon
+           id="polygon9186"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="267.4157,85.745366 269.63257,85.726774 268.48221,80.736246 " />
+      </g>
+      <g
+         id="g9196">
+        <path
+           id="path9190"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 376.14288,90.67879 h -16.00623 a 3,3 90 0 1 -3,-3 V 71.025748" />
+        <polygon
+           id="polygon9192"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="376.14288,89.570317 376.14288,91.787263 381.14288,90.67879 " />
+        <polygon
+           id="polygon9194"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="356.02817,71.025748 358.24512,71.025748 357.13665,66.025748 " />
+      </g>
+      <g
+         id="g9202">
+        <path
+           id="path9198"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 381.14288,94.638447 h -23.52684 a 3,3 -90 0 0 -0.90132,0.138596" />
+        <polygon
+           id="polygon9200"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="357.72082,95.24231 355.70862,94.311775 354.61604,99.315271 " />
+      </g>
+      <g
+         id="g9208">
+        <path
+           id="path9204"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 348.8968,106.31527 h -21.36767 a 3,3 90 0 1 -3,-3 v -3.10385" />
+        <polygon
+           id="polygon9206"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="323.42066,100.21142 325.63761,100.21142 324.52913,95.211422 " />
+      </g>
+      <g
+         id="g9216">
+        <path
+           id="path9210"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 420.93142,93.832237 h -10.89427 a 0.0541205,3 -90 0 0 -3,0.05412 v 0 a 3,0.0541205 0 0 1 -3,0.05412 h -10.89427" />
+        <polygon
+           id="polygon9212"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="420.93142,92.723764 420.93142,94.94071 425.93142,93.832237 " />
+        <polygon
+           id="polygon9214"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="393.14288,95.048951 393.14288,92.832005 388.14288,93.940478 " />
+      </g>
+      <g
+         id="g9224">
+        <path
+           id="path9218"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 454.28994,70.178668 h -16.24741 a 3,3 -90 0 0 -3,3 v 8.655627" />
+        <polygon
+           id="polygon9220"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="454.28994,69.070195 454.28994,71.287141 459.28994,70.178668 " />
+        <polygon
+           id="polygon9222"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="436.15101,81.834295 433.93406,81.834295 435.04253,86.834295 " />
+      </g>
+      <g
+         id="g9232">
+        <path
+           id="path9226"
+           fill="none"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           d="m 437.05333,35.517274 h -2.12191 a 3,3 -90 0 0 -3,3 v 43.314963" />
+        <polygon
+           id="polygon9228"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="437.05333,34.408801 437.05333,36.625747 442.05333,35.517274 " />
+        <polygon
+           id="polygon9230"
+           stroke="White"
+           stroke-opacity="1"
+           stroke-width="1"
+           points="433.0399,81.832237 430.82295,81.832237 431.93142,86.832237 " />
+      </g>
+    </g>
+  </g>
+</svg>
