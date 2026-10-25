@@ -13,25 +13,25 @@ export abstract class DrawingObject extends Attribute {
   }
   static copyValidFields(source: DrawingObject, target: DrawingObject) {
     if (source == null || target == null) return
-    if (source.color && source.color.keyword && source.color.keyword.toLowerCase() !== 'black') {
+    if (source.color) {
       target.color = source.color
     }
     if (source.fillColor) {
       target.fillColor = source.fillColor
     }
-    if (source.labelfontcolor && source.labelfontcolor.keyword.toLowerCase() !== 'black') {
+    if (source.labelfontcolor) {
       target.labelfontcolor = source.labelfontcolor
     }
     if (source.labelText != null && source.labelText !== '' && source.labelText !== source.id) {
       target.labelText = source.labelText
     }
-    if (source.fontColor && source.fontColor.keyword && source.fontColor.keyword.toLowerCase() !== 'black') {
+    if (source.fontColor) {
       target.fontColor = source.fontColor
     }
     if (source.styles && source.styles.length) {
       target.styles = source.styles.map((a) => a)
     }
-    if (source.pencolor && source.pencolor.keyword !== 'black') {
+    if (source.pencolor) {
       target.pencolor = source.pencolor
     }
     if (source.penwidth && source.penwidth !== 1) {

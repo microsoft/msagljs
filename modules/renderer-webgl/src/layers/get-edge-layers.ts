@@ -26,12 +26,12 @@ export function getEdgeLayer(props: EdgeLayerProps, style: ParsedGraphEdgeLayerS
       return [d.startPar, d.endPar]
     },
     widthUnits: 'pixels',
-    // Half the previous 1px default ("twice thinner") and a slightly
-    // transparent black so overlapping edges in dense graphs read more clearly.
+    // Thin curves and a translucent default keep dense graphs readable.
+    // Explicit edge colors retain their own alpha channel.
     // A style's strokeWidth/strokeColor (if any) still override these via the
     // GraphStyleExtension below.
     getWidth: 0.5,
-    getColor: [0, 0, 0, 160],
+    getColor: getCurveColor,
     // one vertex per 4 pixels
     getResolution: (d: CurveClip) => {
       return d.curve.length * props.resolution
@@ -136,13 +136,18 @@ function pointToArray(p: Point): [number, number] {
   return [p.x, p.y]
 }
 
-function getEdgeColor(e: Edge): [number, number, number] {
-  const drawinEdge = getDrawingObj<DrawingEdge>(e)
-  if (drawinEdge) {
-    const color = drawinEdge.color
-    if (color) return [color.R, color.G, color.B]
+function getCurveColor(cc: CurveClip): [number, number, number, number] {
+  // Overlapping edges can share one curve; use its first edge as the representative.
+  return getEdgeColor(cc.edges[0], 160)
+}
+
+function getEdgeColor(e: Edge, defaultAlpha = 255): [number, number, number, number] {
+  const drawingEdge = getDrawingObj<DrawingEdge>(e)
+  if (drawingEdge) {
+    const color = drawingEdge.color
+    if (color) return [color.R, color.G, color.B, color.A]
   }
-  return [0, 0, 0]
+  return [0, 0, 0, defaultAlpha]
 }
 
 function getEdgeType(e: Edge): string {
