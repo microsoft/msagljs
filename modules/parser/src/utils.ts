@@ -1,9 +1,10 @@
 import parseCSSColor from 'parse-color'
 import {Color} from '@msagl/drawing'
 
-export function parseColor(s: string): Color {
+export function parseColor(s: string | number): Color {
+  // DOT colorscheme indices such as `color=1` arrive from the parser as numbers.
   // Older JSON exports include DOT quotes inside the attribute value.
-  const value = s.replace(/^"|"$/g, '')
+  const value = s == null ? '' : String(s).replace(/^"|"$/g, '')
   const hex = /^#([0-9a-f]{6})([0-9a-f]{2})$/i.exec(value)
   if (hex) {
     return new Color(

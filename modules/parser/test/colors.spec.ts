@@ -12,3 +12,9 @@ test.each([
   const color = parseColor(value as string)
   expect([color.R, color.G, color.B, color.A]).toEqual(expected)
 })
+
+// DOT colorscheme values: a numeric index, scheme-relative and explicit indices, and an X11 scheme name.
+test.each([1, '//11', '/ylgn7/5', '/X11/thistle'])('falls back to black for unsupported color %s', (value) => {
+  const color = parseColor(value)
+  expect([color.R, color.G, color.B, color.A]).toEqual([0, 0, 0, 255])
+})
