@@ -79,6 +79,30 @@ test('three nodes', () => {
   // SvgDebugWriter.writeGeomGraph('./tmp/threerectr.svg', gg)
 })
 
+// b is taller than a and c, so the scan line along the top of a and c passes through b, the second
+// obstacle on that line. The route a -> c used to run straight through b.
+test('route avoids the second obstacle on a scan line', () => {
+  const gg = new GeomGraph(new Graph('graph'))
+
+  const a = addNode(gg, 'a', CurveFactory.mkRectangleWithRoundedCorners(60, 40, 0, 0, new Point(0, 0)))
+
+  const b = addNode(gg, 'b', CurveFactory.mkRectangleWithRoundedCorners(60, 80, 0, 0, new Point(150, 0)))
+
+  const c = addNode(gg, 'c', CurveFactory.mkRectangleWithRoundedCorners(60, 40, 0, 0, new Point(300, 0)))
+
+  const e = new GeomEdge(new Edge(a, c))
+
+  const rr = RectilinearEdgeRouter.constructorGNAN(gg, null, 1, 0)
+  rr.run()
+
+  const box = GeomNode.getGeom(b).boundingBox
+  const points = Array.from(e.curve as Polyline)
+  for (let i = 1; i < points.length; i++) {
+    const segment = Rectangle.mkPP(points[i - 1], points[i])
+    expect(segment.left < box.right && segment.right > box.left && segment.bottom < box.top && segment.top > box.bottom).toBe(false)
+  }
+})
+
 test('pbi', () => {
   const gg = new GeomGraph(new Graph('graph'))
   const n15 = addNode(

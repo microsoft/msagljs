@@ -181,7 +181,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
 
   ProcessCustomEvent(evt: SweepEvent) {
     if (!this.ProcessAxisCoordinate(evt)) {
-      this.ProcessCustomEvent(evt)
+      super.ProcessCustomEvent(evt)
     }
   }
 
@@ -335,7 +335,7 @@ export class SparseVisibilityGraphGenerator extends VisibilityGraphGenerator {
 
       // This is a HighObstacleSide.  If we've got overlap nesting, decrement the depth.
       /*Assert.assert(overlapDepth > 0, 'Overlap depth must be positive')*/
-      overlapDepth++
+      overlapDepth--
       if (overlapDepth > 0) {
         continue
       }
