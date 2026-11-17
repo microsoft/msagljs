@@ -25,6 +25,7 @@ import {
 
 import {
   ArrowTypeEnum,
+  Color,
   DrawingEdge,
   DrawingGraph,
   DrawingNode,
@@ -131,9 +132,11 @@ function parseAttrOnDrawingObj(entity: Entity, drawingObj: DrawingObject, o: any
           drawingObj.labelfontcolor = parseColor(str)
           break
         case 'fontcolor':
+        case 'fontColor': // Legacy graphToJSON output.
           drawingObj.fontColor = parseColor(str)
           break
         case 'fillcolor':
+        case 'fillColor': // Legacy graphToJSON output.
           drawingObj.fillColor = parseColor(str)
           break
         case 'style':
@@ -968,29 +971,34 @@ function* getNodeAttrList(node: Node): IterableIterator<Attr> {
   yield* attrIter(DrawingObject.getDrawingObj(node))
 }
 
+function colorAttributeValue(color: Color): string {
+  // Color.toString() quotes hexadecimal colors for DOT text, but AST values are unquoted.
+  return color.toString().replace(/^"|"$/g, '')
+}
+
 function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
   if (drObj.color) {
-    yield {type: 'attr', id: 'color', eq: drObj.color.toString()}
+    yield {type: 'attr', id: 'color', eq: colorAttributeValue(drObj.color)}
   }
   if (drObj.fillColor) {
-    yield {type: 'attr', id: 'fillColor', eq: drObj.fillColor.toString()}
+    yield {type: 'attr', id: 'fillcolor', eq: colorAttributeValue(drObj.fillColor)}
   }
   if (drObj.labelfontcolor) {
-    yield {type: 'attr', id: 'labelfontcolor', eq: drObj.labelfontcolor.toString()}
+    yield {type: 'attr', id: 'labelfontcolor', eq: colorAttributeValue(drObj.labelfontcolor)}
   }
   if (!(drObj.labelText == null || drObj.labelText === '') && drObj.entity && drObj.labelText !== drObj.id) {
     yield {type: 'attr', id: 'label', eq: drObj.labelText}
   }
-  if (drObj.fontColor && drObj.fontColor.keyword.toLowerCase() !== 'black') {
-    yield {type: 'attr', id: 'fontColor', eq: drObj.fontColor.toString()}
+  if (drObj.fontColor) {
+    yield {type: 'attr', id: 'fontcolor', eq: colorAttributeValue(drObj.fontColor)}
   }
 
   if (drObj.styles && drObj.styles.length) {
     const styleString = drObj.styles.map((s) => StyleEnum[s]).reduce((a, b) => a.concat(',' + b))
     yield {type: 'attr', id: 'style', eq: styleString}
   }
-  if (drObj.pencolor && drObj.pencolor.keyword !== 'black') {
-    yield {type: 'attr', id: 'pencolor', eq: drObj.pencolor.toString()}
+  if (drObj.pencolor) {
+    yield {type: 'attr', id: 'pencolor', eq: colorAttributeValue(drObj.pencolor)}
   }
   if (drObj.penwidth && drObj.penwidth !== 1) {
     yield {type: 'attr', id: 'penwidth', eq: drObj.penwidth.toString()}
@@ -1023,7 +1031,7 @@ function* attrIter(drObj: DrawingObject): IterableIterator<Attr> {
     yield {type: 'attr', id: 'ordering', eq: drObj.ordering.toString()}
   }
   if (drObj.bgcolor) {
-    yield {type: 'attr', id: 'bgcolor', eq: drObj.bgcolor.toString()}
+    yield {type: 'attr', id: 'bgcolor', eq: colorAttributeValue(drObj.bgcolor)}
   }
   if (drObj.pos) {
     yield {type: 'attr', id: 'pos', eq: drObj.pos.toString()}

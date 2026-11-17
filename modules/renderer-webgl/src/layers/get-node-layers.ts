@@ -110,7 +110,7 @@ export function getNodeLayers(props: NodeLayerProps, style: ParsedGraphNodeLayer
       // across levels. Tiled FINEST level: 'common' units so the label grows with the
       // (growing) node box at the same speed. Non-tiled: original 'common' behavior.
       getSize: (n: GeomNode) => (tiled && !isFinest ? labelPixelSize(n) : getLabelSize(n) * scaleCurr(n)),
-      getColor: getNodeColor,
+      getColor: getNodeLabelColor,
       billboard: false,
       sizeUnits: tiled && !isFinest ? 'pixels' : 'common',
       characterSet: 'auto',
@@ -156,18 +156,21 @@ function getCornerRadius(n: GeomNode): number {
   return drawingNode.xRad
 }
 
-function getNodeColor(e: GeomNode): [number, number, number, number] {
+function getNodeLabelColor(e: GeomNode): [number, number, number, number] {
   const drawingNode = getDrawingObj<DrawingNode>(e.node)
   if (drawingNode) {
-    const color = drawingNode.pencolor
+    const color = drawingNode.fontColor
     if (color) return [color.R, color.G, color.B, color.A]
   }
   return [0, 0, 0, 255]
 }
 function getNodeBorderColor(e: GeomNode): [number, number, number, number] {
-  const [r, g, b] = getNodeColor(e)
-  // Faint border so labels stand out; edges show through clearly.
-  return [r, g, b, 60]
+  const drawingNode = getDrawingObj<DrawingNode>(e.node)
+  const color =
+    e instanceof GeomGraph ? drawingNode?.pencolor ?? drawingNode?.color : drawingNode?.color ?? drawingNode?.pencolor
+  if (color) return [color.R, color.G, color.B, color.A]
+  // Keep unstyled borders faint so labels stand out.
+  return [0, 0, 0, 60]
 }
 function getNodeFillColor(e: GeomNode): [number, number, number, number] {
   const drawingNode = getDrawingObj<DrawingNode>(e.node)

@@ -19,7 +19,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc --build tsconfig.prod.json && npm run build-bundle",
+    "build": "tsc --build tsconfig.prod.json && npm run build-esm && npm run build-bundle",
+    "build-esm": "esbuild src/index.ts --bundle --format=esm --packages=external --external:@msagl/* --sourcemap --target=es2018 --outfile=dist/index.js",
     "build-bundle": "node ../../esbuild.js bundle.ts dist.min.js"
   },
   "dependencies": {
