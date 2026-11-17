@@ -1,5 +1,11 @@
 # Contributing
 
+## Branches
+
+Development happens on the `dev` branch. Base your work on `dev` and open pull
+requests against `dev`. The documentation site at
+https://microsoft.github.io/msagljs/ is deployed from `dev`.
+
 ## Examples
 
 Renderings graphs with Deck.gl and with SVG can be seen at https://microsoft.github.io/msagljs/.

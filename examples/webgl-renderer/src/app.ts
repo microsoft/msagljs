@@ -15,8 +15,8 @@ import {SAMPLE_DOT, ROUTING, LAYOUT, FONT} from './settings'
 import {DrawingObject} from '@msagl/drawing'
 import {loadGraphFromFile, loadGraphFromUrl} from '@msagl/parser'
 
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/JSONfiles/gameofthrones.json'
-//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/badvoro.gv'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/modules/core/test/data/JSONfiles/gameofthrones.json'
+//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/modules/core/test/data/graphvis/badvoro.gv'
 /// Debug on main thread
 // const renderer = new WebGLRenderer(document.getElementById('viewer'), null)
 /// Test worker with local build
@@ -66,7 +66,7 @@ for (const name of SAMPLE_DOT) {
 }
 dotFileSelect.selectedIndex = -1
 dotFileSelect.onchange = () => {
-  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + dotFileSelect.value
+  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/modules/core/test/data/graphvis/' + dotFileSelect.value
   loadGraphFromUrl(url).then((graph) => {
     updateRender(graph)
     document.getElementById('graph-name').innerText = graph.id + '(' + graph.nodeCountDeep + ',' + graph.deepEdgesCount + ')'

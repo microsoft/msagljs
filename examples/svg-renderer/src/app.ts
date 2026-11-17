@@ -12,8 +12,8 @@ import {LayoutOptions} from '@msagl/renderer-common'
 
 const viewer = document.getElementById('viewer')
 viewer.setAttribute('style', 'touch-action: none;')
-//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/examples/data/gameofthrones.json'
-const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/fsm.gv'
+//const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/examples/data/gameofthrones.json'
+const defaultGraph = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/modules/core/test/data/graphvis/fsm.gv'
 const svgRenderer = new RendererSvg(viewer)
 const graphExamplesSelect = createDotGraphsSelect()
 let objectWithEditedLabel: Entity
@@ -77,7 +77,7 @@ viewer.addEventListener('keydown', (e: KeyboardEvent) => {
 })
 
 graphExamplesSelect.onchange = () => {
-  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/main/modules/core/test/data/graphvis/' + graphExamplesSelect.value
+  const url = 'https://raw.githubusercontent.com/microsoft/msagljs/dev/modules/core/test/data/graphvis/' + graphExamplesSelect.value
   loadGraphFromUrl(url)
     .then((graph) => {
       svgRenderer.setGraph(graph, getLayoutOptions())

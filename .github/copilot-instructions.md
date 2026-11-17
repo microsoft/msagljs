@@ -4,6 +4,10 @@
 
 msagl-js is a JavaScript/TypeScript implementation of Microsoft's Automatic Graph Layout (MSAGL) algorithms. It computes node positions and edge routes for graph visualization.
 
+## Branches
+
+Development happens on the `dev` branch. Base new work on `dev` and open pull requests against `dev`, not `main`.
+
 ## Build, Test, and Lint
 
 ```bash
